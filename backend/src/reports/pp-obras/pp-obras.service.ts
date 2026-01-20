@@ -12,6 +12,7 @@ import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
+import { Html2Text } from '../../common/Html2Text';
 import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
@@ -137,6 +138,11 @@ class RetornoDbCronograma {
     responsavel_nome_exibicao: string;
 
     atraso?: number;
+
+    backup_custo_estimado?: number;
+    backup_custo_real?: number;
+    custo_estimado_anualizado?: JSON;
+    custo_real_anualizado?: JSON;
 }
 
 class RetornoDbRegioes {
@@ -224,6 +230,9 @@ class RetornoDbAcompanhamentos {
     detalhamento_status: string | null;
     pontos_atencao: string | null;
     riscos: string | null;
+    pauta_texto: string | null;
+    detalhamento_texto: string | null;
+    pontos_atencao_texto: string | null;
 }
 
 class RetornoDbObrasSEI {
@@ -316,11 +325,34 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        const cronogramaFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'id',
+            'hierarquia',
+            'numero',
+            'nivel',
+            'tarefa',
+            'inicio_planejado',
+            'termino_planejado',
+            'custo_estimado',
+            'inicio_real',
+            'termino_real',
+            'duracao_real',
+            'percentual_concluido',
+            'custo_real',
+            'dependencias',
+            'atraso',
+            'responsavel_id',
+            'responsavel_nome_exibicao',
+        ];
+
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataCronograma()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'cronograma.csv'
+                'cronograma.csv',
+                cronogramaFields
             )
         );
 
@@ -332,13 +364,34 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        const acompanhamentosFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'data_registro',
+            'participantes',
+            'cronograma_paralizado',
+            'prazo_encaminhamento',
+            'pauta',
+            'pauta_texto',
+            'prazo_realizado',
+            'detalhamento',
+            'detalhamento_texto',
+            'encaminhamento',
+            'responsavel',
+            'observacao',
+            'detalhamento_status',
+            'pontos_atencao',
+            'pontos_atencao_texto',
+            'riscos',
+        ];
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataAcompanhamentos()}
                 ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
-                'acompanhamentos.csv'
+                'acompanhamentos.csv',
+                acompanhamentosFields
             )
         );
 
@@ -394,12 +447,20 @@ export class PPObrasService implements ReportableService {
         return out;
     }
 
-    private async streamQueryToCSV(query: string, params: any[], filename: string): Promise<FileOutput> {
-        const parser = new AsyncParser({
+    private async streamQueryToCSV(
+        query: string,
+        params: any[],
+        filename: string,
+        fields?: string[]
+    ): Promise<FileOutput> {
+        const parserOptions = {
             ...DefaultCsvOptions,
             transforms: defaultTransform,
             withBOM: true,
-        });
+            ...(fields ? { fields } : {}),
+        };
+
+        const parser = new AsyncParser(parserOptions);
 
         const chunks: Buffer[] = [];
 
@@ -747,19 +808,39 @@ export class PPObrasService implements ReportableService {
                 t.tarefa,
                 t.inicio_planejado,
                 t.termino_planejado,
-                t.custo_estimado,
+                CASE
+                    WHEN t.custo_estimado_anualizado IS NOT NULL THEN
+                        (
+                            SELECT string_agg(key || ': ' || value::text, ' ; ' ORDER BY key)
+                            FROM json_each_text(t.custo_estimado_anualizado::json)
+                            WHERE value::text != 'null'
+                        )
+                    ELSE t.backup_custo_estimado::text
+                END AS custo_estimado,
                 t.inicio_real,
                 t.termino_real,
                 t.duracao_real,
                 t.percentual_concluido,
-                t.custo_real,
+                CASE
+                    WHEN t.custo_real_anualizado IS NOT NULL THEN
+                        (
+                            SELECT string_agg(key || ': ' || value::text, ' ; ' ORDER BY key)
+                            FROM json_each_text(t.custo_real_anualizado::json)
+                            WHERE value::text != 'null'
+                        )
+                    ELSE t.backup_custo_real::text
+                END AS custo_real,
                 (
                     SELECT
                       string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                     FROM tarefa_dependente td
                     JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
                     WHERE td.tarefa_id = t.id
-                ) as dependencias
+                ) as dependencias,
+                t.custo_estimado_anualizado,
+                t.custo_real_anualizado,
+                t.backup_custo_estimado,
+                t.backup_custo_real
                 FROM projeto
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
@@ -796,6 +877,52 @@ export class PPObrasService implements ReportableService {
             let tarefasHierarquia: Record<string, string> = {};
             if (tarefaCronoId) tarefasHierarquia = await this.tarefasService.tarefasHierarquia(tarefaCronoId.id);
 
+            // Tratando custo real e custo estimado anualizados.
+            // Esses campos tem regras que olham para a duração da tarefa. Mas aqui podemos apenas verificar se estão definidos.
+            // Caso a tarefa seja anualizada, teremos valores nesses campos. E caso não tenham, utilizaremos os backups.
+            let custo_real: number | string | null;
+            let custo_estimado: number | string | null;
+
+            if (db.custo_real_anualizado !== null && db.custo_real_anualizado !== undefined) {
+                // JSON que segue o padrão {"2023" : 0} ou {"2025" : null}
+                // Vamos exibir como "$ano: valor"
+                const custoRealAnualizadoObj = db.custo_real_anualizado as Record<string, any>;
+                const anoKeys = Object.keys(custoRealAnualizadoObj);
+                const custoRealParts = anoKeys.map((ano) => {
+                    const valor = custoRealAnualizadoObj[ano];
+                    // Se o valor do ano for null, usar backup (sem estrutura de ano) ou null
+                    if (valor !== null) {
+                        return `${ano}: ${valor}`;
+                    } else if (db.backup_custo_real !== null && db.backup_custo_real !== undefined) {
+                        return db.backup_custo_real;
+                    } else {
+                        return null;
+                    }
+                });
+                custo_real = custoRealParts.filter((v) => v !== null).join(' ; ');
+            } else {
+                custo_real = db.backup_custo_real ?? null;
+            }
+
+            if (db.custo_estimado_anualizado !== null && db.custo_estimado_anualizado !== undefined) {
+                const custoEstimadoAnualizadoObj = db.custo_estimado_anualizado as Record<string, any>;
+                const anoKeys = Object.keys(custoEstimadoAnualizadoObj);
+                const custoEstimadoParts = anoKeys.map((ano) => {
+                    const valor = custoEstimadoAnualizadoObj[ano];
+                    // Se o valor do ano for null, usar backup (sem estrutura de ano) ou null
+                    if (valor !== null) {
+                        return `${ano}: ${valor}`;
+                    } else if (db.backup_custo_estimado !== null && db.backup_custo_estimado !== undefined) {
+                        return db.backup_custo_estimado;
+                    } else {
+                        return null;
+                    }
+                });
+                custo_estimado = custoEstimadoParts.filter((v) => v !== null).join(' ; ');
+            } else {
+                custo_estimado = db.backup_custo_estimado ?? null;
+            }
+
             out.push({
                 obra_id: db.projeto_id,
                 obra_codigo: db.projeto_codigo,
@@ -806,12 +933,12 @@ export class PPObrasService implements ReportableService {
                 tarefa: db.tarefa,
                 inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
                 termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
-                custo_estimado: db.custo_estimado ? db.custo_estimado : null,
+                custo_estimado: custo_estimado,
                 inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
                 termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
                 duracao_real: db.duracao_real ? db.duracao_real : null,
                 percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
-                custo_real: db.custo_real ? db.custo_real : null,
+                custo_real: custo_real,
                 dependencias: db.dependencias
                     ? db.dependencias
                           .split('/')
@@ -1069,6 +1196,9 @@ export class PPObrasService implements ReportableService {
                 projeto_acompanhamento.observacao,
                 projeto_acompanhamento.detalhamento_status,
                 projeto_acompanhamento.pontos_atencao,
+                regexp_replace(regexp_replace(regexp_replace(projeto_acompanhamento.pauta, '<[^>]+>', '', 'g'), '&[^;]+;', '', 'g'), '\s+', ' ', 'g') AS pauta_texto,
+                regexp_replace(regexp_replace(regexp_replace(projeto_acompanhamento.detalhamento, '<[^>]+>', '', 'g'), '&[^;]+;', '', 'g'), '\s+', ' ', 'g') AS detalhamento_texto,
+                regexp_replace(regexp_replace(regexp_replace(projeto_acompanhamento.pontos_atencao, '<[^>]+>', '', 'g'), '&[^;]+;', '', 'g'), '\s+', ' ', 'g') AS pontos_atencao_texto,
                 (
                     SELECT string_agg(r.codigo::text, '|')
                     FROM projeto_acompanhamento_risco ar
@@ -1110,6 +1240,9 @@ export class PPObrasService implements ReportableService {
                 detalhamento_status: db.detalhamento_status ? db.detalhamento_status : null,
                 pontos_atencao: db.pontos_atencao ? db.pontos_atencao : null,
                 riscos: db.riscos ? db.riscos : null,
+                pauta_texto: Html2Text(db.pauta),
+                detalhamento_texto: Html2Text(db.detalhamento),
+                pontos_atencao_texto: Html2Text(db.pontos_atencao),
             };
         });
     }

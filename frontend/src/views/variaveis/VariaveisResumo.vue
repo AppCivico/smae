@@ -121,7 +121,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
           { label: 'Início da medição', valor: emFoco.value.inicio_medicao ? dateIgnorarTimezone(emFoco.value.inicio_medicao, 'MM/yyyy') : '-' },
           { label: 'Fim da medição', valor: emFoco.value.fim_medicao ? dateIgnorarTimezone(emFoco.value.fim_medicao, 'MM/yyyy') : '-' },
           { label: 'Periodicidade', valor: emFoco.value.periodicidade },
-          { label: 'Defasagem da medição', valor: emFoco.value.atraso_meses },
+          { label: 'Defasagem da medição (meses)', valor: emFoco.value.atraso_meses },
         ],
       ],
     },

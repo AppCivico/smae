@@ -1,5 +1,4 @@
 import type { ListSeriesAgrupadas, VariavelResumo } from '@back/variavel/dto/list-variavel.dto';
-import { SerieFilhas } from '@back/variavel/entities/variavel.entity';
 import type { ComputedRef, MaybeRef } from 'vue';
 import { computed, toValue } from 'vue';
 
@@ -19,48 +18,56 @@ export function useSeriesFilhasAgrupadasParaEdicao(
   const seriesFilhas = computed(() => {
     const data = toValue(seriesAgrupadas);
 
-    const base: SeriesPorTipo = data?.ordem_series.reduce((acc, cur) => {
+    const seriesPorTipo: SeriesPorTipo = data?.ordem_series?.reduce<SeriesPorTipo>((acc, cur) => {
       if (!acc[cur]) {
         acc[cur] = [];
       }
       return acc;
-    }, {}) || {};
+    }, {} as SeriesPorTipo) || {};
 
     const filhasPorId = data?.variavel_filhas?.reduce((acc, cur) => {
       acc[cur.id] = cur;
       return acc;
     }, {} as Record<number, VariavelResumo>) || {};
 
-    function processVariavelFilha(
-      vf: SerieFilhas,
-      ordemSeries: string[],
-      acc: SeriesPorTipo,
-    ) {
-      vf.series.forEach((serie, j: number) => {
-        const valorNominal = 'valor_nominal' in serie
-          && serie.valor_nominal !== ''
-          ? Number(serie.valor_nominal)
-          : NaN;
+    if (Array.isArray(data?.linhas)) {
+      data.linhas.forEach((linha) => {
+        linha
+          .variaveis_filhas?.forEach((vf) => {
+            // Contrato: vf.series.length deve ser igual a data.ordem_series.length
+            // O backend garante este alinhamento em metas.service.ts
+            if (import.meta.env.DEV && vf.series.length !== data.ordem_series.length) {
+              // eslint-disable-next-line no-console
+              console.warn(
+                `Incompatibilidade no tamanho de séries para variável ${vf.variavel_id}: `
+                + `esperado ${data.ordem_series.length}, recebido ${vf.series.length}`,
+              );
+            }
 
-        const seriesKey = ordemSeries[j];
+            vf.series.forEach((serie, i) => {
+              const valorNominal = 'valor_nominal' in serie && serie.valor_nominal !== ''
+                ? Number(serie.valor_nominal)
+                : NaN;
 
-        if (seriesKey && acc[seriesKey]) {
-          acc[seriesKey].push({
-            variavel: filhasPorId?.[vf.variavel_id],
-            referencia: 'referencia' in serie ? String(serie.referencia) : '',
-            valor: Number.isFinite(valorNominal) ? valorNominal : '',
+              const tipo = data.ordem_series[i];
+
+              if (tipo && seriesPorTipo[tipo]) {
+                seriesPorTipo[tipo].push({
+                  variavel: filhasPorId?.[vf.variavel_id],
+                  referencia: 'referencia' in serie ? String(serie.referencia) : '',
+                  valor: Number.isFinite(valorNominal) ? valorNominal : '',
+                });
+              }
+            });
           });
-        }
+      });
+
+      Object.keys(seriesPorTipo).forEach((key) => {
+        seriesPorTipo[key].sort((a, b) => (a.variavel?.titulo || '').localeCompare(b.variavel?.titulo || ''));
       });
     }
 
-    return Array.isArray(data?.linhas)
-      ? data.linhas.reduce((acc, cur) => {
-        cur.variaveis_filhas?.forEach((vf) => processVariavelFilha(vf, data.ordem_series, acc));
-
-        return acc;
-      }, base)
-      : base;
+    return seriesPorTipo;
   });
 
   return {

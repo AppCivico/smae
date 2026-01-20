@@ -34,6 +34,9 @@ export class ProjetoRisco {
     planos_de_acao_sem_dt_term: number[] | null;
     status_risco: StatusRisco;
     edicao_limitada?: boolean;
+    descricao_texto: string | null;
+    causa_texto: string | null;
+    consequencia_texto: string | null;
 }
 
 export class ListProjetoRiscoDto {

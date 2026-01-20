@@ -14,6 +14,7 @@ import {
 
 import i18n from './config/i18n';
 import fieldToDate from '@/helpers/fieldToDate';
+import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
@@ -45,6 +46,25 @@ addMethod(string, 'nullableOuVazio', function _() {
     .transform((v) => (v === '' ? null : v));
 });
 
+addMethod(string, 'validarCasasDecimais', function _(casasDecimais = 0) {
+  return this
+    .test('casas-decimais', (value, { createError }) => {
+      if (!value) return true;
+
+      const valorNumerico = value.replace(',', '.');
+      const partesDecimais = valorNumerico.split('.')[1];
+      const numeroCasasDecimais = partesDecimais ? partesDecimais.length : 0;
+
+      if (numeroCasasDecimais > casasDecimais) {
+        return createError({
+          message: `O valor deve ter no máximo ${casasDecimais} casas decimais`,
+        });
+      }
+
+      return true;
+    });
+});
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(date, 'nullableOuVazio', function _() {
   return this
@@ -64,6 +84,16 @@ addMethod(mixed, 'nullableOuVazio', function _() {
   return this
     .nullable()
     .transform((v) => (v === '' || v === false ? null : v));
+});
+
+addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não pode ter valores repetidos', params = {}) {
+  return this.test('semDuplicatas', message, function semDuplicatasTeste(value) {
+    const { path, createError } = this;
+
+    return haDuplicatasNaLista(value, params)
+      ? createError({ path, message })
+      : true;
+  });
 });
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

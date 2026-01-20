@@ -6,7 +6,7 @@ import { ApiPaginatedWithPagesResponse } from '../auth/decorators/paginated.deco
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
-import { FindOneParams } from '../common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
@@ -17,7 +17,11 @@ import {
     CreateVariavelBaseDto,
     CreateVariavelPDMDto,
 } from './dto/create-variavel.dto';
-import { FilterVariavelDto, FilterVariavelGlobalDto, FilterVariavelRelacionamentosDto } from './dto/filter-variavel.dto';
+import {
+    FilterVariavelDto,
+    FilterVariavelGlobalDto,
+    FilterVariavelRelacionamentosDto,
+} from './dto/filter-variavel.dto';
 import {
     ListPdmSimplesDto,
     ListSeriesAgrupadas,
@@ -27,9 +31,8 @@ import {
     VariavelGlobalDetailDto,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
-import {
-    VariavelGlobalRelacionamentoDto,
-} from './relacionados/dto/variavel.relacionamento.dto';
+import { UpdateVariavelFilhasDto } from './dto/update-valores-base-filhas.dto';
+import { VariavelGlobalRelacionamentoDto } from './relacionados/dto/variavel.relacionamento.dto';
 import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
@@ -232,6 +235,19 @@ export class VariavelGlobalController {
         return await this.variavelService.update(this.tipo, +params.id, dto, user);
     }
 
+    @Patch('variavel/:id/filha/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(VariavelGlobalController.WritePerm)
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.OK)
+    async updateFilha(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateVariavelFilhasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.variavelService.updateFilha(params.id, params.id2, dto, user);
+    }
+
     @Delete('variavel/:id')
     @ApiBearerAuth('access-token')
     @Roles(VariavelGlobalController.WritePerm)
@@ -330,10 +346,26 @@ export class VariavelGlobalController {
         return await this.variavelService.getPeriodosValidos(this.tipo, filters, params.id, user);
     }
 
-    @Post('processa-variaveis-suspensas')
+    @Post('processa-variaveis-suspensas-pdm-legacy')
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm])
     async processaVariaveisSuspensas(): Promise<number[]> {
-        return await this.variavelService.processVariaveisSuspensasController();
+        return await this.variavelService.processVariaveisSuspensasSync();
+    }
+
+    /**
+     * Processa variáveis globais suspensas manualmente.
+     * Este endpoint é usado para forçar o processamento fora do cron job.
+     * Para variáveis acumulativas: valor = 0
+     * Para variáveis não acumulativas: copia o valor do período anterior
+     */
+    @Post('processa-variaveis-globais-suspensas')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm])
+    async processaVariaveisGlobaisSuspensas(
+        @CurrentUser() pessoa: PessoaFromJwt,
+        @Query('variavel_id') variavelId?: number
+    ): Promise<number[]> {
+        return await this.variavelService.processVariaveisGlobaisSuspensasSync(variavelId, pessoa);
     }
 }

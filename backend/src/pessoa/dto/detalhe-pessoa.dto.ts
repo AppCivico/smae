@@ -33,4 +33,5 @@ export class DetalhePessoaDto {
     modulos_permitidos: ModuloSistema[];
     sistemas_disponiveis: ModuloSistema[];
     permissoes: PessoaMetaPermissoesDto;
+    equipes_responsavel?: number[];
 }

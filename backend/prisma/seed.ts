@@ -20,6 +20,7 @@ import {
     CONST_PERFIL_CASA_CIVIL,
     CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
     CONST_PERFIL_GESTOR_OBRA,
+    CONST_PERFIL_COORDENADOR_EQUIPE,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -27,6 +28,8 @@ const prisma = new PrismaClient({ log: ['query'] });
 const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
     CadastroTipoOrgao: ['Tipos de Órgãos', 'SMAE'],
+    CadastroProjetoTipoEncerramento: ['Tipos de Encerramento de Projeto', 'SMAE'],
+    CadastroProjetoTipoEncerramentoMDO: ['Tipos de Encerramento de Obra', 'MDO'],
     CadastroPessoa: ['Pessoas', 'SMAE'],
     CadastroFonteRecurso: ['Fontes de Recurso', 'SMAE'],
     CadastroTipoDocumento: ['Tipos de Arquivo', 'SMAE'],
@@ -553,7 +556,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
-        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
         ['SMAE.AtualizacaoEmLote', 'Acesso a ferramenta de atualização em lote'],
         ['SMAE.gerente_de_projeto', 'Editar os responsáveis de projetos após a fase de planejamento'],
     ],
@@ -564,6 +566,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ParticipanteEquipe: [
         // era só do config, mas para ele ficar em dois módulos ao mesmo tempo, precisa de um namespace separado
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
@@ -634,6 +637,16 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroPortfolioTag.inserir', 'Incluir Tag de Portfólio'],
         ['CadastroPortfolioTag.listar', 'Listar Tags de Portfólio'],
         ['CadastroPortfolioTag.remover', 'Excluir Tags de Portfólio'],
+    ],
+    CadastroProjetoTipoEncerramento: [
+        ['CadastroProjetoTipoEncerramento.inserir', 'Incluir Tipo de Encerramento de Projeto'],
+        ['CadastroProjetoTipoEncerramento.editar', 'Editar Tipo de Encerramento de Projeto'],
+        ['CadastroProjetoTipoEncerramento.remover', 'Excluir Tipo de Encerramento de Projeto'],
+    ],
+    CadastroProjetoTipoEncerramentoMDO: [
+        ['CadastroProjetoTipoEncerramentoMDO.inserir', 'Incluir Tipo de Encerramento de Obra'],
+        ['CadastroProjetoTipoEncerramentoMDO.editar', 'Editar Tipo de Encerramento de Obra'],
+        ['CadastroProjetoTipoEncerramentoMDO.remover', 'Excluir Tipo de Encerramento de Obra'],
     ],
 };
 
@@ -859,6 +872,10 @@ const MDOCadastroBasico: ListaDePrivilegios[] = [
     'ProjetoProgramaMDO.inserir',
     'ProjetoProgramaMDO.editar',
     'ProjetoProgramaMDO.remover',
+
+    'CadastroProjetoTipoEncerramentoMDO.inserir',
+    'CadastroProjetoTipoEncerramentoMDO.editar',
+    'CadastroProjetoTipoEncerramentoMDO.remover',
 ] as const;
 
 const PPCadastroBasico: ListaDePrivilegios[] = [
@@ -877,6 +894,10 @@ const PPCadastroBasico: ListaDePrivilegios[] = [
     'CadastroPortfolioTag.inserir',
     'CadastroPortfolioTag.editar',
     'CadastroPortfolioTag.remover',
+
+    'CadastroProjetoTipoEncerramento.inserir',
+    'CadastroProjetoTipoEncerramento.editar',
+    'CadastroProjetoTipoEncerramento.remover',
 ] as const;
 
 const PerfilAcessoConfig: PerfilConfigArray = [
@@ -1293,15 +1314,18 @@ PerfilAcessoConfig.push(
     {
         nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
         descricao: 'Gerenciar as equipes onde é responsável',
-        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
+        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel'],
     },
 
     {
+        nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, ['Coordenador de Grupo de Variáveis']),
+        descricao: 'Participa como responsável por equipe',
+        privilegios: ['SMAE.GrupoVariavel.colaborador'],
+    },
+    {
         nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
         descricao: DESC_EQUIPE,
-        privilegios: [
-            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessSMAE.liberar_pdm_as_psas
-        ],
+        privilegios: ['SMAE.GrupoVariavel.participante'],
     }
 );
 

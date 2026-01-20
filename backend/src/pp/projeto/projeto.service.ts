@@ -64,6 +64,7 @@ import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
 import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 import { LoggerWithLog } from '../../common/LoggerWithLog';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -2581,7 +2582,14 @@ export class ProjetoService {
             dto.status = undefined;
         }
 
-        // ges
+        // Se receber orgao_colaborador_id e mudar, limpa o colaboradores_no_orgao se não for enviado
+        if (
+            dto.orgao_colaborador_id !== undefined &&
+            dto.orgao_colaborador_id !== projeto.orgao_colaborador?.id &&
+            dto.colaboradores_no_orgao === undefined
+        ) {
+            dto.colaboradores_no_orgao = [];
+        }
 
         if ('grupo_tematico_id' in dto) {
             await this.verificaGrupoTematico(dto, projeto.grupo_tematico?.id);
@@ -3708,14 +3716,7 @@ export class ProjetoService {
                 id: true,
                 descricao: true,
                 data: true,
-                arquivo: {
-                    select: {
-                        id: true,
-                        tamanho_bytes: true,
-                        nome_original: true,
-                        diretorio_caminho: true,
-                    },
-                },
+                arquivo: { select: PrismaArquivoComPreviewSelect },
             },
         });
         const documentosRet: ProjetoDocumentoDto[] = documentosDB.map((d) => {
@@ -3723,14 +3724,10 @@ export class ProjetoService {
                 id: d.id,
                 data: d.data,
                 descricao: d.descricao,
-                arquivo: {
-                    id: d.arquivo.id,
-                    tamanho_bytes: d.arquivo.tamanho_bytes,
-                    descricao: null,
-                    nome_original: d.arquivo.nome_original,
-                    diretorio_caminho: d.arquivo.diretorio_caminho,
-                    download_token: this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token,
-                } satisfies ArquivoBaseDto,
+                arquivo: BuildArquivoBaseDto(
+                    d.arquivo,
+                    (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                ),
             };
         });
 

@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     forwardRef,
     HttpException,
     Inject,
@@ -24,7 +25,7 @@ import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaHelpers } from '../common/PrismaHelpers';
-import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA, SerieCore } from '../common/consts';
+import { CONST_BOT_USER_ID, CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA, SerieCore } from '../common/consts';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
@@ -32,7 +33,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
 import { SeriesArrayShuffle } from '../common/shuffleArray';
-import { MetaService } from '../meta/meta.service';
+import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
 import { NonExistingSerieJwt, SerieUpsert, ValidatedUpsert } from './dto/batch-serie-upsert.dto';
@@ -56,6 +57,8 @@ import {
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
+import { SerieCompactToken } from '../common/SerieCompactToken';
+import { UpdateVariavelFilhasDto } from './dto/update-valores-base-filhas.dto';
 import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
@@ -73,7 +76,6 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
-import { SerieCompactToken } from '../common/SerieCompactToken';
 import { VariavelUtilService } from './variavel.util.service';
 
 const SUPRA_SUFIXO = ' - Supra';
@@ -109,6 +111,7 @@ interface CicloDocumento {
 
 export type VariavelComCategorica = {
     id: number;
+    casas_decimais: number | null;
     acumulativa: boolean;
     variavel_mae_id: number | null;
     variavel_categorica: { id: number; tipo: TipoVariavelCategorica; valores: VariavelCategoricaValor[] } | null;
@@ -238,6 +241,7 @@ export class VariavelService {
                     select: { grupo_responsavel_equipe: { select: { perfil: true, id: true } } },
                 },
                 orgao_proprietario_id: true,
+                casas_decimais: true,
                 variavel_categorica: { select: { id: true, tipo: true, valores: true } },
             },
         });
@@ -1188,6 +1192,7 @@ export class VariavelService {
                         supraregional: true,
                         variavel_categorica_id: true,
                         medicao_orgao: { select: { id: true, sigla: true } },
+                        suspendida_em: true,
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1288,6 +1293,7 @@ export class VariavelService {
                     orgao_responsal_coleta: r.variavel.medicao_orgao
                         ? { id: r.variavel.medicao_orgao.id, sigla: r.variavel.medicao_orgao.sigla }
                         : null,
+                    suspendida_em: r.variavel.suspendida_em,
                 };
             }),
         };
@@ -1385,13 +1391,30 @@ export class VariavelService {
                 variavel_mae_id: true,
                 orgao_proprietario_id: true,
                 variaveis_filhas: { select: { id: true, titulo: true } },
+                casas_decimais: true,
+                valor_base: true,
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
 
-        if (selfBefUpdate.variavel_mae_id)
-            throw new HttpException('Variável filha não pode ser atualizada diretamente', 400);
+        // Variáveis filhas não podem ser editadas pelo endpoint padrão
+        // Use o endpoint específico para edição de variáveis filhas
+        if (selfBefUpdate.variavel_mae_id) {
+            throw new BadRequestException(
+                'Edição de variáveis filhas não permitida por este endpoint. Use o endpoint específico para variáveis filhas (updateFilha).'
+            );
+        }
+
+        // Validar alteração de casas_decimais
+        if (dto.casas_decimais !== undefined && dto.casas_decimais !== selfBefUpdate.casas_decimais) {
+            await this.validarAlteracaoCasasDecimais(
+                variavelId,
+                selfBefUpdate.casas_decimais,
+                dto.casas_decimais,
+                selfBefUpdate.valor_base
+            );
+        }
 
         await this.validaEquipeResponsavel(dto, {
             liberacao_orgao_id: selfBefUpdate.liberacao_orgao_id ?? dto.orgao_id ?? MIN_DTO_SAFE_NUM,
@@ -1406,9 +1429,11 @@ export class VariavelService {
             const indicadorViaVar = await this.verificaEscritaNaMeta(variavelId, user);
 
             indicador_id = indicadorViaVar.indicador.id;
-        } else {
-            if (dto.suspendida) throw new HttpException('Variáveis do plano setorial não podem ser suspensas.', 400); // uso necessita do ciclo do PDM, e tbm o caso de copiar o valor dos ids das categóricas
+        } else if (tipo == 'Calculada') {
+            // Variáveis calculadas não podem ser suspensas pois não têm valores próprios
+            if (dto.suspendida) throw new HttpException('Variáveis calculadas não podem ser suspensas.', 400);
         }
+        // Variáveis Global podem ser suspensas - os valores serão copiados automaticamente
 
         await this.checkDup(dto, variavelId, indicador_id);
 
@@ -1462,18 +1487,83 @@ export class VariavelService {
             });
             const currentSuspendida = self.suspendida_em !== null;
 
-            if (suspendida === true && currentSuspendida == false) {
-                dto.mostrar_monitoramento = false;
-            } else if (suspendida === false && currentSuspendida == true) {
-                // retorna ao state que estava antes de desativar
-                const prevDesativado = await prismaTxn.variavelSuspensaoLog.findFirst({
-                    where: { variavel_id: variavelId },
-                    orderBy: { criado_em: 'desc' },
-                    select: { previo_status_mostrar_monitoramento: true },
-                    take: 1,
+            // Verifica se estamos tentando suspender uma variável mãe com filhas, se estiver,
+            // suspende as filhas Global ao invés da mãe, mas marca o mostrar_monitoramento da mãe como false
+            const hasChildren = selfBefUpdate.variaveis_filhas.length > 0;
+
+            if (suspendida === true && !currentSuspendida && hasChildren) {
+                logger.log(`Variável ${variavelId} possui filhas. Suspendendo filhas Global ao invés da mãe.`);
+
+                const globalChildren = await prismaTxn.variavel.findMany({
+                    where: {
+                        variavel_mae_id: variavelId,
+                        tipo: 'Global',
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                        mostrar_monitoramento: true,
+                        suspendida_em: true,
+                    },
                 });
 
-                dto.mostrar_monitoramento = prevDesativado?.previo_status_mostrar_monitoramento ?? true;
+                // suspendendo as filhas globais
+                const promises: Promise<any>[] = [];
+                for (const child of globalChildren) {
+                    const childCurrentSuspendida = child.suspendida_em !== null;
+
+                    if (!childCurrentSuspendida) {
+                        promises.push(
+                            this.handleSuspensaoChange(
+                                prismaTxn,
+                                child.id,
+                                true,
+                                child.mostrar_monitoramento,
+                                now,
+                                user,
+                                logger
+                            )
+                        );
+
+                        promises.push(
+                            prismaTxn.variavel.update({
+                                where: { id: child.id },
+                                data: {
+                                    suspendida_em: now,
+                                    mostrar_monitoramento: false,
+                                },
+                            })
+                        );
+                    }
+                }
+                await Promise.all(promises);
+
+                // Trigger processamento assíncrono para cada filha suspensa após transação completar
+                const suspendedChildIds = globalChildren.filter((c) => c.suspendida_em === null).map((c) => c.id);
+                if (suspendedChildIds.length > 0) {
+                    logger.log(
+                        `Agendado processamento de variáveis suspensas para filhas: ${suspendedChildIds.join(', ')}`
+                    );
+                }
+
+                // marca o mostrar_monitoramento como false
+                dto.mostrar_monitoramento = true;
+            } else if (suspendida !== undefined && suspendida !== currentSuspendida) {
+                dto.mostrar_monitoramento = await this.handleSuspensaoChange(
+                    prismaTxn,
+                    variavelId,
+                    suspendida,
+                    self.mostrar_monitoramento,
+                    now,
+                    user,
+                    logger
+                );
+
+                // Trigger processamento se variável foi suspensa
+                if (suspendida === true && !hasChildren) {
+                    logger.log(`Agendado processamento de variável suspensa: ${variavelId}`);
+                }
             }
 
             await this.updateCategorica(selfBefUpdate.variavel_categorica_id, dto, prismaTxn, variavelId, self);
@@ -1541,7 +1631,7 @@ export class VariavelService {
                         ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
                         : {}),
 
-                    suspendida_em: suspendida ? now : null,
+                    ...(suspendida !== undefined ? { suspendida_em: dto.suspendida ? now : null } : {}),
                 },
                 select: {
                     valor_base: true,
@@ -1552,6 +1642,7 @@ export class VariavelService {
                             id: true,
                             titulo: true,
                             supraregional: true,
+                            valor_base: true,
                             regiao: { select: { id: true, descricao: true } },
                         },
                     },
@@ -1559,11 +1650,41 @@ export class VariavelService {
             });
 
             // Caso tenha filhas, deve atualizar as configs delas.
+            // Monta um mapa de valores_base individuais por filha_id
+            const valoresBaseFilhasMap = new Map<number, number>();
+            let algumValorBaseFilhaAlterado = false;
+
+            if (Array.isArray(dto.valores_base_filhas)) {
+                const filhasIds = updated.variaveis_filhas.map((f) => f.id);
+                for (const filhaValor of dto.valores_base_filhas) {
+                    if (!filhasIds.includes(filhaValor.filha_id)) {
+                        throw new BadRequestException(
+                            `Variável filha ${filhaValor.filha_id} não encontrada ou não pertence a esta variável mãe`
+                        );
+                    }
+                    valoresBaseFilhasMap.set(filhaValor.filha_id, filhaValor.valor_base);
+
+                    // Verifica se o valor realmente mudou
+                    const filhaAtual = updated.variaveis_filhas.find((f) => f.id === filhaValor.filha_id);
+                    if (
+                        filhaAtual &&
+                        Number(filhaAtual.valor_base).toString() !== Number(filhaValor.valor_base).toString()
+                    ) {
+                        algumValorBaseFilhaAlterado = true;
+                    }
+                }
+            }
+
             const varsFilhasUpdates = [];
             for (const variavelFilha of updated.variaveis_filhas) {
                 let titulo = dto.titulo;
                 if (variavelFilha.regiao) titulo += ' - ' + variavelFilha.regiao.descricao;
                 else if (variavelFilha.supraregional) titulo += SUPRA_SUFIXO;
+
+                // Usa valor_base individual se fornecido, senão usa o valor_base geral
+                const valorBaseFilha = valoresBaseFilhasMap.has(variavelFilha.id)
+                    ? valoresBaseFilhasMap.get(variavelFilha.id)
+                    : dto.valor_base;
 
                 varsFilhasUpdates.push(
                     prismaTxn.variavel.updateMany({
@@ -1574,7 +1695,7 @@ export class VariavelService {
                             mostrar_monitoramento: dto.mostrar_monitoramento,
                             unidade_medida_id: dto.unidade_medida_id,
                             ano_base: dto.ano_base,
-                            valor_base: dto.valor_base,
+                            valor_base: valorBaseFilha,
                             periodicidade: dto.periodicidade,
                             orgao_id: dto.orgao_id,
                             variavel_categorica_id: dto.variavel_categorica_id,
@@ -1593,7 +1714,8 @@ export class VariavelService {
                                 ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
                                 : {}),
 
-                            suspendida_em: suspendida ? now : null,
+                            // Não passa por cima, se estamos suspendendo a mãe, as filhas já foram todas suspensas
+                            // Então nunca usar dto.suspendida aqui
                         },
                     })
                 );
@@ -1608,19 +1730,6 @@ export class VariavelService {
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
             if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
                 await this.updateAvisoFimIndicador(prismaTxn, variavelId, updated);
-            }
-
-            if (suspendida !== undefined && suspendida !== currentSuspendida) {
-                logger.log(`Suspensão alterada para ${suspendida}`);
-                await prismaTxn.variavelSuspensaoLog.create({
-                    data: {
-                        variavel_id: variavelId,
-                        pessoa_id: user.id,
-                        suspendida: suspendida,
-                        criado_em: now,
-                        previo_status_mostrar_monitoramento: self.mostrar_monitoramento,
-                    },
-                });
             }
 
             if (Array.isArray(responsaveis)) {
@@ -1640,6 +1749,7 @@ export class VariavelService {
 
             let recalc = Number(self.valor_base).toString() !== Number(updated.valor_base).toString();
             if (self.acumulativa != updated.acumulativa) recalc = true;
+            if (algumValorBaseFilhaAlterado) recalc = true;
 
             if (recalc) {
                 logger.log(`Valor base alterado de ${self.valor_base} para ${updated.valor_base}`);
@@ -1658,7 +1768,80 @@ export class VariavelService {
             await logger.saveLogs(prismaTxn, user.getLogData());
         });
 
+        // Trigger processamento assíncrono de variáveis suspensas após transação completar
+        if (dto.suspendida === true) {
+            const targetIds = [variavelId];
+            // Se tiver filhas, precisamos processar todas as filhas que foram suspensas
+            if (selfBefUpdate.variaveis_filhas.length > 0) {
+                targetIds.push(...selfBefUpdate.variaveis_filhas.map((f) => f.id));
+            }
+
+            for (const targetId of targetIds) {
+                this.processVariaveisGlobaisSuspensas(this.prisma, targetId, user)
+                    .then((processedIds) => {
+                        if (processedIds.length > 0) {
+                            this.logger.log(
+                                `Processamento automático concluído para variável ${targetId}: ${processedIds.length} períodos processados`
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        this.logger.error(
+                            `Erro ao processar variável suspensa ${targetId}: ${error.message}`,
+                            error.stack
+                        );
+                    });
+            }
+        }
+
         return { id: variavelId };
+    }
+
+    private async validarAlteracaoCasasDecimais(
+        variavelId: number,
+        casasDecimaisAtual: number,
+        novasCasasDecimais: number,
+        valorBase: Prisma.Decimal | null
+    ) {
+        // Se está aumentando as casas decimais, não há problema
+        if (novasCasasDecimais >= casasDecimaisAtual) return;
+
+        const problemas: string[] = [];
+
+        // Verificar valor_base
+        if (valorBase !== null) {
+            const valorBaseNum = Number(valorBase);
+            const valorArredondado = Number(valorBase.toFixed(novasCasasDecimais));
+
+            if (valorBaseNum !== valorArredondado) {
+                problemas.push(
+                    `O valor base (${valorBase.toString()}) possui mais casas decimais que o novo limite de ${novasCasasDecimais}`
+                );
+            }
+        }
+
+        // Verificar valores na serie_variavel
+        const registrosComProblema = await this.prisma.$queryRaw<Array<{ total: bigint }>>`
+            SELECT COUNT(*) as total
+            FROM serie_variavel sv
+            WHERE sv.variavel_id = ${variavelId}
+              AND sv.valor_nominal IS NOT NULL
+              AND ROUND(sv.valor_nominal, ${novasCasasDecimais}) <> sv.valor_nominal
+        `;
+
+        const totalProblemas = Number(registrosComProblema[0]?.total || 0);
+        if (totalProblemas > 0) {
+            problemas.push(
+                `${totalProblemas} registro(s) na série possui(em) valores com mais casas decimais que o novo limite de ${novasCasasDecimais}`
+            );
+        }
+
+        if (problemas.length > 0) {
+            throw new HttpException(
+                `Não é possível reduzir casas decimais de ${casasDecimaisAtual} para ${novasCasasDecimais}:\n${problemas.join('\n')}`,
+                400
+            );
+        }
     }
 
     private async checkDup(dto: UpdateVariavelDto, variavelId: number | undefined, indicador_id: number | undefined) {
@@ -2021,7 +2204,7 @@ export class VariavelService {
         return variavelCategorica;
     }
 
-    async processVariaveisSuspensasController() {
+    async processVariaveisSuspensasSync() {
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
             return await this.processVariaveisSuspensas(prismaTx);
         });
@@ -2163,6 +2346,363 @@ export class VariavelService {
             return varsSuspensas;
         }
         return [];
+    }
+
+    /**
+     * Processa variáveis globais suspensas, copiando valores automaticamente.
+     * Para variáveis acumulativas: valor = 0
+     * Para variáveis não acumulativas: copia o valor do período anterior
+     *
+     * Também verifica se todas as filhas de uma variável mãe estão suspensas,
+     * e nesse caso, fecha o ciclo automaticamente.
+     */
+    async processVariaveisGlobaisSuspensasSync(targetVariavelId?: number, user?: PessoaFromJwt): Promise<number[]> {
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
+                return await this.processVariaveisGlobaisSuspensas(prismaTx, targetVariavelId, user);
+            },
+            { timeout: 5 * 60 * 1000 }
+        );
+    }
+
+    async processVariaveisGlobaisSuspensas(
+        prismaTx: Prisma.TransactionClient,
+        targetVariavelId?: number,
+        user?: PessoaFromJwt
+    ): Promise<number[]> {
+        const logger = LoggerWithLog('Processamento de variáveis globais suspensas');
+        logger.log(
+            `Iniciando processamento${targetVariavelId ? ` para variável ${targetVariavelId}` : ' de todas as variáveis'}`
+        );
+
+        const specificVarFilter = targetVariavelId ? Prisma.sql`AND v.id = ${targetVariavelId}` : Prisma.sql``;
+
+        // 1. Identifica jobs: Variáveis suspensas com ciclos abertos
+        // Gera TODOS os ciclos faltantes usando busca_periodos_variavel
+        // Filtra apenas registros de controle ativos (removido_em IS NULL)
+        // Considera apenas variáveis tipo Global, não removidas, suspensas,
+        // que ainda não tiveram a liberação enviada e não foram processadas neste ciclo
+        await prismaTx.$executeRaw`
+            CREATE TEMP TABLE _suspend_jobs_global ON COMMIT DROP AS
+            WITH eligible_vars AS (
+                -- Seleciona variáveis suspensas elegíveis
+                SELECT
+                    v.id as variavel_id,
+                    v.variavel_mae_id,
+                    v.acumulativa,
+                    v.variavel_categorica_id as var_categorica_id,
+                    v.suspendida_em,
+                    vcc.id as ciclo_owner_id
+                FROM variavel v
+                JOIN variavel vcc ON vcc.id = COALESCE(v.variavel_mae_id, v.id) AND vcc.removido_em IS NULL
+                WHERE
+                    v.tipo = 'Global'
+                    AND v.removido_em IS NULL
+                    AND v.suspendida_em IS NOT NULL
+                    AND v.possui_variaveis_filhas = false
+                    ${specificVarFilter}
+            ),
+            cycle_ranges AS (
+                -- Busca os períodos válidos para cada variável usando busca_periodos_variavel
+                SELECT
+                    ev.variavel_id,
+                    ev.variavel_mae_id,
+                    ev.acumulativa,
+                    ev.var_categorica_id,
+                    ev.ciclo_owner_id,
+                    g.periodicidade,
+                    g.min as inicio,
+                    g.max as fim
+                FROM eligible_vars ev
+                CROSS JOIN LATERAL busca_periodos_variavel(ev.variavel_id) AS g
+            ),
+            all_cycles AS (
+                -- Gera todos os ciclos entre início e fim usando GENERATE_SERIES
+                SELECT
+                    cr.variavel_id,
+                    cr.variavel_mae_id,
+                    cr.acumulativa,
+                    cr.var_categorica_id,
+                    cr.ciclo_owner_id,
+                    cycle_date::date as data_ciclo_target
+                FROM cycle_ranges cr
+                CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
+                WHERE cycle_date::date < now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}'
+            )
+            -- Filtra apenas ciclos que ainda não foram processados (ou foram removidos)
+            SELECT
+                ac.variavel_id,
+                ac.variavel_mae_id,
+                ac.acumulativa,
+                ac.var_categorica_id,
+                ac.data_ciclo_target,
+                ac.ciclo_owner_id,
+                s.serie
+            FROM all_cycles ac
+            CROSS JOIN (SELECT unnest(enum_range(NULL::"Serie")) as serie) s
+            LEFT JOIN variavel_suspensa_controle ctrl
+                ON ctrl.variavel_id = ac.variavel_id
+                AND ctrl.ciclo_referencia = ac.data_ciclo_target
+                AND ctrl.serie = s.serie
+                AND ctrl.removido_em IS NULL
+            WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
+                AND ctrl.id IS NULL
+        `;
+
+        // 2. Calcula valores usando LOCF para múltiplos ciclos
+        // Implementa LOCF chain - para cada ciclo target, busca o último valor anterior
+        // Para acumulativas: valor = 0
+        // Para não acumulativas: copia o último valor nominal disponível antes do ciclo
+        // Nota: Para RealizadoAcumulado sem valor anterior, defaulta para 0
+        // Para Realizado sem valor anterior, fica NULL (será ignorado no INSERT)
+        await prismaTx.$executeRaw`
+            CREATE TEMP TABLE _suspend_values_global ON COMMIT DROP AS
+            SELECT
+                j.variavel_id,
+                j.ciclo_owner_id,
+                j.serie,
+                j.data_ciclo_target,
+                CASE
+                    WHEN j.acumulativa = true THEN 0
+                    WHEN last_val.valor_nominal IS NULL AND j.serie = 'RealizadoAcumulado' THEN 0
+                    ELSE last_val.valor_nominal
+                END as valor_novo,
+                last_val.valor_nominal as valor_copiado,
+
+                -- Copia campos categóricos apenas para não acumulativas
+                CASE
+                    WHEN j.acumulativa = true THEN NULL
+                    ELSE last_val.variavel_categorica_id
+                END as variavel_categorica_id,
+
+                CASE
+                    WHEN j.acumulativa = true THEN NULL
+                    ELSE last_val.variavel_categorica_valor_id
+                END as variavel_categorica_valor_id,
+
+                CASE
+                    WHEN j.acumulativa = true THEN NULL
+                    ELSE last_val.elementos
+                END as elementos
+
+            FROM _suspend_jobs_global j
+            LEFT JOIN LATERAL (
+                SELECT
+                    valor_nominal,
+                    variavel_categorica_id,
+                    variavel_categorica_valor_id,
+                    elementos
+                FROM serie_variavel sv
+                WHERE sv.variavel_id = j.variavel_id
+                  AND sv.serie = j.serie
+                  AND sv.data_valor < j.data_ciclo_target
+                ORDER BY sv.data_valor DESC
+                LIMIT 1
+            ) last_val ON true
+        `;
+
+        // 3. Upsert na SerieVariavel com todos os metadados
+        // Inclui conferida=true e referências do bot
+        const affectedVars = await prismaTx.$queryRaw<{ variavel_id: number; ciclo_owner_id: number }[]>`
+            WITH ins_real AS (
+                INSERT INTO serie_variavel (
+                    variavel_id,
+                    serie,
+                    data_valor,
+                    valor_nominal,
+                    atualizado_por,
+                    atualizado_em,
+                    conferida,
+                    conferida_por,
+                    conferida_em,
+                    variavel_categorica_id,
+                    variavel_categorica_valor_id,
+                    elementos
+                )
+                SELECT
+                    variavel_id,
+                    serie::"Serie",
+                    data_ciclo_target,
+                    valor_novo,
+                    ${CONST_BOT_USER_ID},
+                    now(),
+                    true,
+                    ${CONST_BOT_USER_ID},
+                    now(),
+                    variavel_categorica_id,
+                    variavel_categorica_valor_id,
+                    elementos
+                FROM _suspend_values_global
+                WHERE valor_novo IS NOT NULL
+                ON CONFLICT (serie, variavel_id, data_valor)
+                DO UPDATE SET
+                    valor_nominal = EXCLUDED.valor_nominal,
+                    atualizado_em = now(),
+                    atualizado_por = ${CONST_BOT_USER_ID},
+                    conferida = true,
+                    conferida_por = ${CONST_BOT_USER_ID},
+                    conferida_em = now(),
+                    variavel_categorica_id = EXCLUDED.variavel_categorica_id,
+                    variavel_categorica_valor_id = EXCLUDED.variavel_categorica_valor_id,
+                    elementos = EXCLUDED.elementos
+                RETURNING variavel_id
+            ),
+            ins_ctrl AS (
+                INSERT INTO variavel_suspensa_controle (variavel_id, serie, ciclo_referencia, valor_antigo, valor_novo, processado_em)
+                SELECT
+                    variavel_id,
+                    serie::"Serie",
+                    data_ciclo_target,
+                    valor_copiado,
+                    valor_novo,
+                    now()
+                FROM _suspend_values_global
+                RETURNING variavel_id
+            )
+            SELECT DISTINCT variavel_id FROM ins_real
+        `;
+
+        const filledVarIds = affectedVars.map((r) => r.variavel_id);
+
+        // Logging para rastrear processamento multi-ciclo
+        // Conta quantos ciclos foram processados por variável
+        const cycleStats = await prismaTx.$queryRaw<
+            { variavel_id: number; num_ciclos: number; min_ciclo: Date; max_ciclo: Date }[]
+        >`
+            SELECT
+                variavel_id,
+                COUNT(DISTINCT data_ciclo_target) as num_ciclos,
+                MIN(data_ciclo_target) as min_ciclo,
+                MAX(data_ciclo_target) as max_ciclo
+            FROM _suspend_jobs_global
+            GROUP BY variavel_id
+        `;
+
+        // Busca TODOS os cycle owners dos jobs, não apenas dos valores inseridos
+        // Isso é necessário porque mesmo sem valores inseridos (ex: Realizado sem valor anterior),
+        // precisamos verificar se todas as filhas estão suspensas para fechar o ciclo da mãe
+        const allCycleOwners = await prismaTx.$queryRaw<{ ciclo_owner_id: number }[]>`
+            SELECT DISTINCT ciclo_owner_id FROM _suspend_jobs_global
+        `;
+        const cycleOwnerIds = [...new Set(allCycleOwners.map((r) => r.ciclo_owner_id))];
+
+        if (filledVarIds.length > 0) {
+            logger.log(`Variáveis globais suspensas processadas: ${JSON.stringify(filledVarIds)}`);
+            console.log('Variáveis globais suspensas processadas:', filledVarIds);
+            for (const stat of cycleStats) {
+                logger.log(
+                    `Variável ${stat.variavel_id}: processados ${stat.num_ciclos} ciclo(s) (${stat.min_ciclo.toISOString().split('T')[0]} a ${stat.max_ciclo.toISOString().split('T')[0]})`
+                );
+                if (stat.num_ciclos <= 1) continue;
+                console.log(
+                    `Variável ${stat.variavel_id}: ${stat.num_ciclos} ciclos processados ` +
+                        `(${stat.min_ciclo.toISOString().split('T')[0]} a ${stat.max_ciclo.toISOString().split('T')[0]})`
+                );
+            }
+
+            logger.log('Iniciando recálculo de séries dependentes');
+            // 4. Dispara recálculos
+            await this.recalc_series_dependentes(filledVarIds, prismaTx);
+            logger.log('Iniciando recálculo de indicadores');
+            await this.recalc_indicador_usando_variaveis(filledVarIds, prismaTx);
+            logger.log('Recálculos concluídos');
+        } else {
+            logger.log('Nenhuma variável global suspensa para processar valores');
+            console.log('Nenhuma variável global suspensa para processar valores');
+        }
+
+        // 5. Verifica se variáveis mãe devem ter ciclo fechado automaticamente
+        // (quando todas as filhas estão suspensas) - executa mesmo sem valores inseridos
+        if (cycleOwnerIds.length > 0) {
+            logger.log(`Verificando fechamento automático de ciclos para ${cycleOwnerIds.length} variável(is) mãe`);
+            await this.autoCloseParentCyclesIfAllChildrenSuspended(cycleOwnerIds, prismaTx);
+        }
+
+        logger.log(`Processamento concluído. Total de variáveis processadas: ${filledVarIds.length}`);
+        if (user) {
+            await logger.saveLogs(prismaTx, user.getLogData());
+        } else {
+            await logger.saveLogs(prismaTx, {
+                ip: '0.0.0.0',
+            });
+        }
+
+        return filledVarIds;
+    }
+
+    /**
+     * Fecha automaticamente o ciclo de variáveis mãe quando todas as filhas estão suspensas.
+     * Isso evita que o usuário precise avançar manualmente um ciclo sem dados a preencher.
+     */
+    private async autoCloseParentCyclesIfAllChildrenSuspended(
+        cycleOwnerIds: number[],
+        prismaTx: Prisma.TransactionClient
+    ): Promise<void> {
+        if (cycleOwnerIds.length === 0) return;
+
+        // Busca variáveis mãe que têm todas as filhas (não calculadas) suspensas
+        const ownersToClose = await prismaTx.$queryRaw<{ id: number; ultimo_periodo_valido: Date }[]>`
+            SELECT vcc.variavel_id as id, vcc.ultimo_periodo_valido
+            FROM variavel_ciclo_corrente vcc
+            WHERE vcc.variavel_id IN (${Prisma.join(cycleOwnerIds)})
+            AND vcc.liberacao_enviada = false
+            -- Variáveis ​​independentes PODEM estar em cycleOwnerIds e, sem a correção,
+            -- elas passariam incorretamente na verificação NOT EXISTS (já que não possuem filhos)
+            AND EXISTS (
+                SELECT 1
+                FROM variavel child
+                WHERE child.variavel_mae_id = vcc.variavel_id
+                  AND child.removido_em IS NULL
+                  AND child.tipo = 'Global'
+            )
+            AND NOT EXISTS (
+                -- Procura qualquer filha ATIVA que NÃO esteja suspensa
+                -- Exclui variáveis calculadas pois elas não precisam de input do usuário
+                SELECT 1
+                FROM variavel child
+                WHERE child.variavel_mae_id = vcc.variavel_id
+                AND child.removido_em IS NULL
+                AND child.tipo = 'Global'
+                AND child.suspendida_em IS NULL
+            )
+        `;
+
+        for (const owner of ownersToClose) {
+            console.log(`Fechando ciclo automaticamente para variável mãe ${owner.id}`);
+
+            // Cria registro de análise para cada fase pendente
+            await prismaTx.variavelGlobalCicloAnalise.create({
+                data: {
+                    variavel_id: owner.id,
+                    fase: 'Liberacao',
+                    referencia_data: owner.ultimo_periodo_valido,
+                    informacoes_complementares:
+                        'Ciclo encerrado automaticamente: Todas as variáveis filhas estão suspensas.',
+                    eh_liberacao_auto: true,
+                    aprovada: true,
+                    ultima_revisao: true,
+                    valores: [],
+                    criado_por: CONST_BOT_USER_ID,
+                    sincronizar_serie_variavel: false,
+                },
+            });
+
+            // Atualiza o ciclo corrente para marcar como liberado
+            await prismaTx.variavelCicloCorrente.update({
+                where: { variavel_id: owner.id },
+                data: {
+                    fase: 'Liberacao',
+                    liberacao_enviada: true,
+                    pedido_complementacao: false,
+                },
+            });
+
+            // Atualiza o estado do ciclo e enfileira tarefas de recálculo
+            // (mirroring marcaLiberacaoEnviada flow)
+            await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${owner.id}::int)::text`;
+            await AddTaskRefreshMeta(prismaTx, { variavel_id: owner.id });
+            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [owner.id] });
+        }
     }
 
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
@@ -3341,7 +3881,7 @@ export class VariavelService {
                     aprovada: false,
                     ultima_revisao: true,
                     criado_por: user.id,
-                    valores: {},
+                    valores: [],
                 })),
             });
         }
@@ -3767,6 +4307,11 @@ export class VariavelService {
                 }
             }
 
+            const variaveisFilhas = await this.prisma.variavel.findMany({
+                where: { variavel_mae_id: id, removido_em: null, tipo: 'Global' },
+                select: { id: true, valor_base: true },
+            });
+
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
                 medicao_orgao_id: detalhes.medicao_orgao_id,
@@ -3787,12 +4332,73 @@ export class VariavelService {
                 liberacao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
                     (e) => e.grupo_responsavel_equipe.perfil === 'Liberacao'
                 ).map((e) => e.grupo_responsavel_equipe.id),
+                valores_base_filhas: variaveisFilhas.map((v) => ({
+                    filha_id: v.id,
+                    valor_base: v.valor_base.toNumber(),
+                })),
             };
 
             return globalDetailDto;
         }
 
         return detailDto;
+    }
+
+    private async handleSuspensaoChange(
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number,
+        newSuspendida: boolean,
+        currentMostrarMonitoramento: boolean,
+        now: Date,
+        user: PessoaFromJwt,
+        logger: LoggerWithLog
+    ): Promise<boolean> {
+        let mostrar_monitoramento: boolean;
+
+        if (newSuspendida === true) {
+            mostrar_monitoramento = false;
+            logger.log(`Variável ${variavelId} suspensa`);
+        } else {
+            const prevLog = await prismaTxn.variavelSuspensaoLog.findFirst({
+                where: { variavel_id: variavelId },
+                orderBy: { criado_em: 'desc' },
+                select: { previo_status_mostrar_monitoramento: true },
+                take: 1,
+            });
+            mostrar_monitoramento = prevLog?.previo_status_mostrar_monitoramento ?? true;
+            logger.log(`Variável ${variavelId} reativada`);
+
+            // Marca todos os registros de controle como removidos quando a variável é dessuspensa
+            // Isso permite que os ciclos sejam reprocessados se a variável for suspensa novamente
+            const updated = await prismaTxn.variavelSuspensaControle.updateMany({
+                where: {
+                    variavel_id: variavelId,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+
+            if (updated.count > 0) {
+                logger.log(
+                    `Marcados ${updated.count} registros de controle como removidos para variável ${variavelId}`
+                );
+            }
+        }
+
+        await prismaTxn.variavelSuspensaoLog.create({
+            data: {
+                variavel_id: variavelId,
+                pessoa_id: user.id,
+                suspendida: newSuspendida,
+                criado_em: now,
+                previo_status_mostrar_monitoramento: currentMostrarMonitoramento,
+            },
+        });
+
+        return mostrar_monitoramento;
     }
 
     async findAllPdms(): Promise<PdmSimplesDto[]> {
@@ -3802,6 +4408,175 @@ export class VariavelService {
             orderBy: { nome: 'asc' },
         });
         return rows;
+    }
+
+    async updateFilha(
+        variavelMaeId: number,
+        filhaId: number,
+        dto: UpdateVariavelFilhasDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const logger = LoggerWithLog('Atualização de variável filha');
+
+        // Só permite alterar suspendida e valor_base
+        const allowedFields = ['suspendida', 'valor_base'];
+        const providedFields = Object.keys(dto).filter((key) => (dto as Record<string, unknown>)[key] !== undefined);
+        const invalidFields = providedFields.filter((f) => !allowedFields.includes(f));
+
+        if (invalidFields.length > 0) {
+            throw new BadRequestException(
+                `Variáveis filhas só podem ter os campos 'suspendida' e 'valor_base' alterados. Campos inválidos: ${invalidFields.join(', ')}`
+            );
+        }
+
+        if (!providedFields.length) {
+            throw new BadRequestException('Nenhum campo válido fornecido para atualização');
+        }
+
+        // verifica permissão através da variável mãe
+        const variavelMaeDetail = await this.findAllGlobal(
+            { id: variavelMaeId, ordem_direcao: 'asc', ordem_coluna: 'id' },
+            user
+        );
+        if (!variavelMaeDetail.linhas.length || !variavelMaeDetail.linhas[0].pode_editar) {
+            throw new ForbiddenException('Usuário não tem permissão para editar esta variável mãe');
+        }
+
+        const variavelFilha = await this.prisma.variavel.findFirst({
+            where: {
+                id: filhaId,
+                variavel_mae_id: variavelMaeId,
+                removido_em: null,
+                tipo: 'Global',
+            },
+            select: {
+                id: true,
+                valor_base: true,
+                suspendida_em: true,
+                mostrar_monitoramento: true,
+            },
+        });
+
+        if (!variavelFilha) {
+            throw new BadRequestException('Variável filha não encontrada ou não pertence à variável mãe informada');
+        }
+
+        const now = new Date(Date.now());
+        const currentSuspendida = variavelFilha.suspendida_em !== null;
+        const newSuspendida = dto.suspendida;
+        const recalcValorBase =
+            dto.valor_base !== undefined &&
+            Number(variavelFilha.valor_base).toString() !== Number(dto.valor_base).toString();
+
+        // Flag para saber se houve alteração real no estado de suspensão (evita query extra quando só muda valor_base)
+        const suspendidaMudou = newSuspendida !== undefined && newSuspendida !== currentSuspendida;
+        const foiSuspendida = suspendidaMudou && newSuspendida === true;
+
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                const updateData: any = {
+                    atualizado_em: now,
+                    atualizado_por: user.id,
+                };
+
+                // Verifica mudanças na suspensão
+                if (suspendidaMudou) {
+                    updateData.suspendida_em = newSuspendida ? now : null;
+                    updateData.mostrar_monitoramento = await this.handleSuspensaoChange(
+                        prismaTxn,
+                        filhaId,
+                        newSuspendida!,
+                        variavelFilha.mostrar_monitoramento,
+                        now,
+                        user,
+                        logger
+                    );
+                }
+
+                // Verifica mudanças no valor_base
+                if (dto.valor_base !== undefined) {
+                    updateData.valor_base = dto.valor_base;
+                    if (recalcValorBase) {
+                        logger.log(
+                            `Valor base da variável ${filhaId} atualizado de ${variavelFilha.valor_base} para ${dto.valor_base}`
+                        );
+                    }
+                }
+
+                await prismaTxn.variavel.update({
+                    where: { id: filhaId },
+                    data: updateData,
+                });
+
+                // Se uma filha foi suspensa e agora TODAS as filhas estão sem monitoramento,
+                // desligar o monitoramento da mãe também (para refletir que "a variável inteira" está suspensa no monitoramento).
+                if (suspendidaMudou && newSuspendida === true) {
+                    const algumaFilhaComMonitoramentoLigado = await prismaTxn.variavel.findFirst({
+                        where: {
+                            variavel_mae_id: variavelMaeId,
+                            tipo: 'Global',
+                            removido_em: null,
+                            suspendida_em: null,
+                        },
+                        select: { id: true },
+                    });
+
+                    if (!algumaFilhaComMonitoramentoLigado) {
+                        const mae = await prismaTxn.variavel.findFirst({
+                            where: { id: variavelMaeId, removido_em: null },
+                            select: { id: true, suspendida_em: true },
+                        });
+
+                        if (mae?.suspendida_em === null) {
+                            logger.log(
+                                `Todas as filhas da variável ${variavelMaeId} ficaram sem monitoramento. Desligando monitoramento da mãe.`
+                            );
+                            await prismaTxn.variavel.update({
+                                where: { id: variavelMaeId },
+                                data: { suspendida_em: now },
+                            });
+                        }
+                    }
+                }
+
+                // Auto reverter: se alguma filha for reativada e a mãe estiver com monitoramento desligado, reativa o monitoramento da mãe
+                if (newSuspendida === false && variavelMaeDetail.linhas[0].suspendida_em !== null) {
+                    logger.log(
+                        `Filha ${filhaId} da variável ${variavelMaeId} foi reativada. Retornar o estado de monitoramento da mãe.`
+                    );
+                    await prismaTxn.variavel.update({
+                        where: { id: variavelMaeId },
+                        data: { suspendida_em: null },
+                    });
+                }
+
+                if (recalcValorBase) {
+                    logger.log(`Recalculando séries dependentes da variável ${filhaId}`);
+                    await this.recalc_series_dependentes([filhaId], prismaTxn);
+                }
+
+                await logger.saveLogs(prismaTxn, user.getLogData());
+            },
+            { isolationLevel: 'ReadCommitted', maxWait: 5000, timeout: 10000 }
+        );
+
+        // Trigger processamento assíncrono de variáveis suspensas após transação completar
+        // Não aguarda o resultado para não bloquear a resposta
+        if (foiSuspendida) {
+            this.processVariaveisGlobaisSuspensas(this.prisma, filhaId)
+                .then((processedIds) => {
+                    if (processedIds.length > 0) {
+                        this.logger.log(
+                            `Processamento automático concluído para variável ${filhaId}: ${processedIds.length} períodos processados`
+                        );
+                    }
+                })
+                .catch((error) => {
+                    this.logger.error(`Erro ao processar variável suspensa ${filhaId}: ${error.message}`, error.stack);
+                });
+        }
+
+        return { id: filhaId };
     }
 }
 

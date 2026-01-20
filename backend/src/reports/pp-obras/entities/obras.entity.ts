@@ -78,12 +78,12 @@ export class RelObrasCronogramaDto {
     tarefa: string;
     inicio_planejado: string | null;
     termino_planejado: string | null;
-    custo_estimado: number | null;
+    custo_estimado: number | null | string;
     inicio_real: string | null;
     termino_real: string | null;
     duracao_real: number | null;
     percentual_concluido: number | null;
-    custo_real: number | null;
+    custo_real: number | null | string;
     dependencias: string | null;
 
     responsavel: IdNomeExibicaoDto | null;
@@ -106,6 +106,9 @@ export class RelObrasAcompanhamentosDto {
     detalhamento_status: string | null;
     pontos_atencao: string | null;
     riscos: string | null;
+    pauta_texto: string | null;
+    detalhamento_texto: string | null;
+    pontos_atencao_texto: string | null;
 }
 
 export class RelObrasRegioesDto {

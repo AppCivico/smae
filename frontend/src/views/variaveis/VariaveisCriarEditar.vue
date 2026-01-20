@@ -4,7 +4,11 @@ import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, onUnmounted, ref, watch,
+  computed,
+  nextTick,
+  onUnmounted,
+  ref,
+  watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -80,6 +84,7 @@ const {
   emFoco,
   erros,
   itemParaEdicao,
+  variaveisFilhasPorMae,
 } = storeToRefs(variaveisGlobaisStore);
 
 const props = defineProps({
@@ -110,7 +115,7 @@ const {
 
 const agrupadorSelecionado = computed(() => itemParaEdicao.value.assuntos_mapeados);
 
-const estãoTodasAsRegiõesSelecionadas = computed({
+const estaoTodasAsRegioesSelecionadas = computed({
   get: () => {
     if (!values.regioes) {
       return false;
@@ -180,6 +185,73 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 const formularioSujo = useIsFormDirty();
 
+async function definirCamposParaClonagem() {
+  if (props.variavelId || !route.query.copiar_de || !emFoco.value) {
+    return;
+  }
+
+  resetField('titulo', { value: `Cópia de ${emFoco.value.titulo}` });
+
+  if (!emFoco.value.possui_variaveis_filhas) {
+    return;
+  }
+
+  // a partir daqui definindo campos de geração de filhas
+  gerarMultiplasVariaveis.value = true;
+
+  if (!variaveisFilhasPorMae.value[route.query.copiar_de]?.length) {
+    await variaveisGlobaisStore.buscarFilhas(route.query.copiar_de);
+  }
+
+  const filhasDaOriginal = variaveisFilhasPorMae.value[route.query.copiar_de] || [];
+
+  if (filhasDaOriginal.length) {
+    let incluirSupraregional = false;
+    let criarCompostas = false;
+    const regioesPorNivel = {};
+    let nivelAplicavel = null;
+
+    // Correndo o array apenas uma vez para definir os campos necessários
+    filhasDaOriginal.forEach((filha) => {
+      if (!incluirSupraregional && filha.supraregional) {
+        incluirSupraregional = true;
+      }
+
+      if (!criarCompostas && filha.tipo?.toLowerCase() === 'calculada') {
+        criarCompostas = true;
+      }
+
+      const nivel = filha.regiao?.nivel;
+
+      if (nivel) {
+        if (!regioesPorNivel[nivel]) {
+          regioesPorNivel[nivel] = [];
+        }
+
+        regioesPorNivel[nivel].push(filha.regiao.id);
+
+        // só o maior nível de regionalização interessa aqui, porque os níveis
+        // abaixo deste são gerados automaticamente pelo backend
+        if (
+          nivelAplicavel === null
+          || nivel > nivelAplicavel
+        ) {
+          nivelAplicavel = nivel;
+        }
+      }
+    });
+
+    resetField('criar_formula_composta', { value: criarCompostas });
+    resetField('nivel_regionalizacao', { value: nivelAplicavel });
+    resetField('supraregional', { value: incluirSupraregional });
+
+    // aguardando pelos campos de regiões estarem disponíveis na UI
+    // e evitar que o seu desenho limpe o valor definido aqui
+    await nextTick();
+    resetField('regioes', { value: regioesPorNivel[nivelAplicavel] });
+  }
+}
+
 async function iniciar() {
   ÓrgãosStore.getAll();
   assuntosStore.buscarTudo();
@@ -208,7 +280,9 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({
     initialValues: novoValor,
   });
-}/* , { immediate: true } */);
+
+  definirCamposParaClonagem();
+}, { immediate: true });
 
 watch(gerarMultiplasVariaveis, (novoValor) => {
   if (!novoValor) {
@@ -260,6 +334,7 @@ onUnmounted(() => {
   usersStore.$reset();
 });
 </script>
+
 <template>
   <CabecalhoDePagina
     class="mb2"
@@ -333,28 +408,61 @@ onUnmounted(() => {
             name="fonte_id"
           />
         </div>
-
-        <div
+        <template
           v-if="variavelId"
-          class="f1 fb15em"
         >
-          <label
-            for="codigo"
-            class="label"
+          <div
+            class="f1 fb10em"
           >
-            Código
-          </label>
-          <input
-            id="codigo"
-            name="codigo"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ error: errors.codigo }"
-            :value="emFoco?.codigo"
-            aria-disabled="true"
-            readonly
-          >
-        </div>
+            <label
+              for="codigo"
+              class="label"
+            >
+              Código
+            </label>
+            <input
+              id="codigo"
+              name="codigo"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ error: errors.codigo }"
+              :value="emFoco?.codigo"
+              aria-disabled="true"
+              readonly
+            >
+          </div>
+          <div class="f1 fb10em">
+            <label class="flex center">
+              <Field
+                name="suspendida"
+                type="checkbox"
+                :value="true"
+                :unchecked-value="false"
+              />
+              <LabelFromYup
+                class="mb0"
+                name="suspendida"
+                as="span"
+                :schema="schema"
+                :class="{ error: errors.suspendida }"
+              >
+                <template v-if="emFoco?.possui_variaveis_filhas">
+                  Suspender todas as filhas
+                </template>
+                <template
+                  v-if="emFoco?.possui_variaveis_filhas"
+                  #balaoInformativo
+                >
+                  Suspender variáveis filhas e retirar do monitoramento físico
+                </template>
+              </LabelFromYup>
+            </label>
+            <ErrorMessage
+              class="error-msg"
+              name="suspendida"
+            />
+          </div>
+        </template>
       </div>
 
       <div class="flex flexwrap g2 mb1">
@@ -624,16 +732,19 @@ onUnmounted(() => {
             {{ schema.fields.valor_base.spec.label }}
             <span class="tvermelho">*</span>
           </LabelFromYup>
+
           <MaskedFloatInput
             :value="values.valor_base"
             name="valor_base"
             class="inputtext light mb1"
             converter-para="string"
+            :fraction-digits="values.casas_decimais"
             :aria-disabled="!!variavelId"
             :standalone="!!variavelId"
             :readonly="!!variavelId"
             :class="{ error: errors.valor_base }"
           />
+
           <ErrorMessage
             class="error-msg"
             name="valor_base"
@@ -719,6 +830,7 @@ onUnmounted(() => {
             :class="{ error: errors.inicio_medicao }"
           >
             <SmaeMonth
+              class="light"
               dia-prefixo="1"
               placeholder="MM/YYYY"
               :model-value="value"
@@ -745,6 +857,7 @@ onUnmounted(() => {
             :class="{ error: errors.fim_medicao }"
           >
             <SmaeMonth
+              class="light"
               dia-prefixo="1"
               placeholder="MM/YYYY"
               :model-value="value"
@@ -945,7 +1058,7 @@ onUnmounted(() => {
     <fieldset>
       <div class="flex flexwrap g2 mb1">
         <div class="f1 fb15em mb1">
-          <label class="flex flexcenter">
+          <label class="flex center">
             <Field
               name="acumulativa"
               type="checkbox"
@@ -967,7 +1080,7 @@ onUnmounted(() => {
           />
         </div>
         <div class="f1 fb15em mb1">
-          <label class="flex flexcenter">
+          <label class="flex center">
             <Field
               name="dado_aberto"
               type="checkbox"
@@ -1095,20 +1208,22 @@ onUnmounted(() => {
       <fieldset v-if="gerarMultiplasVariaveis">
         <div class="flex spacebetween g2 mb1">
           <div class="f1 fb15em mb1 mt2">
-            <label class="block">
-              <Field
-                name="criar_formula_composta"
-                type="checkbox"
-                :value="true"
-                :unchecked-value="false"
-              />
-              <LabelFromYup
-                name="criar_formula_composta"
-                as="span"
-                :schema="schema"
-                :class="{ error: errors.criar_formula_composta }"
-              />
-            </label>
+            <SmaeLabel
+              name="criar_formula_composta"
+              class="flex g1 center"
+              :schema="schema"
+              :class="{ error: errors.criar_formula_composta }"
+            >
+              <template #prepend>
+                <Field
+                  name="criar_formula_composta"
+                  type="checkbox"
+                  :value="true"
+                  :unchecked-value="false"
+                />
+              </template>
+            </SmaeLabel>
+
             <ErrorMessage
               class="error-msg"
               name="criar_formula_composta"
@@ -1137,12 +1252,12 @@ onUnmounted(() => {
                 :value="null"
               />
               <option
-                v-for="nível in Object.values(niveisRegionalizacao)"
-                :key="nível.id"
-                :value="nível.id"
-                :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
+                v-for="nivel in Object.values(niveisRegionalizacao)"
+                :key="nivel.id"
+                :value="nivel.id"
+                :disabled="!regiõesPorNívelOrdenadas?.[nivel.id]?.length"
               >
-                {{ nível.nome }}
+                {{ nivel.nome }}
               </option>
             </Field>
             <ErrorMessage
@@ -1152,16 +1267,16 @@ onUnmounted(() => {
           </div>
 
           <hr class="f1 mt3">
-          <label class="mt2">
+          <label class="mt1 flex center">
             <input
-              v-model="estãoTodasAsRegiõesSelecionadas"
+              v-model="estaoTodasAsRegioesSelecionadas"
               type="checkbox"
               :disabled="!regiõesPorNívelOrdenadas?.[values.nivel_regionalizacao]?.length"
               class="interruptor"
               aria-labelledby="selecionar-todas-as-regiões"
             >
             <span
-              v-if="estãoTodasAsRegiõesSelecionadas"
+              v-if="estaoTodasAsRegioesSelecionadas"
               id="selecionar-todas-as-regiões"
             >
               Limpar seleção
@@ -1223,18 +1338,21 @@ onUnmounted(() => {
 
         <div class="flex flexwrap g2 mb1">
           <div class="mb2 mt2">
-            <label class="block">
-              <Field
-                name="supraregional"
-                type="checkbox"
-                :value="true"
-              /><LabelFromYup
-                name="supraregional"
-                :schema="schema"
-                as="span"
-                :class="{ error: errors.supraregional }"
-              />
-            </label>
+            <SmaeLabel
+              name="supraregional"
+              :schema="schema"
+              class="flex center g1"
+              :class="{ error: errors.supraregional }"
+            >
+              <template #prepend>
+                <Field
+                  name="supraregional"
+                  type="checkbox"
+                  :value="true"
+                />
+              </template>
+            </SmaeLabel>
+
             <ErrorMessage
               class="error-msg"
               name="supraregional"

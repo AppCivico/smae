@@ -1,18 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import { isAfter, isBefore } from 'date-fns';
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
+import { lazy } from 'yup';
 
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
@@ -36,8 +24,6 @@ import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
-import fieldToDate from '@/helpers/fieldToDate';
-import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
 
 import {
   dataMax,
@@ -46,90 +32,17 @@ import {
   startYear,
 } from './formSchemas/config/datas';
 import i18n from './formSchemas/config/i18n';
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  return this.test('teste', errorMessage, function __(value) {
-    const { path, createError } = this;
-
-    if (!value) return true;
-
-    try {
-      const cleanDate = fieldToDate(value).replace(/-/g, '');
-      const cleanNow = new Date()
-        .toISOString()
-        .substring(0, 10)
-        .replace(/-/g, '');
-
-      return Number(cleanDate) <= Number(cleanNow)
-        || createError({ path });
-    } catch (error) {
-      return createError({ path, message: 'Valor de ${path} inválido' });
-    }
-  });
-});
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-addMethod(string, 'nullableOuVazio', function _() {
-  return this
-    .nullable()
-    .transform((v) => (v === '' ? null : v));
-});
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-addMethod(date, 'nullableOuVazio', function _() {
-  return this
-    .nullable()
-    .transform((v) => {
-      try {
-        v.toISOString();
-        return v;
-      } catch (e) {
-        return null;
-      }
-    });
-});
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-addMethod(mixed, 'nullableOuVazio', function _() {
-  return this
-    .nullable()
-    .transform((v) => (v === '' || v === false ? null : v));
-});
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-addMethod(number, 'nullableOuVazio', function _() {
-  return this
-    .nullable()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v));
-});
-
-/**
- * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não encontrado em ${arrayToCompare}') {
-  return this.test({
-    message,
-    name: 'inArray',
-    exclusive: true,
-    params: { arrayToCompare },
-    test(value) {
-      return (this.resolve(arrayToCompare) || []).includes(value);
-    },
-  });
-});
-
-addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não pode ter valores repetidos', params = {}) {
-  return this.test('semDuplicatas', message, function semDuplicatasTeste(value) {
-    const { path, createError } = this;
-
-    return haDuplicatasNaLista(value, params)
-      ? createError({ path, message })
-      : true;
-  });
-});
+import {
+  array,
+  boolean,
+  date,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from './formSchemas/initSchema';
 
 setLocale(i18n);
 
@@ -773,6 +686,94 @@ export const fonte = object()
       .required(),
   });
 
+export const tipoEncerramento = object()
+  .shape({
+    descricao: string()
+      .max(1000)
+      .label('Descrição')
+      .required(),
+    habilitar_info_adicional: boolean()
+      .label('Habilitar informações adicionais')
+      .default(false),
+  });
+
+export const termoEncerramento = object()
+  .shape({
+    assinatura: string()
+      .label('Assinatura')
+      .max(500)
+      .nullable(),
+    data_encerramento: date()
+      .label('Data de encerramento')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    data_inicio_real: date()
+      .label('Data de início real')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    data_termino_real: date()
+      .label('Data de término real')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    etapa_nome: string()
+      .label('Etapa')
+      .max(500)
+      .nullable(),
+    icone: object()
+      .nullable(),
+    justificativa_id: number()
+      .label('Justificativa do encerramento')
+      .nullable(),
+    justificativa_complemento: string()
+      .label('Informações adicionais')
+      .max(2000)
+      .nullable(),
+    nome_projeto: string()
+      .label('Nome do projeto')
+      .nullable(),
+    objeto: string()
+      .label('Objeto')
+      .nullable(),
+    orgao_responsavel_nome: string()
+      .label('Órgão responsável')
+      .nullable(),
+    portfolios_nomes: string()
+      .label('Portfólios')
+      .nullable(),
+    posicao_logotipo: string()
+      .label('Posição do logotipo')
+      .nullable(),
+    previsao_custo: number()
+      .label('Previsão de custo')
+      .min(0)
+      .nullable()
+      .transform((v, o) => (o === '' ? null : v)),
+    previsao_inicio: date()
+      .label('Previsão de início')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    previsao_termino: date()
+      .label('Previsão de término')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    responsavel_encerramento_nome: string()
+      .label('Responsável pelo encerramento')
+      .nullable(),
+    status_final: string()
+      .label('Status final')
+      .nullable(),
+    valor_executado_total: number()
+      .label('Valor executado total')
+      .min(0)
+      .nullable()
+      .transform((v, o) => (o === '' ? null : v)),
+  });
+
 export const geoLocalização = object()
 // shape() necessário para não cair num ciclo infinito na validação de coordenadas
   .shape({
@@ -1071,10 +1072,12 @@ export const meta = (activePdm) => object().shape({
     .label('Código'),
   complemento: string()
     .label('Complemento')
+    .max(1000)
     .nullable(),
   contexto: lazy(() => (activePdm?.possui_contexto_meta
     ? string()
       .label(activePdm?.rotulo_contexto_meta || 'Contexto')
+      .max(1000)
       .required()
     : mixed()
       .nullable())),
@@ -1826,6 +1829,9 @@ export const portfolio = object({
         .label('Pessoa')
         .required(),
     ),
+  icone_impressao: string()
+    .label('Ícone para impressão')
+    .nullable(),
   nivel_maximo_tarefa: number()
     .label('Nível máximo de aninhamento de tarefas')
     .min(1)
@@ -3899,6 +3905,10 @@ export const usuário = object()
     perfil_acesso_ids: array()
       .label('Perfil de acesso')
       .required('Selecione ao menos uma permissão'),
+    equipes: array()
+      .label('Equipes como participante'),
+    equipes_responsavel: array()
+      .label('Equipes como coordenador'),
   });
 
 export const variável = (singleIndicadores) => object()
@@ -3908,6 +3918,7 @@ export const variável = (singleIndicadores) => object()
     ano_base: string()
       .nullable(),
     atraso_meses: number()
+      .label('Defasagem da medição (meses)')
       .min(0)
       .integer(),
     casas_decimais: string()
@@ -4037,7 +4048,7 @@ export const variavelGlobal = object({
         .required(),
     ),
   atraso_meses: number()
-    .label('Defasagem da medição')
+    .label('Defasagem da medição (meses)')
     .min(0)
     .integer(),
   casas_decimais: number()
@@ -4138,6 +4149,11 @@ export const variavelGlobal = object({
     .required()
     .oneOf([...Object.keys(polaridadeDeVariaveis), null])
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
+  suspendida: boolean()
+    .label('suspender variável do ciclo')
+    .meta({
+      balaoInformativo: 'Suspender variável e retirar do monitoramento físico.',
+    }),
   titulo: string()
     .label('Nome')
     .max(256)
@@ -4153,10 +4169,12 @@ export const variavelGlobal = object({
         .positive()
         .required(),
     ),
-  valor_base: number() // como string
+  valor_base: string() // como string
     .label('Valor base')
-    .min(0)
-    .when('variavel_categorica_id', variavelGlobalEhNumberica),
+    .when('variavel_categorica_id', variavelGlobalEhNumberica)
+    .when('casas_decimais', (casasDecimaisValor, field) => (
+      field.validarCasasDecimais(casasDecimaisValor || 0)
+    )),
   variavel_categorica_id: number()
     .label('Tipo de variável')
     .nullableOuVazio(),
@@ -4386,7 +4404,10 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
 
 function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   const schemaCampos = {
-    analise_qualitativa: string().label('análise qualitativa da coleta').required(),
+    analise_qualitativa: string()
+      .label('análise qualitativa da coleta')
+      .max(1000)
+      .required(),
   };
 
   if (posicao !== 1) {
@@ -4396,27 +4417,33 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
       );
     schemaCampos.pedido_complementacao = string()
       .label('Pedido de complementação')
+      .max(1000)
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.required() : field.nullable()));
   }
 
   if (posicao >= 2) {
     schemaCampos.analise_qualitativa_aprovador = string()
       .label('análise qualitativa da conferência')
+      .max(1000)
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
   if (posicao >= 3) {
     schemaCampos.analise_qualitativa_liberador = string()
       .label('análise qualitativa do liberador')
+      .max(1000)
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
   return schemaCampos;
 }
 
-export const cicloAtualizacaoModalAdicionarSchema = (posicao) => {
+export const cicloAtualizacaoModalAdicionarSchema = (posicao, casasDecimais = 0) => {
   const schemaCampos = {
-    valor_realizado: string().label('valor realizado').required(),
+    valor_realizado: string()
+      .label('valor realizado')
+      .required()
+      .validarCasasDecimais(casasDecimais),
     valor_realizado_acumulado: string().required()
       .label('valor realizado acumulado'),
   };
@@ -4436,21 +4463,7 @@ export const cicloAtualizacaoModalEditarSchema = (posicao, casasDecimais = 0) =>
         valor_realizado: string()
           .label('valor realizado')
           .required()
-          .test('casas-decimais', (value, { createError }) => {
-            if (!value) return true;
-
-            const valorNumerico = value.replace(',', '.');
-            const partesDecimais = valorNumerico.split('.')[1];
-            const numeroCasasDecimais = partesDecimais ? partesDecimais.length : 0;
-
-            if (numeroCasasDecimais > casasDecimais) {
-              return createError({
-                message: `O valor deve ter no máximo ${casasDecimais} casas decimais`,
-              });
-            }
-
-            return true;
-          }),
+          .validarCasasDecimais(casasDecimais),
         valor_realizado_acumulado: string()
           .label('valor realizado acumulado')
           .required(),

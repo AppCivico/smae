@@ -13,7 +13,12 @@ import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { LoggerWithLog } from '../common/LoggerWithLog';
-import { CalcSistemasDisponiveis, CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
+import {
+    CalcSistemasDisponiveis,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE,
+    CONST_PERFIL_COORDENADOR_EQUIPE,
+    LISTA_PRIV_ADMIN,
+} from '../common/consts';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
@@ -379,7 +384,8 @@ export class PessoaService implements OnModuleInit {
             dto.email &&
             dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)
         ) {
-            throw new HttpException(`Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
+            throw new HttpException(
+                `Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
                 400
             );
         }
@@ -387,9 +393,7 @@ export class PessoaService implements OnModuleInit {
         if (!this.#cpfObrigatorioSemRF) return;
 
         if (!dto.cpf && !dto.registro_funcionario) {
-            throw new HttpException('Registro de funcionário obrigatório caso CPF não seja informado',
-                400
-            );
+            throw new HttpException('Registro de funcionário obrigatório caso CPF não seja informado', 400);
         }
     }
 
@@ -397,6 +401,7 @@ export class PessoaService implements OnModuleInit {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user);
 
         const equipes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
+        const equipes_responsavel = await this.equipeRespService.findIdsPorColaborador(pessoaId);
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 id: pessoaId,
@@ -453,6 +458,7 @@ export class PessoaService implements OnModuleInit {
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
             equipes,
+            equipes_responsavel,
             modulos_permitidos: pessoa.modulos_permitidos,
             sobreescrever_modulos: pessoa.sobreescrever_modulos,
             permissoes: {
@@ -521,6 +527,7 @@ export class PessoaService implements OnModuleInit {
         });
 
         const equipesAntes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
+        const equipesResponsavelAntes = await this.equipeRespService.findIdsPorColaborador(pessoaId);
 
         const targetUserPrivileges = new Set(
             self.PessoaPerfil.flatMap((pp) => pp.perfil_acesso.perfil_privilegio.map((priv) => priv.privilegio.codigo))
@@ -562,9 +569,7 @@ export class PessoaService implements OnModuleInit {
                     },
                 });
                 if (registroFuncionarioExists > 0) {
-                    throw new HttpException('Registro de funcionário já atrelado a outra conta',
-                        400
-                    );
+                    throw new HttpException('Registro de funcionário já atrelado a outra conta', 400);
                 }
             }
 
@@ -717,6 +722,59 @@ export class PessoaService implements OnModuleInit {
                     await this.equipeRespService.atualizaEquipe(
                         pessoaId,
                         updatePessoaDto.equipes,
+                        prismaTx,
+                        updated.pessoa_fisica.orgao_id
+                    );
+                }
+            }
+
+            // Gerencia equipes onde a pessoa é colaborador/responsável
+            if (Array.isArray(updatePessoaDto.equipes_responsavel)) {
+                const novasEquipesResponsavelSorted = updatePessoaDto.equipes_responsavel
+                    .sort((a, b) => a - b)
+                    .join(',');
+                const equipesResponsavelAntesSorted = equipesResponsavelAntes.sort((a, b) => a - b).join(',');
+
+                if (novasEquipesResponsavelSorted !== equipesResponsavelAntesSorted) {
+                    if (!updated.pessoa_fisica?.orgao_id)
+                        throw new BadRequestException(
+                            'Órgão da pessoa não encontrado, necessário para atualizar equipes como colaborador'
+                        );
+
+                    updatePessoaDto.perfil_acesso_ids = Array.isArray(updatePessoaDto.perfil_acesso_ids)
+                        ? updatePessoaDto.perfil_acesso_ids
+                        : await this.loadPrivPessoa(pessoaId, prismaTx, perfisVisiveis);
+
+                    const perfilCoordenadorEquipe = await prismaTx.perfilAcesso.findFirst({
+                        where: {
+                            nome: CONST_PERFIL_COORDENADOR_EQUIPE,
+                            removido_em: null,
+                        },
+                        select: { id: true },
+                    });
+
+                    if (!perfilCoordenadorEquipe) {
+                        throw new BadRequestException(
+                            `Perfil "${CONST_PERFIL_COORDENADOR_EQUIPE}" não encontrado. Execute o seed do banco de dados.`
+                        );
+                    }
+
+                    logger.log(`Equipes responsável antes: ${equipesResponsavelAntesSorted}`);
+                    logger.log(`Equipes responsável agora: ${novasEquipesResponsavelSorted}`);
+
+                    // Se não está em nenhuma equipe como colaborador, remove o perfil
+                    if (updatePessoaDto.equipes_responsavel.length == 0) {
+                        updatePessoaDto.perfil_acesso_ids = updatePessoaDto.perfil_acesso_ids.filter(
+                            (e) => e != perfilCoordenadorEquipe.id
+                        );
+                    } else if (updatePessoaDto.perfil_acesso_ids.indexOf(perfilCoordenadorEquipe.id) == -1) {
+                        // Se está em alguma equipe e não tem o perfil, adiciona
+                        updatePessoaDto.perfil_acesso_ids.push(perfilCoordenadorEquipe.id);
+                    }
+
+                    await this.equipeRespService.atualizaEquipeColaborador(
+                        pessoaId,
+                        updatePessoaDto.equipes_responsavel,
                         prismaTx,
                         updated.pessoa_fisica.orgao_id
                     );
@@ -1314,8 +1372,7 @@ export class PessoaService implements OnModuleInit {
                         where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } },
                     });
                     if (rfExists > 0) {
-                        throw new BadRequestException('Registro de funcionário já atrelado a outra conta'
-                        );
+                        throw new BadRequestException('Registro de funcionário já atrelado a outra conta');
                     }
                 }
 

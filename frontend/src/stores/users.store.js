@@ -131,7 +131,7 @@ export const useUsersStore = defineStore('users', {
       this.accessProfiles = { loading: true };
       try {
         const r = await this.requestS.get(`${baseUrl}/perfil-de-acesso`);
-        this.accessProfiles = r.linhas;
+        this.accessProfiles = r.linhas.filter((i) => i.id !== 43);
       } catch (error) {
         this.accessProfiles = { error };
       }

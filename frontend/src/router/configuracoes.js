@@ -1,7 +1,14 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store';
+import { useObservadoresStore } from '@/stores/observadores.store.ts';
+import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
+import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
@@ -88,11 +95,11 @@ const rotasParaMenuPrincipal = [
   'projeto.portfolio.listar',
   'mdo.portfolio.listar',
   'gerenciarPainéisDeMetas',
-  'mdoEtiquetasListar',
-  'mdoProgramaHabitacionalListar',
-  'mdoEmpreendimentosListar',
+  'mdoEtiquetas.listar',
+  'mdoProgramaHabitacional.listar',
+  'mdo.empreendimentos.listar',
   'parlamentaresListar',
-  'paineisExternosListar',
+  'paineisExternos.listar',
   'equipesListar',
   'Workflow',
   'programaDeMetas.planosSetoriaisListar',
@@ -361,7 +368,11 @@ export default [
                 }),
 
                 meta: {
-                  título: 'Editar Novo grupo de observadores',
+                  entidadeMãe: 'mdo',
+                  título() {
+                    const { emFoco } = useObservadoresStore(this.entidadeMãe);
+                    return emFoco?.titulo || 'Editar grupo de observadores';
+                  },
                   rotasParaMigalhasDePão: [
                     'mdo.gruposObservadores.listar',
                   ],
@@ -415,7 +426,15 @@ export default [
                 }),
                 meta: {
                   título: 'Editar etapa da obra',
-                  tituloParaMigalhaDePao: 'Editar etapa',
+                  tituloParaMigalhaDePao() {
+                    const { emFoco } = useEtapasProjetosStore(this.entidadeMãe);
+
+                    if (!emFoco) {
+                      return 'Editar etapa da obra';
+                    }
+
+                    return emFoco.descricao;
+                  },
                   rotasParaMigalhasDePão: ['mdo.etapas.listar'],
                   rotaDeEscape: 'mdo.etapas.listar',
                 },
@@ -432,13 +451,13 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
-            'paineisExternosListar',
-            'grupospaineisExternosListar',
+            'paineisExternos.listar',
+            'grupospaineisExternos.listar',
           ],
         },
         children: [
           {
-            name: 'paineisExternosListar',
+            name: 'paineisExternos.listar',
             path: '',
             component: PaineisExternosLista,
             meta: {
@@ -449,7 +468,7 @@ export default [
             },
           },
           {
-            name: 'paineisExternosCriar',
+            name: 'paineisExternos.criar',
             path: 'novo',
             component: PaineisExternosCriarEditar,
             meta: {
@@ -457,12 +476,12 @@ export default [
                 'CadastroPainelExterno.inserir',
               ],
               título: 'Novo painel externo',
-              rotasParaMigalhasDePão: ['paineisExternosListar'],
+              rotasParaMigalhasDePão: ['paineisExternos.listar'],
             },
           },
           {
             path: ':painelId',
-            name: 'paineisExternosEditar',
+            name: 'paineisExternos.editar',
             component: PaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -475,8 +494,12 @@ export default [
               limitarÀsPermissões: [
                 'CadastroPainelExterno.editar',
               ],
-              título: 'Editar painel externo',
-              rotasParaMigalhasDePão: ['paineisExternosListar'],
+              título: () => {
+                const { emFoco } = usePaineisExternosStore();
+
+                return emFoco?.titulo || 'Editar painel externo';
+              },
+              rotasParaMigalhasDePão: ['paineisExternos.listar'],
             },
           },
         ],
@@ -592,11 +615,11 @@ export default [
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: ['ProjetoTagMDO.inserir'],
-          rotasParaMenuSecundário: ['mdoEtiquetasListar'],
+          rotasParaMenuSecundário: ['mdoEtiquetas.listar'],
         },
         children: [
           {
-            name: 'mdoEtiquetasListar',
+            name: 'mdoEtiquetas.listar',
             path: '',
             component: () => import('@/views/mdo.etiquetas/EtiquetasLista.vue'),
             meta: {
@@ -604,17 +627,17 @@ export default [
             },
           },
           {
-            name: 'mdoEtiquetasCriar',
+            name: 'mdoEtiquetas.criar',
             path: 'novo',
             component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
             meta: {
               título: 'Nova etiqueta',
-              rotasParaMigalhasDePão: ['mdoEtiquetasListar'],
+              rotasParaMigalhasDePão: ['mdoEtiquetas.listar'],
             },
           },
           {
             path: ':etiquetaId',
-            name: 'mdoEtiquetasEditar',
+            name: 'mdoEtiquetas.editar',
             component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
@@ -624,8 +647,16 @@ export default [
             }),
 
             meta: {
-              título: 'Editar etiqueta',
-              rotasParaMigalhasDePão: ['mdoEtiquetasListar'],
+              título: () => {
+                const { emFoco } = useEtiquetasStore();
+
+                if (!emFoco) {
+                  return 'Editar Etiqueta';
+                }
+
+                return emFoco.descricao;
+              },
+              rotasParaMigalhasDePão: ['mdoEtiquetas.listar'],
             },
           },
         ],
@@ -641,29 +672,29 @@ export default [
             'CadastroEmpreendimentoMDO.',
           ],
           rotasParaMenuSecundário: [
-            'mdoEmpreendimentosListar',
+            'mdo.empreendimentos.listar',
           ],
         },
         children: [
           {
-            name: 'mdoEmpreendimentosListar',
+            name: 'mdo.empreendimentos.listar',
             path: '',
             component: () => import('@/views/mdo.empreendimentos/EmpreendimentosLista.vue'),
           },
           {
-            name: 'mdoEmpreendimentosCriar',
+            name: 'mdo.empreendimentos.criar',
             path: 'novo',
             component: () => import(
               '@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'
             ),
             meta: {
               título: 'Novo empreendimento',
-              rotasParaMigalhasDePão: ['mdoEmpreendimentosListar'],
+              rotasParaMigalhasDePão: ['mdo.empreendimentos.listar'],
             },
           },
           {
             path: ':empreendimentoId',
-            name: 'mdoEmpreendimentosEditar',
+            name: 'mdo.empreendimentos.editar',
             component: () => import(
               '@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'
             ),
@@ -675,8 +706,11 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar empreendimento',
-              rotasParaMigalhasDePão: ['mdoEmpreendimentosListar'],
+              título: () => {
+                const { itemParaEdicao } = useEmpreendimentosStore();
+                return itemParaEdicao?.nome || 'Editar empreendimento';
+              },
+              rotasParaMigalhasDePão: ['mdo.empreendimentos.listar'],
             },
           },
         ],
@@ -691,31 +725,31 @@ export default [
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: ['ProjetoProgramaMDO.'],
-          rotasParaMenuSecundário: ['mdoProgramaHabitacionalListar'],
+          rotasParaMenuSecundário: ['mdoProgramaHabitacional.listar'],
         },
         children: [
           {
-            name: 'mdoProgramaHabitacionalListar',
+            name: 'mdoProgramaHabitacional.listar',
             path: '',
             component: () => import(
               '@/views/mdo.programasHabitacionais/ProgramaHabitacionalLista.vue'
             ),
           },
           {
-            name: 'mdoProgramaHabitacionalCriar',
+            name: 'mdoProgramaHabitacional.criar',
             path: 'novo',
             component: () => import(
               '@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'
             ),
             meta: {
               título: 'Novo programa habitacional',
-              rotasParaMigalhasDePão: ['mdoProgramaHabitacionalListar'],
+              rotasParaMigalhasDePão: ['mdoProgramaHabitacional.listar'],
               limitarÀsPermissões: ['ProjetoProgramaMDO.inserir'],
             },
           },
           {
             path: ':programaHabitacionalId',
-            name: 'mdoProgramaHabitacionalEditar',
+            name: 'mdoProgramaHabitacional.editar',
             component: () => import(
               '@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'
             ),
@@ -729,8 +763,12 @@ export default [
             }),
 
             meta: {
-              título: 'Editar programa habitacional',
-              rotasParaMigalhasDePão: ['mdoProgramaHabitacionalListar'],
+              título: () => {
+                const { itemParaEdicao } = useProgramaHabitacionalStore();
+
+                return itemParaEdicao?.nome || 'Editar programa habitacional';
+              },
+              rotasParaMigalhasDePão: ['mdoProgramaHabitacional.listar'],
               limitarÀsPermissões: ['ProjetoProgramaMDO.editar'],
             },
           },
@@ -1025,13 +1063,13 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
-            'paineisExternosListar',
-            'grupospaineisExternosListar',
+            'paineisExternos.listar',
+            'grupospaineisExternos.listar',
           ],
         },
         children: [
           {
-            name: 'grupospaineisExternosListar',
+            name: 'grupospaineisExternos.listar',
             path: '',
             component: GruposDePaineisExternosLista,
             meta: {
@@ -1039,17 +1077,17 @@ export default [
             },
           },
           {
-            name: 'grupospaineisExternosCriar',
+            name: 'grupospaineisExternos.criar',
             path: 'novo',
             component: GruposDePaineisExternosCriarEditar,
             meta: {
               título: 'Novo Grupo de Painéis Externos',
-              rotasParaMigalhasDePão: ['grupospaineisExternosListar'],
+              rotasParaMigalhasDePão: ['grupospaineisExternos.listar'],
             },
           },
           {
             path: ':gruposPaineisExternosId',
-            name: 'gruposPaineisExternosEditar',
+            name: 'gruposPaineisExternos.editar',
             component: GruposDePaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -1060,8 +1098,12 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar grupo de painel externo',
-              rotasParaMigalhasDePão: ['grupospaineisExternosListar'],
+              título: () => {
+                const { emFoco } = useGruposPaineisExternos();
+
+                return emFoco?.titulo || 'Editar grupo de painel externo';
+              },
+              rotasParaMigalhasDePão: ['grupospaineisExternos.listar'],
             },
           },
         ],
@@ -1124,7 +1166,11 @@ export default [
             }),
 
             meta: {
-              título: 'Editar Novo grupo de observadores',
+              entidadeMãe: 'projeto',
+              título() {
+                const { emFoco } = useObservadoresStore(this.entidadeMãe);
+                return emFoco?.titulo || 'Editar grupo de observadores';
+              },
               rotasParaMigalhasDePão: [
                 'projeto.gruposObservadores.listar',
               ],

@@ -26,6 +26,16 @@ export const useTipoDeTransferenciaStore = defineStore('tipoDeTransferencia', {
       this.chamadasPendentes.lista = false;
     },
 
+    async buscarItem(itemId) {
+      if (this.lista.length === 0) {
+        await this.buscarTudo();
+      }
+
+      this.emFoco = this.lista.find((x) => x.id === Number(itemId));
+
+      return this.emFoco;
+    },
+
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
       this.erro = null;

@@ -1,7 +1,9 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Empreendimentos" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
 
@@ -121,7 +123,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       empreendimentosStore.$reset();
-      router.push({ name: 'mdoEmpreendimentosListar' });
+      router.push({ name: 'mdo.empreendimentos.listar' });
     }
   } catch (error) {
     alertStore.error(error);

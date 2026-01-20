@@ -1,5 +1,7 @@
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
+
 const entidadeMãe = 'planoSetorial';
 
 export default {
@@ -43,15 +45,22 @@ export default {
       component: () => import('@/views/variaveis/VariaveisLista.vue'),
     },
     {
-      component: () => import('@/views/variaveis/VariaveisCriarEditar.vue'),
-      path: 'novo',
-      name: 'variaveisCriar',
-      meta: {
-        limitarÀsPermissões: ['CadastroVariavelGlobal.administrador_no_orgao'],
-        rotaDeEscape: 'variaveisListar',
-        rotasParaMigalhasDePão: ['variaveisListar'],
-        título: 'Cadastro de Variável',
-      },
+      component: () => import('@/views/variaveis/VariaveisItem.vue'),
+      path: '',
+      props: tiparPropsDeRota,
+      children: [
+        {
+          component: () => import('@/views/variaveis/VariaveisCriarEditar.vue'),
+          path: 'novo',
+          name: 'variaveisCriar',
+          meta: {
+            limitarÀsPermissões: ['CadastroVariavelGlobal.administrador_no_orgao'],
+            rotaDeEscape: 'variaveisListar',
+            rotasParaMigalhasDePão: ['variaveisListar'],
+            título: 'Cadastro de Variável',
+          },
+        },
+      ],
     },
     {
       component: () => import('@/views/variaveis/VariaveisItem.vue'),

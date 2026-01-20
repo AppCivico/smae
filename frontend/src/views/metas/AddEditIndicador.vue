@@ -385,7 +385,7 @@ watch(() => props.group, () => {
     <Form
       v-slot="{ errors, isSubmitting, setFieldValue, values }"
       :validation-schema="schema"
-      :initial-values="indicadorId ? singleIndicadores : {}"
+      :initial-values="indicadorId ? singleIndicadores : { indicador_tipo: 'Numerico' }"
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -413,10 +413,7 @@ watch(() => props.group, () => {
             {{ errors.titulo }}
           </div>
         </div>
-        <div
-          v-if="indicadorId"
-          class="f2"
-        >
+        <div class="f2">
           <label class="label">Tipo da fórmula <span class="tvermelho">*</span></label>
           <Field
             id="indicador_tipo"
@@ -424,7 +421,7 @@ watch(() => props.group, () => {
             name="indicador_tipo"
             class="inputtext light"
             @change="() => {
-              if (values.indicador_tipo) {
+              if (values.indicador_tipo && indicadorId) {
                 setFieldValue('formula', '')
                 setFieldValue('formula_variaveis', [])
                 formula = ''

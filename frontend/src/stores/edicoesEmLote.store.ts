@@ -3,7 +3,6 @@ import type {
   AtualizacaoEmLoteResumoDto,
 } from '@back/atualizacao-em-lote/dto/atualizacao-em-lote.dto';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type { CreateRunUpdateDto } from '@back/task/run_update/dto/create-run-update.dto';
 import { defineStore } from 'pinia';
 

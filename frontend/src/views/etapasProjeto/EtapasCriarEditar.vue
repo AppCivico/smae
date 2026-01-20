@@ -4,7 +4,7 @@ import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineOptions, onMounted, ref,
+  computed, defineOptions, onMounted, ref, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -12,7 +12,6 @@ import configEtapas from '@/consts/configEtapas';
 import { etapasProjeto as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { usePortfolioStore } from '@/stores/portfolios.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
@@ -20,7 +19,6 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
 const alertStore = useAlertStore();
 const router = useRouter();
 const route = useRoute();
-const authStore = useAuthStore();
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 
 function inicializarPortfolioStore() {
@@ -81,7 +79,7 @@ const props = defineProps({
 
 const emFoco = computed(() => {
   if (props.etapaId) {
-    const etapa = etapasPorId.value[props.etapaId];
+    const etapa = etapasProjetosStore.emFoco;
     if (!etapa) return null;
 
     return {
@@ -110,7 +108,7 @@ const emFoco = computed(() => {
 });
 
 const {
-  errors, handleSubmit, isSubmitting, values, setFieldValue,
+  errors, handleSubmit, isSubmitting, resetForm,
 } = useForm({
   initialValues: emFoco,
   validationSchema: schema,
@@ -131,8 +129,8 @@ onMounted(() => {
   }
 
   // Etapas padrão pra preencher o select
-  if (contextoEtapa.value === 'configuracoes') {
-    etapasProjetosStore.buscarEtapasPadrao();
+  if (props.etapaId) {
+    etapasProjetosStore.buscarPorId(props.etapaId);
   }
 });
 
@@ -167,46 +165,17 @@ const onSubmit = handleSubmit(async (carga) => {
   }
 });
 
-function excluirEtapaDoProjeto(id) {
-  alertStore.confirmAction(
-    'Deseja mesmo remover esse item?',
-    async () => {
-      if (await etapasProjetosStore.excluirItem(id)) {
-        etapasProjetosStore.$reset();
-        etapasProjetosStore.buscarTudo();
-        alertStore.success('Etapa removida.');
-
-        const rotaDeEscape = route.meta?.rotaDeEscape;
-
-        if (rotaDeEscape) {
-          router.push(
-            typeof rotaDeEscape === 'string'
-              ? { name: rotaDeEscape }
-              : rotaDeEscape,
-          );
-        }
-      }
-    },
-    'Remover',
-  );
-}
+watch(emFoco, () => {
+  resetForm({ values: emFoco.value });
+});
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      <div
-        v-if="etapaId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ "Editar etapa" }}
-      </div>
-      {{ emFoco?.descricao
-        ? emFoco?.descricao
-        : etapaId
-          ? "Etapa"
-          : "Nova etapa" }}
-    </h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 

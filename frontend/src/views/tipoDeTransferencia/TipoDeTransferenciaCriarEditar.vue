@@ -1,8 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -16,11 +15,10 @@ const tipoDeTransferencia = useTipoDeTransferenciaStore();
 const {
   chamadasPendentes,
   erro,
-  lista,
+  emFoco,
 } = storeToRefs(tipoDeTransferencia);
 
 const router = useRouter();
-const route = useRoute();
 const props = defineProps({
   tipoId: {
     type: Number,
@@ -29,9 +27,6 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const itemParaEdicao = computed(() => lista.value.find((x) => x.id === Number(route.params.tipoId)) || {
-  id: 0, nome: '', categoria: null, esfera: null,
-});
 
 async function onSubmit(values) {
   try {
@@ -48,7 +43,7 @@ async function onSubmit(values) {
     if (r) {
       alertStore.success(msg);
       tipoDeTransferencia.$reset();
-      router.push({ name: 'tipoDeTransferenciaListar' });
+      router.push({ name: 'tipoDeTransferencia.listar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -56,14 +51,14 @@ async function onSubmit(values) {
 }
 
 if (props.tipoId) {
-  tipoDeTransferencia.buscarTudo(props.tipoId);
+  tipoDeTransferencia.buscarItem(props.tipoId);
 }
 
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Tipo de Trasferência' }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -71,7 +66,7 @@ if (props.tipoId) {
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
-    :initial-values="itemParaEdicao"
+    :initial-values="emFoco"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">

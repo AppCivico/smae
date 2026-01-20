@@ -1,3 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { ModuloSistema } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -12,10 +14,8 @@ import {
     MinLength,
     ValidateIf,
 } from 'class-validator';
-import { IsValidCPF } from '../../common/decorators/IsValidCPF';
-import { ModuloSistema } from '@prisma/client';
-import { ApiProperty } from '@nestjs/swagger';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 
 export class CreatePessoaDto {
     /**
@@ -119,4 +119,12 @@ export class CreatePessoaDto {
     @IsEnum(ModuloSistema, { each: true })
     @ApiProperty({ type: 'array', enum: ModuloSistema })
     modulos_permitidos?: ModuloSistema[];
+
+    /**
+     * Lista dos IDs das equipes onde a pessoa é colaborador/responsável
+     */
+    @IsArray()
+    @IsOptional()
+    @ArrayMaxSize(100, { message: 'equipes_responsavel: precisa ter no máximo 100 items' })
+    equipes_responsavel?: number[];
 }

@@ -15,6 +15,8 @@ export class PlanoAcao {
     @IsDateYMD({ nullable: true })
     data_termino: string | null;
     projeto_risco: RiscoIdCod;
+    contramedida_texto: string;
+    medidas_de_contingencia_texto: string;
 }
 
 export class RiscoIdCod {
@@ -39,4 +41,6 @@ export class PlanoAcaoDetailDto {
     contato_do_responsavel: string | null;
     @IsDateYMD({ nullable: true })
     data_termino: string | null;
+    contramedida_texto: string;
+    medidas_de_contingencia_texto: string;
 }

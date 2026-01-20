@@ -29,14 +29,16 @@ portfolioStore.buscarTudo();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Paineis externos' }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <router-link
-      :to="{name: 'paineisExternosCriar'}"
+
+    <SmaeLink
+      :to="{name: 'paineisExternos.criar'}"
       class="btn big ml1"
     >
       Novo painel externo
-    </router-link>
+    </SmaeLink>
   </div>
 
   <table class="tablemain">
@@ -82,7 +84,7 @@ portfolioStore.buscarTudo();
         </td>
         <td>
           <SmaeLink
-            :to="{ name: 'paineisExternosEditar', params: { painelId: item.id } }"
+            :to="{ name: 'paineisExternos.editar', params: { painelId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -101,7 +103,7 @@ portfolioStore.buscarTudo();
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>

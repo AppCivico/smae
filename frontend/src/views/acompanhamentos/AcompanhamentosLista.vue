@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
+import removerHtml from '@/helpers/html/removerHtml';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 
@@ -291,7 +292,7 @@ vue/singleline-html-element-content-newline -->
           {{ linha.acompanhamento_tipo?.nome ? linha.acompanhamento_tipo.nome : '-' }}
         </td>
         <td>
-          {{ linha.pauta }}
+          {{ removerHtml(linha.pauta || '') }}
         </td>
         <td class="cell--number">
           {{ linha.acompanhamentos.length ?? 0 }}

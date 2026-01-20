@@ -1,8 +1,9 @@
 <template>
-  <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!programaHabitacionalId">Novo</span> programa habitacional</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
   <Form
@@ -104,7 +105,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       programaHabitacionalStore.$reset();
-      router.push({ name: 'mdoProgramaHabitacionalListar' });
+      router.push({ name: 'mdoProgramaHabitacional.listar' });
     }
   } catch (error) {
     alertStore.error(error);

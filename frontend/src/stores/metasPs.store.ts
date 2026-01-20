@@ -1,4 +1,3 @@
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type { ListMetaDto } from '@back/meta/dto/list-meta.dto';
 import type { MetaItemDto } from '@back/meta/entities/meta.entity';
 import { defineStore } from 'pinia';
@@ -8,16 +7,6 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Lista = ListMetaDto['linhas'];
 
-interface ChamadasPendentes {
-  lista: boolean;
-  emFoco: boolean;
-}
-
-interface Erros {
-  lista: unknown;
-  emFoco: unknown;
-}
-
 interface Estado {
   lista: Lista;
   emFoco: MetaItemDto | null;
@@ -25,13 +14,7 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 
-  paginacao: {
-    tokenPaginacao: string;
-    paginas: number;
-    paginaCorrente: number;
-    temMais: boolean;
-    totalRegistros: number;
-  };
+  paginacao: Paginacao;
 }
 
 function caminhoParaApi(rotaMeta: RouteMeta) {

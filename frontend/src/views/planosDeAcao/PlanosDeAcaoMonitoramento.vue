@@ -7,6 +7,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { monitoramentoDePlanoDeAção as schema } from '@/consts/formSchemas';
+import removerHtml from '@/helpers/html/removerHtml';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
@@ -59,7 +60,7 @@ async function onSubmit(_, { controlledValues: carga }) {
   <div class="flex spacebetween center mb2">
     <div>
       <div class="t12 uc w700 tamarelo">
-        {{ emFoco?.contramedida }}
+        {{ removerHtml(emFoco?.contramedida || '') }}
       </div>
 
       <h1>

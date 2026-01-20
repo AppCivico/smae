@@ -3,9 +3,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageService } from './storage-service';
 import { UploadController } from './upload.controller';
-import { UploadService } from './upload.service';
 import { UploadDiretorioController } from './upload.diretorio.controller';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { GotenbergService } from './gotenberg.service';
+import { PreviewService } from './preview.service';
+import { UploadService } from './upload.service';
 
 @Module({
     imports: [
@@ -16,7 +18,7 @@ import { UploadDiretorioService } from './upload.diretorio.service';
         }),
     ],
     controllers: [UploadController, UploadDiretorioController],
-    providers: [UploadService, StorageService, UploadDiretorioService],
-    exports: [UploadService],
+    providers: [UploadService, StorageService, UploadDiretorioService, GotenbergService, PreviewService],
+    exports: [UploadService, GotenbergService, PreviewService],
 })
 export class UploadModule {}

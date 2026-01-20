@@ -1,22 +1,3 @@
-<template>
-  <header
-    class="flex spacebetween center g2 mb2 cabecalho"
-    v-bind="$attrs"
-  >
-    <TituloDePagina id="titulo-da-pagina">
-      <slot name="titulo" />
-    </TituloDePagina>
-
-    <hr class="f1">
-
-    <slot name="acoes" />
-
-    <CheckClose
-      v-if="$route.meta.rotaDeEscape"
-      :formulario-sujo="$props.formularioSujo"
-    />
-  </header>
-</template>
 <script setup lang="ts">
 defineOptions({
   inheritAttrs: false,
@@ -29,6 +10,35 @@ defineProps({
   },
 });
 </script>
+<template>
+  <header
+    class="flex flexwrap spacebetween center g2 mb2 cabecalho"
+    v-bind="$attrs"
+  >
+    <p
+      v-if="!!$route.meta.subtitulo || !!$slots.subtitulo?.()"
+      role="doc-subtitle"
+      class="t12 uc w700 tamarelo"
+    >
+      <slot name="subtitulo">
+        {{ $route.meta.subtitulo }}
+      </slot>
+    </p>
+
+    <TituloDePagina id="titulo-da-pagina">
+      <slot name="titulo" />
+    </TituloDePagina>
+
+    <hr class="f1" />
+
+    <slot name="acoes" />
+
+    <CheckClose
+      v-if="$route.meta.rotaDeEscape"
+      :formulario-sujo="$props.formularioSujo"
+    />
+  </header>
+</template>
 <style scoped lang="less">
 .cabecalho > {
   :deep(*) {
@@ -37,13 +47,22 @@ defineProps({
     flex-grow: 1;
   }
 
+  [role="doc-subtitle"] {
+    flex-basis: 100%;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+
   :deep(h1) {
     flex-basis: min-content;
+    flex-grow: 10;
   }
 
   hr {
     max-width: none;
     width: auto;
+    flex-basis: 1%;
   }
 
   :deep(.botao-de-fechamento) {

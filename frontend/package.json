@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@date-fns/utc": "^2.1.0",
+    "@tiptap/extension-underline": "^2.27.2",
     "@tiptap/starter-kit": "^2.0.0-beta.202",
     "@tiptap/vue-3": "^2.0.0-beta.202",
     "@vue/eslint-config-typescript": "^13.0.0",
@@ -40,7 +41,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-import-resolver-alias": "^1.1.2",
-    "eslint-plugin-vue": "^9.3.0",
+    "eslint-plugin-vue": "^9.33.0",
     "happy-dom": "^15.11.7",
     "husky": "^9.1.6",
     "less": "^4.1.3",

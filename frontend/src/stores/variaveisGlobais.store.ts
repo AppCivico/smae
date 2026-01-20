@@ -1,6 +1,5 @@
 import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   ListPdmSimplesDto,
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
@@ -202,6 +201,29 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       }
     },
 
+    async salvarFilha(
+      variavelMaeId: number,
+      variavelFilhaId: number,
+      params = {},
+    ): Promise<RecordWithId | boolean> {
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        const resposta = await this.requestS.patch(
+          `${baseUrl}/variavel/${variavelMaeId}/filha/${variavelFilhaId}`,
+          params,
+        ) as RecordWithId;
+
+        this.chamadasPendentes.emFoco = false;
+        this.erros.emFoco = null;
+        return resposta;
+      } catch (erro) {
+        this.erros.emFoco = erro;
+        this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
+
     async buscarSerie(variavelId: number | string, params = {}): Promise<void> {
       this.chamadasPendentes.seriesAgrupadas = true;
       this.erros.seriesAgrupadas = null;
@@ -333,6 +355,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
             liberacao_fim: null,
           },
       polaridade: emFoco?.polaridade || null,
+      suspendida: !!emFoco?.suspendida,
       titulo: emFoco?.titulo || '',
       unidade_medida_id: emFoco?.unidade_medida?.id || null,
       validacao_grupo_ids: Array.isArray(emFoco?.validacao_grupo_ids)

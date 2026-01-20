@@ -36,6 +36,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  fractionDigits: {
+    type: Number,
+    default: 2,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -93,6 +97,6 @@ const typedValue = computed({
     type="text"
     inputmode="numeric"
     :name="name"
-    @keyup="maskFloat"
+    @keyup="maskFloat($event, $props.fractionDigits)"
   >
 </template>

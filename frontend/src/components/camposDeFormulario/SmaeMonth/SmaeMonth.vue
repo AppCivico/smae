@@ -122,6 +122,7 @@ watch(() => props.modelValue, () => {
 
 <template>
   <input
+    :name="props.name"
     class="inputtext"
     :value="valorExibicao"
     @input="handleInput"

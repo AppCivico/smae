@@ -3,18 +3,16 @@ import {
   computed, defineAsyncComponent, ref, watchEffect,
 } from 'vue';
 
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import createDataTree from '@/helpers/createDataTree.ts';
+import normalizarCaminho from '@/helpers/normalizarCaminho.ts';
 import requestS from '@/helpers/requestS.ts';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
+import Arvore from './ArvoreDeArquivos.vue';
+import DialogoDePrevia from './DialogoDePrevia.vue';
 
-const Arvore = defineAsyncComponent({
-  loader: () => import('./ArvoreDeArquivos.vue'),
-  loadingComponent: LoadingComponent,
-});
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const props = defineProps({
   arquivos: {
@@ -48,77 +46,70 @@ const props = defineProps({
 
 defineEmits(['apagar', 'editar']);
 
-const diretórios = ref([]);
+const diretorios = ref([]);
 const listaFiltradaPorTermoDeBusca = ref([]);
 const chamadasPendentes = ref({
-  diretórios: false,
+  diretorios: false,
 });
 const ordenadoPor = ref('descricao');
 const ordem = ref('crescente');
 const erros = ref({
-  diretórios: null,
+  diretorios: null,
 });
 
 const arquivosOrdenados = computed(() => props.arquivos.slice()
   .sort((a, b) => {
     if (a[ordenadoPor.value] || b[ordenadoPor.value]) {
       return ordem.value === 'crescente'
-        ? (a[ordenadoPor.value] || '').localeCompare((b[ordenadoPor.value] || ''))
-        : (b[ordenadoPor.value] || '').localeCompare((a[ordenadoPor.value] || ''));
+        ? (a[ordenadoPor.value] ?? '').localeCompare((b[ordenadoPor.value] ?? ''))
+        : (b[ordenadoPor.value] ?? '').localeCompare((a[ordenadoPor.value] ?? ''));
     }
     return 0;
   }));
 
-const arquivosAgrupadosPorCaminho = computed(() => listaFiltradaPorTermoDeBusca.value
-  .reduce((acc, cur) => {
-    const caminho = (cur?.arquivo?.diretorio_caminho || '/');
+const arquivosAgrupadosPorCaminho = computed(() => Object
+  .groupBy(
+    listaFiltradaPorTermoDeBusca.value,
+    (item) => normalizarCaminho(item.arquivo.diretorio_caminho),
+  ));
 
-    acc[caminho] = !acc[caminho]
-      ? [cur]
-      : acc[caminho].concat([cur]);
+const arquivosPorId = computed(() => props.arquivos
+  .reduce((acc, cur) => {
+    acc[cur.id] = cur;
     return acc;
   }, {})
   || {});
 
-const diretóriosConsolidados = computed(() => consolidarDiretorios(
-  props.arquivos,
-  diretórios.value,
+const diretoriosConsolidados = computed(() => consolidarDiretorios(
+  [].concat(
+    diretorios.value.map((dir) => dir.caminho),
+    props.arquivos.map((arq) => arq.arquivo?.diretorio_caminho || '/'),
+  ),
 ));
 
-const árvoreDeDiretórios = computed(() => createDataTree(
-  diretóriosConsolidados.value
-    .reduce((acc, cur) => acc.concat(
-      cur.replace('/', '')
-        .split('/')
-        .map((segmento, index, segmentos) => ({
-          id: segmento || '/',
-          pai: !segmento ? null : (segmentos[index - 1] || '/'),
-          caminho: segmento ? `${cur.split(segmento)[0] + segmento}/` : '/',
-        }))
-        .filter((x) => !acc.some((y) => y.id === x.id)),
-    ), []),
-  { parentPropertyName: 'pai' },
-) || []);
+const árvoreDeDiretórios = computed(() => createDataTree(diretoriosConsolidados.value, { parentPropertyName: 'pai' }) || []);
 
+// Buscar lista de diretórios. Só é necessário se formos mostrar possíveis
+// vazios, se não podemos extrair todos dos arquivos.
 watchEffect(async () => {
-  erros.value.diretórios = null;
+  erros.value.diretorios = null;
 
   if (props.parâmetrosDeDiretórios) {
-    chamadasPendentes.value.diretórios = true;
+    chamadasPendentes.value.diretorios = true;
 
     try {
       const { linhas } = typeof props.parâmetrosDeDiretórios === 'object'
         ? await requestS.get(`${baseUrl}/diretorio`, props.parâmetrosDeDiretórios)
         : await requestS.get(`${baseUrl}/diretorio`);
 
-      diretórios.value = linhas;
+      diretorios.value = linhas;
     } catch (erro) {
-      erros.value.diretórios = erro;
+      erros.value.diretorios = erro;
     } finally {
-      chamadasPendentes.value.diretórios = false;
+      chamadasPendentes.value.diretorios = false;
     }
   } else {
-    diretórios.value.splice(0);
+    diretorios.value.splice(0);
   }
 });
 </script>
@@ -169,7 +160,20 @@ watchEffect(async () => {
       :rota-de-edição="props.rotaDeEdição"
       @apagar="($params) => $emit('apagar', $params)"
       @editar="($params) => $emit('editar', $params)"
-    />
+    >
+      <template #nome-diretorio="slotProps">
+        <slot
+          name="nome-diretorio"
+          v-bind="slotProps"
+        />
+      </template>
+      <template #nome-arquivo="slotProps">
+        <slot
+          name="nome-arquivo"
+          v-bind="slotProps"
+        />
+      </template>
+    </Arvore>
 
     <SmaeLink
       v-if="props.rotaDeAdição && !$props.apenasLeitura"
@@ -184,6 +188,8 @@ watchEffect(async () => {
       </svg>
       Adicionar arquivo
     </SmaeLink>
+
+    <DialogoDePrevia :arquivos-por-id="arquivosPorId" />
   </div>
 </template>
 <style lang="less">

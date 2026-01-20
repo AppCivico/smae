@@ -289,7 +289,7 @@ const onSubmit = handleSubmit(async () => {
       throw new Error('token ausente da resposta');
     }
     model.value[ediçãoDeEndereçoAberta.value] = resposta.token;
-    endereçosTemporários.value[resposta.token] = cloneDeep(dadosParaEnvio);
+    endereçosTemporários.value[resposta.token] = cloneDeep(resposta);
     handleChange(model.value);
 
     ediçãoDeEndereçoAberta.value = -1;

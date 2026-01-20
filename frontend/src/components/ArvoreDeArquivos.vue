@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 
 import dateToField from '@/helpers/dateToField';
-import truncate from '@/helpers/texto/truncate';
 
 import oArquivoEhEditavel from './ArvoreDeArquivos.helpers/oArquivoEhEditavel';
 
@@ -12,6 +11,10 @@ const props = defineProps({
   aninhado: {
     type: Boolean,
     default: false,
+  },
+  nivel: {
+    type: Number,
+    default: 0,
   },
   apenasLeitura: {
     type: Boolean,
@@ -89,12 +92,18 @@ const éPossívelAbrir = (item) => !item.children?.length
           </label>
 
           <strong class="arvore-de-arquivos__nome">
-            {{ item.id }}
+            <slot
+              name="nome-diretorio"
+              :diretorio="item"
+              :nivel="$props.nivel"
+            >
+              {{ item.nome }}
+            </slot>
           </strong>
 
           <SmaeLink
             v-if="props.rotaDeAdição && !apenasLeitura"
-            class="like-a__text arvore-de-arquivos__adicionar"
+            class="tipinfo left like-a__text arvore-de-arquivos__adicionar"
             :aria-label="`adicionar arquivo em ${item.caminho}`"
             :to="{
               ...props.rotaDeAdição,
@@ -107,11 +116,13 @@ const éPossívelAbrir = (item) => !item.children?.length
               width="20"
               height="20"
             ><use xlink:href="#i_+" /></svg>
+            <div>Adicionar arquivo à "{{ item.caminho }}"</div>
           </SmaeLink>
         </span>
         <ArvoreDeArquivos
           :key="`diretorio--${item.id || i}__arvore`"
           :aninhado="true"
+          :nivel="nivel + 1"
           :lista-de-diretórios="item.children"
           :tem-arquivos="!!arquivosAgrupadosPorCaminho?.[item.caminho]?.length"
           :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
@@ -122,6 +133,18 @@ const éPossívelAbrir = (item) => !item.children?.length
           @apagar="($params) => $emit('apagar', $params)"
           @editar="($params) => $emit('editar', $params)"
         >
+          <template #nome-diretorio="slotProps">
+            <slot
+              name="nome-diretorio"
+              v-bind="slotProps"
+            />
+          </template>
+          <template #nome-arquivo="slotProps">
+            <slot
+              name="nome-arquivo"
+              v-bind="slotProps"
+            />
+          </template>
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
@@ -137,7 +160,13 @@ const éPossívelAbrir = (item) => !item.children?.length
                   download
                   class="arvore-de-arquivos__descricao"
                 >
-                  {{ arquivo?.descricao || arquivo?.arquivo?.nome_original }}
+                  <slot
+                    name="nome-arquivo"
+                    :arquivo="arquivo"
+                    :nivel="$props.nivel"
+                  >
+                    {{ arquivo?.descricao || arquivo?.arquivo?.nome_original }}
+                  </slot>
                 </component>
 
                 <small
@@ -146,10 +175,51 @@ const éPossívelAbrir = (item) => !item.children?.length
                 >
                   {{ dateToField(arquivo?.data) }}
                 </small>
+                <SmaeLink
+                  v-if="arquivo?.arquivo?.preview"
+                  :desabilitar="!arquivo?.arquivo?.preview?.download_token"
+                  exibir-desabilitado
+                  class="tipinfo left like-a__text arvore-de-arquivos__editar"
+                  :class="`arvore-de-arquivos__link-previa--${arquivo?.arquivo?.preview?.status}`"
+                  :aria-label="`exibir uma amostra de ${arquivo?.arquivo?.nome_original}`"
+                  :to="{
+                    query: {
+                      ...$route.query,
+                      dialogo: 'previa-arquivo',
+                      arquivo_id: arquivo?.id
+                    },
+                  }"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use
+                    :xlink:href="arquivo?.arquivo?.preview?.download_token
+                      ? '#i_eye'
+                      : '#i_eye-off'"
+                  /></svg>
+                  <div v-if="arquivo?.arquivo?.preview?.erro_mensagem">
+                    {{ arquivo?.arquivo?.preview?.erro_mensagem }}
+                  </div>
+                  <div v-else-if="arquivo?.arquivo?.preview?.status === 'pendente'">
+                    Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
+                    pendente
+                  </div>
+                  <div v-else-if="arquivo?.arquivo?.preview?.status === 'executando'">
+                    Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
+                    sendo gerada
+                  </div>
+                  <div v-else-if="arquivo?.arquivo?.preview?.download_token">
+                    Visualizar "{{ arquivo?.arquivo?.nome_original }}"
+                  </div>
+                  <div v-else>
+                    Visualização de "{{ arquivo?.arquivo?.nome_original }}" indisponível
+                  </div>
+                </SmaeLink>
 
                 <SmaeLink
                   v-if="props.rotaDeEdição && !apenasLeitura"
-                  class="like-a__text arvore-de-arquivos__editar"
+                  class="tipinfo left like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
                   :to="{
                     ...props.rotaDeEdição,
@@ -162,11 +232,12 @@ const éPossívelAbrir = (item) => !item.children?.length
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
+                  <div>Editar "{{ arquivo?.arquivo?.nome_original }}"</div>
                 </SmaeLink>
                 <button
                   v-if="oArquivoEhEditavel(apenasLeitura, arquivo.pode_editar)"
                   type="button"
-                  class="like-a__text arvore-de-arquivos__apagar"
+                  class="tipinfo left like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
                   @click="$emit('apagar', {
                     id: arquivo?.id,
@@ -177,6 +248,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                     width="20"
                     height="20"
                   ><use xlink:href="#i_waste" /></svg>
+                  <div>Apagar "{{ arquivo?.arquivo?.nome_original }}"</div>
                 </button>
 
               </span>
@@ -212,8 +284,6 @@ const éPossívelAbrir = (item) => !item.children?.length
   }
 
   button {
-    margin-right: 0.5rem;
-    margin-left: 0.5rem;
   }
 
   .arvore-de-arquivos__item {
@@ -323,6 +393,26 @@ const éPossívelAbrir = (item) => !item.children?.length
     }
 
     margin-right: 0;
+  }
+
+  // pendente: Task criada, aguardando execução
+  // executando: Task em execução
+  // concluido: Preview gerado com sucesso
+  // erro: Erro durante a geração
+  // sem_suporte: Tipo de arquivo não suportado
+  // pulado: Arquivo muito grande ou é ZIP
+  .arvore-de-arquivos__link-previa--pendente,
+  .arvore-de-arquivos__link-previa--executando,
+  .arvore-de-arquivos__link-previa--erro,
+  .arvore-de-arquivos__link-previa--sem_suporte,
+  .arvore-de-arquivos__link-previa--pulado {
+    svg {
+      opacity: 0.65;
+    }
+
+    div {
+      opacity: 1;
+    }
   }
 }
 </style>

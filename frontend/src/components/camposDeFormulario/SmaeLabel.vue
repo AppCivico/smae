@@ -101,24 +101,25 @@ const temInformacao = computed<boolean>(() => {
             )"
           class="tvermelho"
         >&nbsp;*</span>
-
-        {{ temInformacao ? '&nbsp;' : undefined }}
-
-        <div class="relative flex center">
-          <SmaeTooltip
-            v-if="temInformacao"
-            class="smae-label__tooltip"
-            as="small"
-            :texto="
-              $props.balaoInformativo
-                || caminhoNoSchema.spec.meta?.balaoInformativo
-            "
-          >
-            <slot name="balaoInformativo" />
-          </SmaeTooltip>
-        </div>
       </template>
     </slot>
+    <template v-if="temInformacao">
+      &nbsp;
+      <div
+        class="relative flex center"
+      >
+        <SmaeTooltip
+          class="smae-label__tooltip"
+          as="small"
+          :texto="
+            $props.balaoInformativo
+              || caminhoNoSchema.spec.meta?.balaoInformativo
+          "
+        >
+          <slot name="balaoInformativo" />
+        </SmaeTooltip>
+      </div>
+    </template>
     <slot name="append" />
   </component>
 </template>

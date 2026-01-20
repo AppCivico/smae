@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateRiscoDto {
     @IsOnlyDate()
@@ -24,18 +24,18 @@ export class CreateRiscoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     descricao: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Causa" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Causa" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     causa: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, {
-        message: `O campo "Consequência" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "Consequência" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     consequencia: string;
 

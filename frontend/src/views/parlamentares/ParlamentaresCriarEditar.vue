@@ -9,7 +9,7 @@ import {
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import InputImageProfile from '@/components/InputImageProfile.vue';
+import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import CargosDeParlamentar from '@/consts/cargosDeParlamentar';

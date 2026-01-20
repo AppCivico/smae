@@ -21,7 +21,8 @@ type CategoricaValorJson = {
     id: number;
     titulo: string;
     valor_variavel: number;
-    quantidade: number;
+    quantidade?: number;
+    variavel_id?: number;
 };
 
 type JsonRetornoDbIndicador = {
@@ -43,6 +44,7 @@ class RetornoDb {
     indicador_titulo: string;
     indicador_contexto: string;
     indicador_complemento: string;
+    indicador_tipo: string;
 
     variavel_id?: number;
     variavel_codigo?: string;
@@ -77,6 +79,7 @@ type JsonRetornoDbVariavel = {
     valor_nominal: string;
     atualizado_em: Date;
     valor_categorica: string | null;
+    valores_categorica: CategoricaValorJson[] | null;
 };
 
 class RetornoDbRegiao extends RetornoDb {
@@ -219,6 +222,7 @@ export class IndicadoresService implements ReportableService {
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
+        i.indicador_tipo as indicador_tipo,
         COALESCE(i.meta_id, m2.id) as meta_id,
         COALESCE(meta.titulo, m2.titulo) as meta_titulo,
         COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -244,6 +248,7 @@ export class IndicadoresService implements ReportableService {
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
         where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+        AND NOT (i.indicador_tipo = 'Categorica' AND series.serie = 'RealizadoAcumulado')
         `;
 
         await this.prisma.$transaction(
@@ -446,6 +451,7 @@ export class IndicadoresService implements ReportableService {
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
+        i.indicador_tipo as indicador_tipo,
         COALESCE(i.meta_id, m2.id) as meta_id,
         COALESCE(meta.titulo, m2.titulo) as meta_titulo,
         COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -475,6 +481,7 @@ export class IndicadoresService implements ReportableService {
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
         AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+        AND NOT (i.indicador_tipo = 'Categorica' AND series.serie = 'RealizadoAcumulado')
         `;
 
         const regioes = await this.prisma.regiao.findMany({
@@ -675,6 +682,7 @@ export class IndicadoresService implements ReportableService {
             i.id as indicador_id,
             i.codigo as indicador_codigo,
             i.titulo as indicador_titulo,
+            i.indicador_tipo as indicador_tipo,
             COALESCE(i.meta_id, m2.id) as meta_id,
             COALESCE(meta.titulo, m2.titulo) as meta_titulo,
             COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -716,6 +724,7 @@ export class IndicadoresService implements ReportableService {
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
         WHERE
             dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+            AND NOT (i.indicador_tipo = 'Categorica' AND series.serie = 'RealizadoAcumulado')
         `;
 
         try {
@@ -1236,18 +1245,22 @@ export class IndicadoresService implements ReportableService {
                                         const parsed = JSON.parse(row.valor_json) as JsonRetornoDbVariavel;
                                         row.valor = parsed.valor_nominal;
                                         row.valor_categorica = parsed.valor_categorica;
+                                        row.valores_categorica = parsed.valores_categorica;
                                     } catch (parseErr) {
                                         this.logger.warn(`Error parsing valor_json: ${parseErr}`);
                                         row.valor = null;
                                         row.valor_categorica = null;
+                                        row.valores_categorica = null;
                                     }
                                 } else {
                                     row.valor = row.valor_json.valor_nominal;
                                     row.valor_categorica = row.valor_json.valor_categorica;
+                                    row.valores_categorica = row.valor_json.valores_categorica;
                                 }
                             } else {
                                 row.valor = null;
                                 row.valor_categorica = null;
+                                row.valores_categorica = null;
                             }
 
                             const processedRow = this.processRowForCsvRegiao(row, regioesDb);
@@ -1284,7 +1297,13 @@ export class IndicadoresService implements ReportableService {
     /**
      * Process a database row into a flattened object for CSV output (Indicator)
      */
-    private processRowForCsvIndicador(row: RetornoDb): Record<string, any> {
+    private processRowForCsvIndicador(row: RetornoDbIndicadorJson): Record<string, any> {
+        // Extract categorical values from JSON
+        let valoresCategorica = null;
+        if (row.valor_json && row.valor_json.valores_categorica) {
+            valoresCategorica = row.valor_json.valores_categorica;
+        }
+
         const item = {
             pdm_nome: row.pdm_nome,
             indicador: {
@@ -1293,6 +1312,7 @@ export class IndicadoresService implements ReportableService {
                 contexto: row.indicador_contexto,
                 complemento: row.indicador_complemento,
                 id: +row.indicador_id,
+                tipo: row.indicador_tipo,
             },
             meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
             meta_tags: row.meta_tags ? row.meta_tags : null,
@@ -1306,9 +1326,9 @@ export class IndicadoresService implements ReportableService {
             data: row.data,
             data_referencia: row.data_referencia,
             serie: row.serie,
-            valor: row.valor,
-            eh_previa: row.eh_previa || false,
-            valores_categorica: row.valores_categorica,
+            valor: row.valor_json?.valor_nominal || null,
+            eh_previa: row.valor_json?.eh_previa || false,
+            valores_categorica: valoresCategorica,
         };
 
         return this.flattenObject(item);
@@ -1341,6 +1361,7 @@ export class IndicadoresService implements ReportableService {
             serie: row.serie,
             valor: row.valor,
             valor_categorica: row.valor_categorica,
+            valores_categorica: row.valores_categorica,
 
             variavel: row.variavel_id
                 ? {
@@ -1387,15 +1408,15 @@ export class IndicadoresService implements ReportableService {
         let valoresCategoricaStr = '';
         if (flatItem['valores_categorica'] && Array.isArray(flatItem['valores_categorica'])) {
             valoresCategoricaStr = flatItem['valores_categorica']
-                .map((v: CategoricaValorJson) => `${v.titulo}:${v.quantidade}`)
-                .join(';');
+                .map((v: CategoricaValorJson) => `${v.titulo}: ${v.quantidade}`)
+                .join('; ');
         }
 
         const standardFields = [
             this.escapeCsvField(flatItem['data_referencia'] || ''),
             this.escapeCsvField(flatItem['serie'] || ''),
             this.escapeCsvField(flatItem['data'] || ''),
-            this.escapeCsvField(flatItem['valor'] || ''),
+            this.escapeCsvField(flatItem['indicador.tipo'] === 'Categorica' ? '' : flatItem['valor'] || ''),
             this.escapeCsvField(flatItem['eh_previa'] ? 'Sim' : 'Não'),
             this.escapeCsvField(valoresCategoricaStr),
         ];
@@ -1429,12 +1450,29 @@ export class IndicadoresService implements ReportableService {
             return this.escapeCsvField(value);
         });
 
+        // Format categorical values - use valores_categorica if available, otherwise valor_categorica
+        let valorCategoricaStr = '';
+        if (flatItem['valores_categorica'] && Array.isArray(flatItem['valores_categorica'])) {
+            const counts = flatItem['valores_categorica'].reduce(
+                (acc: Record<string, number>, v: CategoricaValorJson) => {
+                    acc[v.titulo] = (acc[v.titulo] || 0) + 1;
+                    return acc;
+                },
+                {}
+            );
+            valorCategoricaStr = Object.entries(counts)
+                .map(([titulo, count]) => `${titulo}: ${count}`)
+                .join('; ');
+        } else if (flatItem['valor_categorica']) {
+            valorCategoricaStr = flatItem['valor_categorica'];
+        }
+
         const standardFields = [
             this.escapeCsvField(flatItem['data_referencia'] || ''),
             this.escapeCsvField(flatItem['serie'] || ''),
             this.escapeCsvField(flatItem['data'] || ''),
             this.escapeCsvField(flatItem['valor'] || ''),
-            this.escapeCsvField(flatItem['valor_categorica'] || ''),
+            this.escapeCsvField(valorCategoricaStr),
         ];
 
         return [...fieldValues, ...standardFields].join(',');
@@ -1668,14 +1706,17 @@ export class IndicadoresService implements ReportableService {
                                 const parsed = JSON.parse(row.valor_json) as JsonRetornoDbVariavel;
                                 row.valor = parsed.valor_nominal;
                                 row.valor_categorica = parsed.valor_categorica;
+                                row.valores_categorica = parsed.valores_categorica;
                             } catch (parseErr) {
                                 this.logger.warn(`Error parsing valor_json: ${parseErr}`);
                                 row.valor = null;
                                 row.valor_categorica = null;
+                                row.valores_categorica = null;
                             }
                         } else {
                             row.valor = row.valor_json.valor_nominal;
                             row.valor_categorica = row.valor_json.valor_categorica;
+                            row.valores_categorica = row.valor_json.valores_categorica;
                         }
                     }
 
@@ -1704,6 +1745,7 @@ export class IndicadoresService implements ReportableService {
                         serie: row.serie,
                         valor: row.valor,
                         valor_categorica: row.valor_categorica,
+                        valores_categorica: row.valores_categorica,
 
                         variavel: row.variavel_id
                             ? {

@@ -43,6 +43,7 @@ import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -391,9 +392,7 @@ export class TransferenciaService {
                         },
                     });
                     if (tipo.esfera != dto.esfera)
-                        throw new HttpException('Esfera da transferência e esfera do tipo devem ser iguais',
-                            400
-                        );
+                        throw new HttpException('Esfera da transferência e esfera do tipo devem ser iguais', 400);
                 }
 
                 let identificador: string | undefined = undefined;
@@ -419,7 +418,8 @@ export class TransferenciaService {
                         },
                     });
                     if (temMovimentacaoWorkflow)
-                        throw new HttpException('Ano não pode ser modificado, pois transferência já está em progresso.',
+                        throw new HttpException(
+                            'Ano não pode ser modificado, pois transferência já está em progresso.',
                             400
                         );
 
@@ -530,9 +530,7 @@ export class TransferenciaService {
                     self.clausula_suspensiva == false &&
                     dto.clausula_suspensiva_vencimento == null
                 )
-                    throw new HttpException('Data de vencimento da cláusula suspensiva deve ser informada.',
-                        400
-                    );
+                    throw new HttpException('Data de vencimento da cláusula suspensiva deve ser informada.', 400);
 
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
@@ -705,7 +703,8 @@ export class TransferenciaService {
                             },
                         });
                         if (parlamentarDistribuicao)
-                            throw new HttpException('Parlamentar já está configurado em distribuição de recurso. Remova-o primeiro na distribuição.',
+                            throw new HttpException(
+                                'Parlamentar já está configurado em distribuição de recurso. Remova-o primeiro na distribuição.',
                                 400
                             );
 
@@ -768,15 +767,14 @@ export class TransferenciaService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
-                    throw new HttpException('Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                    throw new HttpException(
+                        'Valor do repasse deve ser a soma dos valores de custeio e investimento.',
                         400
                     );
 
                 // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
                 if (Number(dto.valor_total).toFixed(2) != (+dto.valor + +dto.valor_contrapartida).toFixed(2))
-                    throw new HttpException('Valor total deve ser a soma dos valores de repasse e contrapartida.',
-                        400
-                    );
+                    throw new HttpException('Valor total deve ser a soma dos valores de repasse e contrapartida.', 400);
 
                 // TODO: quando o front-end começar a enviar os params de pct_custeio e pct_investimento, implementar a validação dos valores de porcentagem.
                 const transferencia = await prismaTxn.transferencia.update({
@@ -1000,7 +998,8 @@ export class TransferenciaService {
                         .reduce((acc, curr) => acc + +curr.valor!, 0);
 
                     if (+sumValor > +dto.valor!)
-                        throw new HttpException('A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
+                        throw new HttpException(
+                            'A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
                             400
                         );
 
@@ -1037,7 +1036,8 @@ export class TransferenciaService {
                                     );
 
                                     if (+sumDistribuicoes > +relParlamentar.valor)
-                                        throw new HttpException('O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
+                                        throw new HttpException(
+                                            'O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
                                             400
                                         );
                                 }
@@ -1666,12 +1666,7 @@ export class TransferenciaService {
                 descricao: true,
                 data: true,
                 arquivo: {
-                    select: {
-                        id: true,
-                        tamanho_bytes: true,
-                        nome_original: true,
-                        diretorio_caminho: true,
-                    },
+                    select: PrismaArquivoComPreviewSelect,
                 },
             },
         });
@@ -1685,14 +1680,10 @@ export class TransferenciaService {
                 data: d.data,
                 descricao: d.descricao,
                 pode_editar: pode_editar,
-                arquivo: {
-                    descricao: null,
-                    id: d.arquivo.id,
-                    tamanho_bytes: d.arquivo.tamanho_bytes,
-                    nome_original: d.arquivo.nome_original,
-                    diretorio_caminho: d.arquivo.diretorio_caminho,
-                    download_token: link,
-                } satisfies ArquivoBaseDto,
+                arquivo: BuildArquivoBaseDto(
+                    d.arquivo,
+                    (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                ),
             };
         });
 

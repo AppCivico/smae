@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'tipoDeAditivosCriar' }"
+      :to="{ name: 'tipoDeAditivos.criar' }"
       class="btn big ml1"
     >
       Novo aditivo
@@ -29,7 +29,7 @@
         <td>{{ item.nome }}</td>
         <td>
           <router-link
-            :to="{ name: 'tipoDeAditivosEditar', params: { aditivoId: item.id } }"
+            :to="{ name: 'tipoDeAditivos.editar', params: { aditivoId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -48,7 +48,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>

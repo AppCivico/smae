@@ -1,4 +1,5 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import type { RouteLocation } from 'vue-router';
 
 import {
   AddEditAtividade,
@@ -37,8 +38,9 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 // - `/meta/:meta_id/iniciativas/:iniciativa_id/atividades/:atividade_id`
 
 import type { TiposDeOrcamentosDisponiveis } from '@/stores/planosSetoriais.store';
-import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
 import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
+import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
+import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
 import type {
   EntidadesPossiveis,
   ParametrosPagina,
@@ -64,6 +66,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotasDoPdm = [
           `${entidadeMãe}.resumoDeAtividade`,
           `${entidadeMãe}.evoluçãoDaAtividade`,
+          `${entidadeMãe}.anexosDaAtividade`,
           `${entidadeMãe}.cronogramaDaAtividade`,
         ];
         break;
@@ -72,6 +75,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         rotasDoPdm = [
           `${entidadeMãe}.resumoDeIniciativa`,
           `${entidadeMãe}.evoluçãoDaIniciativa`,
+          `${entidadeMãe}.anexosDaIniciativa`,
           `${entidadeMãe}.cronogramaDaIniciativa`,
         ];
         break;
@@ -82,6 +86,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           `${entidadeMãe}.meta`,
           `${entidadeMãe}.evoluçãoDaMeta`,
           `${entidadeMãe}.monitoramentoDeMetas`,
+          `${entidadeMãe}.anexosDaMeta`,
           `${entidadeMãe}.cronogramaDaMeta`,
         ];
 
@@ -258,6 +263,17 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           ],
         },
       ],
+    },
+    {
+      name: `${entidadeMãe}.anexosDaMeta`,
+      path: ':meta_id/anexos',
+      component: () => import('@/views/metas/AnexosDasVariaveis.vue'),
+      props: tiparPropsDeRota,
+      meta: {
+        títuloParaMenu: 'Anexos',
+        título: 'Anexos das variáveis da meta',
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
     },
     {
       path: ':meta_id/indicadores/novo',
@@ -677,7 +693,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     {
       path: ':meta_id/orcamento',
       name: `${entidadeMãe}.orcamentoDeMetas`,
-      redirect: (to) => `${to.path}/custo`,
+      redirect: (to: RouteLocation) => `${to.path}/custo`,
       component: MetaOrçamentoRaiz,
       meta: {
         rotaPrescindeDeChave: true,
@@ -868,6 +884,17 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleIniciativa,
           meta: {
             títuloParaMenu: 'Resumo',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/anexos',
+          name: `${entidadeMãe}.anexosDaIniciativa`,
+          component: () => import('@/views/metas/AnexosDasVariaveis.vue'),
+          props: tiparPropsDeRota,
+          meta: {
+            títuloParaMenu: 'Anexos',
+            título: 'Anexos das variáveis da iniciativa',
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
@@ -1196,6 +1223,17 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: SingleAtividade,
               meta: {
                 títuloParaMenu: 'Resumo',
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/anexos',
+              name: `${entidadeMãe}.anexosDaAtividade`,
+              component: () => import('@/views/metas/AnexosDasVariaveis.vue'),
+              props: tiparPropsDeRota,
+              meta: {
+                títuloParaMenu: 'Anexos',
+                título: 'Anexos das variáveis da atividade',
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },

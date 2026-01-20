@@ -11,7 +11,7 @@ import {
     IsString,
     MaxLength,
     ValidateIf,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
@@ -151,7 +151,9 @@ export class VariavelGlobalAnaliseItemDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     @ValidateIf((object, value) => value !== '')
     analise_qualitativa: string;
 }
@@ -162,7 +164,9 @@ export class UpsertVariavelGlobalCicloDocumentoDto {
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Upload Token' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Upload Token' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     upload_token: string;
 }
 
@@ -173,8 +177,8 @@ export class BatchAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     analise_qualitativa?: string;
 
@@ -198,8 +202,8 @@ export class BatchAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Pedido de complementação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Pedido de complementação' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     pedido_complementacao?: string;
 }
@@ -225,35 +229,33 @@ export class VariavelValorDto {
         message: `O campo 'Valor realizado' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
     valor_realizado: string | null;
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Valor realizado acumulado' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Valor realizado acumulado' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     valor_realizado_acumulado: string | null;
     analise_qualitativa: string | null;
 }
 
 export class AnaliseQualitativaDto {
-    @ApiProperty({ description: 'Análise qualitativa' })
     analise_qualitativa: string;
     criado_em: Date;
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Criador nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     criador_nome: string;
     fase: VariavelFase;
     eh_liberacao_auto: boolean;
 }
 
-export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
-    'id',
-    'nome_original',
-    'download_token',
-    'descricao',
-]) {
-    descricao: string | null;
+// Change VariavelAnaliseDocumento to extend ArquivoBaseDto instead of picking properties
+export class VariavelAnaliseDocumento extends ArquivoBaseDto {
+    // Override descricao to make it required (not deprecated here)
+    declare descricao: string | null;
+    // Add variavel-specific fields
     fase: VariavelFase;
     pode_editar: boolean;
 }
 
 export class PSPedidoComplementacaoDto {
     @ApiProperty({ description: 'Pedido de complementação' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Pedido' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Pedido' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     pedido: string;
     criado_em: Date;
     criador_nome: string;
@@ -269,11 +271,72 @@ export class VariavelAnaliseQualitativaResponseDto {
     @ApiProperty({ description: 'Ultimo pedido de complementacao' })
     pedido_complementacao: PSPedidoComplementacaoDto | null;
 
-    @ApiProperty({ description: 'Valores da variável e suas filhas', type: [VariavelValorDto] })
+    @ApiProperty({ description: 'Valores da variável e suas filhas (exclui filhas suspensas)', type: [VariavelValorDto] })
     valores: VariavelValorDto[];
 
     @ApiProperty({ description: 'Uploads associados', type: [VariavelAnaliseDocumento] })
     uploads: VariavelAnaliseDocumento[];
 
     possui_variaveis_filhas: boolean;
+
+    @ApiProperty({ description: 'Quantidade de variáveis filhas suspensas (preenchidas automaticamente pelo sistema)' })
+    filhas_suspensas_count: number;
+
+    @ApiProperty({ description: 'Quantidade de variáveis filhas não suspensas (que precisam ser preenchidas)' })
+    filhas_nao_suspensas_count: number;
+}
+
+export class VariavelCicloFaseCountItemDto {
+    @ApiProperty({ description: 'Fase do ciclo', enum: VariavelFase })
+    fase: VariavelFase;
+
+    @ApiProperty({ description: 'Quantidade de variáveis em aberto na fase' })
+    quantidade: number;
+}
+
+export class VariavelCicloFaseCountDto {
+    @ApiProperty({ type: [VariavelCicloFaseCountItemDto] })
+    linhas: VariavelCicloFaseCountItemDto[];
+
+    @ApiProperty({ description: 'Total geral de variáveis em aberto' })
+    total: number;
+}
+
+export class VariavelDocumentosGlobalDto {
+    variavel_id: number;
+    variavel_codigo: string;
+    variavel_titulo: string;
+    documentos: VariavelAnaliseDocumentoComCicloDto[];
+}
+
+export class VariavelAnaliseDocumentoComCicloDto extends VariavelAnaliseDocumento {
+    ciclo_fisico_id?: number;
+    ciclo_data?: string;
+    referencia_data: string;
+}
+
+export class ListaDocumentosPorVariavelGlobalDto {
+    variaveis: VariavelDocumentosGlobalDto[];
+}
+
+export class FilterDocumentosPorVariavelGlobalDto {
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    meta_id?: number;
+
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    iniciativa_id?: number;
+
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    atividade_id?: number;
+
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    pdm_id?: number;
 }

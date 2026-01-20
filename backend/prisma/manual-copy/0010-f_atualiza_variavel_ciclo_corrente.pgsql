@@ -307,6 +307,13 @@ BEGIN
                   AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
                 ORDER BY criado_em DESC LIMIT 1;
 
+                UPDATE variavel_global_ciclo_analise
+                SET ultima_revisao = FALSE
+                WHERE variavel_id = p_variavel_id
+                  AND referencia_data = v_ultimo_periodo_valido
+                  AND fase = 'Validacao'
+                  AND ultima_revisao = true;
+
                 INSERT INTO variavel_global_ciclo_analise (
                     variavel_id,
                     fase,
@@ -381,6 +388,13 @@ BEGIN
                       AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
                     ORDER BY criado_em DESC LIMIT 1;
                 END IF;
+
+                UPDATE variavel_global_ciclo_analise
+                SET ultima_revisao = FALSE
+                WHERE variavel_id = p_variavel_id
+                  AND referencia_data = v_ultimo_periodo_valido
+                  AND fase = 'Liberacao'
+                  AND ultima_revisao = true;
 
                 INSERT INTO variavel_global_ciclo_analise (
                     variavel_id,

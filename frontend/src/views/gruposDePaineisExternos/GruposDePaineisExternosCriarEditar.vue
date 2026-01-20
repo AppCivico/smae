@@ -56,7 +56,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
     if (r) {
       alertStore.success(msg);
       useGruposPaineisExternosStore.$reset();
-      router.push({ name: 'grupospaineisExternosListar' });
+      router.push({ name: 'grupospaineisExternos.listar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -89,8 +89,10 @@ watch(itemParaEdicao, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Grupo de Painéis Externos' }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>
   <form

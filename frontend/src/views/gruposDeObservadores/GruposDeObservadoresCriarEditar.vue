@@ -87,8 +87,10 @@ watch(itemParaEdicao, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route.meta.título || "Portfólios" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose
       :formulario-sujo="formularioSujo"
       :rota-de-escape="route.meta.rotaDeEscape"

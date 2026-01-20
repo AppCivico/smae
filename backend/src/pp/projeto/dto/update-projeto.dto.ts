@@ -88,7 +88,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objeto" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Objeto" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     objeto?: string;
 
     @IsOptional()

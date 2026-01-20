@@ -46,6 +46,7 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -1875,11 +1876,10 @@ export class MetasService {
                           id: r.id,
                           criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                           criado_em: r.criado_em,
-                          arquivo: {
-                              ...r.arquivo,
-                              descricao: null,
-                              ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-                          } satisfies ArquivoBaseDto,
+                          arquivo: BuildArquivoBaseDto(
+                              r.arquivo,
+                              (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                          ),
                       };
                   })
                 : [],
@@ -1935,14 +1935,7 @@ export class MetasService {
                     select: { nome_exibicao: true },
                 },
                 id: true,
-                arquivo: {
-                    select: {
-                        id: true,
-                        tamanho_bytes: true,
-                        nome_original: true,
-                        diretorio_caminho: true,
-                    },
-                },
+                arquivo: { select: PrismaArquivoComPreviewSelect },
             },
         });
     }
@@ -2217,14 +2210,7 @@ export class MetasService {
                     select: { nome_exibicao: true },
                 },
                 id: true,
-                arquivo: {
-                    select: {
-                        id: true,
-                        tamanho_bytes: true,
-                        nome_original: true,
-                        diretorio_caminho: true,
-                    },
-                },
+                arquivo: { select: PrismaArquivoComPreviewSelect },
             },
         });
 
@@ -2246,11 +2232,10 @@ export class MetasService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
-                    arquivo: {
-                        ...r.arquivo,
-                        descricao: null,
-                        ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-                    } satisfies ArquivoBaseDto,
+                    arquivo: BuildArquivoBaseDto(
+                        r.arquivo,
+                        (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                    ),
                 };
             }),
         };

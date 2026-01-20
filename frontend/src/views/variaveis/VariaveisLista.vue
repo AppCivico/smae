@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmallModal from '@/components/SmallModal.vue';
+import DialogoValorBase from '@/components/variaveis/DialogoValorBase.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -41,31 +42,36 @@ async function excluirVariavel(id, nome) {
   }, 'Remover');
 }
 
-watchEffect(() => {
-  variaveisGlobaisStore.buscarTudo({
-    assuntos: route.query.assuntos,
-    codigo: route.query.codigo,
-    descricao: route.query.descricao,
-    meta_id: route.query.meta_id,
-    medicao_orgao_id: route.query.medicao_orgao_id,
-    orgao_proprietario_id: route.query.orgao_proprietario_id,
-    nivel_regionalizacao: route.query.nivel_regionalizacao,
-    palavra_chave: route.query.palavra_chave,
-    periodicidade: route.query.periodicidade,
-    plano_setorial_id: route.query.plano_setorial_id,
-    regiao_id: route.query.regiao_id,
-    titulo: route.query.titulo,
-    variavel_categorica_id: route.query.variavel_categorica_id,
+// Extrai apenas os parâmetros relevantes em um computed
+// Isso cria uma "barreira" de reatividade - mudanças em outros parâmetros não afetam este computed
+const parametrosDeBusca = computed(() => ({
+  assuntos: route.query.assuntos,
+  codigo: route.query.codigo,
+  descricao: route.query.descricao,
+  meta_id: route.query.meta_id,
+  medicao_orgao_id: route.query.medicao_orgao_id,
+  orgao_proprietario_id: route.query.orgao_proprietario_id,
+  nivel_regionalizacao: route.query.nivel_regionalizacao,
+  palavra_chave: route.query.palavra_chave,
+  periodicidade: route.query.periodicidade,
+  plano_setorial_id: route.query.plano_setorial_id,
+  regiao_id: route.query.regiao_id,
+  titulo: route.query.titulo,
+  variavel_categorica_id: route.query.variavel_categorica_id,
+  pagina: route.query.pagina,
+  ipp: route.query.ipp,
+  token_paginacao: route.query.token_paginacao,
+  ordem_coluna: route.query.ordem_coluna,
+  ordem_direcao: route.query.ordem_direcao,
+}));
 
-    pagina: route.query.pagina,
+// String serializada dos parâmetros para comparação estável
+const parametrosSerializados = computed(() => JSON.stringify(parametrosDeBusca.value));
 
-    ipp: route.query.ipp,
-    token_paginacao: route.query.token_paginacao,
-
-    ordem_coluna: route.query.ordem_coluna,
-    ordem_direcao: route.query.ordem_direcao,
-  });
-});
+// Watch na string serializada - só dispara quando os VALORES mudam, não quando o objeto é recriado
+watch(parametrosSerializados, () => {
+  variaveisGlobaisStore.buscarTudo(parametrosDeBusca.value);
+}, { immediate: true });
 </script>
 <template>
   <CabecalhoDePagina class="mb2">
@@ -101,7 +107,7 @@ watchEffect(() => {
 
   <TabelaDeVariaveisGlobais
     aria-labelledby="titulo-da-pagina"
-    numero-de-colunas-extras="5"
+    numero-de-colunas-extras="6"
   >
     <template #definicaoUltimasColunas>
       <col class="col--botão-de-ação">
@@ -109,9 +115,19 @@ watchEffect(() => {
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
     </template>
 
-    <template #finalLinhaVariavel="{ variavel }">
+    <template #finalLinhaCabecalho>
+      <td />
+      <td />
+      <td />
+      <td />
+      <td />
+      <td />
+    </template>
+
+    <template #finalLinhaVariavel="{ variavel, ehFilha, mae }">
       <td>
         <SmaeLink
           type="button"
@@ -165,24 +181,68 @@ watchEffect(() => {
 
       <td>
         <SmaeLink
+          v-if="!ehFilha"
+          :to="{
+            name: 'variaveisCriar',
+            query: {
+              copiar_de: variavel.id,
+              escape: { query: $route.query }
+            }
+          }"
+          class="tipinfo tprimary"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_copy" /></svg>
+          <div>Clonar variável "{{ variavel.titulo }}"</div>
+        </SmaeLink>
+      </td>
+
+      <td>
+        <SmaeLink
           v-if="variavel?.pode_editar_valor && variavel?.pode_editar"
           :to="{
             name: 'variaveisEditar',
             params: { variavelId: variavel.id },
             query: { escape: { query: $route.query } }
           }"
-          class="tprimary"
+          class="tipinfo left tprimary"
         >
           <svg
             width="20"
             height="20"
           ><use xlink:href="#i_edit" /></svg>
+          <div>Editar variável "{{ variavel.titulo }}"</div>
+        </SmaeLink>
+
+        <SmaeLink
+          v-if="ehFilha
+            && variavel.tipo === 'Global'
+            && mae?.pode_editar_valor
+            && mae?.pode_editar"
+          :to="{
+            query: {
+              ...$route.query,
+              dialogo: 'editar-valor-base',
+              variavel_filha_id: variavel.id,
+              variavel_mae_id: mae?.id,
+            }
+          }"
+          class="tipinfo left tprimary"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_edit" /></svg>
+          <div>Editar variável "{{ variavel.titulo }}"</div>
         </SmaeLink>
       </td>
+
       <td>
         <button
           v-if="variavel?.pode_excluir"
-          class="like-a__text"
+          class="tipinfo left like-a__text"
           aria-label="excluir"
           title="excluir"
           @click="excluirVariavel(variavel.id, variavel.titulo)"
@@ -191,6 +251,7 @@ watchEffect(() => {
             width="20"
             height="20"
           ><use xlink:href="#i_remove" /></svg>
+          <div>Excluir variável "{{ variavel.titulo }}"</div>
         </button>
       </td>
     </template>
@@ -223,4 +284,6 @@ watchEffect(() => {
       />
     </SmallModal>
   </template>
+
+  <DialogoValorBase @sucesso="variaveisGlobaisStore.buscarTudo(parametrosDeBusca);" />
 </template>

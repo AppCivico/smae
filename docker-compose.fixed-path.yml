@@ -98,6 +98,7 @@ services:
       TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX: "${TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX}" # "http://smae_transferegov_transferencias:80/"
       DOTACAO_SOF_SIMULTANEIDADE: "${DOTACAO_SOF_SIMULTANEIDADE}"
       API_HOST_NAME: "${API_HOST_NAME}"
+      GOTENBERG_URL: "http://gotenberg:3000"
     networks:
       #- postgres
       #- minio
@@ -109,6 +110,7 @@ services:
     depends_on:
       - db
       - minio
+      - gotenberg
     #- smae_orcamento
     #- smae_geoloc
     logging:

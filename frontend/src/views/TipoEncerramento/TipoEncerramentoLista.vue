@@ -1,0 +1,58 @@
+<script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
+
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { tipoEncerramento as schema } from '@/consts/formSchemas';
+import { useAuthStore } from '@/stores/auth.store';
+import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
+
+const { sistemaEscolhido } = useAuthStore();
+
+const tipoEncerramentoStore = useTipoEncerramentoStore(sistemaEscolhido);
+const { lista } = storeToRefs(tipoEncerramentoStore);
+
+function buscarDados(): void {
+  tipoEncerramentoStore.buscarTudo();
+}
+
+async function excluirItem({ id }: { id: number }): Promise<void> {
+  await tipoEncerramentoStore.excluirItem(id);
+  tipoEncerramentoStore.$reset();
+
+  buscarDados();
+}
+
+onMounted(() => {
+  buscarDados();
+});
+</script>
+
+<template>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: 'tipoEncerramento.novo' }"
+        class="btn big ml1"
+      >
+        nova justificativa de encerramento
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
+
+  <SmaeTable
+    :colunas="[
+      { chave: 'descricao' },
+      { chave: 'habilitar_info_adicional', formatador: v => v ? 'Sim' : 'Não' }
+    ]"
+    :schema="schema"
+    parametro-no-objeto-para-excluir="descricao"
+    :dados="lista"
+    :rota-editar="({ id }) => ({
+      name: 'tipoEncerramento.editar',
+      params: { tipoEncerramentoId: String(id)}
+    })"
+    @deletar="excluirItem"
+  />
+</template>

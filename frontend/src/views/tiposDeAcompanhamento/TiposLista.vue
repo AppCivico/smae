@@ -47,7 +47,7 @@ const listaPreparada = computed(() => lista.value.map((x) => ({
   nome: x.nome,
   editar: {
     rota: {
-      name: 'tipoDeAcompanhamentoEditar',
+      name: 'tipoDeAcompanhamento.editar',
       params: {
         tipoDeAtendimentoId: x.id,
       },
@@ -66,7 +66,7 @@ const listaPreparada = computed(() => lista.value.map((x) => ({
     <hr class="ml2 f1">
 
     <SmaeLink
-      :to="{ name: 'tipoDeAcompanhamentoCriar' }"
+      :to="{ name: 'tipoDeAcompanhamento.criar' }"
       class="btn big ml2"
     >
       Novo tipo

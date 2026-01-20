@@ -3,6 +3,8 @@ import { Prisma, ProjetoStatus, StatusRisco } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { RiscoCalc } from 'src/common/RiscoCalc';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { Html2Text } from '../../common/Html2Text';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRiscoDto } from './dto/create-risco.dto';
@@ -61,10 +63,10 @@ export class RiscoService {
                         registrado_em: dto.registrado_em,
                         probabilidade: dto.probabilidade,
                         impacto: dto.impacto,
-                        descricao: dto.descricao,
-                        causa: dto.causa,
+                        descricao: HtmlSanitizer(dto.descricao),
+                        causa: HtmlSanitizer(dto.causa),
                         titulo: dto.titulo,
-                        consequencia: dto.consequencia,
+                        consequencia: HtmlSanitizer(dto.consequencia),
                         risco_tarefa_outros: dto.risco_tarefa_outros,
 
                         nivel: calcResult?.nivel,
@@ -161,6 +163,9 @@ export class RiscoService {
                         grau_descricao: calcResult?.grau_descricao ?? null,
                         resposta: resposta,
                         resposta_descricao: calcResult?.resposta_descricao ?? null,
+                        descricao_texto: Html2Text(r.descricao),
+                        causa_texto: Html2Text(r.causa),
+                        consequencia_texto: Html2Text(r.consequencia),
                     };
                 });
 
@@ -267,6 +272,9 @@ export class RiscoService {
             grau_descricao: calcResult ? calcResult.grau_descricao : null,
             resposta: calcResult ? calcResult.resposta_descricao : null,
             edicao_limitada: edicaoLimitada,
+            descricao_texto: Html2Text(projetoRisco.descricao),
+            causa_texto: Html2Text(projetoRisco.causa),
+            consequencia_texto: Html2Text(projetoRisco.consequencia),
 
             tarefas_afetadas: projetoRisco?.RiscoTarefa.map((r) => {
                 return {
@@ -280,6 +288,8 @@ export class RiscoService {
                     ...pa,
                     prazo_contramedida: Date2YMD.toStringOrNull(pa.prazo_contramedida),
                     data_termino: Date2YMD.toStringOrNull(pa.data_termino),
+                    contramedida_texto: Html2Text(pa.contramedida),
+                    medidas_de_contingencia_texto: Html2Text(pa.medidas_de_contingencia),
                 };
             }),
         };
@@ -381,10 +391,10 @@ export class RiscoService {
                         registrado_em: dto.registrado_em,
                         probabilidade: dto.probabilidade,
                         impacto: dto.impacto,
-                        descricao: dto.descricao,
-                        causa: dto.causa,
+                        descricao: dto.descricao ? HtmlSanitizer(dto.descricao) : undefined,
+                        causa: dto.causa ? HtmlSanitizer(dto.causa) : undefined,
                         titulo: dto.titulo,
-                        consequencia: dto.consequencia,
+                        consequencia: dto.consequencia ? HtmlSanitizer(dto.consequencia) : undefined,
                         risco_tarefa_outros: dto.risco_tarefa_outros,
                         status_risco: dto.status,
 

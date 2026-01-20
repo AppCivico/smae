@@ -36,10 +36,10 @@ defineProps({
       <button
         class="btn big"
         type="submit"
-        :area-disabled="$props.erros && Object.keys($props.erros)?.length"
-        :area-busy="$props.estaCarregando"
+        :aria-disabled="$props.erros && Object.keys($props.erros)?.length"
+        :aria-busy="$props.estaCarregando"
       >
-        Enviar
+        Salvar
       </button>
     </slot>
   </component>
@@ -51,7 +51,7 @@ defineProps({
     flex-grow: 1;
     content: '';
     height: 1.5px;
-    background-color: @c300;
+    background-color: @c100;
   }
 }
 </style>

@@ -40,6 +40,13 @@ model Pessoa {
     ProjetoOrigemQAtualizei CompromissoOrigem[] @relation("Atualizador")
     ProjetoOrigemQRemovi    CompromissoOrigem[] @relation("Removedor")
 
+    ProjetoTipoQcriei           ProjetoTipoEncerramento[]  @relation("Criador")
+    ProjetoTipoQatualizei       ProjetoTipoEncerramento[]  @relation("Atualizador")
+    ProjetoTipoQremovi          ProjetoTipoEncerramento[]  @relation("Removedor")
+    CriouTermosEncerramento     ProjetoTermoEncerramento[] @relation("CriadorTermo")
+    AtualizouTermosEncerramento ProjetoTermoEncerramento[] @relation("AtualizadorTermo")
+    RemoveuTermosEncerramento   ProjetoTermoEncerramento[] @relation("RemovedorTermo")
+
     atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
     desativador         Pessoa?             @relation("DesativadorPessoas", fields: [desativado_por], references: [id])
@@ -1202,24 +1209,53 @@ model Regiao {
     @@map("regiao")
 }
 
+enum arquivo_preview_status {
+    pendente // Task criada, aguardando processamento
+    executando // Task em execução
+    concluido // Preview gerado com sucesso
+    erro // Erro durante a geração
+    sem_suporte // Arquivo não suportado (gotenberg falhou)
+    pulado // Arquivo muito grande ou é ZIP
+}
+
+enum arquivo_preview_tipo {
+    redimensionamento // Para imagens - apenas redimensiona
+    conversao_pdf // Para documentos - converte para PDF
+    conversao_json // Para JSON, converte para html e depois para PDF
+    conversao_csv // Para CSV, converte para html e depois para PDF
+}
+
 model Arquivo {
     id   Int    @id @default(autoincrement())
     tipo String
 
-    criador                         Pessoa?                           @relation("Criador", fields: [criado_por], references: [id])
-    criado_por                      Int?
-    criado_em                       DateTime                          @default(now()) @db.Timestamptz(6)
-    atualizador                     Pessoa?                           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    atualizado_por                  Int?
-    atualizado_em                   DateTime?
-    caminho                         String
-    nome_original                   String
-    mime_type                       String?
-    tamanho_bytes                   Int
-    descricao                       String?                           @ignore
-    tipo_documento_id               Int?
-    diretorio_caminho               String?
-    TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
+    criador           Pessoa?        @relation("Criador", fields: [criado_por], references: [id])
+    criado_por        Int?
+    criado_em         DateTime       @default(now()) @db.Timestamptz(6)
+    atualizador       Pessoa?        @relation("Atualizador", fields: [atualizado_por], references: [id])
+    atualizado_por    Int?
+    atualizado_em     DateTime?
+    caminho           String
+    nome_original     String
+    mime_type         String?
+    tamanho_bytes     Int
+    descricao         String?        @ignore
+    tipo_documento_id Int?
+    diretorio_caminho String?
+    TipoDocumento     TipoDocumento? @relation(fields: [tipo_documento_id], references: [id])
+
+    // Campos de preview
+    preview_status arquivo_preview_status @default(pulado)
+    preview_tipo   arquivo_preview_tipo?
+
+    preview_erro_mensagem String? /// Mensagem de erro caso o preview falhe
+    preview_arquivo_id    Int?      @unique /// FK para o arquivo de preview gerado (self-reference)
+    preview_task_id       Int?
+    preview_criado_em     DateTime? @db.Timestamptz(6)
+    preview_atualizado_em DateTime? @db.Timestamptz(6)
+
+    IconeTermosEncerramento ProjetoTermoEncerramento[] @relation("icone_termo")
+
     Tag                             Tag[]
     Regiao                          Regiao[]
     ArquivoDocumento                PdmDocumento[]
@@ -1229,6 +1265,9 @@ model Arquivo {
     Relatorio                       Relatorio[]
     projeto_documentos              ProjetoDocumento[]
     fotosParlamentar                Parlamentar[]
+    preview_arquivo                 Arquivo?                          @relation("ArquivoPreview", fields: [preview_arquivo_id], references: [id], onDelete: SetNull)
+    preview_de                      Arquivo?                          @relation("ArquivoPreview")
+    preview_task                    task_queue?                       @relation("ArquivoPreviewTask", fields: [preview_task_id], references: [id], onDelete: SetNull)
 
     ImportacaoLogInput                  ImportacaoOrcamento[]                 @relation("input")
     ImportacaoLogOutput                 ImportacaoOrcamento[]                 @relation("output")
@@ -1970,19 +2009,30 @@ model VariavelSuspensaControle {
     variavel_id Int
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
-    ciclo_fisico_base_id     Int
-    ciclo_fisico_corrente_id Int
+    // Campos para variáveis PDM (legacy)
+    ciclo_fisico_base_id     Int?
+    ciclo_fisico_corrente_id Int?
 
-    ciclo_fisico_base     CicloFisico @relation("CicloFisicoBase", fields: [ciclo_fisico_base_id], references: [id])
-    ciclo_fisico_corrente CicloFisico @relation("CicloFisicoCorrente", fields: [ciclo_fisico_corrente_id], references: [id])
+    ciclo_fisico_base     CicloFisico? @relation("CicloFisicoBase", fields: [ciclo_fisico_base_id], references: [id])
+    ciclo_fisico_corrente CicloFisico? @relation("CicloFisicoCorrente", fields: [ciclo_fisico_corrente_id], references: [id])
+
+    // Campo para variáveis globais - data de referência do ciclo
+    ciclo_referencia DateTime? @db.Date
 
     serie        Serie
     valor_antigo Decimal? @db.Decimal(65, 30)
     valor_novo   Decimal? @db.Decimal(65, 30)
 
-    processado_em DateTime @db.Timestamptz(6)
+    removido_em  DateTime? @db.Timestamptz(6)
+    removido_por Int?
 
+    processado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    // Índice único para PDM (legacy) - quando ciclo_fisico_corrente_id não é nulo
     @@unique([variavel_id, ciclo_fisico_corrente_id, serie])
+    // Índice único para variáveis globais - quando ciclo_referencia não é nulo
+    @@unique([variavel_id, serie, ciclo_referencia])
+    @@index([variavel_id, removido_em])
     @@map("variavel_suspensa_controle")
 }
 
@@ -3647,6 +3697,8 @@ model Portfolio {
     nivel_maximo_tarefa  Int @default(5) @db.SmallInt
     nivel_regionalizacao Int @default(1) @db.SmallInt
 
+    icone_impressao Int?
+
     orcamento_execucao_disponivel_meses Int[] @default([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 
     descricao    String    @default("")
@@ -3767,6 +3819,8 @@ model Projeto {
     atualizado_em  DateTime? @db.Timestamptz(6)
     atualizado_por Int?
     atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    TermosEncerramento ProjetoTermoEncerramento[]
 
     codigo                    String? // abre apenas depois de priorizado
     previsao_custo            Float?
@@ -5060,6 +5114,7 @@ enum task_type {
     run_update
     backup_api_log_day
     restore_api_log_day
+    gerar_preview_documento
 }
 
 enum task_status {
@@ -5098,6 +5153,7 @@ model task_queue {
     AtualizacaoEmLote    AtualizacaoEmLote[]
     task_buffer          task_buffer?
     ApiRequestLogControl ApiRequestLogControl[]
+    arquivo_previews     Arquivo[]              @relation("ArquivoPreviewTask")
 
     @@index([status])
     @@index([criado_em])
@@ -8030,4 +8086,110 @@ model DistribuicaoRecursoVinculo {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("distribuicao_recurso_vinculo")
+}
+
+model ProjetoTipoEncerramento {
+    id                       Int         @id @default(autoincrement())
+    descricao                String
+    tipo                     TipoProjeto @default(PP)
+    habilitar_info_adicional Boolean     @default(false)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    termos ProjetoTermoEncerramento[]
+
+    @@map("projeto_tipo_encerramento")
+}
+
+enum PosicaoLogotipo {
+    Esquerda
+    Centro
+    Direita
+}
+
+model ProjetoTermoEncerramento {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    // Icone (FK para o Arquivo)
+    icone_arquivo_id Int?
+    icone            Arquivo? @relation("icone_termo", fields: [icone_arquivo_id], references: [id])
+
+    // Salvo no momento da criação para garantir que a versão imprimível não mude se o projeto mudar
+    nome_projeto           String
+    orgao_responsavel_nome String
+    portfolios_nomes       String // Concat string of portfolios
+    objeto                 String /// HTML
+
+    // --- Editaveis Datas & Custos (Calculados de Projeto/Cronograma/Orcamento) ---
+
+    // "Data de inicio planejado" (origem = cronograma)
+    previsao_inicio DateTime? @db.Date()
+
+    // "Data de término planejado" (origem = cronograma)
+    previsao_termino DateTime? @db.Date()
+
+    // "Data de inicio real" (origem = cronograma)
+    data_inicio_real DateTime? @db.Date()
+
+    // "Data de término real" (origem = escopo ou, se não tiver, cronograma)
+    data_termino_real DateTime? @db.Date()
+
+    // "custo planejado" (origem: Custo Total Planejado do cronograma)
+    previsao_custo Float?
+
+    // "valor executado total" (origem: Total Geral Empenhado da execução orçamentária)
+    valor_executado_total Float?
+
+    // --- Campos livres ---
+
+    status_final String // Snapshot of the status enum/string
+    etapa_nome   String // Snapshot of the etapa
+
+    // "Justificativa para encerramento (cadastro básico)"
+    justificativa_id Int?
+    justificativa    ProjetoTipoEncerramento? @relation(fields: [justificativa_id], references: [id])
+
+    // "Texto livre (2k de caracteres)" - depends on the boolean of the justification
+    justificativa_complemento String?
+
+    responsavel_encerramento_nome String
+    data_encerramento             DateTime @db.Date()
+    assinatura                    String?
+
+    // --- Não impresso ---
+
+    posicao_logotipo PosicaoLogotipo @default(Esquerda)
+
+    // --- Versão & Auditoria ---
+
+    ultima_versao Boolean? @default(true)
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    atualizado_em  DateTime? @db.Timestamptz(6)
+    atualizado_por Int?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    criador     Pessoa  @relation("CriadorTermo", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("AtualizadorTermo", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("RemovedorTermo", fields: [removido_por], references: [id])
+
+    @@unique([projeto_id, ultima_versao])
+    @@index([projeto_id, removido_em])
+    @@map("projeto_termo_encerramento")
 }

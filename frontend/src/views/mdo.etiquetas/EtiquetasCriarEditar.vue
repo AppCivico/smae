@@ -1,9 +1,12 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Etiquetas" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
@@ -103,7 +106,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       etiquetasStore.$reset();
-      router.push({ name: 'mdoEtiquetasListar' });
+      router.push({ name: 'mdoEtiquetas.listar' });
     }
   } catch (error) {
     alertStore.error(error);

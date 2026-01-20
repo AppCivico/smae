@@ -73,6 +73,17 @@ partidoStore.buscarTudo();
           {{ item.numero }}
         </td>
         <td>
+          <SmaeLink
+            :to="{ name: 'partidosEditar', params: { partidoId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </td>
+        <td>
           <button
             class="like-a__text"
             aria-label="excluir"
@@ -82,19 +93,8 @@ partidoStore.buscarTudo();
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            :to="{ name: 'partidosEditar', params: { partidoId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">

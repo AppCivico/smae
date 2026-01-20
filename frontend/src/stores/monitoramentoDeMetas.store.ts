@@ -1,5 +1,4 @@
 import type { ParametrosDeRequisicao } from '@/helpers/requestS';
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   CicloFisicoPSDto,
   CiclosRevisaoDto,

@@ -3,25 +3,36 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { IsCrontabEnabled } from '../common/crontab-utils';
-import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_BOT_USER_ID } from '../common/consts';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { IdTituloDto } from '../common/dto/IdTitulo.dto';
 import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
+import { LoggerWithLog } from '../common/LoggerWithLog';
+import { AddTaskRefreshMeta } from '../meta/meta.service';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+    BuildArquivoBaseDto,
+    PrismaArquivoComPreviewPayload,
+    PrismaArquivoComPreviewSelect,
+} from '../upload/arquivo-preview.helper';
 import { UploadService } from '../upload/upload.service';
 import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
 import {
     AnaliseQualitativaDto,
     BatchAnaliseQualitativaDto,
+    FilterDocumentosPorVariavelGlobalDto,
     FilterVariavelAnaliseQualitativaGetDto,
     FilterVariavelGlobalCicloDto,
+    ListaDocumentosPorVariavelGlobalDto,
     PSPedidoComplementacaoDto,
     UpsertVariavelGlobalCicloDocumentoDto,
     VariavelAnaliseDocumento,
+    VariavelAnaliseDocumentoComCicloDto,
     VariavelAnaliseQualitativaResponseDto,
+    VariavelCicloFaseCountDto,
+    VariavelDocumentosGlobalDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
     VariavelValorDto,
@@ -34,7 +45,6 @@ import {
     VariavelService,
 } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
-import { AddTaskRefreshMeta } from '../meta/meta.service';
 
 interface ICicloCorrente {
     variavel: {
@@ -43,6 +53,7 @@ interface ICicloCorrente {
         variaveis_filhas: {
             id: number;
             titulo?: string;
+            suspendida_em?: Date | null;
         }[];
     };
     fase: VariavelFase;
@@ -56,16 +67,11 @@ interface ValorSerieInterface {
     valor_nominal: { toString: () => string };
 }
 
-interface UploadArquivoInterface {
-    arquivo: {
-        id: number;
-        tamanho_bytes: number;
-        nome_original: string;
-        diretorio_caminho: string | null;
-    };
+type UploadArquivoInterface = {
+    arquivo: PrismaArquivoComPreviewPayload;
     descricao: string | null;
     fase: VariavelFase;
-}
+};
 
 interface IUltimaAnaliseValor {
     variavel_id: number;
@@ -173,7 +179,11 @@ export async function getVariavelPermissionsWhere(
     return { AND: whereConditions };
 }
 
-function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
+function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto): {
+    view_dashboard_variavel_corrente?: {
+        some: object;
+    };
+} {
     if (filters.atividade_id)
         return {
             view_dashboard_variavel_corrente: {
@@ -211,6 +221,7 @@ function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
                 },
             },
         };
+
     return {};
 }
 
@@ -361,7 +372,7 @@ export class VariavelCicloService {
                         titulo: true,
                         variaveis_filhas: {
                             where: { removido_em: null, tipo: 'Global' },
-                            select: { id: true },
+                            select: { id: true, titulo: true, suspendida_em: true },
                         },
                     },
                 },
@@ -461,8 +472,11 @@ export class VariavelCicloService {
                 if (dto.aprovar) {
                     conferida = true;
 
-                    // Verifica se todas as filhas estão conferidas ou serão atualizadas neste batch
-                    const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
+                    // Verifica se todas as filhas NÃO SUSPENSAS estão conferidas ou serão atualizadas neste batch
+                    // Filhas suspensas são preenchidas automaticamente pelo sistema
+                    const filhaIds = cicloCorrente.variavel.variaveis_filhas
+                        .filter((child) => child.suspendida_em === null)
+                        .map((child) => child.id);
                     await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
 
                     await this.marcaLiberacaoEnviada(cicloCorrente.variavel.id, prismaTxn);
@@ -554,22 +568,39 @@ export class VariavelCicloService {
             throw new BadRequestException('Valores duplicados para a mesma variável não são permitidos');
         }
 
+        // Filtra filhas não suspensas - apenas essas precisam ter valores informados
+        // Variáveis suspensas têm seus valores preenchidos automaticamente pelo sistema
+        const filhasNaoSuspensas = cicloCorrente.variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
+        const filhasSuspensas = cicloCorrente.variavel.variaveis_filhas.filter((f) => f.suspendida_em !== null);
+
         if (cicloCorrente.variavel.variaveis_filhas.length > 0) {
             // Validações para variáveis COM filhas
             if (valorGlobalOuMae.length > 0) {
                 throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
             }
-            // Garante que a estrutura esteja sempre completa, mesmo se os valores estiverem vazios antes da aprovação
-            if (valorFilhas.length != cicloCorrente.variavel.variaveis_filhas.length) {
+
+            // Garante que valores de filhas suspensas não sejam enviados
+            const suspensasIds = new Set(filhasSuspensas.map((v) => v.id));
+            for (const valor of valorFilhas) {
+                if (valor.variavel_id && suspensasIds.has(valor.variavel_id)) {
+                    const filhaSuspensa = filhasSuspensas.find((f) => f.id === valor.variavel_id);
+                    throw new BadRequestException(
+                        `A variável filha "${filhaSuspensa?.titulo ?? valor.variavel_id}" está suspensa e não deve receber valores. ` +
+                            'Os valores são preenchidos automaticamente pelo sistema.'
+                    );
+                }
+            }
+
+            // Garante que a estrutura esteja sempre completa para filhas NÃO suspensas
+            if (valorFilhas.length != filhasNaoSuspensas.length) {
                 throw new BadRequestException(
-                    `Quantidade de valores (${valorFilhas.length}) fornecidos para as variáveis filhas não confere com o esperado (${
-                        cicloCorrente.variavel.variaveis_filhas.length
-                    }). Todos devem ser enviados.`
+                    `Quantidade de valores (${valorFilhas.length}) fornecidos para as variáveis filhas não confere com o esperado (${filhasNaoSuspensas.length}). ` +
+                        `Todas as filhas não suspensas devem ser enviadas.`
                 );
             }
 
-            // Verificação detalhada para garantir que todas as variáveis filhas tenham valores correspondentes
-            const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
+            // Verificação detalhada para garantir que todas as variáveis filhas NÃO suspensas tenham valores correspondentes
+            const filhasSet = new Set(filhasNaoSuspensas.map((v) => v.id));
             for (const valor of valorFilhas) {
                 if (!valor.variavel_id) continue; // Não deveria acontecer devido ao filtro, mas just in case
                 if (!filhasSet.has(valor.variavel_id)) {
@@ -579,11 +610,10 @@ export class VariavelCicloService {
                 }
                 filhasSet.delete(valor.variavel_id); // Rastreia quais foram fornecidas
             }
-            // Esta verificação teoricamente já está coberta pela verificação do tamanho, mas é uma boa salvaguarda caso alguém
-            // tente enviar valores de filhas que não estão na lista
+            // Esta verificação teoricamente já está coberta pela verificação do tamanho, mas é uma boa salvaguarda
             if (filhasSet.size > 0) {
                 throw new BadRequestException(
-                    `Valores não fornecidos para as variáveis filhas: ${Array.from(filhasSet).join(', ')}`
+                    `Valores não fornecidos para as variáveis filhas não suspensas: ${Array.from(filhasSet).join(', ')}`
                 );
             }
         } else {
@@ -643,6 +673,19 @@ export class VariavelCicloService {
             if (!valorExiste)
                 throw new BadRequestException(`Valor ${valor_nominal} não é permitido para a variável categórica`);
             variavel_categorica_valor_id = valorExiste.id;
+        }
+
+        // Verificando casas decimais se for numérica
+        if (variavelInfo.variavel_categorica === null && variavelInfo.casas_decimais !== null && valor_nominal !== '') {
+            const partes = valor_nominal.split('.');
+            if (partes.length === 2) {
+                const decimais = partes[1];
+                if (decimais.length > variavelInfo.casas_decimais) {
+                    throw new BadRequestException(
+                        `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
+                    );
+                }
+            }
         }
 
         const existeValor = await prismaTxn.serieVariavel.findFirst({
@@ -895,7 +938,7 @@ export class VariavelCicloService {
                 referencia_data: data_referencia,
                 removido_em: null,
             },
-            select: { arquivo: true, descricao: true, fase: true },
+            select: { arquivo: { select: PrismaArquivoComPreviewSelect }, descricao: true, fase: true },
         });
 
         // Processar e formatar os resultados
@@ -998,11 +1041,18 @@ export class VariavelCicloService {
               }
             : null;
 
+        // Conta filhas suspensas para informar o frontend
+        const filhasSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em !== null);
+        const filhasNaoSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
+
         return {
             fase: cicloCorrente.fase,
             pedido_complementacao,
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
+            // Informações sobre filhas suspensas para o frontend
+            filhas_suspensas_count: filhasSuspensas.length,
+            filhas_nao_suspensas_count: filhasNaoSuspensas.length,
             analises,
             valores: valoresFormatados,
             uploads: uploadsFormatados,
@@ -1012,12 +1062,25 @@ export class VariavelCicloService {
     private formatarValores(
         variavel: VariavelResumoInput & { variaveis_filhas: VariavelResumoInput[] },
         valores: ValorSerieInterface[],
-        formValues?: IUltimaAnaliseValor[]
+        formValues?: IUltimaAnaliseValor[],
+        incluirMaeSemFilhasAtivas: boolean = false
     ): VariavelValorDto[] {
         const valoresMap = new Map<number, VariavelValorDto>();
 
-        const todasVariaveis = [...variavel.variaveis_filhas];
-        if (todasVariaveis.length === 0) todasVariaveis.push(variavel); // Se não tem filhas, adiciona a mãe
+        // Filtra filhas suspensas - elas são preenchidas automaticamente pelo sistema
+        // e não devem aparecer na listagem para o usuário preencher
+        const filhasNaoSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
+        const todasVariaveis = [...filhasNaoSuspensas];
+
+        // Lógica para adicionar a variável mãe:
+        // - Se não tem filhas (variável standalone): sempre adiciona a mãe
+        // - Se tem filhas mas todas estão suspensas: só adiciona se incluirMaeSemFilhasAtivas=true
+        //   (por padrão, retorna lista vazia - validação rejeitaria submissão de variável com filhas)
+        if (variavel.variaveis_filhas.length === 0) {
+            todasVariaveis.push(variavel); // Variável sem filhas
+        } else if (todasVariaveis.length === 0 && incluirMaeSemFilhasAtivas) {
+            todasVariaveis.push(variavel); // Todas filhas suspensas, mas param permite
+        }
 
         // caso a variável não tenha filhas, mas o formValues tenha, adiciona a variável mãe
         if (variavel.variaveis_filhas.length === 0 && Array.isArray(formValues) && formValues.length === 1) {
@@ -1062,13 +1125,13 @@ export class VariavelCicloService {
 
     private formatarUploads(uploads: UploadArquivoInterface[]): VariavelAnaliseDocumento[] {
         return uploads.map((upload) => {
-            const arquivo = upload.arquivo;
-            const token = this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO);
+            const baseDto = BuildArquivoBaseDto(
+                upload.arquivo,
+                (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+            );
             return {
-                download_token: token.download_token,
+                ...baseDto,
                 descricao: upload.descricao,
-                id: arquivo.id,
-                nome_original: arquivo.nome_original,
                 fase: upload.fase,
                 // no momento, sempre pode editar pois quem subiu pode editar, e os supervisores podem editar tudo, então
                 // não há necessidade de verificar permissões
@@ -1227,6 +1290,15 @@ export class VariavelCicloService {
 
                 for (const variavel of variaveis) {
                     await this.processVariavel(variavel.id, logger);
+                }
+
+                // Processa variáveis globais suspensas - copia valores automaticamente
+                // Para variáveis acumulativas: valor = 0
+                // Para variáveis não acumulativas: copia o valor do período anterior
+                logger.log('Iniciando processamento de variáveis suspensas');
+                const suspensasProcessadas = await this.variavelService.processVariaveisGlobaisSuspensas(prismaTx);
+                if (suspensasProcessadas.length > 0) {
+                    logger.log(`Variáveis suspensas processadas: ${suspensasProcessadas.length}`);
                 }
 
                 // Busca as variáveis marcadas para sincronização
@@ -1472,5 +1544,248 @@ export class VariavelCicloService {
                 sv_sincronizado_em: new Date(),
             },
         });
+    }
+
+    /**
+     * Retorna a contagem de variáveis em aberto por fase do ciclo
+     * Utiliza a mesma lógica de permissões e filtros do getVariavelCiclo
+     */
+    async getVariavelCicloCount(
+        filters: FilterVariavelGlobalCicloDto,
+        user: PessoaFromJwt
+    ): Promise<VariavelCicloFaseCountDto> {
+        const whereFilter = await this.getPermissionSet(filters, user);
+
+        // Busca as equipes do usuário para verificar permissão de edição
+        const minhasEquipes = await user.getEquipesColaborador(this.prisma);
+
+        // Se o usuário não tem equipes, não pode editar nada, retorna zero
+        if (minhasEquipes.length === 0) {
+            return { linhas: [], total: 0 };
+        }
+
+        const mapPerfil: Record<VariavelFase, PerfilResponsavelEquipe> = {
+            Liberacao: 'Liberacao',
+            Preenchimento: 'Medicao',
+            Validacao: 'Validacao',
+        };
+
+        // Cria filtro OR dinâmico para garantir que o usuário tenha equipe com o perfil correto para a fase
+        const editPermissionFilter: Prisma.VariavelCicloCorrenteWhereInput = {
+            OR: Object.entries(mapPerfil).map(([fase, perfil]) => ({
+                fase: fase as VariavelFase,
+                variavel: {
+                    VariavelGrupoResponsavelEquipe: {
+                        some: {
+                            removido_em: null,
+                            grupo_responsavel_equipe: {
+                                id: { in: minhasEquipes },
+                                perfil: perfil,
+                                removido_em: null,
+                            },
+                        },
+                    },
+                },
+            })),
+        };
+
+        // Agrupa por fase e conta as variáveis
+        const countByFase = await this.prisma.variavelCicloCorrente.groupBy({
+            by: ['fase'],
+            where: {
+                ultimo_periodo_valido: filters.referencia,
+                variavel: {
+                    AND: whereFilter,
+                },
+                eh_corrente: true,
+                ...buildMetaIniAtvFilter(filters),
+                AND: [editPermissionFilter], // Adiciona o filtro de edição
+                liberacao_enviada: false,
+            },
+            _count: {
+                variavel_id: true,
+            },
+        });
+
+        // Ordena as fases na ordem correta do fluxo
+        const faseOrder: Record<VariavelFase, number> = {
+            Preenchimento: 1,
+            Validacao: 2,
+            Liberacao: 3,
+        };
+
+        const linhas = countByFase
+            .map((item) => ({
+                fase: item.fase,
+                quantidade: item._count.variavel_id,
+            }))
+            .sort((a, b) => faseOrder[a.fase] - faseOrder[b.fase]);
+
+        const total = linhas.reduce((acc, item) => acc + item.quantidade, 0);
+
+        return { linhas, total };
+    }
+
+    async getDocumentosPorVariavel(
+        filters: FilterDocumentosPorVariavelGlobalDto,
+        user: PessoaFromJwt
+    ): Promise<ListaDocumentosPorVariavelGlobalDto> {
+        // Valida que pelo menos um parâmetro foi informado
+        if (!filters.meta_id && !filters.iniciativa_id && !filters.atividade_id && !filters.pdm_id) {
+            throw new BadRequestException(
+                'É necessário informar ao menos um dos parâmetros: meta_id, iniciativa_id, atividade_id ou pdm_id'
+            );
+        }
+
+        const whereFilter = await this.getPermissionSet({}, user);
+
+        // Consulta a view para obter todas as variáveis associadas a meta/ini/atv (não apenas o ciclo atual)
+        const viewResults = await this.prisma.view_dashboard_variavel_corrente.findMany({
+            where: {
+                ...buildMetaIniAtvFilter(filters).view_dashboard_variavel_corrente?.some,
+            },
+            distinct: ['variavel_ciclo_corrente_id'],
+            select: {
+                variavel_ciclo_corrente: {
+                    select: {
+                        variavel_id: true,
+                    },
+                },
+            },
+        });
+
+        const variavelIdsFromView = [...new Set(viewResults.map((v) => v.variavel_ciclo_corrente.variavel_id))];
+
+        if (variavelIdsFromView.length === 0) {
+            return { variaveis: [] };
+        }
+
+        // Agora consulta as variáveis com filtro de permissão E os IDs da view
+        const variaveis = await this.prisma.variavel.findMany({
+            where: {
+                AND: whereFilter,
+                tipo: 'Global',
+                id: { in: variavelIdsFromView },
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                variavel_mae_id: true,
+            },
+            orderBy: [{ codigo: 'asc' }],
+        });
+
+        if (variaveis.length === 0) {
+            return { variaveis: [] };
+        }
+
+        // Separa variáveis pai das variáveis filhas
+        const parentVariavelIds = new Set<number>();
+        const childToParentMap = new Map<number, number>();
+
+        for (const variavel of variaveis) {
+            if (variavel.variavel_mae_id) {
+                childToParentMap.set(variavel.id, variavel.variavel_mae_id);
+                parentVariavelIds.add(variavel.variavel_mae_id);
+            } else {
+                parentVariavelIds.add(variavel.id);
+            }
+        }
+
+        // Busca informações das variáveis pai que ainda não temos
+        const missingParentIds = Array.from(parentVariavelIds).filter((id) => !variaveis.some((v) => v.id === id));
+
+        let parentVariaveis: Array<{ id: number; codigo: string; titulo: string }> = [];
+        if (missingParentIds.length > 0) {
+            parentVariaveis = await this.prisma.variavel.findMany({
+                where: {
+                    id: { in: missingParentIds },
+                    tipo: 'Global',
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                },
+            });
+        }
+
+        // Obtém TODOS os documentos das variáveis pai (sem filtro por eh_corrente)
+        const documentos = await this.prisma.variavelGlobalCicloDocumento.findMany({
+            where: {
+                variavel_id: { in: Array.from(parentVariavelIds) },
+                removido_em: null,
+            },
+            orderBy: [{ variavel_id: 'asc' }, { referencia_data: 'desc' }, { criado_em: 'desc' }],
+            select: {
+                id: true,
+                variavel_id: true,
+                criado_em: true,
+                descricao: true,
+                fase: true,
+                referencia_data: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                arquivo: { select: PrismaArquivoComPreviewSelect },
+            },
+        });
+
+        // Constrói a resposta
+        const variaveisComDocumentos: VariavelDocumentosGlobalDto[] = [];
+
+        // Cria um mapa com todas as informações das variáveis (originais + pais buscados)
+        const allVariaveisMap = new Map<number, { codigo: string; titulo: string }>();
+        for (const v of [...variaveis, ...parentVariaveis]) {
+            if (!allVariaveisMap.has(v.id)) {
+                allVariaveisMap.set(v.id, { codigo: v.codigo, titulo: v.titulo });
+            }
+        }
+
+        for (const variavel of variaveis) {
+            const documentHolderId = variavel.variavel_mae_id || variavel.id;
+            const docsVariavel = documentos.filter((d) => d.variavel_id === documentHolderId);
+
+            if (docsVariavel.length > 0) {
+                // Obtém as informações do detentor dos documentos (pode ser a variável pai)
+                const holderInfo = allVariaveisMap.get(documentHolderId);
+
+                if (!holderInfo) continue;
+
+                // Verifica se já adicionamos esta variável pai
+                if (variaveisComDocumentos.some((v) => v.variavel_id === documentHolderId)) {
+                    continue;
+                }
+
+                variaveisComDocumentos.push({
+                    variavel_id: documentHolderId,
+                    variavel_codigo: holderInfo.codigo,
+                    variavel_titulo: holderInfo.titulo,
+                    documentos: docsVariavel.map((doc) => {
+                        const baseDto = BuildArquivoBaseDto(
+                            doc.arquivo,
+                            (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                        );
+
+                        // Formato: "Titulo da Variável/MM-YYYY"
+                        const dataReferencia = DateTime.fromJSDate(doc.referencia_data, { zone: 'UTC' });
+                        const mesAno = dataReferencia.toFormat('LLL yyyy', { locale: 'pt-BR' });
+                        baseDto.diretorio_caminho = `${holderInfo.titulo}/${mesAno}`;
+
+                        return {
+                            ...baseDto,
+                            descricao: doc.descricao,
+                            fase: doc.fase,
+                            pode_editar: true,
+                            referencia_data: Date2YMD.toString(doc.referencia_data),
+                        } satisfies VariavelAnaliseDocumentoComCicloDto;
+                    }),
+                });
+            }
+        }
+
+        return { variaveis: variaveisComDocumentos };
     }
 }

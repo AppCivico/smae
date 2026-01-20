@@ -1,10 +1,12 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 
 import acompanhamentos from './acompanhamentos';
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
 import contratos from './projetos.contratos';
@@ -132,9 +134,7 @@ export default {
           'Projeto.administrador_no_orgao',
           'Projeto.administrador',
         ],
-        rotasParaMigalhasDePão: [
-          'projetosListar',
-        ],
+        rotasParaMigalhasDePão: ['projetosListar'],
       },
     },
 
@@ -172,6 +172,7 @@ export default {
             título: 'Encerramento',
             rotas: [
               'liçõesAprendidasListar',
+              `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
             ],
           };
 
@@ -302,7 +303,60 @@ export default {
         riscos,
         acompanhamentos,
         licoesAprendidas,
-
+        {
+          path: 'termo-encerramento',
+          meta: {
+            entidadeMãe: ModuloSistema.Projetos,
+            limitarÀsPermissões: [
+              'Projeto.administrador',
+              'Projeto.administrador_no_orgao',
+              'SMAE.gestor_de_projeto',
+              'SMAE.colaborador_de_projeto',
+              'SMAE.espectador_de_projeto',
+            ],
+          },
+          children: [
+            {
+              name: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
+              path: '',
+              props: (route) => ({
+                ...tiparPropsDeRota(route),
+                escopoId: route.params.projetoId,
+              }),
+              component: () => import(
+                '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'
+              ),
+              meta: {
+                título: 'Termo de Encerramento',
+                rotasParaMigalhasDePão: [
+                  'projetosListar',
+                  'projetosResumo',
+                ],
+              },
+            },
+            {
+              name: `${ModuloSistema.Projetos}.termoEncerramento.editar`,
+              path: 'editar',
+              props: (route) => ({
+                ...tiparPropsDeRota(route),
+                escopoId: route.params.projetoId,
+              }),
+              component: () => import(
+                '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'
+              ),
+              meta: {
+                título: 'Editar termo de encerramento',
+                tituloParaMigalhaDePao: 'Editar',
+                rotaDeEscape: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
+                rotasParaMigalhasDePão: [
+                  'projetosListar',
+                  'projetosResumo',
+                  `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
+                ],
+              },
+            },
+          ],
+        },
         {
           path: 'documentos',
           name: 'projetosDocumentos',

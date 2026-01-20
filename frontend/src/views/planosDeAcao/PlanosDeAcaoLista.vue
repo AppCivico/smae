@@ -10,6 +10,7 @@ import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
+import removerHtml from '@/helpers/html/removerHtml';
 import requestS from '@/helpers/requestS.ts';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
@@ -282,7 +283,7 @@ onMounted(() => {
                 params: { planoId: item.id }
               }"
             >
-              {{ item.contramedida }}
+              {{ removerHtml(item.contramedida || '') }}
             </SmaeLink>
           </th>
           <td>

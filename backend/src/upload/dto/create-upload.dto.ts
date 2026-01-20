@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
-import { TipoUpload } from '../entities/tipo-upload';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { TipoUpload } from '../entities/tipo-upload';
+import { ArquivoPreviewDto } from './arquivo-preview.dto';
 
 export class CreateUploadDto {
     /**
@@ -30,7 +31,10 @@ export class CreateUploadDto {
      */
     @IsOptional()
     @IsString({ message: 'descrição: Precisa ser alfanumérico' })
-    @ApiProperty({ deprecated: true, description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08'})
+    @ApiProperty({
+        deprecated: true,
+        description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08',
+    })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 
@@ -50,4 +54,5 @@ export class ArquivoBaseDto {
     nome_original: string;
     download_token: string;
     diretorio_caminho: string | null;
+    preview: ArquivoPreviewDto | null;
 }

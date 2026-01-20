@@ -7,13 +7,23 @@ import {
   useOrgansStore,
   useResourcesStore,
   useDocumentTypesStore,
+  useAuthStore,
 } from '@/stores';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { useClassificacaoStore } from '@/stores/classificacao.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
+import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
+import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { Administracao } from '@/views';
 import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasLista from '@/views/bancada/BancadasLista.vue';
@@ -67,6 +77,8 @@ import {
   ListUsers,
 } from '@/views/users';
 
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
+
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
@@ -83,7 +95,7 @@ const TiposDeAcompanhamentoRaiz = defineAsyncComponent({
 const rotasParaMenuSecundário = [
   {
     rotas: [
-      'tipoDeAcompanhamentoListar',
+      'tipoDeAcompanhamento.listar',
       'orgaos.listar',
       'orgaos.tipos',
       'tipoDocumento.listar',
@@ -91,15 +103,16 @@ const rotasParaMenuSecundário = [
       'categorias.lista',
       'classificacao',
       'gerenciarRegiões',
-      'tipoDeTransferenciaListar',
+      'tipoDeTransferencia.listar',
       'tipoDeVinculo.listar',
+      'tipoEncerramento.listar',
       'projeto.etapasListar',
       'mdo.etapasListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
-      'tipoDeAditivosListar',
-      'variaveisCategoricasListar',
+      'tipoDeAditivos.listar',
+      'variaveisCategoricas.listar',
       'categoriaAssunto.listar',
       'assunto.listar',
       'modalidadesListar',
@@ -166,6 +179,7 @@ export default [
             component: PartidosCriarEditar,
             meta: {
               título: 'Novo partido',
+              rotasParaMigalhasDePão: ['partidosListar'],
             },
           },
           {
@@ -178,9 +192,62 @@ export default [
                 partidoId: Number.parseInt(params.partidoId, 10) || undefined,
               },
             }),
-
             meta: {
-              título: 'Editar partido',
+              título: () => {
+                const { emFoco } = usePartidosStore();
+
+                if (!emFoco) {
+                  return 'Editar partido';
+                }
+
+                return emFoco.nome;
+              },
+              rotasParaMigalhasDePão: ['partidosListar'],
+            },
+          },
+        ],
+      },
+      {
+        path: '/tipo-encerramento',
+        component: () => import('@/views/TipoEncerramento/TipoEncerramentoRaiz.vue'),
+        meta: {
+          limitarÀsPermissões: [
+            'Projeto.administrador',
+            'Projeto.administrador_no_orgao',
+          ],
+          título: 'Justificativas de Encerramento',
+          rotasParaMenuSecundário,
+        },
+        children: [
+          {
+            name: 'tipoEncerramento.listar',
+            path: '',
+            component: () => import('@/views/TipoEncerramento/TipoEncerramentoLista.vue'),
+          },
+          {
+            name: 'tipoEncerramento.novo',
+            path: 'novo',
+            component: () => import('@/views/TipoEncerramento/TipoEncerramentoCriarEditar.vue'),
+            meta: {
+              título: 'Nova justificativa de encerramento',
+              rotasParaMigalhasDePão: ['tipoEncerramento.listar'],
+              rotaDeEscape: 'tipoEncerramento.listar',
+            },
+          },
+          {
+            path: ':tipoEncerramentoId',
+            name: 'tipoEncerramento.editar',
+            component: () => import('@/views/TipoEncerramento/TipoEncerramentoCriarEditar.vue'),
+            props: tiparPropsDeRota,
+            meta: {
+              título: () => {
+                const { sistemaEscolhido } = useAuthStore();
+
+                const { emFoco } = useTipoEncerramentoStore(sistemaEscolhido);
+                return emFoco?.descricao || 'Editar justificativa de encerramento';
+              },
+              rotasParaMigalhasDePão: ['tipoEncerramento.listar'],
+              rotaDeEscape: 'tipoEncerramento.listar',
             },
           },
         ],
@@ -224,8 +291,10 @@ export default [
               },
             }),
             meta: {
-              título: () => useGruposTematicosStore()?.emFoco?.nome
-                || 'Editar Grupo Temático',
+              título: () => {
+                const { emFoco } = useGruposTematicosStore();
+                return emFoco?.nome || 'Editar Grupo Temático';
+              },
               rotasParaMigalhasDePão: ['gruposTematicosObras'],
             },
           },
@@ -293,7 +362,6 @@ export default [
             component: EquipamentosLista,
             meta: {
               título: 'Equipamentos',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -302,7 +370,7 @@ export default [
             component: EquipamentosCriarEditar,
             meta: {
               título: 'Novo equipamento',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
+              rotasParaMigalhasDePão: ['equipamentosLista'],
             },
           },
           {
@@ -317,8 +385,16 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar equipamento',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
+              título: () => {
+                const { itemParaEdicao } = useEquipamentosStore();
+
+                if (!itemParaEdicao) {
+                  return 'Editar equipamento';
+                }
+
+                return itemParaEdicao.nome;
+              },
+              rotasParaMigalhasDePão: ['equipamentosLista'],
             },
           },
         ],
@@ -380,7 +456,7 @@ export default [
 
         children: [
           {
-            name: 'tipoDeAcompanhamentoListar',
+            name: 'tipoDeAcompanhamento.listar',
             path: '',
             component: TiposDeAcompanhamentoLista,
             meta: {
@@ -388,17 +464,18 @@ export default [
             },
           },
           {
-            name: 'tipoDeAcompanhamentoCriar',
+            name: 'tipoDeAcompanhamento.criar',
             path: 'novo',
             component: TiposDeAcompanhamentoCriarEditar,
             meta: {
               título: 'Novo tipo de acompanhamento',
-              rotaDeEscape: 'tipoDeAcompanhamentoListar',
+              rotaDeEscape: 'tipoDeAcompanhamento.listar',
+              rotasParaMigalhasDePão: ['tipoDeAcompanhamento.listar'],
             },
           },
           {
             path: ':tipoDeAtendimentoId',
-            name: 'tipoDeAcompanhamentoEditar',
+            name: 'tipoDeAcompanhamento.editar',
             component: TiposDeAcompanhamentoCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -409,8 +486,12 @@ export default [
             }),
 
             meta: {
-              título: 'Editar tipo de acompanhamento',
-              rotaDeEscape: 'tipoDeAcompanhamentoListar',
+              título: () => {
+                const { emFoco } = useTiposDeAcompanhamentoStore();
+                return emFoco?.nome || 'Editar tipo de acompanhamento';
+              },
+              rotaDeEscape: 'tipoDeAcompanhamento.listar',
+              rotasParaMigalhasDePão: ['tipoDeAcompanhamento.listar'],
             },
           },
         ],
@@ -426,7 +507,7 @@ export default [
         },
         children: [
           {
-            name: 'tipoDeTransferenciaListar',
+            name: 'tipoDeTransferencia.listar',
             path: '',
             component: TipoDeTransferenciaLista,
             meta: {
@@ -434,16 +515,17 @@ export default [
             },
           },
           {
-            name: 'tipoDeTransferenciaCriar',
+            name: 'tipoDeTransferencia.criar',
             path: 'novo',
             component: TipoDeTransferenciaCriarEditar,
             meta: {
               título: 'Novo Tipo de Transferência',
+              rotasParaMigalhasDePão: ['tipoDeTransferencia.listar'],
             },
           },
           {
             path: ':tipoId',
-            name: 'tipoDeTransferenciaEditar',
+            name: 'tipoDeTransferencia.editar',
             component: TipoDeTransferenciaCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -451,7 +533,16 @@ export default [
             }),
 
             meta: {
-              título: 'Editar Tipo de Transferência',
+              título: () => {
+                const { emFoco } = useTipoDeTransferenciaStore();
+
+                if (!emFoco) {
+                  return 'Editar Tipo de Transferência';
+                }
+
+                return emFoco.nome;
+              },
+              rotasParaMigalhasDePão: ['tipoDeTransferencia.listar'],
             },
           },
         ],
@@ -579,7 +670,6 @@ export default [
             component: EtapasLista,
             meta: {
               título: 'Etapas padrão',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -588,7 +678,7 @@ export default [
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa padrão',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'mdo.etapasListar'],
+              rotasParaMigalhasDePão: ['mdo.etapasListar'],
               rotaDeEscape: 'mdo.etapasListar',
             },
           },
@@ -603,8 +693,16 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar etapa padrão',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'mdo.etapasListar'],
+              título() {
+                const { emFoco } = useEtapasProjetosStore(this.entidadeMãe);
+
+                if (!emFoco) {
+                  return 'Editar etapa padrão';
+                }
+
+                return emFoco.descricao;
+              },
+              rotasParaMigalhasDePão: ['mdo.etapasListar'],
               rotaDeEscape: 'mdo.etapasListar',
             },
           },
@@ -712,11 +810,11 @@ export default [
             },
           },
           {
-            path: 'editar/:id',
+            path: ':id',
             component: AddEditOrganTypes,
             name: 'orgaos.tipos.editar',
             meta: {
-              título: 'Editar tipo de Orgão',
+              título: () => useOrgansStore()?.tempOrganTypes?.descricao || 'Editar tipo de Orgão',
               rotasParaMigalhasDePão: ['orgaos.tipos'],
             },
           },
@@ -848,11 +946,27 @@ export default [
         name: 'classificacao.novo',
         path: 'novo',
         component: ClassificacaoCriarEditar,
+        meta: {
+          título: 'Nova classificação',
+          rotasParaMigalhasDePão: ['classificacao'],
+        },
       },
       {
         name: 'classificacao.editar',
         path: ':classificacaoId',
         component: ClassificacaoCriarEditar,
+        meta: {
+          título: () => {
+            const { emFoco } = useClassificacaoStore();
+
+            if (!emFoco) {
+              return 'Editar classificação';
+            }
+
+            return emFoco.nome;
+          },
+          rotasParaMigalhasDePão: ['classificacao'],
+        },
       },
     ],
   },
@@ -948,25 +1062,33 @@ export default [
     children: [
       {
         path: '',
-        name: 'tipoDeAditivosListar',
+        name: 'tipoDeAditivos.listar',
         component: () => import('@/views/tipoDeAditivo/AditivosLista.vue'),
       },
       {
         path: 'novo',
         component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
-        name: 'tipoDeAditivosCriar',
+        name: 'tipoDeAditivos.criar',
         meta: {
           título: 'Novo tipo de aditivo',
-          rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
+          rotasParaMigalhasDePão: ['tipoDeAditivos.listar'],
         },
       },
       {
         path: ':aditivoId',
         component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
-        name: 'tipoDeAditivosEditar',
+        name: 'tipoDeAditivos.editar',
         meta: {
-          título: 'Editar tipo de aditivo',
-          rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
+          título: () => {
+            const { itemParaEdicao } = useTipoDeAditivosStore();
+
+            if (!itemParaEdicao) {
+              return 'Editar tipo de aditivo';
+            }
+
+            return itemParaEdicao.nome;
+          },
+          rotasParaMigalhasDePão: ['tipoDeAditivos.listar'],
         },
       },
     ],
@@ -981,7 +1103,7 @@ export default [
     },
     children: [
       {
-        name: 'variaveisCategoricasListar',
+        name: 'variaveisCategoricas.listar',
         path: '',
         component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasLista.vue'),
         meta: {
@@ -989,19 +1111,19 @@ export default [
         },
       },
       {
-        name: 'variaveisCategoricasCriar',
+        name: 'variaveisCategoricas.criar',
         path: 'novo',
         component: () => import(
           '@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'
         ),
         meta: {
           título: 'Novo tipo de variável categórica',
-          rotasParaMigalhasDePão: ['variaveisCategoricasListar'],
+          rotasParaMigalhasDePão: ['variaveisCategoricas.listar'],
         },
       },
       {
         path: ':variavelId',
-        name: 'variaveisCategoricasEditar',
+        name: 'variaveisCategoricas.editar',
         component: () => import(
           '@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'
         ),
@@ -1013,8 +1135,16 @@ export default [
         }),
 
         meta: {
-          título: 'Editar tipo de variável categórica',
-          rotasParaMigalhasDePão: ['variaveisCategoricasListar'],
+          título: () => {
+            const { itemParaEdicao } = useVariaveisCategoricasStore();
+
+            if (!itemParaEdicao) {
+              return 'Editar tipo de variável categórica';
+            }
+
+            return itemParaEdicao.titulo;
+          },
+          rotasParaMigalhasDePão: ['variaveisCategoricas.listar'],
         },
       },
     ],

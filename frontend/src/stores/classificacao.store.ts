@@ -8,6 +8,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}/classificacao`;
 interface Estado {
   lista: ClassificacaoDto[];
   erro: null | unknown;
+  emFoco?: ClassificacaoDto | null;
 }
 
 type ClassificacaoDados = {
@@ -19,6 +20,7 @@ export const useClassificacaoStore = defineStore('classificacao', {
   state: (): Estado => ({
     erro: null,
     lista: [],
+    emFoco: null,
   }),
   actions: {
     async buscarTudo(): Promise<void> {
@@ -32,7 +34,11 @@ export const useClassificacaoStore = defineStore('classificacao', {
     },
     async buscarItem(classificacaoId: string): Promise<ClassificacaoDto> {
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/${classificacaoId}`);
+        const resposta = (await this.requestS.get(
+          `${baseUrl}/${classificacaoId}`,
+        )) as ClassificacaoDto;
+
+        this.emFoco = resposta;
 
         return resposta;
       } catch (err) {

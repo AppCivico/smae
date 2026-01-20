@@ -18,6 +18,42 @@
       >
         <template
           v-for="(tab, tabIndex) in tabs"
+          #[`${tabIndex}__cabecalho`]
+          :key="tab.id"
+        >
+          {{ tab.etiqueta }}
+
+          <LoadingComponent
+            v-if="chamadasPendentes.contagemDeVariaveis"
+            class="tipinfo dib"
+            as="span"
+          >
+            <div>
+              contando variáveis...
+            </div>
+          </LoadingComponent>
+          <sup
+            v-else
+            class="info tipinfo"
+          >
+            {{ contagemDeVariaveisPorFase[tab.id] || 0 }}
+
+            <div>
+              <template v-if="!contagemDeVariaveisPorFase[tab.id]">
+                Não há variáveis em aberto na fase de <b>{{ tab.etiqueta }}</b>
+              </template>
+
+              <template v-else>
+                Há <b>{{ contagemDeVariaveisPorFase[tab.id] }}</b>
+                / {{ contagemDeVariaveis?.total }}
+                variáveis em aberto na fase de <b>{{ tab.etiqueta }}</b>
+              </template>
+            </div>
+          </sup>
+        </template>
+
+        <template
+          v-for="(tab, tabIndex) in tabs"
           #[tabIndex]
           :key="tab.id"
         />
@@ -171,7 +207,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
@@ -206,6 +243,12 @@ type VariavelCicloComIcone = VariavelCiclo & {
 const route = useRoute();
 
 const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
+
+const {
+  contagemDeVariaveis,
+  contagemDeVariaveisPorFase,
+  chamadasPendentes,
+} = storeToRefs(cicloAtualizacaoStore);
 
 // TO-DO: passar para v-slots
 const tabs: Record<string, {
@@ -281,6 +324,10 @@ function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
 
   return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
 }
+
+onMounted(() => {
+  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+});
 
 watch(() => route.query, (query) => {
   const { aba, ...params } = query;

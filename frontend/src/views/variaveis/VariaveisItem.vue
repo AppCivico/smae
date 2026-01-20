@@ -1,6 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 
@@ -13,12 +14,16 @@ const props = defineProps({
   },
 });
 
+const route = useRoute();
+
 const { emFoco } = storeToRefs(variaveisGlobaisStore);
 
 function iniciar() {
-  if (emFoco?.id !== Number(props.variavelId)) {
+  const variavelId = Number(props.variavelId || route.query.copiar_de);
+
+  if (emFoco.value?.id !== variavelId && variavelId) {
     emFoco.value = null;
-    variaveisGlobaisStore.buscarItem(props.variavelId, { incluir_auxiliares: true });
+    variaveisGlobaisStore.buscarItem(variavelId, { incluir_auxiliares: true });
   }
 }
 

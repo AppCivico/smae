@@ -1,3 +1,4 @@
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 import { useObrasStore } from '@/stores/obras.store';
 
 import obrasAcompanhamentos from './obras.acompanhamentos';

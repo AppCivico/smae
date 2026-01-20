@@ -1,5 +1,6 @@
 <script setup>
-import { parseISO, isValid, format } from 'date-fns';
+import { UTCDate } from '@date-fns/utc';
+import { isValid, format, parseISO } from 'date-fns';
 import { useField } from 'vee-validate';
 import {
   computed,
@@ -42,9 +43,7 @@ const valorDigitado = computed({
   get() {
     if (!props.modelValue || props.modelValue === '') return null;
 
-    const data = props.modelValue instanceof Date
-      ? props.modelValue
-      : parseISO(props.modelValue);
+    const data = new UTCDate(props.modelValue);
 
     return isValid(data) ? format(data, 'yyyy-MM-dd') : null;
   },
