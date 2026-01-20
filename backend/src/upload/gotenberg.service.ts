@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as FormData from 'form-data';
 import got from 'got';
 import { Readable } from 'stream';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 
 export interface GotenbergConversionOptions {
     /**
@@ -44,11 +45,17 @@ export interface GotenbergConversionOptions {
 @Injectable()
 export class GotenbergService {
     private readonly logger = new Logger(GotenbergService.name);
-    private readonly gotenbergUrl: string;
+    private gotenbergUrl: string;
 
-    constructor() {
-        // Get Gotenberg URL from environment variable or use default
-        this.gotenbergUrl = process.env.GOTENBERG_URL || 'http://0.0.0.0:3000';
+    constructor(private readonly smaeConfigService: SmaeConfigService) {}
+
+    async onModuleInit() {
+        this.gotenbergUrl = await this.smaeConfigService.getConfigWithDefault<string>(
+            'GOTENBERG_URL',
+            'http://gotenberg:3000/'
+        );
+
+        this.logger.debug(`Gotenberg configurada para usar endereço ${this.gotenbergUrl}`);
     }
 
     /**
