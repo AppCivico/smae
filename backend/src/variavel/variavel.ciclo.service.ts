@@ -1588,7 +1588,6 @@ export class VariavelCicloService {
                 },
             })),
         };
-        console.dir(editPermissionFilter, { depth: null });
 
         // Agrupa por fase e conta as variáveis
         const countByFase = await this.prisma.variavelCicloCorrente.groupBy({
@@ -1623,7 +1622,7 @@ export class VariavelCicloService {
             .sort((a, b) => faseOrder[a.fase] - faseOrder[b.fase]);
 
         const total = linhas.reduce((acc, item) => acc + item.quantidade, 0);
-console.log(linhas);
+
         return { linhas, total };
     }
 
