@@ -334,6 +334,7 @@ onUnmounted(() => {
   usersStore.$reset();
 });
 </script>
+
 <template>
   <CabecalhoDePagina
     class="mb2"
@@ -731,16 +732,19 @@ onUnmounted(() => {
             {{ schema.fields.valor_base.spec.label }}
             <span class="tvermelho">*</span>
           </LabelFromYup>
+
           <MaskedFloatInput
             :value="values.valor_base"
             name="valor_base"
             class="inputtext light mb1"
             converter-para="string"
+            :fraction-digits="values.casas_decimais"
             :aria-disabled="!!variavelId"
             :standalone="!!variavelId"
             :readonly="!!variavelId"
             :class="{ error: errors.valor_base }"
           />
+
           <ErrorMessage
             class="error-msg"
             name="valor_base"
