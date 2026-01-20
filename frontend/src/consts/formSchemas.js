@@ -4169,7 +4169,6 @@ export const variavelGlobal = object({
     ),
   valor_base: string() // como string
     .label('Valor base')
-    .min(0)
     .when('variavel_categorica_id', variavelGlobalEhNumberica)
     .when('casas_decimais', (casasDecimaisValor, field) => (
       field.validarCasasDecimais(casasDecimaisValor || 0)
