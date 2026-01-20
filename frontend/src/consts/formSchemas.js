@@ -1072,6 +1072,7 @@ export const meta = (activePdm) => object().shape({
     .label('Código'),
   complemento: string()
     .label('Complemento')
+    .max(1000)
     .nullable(),
   contexto: lazy(() => (activePdm?.possui_contexto_meta
     ? string()
