@@ -131,4 +131,19 @@ export class UploadController {
     ): Promise<SolicitarPreviewResponseDto> {
         return await this.uploadService.solicitarPreview(dto.token, user.id);
     }
+
+    @Post('processar-previews-pendentes')
+    @ApiBearerAuth('access-token')
+    async processarPreviewsPendentes(
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
+        Logger.log(`User ${user.id} (${user.nome_exibicao}) initiated batch preview processing for all files`);
+
+        const result = await this.uploadService.processarPreviewsPendentes(user.id);
+
+        return {
+            ...result,
+            message: `Processados ${result.total} arquivos. Agendados: ${result.agendados}, Pulados: ${result.pulados}.`,
+        };
+    }
 }

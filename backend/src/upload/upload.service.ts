@@ -763,4 +763,98 @@ export class UploadService {
             status: 'pendente' as arquivo_preview_status,
         };
     }
+
+    async processarPreviewsPendentes(userId: number): Promise<{ total: number; agendados: number; pulados: number }> {
+        this.logger.log(`Processing all pending previews in batch`);
+
+        // Find arquivos that don't have previews or have failed previews
+        const arquivos = await this.prisma.arquivo.findMany({
+            where: {
+                tipo: 'DOCUMENTO',
+                OR: [{ preview_status: 'pulado' }, { preview_status: 'erro' }],
+            },
+            select: {
+                id: true,
+                tipo: true,
+                tamanho_bytes: true,
+                nome_original: true,
+                mime_type: true,
+                preview_status: true,
+                preview_task_id: true,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+        });
+
+        let agendados = 0;
+        let pulados = 0;
+
+        for (const arquivo of arquivos) {
+            // Check if preview can be generated
+            const resultado = deveGerarPreview(
+                arquivo.tipo,
+                arquivo.tamanho_bytes,
+                arquivo.nome_original,
+                arquivo.mime_type || ''
+            );
+
+            if (!resultado.gerar) {
+                pulados++;
+                // Update status to indicate it was checked and skipped
+                await this.prisma.arquivo.update({
+                    where: { id: arquivo.id },
+                    data: {
+                        preview_status: 'pulado',
+                        preview_erro_mensagem: resultado.motivo || 'Tipo de arquivo não suportado',
+                        preview_atualizado_em: new Date(),
+                    },
+                });
+                continue;
+            }
+
+            try {
+                // Create preview task
+                const task = await this.prisma.task_queue.create({
+                    data: {
+                        type: 'gerar_preview_documento',
+                        status: 'pending',
+                        pessoa_id: userId,
+                        params: {
+                            arquivo_id: arquivo.id,
+                            tipo_preview: resultado.tipoPreview,
+                        },
+                    },
+                });
+
+                // Update arquivo
+                await this.prisma.arquivo.update({
+                    where: { id: arquivo.id },
+                    data: {
+                        preview_status: 'pendente',
+                        preview_tipo: resultado.tipoPreview,
+                        preview_task_id: task.id,
+                        preview_criado_em: arquivo.preview_status ? undefined : new Date(),
+                        preview_atualizado_em: new Date(),
+                        preview_erro_mensagem: null,
+                    },
+                });
+
+                agendados++;
+            } catch (error) {
+                this.logger.error(`Error scheduling preview for arquivo ${arquivo.id}:`, error);
+                pulados++;
+            }
+        }
+
+        this.logger.log(
+            `Batch preview processing completed. Total: ${arquivos.length}, Scheduled: ${agendados}, Skipped: ${pulados}`
+        );
+
+        return {
+            total: arquivos.length,
+            agendados,
+            pulados,
+        };
+    }
 }
