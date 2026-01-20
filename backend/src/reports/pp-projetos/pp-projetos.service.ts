@@ -839,13 +839,16 @@ export class PPProjetosService implements ReportableService {
             'cronograma_paralizado',
             'prazo_encaminhamento',
             'pauta',
+            'pauta_texto',
             'prazo_realizado',
             'detalhamento',
+            'detalhamento_texto',
             'encaminhamento',
             'responsavel',
             'observacao',
             'detalhamento_status',
             'pontos_atencao',
+            'pontos_atencao_texto',
             'riscos',
         ];
         const acompFieldNames = [
@@ -856,13 +859,16 @@ export class PPProjetosService implements ReportableService {
             'Cronograma Paralisado',
             'Prazo de Encaminhamento',
             'Pauta',
+            'Pauta Texto',
             'Prazo Realizado',
             'Detalhamento',
+            'Detalhamento Texto',
             'Encaminhamento',
             'Responsável',
             'Observação',
             'Status Detalhado',
             'Pontos de Atenção',
+            'Pontos de Atenção Texto',
             'Códigos dos Riscos',
         ];
         await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, projetosIds, out, ctx, 70);

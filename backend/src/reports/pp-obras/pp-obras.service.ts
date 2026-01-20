@@ -364,13 +364,31 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        const acompanhamentosFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'data_registro',
+            'participantes',
+            'cronograma_paralizado',
+            'prazo_encaminhamento',
+            'pauta_texto',
+            'prazo_realizado',
+            'detalhamento_texto',
+            'encaminhamento',
+            'responsavel',
+            'observacao',
+            'detalhamento_status',
+            'pontos_atencao_texto',
+            'riscos',
+        ];
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataAcompanhamentos()}
                 ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
-                'acompanhamentos.csv'
+                'acompanhamentos.csv',
+                acompanhamentosFields
             )
         );
 
