@@ -362,7 +362,10 @@ export class VariavelGlobalController {
     @Post('processa-variaveis-globais-suspensas')
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm])
-    async processaVariaveisGlobaisSuspensas(@Query('variavel_id') variavelId?: number): Promise<number[]> {
-        return await this.variavelService.processVariaveisGlobaisSuspensasSync(variavelId);
+    async processaVariaveisGlobaisSuspensas(
+        @CurrentUser() pessoa: PessoaFromJwt,
+        @Query('variavel_id') variavelId?: number
+    ): Promise<number[]> {
+        return await this.variavelService.processVariaveisGlobaisSuspensasSync(variavelId, pessoa);
     }
 }

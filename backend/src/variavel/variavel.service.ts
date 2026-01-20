@@ -1777,7 +1777,7 @@ export class VariavelService {
             }
 
             for (const targetId of targetIds) {
-                this.processVariaveisGlobaisSuspensas(this.prisma, targetId)
+                this.processVariaveisGlobaisSuspensas(this.prisma, targetId, user)
                     .then((processedIds) => {
                         if (processedIds.length > 0) {
                             this.logger.log(
@@ -2356,10 +2356,10 @@ export class VariavelService {
      * Também verifica se todas as filhas de uma variável mãe estão suspensas,
      * e nesse caso, fecha o ciclo automaticamente.
      */
-    async processVariaveisGlobaisSuspensasSync(targetVariavelId?: number): Promise<number[]> {
+    async processVariaveisGlobaisSuspensasSync(targetVariavelId?: number, user?: PessoaFromJwt): Promise<number[]> {
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
-                return await this.processVariaveisGlobaisSuspensas(prismaTx, targetVariavelId);
+                return await this.processVariaveisGlobaisSuspensas(prismaTx, targetVariavelId, user);
             },
             { timeout: 5 * 60 * 1000 }
         );
@@ -2367,8 +2367,14 @@ export class VariavelService {
 
     async processVariaveisGlobaisSuspensas(
         prismaTx: Prisma.TransactionClient,
-        targetVariavelId?: number
+        targetVariavelId?: number,
+        user?: PessoaFromJwt
     ): Promise<number[]> {
+        const logger = LoggerWithLog('Processamento de variáveis globais suspensas');
+        logger.log(
+            `Iniciando processamento${targetVariavelId ? ` para variável ${targetVariavelId}` : ' de todas as variáveis'}`
+        );
+
         const specificVarFilter = targetVariavelId ? Prisma.sql`AND v.id = ${targetVariavelId}` : Prisma.sql``;
 
         // 1. Identifica jobs: Variáveis suspensas com ciclos abertos
@@ -2386,18 +2392,14 @@ export class VariavelService {
                     v.acumulativa,
                     v.variavel_categorica_id as var_categorica_id,
                     v.suspendida_em,
-                    vcc.ultimo_periodo_valido,
-                    vcc.variavel_id as ciclo_owner_id,
-                    vcc.liberacao_enviada
+                    vcc.id as ciclo_owner_id
                 FROM variavel v
-                JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = COALESCE(v.variavel_mae_id, v.id)
+                JOIN variavel vcc ON vcc.id = COALESCE(v.variavel_mae_id, v.id) AND vcc.removido_em IS NULL
                 WHERE
                     v.tipo = 'Global'
                     AND v.removido_em IS NULL
                     AND v.suspendida_em IS NOT NULL
-                    AND v.suspendida_em <= vcc.ultimo_periodo_valido
                     AND v.possui_variaveis_filhas = false
-                    AND vcc.liberacao_enviada = false
                     ${specificVarFilter}
             ),
             cycle_ranges AS (
@@ -2410,8 +2412,7 @@ export class VariavelService {
                     ev.ciclo_owner_id,
                     g.periodicidade,
                     g.min as inicio,
-                    g.max as fim,
-                    ev.ultimo_periodo_valido
+                    g.max as fim
                 FROM eligible_vars ev
                 CROSS JOIN LATERAL busca_periodos_variavel(ev.variavel_id) AS g
             ),
@@ -2426,8 +2427,7 @@ export class VariavelService {
                     cycle_date::date as data_ciclo_target
                 FROM cycle_ranges cr
                 CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-                WHERE cycle_date::date <= cr.ultimo_periodo_valido
-                    AND cycle_date::date < now()::date
+                WHERE cycle_date::date < now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}'
             )
             -- Filtra apenas ciclos que ainda não foram processados (ou foram removidos)
             SELECT
@@ -2587,8 +2587,12 @@ export class VariavelService {
         const cycleOwnerIds = [...new Set(allCycleOwners.map((r) => r.ciclo_owner_id))];
 
         if (filledVarIds.length > 0) {
+            logger.log(`Variáveis globais suspensas processadas: ${JSON.stringify(filledVarIds)}`);
             console.log('Variáveis globais suspensas processadas:', filledVarIds);
             for (const stat of cycleStats) {
+                logger.log(
+                    `Variável ${stat.variavel_id}: processados ${stat.num_ciclos} ciclo(s) (${stat.min_ciclo.toISOString().split('T')[0]} a ${stat.max_ciclo.toISOString().split('T')[0]})`
+                );
                 if (stat.num_ciclos <= 1) continue;
                 console.log(
                     `Variável ${stat.variavel_id}: ${stat.num_ciclos} ciclos processados ` +
@@ -2596,17 +2600,31 @@ export class VariavelService {
                 );
             }
 
+            logger.log('Iniciando recálculo de séries dependentes');
             // 4. Dispara recálculos
             await this.recalc_series_dependentes(filledVarIds, prismaTx);
+            logger.log('Iniciando recálculo de indicadores');
             await this.recalc_indicador_usando_variaveis(filledVarIds, prismaTx);
+            logger.log('Recálculos concluídos');
         } else {
+            logger.log('Nenhuma variável global suspensa para processar valores');
             console.log('Nenhuma variável global suspensa para processar valores');
         }
 
         // 5. Verifica se variáveis mãe devem ter ciclo fechado automaticamente
         // (quando todas as filhas estão suspensas) - executa mesmo sem valores inseridos
         if (cycleOwnerIds.length > 0) {
+            logger.log(`Verificando fechamento automático de ciclos para ${cycleOwnerIds.length} variável(is) mãe`);
             await this.autoCloseParentCyclesIfAllChildrenSuspended(cycleOwnerIds, prismaTx);
+        }
+
+        logger.log(`Processamento concluído. Total de variáveis processadas: ${filledVarIds.length}`);
+        if (user) {
+            await logger.saveLogs(prismaTx, user.getLogData());
+        } else {
+            await logger.saveLogs(prismaTx, {
+                ip: '0.0.0.0',
+            });
         }
 
         return filledVarIds;
