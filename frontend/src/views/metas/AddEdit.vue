@@ -477,7 +477,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
               as="textarea"
               anular-vazio
               :rows="3"
-              :maxlength="1000"
+              :schema="schema"
               class="inputtext light mb1"
               :class="{ error: errors.contexto }"
               :name="field.name"

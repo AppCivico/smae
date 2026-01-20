@@ -1077,6 +1077,7 @@ export const meta = (activePdm) => object().shape({
   contexto: lazy(() => (activePdm?.possui_contexto_meta
     ? string()
       .label(activePdm?.rotulo_contexto_meta || 'Contexto')
+      .max(1000)
       .required()
     : mixed()
       .nullable())),
