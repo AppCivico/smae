@@ -8,6 +8,7 @@ import { PessoaService } from '../pessoa/pessoa.service';
 import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { CalcSistemasDisponiveis } from '../common/consts';
 
 @ApiTags('Minha Conta')
@@ -15,7 +16,8 @@ import { CalcSistemasDisponiveis } from '../common/consts';
 export class MinhaContaController {
     constructor(
         private readonly pessoaService: PessoaService,
-        private readonly featureFlagService: FeatureFlagService
+        private readonly featureFlagService: FeatureFlagService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     @Post('teste-sistema')
@@ -33,6 +35,7 @@ export class MinhaContaController {
     async getMe(@CurrentUser() user: PessoaFromJwt): Promise<MinhaContaDto> {
         const ff = await this.featureFlagService.featureFlag();
         const sistemas_disponiveis = CalcSistemasDisponiveis(ff.mostrar_pdm_antigo);
+        const max_upload_size = await this.smaeConfigService.getConfigNumberWithDefault('MAX_UPLOAD_SIZE', 104857600); // 100MB default
 
         let sistemas: ModuloSistema[] = user.sistemas;
         let modulos_sobrescritos = false;
@@ -56,6 +59,7 @@ export class MinhaContaController {
                 orgao_id: user.orgao_id,
                 flags: user.flags,
                 modulos_sobrescritos,
+                max_upload_size,
                 ip: user.ip,
             } satisfies SessaoDto,
         };
