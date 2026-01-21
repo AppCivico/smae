@@ -308,17 +308,39 @@ export class GotenbergService {
             return '/forms/libreoffice/convert';
         }
 
-        // If it's already a PDF, we don't need to convert
-        if (mimeType === 'application/pdf') {
-            return null; // No conversion needed
-        }
-
         // For HTML content, use Chromium route
         if (mimeType === 'text/html') {
             return '/forms/chromium/convert/html';
         }
 
         return null;
+    }
+
+    /**
+     * Check if a file is a multi-page document type where showing multiple pages makes sense
+     * Excludes spreadsheets (XLSX, XLS, ODS) as they are not page-based
+     * @param mimeType The MIME type to check
+     * @returns boolean True if the file should use multi-page preview (5 pages)
+     */
+    isMultiPageDocumentType(mimeType: string): boolean {
+        const multiPageTypes = [
+            // Microsoft Office - Word (page-based)
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+            'application/msword', // .doc
+            // Microsoft Office - PowerPoint (slide-based, show header/first slides)
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+            'application/vnd.ms-powerpoint', // .ppt
+            // OpenOffice/LibreOffice - Writer (page-based)
+            'application/vnd.oasis.opendocument.text', // .odt
+            // OpenOffice/LibreOffice - Impress (slide-based)
+            'application/vnd.oasis.opendocument.presentation', // .odp
+            // Other text formats
+            'text/rtf', // .rtf
+            'application/rtf', // .rtf
+            'text/html', // .html
+        ];
+
+        return multiPageTypes.includes(mimeType);
     }
 
     /**

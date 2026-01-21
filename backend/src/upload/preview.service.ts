@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import * as sharp from 'sharp';
 import { PrismaService } from '../prisma/prisma.service';
-import { StorageService } from './storage-service';
-import { UploadService } from './upload.service';
+import { TaskableService } from '../task/entities/task.entity';
 import { PreviewConfig } from './arquivo-preview.helper';
 import { GotenbergService } from './gotenberg.service';
-import { TaskableService } from '../task/entities/task.entity';
+import { StorageService } from './storage-service';
+import { UploadService } from './upload.service';
 
 @Injectable()
 export class PreviewService implements TaskableService {
@@ -126,6 +125,12 @@ export class PreviewService implements TaskableService {
     private async processPdfConversion(arquivo: any): Promise<number> {
         this.logger.log(`Starting PDF conversion for arquivo ${arquivo.id}, mime_type: ${arquivo.mime_type}`);
 
+        // If the original file is already a PDF, return the original arquivo ID without conversion
+        if (arquivo.mime_type === 'application/pdf') {
+            this.logger.log(`File is already a PDF, skipping conversion and using original arquivo ${arquivo.id}`);
+            return arquivo.id;
+        }
+
         // Download original file from storage
         const stream = await this.storage.getStream(arquivo.caminho);
         const chunks: Buffer[] = [];
@@ -136,13 +141,11 @@ export class PreviewService implements TaskableService {
 
         this.logger.log(`Downloaded file buffer, size: ${buffer.length} bytes`);
 
-        // Determine if this is a DOCX file that should be limited to 5 pages
-        const isDocx =
-            arquivo.mime_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-            arquivo.mime_type === 'application/msword';
+        // Check if this is a multi-page document type (excludes spreadsheets like XLSX)
+        const isMultiPageDocument = this.gotenbergService.isMultiPageDocumentType(arquivo.mime_type);
 
-        // Determine page limit: DOCX gets 5 pages, others get 1 page
-        const pageLimit = isDocx ? '1-5' : '1';
+        // Determine page limit: Multi-page documents (DOCX, PPTX, etc.) get 5 pages, others get 1 page
+        const pageLimit = isMultiPageDocument ? '1-5' : '1';
 
         // Convert to PDF using Gotenberg (full document first)
         let pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
@@ -421,19 +424,19 @@ export class PreviewService implements TaskableService {
             <head>
                 <meta charset="UTF-8">
                 <style>
-                    body { 
-                        font-family: 'Courier New', monospace; 
+                    body {
+                        font-family: 'Courier New', monospace;
                         background: #1e1e1e;
                         color: #d4d4d4;
                         padding: 20px;
                         margin: 0;
                     }
-                    .filename { 
-                        color: #4ec9b0; 
+                    .filename {
+                        color: #4ec9b0;
                         margin-bottom: 10px;
                         font-size: 14px;
                     }
-                    pre { 
+                    pre {
                         margin: 0;
                         white-space: pre-wrap;
                         word-wrap: break-word;
