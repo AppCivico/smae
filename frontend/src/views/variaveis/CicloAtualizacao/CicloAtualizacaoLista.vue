@@ -1,3 +1,141 @@
+<script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import RolagemHorizontal from '@/components/rolagem/RolagemHorizontal.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import truncate from '@/helpers/texto/truncate';
+import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
+
+import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
+
+export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';
+
+type IconOpcoes = 'complementacao' | 'coleta';
+
+type IconForma = {
+  icone: string;
+  tamanho: number;
+  label: string
+};
+
+type IconsMap = {
+  [key in IconOpcoes]: IconForma
+};
+
+type VariavelCicloComIcone = VariavelCiclo & {
+  icone: IconForma
+  temAtraso: boolean
+};
+
+const route = useRoute();
+
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
+
+const {
+  contagemDeVariaveis,
+  contagemDeVariaveisPorFase,
+  chamadasPendentes,
+} = storeToRefs(cicloAtualizacaoStore);
+
+// TO-DO: passar para v-slots
+const tabs: Record<string, {
+  id: AbasDisponiveis,
+  [key: string]: unknown;
+}> = {
+  coleta: {
+    aberta: true,
+    etiqueta: 'Coleta',
+    id: 'Preenchimento',
+    aba: 'coleta',
+  },
+  aprovacao: {
+    etiqueta: 'Conferência',
+    id: 'Validacao',
+    aba: 'aprovacao',
+  },
+  liberacao: {
+    etiqueta: 'Liberação',
+    id: 'Liberacao',
+    aba: 'liberacao',
+  },
+};
+
+const icons: IconsMap = {
+  coleta: {
+    tamanho: 12,
+    icone: 'i_circle',
+    label: 'Coleta',
+  },
+  complementacao: {
+    tamanho: 15,
+    icone: 'i_alert',
+    label: 'Complementação',
+  },
+};
+
+function getIcons(reference: IconOpcoes): IconForma {
+  return icons[reference] || icons.coleta;
+}
+
+const ciclosAtualizacao = computed(() => {
+  const ciclosComIcone = cicloAtualizacaoStore.ciclosAtualizacao.map<VariavelCicloComIcone>(
+    (item) => ({
+      ...item,
+      temAtraso: item.em_atraso,
+      icone: getIcons(item.pedido_complementacao ? 'complementacao' : 'coleta'),
+    }),
+  );
+
+  return ciclosComIcone;
+});
+
+function formatarReferencia(referencia: any): string | undefined {
+  if (!referencia) return undefined;
+
+  return `${referencia.split('/').reverse().join('-')}-01`;
+}
+
+function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
+  if (!atrasos) {
+    return '';
+  }
+
+  if (atrasos.length === 1) {
+    const [atraso] = atrasos;
+
+    return dateIgnorarTimezone(atraso, 'dd/MM/yyyy') || '-';
+  }
+
+  const primeiro = atrasos.at(0);
+  const ultimo = atrasos.at(-1);
+
+  return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
+}
+
+onMounted(() => {
+  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+});
+
+watch(() => route.query, (query) => {
+  const { aba, ...params } = query;
+
+  if (Object.keys(query).length === 0) {
+    return;
+  }
+
+  cicloAtualizacaoStore.getCiclosAtualizacao({
+    ...params,
+    referencia: formatarReferencia(params.referencia),
+    fase: aba,
+  });
+}, { immediate: true });
+</script>
+
 <template>
   <section class="ciclo-atualizacao-lista">
     <header class="flex spacebetween center mb2 g2">
@@ -206,143 +344,6 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
-
-import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import RolagemHorizontal from '@/components/rolagem/RolagemHorizontal.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import truncate from '@/helpers/texto/truncate';
-import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
-
-import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
-
-export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';
-
-type IconOpcoes = 'complementacao' | 'coleta';
-
-type IconForma = {
-  icone: string;
-  tamanho: number;
-  label: string
-};
-
-type IconsMap = {
-  [key in IconOpcoes]: IconForma
-};
-
-type VariavelCicloComIcone = VariavelCiclo & {
-  icone: IconForma
-  temAtraso: boolean
-};
-
-const route = useRoute();
-
-const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
-
-const {
-  contagemDeVariaveis,
-  contagemDeVariaveisPorFase,
-  chamadasPendentes,
-} = storeToRefs(cicloAtualizacaoStore);
-
-// TO-DO: passar para v-slots
-const tabs: Record<string, {
-  id: AbasDisponiveis,
-  [key: string]: unknown;
-}> = {
-  coleta: {
-    aberta: true,
-    etiqueta: 'Coleta',
-    id: 'Preenchimento',
-    aba: 'coleta',
-  },
-  aprovacao: {
-    etiqueta: 'Conferência',
-    id: 'Validacao',
-    aba: 'aprovacao',
-  },
-  liberacao: {
-    etiqueta: 'Liberação',
-    id: 'Liberacao',
-    aba: 'liberacao',
-  },
-};
-
-const icons: IconsMap = {
-  coleta: {
-    tamanho: 12,
-    icone: 'i_circle',
-    label: 'Coleta',
-  },
-  complementacao: {
-    tamanho: 15,
-    icone: 'i_alert',
-    label: 'Complementação',
-  },
-};
-
-function getIcons(reference: IconOpcoes): IconForma {
-  return icons[reference] || icons.coleta;
-}
-
-const ciclosAtualizacao = computed(() => {
-  const ciclosComIcone = cicloAtualizacaoStore.ciclosAtualizacao.map<VariavelCicloComIcone>(
-    (item) => ({
-      ...item,
-      temAtraso: item.em_atraso,
-      icone: getIcons(item.pedido_complementacao ? 'complementacao' : 'coleta'),
-    }),
-  );
-
-  return ciclosComIcone;
-});
-
-function formatarReferencia(referencia: any): string | undefined {
-  if (!referencia) return undefined;
-
-  return `${referencia.split('/').reverse().join('-')}-01`;
-}
-
-function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
-  if (!atrasos) {
-    return '';
-  }
-
-  if (atrasos.length === 1) {
-    const [atraso] = atrasos;
-
-    return dateIgnorarTimezone(atraso, 'dd/MM/yyyy') || '-';
-  }
-
-  const primeiro = atrasos.at(0);
-  const ultimo = atrasos.at(-1);
-
-  return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
-}
-
-onMounted(() => {
-  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
-});
-
-watch(() => route.query, (query) => {
-  const { aba, ...params } = query;
-
-  if (Object.keys(query).length === 0) {
-    return;
-  }
-
-  cicloAtualizacaoStore.getCiclosAtualizacao({
-    ...params,
-    referencia: formatarReferencia(params.referencia),
-    fase: aba,
-  });
-}, { immediate: true });
-</script>
 <style lang="less" scoped>
 .ciclo-atualizacao-lista__abas {
   :deep(.abas__navegacao) {

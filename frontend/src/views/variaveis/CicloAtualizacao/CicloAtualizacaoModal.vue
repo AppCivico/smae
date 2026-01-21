@@ -1,52 +1,3 @@
-<template>
-  <SmallModal
-    :active="modalVisivel"
-    class="ciclo-atualizacao-editar__modal"
-    tamanho-ajustavel
-    @close="checarFecharModal"
-  >
-    <section class="ciclo-atualizacao-editar">
-      <header class="flex spacebetween center mb2 g2">
-        <h1 class="ciclo-atualizacao-editar__titulo">
-          {{ conteudoEscolhido.titulo }}
-        </h1>
-
-        <hr class="f1">
-
-        <button
-          class="btn round-full"
-          @click="checarFecharModal"
-        >
-          <svg
-            width="24"
-            height="24"
-          ><use xlink:href="#i_x" /></svg>
-        </button>
-      </header>
-
-      <div
-        v-if="emFoco?.pedido_complementacao"
-        class="complementacao mb2"
-      >
-        <div class="w700 t13 mb1">
-          Solicitação de complementação
-        </div>
-        <p>{{ emFoco?.pedido_complementacao.pedido }}</p>
-        <div class="t12 tc600">
-          {{ dateToDate(emFoco?.pedido_complementacao.criado_em) }},
-          {{ emFoco?.pedido_complementacao.criador_nome }}
-        </div>
-      </div>
-
-      <component
-        :is="conteudoEscolhido.componente"
-        v-if="cicloAtualizacaoStore.emFoco"
-        @enviado="fecharModal"
-      />
-    </section>
-  </SmallModal>
-</template>
-
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import type { Component } from 'vue';
@@ -162,6 +113,55 @@ const conteudoEscolhido = computed<ConteudoOpcao>(() => {
   return opcoes.simples;
 });
 </script>
+
+<template>
+  <SmallModal
+    :active="modalVisivel"
+    class="ciclo-atualizacao-editar__modal"
+    tamanho-ajustavel
+    @close="checarFecharModal"
+  >
+    <section class="ciclo-atualizacao-editar">
+      <header class="flex spacebetween center mb2 g2">
+        <h1 class="ciclo-atualizacao-editar__titulo">
+          {{ conteudoEscolhido.titulo }}
+        </h1>
+
+        <hr class="f1">
+
+        <button
+          class="btn round-full"
+          @click="checarFecharModal"
+        >
+          <svg
+            width="24"
+            height="24"
+          ><use xlink:href="#i_x" /></svg>
+        </button>
+      </header>
+
+      <div
+        v-if="emFoco?.pedido_complementacao"
+        class="complementacao mb2"
+      >
+        <div class="w700 t13 mb1">
+          Solicitação de complementação
+        </div>
+        <p>{{ emFoco?.pedido_complementacao.pedido }}</p>
+        <div class="t12 tc600">
+          {{ dateToDate(emFoco?.pedido_complementacao.criado_em) }},
+          {{ emFoco?.pedido_complementacao.criador_nome }}
+        </div>
+      </div>
+
+      <component
+        :is="conteudoEscolhido.componente"
+        v-if="cicloAtualizacaoStore.emFoco"
+        @enviado="fecharModal"
+      />
+    </section>
+  </SmallModal>
+</template>
 
 <style lang="less" scoped>
 .ciclo-atualizacao-editar__titulo {
