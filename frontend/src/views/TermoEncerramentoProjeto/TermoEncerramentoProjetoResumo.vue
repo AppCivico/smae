@@ -327,7 +327,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
   }
 
   // Tendo que reforçar especificidade
-  // pois helpers com importante e estilo scoped
+  // pois helpers com !important e estilo scoped
   // estão sendo usados no que queremos sobrescrever
   :deep(.hide-on-print) {
     display: none !important;
