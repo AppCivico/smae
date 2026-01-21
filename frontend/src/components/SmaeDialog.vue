@@ -129,20 +129,25 @@ onBeforeUnmount(() => {
   // Remove o diálogo do registro
   dialogRegistry.unregister();
 });
-
 </script>
 <template>
   <Teleport
     to="#modais"
   >
+    <div
+      v-if="dialogoEstaAberto"
+      class="smae-dialog-backdrop"
+      @click="acionarFechamento"
+    />
+
     <dialog
       v-if="dialogoEstaAberto"
       :id="`smae-dialog-${props.id}`"
       ref="dialogRef"
+      closedby="any"
       class="editModal-dialog"
       :class="{ 'editModal--tamanho-ajustavel': tamanhoAjustavel }"
       v-bind="$attrs"
-      @click.self="acionarFechamento"
       @cancel.prevent="acionarFechamento"
     >
       <header
@@ -155,7 +160,7 @@ onBeforeUnmount(() => {
             </slot>
           </TituloDaPagina>
 
-          <hr class="f1">
+          <hr class="f1" />
 
           <button
             type="button"
@@ -188,6 +193,12 @@ onBeforeUnmount(() => {
   </Teleport>
 </template>
 <style lang="less" scoped>
+.smae-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
 .largura-total {
   width: 100% !important;
   max-width: none !important;

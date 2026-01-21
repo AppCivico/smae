@@ -17,6 +17,12 @@
 - **Padrão:** `''`
 - **Descrição:** Título exibido no cabeçalho do diálogo. Pode ser substituído usando o slot `titulo`.
 
+### `subtitulo`
+
+- **Tipo:** `String`
+- **Padrão:** `''`
+- **Descrição:** Subtítulo exibido abaixo do título do diálogo. Pode ser substituído usando o slot `subtitulo`.
+
 ### `tamanhoAjustavel`
 
 - **Tipo:** `Boolean`
@@ -77,6 +83,10 @@ async function salvar(fecharFn) {
 ### `titulo`
 
 - **Descrição:** Substitui o título padrão. Se não fornecido, usa a prop `titulo`.
+
+### `subtitulo`
+
+- **Descrição:** Substitui o subtítulo padrão. Se não fornecido, usa a prop `subtitulo`.
 
 ## Como Usar
 
@@ -244,7 +254,7 @@ Em modo de desenvolvimento (`import.meta.env.DEV`), o componente emite avisos no
 
 Se múltiplos componentes `SmaeDialog` com o mesmo `id` forem detectados:
 
-```
+```text
 [SmaeDialog] Múltiplos componentes SmaeDialog com id="meu-dialogo" detectados.
 Isso pode causar conflitos de ID no DOM. Certifique-se de usar IDs únicos para cada diálogo.
 ```
@@ -255,7 +265,7 @@ Isso pode causar conflitos de ID no DOM. Certifique-se de usar IDs únicos para 
 
 Se o elemento `#modais` não existir no DOM:
 
-```
+```text
 [SmaeDialog] Elemento #modais não encontrado no DOM
 ```
 
@@ -265,5 +275,7 @@ Se o elemento `#modais` não existir no DOM:
 
 - **IDs Únicos:** Cada diálogo deve ter um `id` único na aplicação para evitar conflitos
 - **Apenas um diálogo por vez:** Embora tecnicamente possível ter múltiplos diálogos abertos, recomenda-se apenas um por vez para melhor UX
-- **Compatibilidade:** O componente usa `structuredClone()` para clonar query parameters, que requer navegadores modernos
+- **Compatibilidade:**
+  - O componente usa `structuredClone()` para clonar query parameters, que requer navegadores modernos
+  - O atributo `closedby="any"` é usado para fechar o diálogo ao clicar fora, mas não é suportado no Safari. Um elemento de backdrop é usado como fallback para garantir compatibilidade
 - **Acessibilidade:** O botão de fechar possui `aria-label="Fechar diálogo"` para melhor acessibilidade
