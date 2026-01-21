@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import RolagemHorizontal from '@/components/rolagem/RolagemHorizontal.vue';
@@ -42,7 +42,6 @@ const {
   chamadasPendentes,
 } = storeToRefs(cicloAtualizacaoStore);
 
-// TO-DO: passar para v-slots
 const tabs: Record<string, {
   id: AbasDisponiveis,
   [key: string]: unknown;
@@ -118,6 +117,13 @@ function obterPrimeiroEUltimoAtraso(atrasos: string[] | null): string {
 }
 
 onMounted(() => {
+  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+});
+
+// TO-DO: trocar o componente de diálogo para o SmaeDialog e fazer a nova
+// chamada no seu fechamento. Usar `onBeforeRouteUpdate` faz uma chamada
+// desnecessária na abertura do diálogo.
+onBeforeRouteUpdate(() => {
   cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
 });
 
