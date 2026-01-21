@@ -2642,6 +2642,7 @@ export class VariavelService {
         const ownersToClose = await prismaTx.$queryRaw<{ id: number; ultimo_periodo_valido: Date }[]>`
             SELECT vcc.variavel_id as id, vcc.ultimo_periodo_valido
             FROM variavel_ciclo_corrente vcc
+            JOIN variavel v ON v.id = vcc.variavel_id
             WHERE vcc.variavel_id IN (${Prisma.join(cycleOwnerIds)})
             AND vcc.liberacao_enviada = false
             AND
