@@ -104,7 +104,7 @@ function excluirTermo() {
     termoEncerramentoStore.$reset();
 
     iniciar();
-  }, 'Excluir');
+  }, 'Resetar');
 }
 
 onMounted(() => {
@@ -201,6 +201,13 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       {
         label: schema.fields.responsavel_encerramento_nome.spec.label,
         valor: emFoco.value.responsavel_encerramento_nome,
+      },
+    ],
+    [
+      {
+        label: schema.fields.justificativa_complemento.spec.label,
+        valor: emFoco.value.justificativa_complemento,
+        esconder: !emFoco.value.justificativa_complemento,
       },
     ],
     [
