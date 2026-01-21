@@ -888,8 +888,33 @@ export const indicador = object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
     casas_decimais: number()
-      .min(0)
-      .max(35)
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable()
+      .when('indicador_tipo', (indicadorTipo, field) => {
+        if (indicadorTipo === 'Numerico') {
+          return field.min(0).max(35);
+        }
+        return field;
+      }),
+    indicador_tipo: string()
+      .required('Selecione o tipo de fórmula')
+      .oneOf(['Numerico', 'Categorica'], 'Tipo inválido'),
+    variavel_categoria_id: number()
+      .nullable()
+      .when('indicador_tipo', (indicadorTipo, field) => {
+        if (indicadorTipo === 'Categorica') {
+          return field.required('Selecione a variável categórica');
+        }
+        return field.nullable();
+      }),
+    indicador_previa_opcao: string()
+      .nullable()
+      .oneOf(['NaoPermitir', 'PermitirPreenchimento'], 'Opção inválida'),
+    formula: string()
+      .nullable(),
+    formula_variaveis: array()
+      .nullable(),
+    acumulado_usa_formula: boolean()
       .nullable(),
     codigo: string()
       .required('Preencha o código'),

@@ -26,6 +26,7 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
@@ -72,6 +73,9 @@ const {
   Variaveis, variáveisCompostas, variáveisCompostasEmUso,
 } = storeToRefs(VariaveisStore);
 
+const VariaveisCategoricasStore = useVariaveisCategoricasStore();
+const { lista: listaVariaveisCategoricas } = storeToRefs(VariaveisCategoricasStore);
+
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
     id: 'variaveis',
@@ -102,10 +106,11 @@ const variaveisFormula = ref([]);
 const errFormula = ref('');
 const AssociadorDeVariaveisEstaAberto = ref(false);
 
-// eslint-disable-next-line max-len
-const variaveisCategoricasDisponiveis = computed(() => (Array.isArray(Variaveis.value?.[route.params.indicador_id])
-  ? Variaveis.value?.[route.params.indicador_id].filter((v) => v.variavel_categorica_id !== null)
-  : []));
+const variaveisCategoricasDisponiveis = computed(
+  () => (Array.isArray(listaVariaveisCategoricas.value)
+    ? listaVariaveisCategoricas.value
+    : []),
+);
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -225,9 +230,12 @@ async function onSubmit(values) {
         values.variavel_categoria_id = null;
       }
 
-      if (values.indicador_tipo === 'Categorica' && !values.variavel_categoria_id) {
-        values.formula = null;
-        values.formula_variaveis = [];
+      if (values.indicador_tipo === 'Categorica') {
+        values.casas_decimais = null;
+        if (!values.variavel_categoria_id) {
+          values.formula = null;
+          values.formula_variaveis = [];
+        }
       }
 
       if (singleIndicadores.value.id) {
@@ -235,6 +243,11 @@ async function onSubmit(values) {
         MetasStore.clear();
         IndicadoresStore.clear();
         msg = 'Dados salvos com sucesso!';
+      } else {
+        r = await IndicadoresStore.insert(values);
+        MetasStore.clear();
+        IndicadoresStore.clear();
+        msg = 'Item adicionado com sucesso!';
       }
     } else {
       r = await IndicadoresStore.insert(values);
@@ -296,6 +309,9 @@ async function checkClose() {
     }
   });
 }
+
+// Carregar variáveis categóricas disponíveis
+VariaveisCategoricasStore.buscarTudo();
 
 if (indicadorId) {
   const chamadas = [
@@ -635,6 +651,9 @@ watch(() => props.group, () => {
               {{ variavel.titulo }}
             </option>
           </Field>
+          <div class="error-msg">
+            {{ errors.variavel_categoria_id }}
+          </div>
         </div>
       </div>
       <div
