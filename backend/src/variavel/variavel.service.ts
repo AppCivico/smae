@@ -2643,12 +2643,10 @@ export class VariavelService {
             WITH eligible_parents AS (
                 -- Busca variáveis mãe que têm todas as filhas (não calculadas) suspensas
                 SELECT
-                    vcc.variavel_id as id,
+                    v.id as id,
                     v.periodicidade
-                FROM variavel_ciclo_corrente vcc
-                JOIN variavel v ON v.id = vcc.variavel_id
-                WHERE vcc.variavel_id IN (${Prisma.join(cycleOwnerIds)})
-                AND vcc.liberacao_enviada = false
+                FROM variavel v
+                WHERE v.id IN (${Prisma.join(cycleOwnerIds)})
                 AND
                     (
                         -- é mãe sem filhas
@@ -2658,7 +2656,7 @@ export class VariavelService {
                             EXISTS (
                                 SELECT 1
                                 FROM variavel child
-                                WHERE child.variavel_mae_id = vcc.variavel_id
+                                WHERE child.variavel_mae_id = v.id
                                   AND child.removido_em IS NULL
                                   AND child.tipo = 'Global'
                             )
@@ -2667,7 +2665,7 @@ export class VariavelService {
                                 -- Exclui variáveis calculadas pois elas não precisam de input do usuário
                                 SELECT 1
                                 FROM variavel child
-                                WHERE child.variavel_mae_id = vcc.variavel_id
+                                WHERE child.variavel_mae_id = v.id
                                 AND child.removido_em IS NULL
                                 AND child.tipo = 'Global'
                                 AND child.suspendida_em IS NULL
