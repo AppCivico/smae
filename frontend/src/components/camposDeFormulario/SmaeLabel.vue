@@ -50,7 +50,7 @@ const temInformacao = computed<boolean>(() => {
     return true;
   }
 
-  if (caminhoNoSchema.value.spec.meta?.balaoInformativo) {
+  if (caminhoNoSchema.value?.spec?.meta?.balaoInformativo) {
     return true;
   }
 
@@ -113,7 +113,7 @@ const temInformacao = computed<boolean>(() => {
           as="small"
           :texto="
             $props.balaoInformativo
-              || caminhoNoSchema.spec.meta?.balaoInformativo
+              || caminhoNoSchema?.spec?.meta?.balaoInformativo
           "
         >
           <slot name="balaoInformativo" />
