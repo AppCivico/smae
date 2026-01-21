@@ -1296,7 +1296,7 @@ export class VariavelCicloService {
                 // Para variáveis acumulativas: valor = 0
                 // Para variáveis não acumulativas: copia o valor do período anterior
                 logger.log('Iniciando processamento de variáveis suspensas');
-                const suspensasProcessadas = await this.variavelService.processVariaveisGlobaisSuspensas(prismaTx);
+                const suspensasProcessadas = await this.variavelService.processVariaveisGlobaisSuspensasSync();
                 if (suspensasProcessadas.length > 0) {
                     logger.log(`Variáveis suspensas processadas: ${suspensasProcessadas.length}`);
                 }
