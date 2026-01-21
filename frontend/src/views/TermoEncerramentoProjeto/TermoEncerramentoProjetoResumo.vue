@@ -211,6 +211,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       {
         label: schema.fields.assinatura.spec.label,
         valor: emFoco.value.assinatura,
+        class: 'hide-on-print',
       },
     ],
   ];
@@ -323,6 +324,13 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 @media print {
   .assinatura-impressao {
     display: block;
+  }
+
+  // Tendo que reforçar especificidade
+  // pois helpers com importante e estilo scoped
+  // estão sendo usados no que queremos sobrescrever
+  :deep(.hide-on-print) {
+    display: none !important;
   }
 }
 </style>
