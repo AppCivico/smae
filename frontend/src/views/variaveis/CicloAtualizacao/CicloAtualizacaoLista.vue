@@ -100,7 +100,7 @@ function formatarReferencia(referencia: any): string | undefined {
   return `${referencia.split('/').reverse().join('-')}-01`;
 }
 
-function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
+function obterPrimeiroEUltimoAtraso(atrasos: string[] | null): string {
   if (!atrasos) {
     return '';
   }
@@ -268,7 +268,7 @@ watch(() => route.query, (query) => {
                   >
                     <template #default>
                       Atualização com atraso: <br>
-                      {{ obterPrimeiroEUlticoAtraso(cicloAtualizacao.atrasos) }}
+                      {{ obterPrimeiroEUltimoAtraso(cicloAtualizacao.atrasos) }}
                     </template>
 
                     <template #botao>
