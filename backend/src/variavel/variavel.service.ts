@@ -2644,24 +2644,30 @@ export class VariavelService {
             FROM variavel_ciclo_corrente vcc
             WHERE vcc.variavel_id IN (${Prisma.join(cycleOwnerIds)})
             AND vcc.liberacao_enviada = false
-            -- Variáveis ​​independentes PODEM estar em cycleOwnerIds e, sem a correção,
-            -- elas passariam incorretamente na verificação NOT EXISTS (já que não possuem filhos)
-            AND EXISTS (
-                SELECT 1
-                FROM variavel child
-                WHERE child.variavel_mae_id = vcc.variavel_id
-                  AND child.removido_em IS NULL
-                  AND child.tipo = 'Global'
-            )
-            AND NOT EXISTS (
-                -- Procura qualquer filha ATIVA que NÃO esteja suspensa
-                -- Exclui variáveis calculadas pois elas não precisam de input do usuário
-                SELECT 1
-                FROM variavel child
-                WHERE child.variavel_mae_id = vcc.variavel_id
-                AND child.removido_em IS NULL
-                AND child.tipo = 'Global'
-                AND child.suspendida_em IS NULL
+            AND
+                (
+                    -- é mãe sem filhas
+                    (v.possui_variaveis_filhas = FALSE)
+                    OR -- ou é mãe com filhas, mas todas estão suspensas
+                    (
+                        EXISTS (
+                            SELECT 1
+                            FROM variavel child
+                            WHERE child.variavel_mae_id = vcc.variavel_id
+                              AND child.removido_em IS NULL
+                              AND child.tipo = 'Global'
+                        )
+                        AND NOT EXISTS (
+                            -- Procura qualquer filha ATIVA que NÃO esteja suspensa
+                            -- Exclui variáveis calculadas pois elas não precisam de input do usuário
+                            SELECT 1
+                            FROM variavel child
+                            WHERE child.variavel_mae_id = vcc.variavel_id
+                            AND child.removido_em IS NULL
+                            AND child.tipo = 'Global'
+                            AND child.suspendida_em IS NULL
+                        )
+                    )
             )
         `;
 
