@@ -1777,7 +1777,7 @@ export class VariavelService {
             }
 
             for (const targetId of targetIds) {
-                this.processVariaveisGlobaisSuspensas(this.prisma, targetId, user)
+                this.processVariaveisGlobaisSuspensasSync(targetId, user)
                     .then((processedIds) => {
                         if (processedIds.length > 0) {
                             this.logger.log(
@@ -2336,11 +2336,11 @@ export class VariavelService {
         if (suspensas[0] && Array.isArray(suspensas[0].variaveis)) {
             const varsSuspensas = suspensas[0].variaveis;
             if (varsSuspensas.length) {
-                console.log('variáveis suspensas recalc:', varsSuspensas);
+                this.logger.log('variáveis suspensas recalc: ' + JSON.stringify(varsSuspensas));
                 await this.recalc_series_dependentes(varsSuspensas, prismaTx);
                 await this.recalc_indicador_usando_variaveis(varsSuspensas, prismaTx);
             } else {
-                console.log('não há variáveis suspensas');
+                this.logger.log('não há variáveis suspensas');
             }
 
             return varsSuspensas;
@@ -2359,13 +2359,13 @@ export class VariavelService {
     async processVariaveisGlobaisSuspensasSync(targetVariavelId?: number, user?: PessoaFromJwt): Promise<number[]> {
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
-                return await this.processVariaveisGlobaisSuspensas(prismaTx, targetVariavelId, user);
+                return await this.processVariaveisGlobaisSuspensasWithTx(prismaTx, targetVariavelId, user);
             },
             { timeout: 5 * 60 * 1000 }
         );
     }
 
-    async processVariaveisGlobaisSuspensas(
+    private async processVariaveisGlobaisSuspensasWithTx(
         prismaTx: Prisma.TransactionClient,
         targetVariavelId?: number,
         user?: PessoaFromJwt
@@ -2588,15 +2588,9 @@ export class VariavelService {
 
         if (filledVarIds.length > 0) {
             logger.log(`Variáveis globais suspensas processadas: ${JSON.stringify(filledVarIds)}`);
-            console.log('Variáveis globais suspensas processadas:', filledVarIds);
             for (const stat of cycleStats) {
                 logger.log(
                     `Variável ${stat.variavel_id}: processados ${stat.num_ciclos} ciclo(s) (${stat.min_ciclo.toISOString().split('T')[0]} a ${stat.max_ciclo.toISOString().split('T')[0]})`
-                );
-                if (stat.num_ciclos <= 1) continue;
-                console.log(
-                    `Variável ${stat.variavel_id}: ${stat.num_ciclos} ciclos processados ` +
-                        `(${stat.min_ciclo.toISOString().split('T')[0]} a ${stat.max_ciclo.toISOString().split('T')[0]})`
                 );
             }
 
@@ -2608,14 +2602,13 @@ export class VariavelService {
             logger.log('Recálculos concluídos');
         } else {
             logger.log('Nenhuma variável global suspensa para processar valores');
-            console.log('Nenhuma variável global suspensa para processar valores');
         }
 
         // 5. Verifica se variáveis mãe devem ter ciclo fechado automaticamente
         // (quando todas as filhas estão suspensas) - executa mesmo sem valores inseridos
         if (cycleOwnerIds.length > 0) {
             logger.log(`Verificando fechamento automático de ciclos para ${cycleOwnerIds.length} variável(is) mãe`);
-            await this.autoCloseParentCyclesIfAllChildrenSuspended(cycleOwnerIds, prismaTx);
+            await this.autoCloseParentCyclesIfAllChildrenSuspended(cycleOwnerIds, prismaTx, logger);
         }
 
         logger.log(`Processamento concluído. Total de variáveis processadas: ${filledVarIds.length}`);
@@ -2636,9 +2629,14 @@ export class VariavelService {
      */
     private async autoCloseParentCyclesIfAllChildrenSuspended(
         cycleOwnerIds: number[],
-        prismaTx: Prisma.TransactionClient
+        prismaTx: Prisma.TransactionClient,
+        logger: ReturnType<typeof LoggerWithLog>
     ): Promise<void> {
         if (cycleOwnerIds.length === 0) return;
+
+        logger.log(
+            `autoCloseParentCyclesIfAllChildrenSuspended: Verificando ${cycleOwnerIds.length} variáveis mãe: [${cycleOwnerIds.join(', ')}]`
+        );
 
         // Busca variáveis mãe que têm todas as filhas (não calculadas) suspensas
         const ownersToClose = await prismaTx.$queryRaw<{ id: number; ultimo_periodo_valido: Date }[]>`
@@ -2667,10 +2665,25 @@ export class VariavelService {
             )
         `;
 
+        logger.log(
+            `autoCloseParentCyclesIfAllChildrenSuspended: Encontrados ${ownersToClose.length} variáveis mãe para fechar automaticamente`
+        );
+
+        if (ownersToClose.length > 0) {
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: ownersToClose = ${JSON.stringify(ownersToClose.map((o) => ({ id: o.id, ultimo_periodo_valido: o.ultimo_periodo_valido })))}`
+            );
+        }
+
         for (const owner of ownersToClose) {
-            console.log(`Fechando ciclo automaticamente para variável mãe ${owner.id}`);
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: Iniciando fechamento automático para variável mãe ${owner.id} (ultimo_periodo_valido: ${owner.ultimo_periodo_valido})`
+            );
 
             // Cria registro de análise para cada fase pendente
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] Criando variavelGlobalCicloAnalise com fase=Liberacao, eh_liberacao_auto=true`
+            );
             await prismaTx.variavelGlobalCicloAnalise.create({
                 data: {
                     variavel_id: owner.id,
@@ -2686,8 +2699,14 @@ export class VariavelService {
                     sincronizar_serie_variavel: false,
                 },
             });
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] variavelGlobalCicloAnalise criado com sucesso`
+            );
 
             // Atualiza o ciclo corrente para marcar como liberado
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] Atualizando variavelCicloCorrente: fase=Liberacao, liberacao_enviada=true, pedido_complementacao=false`
+            );
             await prismaTx.variavelCicloCorrente.update({
                 where: { variavel_id: owner.id },
                 data: {
@@ -2696,13 +2715,44 @@ export class VariavelService {
                     pedido_complementacao: false,
                 },
             });
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] variavelCicloCorrente atualizado com sucesso`
+            );
 
             // Atualiza o estado do ciclo e enfileira tarefas de recálculo
             // (mirroring marcaLiberacaoEnviada flow)
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] Executando f_atualiza_variavel_ciclo_corrente`
+            );
             await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${owner.id}::int)::text`;
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] f_atualiza_variavel_ciclo_corrente executado com sucesso`
+            );
+
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] Adicionando tarefa AddTaskRefreshMeta`
+            );
             await AddTaskRefreshMeta(prismaTx, { variavel_id: owner.id });
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] AddTaskRefreshMeta adicionado com sucesso`
+            );
+
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] Adicionando tarefa AddTaskRecalcVariaveis`
+            );
             await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [owner.id] });
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] AddTaskRecalcVariaveis adicionado com sucesso`
+            );
+
+            logger.log(
+                `autoCloseParentCyclesIfAllChildrenSuspended: [variável ${owner.id}] Fechamento automático concluído com sucesso`
+            );
         }
+
+        logger.log(
+            `autoCloseParentCyclesIfAllChildrenSuspended: Processo completo. Total de variáveis fechadas: ${ownersToClose.length}`
+        );
     }
 
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
@@ -4563,7 +4613,7 @@ export class VariavelService {
         // Trigger processamento assíncrono de variáveis suspensas após transação completar
         // Não aguarda o resultado para não bloquear a resposta
         if (foiSuspendida) {
-            this.processVariaveisGlobaisSuspensas(this.prisma, filhaId)
+            this.processVariaveisGlobaisSuspensasSync(filhaId, user)
                 .then((processedIds) => {
                     if (processedIds.length > 0) {
                         this.logger.log(

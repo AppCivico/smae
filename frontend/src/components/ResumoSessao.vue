@@ -8,6 +8,7 @@ type SessaoDeDetalheLinha = {
   valor?: PossiveisValores
   col?: number
   esconder?: boolean
+  class?: string
 }[];
 
 export type SessaoDeDetalheLinhas = SessaoDeDetalheLinha[];
@@ -69,6 +70,7 @@ function obterLinhas(quantidadeLinhas: number): number {
         v-for="(item, itemIndex) in linha"
         :key="`resumo-item--${linhaIndex}-${itemIndex}`"
         class="flex column g1 resumo-sessao__item"
+        :class="item.class"
         :style="{
           'flex': item.col ?
             `0 0 calc(${item.col * 100 / obterLinhas(linha.length)}% - 1rem)`

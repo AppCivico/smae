@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { FeatureFlagModule } from '../feature-flag/feature-flag.module';
 import { PessoaModule } from '../pessoa/pessoa.module';
+import { SmaeConfigModule } from '../common/services/smae-config.module';
 import { MinhaContaController } from './minha-conta.controller';
 
 @Module({
-    imports: [PessoaModule, FeatureFlagModule],
+    imports: [PessoaModule, FeatureFlagModule, SmaeConfigModule],
     controllers: [MinhaContaController],
 })
 export class MinhaContaModule {}

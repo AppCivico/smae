@@ -17,6 +17,9 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
     sistemas_disponiveis: ModuloSistema[];
 
     modulos_sobrescritos: boolean;
+
+    @ApiProperty({ description: 'Tamanho máximo permitido para upload em bytes' })
+    max_upload_size: number;
 }
 
 export class MinhaContaDto {

@@ -104,7 +104,7 @@ function excluirTermo() {
     termoEncerramentoStore.$reset();
 
     iniciar();
-  }, 'Excluir');
+  }, 'Resetar');
 }
 
 onMounted(() => {
@@ -205,12 +205,20 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
     ],
     [
       {
+        label: schema.fields.justificativa_complemento.spec.label,
+        valor: emFoco.value.justificativa_complemento,
+        esconder: !emFoco.value.justificativa_complemento,
+      },
+    ],
+    [
+      {
         label: schema.fields.data_encerramento.spec.label,
         valor: dateIgnorarTimezone(emFoco.value.data_encerramento, 'dd/MM/yyyy'),
       },
       {
         label: schema.fields.assinatura.spec.label,
         valor: emFoco.value.assinatura,
+        class: 'hide-on-print',
       },
     ],
   ];
@@ -323,6 +331,13 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 @media print {
   .assinatura-impressao {
     display: block;
+  }
+
+  // Tendo que reforçar especificidade
+  // pois helpers com !important e estilo scoped
+  // estão sendo usados no que queremos sobrescrever
+  :deep(.hide-on-print) {
+    display: none !important;
   }
 }
 </style>
