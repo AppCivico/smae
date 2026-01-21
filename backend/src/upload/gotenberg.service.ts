@@ -52,8 +52,10 @@ export class GotenbergService {
     async onModuleInit() {
         this.gotenbergUrl = await this.smaeConfigService.getConfigWithDefault<string>(
             'GOTENBERG_URL',
-            'http://gotenberg:3000/'
+            'http://gotenberg:3000'
         );
+
+        this.gotenbergUrl = this.gotenbergUrl.replace(/\/+$/, ''); // Remove trailing slashes
 
         this.logger.debug(`Gotenberg configurada para usar endereço ${this.gotenbergUrl}`);
     }
