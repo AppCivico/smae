@@ -2679,7 +2679,7 @@ export class VariavelService {
                 -- Busca os períodos válidos para cada variável usando busca_periodos_variavel
                 SELECT
                     ep.id as variavel_id,
-                    ep.periodicidade,
+                    g.periodicidade,
                     g.min as inicio,
                     g.max as fim
                 FROM eligible_parents ep
@@ -2704,6 +2704,7 @@ export class VariavelService {
                 AND vgca.referencia_data = ac.data_ciclo
                 AND vgca.fase = 'Liberacao'
                 AND vgca.removido_em IS NULL
+                AND vgca.ultima_revisao = true
             WHERE vgca.id IS NULL
             ORDER BY ac.variavel_id, ac.data_ciclo
         `;
