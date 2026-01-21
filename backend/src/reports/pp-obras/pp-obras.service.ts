@@ -1196,9 +1196,9 @@ export class PPObrasService implements ReportableService {
                 projeto_acompanhamento.observacao,
                 projeto_acompanhamento.detalhamento_status,
                 projeto_acompanhamento.pontos_atencao,
-                trim(regexp_replace(regexp_replace(projeto_acompanhamento.pauta, '<[^>]*>', '', 'g'), '\s+', ' ', 'g')) AS pauta_texto,
-                trim(regexp_replace(regexp_replace(projeto_acompanhamento.detalhamento, '<[^>]*>', '', 'g'), '\s+', ' ', 'g')) AS detalhamento_texto,
-                trim(regexp_replace(regexp_replace(projeto_acompanhamento.pontos_atencao, '<[^>]*>', '', 'g'), '\s+', ' ', 'g')) AS pontos_atencao_texto,
+                trim(regexp_replace(regexp_replace(projeto_acompanhamento.pauta, '<[^>]+>', '', 'g'), '[ \t\n\r]+', ' ', 'g')) AS pauta_texto,
+                trim(regexp_replace(regexp_replace(projeto_acompanhamento.detalhamento, '<[^>]+>', '', 'g'), '[ \t\n\r]+', ' ', 'g')) AS detalhamento_texto,
+                trim(regexp_replace(regexp_replace(projeto_acompanhamento.pontos_atencao, '<[^>]+>', '', 'g'), '[ \t\n\r]+', ' ', 'g')) AS pontos_atencao_texto,
                 (
                     SELECT string_agg(r.codigo::text, '|')
                     FROM projeto_acompanhamento_risco ar
