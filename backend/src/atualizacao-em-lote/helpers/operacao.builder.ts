@@ -250,6 +250,7 @@ async function formatValueForDisplay(
         case 'orgao_executor_id':
         case 'orgao_origem_id':
         case 'orgao_colaborador_id':
+        case 'remover_colaboradores_do_orgao':
             try {
                 const orgao = await prisma.orgao.findUnique({
                     where: { id: value },
