@@ -83,6 +83,7 @@ export class VariavelResumo {
      */
     id: number;
     suspendida: boolean;
+    suspendida_em: Date | null;
     variavel_categorica_id: number | null;
     unidade_medida: IdSiglaDescricao;
 

@@ -149,7 +149,7 @@ export class VariavelFormulaCompostaService {
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
                 variavel: {
-                    ...{ ...variavel, valor_base: variavel.valor_base.toString(), suspendida_em: undefined },
+                    ...{ ...variavel, valor_base: variavel.valor_base.toString() },
                     suspendida: variavel.suspendida_em ? true : false,
                 },
             });

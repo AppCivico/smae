@@ -1145,6 +1145,7 @@ export class VariavelService {
                 recalculo_erro: row.recalculo_erro,
                 recalculo_tempo: row.recalculo_tempo,
                 variavel_mae_id: row.variavel_mae_id,
+                suspendida_em: row.suspendida_em,
             } satisfies VariavelItemDto;
         });
 
@@ -2950,6 +2951,7 @@ export class VariavelService {
             recalculando: variavel.recalculando,
             recalculo_erro: variavel.recalculo_erro,
             recalculo_tempo: variavel.recalculo_tempo,
+            suspendida_em: variavel.suspendida_em,
         };
     }
 
@@ -3118,6 +3120,7 @@ export class VariavelService {
                 recalculo_erro: variavel.recalculo_erro,
                 recalculo_tempo: variavel.recalculo_tempo,
                 variavel_mae_id: variavel.variavel_mae_id,
+                suspendida_em: variavel.suspendida_em,
             },
             linhas: [],
             ordem_series: ordemSeries,
