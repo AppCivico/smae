@@ -1523,7 +1523,8 @@ export class VariavelService {
                                 child.mostrar_monitoramento,
                                 now,
                                 user,
-                                logger
+                                logger,
+                                'Global'
                             )
                         );
 
@@ -1547,10 +1548,58 @@ export class VariavelService {
                         `Agendado processamento de variáveis suspensas para filhas: ${suspendedChildIds.join(', ')}`
                     );
                 }
+            } else if (suspendida === false && hasChildren && currentSuspendida) {
+                // Caso de dessuspensão da mãe: aplicar dessuspensão nas filhas globais
+                logger.log(`Variável ${variavelId} possui filhas. Dessuspendendo filhas Global ao invés da mãe.`);
 
-                // marca o mostrar_monitoramento como false
-                dto.mostrar_monitoramento = true;
-            } else if (suspendida !== undefined && suspendida !== currentSuspendida) {
+                const globalChildren = await prismaTxn.variavel.findMany({
+                    where: {
+                        variavel_mae_id: variavelId,
+                        tipo: 'Global',
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                        mostrar_monitoramento: true,
+                        suspendida_em: true,
+                    },
+                });
+
+                const unsuspendedIds: number[] = [];
+                for (const child of globalChildren) {
+                    const childCurrentSuspendida = child.suspendida_em !== null;
+
+                    if (childCurrentSuspendida) {
+                        // Atualiza mostrar_monitoramento baseado na mesma regra usada na mãe
+                        const novoMostrar = await this.handleSuspensaoChange(
+                            prismaTxn,
+                            child.id,
+                            false,
+                            child.mostrar_monitoramento,
+                            now,
+                            user,
+                            logger,
+                            'Global'
+                        );
+
+                        await prismaTxn.variavel.update({
+                            where: { id: child.id },
+                            data: {
+                                suspendida_em: null,
+                                mostrar_monitoramento: novoMostrar,
+                            },
+                        });
+                        unsuspendedIds.push(child.id);
+                    }
+                }
+
+                if (unsuspendedIds.length > 0) {
+                    logger.log(`Dessuspensão aplicada às filhas: ${unsuspendedIds.join(', ')}`);
+                }
+            }
+
+            if (suspendida !== undefined && suspendida !== currentSuspendida) {
                 dto.mostrar_monitoramento = await this.handleSuspensaoChange(
                     prismaTxn,
                     variavelId,
@@ -1558,7 +1607,8 @@ export class VariavelService {
                     self.mostrar_monitoramento,
                     now,
                     user,
-                    logger
+                    logger,
+                    tipo
                 );
 
                 // Trigger processamento se variável foi suspensa
@@ -4447,7 +4497,8 @@ export class VariavelService {
         currentMostrarMonitoramento: boolean,
         now: Date,
         user: PessoaFromJwt,
-        logger: LoggerWithLog
+        logger: LoggerWithLog,
+        tipo: TipoVariavel
     ): Promise<boolean> {
         let mostrar_monitoramento: boolean;
 
@@ -4455,14 +4506,20 @@ export class VariavelService {
             mostrar_monitoramento = false;
             logger.log(`Variável ${variavelId} suspensa`);
         } else {
-            const prevLog = await prismaTxn.variavelSuspensaoLog.findFirst({
-                where: { variavel_id: variavelId },
-                orderBy: { criado_em: 'desc' },
-                select: { previo_status_mostrar_monitoramento: true },
-                take: 1,
-            });
-            mostrar_monitoramento = prevLog?.previo_status_mostrar_monitoramento ?? true;
-            logger.log(`Variável ${variavelId} reativada`);
+            // Para variáveis Global, sempre restaura para true
+            if (tipo === 'Global') {
+                mostrar_monitoramento = true;
+                logger.log(`Variável Global ${variavelId} reativada com mostrar_monitoramento=true`);
+            } else {
+                const prevLog = await prismaTxn.variavelSuspensaoLog.findFirst({
+                    where: { variavel_id: variavelId },
+                    orderBy: { criado_em: 'desc' },
+                    select: { previo_status_mostrar_monitoramento: true },
+                    take: 1,
+                });
+                mostrar_monitoramento = prevLog?.previo_status_mostrar_monitoramento ?? true;
+                logger.log(`Variável ${variavelId} reativada`);
+            }
 
             // Marca todos os registros de controle como removidos quando a variável é dessuspensa
             // Isso permite que os ciclos sejam reprocessados se a variável for suspensa novamente
@@ -4585,7 +4642,8 @@ export class VariavelService {
                         variavelFilha.mostrar_monitoramento,
                         now,
                         user,
-                        logger
+                        logger,
+                        'Global'
                     );
                 }
 
