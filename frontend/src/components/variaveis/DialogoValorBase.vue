@@ -24,7 +24,7 @@ const {
   emFoco,
 } = storeToRefs(variaveisGlobaisStore);
 
-const emit = defineEmits(['sucesso']);
+const emit = defineEmits(['edicao-bem-sucedida']);
 
 // ID do diálogo - deve ser único
 const DIALOG_ID = 'editar-valor-base';
@@ -103,7 +103,7 @@ const onSubmit = handleSubmit(async (valoresControlados) => {
         // Limpa emFoco após fechar o diálogo
         variaveisGlobaisStore.emFoco = null;
       }
-      emit('sucesso');
+      emit('edicao-bem-sucedida');
     }
   } catch (error) {
     alertStore.error(error);

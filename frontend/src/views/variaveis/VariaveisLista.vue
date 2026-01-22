@@ -285,5 +285,5 @@ watch(parametrosSerializados, () => {
     </SmallModal>
   </template>
 
-  <DialogoValorBase @sucesso="variaveisGlobaisStore.buscarTudo(parametrosDeBusca);" />
+  <DialogoValorBase @edicao-bem-sucedida="variaveisGlobaisStore.buscarTudo(parametrosDeBusca);" />
 </template>
