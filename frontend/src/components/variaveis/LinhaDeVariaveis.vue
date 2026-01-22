@@ -36,7 +36,10 @@ const { temPermissãoPara } = storeToRefs(authStore);
         height="24"
         color="#F2890D"
       ><use xlink:href="#i_alert" /></svg><div>
-        Suspensa do monitoramento físico em {{ dateToField($props.linha?.suspendida_em) }}
+        Suspensa do monitoramento físico
+        <template v-if="$props.linha?.suspendida_em">
+          em {{ dateToField($props.linha?.suspendida_em) }}
+        </template>
       </div>
     </span>
     {{ $props.linha?.codigo }}
