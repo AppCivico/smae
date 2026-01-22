@@ -782,6 +782,7 @@ watch(() => props.group, () => {
       <div
         v-if="indicadorId && !Variaveis[indicadorId]?.loading"
         v-show="values.indicador_tipo === 'Numerico'"
+        class="flex column start"
       >
         <EditorDeFormula
           v-model="formula"
@@ -816,6 +817,7 @@ watch(() => props.group, () => {
 
         <div
           v-if="!values.acumulado_usa_formula"
+          style="width: 100%"
         >
           <LabelFromYup
             name="acumulado_valor_base"

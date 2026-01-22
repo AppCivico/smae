@@ -2582,6 +2582,17 @@ export class ProjetoService {
             dto.status = undefined;
         }
 
+        if (tipo == 'MDO' && dto.orgao_colaborador_id) {
+            throw new HttpException('Não é permitido o uso da coluna orgao_colaborador_id em Obras.', 400);
+        }
+
+        if (dto.remover_colaboradores_do_orgao && dto.colaboradores_no_orgao) {
+            throw new HttpException(
+                'Não é permitido enviar colaboradores_no_orgao junto com remover_colaboradores_do_orgao.',
+                400
+            );
+        }
+
         // Se receber orgao_colaborador_id e mudar, limpa o colaboradores_no_orgao se não for enviado
         if (
             dto.orgao_colaborador_id !== undefined &&
@@ -2589,6 +2600,28 @@ export class ProjetoService {
             dto.colaboradores_no_orgao === undefined
         ) {
             dto.colaboradores_no_orgao = [];
+        }
+
+        if (dto.remover_colaboradores_do_orgao) {
+            // carrega os colaboradores atuais que são do orgao informado
+            const pessoasParaRemover = await this.prisma.pessoa.findMany({
+                where: {
+                    id: { in: projeto.colaboradores_no_orgao.map((r) => r.id) },
+                    pessoa_fisica: {
+                        orgao_id: dto.remover_colaboradores_do_orgao,
+                    },
+                },
+                select: { id: true },
+            });
+
+            delete dto.remover_colaboradores_do_orgao;
+
+            const atuais = projeto.colaboradores_no_orgao.map((r) => r.id);
+
+            logger.log(
+                `Removendo colaboradores do órgão ${dto.remover_colaboradores_do_orgao}: ${JSON.stringify(dto.colaboradores_no_orgao)}`
+            );
+            dto.colaboradores_no_orgao = atuais.filter((id) => !pessoasParaRemover.some((p) => p.id === id));
         }
 
         if ('grupo_tematico_id' in dto) {

@@ -2,7 +2,6 @@ import * as he from 'he';
 
 // 1. Definir Regex fora para garantir comportamento de compilação única
 const STRIP_SCRIPTS = /<(style|script)[^>]*>[\s\S]*?<\/\1>/gi;
-const STRIP_TAGS = /<[^>]+>/g;
 const COLLAPSE_SPACE = /\s+/g;
 
 /**
@@ -31,14 +30,33 @@ export function Html2Text(html: string | null | undefined): string | null | unde
         return html.trim().replace(COLLAPSE_SPACE, ' ');
     }
 
-    const stripped = html
+    const processed = html
         // 3. Remover scripts/estilos
-        .replace(STRIP_SCRIPTS, '')
-        // 4. Remover tags restantes
-        .replace(STRIP_TAGS, '');
+        .replace(STRIP_SCRIPTS, ' ')
+        // 4. Converter <br> tags para newlines
+        .replace(/<br\s*\/?>/gi, '\n')
+        // 5. Converter listas: ul/ol com newlines antes e depois
+        .replace(/<(ul|ol)[^>]*>/gi, '\n')
+        .replace(/<\/(ul|ol)>/gi, '\n')
+        // 6. Converter li para newline + dash
+        .replace(/<li[^>]*>/gi, '\n- ')
+        .replace(/<\/li>/gi, '')
+        // 7. Converter <p> tags para newlines, outros blocos para espaço
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<\/(div|h[1-6]|tr|td|th)>/gi, ' ')
+        // 8. Remover tags restantes
+        .replace(/<[^>]+>/g, '');
 
-    // 5. Decodificar entidades e normalizar espaços em branco
-    // Nota: he.decode trata coisas como &nbsp; -> \xA0 (espaço não-quebrável)
-    // O replace final (COLLAPSE_SPACE) transforma \xA0 e \n em espaços padrão 0x20
-    return he.decode(stripped).trim().replace(COLLAPSE_SPACE, ' ');
+    // 7. Decodificar entidades HTML
+    const decoded = he.decode(processed);
+
+    // 8. Normalizar espaços: colapsar múltiplos espaços, mas preservar newlines
+    const normalized = decoded
+        .split('\n')
+        .map((line) => line.trim().replace(COLLAPSE_SPACE, ' '))
+        .join('\n')
+        .replace(/\n\s*\n/g, '\n') // Remove linhas vazias extras
+        .trim();
+
+    return normalized;
 }

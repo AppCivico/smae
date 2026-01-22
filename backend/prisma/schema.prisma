@@ -2031,7 +2031,8 @@ model VariavelSuspensaControle {
     // Índice único para PDM (legacy) - quando ciclo_fisico_corrente_id não é nulo
     @@unique([variavel_id, ciclo_fisico_corrente_id, serie])
     // Índice único para variáveis globais - quando ciclo_referencia não é nulo
-    @@unique([variavel_id, serie, ciclo_referencia])
+    // criado com manualmente, ... de prisma não suporta isso
+    // @@unique([variavel_id, serie, ciclo_referencia]) WHERE removido_em is null
     @@index([variavel_id, removido_em])
     @@map("variavel_suspensa_controle")
 }

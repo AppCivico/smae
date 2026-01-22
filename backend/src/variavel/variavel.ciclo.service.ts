@@ -1240,6 +1240,7 @@ export class VariavelCicloService {
         return {
             id: variavel.id,
             suspendida: variavel.suspendida_em !== null,
+            suspendida_em: variavel.suspendida_em,
             variavel_categorica_id: variavel.variavel_categorica_id,
             casas_decimais: variavel.casas_decimais,
             periodicidade: variavel.periodicidade,
