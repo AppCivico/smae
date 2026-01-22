@@ -24,7 +24,7 @@ const {
   emFoco,
 } = storeToRefs(variaveisGlobaisStore);
 
-const emit = defineEmits(['sucesso']);
+const emit = defineEmits(['edicao-bem-sucedida']);
 
 // ID do diálogo - deve ser único
 const DIALOG_ID = 'editar-valor-base';
@@ -45,15 +45,30 @@ const dialogoEstaAberto = computed(
   () => route.query.dialogo === DIALOG_ID,
 );
 
-const schema = object({
-  valor_base: number()
-    .label('Valor base')
-    .min(0)
-    .required('Valor base é obrigatório'),
+const schema = computed(() => object({
+  ...(
+    !emFoco.value || emFoco.value?.variavel_categorica_id
+      ? {}
+      : {
+        valor_base: number()
+          .label('Valor base')
+          .min(0)
+          .required('Valor base é obrigatório'),
+      }
+  ),
   suspendida: boolean()
     .label('Suspender variável')
     .nullable(),
-});
+}));
+
+const itemParaEdicao = computed(() => ({
+  ...(
+    !emFoco.value || emFoco.value?.variavel_categorica_id
+      ? {}
+      : { valor_base: emFoco.value?.valor_base || null }
+  ),
+  suspendida: emFoco.value?.suspendida || false,
+}));
 
 const {
   errors,
@@ -62,10 +77,7 @@ const {
   values,
 } = useForm({
   validationSchema: schema,
-  initialValues: {
-    valor_base: emFoco.value?.valor_base || null,
-    suspendida: emFoco.value?.suspendida || false,
-  },
+  initialValues: itemParaEdicao.value,
 });
 
 // Ref para armazenar a função de fechar recebida do SmaeDialog
@@ -84,7 +96,7 @@ const onSubmit = handleSubmit(async (valoresControlados) => {
   }
 
   // Validar se é uma variável numérica antes de salvar
-  if (emFoco.value?.variavel_categorica_id) {
+  if (valoresControlados.valor_base && emFoco.value?.variavel_categorica_id) {
     alertStore.error('Apenas variáveis numéricas podem ter valor base editado');
     return;
   }
@@ -96,14 +108,14 @@ const onSubmit = handleSubmit(async (valoresControlados) => {
       valoresControlados,
     );
     if (resposta) {
-      alertStore.success('Valor base atualizado com sucesso!');
+      alertStore.success('Variável atualizada!');
       // Usa a função de fechar fornecida pelo SmaeDialog
       if (fecharDialogo.value) {
         fecharDialogo.value();
         // Limpa emFoco após fechar o diálogo
         variaveisGlobaisStore.emFoco = null;
       }
-      emit('sucesso');
+      emit('edicao-bem-sucedida');
     }
   } catch (error) {
     alertStore.error(error);
@@ -117,16 +129,13 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
     if (!emFoco.value || emFoco.value.id !== Number(filhaId)) {
       await variaveisGlobaisStore.buscarItem(filhaId);
     }
-
-    // Atualiza o formulário com os valores da variável
-    resetForm({
-      values: {
-        valor_base: emFoco.value?.valor_base || null,
-        suspendida: emFoco.value?.suspendida || false,
-      },
-    });
   }
 }, { immediate: true });
+
+watch(itemParaEdicao, (novoValor) => {
+  // Atualiza o formulário quando os valores para edição mudam
+  resetForm({ values: novoValor });
+});
 </script>
 
 <template>
@@ -148,14 +157,7 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
         @submit.prevent="fecharDialogo = fecharFn; onSubmit()"
       >
         <div
-          v-if="emFoco?.variavel_categorica_id"
-          class="error-msg mb2"
-        >
-          Variáveis categóricas não possuem valor base.
-        </div>
-
-        <div
-          v-else
+          v-if="emFoco && !emFoco?.variavel_categorica_id"
           class="mb2"
         >
           <SmaeLabel
@@ -167,6 +169,7 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
             name="valor_base"
             class="inputtext light mb1"
             converter-para="string"
+            :fraction-digits="emFoco.casas_decimais"
             :class="{ error: errors.valor_base }"
           />
           <ErrorMessage
@@ -201,15 +204,8 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
           :erros="errors"
           :esta-carregando="chamadasPendentes.emFoco"
           class="mt2"
-        >
-          <button
-            type="submit"
-            class="btn big"
-            :disabled="!!(chamadasPendentes.emFoco || emFoco?.variavel_categorica_id)"
-          >
-            Salvar
-          </button>
-        </SmaeFieldsetSubmit>
+          :disabled="!!(chamadasPendentes.emFoco)"
+        />
       </form>
     </template>
   </SmaeDialog>

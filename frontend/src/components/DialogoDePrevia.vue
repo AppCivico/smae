@@ -22,6 +22,24 @@ const cargaPendente = ref(true);
 
 const arquivoAtual = computed(() => props.arquivosPorId[route.query.arquivo_id]);
 
+const ehPdf = computed(() => arquivoAtual.value?.arquivo?.preview?.mime_type === 'application/pdf');
+
+const urlDoArquivo = computed(() => (arquivoAtual.value?.arquivo?.download_token
+  ? `${baseUrl}/download/${arquivoAtual.value.arquivo.download_token}`
+  : null));
+
+const urlDaPrevia = computed(() => {
+  if (!arquivoAtual.value?.arquivo?.preview?.download_token) {
+    return null;
+  }
+
+  const url = `${baseUrl}/download/${arquivoAtual.value.arquivo.preview.download_token}?inline=true`;
+
+  return ehPdf.value
+    ? `${url}#toolbar=0&navpanes=1&scrollbar=1&statusbar=1&messages=1`
+    : url;
+});
+
 watch(arquivoAtual, () => {
   cargaPendente.value = true;
 });
@@ -33,9 +51,26 @@ watch(arquivoAtual, () => {
       'arquivo_id'
     ]"
     titulo="Pré-visualização do arquivo"
-    class="dialogo-de-previa"
+    class="dialogo-de-previa largura-total"
     style="flex-direction: column; display: flex;"
   >
+    <template #acoes>
+      <SmaeLink
+        v-if="urlDoArquivo"
+        :download="arquivoAtual?.arquivo?.nome_original"
+        class="dialogo-de-previa__download-button btn with-icon amarelo"
+        :to="urlDoArquivo"
+      >
+        baixar arquivo <svg
+          class="f0 mr0 ml0"
+          width="24"
+          height="24"
+        ><use
+          xlink:href="#i_download"
+        /></svg>
+      </SmaeLink>
+    </template>
+
     <dl
       class="flex g2 mb1 flexwrap"
     >
@@ -84,9 +119,9 @@ watch(arquivoAtual, () => {
     </dl>
 
     <iframe
-      v-if="arquivoAtual?.arquivo?.preview?.mime_type == 'application/pdf'"
+      v-if="ehPdf"
       class="dialogo-de-previa__previa dialogo-de-previa__previa--iframe block card-shadow"
-      :src="`${baseUrl}/download/${arquivoAtual?.arquivo?.preview.download_token}?inline=true`"
+      :src="urlDaPrevia"
     >
       Seu navegador não suporta iframes.
     </iframe>
@@ -98,7 +133,7 @@ watch(arquivoAtual, () => {
       <img
         v-show="!cargaPendente"
         class="dialogo-de-previa__previa dialogo-de-previa__previa--img block card-shadow"
-        :src="`${baseUrl}/download/${arquivoAtual?.arquivo?.preview.download_token}`"
+        :src="urlDaPrevia"
         alt="Pré-visualização do arquivo"
         @load="cargaPendente = false"
       >
@@ -110,24 +145,18 @@ watch(arquivoAtual, () => {
       Formato desconhecido.
     </p>
 
-    <div
-      v-if="arquivoAtual?.arquivo?.download_token"
-      class="dialogo-de-previa__download-wrapper flex center g2 mt2"
+    <p
+      v-if="ehPdf"
+      class="t13 tc600 mt2 mb0"
     >
-      <SmaeLink
-        :download="arquivoAtual?.arquivo?.nome_original"
-        class="dialogo-de-previa__download-button flex center g1 btn big"
-        :to="`${baseUrl}/download/${arquivoAtual?.arquivo?.download_token}`"
-      >
-        baixar arquivo <svg
-          class="f0 mr0 ml0"
-          width="24"
-          height="24"
-        ><use
-          xlink:href="#i_download"
-        /></svg>
-      </SmaeLink>
-    </div>
+      <svg
+        width="24"
+        height="24"
+        color="#F2890D"
+        class="ib"
+      ><use xlink:href="#i_alert" /></svg>
+      Limitada às primeiras <strong>5</strong> páginas do documento.
+    </p>
   </SmaeDialog>
 </template>
 <style lang="less" scoped>

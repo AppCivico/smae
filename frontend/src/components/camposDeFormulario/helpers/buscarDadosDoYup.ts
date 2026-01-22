@@ -21,7 +21,12 @@ export default (schema: AnyObjectSchema, caminho: string) => {
   // Parâmetros: _resolve(value, options) - passamos objetos vazios como fallback seguro.
   if (field && typeof field._resolve === 'function') {
     try {
-      field = field._resolve({}, {});
+      const resolved = field._resolve({}, {});
+      // Apenas usa o schema resolvido se ele tiver a estrutura esperada (.spec)
+      if (resolved && resolved.spec) {
+        field = resolved;
+      }
+      // Se não tiver .spec, mantém o lazy wrapper original
     } catch (error) {
       // Lazy schema pode falhar se depender de valores específicos.
       // Nesse caso, mantemos o campo original (não resolvido).

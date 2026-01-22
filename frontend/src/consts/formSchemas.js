@@ -1441,6 +1441,10 @@ export const obras = object({
         .min(1),
     )
     .nullable(),
+  remover_colaboradores_do_orgao: number()
+    .label('Órgão colaborador')
+    .min(1, 'Órgão colaborador inválido')
+    .nullable(),
   responsavel_id: number()
     .label('Ponto focal responsável')
     .min(1, 'Responsável inválido')

@@ -11,6 +11,7 @@ import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
 
+import obterPrimeiroEUltimoAtraso from './obterPrimeiroEUltimoAtraso';
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
 export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';
@@ -97,23 +98,6 @@ function formatarReferencia(referencia: any): string | undefined {
   if (!referencia) return undefined;
 
   return `${referencia.split('/').reverse().join('-')}-01`;
-}
-
-function obterPrimeiroEUltimoAtraso(atrasos: string[] | null): string {
-  if (!atrasos) {
-    return '';
-  }
-
-  if (atrasos.length === 1) {
-    const [atraso] = atrasos;
-
-    return dateIgnorarTimezone(atraso, 'dd/MM/yyyy') || '-';
-  }
-
-  const primeiro = atrasos.at(0);
-  const ultimo = atrasos.at(-1);
-
-  return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
 }
 
 onMounted(() => {
@@ -274,7 +258,8 @@ watch(() => route.query, (query) => {
                   >
                     <template #default>
                       Atualização com atraso: <br>
-                      {{ obterPrimeiroEUltimoAtraso(cicloAtualizacao.atrasos) }}
+                      {{ obterPrimeiroEUltimoAtraso(cicloAtualizacao.atrasos,
+                        cicloAtualizacao.periodicidade) }}
                     </template>
 
                     <template #botao>

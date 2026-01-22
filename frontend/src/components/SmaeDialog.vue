@@ -160,7 +160,9 @@ onBeforeUnmount(() => {
             </slot>
           </TituloDaPagina>
 
-          <hr class="f1" />
+          <hr class="f1">
+
+          <slot name="acoes" />
 
           <button
             type="button"
@@ -200,7 +202,7 @@ onBeforeUnmount(() => {
 }
 
 .largura-total {
-  width: 100% !important;
+  width: calc(100% - 2rem) !important;
   max-width: none !important;
 }
 
