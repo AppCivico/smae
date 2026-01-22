@@ -17,6 +17,10 @@ defineProps({
     type: Object,
     default: null,
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 </script>
 
@@ -36,8 +40,9 @@ defineProps({
       <button
         class="btn big"
         type="submit"
-        :aria-disabled="$props.erros && Object.keys($props.erros)?.length"
+        :aria-disabled="$props.erros && !!Object.keys($props.erros)?.length"
         :aria-busy="$props.estaCarregando"
+        :disabled="$props.disabled"
       >
         Salvar
       </button>
