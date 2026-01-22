@@ -22,7 +22,11 @@ const cargaPendente = ref(true);
 
 const arquivoAtual = computed(() => props.arquivosPorId[route.query.arquivo_id]);
 
-const ehPdf = computed(() => arquivoAtual.value?.arquivo?.preview?.mime_type === 'application/pdf');
+const ehPdf = computed(() => arquivoAtual.value?.arquivo?.preview?.mime_type === 'application/pdf'
+  && !!arquivoAtual.value?.arquivo?.preview?.download_token);
+
+const ehImagem = computed(() => arquivoAtual.value?.arquivo?.preview?.mime_type?.startsWith('image/')
+  && !!arquivoAtual.value?.arquivo?.preview?.download_token);
 
 const urlDoArquivo = computed(() => (arquivoAtual.value?.arquivo?.download_token
   ? `${baseUrl}/download/${arquivoAtual.value.arquivo.download_token}`
@@ -127,7 +131,7 @@ watch(arquivoAtual, () => {
     </iframe>
 
     <template
-      v-else-if="arquivoAtual?.arquivo?.preview?.mime_type?.startsWith('image/')"
+      v-else-if="ehImagem"
     >
       <LoadingComponent v-if="cargaPendente" />
       <img
