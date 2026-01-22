@@ -34,6 +34,7 @@ const COLUMN_LABELS: Record<string, string> = {
     orgao_origem_id: 'Órgão de Origem',
     orgao_executor_id: 'Órgão Executor',
     orgao_colaborador_id: 'Órgão Colaborador',
+    remover_colaboradores_do_orgao: 'Remoção de Colaboradores do Órgão',
 
     // Pessoas
     responsavel_id: 'Responsável',
@@ -359,10 +360,12 @@ export async function BuildOperacaoProcessada(
     const processedItems: OperacaoProcessadaItemDto[] = [];
 
     for (const op of operacao) {
+        const tipoOperacao = op.col === 'remover_colaboradores_do_orgao' ? 'Remove' : op.tipo_operacao;
+
         const item: OperacaoProcessadaItemDto = {
             col: op.col,
             col_label: COLUMN_LABELS[op.col] || op.col,
-            tipo_operacao: op.tipo_operacao,
+            tipo_operacao: tipoOperacao,
             valor: op.valor,
             valor_formatado: await formatValueForDisplay(prisma, op.col, op.valor, tipo),
         };
