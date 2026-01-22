@@ -2430,6 +2430,7 @@ export class VariavelService {
                 WHERE cycle_date::date < now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}'
             )
             -- Filtra apenas ciclos que ainda não foram processados (ou foram removidos)
+            -- E que ainda não possuem valores em serie_variavel (para evitar sobrescrever dados existentes)
             SELECT
                 ac.variavel_id,
                 ac.variavel_mae_id,
@@ -2445,8 +2446,13 @@ export class VariavelService {
                 AND ctrl.ciclo_referencia = ac.data_ciclo_target
                 AND ctrl.serie = s.serie
                 AND ctrl.removido_em IS NULL
+            LEFT JOIN serie_variavel sv
+                ON sv.variavel_id = ac.variavel_id
+                AND sv.serie = s.serie
+                AND sv.data_valor = ac.data_ciclo_target
             WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
                 AND ctrl.id IS NULL
+                AND sv.variavel_id IS NULL  -- Só processa ciclos sem dados existentes
         `;
 
         // 2. Calcula valores usando LOCF para múltiplos ciclos
@@ -2503,6 +2509,9 @@ export class VariavelService {
 
         // 3. Upsert na SerieVariavel com todos os metadados
         // Inclui conferida=true e referências do bot
+        // IMPORTANTE: Como já filtramos ciclos sem dados existentes na criação dos jobs,
+        // este INSERT normalmente não conflitará com dados existentes.
+        // O ON CONFLICT é mantido como proteção contra edge cases (inserções concorrentes).
         const affectedVars = await prismaTx.$queryRaw<{ variavel_id: number; ciclo_owner_id: number }[]>`
             WITH ins_real AS (
                 INSERT INTO serie_variavel (
@@ -2534,17 +2543,7 @@ export class VariavelService {
                     elementos
                 FROM _suspend_values_global
                 WHERE valor_novo IS NOT NULL
-                ON CONFLICT (serie, variavel_id, data_valor)
-                DO UPDATE SET
-                    valor_nominal = EXCLUDED.valor_nominal,
-                    atualizado_em = now(),
-                    atualizado_por = ${CONST_BOT_USER_ID},
-                    conferida = true,
-                    conferida_por = ${CONST_BOT_USER_ID},
-                    conferida_em = now(),
-                    variavel_categorica_id = EXCLUDED.variavel_categorica_id,
-                    variavel_categorica_valor_id = EXCLUDED.variavel_categorica_valor_id,
-                    elementos = EXCLUDED.elementos
+                ON CONFLICT (serie, variavel_id, data_valor) DO NOTHING
                 RETURNING variavel_id
             ),
             ins_ctrl AS (
