@@ -44,11 +44,20 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 const name = toRef(props, 'name');
+
 const validarValorMaximo = (max, value) => {
   if (max > 0) {
     return value >= max ? max : value;
   }
   return value;
+};
+
+const aplicarMascara = (event) => {
+  const valorLimpo = event.target.value.replace(/[\D]/g, '');
+  if (valorLimpo === '') {
+    return;
+  }
+  maskFloat(event, props.fractionDigits);
 };
 const { handleChange } = useField(name, undefined, {
   // eslint-disable-next-line no-nested-ternary
@@ -65,7 +74,10 @@ const typedValue = computed({
   get() {
     return props.value === '' || props.value === null
       ? null
-      : dinheiro(props.value);
+      : dinheiro(props.value, {
+        minimumFractionDigits: props.fractionDigits,
+        maximumFractionDigits: props.fractionDigits,
+      });
   },
   set: (newValue) => {
     let cleanValue;
@@ -77,7 +89,7 @@ const typedValue = computed({
         break;
 
       default:
-        cleanValue = Number(newValue.replace(/[\D]/g, '')) / 100;
+        cleanValue = Number(newValue.replace(/[\D]/g, '')) / (10 ** props.fractionDigits);
         cleanValue = validarValorMaximo(Number(props.max), cleanValue);
 
         if (['string', 'text'].indexOf(props.converterPara.toLowerCase()) !== -1) {
@@ -97,6 +109,6 @@ const typedValue = computed({
     type="text"
     inputmode="numeric"
     :name="name"
-    @keyup="maskFloat($event, $props.fractionDigits)"
+    @keyup="aplicarMascara"
   >
 </template>
