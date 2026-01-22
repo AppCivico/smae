@@ -1,22 +1,22 @@
-import dateIgnorarTimezone from "@/helpers/dateIgnorarTimezone";
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 
 function periodicidadeEmDias(p: string): number {
   switch (p) {
-    case "Mensal":
+    case 'Mensal':
       return 30; // aproximação de 1 mês
-    case "Bimestral":
+    case 'Bimestral':
       return 60; // aproximação de 2 meses
-    case "Trimestral":
+    case 'Trimestral':
       return 90; // aproximação de 3 meses
-    case "Quadrimestral":
+    case 'Quadrimestral':
       return 120; // aproximação de 4 meses
-    case "Semestral":
+    case 'Semestral':
       return 180; // aproximação de 6 meses
-    case "Anual":
+    case 'Anual':
       return 365; // aproximação de 1 ano
-    case "Quinquenal":
+    case 'Quinquenal':
       return 1825; // aproximação de 5 anos
-    case "Secular":
+    case 'Secular':
       return 36500; // aproximação de 100 anos
     default:
       return 1;
@@ -47,7 +47,7 @@ export default function obterPrimeiroEUltimoAtraso(
   periodicidade: string,
 ): string {
   if (!atrasos || atrasos.length === 0) {
-    return "";
+    return '';
   }
 
   if (atrasos.length === 1) {
@@ -65,8 +65,8 @@ export default function obterPrimeiroEUltimoAtraso(
     let j = i + 1;
 
     while (
-      j < atrasos.length &&
-      !hasGap(atrasos[j - 1], atrasos[j], expectedDays)
+      j < atrasos.length
+      && !hasGap(atrasos[j - 1], atrasos[j], expectedDays)
     ) {
       fim = atrasos[j];
       j += 1;
@@ -83,5 +83,5 @@ export default function obterPrimeiroEUltimoAtraso(
 
   const resto = i < atrasos.length;
 
-  return resto ? `${grupos.join(", ")} e outros` : grupos.join(", ");
+  return resto ? `${grupos.join(', ')} e outros` : grupos.join(', ');
 }
