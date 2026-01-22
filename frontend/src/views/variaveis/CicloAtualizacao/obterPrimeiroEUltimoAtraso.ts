@@ -24,7 +24,7 @@ function periodicidadeEmDias(p: string): number {
 }
 
 function fmt(date: string): string {
-  return dateIgnorarTimezone(date, 'dd/MM/yyyy') || '"-"';
+  return dateIgnorarTimezone(date, 'dd/MM/yyyy') || '-';
 }
 
 function hasGap(prev: string, curr: string, expectedDays: number): boolean {
