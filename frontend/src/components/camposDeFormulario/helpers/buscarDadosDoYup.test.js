@@ -58,4 +58,13 @@ describe('buscarDadosDoYup', () => {
     // Mixed não tem validação _resolve
     expect(resultadoMixed._resolve).toBeUndefined();
   });
+
+  it('deve garantir que o schema retornado sempre tenha .spec', () => {
+    // Testa que mesmo após _resolve(), o objeto retornado tem .spec
+    const resultado = buscarDadosDoYup(schemaComLazy, 'campo_condicional');
+
+    expect(resultado).toBeDefined();
+    expect(resultado.spec).toBeDefined();
+    expect(resultado.spec).not.toBeNull();
+  });
 });
