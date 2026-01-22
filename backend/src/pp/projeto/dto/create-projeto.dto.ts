@@ -57,18 +57,12 @@ export class PPfonteRecursoDto {
     @Transform((a: TransformFnParams) => +a.value)
     fonte_recurso_ano: number;
 
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'até duas casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     valor_percentual?: number | null;
 
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'até duas casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     valor_nominal?: number | null;
@@ -509,6 +503,11 @@ export class CreateProjetoDto {
     @IsInt({ message: 'precisa ser inteiro' })
     @Min(0, { message: 'Mínimo 0' })
     orgao_colaborador_id?: number;
+
+    @IsOptional()
+    @IsInt({ message: 'precisa ser inteiro' })
+    @Min(0, { message: 'Mínimo 0' })
+    remover_colaboradores_do_orgao?: number;
 
     @IsOptional()
     @IsArray()
