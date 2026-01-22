@@ -1553,6 +1553,7 @@ body:has(dialog[open].editModal-dialog) {
     max-width: 500px;
   }
 }
+
 // Dialog nativo para modais
 .editModal-dialog {
   .modal();
@@ -1567,7 +1568,9 @@ body:has(dialog[open].editModal-dialog) {
   }
 
   .editModal {
-    .modal();
+    background: @branco;
+    color: @primary;
+    display: block;
   }
 }
 
