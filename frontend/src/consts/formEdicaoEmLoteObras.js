@@ -47,7 +47,7 @@ const metasEdicaoEmLote = {
   mdo_previsao_inauguracao: {
     permite_edicao_em_massa: true,
   },
-  orgao_colaborador_id: {
+  remover_colaboradores_do_orgao: {
     permite_edicao_em_massa: true,
     storeKey: 'órgãos',
     fetchAction: 'getAll',
@@ -55,11 +55,14 @@ const metasEdicaoEmLote = {
     optionValue: 'id',
     optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
     operacoes_permitidas: ['Set'],
+    operacao_display: {
+      Set: 'Excluir',
+    },
     explicacoes: {
       operacao: {
-        Set: 'Substitui o item existente',
+        Set: 'Remove o órgão colaborador e seus colaboradores da obra',
       },
-      campo: 'A edição do órgão colaborador implica na exclusão dos colaboradores da obra',
+      campo: 'A remoção do órgão colaborador implica na exclusão dos colaboradores da obra',
     },
   },
   orgao_executor_id: {

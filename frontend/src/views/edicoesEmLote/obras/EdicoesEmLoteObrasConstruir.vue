@@ -382,7 +382,11 @@ async function handlePropertyChange(event, idx) {
                   :key="op"
                   :value="op"
                 >
-                  <template v-if="op === 'Set'">
+                  <template v-if="campoConfig(idx)?.meta?.operacao_display?.[op]">
+                    {{ campoConfig(idx).meta.operacao_display[op] }}
+                  </template>
+
+                  <template v-else-if="op === 'Set'">
                     Substituir
                   </template>
 
