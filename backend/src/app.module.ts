@@ -25,6 +25,7 @@ import { BancadaModule } from './bancada/bancada.module';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { BuscaGlobalModule } from './busca-global/busca-global.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
+import { DemandaConfigModule } from './casa-civil/demanda-config/demanda-config.module';
 import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
 import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
@@ -127,6 +128,7 @@ import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerrame
         TipoEncerramentoModule,
         BlocoNotasModule,
         DashTransferenciaModule,
+        DemandaConfigModule,
         PessoaPrivilegioModule,
         CommonBaseModule,
         TaskModule,
