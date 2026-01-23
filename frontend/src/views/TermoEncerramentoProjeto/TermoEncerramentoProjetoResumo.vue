@@ -226,7 +226,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 </script>
 
 <template>
-  <div class="inverte-na-impressao">
+  <div class="impressao-column-reverse">
     <CabecalhoDePagina>
       <template #acoes>
         <button
@@ -335,7 +335,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
     display: block;
   }
 
-  .inverte-na-impressao {
+  .impressao-column-reverse {
     display: flex;
     flex-direction: column-reverse;
   }
