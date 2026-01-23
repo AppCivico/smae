@@ -675,19 +675,17 @@ export class VariavelCicloService {
                     valor.valor_realizado !== ''
                 ) {
                     const valorStr = valor.valor_realizado.toString();
-                    const partes = valorStr.split('.');
-                    if (partes.length === 2) {
-                        const decimais = partes[1];
-                        if (decimais.length > variavelInfo.casas_decimais) {
-                            const variableTitle = valor.variavel_id
-                                ? (cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)
-                                      ?.titulo ?? valor.variavel_id)
-                                : cicloCorrente.variavel.titulo;
+                    const precisaoReal = this.util.getDecimalPrecision(valorStr);
 
-                            throw new BadRequestException(
-                                `Valor ${valor.valor_realizado} para a variável "${variableTitle}" excede o número permitido de casas decimais (${variavelInfo.casas_decimais}).`
-                            );
-                        }
+                    if (precisaoReal > variavelInfo.casas_decimais) {
+                        const variableTitle = valor.variavel_id
+                            ? (cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)
+                                  ?.titulo ?? valor.variavel_id)
+                            : cicloCorrente.variavel.titulo;
+
+                        throw new BadRequestException(
+                            `Valor ${valor.valor_realizado} para a variável "${variableTitle}" excede o número permitido de casas decimais (${variavelInfo.casas_decimais}).`
+                        );
                     }
                 }
             }
@@ -718,14 +716,11 @@ export class VariavelCicloService {
 
         // Verificando casas decimais se for numérica
         if (variavelInfo.variavel_categorica === null && variavelInfo.casas_decimais !== null && valor_nominal !== '') {
-            const partes = valor_nominal.split('.');
-            if (partes.length === 2) {
-                const decimais = partes[1];
-                if (decimais.length > variavelInfo.casas_decimais) {
-                    throw new BadRequestException(
-                        `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
-                    );
-                }
+            const precisaoReal = this.util.getDecimalPrecision(valor_nominal);
+            if (precisaoReal > variavelInfo.casas_decimais) {
+                throw new BadRequestException(
+                    `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
+                );
             }
         }
 

@@ -1810,10 +1810,9 @@ export class VariavelService {
 
         // Verificar valor_base
         if (valorBase !== null) {
-            const valorBaseNum = Number(valorBase);
-            const valorArredondado = Number(valorBase.toFixed(novasCasasDecimais));
+            const precisaoReal = this.util.getDecimalPrecision(valorBase.toString());
 
-            if (valorBaseNum !== valorArredondado) {
+            if (precisaoReal > novasCasasDecimais) {
                 problemas.push(
                     `O valor base (${valorBase.toString()}) possui mais casas decimais que o novo limite de ${novasCasasDecimais}`
                 );
@@ -3698,15 +3697,12 @@ export class VariavelService {
 
                         // Verificando casas decimais.
                         if (variavelInfo.casas_decimais !== null) {
-                            const partes = valor.valor.split('.');
-                            if (partes.length === 2) {
-                                const decimais = partes[1];
-                                if (decimais.length > variavelInfo.casas_decimais) {
-                                    throw new HttpException(
-                                        `Valor ${valor.valor} possui mais que ${variavelInfo.casas_decimais} casas decimais.`,
-                                        400
-                                    );
-                                }
+                            const precisaoReal = this.util.getDecimalPrecision(valor.valor);
+                            if (precisaoReal > variavelInfo.casas_decimais) {
+                                throw new HttpException(
+                                    `Valor ${valor.valor} possui mais que ${variavelInfo.casas_decimais} casas decimais.`,
+                                    400
+                                );
                             }
                         }
 
