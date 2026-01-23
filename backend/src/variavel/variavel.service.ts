@@ -3696,6 +3696,20 @@ export class VariavelService {
                             variavel_categorica_valor_id = valorExiste.id;
                         }
 
+                        // Verificando casas decimais.
+                        if (variavelInfo.casas_decimais !== null) {
+                            const partes = valor.valor.split('.');
+                            if (partes.length === 2) {
+                                const decimais = partes[1];
+                                if (decimais.length > variavelInfo.casas_decimais) {
+                                    throw new HttpException(
+                                        `Valor ${valor.valor} possui mais que ${variavelInfo.casas_decimais} casas decimais.`,
+                                        400
+                                    );
+                                }
+                            }
+                        }
+
                         const updateOrCreateData: Prisma.SerieVariavelCreateManyInput = {
                             data_valor: Date2YMD.fromString(valor.referencia.periodo),
                             valor_nominal: valor.valor,
