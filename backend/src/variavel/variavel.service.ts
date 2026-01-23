@@ -1410,7 +1410,9 @@ export class VariavelService {
         // Validar alteração de casas_decimais
         if (dto.casas_decimais !== undefined && dto.casas_decimais !== selfBefUpdate.casas_decimais) {
             await this.validarAlteracaoCasasDecimais(
-                variavelId,
+                // na teoria não tem como editar as filhas por este endpoint
+                // mas fica aqui explicito a regra que precisa ser seguida
+                selfBefUpdate.variavel_mae_id ? selfBefUpdate.variavel_mae_id : variavelId,
                 selfBefUpdate.casas_decimais,
                 dto.casas_decimais,
                 selfBefUpdate.valor_base
@@ -1857,19 +1859,6 @@ export class VariavelService {
         // Se está aumentando as casas decimais, não há problema
         if (novasCasasDecimais >= casasDecimaisAtual) return;
 
-        // Se for variável mãe, verificar valores das filhas dentro do JSON de análises
-        const variavelInfo = await this.prisma.variavel.findUnique({
-            where: { id: variavelId },
-            select: {
-                variavel_mae_id: true,
-                possui_variaveis_filhas: true,
-                variaveis_filhas: {
-                    where: { removido_em: null },
-                    select: { id: true },
-                },
-            },
-        });
-
         const problemas: string[] = [];
 
         // Verificar valor_base
@@ -1903,11 +1892,11 @@ export class VariavelService {
         const maxScaleAnalise = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
             SELECT MAX(min_scale((elem->>'valor_realizado')::numeric)) as max_scale
             FROM variavel_global_ciclo_analise vgca
-            JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = vgca.variavel_id 
+            JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = vgca.variavel_id
                 AND vcc.eh_corrente = true
                 AND vgca.referencia_data = vcc.ultimo_periodo_valido
             CROSS JOIN LATERAL jsonb_array_elements(vgca.valores::jsonb) AS elem
-            WHERE vgca.variavel_id = ${variavelInfo?.variavel_mae_id ? variavelInfo.variavel_mae_id : variavelId}
+            WHERE vgca.variavel_id = ${variavelId}
               AND vgca.ultima_revisao = true
               AND vgca.removido_em IS NULL
               AND jsonb_typeof(vgca.valores::jsonb) = 'array'
