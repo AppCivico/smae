@@ -510,7 +510,6 @@ async function handlePropertyChange(event, idx) {
         <button
           type="submit"
           class="btn big"
-          @click="confirmarEdicao"
         >
           Confirmar Edição
         </button>
