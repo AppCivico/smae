@@ -194,15 +194,8 @@ BEGIN
 
             -- Evaluate the expression and insert the result into Serie_Variavel
             EXECUTE 'SELECT ' || vFormula INTO resultado;
-            
-            -- Valida número de casas decimais antes de inserir
-            IF ROUND(resultado, vVariavel.casas_decimais) = resultado THEN
-                INSERT INTO Serie_Variavel (variavel_id, serie, data_valor, valor_nominal, elementos)
-                VALUES (pVariavelId, vSerieAtual, vPeriodo, resultado, vCategoricaJSON);
-            ELSE
-                RAISE WARNING 'Variável %: Valor % no período % tem mais casas decimais do que o configurado (%). Não será inserido.', 
-                    pVariavelId, resultado, vPeriodo, vVariavel.casas_decimais;
-            END IF;
+            INSERT INTO Serie_Variavel (variavel_id, serie, data_valor, valor_nominal, elementos)
+            VALUES (pVariavelId, vSerieAtual, vPeriodo, resultado, vCategoricaJSON);
         END LOOP;
     END LOOP;
 

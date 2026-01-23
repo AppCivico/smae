@@ -184,8 +184,7 @@ BEGIN
                 td.data_serie,
                 td.valor_acc
             FROM theData td
-            WHERE td.valor_acc IS NOT NULL -- Should not be necessary due to coalesce, but safe practice
-                AND ROUND(td.valor_acc, vVariavelNumeroCasas) = td.valor_acc; -- Valida número de casas decimais
+            WHERE td.valor_acc IS NOT NULL; -- Should not be necessary due to coalesce, but safe practice
 
         ELSE -- Se a variável NÃO for acumulativa
             -- Para casos não acumulativos, a série "Acumulada" é apenas uma cópia da série base.
@@ -204,8 +203,7 @@ BEGIN
             FROM serie_variavel sv
             WHERE sv.variavel_id = pVariavelId
                 AND sv.serie = serieRecord.serie
-                AND sv.data_valor BETWEEN vInicio AND vFimCalculo
-                AND ROUND(sv.valor_nominal, vVariavelNumeroCasas) = sv.valor_nominal; -- Valida número de casas decimais
+                AND sv.data_valor BETWEEN vInicio AND vFimCalculo;
 
         END IF;
 
