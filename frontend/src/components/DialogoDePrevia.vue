@@ -40,7 +40,7 @@ const urlDaPrevia = computed(() => {
   const url = `${baseUrl}/download/${arquivoAtual.value.arquivo.preview.download_token}?inline=true`;
 
   return ehPdf.value
-    ? `${url}#toolbar=0&navpanes=1&scrollbar=1&statusbar=1&messages=1`
+    ? `${url}#toolbar=0&navpanes=0&scrollbar=1&statusbar=0&messages=1`
     : url;
 });
 
@@ -51,13 +51,28 @@ watch(arquivoAtual, () => {
 <template>
   <SmaeDialog
     id="previa-arquivo"
-    :parametros-associados="[
-      'arquivo_id'
-    ]"
-    titulo="Pré-visualização do arquivo"
+    :parametros-associados="['arquivo_id']"
     class="dialogo-de-previa largura-total"
     style="flex-direction: column; display: flex;"
   >
+    <template #titulo>
+      {{ arquivoAtual?.arquivo?.nome_original || '—' }}
+
+      <small v-if="arquivoAtual?.data">
+        ({{ dateToField(arquivoAtual?.data) || '-' }})
+      </small>
+    </template>
+
+    <template #subtitulo>
+      <svg
+        width="24"
+        height="24"
+        color="#F2890D"
+        class="ib"
+      ><use xlink:href="#i_alert" /></svg>{{ ehPdf
+        ? 'Prévia limitada às primeiras 5 páginas do documento'
+        : 'Pré-visualização do arquivo' }}
+    </template>
     <template #acoes>
       <SmaeLink
         v-if="urlDoArquivo"
@@ -76,36 +91,9 @@ watch(arquivoAtual, () => {
     </template>
 
     <dl
-      class="flex g2 mb1 flexwrap"
+      v-if="arquivoAtual?.descricao"
+      class="flex g2 flexwrap"
     >
-      <div
-        class="f1 mb1 fb50"
-      >
-        <dt
-          class="t12 uc w700 mb05 tamarelo"
-        >
-          Nome
-        </dt>
-        <dd
-          class="t13"
-        >
-          {{ arquivoAtual?.arquivo?.nome_original || '—' }}
-        </dd>
-      </div>
-      <div
-        class="f1 mb1 fb10em"
-      >
-        <dt
-          class="t12 uc w700 mb05 tamarelo"
-        >
-          Data
-        </dt>
-        <dd
-          class="t13"
-        >
-          {{ dateToField(arquivoAtual?.data) || '—' }}
-        </dd>
-      </div>
       <div
         class="f1 mb1 fb100"
       >
@@ -148,19 +136,6 @@ watch(arquivoAtual, () => {
     >
       Formato desconhecido.
     </p>
-
-    <p
-      v-if="ehPdf"
-      class="t13 tc600 mt2 mb0"
-    >
-      <svg
-        width="24"
-        height="24"
-        color="#F2890D"
-        class="ib"
-      ><use xlink:href="#i_alert" /></svg>
-      Limitada às primeiras <strong>5</strong> páginas do documento.
-    </p>
   </SmaeDialog>
 </template>
 <style lang="less" scoped>
@@ -199,5 +174,14 @@ watch(arquivoAtual, () => {
 
 .dialogo-de-previa__download-button svg {
   height: 1.25em;
+}
+
+small {
+  font-weight: 400;
+  font-size: 65%;
+  color: @c600;
+  overflow-wrap: normal;
+  word-break: normal;
+  flex-shrink: 0;
 }
 </style>
