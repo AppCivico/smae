@@ -289,18 +289,13 @@ export class VariavelCicloService {
                         VariavelGrupoResponsavelEquipe: {
                             where: {
                                 removido_em: null,
-
-                                grupo_responsavel_equipe: filters.fase
-                                    ? {
-                                          perfil: mapPerfil[filters.fase],
-                                      }
-                                    : undefined,
                             },
                             select: {
                                 grupo_responsavel_equipe: {
                                     select: {
                                         id: true,
                                         titulo: true,
+                                        perfil: true, // Incluir perfil para validação
                                     },
                                 },
                             },
@@ -313,9 +308,16 @@ export class VariavelCicloService {
         const rows = variaveis.map((v) => {
             let pode_editar: boolean = false;
             const prazo: Date | null = v.prazo;
-            const equipesDb = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id);
 
-            const equipes: IdTituloDto[] = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => ({
+            // Filtra equipes pelo perfil necessário para a fase atual da variável
+            const perfilNecessario = mapPerfil[v.fase];
+            const equipesComPerfilCorreto = v.variavel.VariavelGrupoResponsavelEquipe.filter(
+                (e) => e.grupo_responsavel_equipe.perfil === perfilNecessario
+            );
+
+            const equipesDb = equipesComPerfilCorreto.map((e) => e.grupo_responsavel_equipe.id);
+
+            const equipes: IdTituloDto[] = equipesComPerfilCorreto.map((e) => ({
                 id: e.grupo_responsavel_equipe.id,
                 titulo: e.grupo_responsavel_equipe.titulo,
             }));
@@ -1572,9 +1574,12 @@ export class VariavelCicloService {
         };
 
         // Cria filtro OR dinâmico para garantir que o usuário tenha equipe com o perfil correto para a fase
+        // Para Liberacao, também verifica que a liberação ainda não foi enviada
         const editPermissionFilter: Prisma.VariavelCicloCorrenteWhereInput = {
             OR: Object.entries(mapPerfil).map(([fase, perfil]) => ({
                 fase: fase as VariavelFase,
+                // liberacao_enviada só é relevante para fase Liberacao
+                ...(fase === 'Liberacao' ? { liberacao_enviada: false } : {}),
                 variavel: {
                     VariavelGrupoResponsavelEquipe: {
                         some: {
@@ -1598,10 +1603,10 @@ export class VariavelCicloService {
                 variavel: {
                     AND: whereFilter,
                 },
+                fase: filters.fase, // Respeita filtro de fase se fornecido
                 eh_corrente: true,
                 ...buildMetaIniAtvFilter(filters),
                 AND: [editPermissionFilter], // Adiciona o filtro de edição
-                liberacao_enviada: false,
             },
             _count: {
                 variavel_id: true,
