@@ -62,6 +62,9 @@ const título = typeof route?.meta?.título === 'function'
   display: flex;
   align-items: center;
   gap: 1rem;
+
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .título-da-página__ícone {
