@@ -3,7 +3,9 @@ import { format } from 'date-fns';
 import {
   Field, FieldArray, ErrorMessage, useForm,
 } from 'vee-validate';
-import { computed, ref } from 'vue';
+import {
+  computed, ref, onBeforeMount,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   object,
@@ -33,6 +35,13 @@ const alertStore = useAlertStore();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote);
 
 const modoRevisao = ref(false);
+
+onBeforeMount(() => {
+  if (!edicoesEmLoteStore.idsSelecionados.length) {
+    alertStore.error('Nenhuma obra selecionada. Selecione as obras antes de construir a edição.');
+    router.push({ name: 'edicoesEmLoteObrasNovo' });
+  }
+});
 
 const storeInstances = {
   equipamentos: useEquipamentosStore(),
@@ -505,7 +514,6 @@ async function handlePropertyChange(event, idx) {
         <button
           type="submit"
           class="btn big"
-          @click="confirmarEdicao"
         >
           Confirmar Edição
         </button>
