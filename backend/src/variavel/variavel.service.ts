@@ -1806,6 +1806,19 @@ export class VariavelService {
         // Se está aumentando as casas decimais, não há problema
         if (novasCasasDecimais >= casasDecimaisAtual) return;
 
+        // Se for variável mãe, verificar valores das filhas dentro do JSON de análises
+        const variavelInfo = await this.prisma.variavel.findUnique({
+            where: { id: variavelId },
+            select: {
+                variavel_mae_id: true,
+                possui_variaveis_filhas: true,
+                variaveis_filhas: {
+                    where: { removido_em: null },
+                    select: { id: true },
+                },
+            },
+        });
+
         const problemas: string[] = [];
 
         // Verificar valor_base
@@ -1835,55 +1848,28 @@ export class VariavelService {
         }
 
         // Verificar valores em variavel_global_ciclo_analise (valores pendentes de aprovação)
+        // Os valores das filhas estão no JSON da mãe, então busca sempre na mãe (se existir)
         const maxScaleAnalise = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
             SELECT MAX(min_scale((elem->>'valor_realizado')::numeric)) as max_scale
-            FROM variavel_global_ciclo_analise vgca,
-                 jsonb_array_elements(vgca.valores::jsonb) AS elem
-            WHERE vgca.variavel_id = ${variavelId}
+            FROM variavel_global_ciclo_analise vgca
+            JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = vgca.variavel_id 
+                AND vcc.eh_corrente = true
+                AND vgca.referencia_data = vcc.ultimo_periodo_valido
+            CROSS JOIN LATERAL jsonb_array_elements(vgca.valores::jsonb) AS elem
+            WHERE vgca.variavel_id = ${variavelInfo?.variavel_mae_id ? variavelInfo.variavel_mae_id : variavelId}
               AND vgca.ultima_revisao = true
               AND vgca.removido_em IS NULL
+              AND jsonb_typeof(vgca.valores::jsonb) = 'array'
+              AND jsonb_array_length(vgca.valores::jsonb) > 0
+              AND (elem->>'valor_realizado') IS NOT NULL
               AND (elem->>'valor_realizado')::text != ''
         `;
 
         const maxCasasDecimaisAnalise = maxScaleAnalise[0]?.max_scale ?? 0;
         if (maxCasasDecimaisAnalise > novasCasasDecimais) {
             problemas.push(
-                `Análises qualitativas pendentes possuem valores com até ${maxCasasDecimaisAnalise} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
+                `Análises qualitativas pendentes no ciclo corrente possuem valores com até ${maxCasasDecimaisAnalise} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
             );
-        }
-
-        // Se for variável mãe, verificar valores das filhas dentro do JSON de análises
-        const variavelInfo = await this.prisma.variavel.findUnique({
-            where: { id: variavelId },
-            select: {
-                possui_variaveis_filhas: true,
-                variaveis_filhas: {
-                    where: { removido_em: null },
-                    select: { id: true },
-                },
-            },
-        });
-
-        if (variavelInfo?.possui_variaveis_filhas && variavelInfo.variaveis_filhas.length > 0) {
-            const filhasIds = variavelInfo.variaveis_filhas.map((f) => f.id);
-
-            // Verificar análises das filhas
-            const maxScaleFilhas = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
-                SELECT MAX(min_scale((elem->>'valor_realizado')::numeric)) as max_scale
-                FROM variavel_global_ciclo_analise vgca,
-                     jsonb_array_elements(vgca.valores::jsonb) AS elem
-                WHERE vgca.variavel_id = ANY(${filhasIds}::int[])
-                  AND vgca.ultima_revisao = true
-                  AND vgca.removido_em IS NULL
-                  AND (elem->>'valor_realizado')::text != ''
-            `;
-
-            const maxCasasDecimaisFilhas = maxScaleFilhas[0]?.max_scale ?? 0;
-            if (maxCasasDecimaisFilhas > novasCasasDecimais) {
-                problemas.push(
-                    `Análises de variáveis filhas possuem valores com até ${maxCasasDecimaisFilhas} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
-                );
-            }
         }
 
         if (problemas.length > 0) {
