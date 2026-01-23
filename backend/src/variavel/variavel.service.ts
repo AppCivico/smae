@@ -1861,30 +1861,80 @@ export class VariavelService {
 
         // Verificar valor_base
         if (valorBase !== null) {
-            const valorBaseNum = Number(valorBase);
-            const valorArredondado = Number(valorBase.toFixed(novasCasasDecimais));
+            const precisaoReal = this.util.getDecimalPrecision(valorBase.toString());
 
-            if (valorBaseNum !== valorArredondado) {
+            if (precisaoReal > novasCasasDecimais) {
                 problemas.push(
                     `O valor base (${valorBase.toString()}) possui mais casas decimais que o novo limite de ${novasCasasDecimais}`
                 );
             }
         }
 
-        // Verificar valores na serie_variavel
-        const registrosComProblema = await this.prisma.$queryRaw<Array<{ total: bigint }>>`
-            SELECT COUNT(*) as total
+        // Verificar valores na serie_variavel usando min_scale
+        const maxScaleSerie = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
+            SELECT MAX(min_scale(valor_nominal)) as max_scale
             FROM serie_variavel sv
             WHERE sv.variavel_id = ${variavelId}
               AND sv.valor_nominal IS NOT NULL
-              AND ROUND(sv.valor_nominal, ${novasCasasDecimais}) <> sv.valor_nominal
         `;
 
-        const totalProblemas = Number(registrosComProblema[0]?.total || 0);
-        if (totalProblemas > 0) {
+        const maxCasasDecimaisSerie = maxScaleSerie[0]?.max_scale ?? 0;
+        if (maxCasasDecimaisSerie > novasCasasDecimais) {
             problemas.push(
-                `${totalProblemas} registro(s) na série possui(em) valores com mais casas decimais que o novo limite de ${novasCasasDecimais}`
+                `Valores na série possuem até ${maxCasasDecimaisSerie} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
             );
+        }
+
+        // Verificar valores em variavel_global_ciclo_analise (valores pendentes de aprovação)
+        const maxScaleAnalise = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
+            SELECT MAX(min_scale((elem->>'valor_realizado')::numeric)) as max_scale
+            FROM variavel_global_ciclo_analise vgca,
+                 jsonb_array_elements(vgca.valores::jsonb) AS elem
+            WHERE vgca.variavel_id = ${variavelId}
+              AND vgca.ultima_revisao = true
+              AND vgca.removido_em IS NULL
+              AND (elem->>'valor_realizado')::text != ''
+        `;
+
+        const maxCasasDecimaisAnalise = maxScaleAnalise[0]?.max_scale ?? 0;
+        if (maxCasasDecimaisAnalise > novasCasasDecimais) {
+            problemas.push(
+                `Análises qualitativas pendentes possuem valores com até ${maxCasasDecimaisAnalise} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
+            );
+        }
+
+        // Se for variável mãe, verificar valores das filhas dentro do JSON de análises
+        const variavelInfo = await this.prisma.variavel.findUnique({
+            where: { id: variavelId },
+            select: {
+                possui_variaveis_filhas: true,
+                variaveis_filhas: {
+                    where: { removido_em: null },
+                    select: { id: true },
+                },
+            },
+        });
+
+        if (variavelInfo?.possui_variaveis_filhas && variavelInfo.variaveis_filhas.length > 0) {
+            const filhasIds = variavelInfo.variaveis_filhas.map((f) => f.id);
+
+            // Verificar análises das filhas
+            const maxScaleFilhas = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
+                SELECT MAX(min_scale((elem->>'valor_realizado')::numeric)) as max_scale
+                FROM variavel_global_ciclo_analise vgca,
+                     jsonb_array_elements(vgca.valores::jsonb) AS elem
+                WHERE vgca.variavel_id = ANY(${filhasIds}::int[])
+                  AND vgca.ultima_revisao = true
+                  AND vgca.removido_em IS NULL
+                  AND (elem->>'valor_realizado')::text != ''
+            `;
+
+            const maxCasasDecimaisFilhas = maxScaleFilhas[0]?.max_scale ?? 0;
+            if (maxCasasDecimaisFilhas > novasCasasDecimais) {
+                problemas.push(
+                    `Análises de variáveis filhas possuem valores com até ${maxCasasDecimaisFilhas} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
+                );
+            }
         }
 
         if (problemas.length > 0) {
@@ -3747,6 +3797,17 @@ export class VariavelService {
                                     400
                                 );
                             variavel_categorica_valor_id = valorExiste.id;
+                        }
+
+                        // Verificando casas decimais.
+                        if (variavelInfo.casas_decimais !== null) {
+                            const precisaoReal = this.util.getDecimalPrecision(valor.valor);
+                            if (precisaoReal > variavelInfo.casas_decimais) {
+                                throw new HttpException(
+                                    `Valor ${valor.valor} possui mais que ${variavelInfo.casas_decimais} casas decimais.`,
+                                    400
+                                );
+                            }
                         }
 
                         const updateOrCreateData: Prisma.SerieVariavelCreateManyInput = {

@@ -50,10 +50,14 @@ interface ICicloCorrente {
     variavel: {
         id: number;
         titulo: string;
+        casas_decimais: number | null;
+        variavel_categorica_id: number | null;
         variaveis_filhas: {
             id: number;
             titulo?: string;
             suspendida_em?: Date | null;
+            casas_decimais?: number | null;
+            variavel_categorica_id?: number | null;
         }[];
     };
     fase: VariavelFase;
@@ -372,9 +376,17 @@ export class VariavelCicloService {
                     select: {
                         id: true,
                         titulo: true,
+                        casas_decimais: true,
+                        variavel_categorica_id: true,
                         variaveis_filhas: {
                             where: { removido_em: null, tipo: 'Global' },
-                            select: { id: true, titulo: true, suspendida_em: true },
+                            select: {
+                                id: true,
+                                titulo: true,
+                                suspendida_em: true,
+                                casas_decimais: true,
+                                variavel_categorica_id: true,
+                            },
                         },
                     },
                 },
@@ -651,6 +663,33 @@ export class VariavelCicloService {
                         `Ao aprovar, o valor realizado para a variável "${variableTitle}"${childIdentifier} não pode estar vazio.`
                     );
                 }
+
+                // Valida casas decimais para variáveis numéricas (não categóricas)
+                const variavelInfo = valor.variavel_id
+                    ? cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)
+                    : cicloCorrente.variavel;
+
+                if (
+                    variavelInfo &&
+                    variavelInfo.variavel_categorica_id === null &&
+                    variavelInfo.casas_decimais !== null &&
+                    variavelInfo.casas_decimais != undefined &&
+                    valor.valor_realizado !== ''
+                ) {
+                    const valorStr = valor.valor_realizado.toString();
+                    const precisaoReal = this.util.getDecimalPrecision(valorStr);
+
+                    if (precisaoReal > variavelInfo.casas_decimais) {
+                        const variableTitle = valor.variavel_id
+                            ? (cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)
+                                  ?.titulo ?? valor.variavel_id)
+                            : cicloCorrente.variavel.titulo;
+
+                        throw new BadRequestException(
+                            `Valor ${valor.valor_realizado} para a variável "${variableTitle}" excede o número permitido de casas decimais (${variavelInfo.casas_decimais}).`
+                        );
+                    }
+                }
             }
         }
     }
@@ -679,14 +718,11 @@ export class VariavelCicloService {
 
         // Verificando casas decimais se for numérica
         if (variavelInfo.variavel_categorica === null && variavelInfo.casas_decimais !== null && valor_nominal !== '') {
-            const partes = valor_nominal.split('.');
-            if (partes.length === 2) {
-                const decimais = partes[1];
-                if (decimais.length > variavelInfo.casas_decimais) {
-                    throw new BadRequestException(
-                        `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
-                    );
-                }
+            const precisaoReal = this.util.getDecimalPrecision(valor_nominal);
+            if (precisaoReal > variavelInfo.casas_decimais) {
+                throw new BadRequestException(
+                    `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
+                );
             }
         }
 
