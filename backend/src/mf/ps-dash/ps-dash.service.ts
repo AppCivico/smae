@@ -22,6 +22,7 @@ import {
     PSMFSituacaoVariavelDto,
     StrMIA,
 } from './dto/ps.dto';
+import { PrismaMerge } from '../../prisma/prisma.helpers';
 
 interface PaginationTokenBody {
     search_hash: string;
@@ -134,19 +135,6 @@ export class PSMFDashboardService {
             },
         ];
 
-        // Total filter without personal view constraint
-        const totalFilterSet = [...dashPermissionsSet];
-        if (ehVisaoPessoal) {
-            totalFilterSet[0] = { ...totalFilterSet[0] };
-            totalFilterSet[0].AND = [];
-        }
-
-        // Filter for variables without PDM
-        const semPdmFilterSet = { ...dashPermissionsSet[0] };
-        if (filtros.orgao_id && Array.isArray(filtros.orgao_id)) {
-            semPdmFilterSet.equipes_orgaos = { hasSome: filtros.orgao_id };
-        }
-
         // Helper function to get detailed statistics
         async function getStatsByFaseAndState(
             prisma: PrismaService,
@@ -199,41 +187,48 @@ export class PSMFDashboardService {
             };
         }
 
+        const filtroSemPdm: Prisma.PsDashboardVariavelWhereInput = {
+            pdm_id: { isEmpty: true },
+        };
+        const filtroSemPdmMasNao: Prisma.PsDashboardVariavelWhereInput = {
+            OR: [
+                { pdm_id: { isEmpty: true } },
+                filtros.pdm_id
+                    ? {
+                          NOT: { pdm_id: { hasSome: [filtros.pdm_id!] } },
+                      }
+                    : {},
+            ],
+        };
+
+        const filtroTemPdm: Prisma.PsDashboardVariavelWhereInput = {
+            pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined,
+        };
+
+        // mantive o comportamento de pegar só quem ta sem pdm por padrão
+        const filtroOutras = filtros.outras_variavel_modo_expandido ? filtroSemPdmMasNao : filtroSemPdm;
+
         // Obter estatísticas detalhadas para cada quadro
         const [associadasPdmAtualStats, naoAssociadasPdmAtualStats, totalPorSituacaoStats, semPdmStats] =
             await Promise.all([
                 // Quadros visão pessoal
                 filtros.visao_pessoal
-                    ? getStatsByFaseAndState(this.prisma, {
-                          AND: dashPermissionsSet,
-                          pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined,
-                      })
+                    ? getStatsByFaseAndState(this.prisma, PrismaMerge({ AND: dashPermissionsSet }, filtroTemPdm))
                     : Promise.resolve(null),
 
                 filtros.visao_pessoal
-                    ? getStatsByFaseAndState(this.prisma, {
-                          AND: dashPermissionsSet,
-                          pdm_id: { isEmpty: true },
-                      })
+                    ? getStatsByFaseAndState(this.prisma, PrismaMerge({ AND: dashPermissionsSet }, filtroOutras))
                     : Promise.resolve(null),
 
                 // Quadros visão adm
                 !filtros.visao_pessoal
-                    ? getStatsByFaseAndState(this.prisma, {
-                          AND: totalFilterSet,
-                          pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined,
-                      })
+                    ? getStatsByFaseAndState(this.prisma, PrismaMerge({ AND: dashPermissionsSet }, filtroTemPdm))
                     : Promise.resolve(null),
 
                 !filtros.visao_pessoal
-                    ? getStatsByFaseAndState(this.prisma, {
-                          AND: [semPdmFilterSet],
-                          pdm_id: { isEmpty: true },
-                      })
+                    ? getStatsByFaseAndState(this.prisma, PrismaMerge({ AND: dashPermissionsSet }, filtroOutras))
                     : Promise.resolve(null),
             ]);
-
-        //console.dir(semPdmFilterSet, { depth: 10 });
 
         // Montar e retornar o objeto PSMFQuadroVariaveisDto com os valores calculados
         return {

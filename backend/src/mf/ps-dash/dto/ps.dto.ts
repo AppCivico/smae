@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CicloFase } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
@@ -38,6 +38,19 @@ export class PSMFFiltroDashboardQuadroDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     apenas_pendentes?: boolean; // Mostrar apenas itens com pendências
+
+    @ApiPropertyOptional({
+        description:
+            'Modo de exibição do quadro "Outras variáveis". ' +
+            'true = modo expandido (sem PDM + outros PDMs). ' +
+            'false = modo padrão (apenas sem PDM).',
+        default: false,
+        example: false,
+    })
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    outras_variavel_modo_expandido?: boolean;
 }
 
 export class PSMFFiltroDashboardQuadroVariaveisDto extends OmitType(PSMFFiltroDashboardQuadroDto, ['pdm_id']) {
