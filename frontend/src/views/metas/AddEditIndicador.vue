@@ -238,8 +238,9 @@ async function onSubmit(values) {
         },
       ];
       values.formula = '$_1';
-    } else {
-      // Usa fórmula do editor (com null check)
+    } else if (values.indicador_tipo !== 'Categorica' || values.variavel_categoria_id) {
+      // Só usa fórmula do editor se NÃO for categórico sem variável
+      // (categórico sem variável já foi limpo acima e deve permanecer null)
       values.formula = (formula.value || '').trim();
       values.formula_variaveis = unref(variaveisFormula);
     }
