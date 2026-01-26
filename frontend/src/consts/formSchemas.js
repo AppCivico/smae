@@ -900,8 +900,7 @@ export const indicador = object()
       .required('Selecione o tipo de fórmula')
       .oneOf(['Numerico', 'Categorica'], 'Tipo inválido'),
     variavel_categoria_id: number()
-      .nullable()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+      .nullableOuVazio(),
     indicador_previa_opcao: string()
       .nullable()
       .oneOf(['NaoPermitir', 'PermitirPreenchimento'], 'Opção inválida'),
