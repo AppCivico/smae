@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, watch } from 'vue';
-import { useRoute, onBeforeRouteUpdate } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import RolagemHorizontal from '@/components/rolagem/RolagemHorizontal.vue';
@@ -100,15 +100,24 @@ function formatarReferencia(referencia: any): string | undefined {
   return `${referencia.split('/').reverse().join('-')}-01`;
 }
 
+function obterContagemDeVariaveisPorFase() {
+  const params = structuredClone(route.query);
+
+  delete params.fase;
+  delete params.aba;
+
+  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase(params);
+}
+
 onMounted(() => {
-  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+  obterContagemDeVariaveisPorFase();
 });
 
 // TO-DO: trocar o componente de diálogo para o SmaeDialog e fazer a nova
 // chamada no seu fechamento. Usar `onBeforeRouteUpdate` faz uma chamada
 // desnecessária na abertura do diálogo.
 onBeforeRouteUpdate(() => {
-  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+  obterContagemDeVariaveisPorFase();
 });
 
 watch(() => route.query, (query) => {
@@ -117,6 +126,8 @@ watch(() => route.query, (query) => {
   if (Object.keys(query).length === 0) {
     return;
   }
+
+  obterContagemDeVariaveisPorFase();
 
   cicloAtualizacaoStore.getCiclosAtualizacao({
     ...params,
