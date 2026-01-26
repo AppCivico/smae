@@ -26,7 +26,6 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
@@ -73,9 +72,6 @@ const {
   Variaveis, variáveisCompostas, variáveisCompostasEmUso,
 } = storeToRefs(VariaveisStore);
 
-const VariaveisCategoricasStore = useVariaveisCategoricasStore();
-const { lista: listaVariaveisCategoricas } = storeToRefs(VariaveisCategoricasStore);
-
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
     id: 'variaveis',
@@ -106,11 +102,21 @@ const variaveisFormula = ref([]);
 const errFormula = ref('');
 const AssociadorDeVariaveisEstaAberto = ref(false);
 
-const variaveisCategoricasDisponiveis = computed(
-  () => (Array.isArray(listaVariaveisCategoricas.value)
-    ? listaVariaveisCategoricas.value
-    : []),
-);
+const variaveisCategoricasDisponiveis = computed(() => {
+  const indicadorIdAtual = route.params.indicador_id;
+
+  // Retorna lista vazia se não está editando (campo não aparece na criação)
+  if (!indicadorIdAtual) {
+    return [];
+  }
+
+  // Retorna variáveis categóricas disponíveis para o indicador
+  if (Array.isArray(Variaveis.value?.[indicadorIdAtual])) {
+    return Variaveis.value[indicadorIdAtual].filter((v) => v.variavel_categorica_id !== null);
+  }
+
+  return [];
+});
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -168,21 +174,7 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    if (values.variavel_categoria_id) {
-      values.formula_variaveis = [
-        {
-          variavel_id: values.variavel_categoria_id,
-          referencia: '_1',
-          janela: 1,
-          usar_serie_acumulada: false,
-        },
-      ];
-      values.formula = '$_1';
-    } else {
-      values.formula = formula.value.trim();
-      values.formula_variaveis = unref(variaveisFormula);
-    }
-
+    // Normalização de valores básicos
     values.regionalizavel = !!values.regionalizavel;
     values.variavel_categoria_id = values.variavel_categoria_id === '' ? null : values.variavel_categoria_id;
     values.nivel_regionalizacao = values.regionalizavel
@@ -217,38 +209,56 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if (indicadorId || values.indicador_tipo === 'Categorica') {
-      if (values.formula) {
-        const er = await validadeFormula(values.formula);
-        if (er) {
-          errFormula.value = er;
-          throw new Error('Erro na fórmula');
-        }
-      }
+    // Limpeza de campos baseada no tipo de indicador
+    // IMPORTANTE: Fazer isso ANTES de montar a fórmula
+    if (values.indicador_tipo === 'Numerico') {
+      // Indicador numérico não pode ter variável categórica
+      values.variavel_categoria_id = null;
+    }
 
-      if (values.indicador_tipo === 'Numerico') {
-        values.variavel_categoria_id = null;
-      }
+    if (values.indicador_tipo === 'Categorica') {
+      // Indicador categórico não usa casas decimais
+      values.casas_decimais = null;
 
-      if (values.indicador_tipo === 'Categorica') {
-        values.casas_decimais = null;
-        if (!values.variavel_categoria_id) {
-          values.formula = null;
-          values.formula_variaveis = [];
-        }
+      // Se não tem variável categórica associada, limpa fórmula
+      if (!values.variavel_categoria_id) {
+        values.formula = null;
+        values.formula_variaveis = [];
       }
+    }
 
-      if (singleIndicadores.value.id) {
-        r = await IndicadoresStore.update(singleIndicadores.value.id, values);
-        MetasStore.clear();
-        IndicadoresStore.clear();
-        msg = 'Dados salvos com sucesso!';
-      } else {
-        r = await IndicadoresStore.insert(values);
-        MetasStore.clear();
-        IndicadoresStore.clear();
-        msg = 'Item adicionado com sucesso!';
+    // Montagem de fórmula (após limpeza de campos)
+    if (values.variavel_categoria_id) {
+      values.formula_variaveis = [
+        {
+          variavel_id: values.variavel_categoria_id,
+          referencia: '_1',
+          janela: 1,
+          usar_serie_acumulada: false,
+        },
+      ];
+      values.formula = '$_1';
+    } else {
+      // Usa fórmula do editor (com null check)
+      values.formula = (formula.value || '').trim();
+      values.formula_variaveis = unref(variaveisFormula);
+    }
+
+    // Validação de fórmula (se houver)
+    if (values.formula && values.formula.trim()) {
+      const er = await validadeFormula(values.formula);
+      if (er) {
+        errFormula.value = er;
+        throw new Error('Erro na fórmula');
       }
+    }
+
+    // Submit
+    if (singleIndicadores.value.id) {
+      r = await IndicadoresStore.update(singleIndicadores.value.id, values);
+      MetasStore.clear();
+      IndicadoresStore.clear();
+      msg = 'Dados salvos com sucesso!';
     } else {
       r = await IndicadoresStore.insert(values);
       MetasStore.clear();
@@ -309,9 +319,6 @@ async function checkClose() {
     }
   });
 }
-
-// Carregar variáveis categóricas disponíveis
-VariaveisCategoricasStore.buscarTudo();
 
 if (indicadorId) {
   const chamadas = [
@@ -631,7 +638,7 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-if="values.indicador_tipo === 'Categorica'"
+          v-if="values.indicador_tipo === 'Categorica' && indicadorId"
           class="f1 fb20em"
         >
           <label class="label">Variavel</label>
@@ -641,7 +648,9 @@ watch(() => props.group, () => {
             name="variavel_categoria_id"
             class="inputtext light"
           >
-            <option :value="null" />
+            <option :value="null">
+              Selecione
+            </option>
             <option
               v-for="(variavel, index) in variaveisCategoricasDisponiveis"
               :key="index"

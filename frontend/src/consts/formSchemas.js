@@ -901,12 +901,7 @@ export const indicador = object()
       .oneOf(['Numerico', 'Categorica'], 'Tipo inválido'),
     variavel_categoria_id: number()
       .nullable()
-      .when('indicador_tipo', (indicadorTipo, field) => {
-        if (indicadorTipo === 'Categorica') {
-          return field.required('Selecione a variável categórica');
-        }
-        return field.nullable();
-      }),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     indicador_previa_opcao: string()
       .nullable()
       .oneOf(['NaoPermitir', 'PermitirPreenchimento'], 'Opção inválida'),
