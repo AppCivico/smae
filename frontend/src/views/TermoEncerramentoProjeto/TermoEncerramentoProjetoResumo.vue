@@ -226,44 +226,46 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 </script>
 
 <template>
-  <CabecalhoDePagina>
-    <template #acoes>
-      <button
-        type="button"
-        class="btn outline bgnone tcprimary big"
-        @click="imprimirDocumento"
-      >
-        Imprimir
-      </button>
+  <div class="impressao-column-reverse">
+    <CabecalhoDePagina>
+      <template #acoes>
+        <button
+          type="button"
+          class="btn outline bgnone tcprimary big"
+          @click="imprimirDocumento"
+        >
+          Imprimir
+        </button>
 
-      <button
-        v-if="emFoco?.id"
-        type="button"
-        class="btn outline bgnone tcprimary big"
-        @click="excluirTermo"
-      >
-        Resetar
-      </button>
+        <button
+          v-if="emFoco?.id"
+          type="button"
+          class="btn outline bgnone tcprimary big"
+          @click="excluirTermo"
+        >
+          Resetar
+        </button>
 
-      <SmaeLink
-        :to="{ name: '.termoEncerramento.editar' }"
-        class="btn big"
-      >
-        Editar
-      </SmaeLink>
-    </template>
-  </CabecalhoDePagina>
+        <SmaeLink
+          :to="{ name: '.termoEncerramento.editar' }"
+          class="btn big"
+        >
+          Editar
+        </SmaeLink>
+      </template>
+    </CabecalhoDePagina>
 
-  <div
-    v-if="urlIcone"
-    class="flex mb2"
-    :class="classeAlinhamentoIcone"
-  >
-    <img
-      :src="urlIcone"
-      alt="Ícone do termo de encerramento"
-      class="icone-termo"
+    <div
+      v-if="urlIcone"
+      class="flex mb2"
+      :class="classeAlinhamentoIcone"
     >
+      <img
+        :src="urlIcone"
+        alt="Ícone do termo de encerramento"
+        class="icone-termo"
+      >
+    </div>
   </div>
 
   <section
@@ -331,6 +333,11 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 @media print {
   .assinatura-impressao {
     display: block;
+  }
+
+  .impressao-column-reverse {
+    display: flex;
+    flex-direction: column-reverse;
   }
 
   // Tendo que reforçar especificidade
