@@ -102,10 +102,21 @@ const variaveisFormula = ref([]);
 const errFormula = ref('');
 const AssociadorDeVariaveisEstaAberto = ref(false);
 
-// eslint-disable-next-line max-len
-const variaveisCategoricasDisponiveis = computed(() => (Array.isArray(Variaveis.value?.[route.params.indicador_id])
-  ? Variaveis.value?.[route.params.indicador_id].filter((v) => v.variavel_categorica_id !== null)
-  : []));
+const variaveisCategoricasDisponiveis = computed(() => {
+  const indicadorIdAtual = route.params.indicador_id;
+
+  // Retorna lista vazia se não está editando (campo não aparece na criação)
+  if (!indicadorIdAtual) {
+    return [];
+  }
+
+  // Retorna variáveis categóricas disponíveis para o indicador
+  if (Array.isArray(Variaveis.value?.[indicadorIdAtual])) {
+    return Variaveis.value[indicadorIdAtual].filter((v) => v.variavel_categorica_id !== null);
+  }
+
+  return [];
+});
 
 // PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
 // dentro de variáveis reativas comprometem performance
@@ -163,21 +174,7 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    if (values.variavel_categoria_id) {
-      values.formula_variaveis = [
-        {
-          variavel_id: values.variavel_categoria_id,
-          referencia: '_1',
-          janela: 1,
-          usar_serie_acumulada: false,
-        },
-      ];
-      values.formula = '$_1';
-    } else {
-      values.formula = formula.value.trim();
-      values.formula_variaveis = unref(variaveisFormula);
-    }
-
+    // Normalização de valores básicos
     values.regionalizavel = !!values.regionalizavel;
     values.variavel_categoria_id = values.variavel_categoria_id === '' ? null : values.variavel_categoria_id;
     values.nivel_regionalizacao = values.regionalizavel
@@ -212,30 +209,59 @@ async function onSubmit(values) {
       values.meta_id = Number(metaId);
     }
 
-    if (indicadorId || values.indicador_tipo === 'Categorica') {
-      if (values.formula) {
-        const er = await validadeFormula(values.formula);
-        if (er) {
-          errFormula.value = er;
-          throw new Error('Erro na fórmula');
-        }
-      }
+    // Limpeza de campos baseada no tipo de indicador
+    // IMPORTANTE: Fazer isso ANTES de montar a fórmula
+    if (values.indicador_tipo === 'Numerico') {
+      // Indicador numérico não pode ter variável categórica
+      values.variavel_categoria_id = null;
+    }
 
-      if (values.indicador_tipo === 'Numerico') {
-        values.variavel_categoria_id = null;
-      }
+    if (values.indicador_tipo === 'Categorica') {
+      // Indicador categórico não usa casas decimais
+      values.casas_decimais = null;
 
-      if (values.indicador_tipo === 'Categorica' && !values.variavel_categoria_id) {
+      // Se não tem variável categórica associada, limpa fórmula
+      if (!values.variavel_categoria_id) {
         values.formula = null;
         values.formula_variaveis = [];
       }
+    }
 
-      if (singleIndicadores.value.id) {
-        r = await IndicadoresStore.update(singleIndicadores.value.id, values);
-        MetasStore.clear();
-        IndicadoresStore.clear();
-        msg = 'Dados salvos com sucesso!';
+    // Montagem de fórmula (após limpeza de campos)
+    if (values.variavel_categoria_id) {
+      values.formula_variaveis = [
+        {
+          variavel_id: values.variavel_categoria_id,
+          referencia: '_1',
+          janela: 1,
+          usar_serie_acumulada: false,
+        },
+      ];
+      values.formula = '$_1';
+    } else if (values.indicador_tipo !== 'Categorica' || values.variavel_categoria_id) {
+      // Só usa fórmula do editor se NÃO for categórico sem variável
+      // (categórico sem variável já foi limpo acima e deve permanecer null)
+      values.formula = (formula.value || '').trim();
+      values.formula_variaveis = unref(variaveisFormula);
+    }
+
+    // Validação de fórmula (se houver)
+    if (values.formula && values.formula.trim()) {
+      errFormula.value = ''; // Limpa erros anteriores
+      const er = await validadeFormula(values.formula);
+      if (er) {
+        errFormula.value = er;
+        throw new Error('Erro na fórmula');
       }
+      // Validação passou, mantém limpo
+    }
+
+    // Submit
+    if (singleIndicadores.value.id) {
+      r = await IndicadoresStore.update(singleIndicadores.value.id, values);
+      MetasStore.clear();
+      IndicadoresStore.clear();
+      msg = 'Dados salvos com sucesso!';
     } else {
       r = await IndicadoresStore.insert(values);
       MetasStore.clear();
@@ -615,7 +641,7 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
-          v-if="values.indicador_tipo === 'Categorica'"
+          v-if="values.indicador_tipo === 'Categorica' && indicadorId"
           class="f1 fb20em"
         >
           <label class="label">Variavel</label>
@@ -625,7 +651,9 @@ watch(() => props.group, () => {
             name="variavel_categoria_id"
             class="inputtext light"
           >
-            <option :value="null" />
+            <option :value="null">
+              Selecione
+            </option>
             <option
               v-for="(variavel, index) in variaveisCategoricasDisponiveis"
               :key="index"
@@ -635,6 +663,9 @@ watch(() => props.group, () => {
               {{ variavel.titulo }}
             </option>
           </Field>
+          <div class="error-msg">
+            {{ errors.variavel_categoria_id }}
+          </div>
         </div>
       </div>
       <div
