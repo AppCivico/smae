@@ -195,7 +195,7 @@ watch(() => props.exibindo, () => {
       <div class="mb2">
         <p class="t16">
           Selecione a distribuição que deseja vincular a
-          <span class="w700 uc">nome da meta/obra/plano/projeto</span>.
+          <span class="w700 uc">{{ $props.dados.nome }}</span>.
         </p>
       </div>
 
