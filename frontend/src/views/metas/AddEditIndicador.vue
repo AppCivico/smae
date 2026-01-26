@@ -247,11 +247,13 @@ async function onSubmit(values) {
 
     // Validação de fórmula (se houver)
     if (values.formula && values.formula.trim()) {
+      errFormula.value = ''; // Limpa erros anteriores
       const er = await validadeFormula(values.formula);
       if (er) {
         errFormula.value = er;
         throw new Error('Erro na fórmula');
       }
+      // Validação passou, mantém limpo
     }
 
     // Submit
