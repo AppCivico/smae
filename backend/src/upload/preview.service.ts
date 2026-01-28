@@ -1,27 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as sharp from 'sharp';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TaskableService } from '../task/entities/task.entity';
 import { PreviewConfig } from './arquivo-preview.helper';
 import { GotenbergService } from './gotenberg.service';
 import { StorageService } from './storage-service';
-import { UploadService } from './upload.service';
 
 @Injectable()
 export class PreviewService implements TaskableService {
     private readonly logger = new Logger(PreviewService.name);
+    gerar_preview_pdf: any;
 
     constructor(
         private readonly prisma: PrismaService,
         private readonly storage: StorageService,
-        private readonly uploadService: UploadService,
-        private readonly gotenbergService: GotenbergService
+        private readonly gotenbergService: GotenbergService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async processPreviewTask(taskId: number, params: any): Promise<void> {
         const arquivoId = params.arquivo_id;
         const tipoPreview = params.tipo_preview;
 
+        this.gerar_preview_pdf = await this.smaeConfigService.getConfigBooleanWithDefault('GERAR_PREVIEW_PDF', true);
         this.logger.log(`Processing preview for arquivo ${arquivoId}, type: ${tipoPreview}`);
 
         try {
@@ -125,8 +127,7 @@ export class PreviewService implements TaskableService {
     private async processPdfConversion(arquivo: any): Promise<number> {
         this.logger.log(`Starting PDF conversion for arquivo ${arquivo.id}, mime_type: ${arquivo.mime_type}`);
 
-        // If the original file is already a PDF, return the original arquivo ID without conversion
-        if (arquivo.mime_type === 'application/pdf') {
+        if (arquivo.mime_type === 'application/pdf' && this.gerar_preview_pdf === false) {
             this.logger.log(`File is already a PDF, skipping conversion and using original arquivo ${arquivo.id}`);
             return arquivo.id;
         }

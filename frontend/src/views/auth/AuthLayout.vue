@@ -2,15 +2,12 @@
   <div class="login">
     <div class="login-form">
       <div class="wrap flex column spacebetween">
-        <div>
+        <picture>
           <img
-            src="@/assets/logo.svg"
-            alt="SMAE"
+            src="@/assets/logo.png"
+            alt="Logo Smae"
           >
-          <p class="tamarelo">
-            Sistema de Monitoramento e Acompanhamento Estratégico
-          </p>
-        </div>
+        </picture>
 
         <RouterView />
 

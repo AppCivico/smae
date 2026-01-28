@@ -119,7 +119,7 @@ onMounted(() => {
   >
     <div class="flex g2 mb1">
       <div
-        v-if="riscoId"
+        v-if="itemParaEdicao.id"
         class="f1 mb1"
       >
         <LabelFromYup

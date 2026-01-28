@@ -1410,7 +1410,9 @@ export class VariavelService {
         // Validar alteração de casas_decimais
         if (dto.casas_decimais !== undefined && dto.casas_decimais !== selfBefUpdate.casas_decimais) {
             await this.validarAlteracaoCasasDecimais(
-                variavelId,
+                // na teoria não tem como editar as filhas por este endpoint
+                // mas fica aqui explicito a regra que precisa ser seguida
+                selfBefUpdate.variavel_mae_id ? selfBefUpdate.variavel_mae_id : variavelId,
                 selfBefUpdate.casas_decimais,
                 dto.casas_decimais,
                 selfBefUpdate.valor_base
@@ -1861,29 +1863,52 @@ export class VariavelService {
 
         // Verificar valor_base
         if (valorBase !== null) {
-            const valorBaseNum = Number(valorBase);
-            const valorArredondado = Number(valorBase.toFixed(novasCasasDecimais));
+            const precisaoReal = this.util.getDecimalPrecision(valorBase.toString());
 
-            if (valorBaseNum !== valorArredondado) {
+            if (precisaoReal > novasCasasDecimais) {
                 problemas.push(
                     `O valor base (${valorBase.toString()}) possui mais casas decimais que o novo limite de ${novasCasasDecimais}`
                 );
             }
         }
 
-        // Verificar valores na serie_variavel
-        const registrosComProblema = await this.prisma.$queryRaw<Array<{ total: bigint }>>`
-            SELECT COUNT(*) as total
+        // Verificar valores na serie_variavel usando min_scale
+        const maxScaleSerie = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
+            SELECT MAX(min_scale(valor_nominal)) as max_scale
             FROM serie_variavel sv
             WHERE sv.variavel_id = ${variavelId}
               AND sv.valor_nominal IS NOT NULL
-              AND ROUND(sv.valor_nominal, ${novasCasasDecimais}) <> sv.valor_nominal
         `;
 
-        const totalProblemas = Number(registrosComProblema[0]?.total || 0);
-        if (totalProblemas > 0) {
+        const maxCasasDecimaisSerie = maxScaleSerie[0]?.max_scale ?? 0;
+        if (maxCasasDecimaisSerie > novasCasasDecimais) {
             problemas.push(
-                `${totalProblemas} registro(s) na série possui(em) valores com mais casas decimais que o novo limite de ${novasCasasDecimais}`
+                `Valores na série possuem até ${maxCasasDecimaisSerie} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
+            );
+        }
+
+        // Verificar valores em variavel_global_ciclo_analise (valores pendentes de aprovação)
+        // Os valores das filhas estão no JSON da mãe, então busca sempre na mãe (se existir)
+        const maxScaleAnalise = await this.prisma.$queryRaw<Array<{ max_scale: number | null }>>`
+            SELECT MAX(min_scale((elem->>'valor_realizado')::numeric)) as max_scale
+            FROM variavel_global_ciclo_analise vgca
+            JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = vgca.variavel_id
+                AND vcc.eh_corrente = true
+                AND vgca.referencia_data = vcc.ultimo_periodo_valido
+            CROSS JOIN LATERAL jsonb_array_elements(vgca.valores::jsonb) AS elem
+            WHERE vgca.variavel_id = ${variavelId}
+              AND vgca.ultima_revisao = true
+              AND vgca.removido_em IS NULL
+              AND jsonb_typeof(vgca.valores::jsonb) = 'array'
+              AND jsonb_array_length(vgca.valores::jsonb) > 0
+              AND (elem->>'valor_realizado') IS NOT NULL
+              AND (elem->>'valor_realizado')::text != ''
+        `;
+
+        const maxCasasDecimaisAnalise = maxScaleAnalise[0]?.max_scale ?? 0;
+        if (maxCasasDecimaisAnalise > novasCasasDecimais) {
+            problemas.push(
+                `Análises qualitativas pendentes no ciclo corrente possuem valores com até ${maxCasasDecimaisAnalise} casas decimais, superior ao novo limite de ${novasCasasDecimais}`
             );
         }
 
@@ -3747,6 +3772,17 @@ export class VariavelService {
                                     400
                                 );
                             variavel_categorica_valor_id = valorExiste.id;
+                        }
+
+                        // Verificando casas decimais.
+                        if (variavelInfo.casas_decimais !== null) {
+                            const precisaoReal = this.util.getDecimalPrecision(valor.valor);
+                            if (precisaoReal > variavelInfo.casas_decimais) {
+                                throw new HttpException(
+                                    `Valor ${valor.valor} possui mais que ${variavelInfo.casas_decimais} casas decimais.`,
+                                    400
+                                );
+                            }
                         }
 
                         const updateOrCreateData: Prisma.SerieVariavelCreateManyInput = {

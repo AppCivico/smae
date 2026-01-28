@@ -50,10 +50,14 @@ interface ICicloCorrente {
     variavel: {
         id: number;
         titulo: string;
+        casas_decimais: number | null;
+        variavel_categorica_id: number | null;
         variaveis_filhas: {
             id: number;
             titulo?: string;
             suspendida_em?: Date | null;
+            casas_decimais?: number | null;
+            variavel_categorica_id?: number | null;
         }[];
     };
     fase: VariavelFase;
@@ -289,18 +293,13 @@ export class VariavelCicloService {
                         VariavelGrupoResponsavelEquipe: {
                             where: {
                                 removido_em: null,
-
-                                grupo_responsavel_equipe: filters.fase
-                                    ? {
-                                          perfil: mapPerfil[filters.fase],
-                                      }
-                                    : undefined,
                             },
                             select: {
                                 grupo_responsavel_equipe: {
                                     select: {
                                         id: true,
                                         titulo: true,
+                                        perfil: true, // Incluir perfil para validação
                                     },
                                 },
                             },
@@ -313,9 +312,16 @@ export class VariavelCicloService {
         const rows = variaveis.map((v) => {
             let pode_editar: boolean = false;
             const prazo: Date | null = v.prazo;
-            const equipesDb = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id);
 
-            const equipes: IdTituloDto[] = v.variavel.VariavelGrupoResponsavelEquipe.map((e) => ({
+            // Filtra equipes pelo perfil necessário para a fase atual da variável
+            const perfilNecessario = mapPerfil[v.fase];
+            const equipesComPerfilCorreto = v.variavel.VariavelGrupoResponsavelEquipe.filter(
+                (e) => e.grupo_responsavel_equipe.perfil === perfilNecessario
+            );
+
+            const equipesDb = equipesComPerfilCorreto.map((e) => e.grupo_responsavel_equipe.id);
+
+            const equipes: IdTituloDto[] = equipesComPerfilCorreto.map((e) => ({
                 id: e.grupo_responsavel_equipe.id,
                 titulo: e.grupo_responsavel_equipe.titulo,
             }));
@@ -370,9 +376,17 @@ export class VariavelCicloService {
                     select: {
                         id: true,
                         titulo: true,
+                        casas_decimais: true,
+                        variavel_categorica_id: true,
                         variaveis_filhas: {
                             where: { removido_em: null, tipo: 'Global' },
-                            select: { id: true, titulo: true, suspendida_em: true },
+                            select: {
+                                id: true,
+                                titulo: true,
+                                suspendida_em: true,
+                                casas_decimais: true,
+                                variavel_categorica_id: true,
+                            },
                         },
                     },
                 },
@@ -649,6 +663,33 @@ export class VariavelCicloService {
                         `Ao aprovar, o valor realizado para a variável "${variableTitle}"${childIdentifier} não pode estar vazio.`
                     );
                 }
+
+                // Valida casas decimais para variáveis numéricas (não categóricas)
+                const variavelInfo = valor.variavel_id
+                    ? cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)
+                    : cicloCorrente.variavel;
+
+                if (
+                    variavelInfo &&
+                    variavelInfo.variavel_categorica_id === null &&
+                    variavelInfo.casas_decimais !== null &&
+                    variavelInfo.casas_decimais != undefined &&
+                    valor.valor_realizado !== ''
+                ) {
+                    const valorStr = valor.valor_realizado.toString();
+                    const precisaoReal = this.util.getDecimalPrecision(valorStr);
+
+                    if (precisaoReal > variavelInfo.casas_decimais) {
+                        const variableTitle = valor.variavel_id
+                            ? (cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)
+                                  ?.titulo ?? valor.variavel_id)
+                            : cicloCorrente.variavel.titulo;
+
+                        throw new BadRequestException(
+                            `Valor ${valor.valor_realizado} para a variável "${variableTitle}" excede o número permitido de casas decimais (${variavelInfo.casas_decimais}).`
+                        );
+                    }
+                }
             }
         }
     }
@@ -677,14 +718,11 @@ export class VariavelCicloService {
 
         // Verificando casas decimais se for numérica
         if (variavelInfo.variavel_categorica === null && variavelInfo.casas_decimais !== null && valor_nominal !== '') {
-            const partes = valor_nominal.split('.');
-            if (partes.length === 2) {
-                const decimais = partes[1];
-                if (decimais.length > variavelInfo.casas_decimais) {
-                    throw new BadRequestException(
-                        `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
-                    );
-                }
+            const precisaoReal = this.util.getDecimalPrecision(valor_nominal);
+            if (precisaoReal > variavelInfo.casas_decimais) {
+                throw new BadRequestException(
+                    `Valor ${valor_nominal} excede o número permitido de casas decimais (${variavelInfo.casas_decimais}) para a variável.`
+                );
             }
         }
 
@@ -1572,9 +1610,12 @@ export class VariavelCicloService {
         };
 
         // Cria filtro OR dinâmico para garantir que o usuário tenha equipe com o perfil correto para a fase
+        // Para Liberacao, também verifica que a liberação ainda não foi enviada
         const editPermissionFilter: Prisma.VariavelCicloCorrenteWhereInput = {
             OR: Object.entries(mapPerfil).map(([fase, perfil]) => ({
                 fase: fase as VariavelFase,
+                // liberacao_enviada só é relevante para fase Liberacao
+                ...(fase === 'Liberacao' ? { liberacao_enviada: false } : {}),
                 variavel: {
                     VariavelGrupoResponsavelEquipe: {
                         some: {
@@ -1598,10 +1639,10 @@ export class VariavelCicloService {
                 variavel: {
                     AND: whereFilter,
                 },
+                fase: filters.fase, // Respeita filtro de fase se fornecido
                 eh_corrente: true,
                 ...buildMetaIniAtvFilter(filters),
                 AND: [editPermissionFilter], // Adiciona o filtro de edição
-                liberacao_enviada: false,
             },
             _count: {
                 variavel_id: true,

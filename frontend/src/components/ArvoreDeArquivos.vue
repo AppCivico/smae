@@ -78,6 +78,7 @@ const éPossívelAbrir = (item) => !item.children?.length
               type="checkbox"
               :value="item.id"
               :disabled="éPossívelAbrir(item)"
+              aria-label="Fechar diretório na árvore de arquivos"
             >
             <svg
               title="fechar/abrir lista de arquivos"
@@ -152,36 +153,11 @@ const éPossívelAbrir = (item) => !item.children?.length
               class="arvore-de-arquivos__item arvore-de-arquivos__item--arquivo"
             >
               <span class="arvore-de-arquivos__linha">
-                <component
-                  :is="arquivo?.arquivo?.download_token ? 'a' : 'span'"
-                  :href="arquivo?.arquivo?.download_token
-                    ? baseUrl + '/download/' + arquivo?.arquivo?.download_token
-                    : undefined"
-                  download
-                  class="arvore-de-arquivos__descricao"
-                >
-                  <slot
-                    name="nome-arquivo"
-                    :arquivo="arquivo"
-                    :nivel="$props.nivel"
-                  >
-                    {{ arquivo?.descricao || arquivo?.arquivo?.nome_original }}
-                  </slot>
-                </component>
-
-                <small
-                  v-if="arquivo?.data"
-                  class="arvore-de-arquivos__data ml1"
-                >
-                  {{ dateToField(arquivo?.data) }}
-                </small>
                 <SmaeLink
-                  v-if="arquivo?.arquivo?.preview"
                   :desabilitar="!arquivo?.arquivo?.preview?.download_token"
                   exibir-desabilitado
-                  class="tipinfo left like-a__text arvore-de-arquivos__editar"
+                  class="arvore-de-arquivos__descricao"
                   :class="`arvore-de-arquivos__link-previa--${arquivo?.arquivo?.preview?.status}`"
-                  :aria-label="`exibir uma amostra de ${arquivo?.arquivo?.nome_original}`"
                   :to="{
                     query: {
                       ...$route.query,
@@ -190,31 +166,67 @@ const éPossívelAbrir = (item) => !item.children?.length
                     },
                   }"
                 >
+                  <span
+                    v-if="!arquivo?.arquivo?.preview?.download_token"
+                    class="ib tipinfo right mr05"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      :color="arquivo?.arquivo?.preview?.erro_mensagem ?
+                        '#F2890D'
+                        : undefined"
+                    ><use
+                      :xlink:href="arquivo?.arquivo?.preview?.erro_mensagem
+                        ? '#i_alert'
+                        : '#i_eye-off'"
+                    /></svg>
+                    <div v-if="arquivo?.arquivo?.preview?.erro_mensagem">
+                      {{ arquivo?.arquivo?.preview?.erro_mensagem }}
+                    </div>
+                    <div v-else-if="arquivo?.arquivo?.preview?.status === 'pendente'">
+                      Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
+                      pendente
+                    </div>
+                    <div v-else-if="arquivo?.arquivo?.preview?.status === 'executando'">
+                      Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
+                      sendo gerada
+                    </div>
+                    <div v-else>
+                      Visualização de "{{ arquivo?.arquivo?.nome_original }}" indisponível
+                    </div>
+                  </span>
+
+                  <slot
+                    name="nome-arquivo"
+                    :arquivo="arquivo"
+                    :nivel="$props.nivel"
+                  >
+                    {{ arquivo?.descricao || arquivo?.arquivo?.nome_original }}
+                  </slot>
+                </SmaeLink>
+
+                <small
+                  v-if="arquivo?.data"
+                  class="arvore-de-arquivos__data ml1"
+                >
+                  {{ dateToField(arquivo?.data) }}
+                </small>
+                <SmaeLink
+                  :desabilitar="!arquivo?.arquivo?.download_token"
+                  exibir-desabilitado
+                  :to="arquivo?.arquivo?.download_token
+                    ? baseUrl + '/download/' + arquivo?.arquivo?.download_token
+                    : undefined"
+                  download
+                  class="tipinfo left like-a__text arvore-de-arquivos__editar"
+                  :aria-label="`baixar ${arquivo?.arquivo?.nome_original}`"
+                >
                   <svg
                     width="20"
                     height="20"
-                  ><use
-                    :xlink:href="arquivo?.arquivo?.preview?.download_token
-                      ? '#i_eye'
-                      : '#i_eye-off'"
-                  /></svg>
-                  <div v-if="arquivo?.arquivo?.preview?.erro_mensagem">
-                    {{ arquivo?.arquivo?.preview?.erro_mensagem }}
-                  </div>
-                  <div v-else-if="arquivo?.arquivo?.preview?.status === 'pendente'">
-                    Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
-                    pendente
-                  </div>
-                  <div v-else-if="arquivo?.arquivo?.preview?.status === 'executando'">
-                    Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
-                    sendo gerada
-                  </div>
-                  <div v-else-if="arquivo?.arquivo?.preview?.download_token">
-                    Visualizar "{{ arquivo?.arquivo?.nome_original }}"
-                  </div>
-                  <div v-else>
-                    Visualização de "{{ arquivo?.arquivo?.nome_original }}" indisponível
-                  </div>
+                  ><use xlink:href="#i_download" /></svg>
+                  <div>Baixar "{{ arquivo?.arquivo?.nome_original }}"</div>
                 </SmaeLink>
 
                 <SmaeLink

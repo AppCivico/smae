@@ -50,4 +50,14 @@ export class VariavelUtilService {
         console.log(r[0].ultimo_periodo_valido);
         return r[0].ultimo_periodo_valido;
     }
+
+    /**
+     * Calcula o número de casas decimais significativas (ignorando zeros à direita).
+     * Exemplo: "1.500" retorna 1, "1.520" retorna 2, "1.523" retorna 3
+     */
+    getDecimalPrecision(value: string | number): number {
+        const s = String(value);
+        const match = s.match(/\.(\d*?[1-9])0*$/);
+        return match ? match[1].length : 0;
+    }
 }

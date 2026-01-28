@@ -17,8 +17,12 @@ import {
 
 setLocale(i18n);
 
-export default (tipo?: 'real' | 'estimado', obterAnosDisponiveis?: () => number[]) => object().shape({
+export default (
+  tipo?: 'real' | 'estimado',
+  obterAnosDisponiveis?: () => number[],
+) => object().shape({
   atualizacao_do_realizado: boolean(),
+  n_filhos_imediatos: number(),
   custo_estimado: number()
     .label('Previsão de custo')
     .nullable(),
@@ -30,15 +34,29 @@ export default (tipo?: 'real' | 'estimado', obterAnosDisponiveis?: () => number[
         ano: number()
           .label('Ano')
           .required()
-          .test('ano-valido', 'Ano selecionado não pertence ao período', (value) => {
+          .test('ano-valido', 'Ano selecionado não pertence ao período', function requiredCondicional(value) {
             if (!tipo || tipo === 'real' || !obterAnosDisponiveis) {
+              return true;
+            }
+
+            type FromType = { from?: { value: Record<string, unknown> }[] };
+            const fromArray = (this as unknown as FromType).from;
+            const raiz = fromArray?.[1]?.value;
+            const nFilhosImediatos = raiz?.n_filhos_imediatos;
+
+            if (nFilhosImediatos !== 0) {
               return true;
             }
 
             const anosDisponiveis = [...obterAnosDisponiveis()];
 
             if (anosDisponiveis.length === 0) return true;
-            return value ? anosDisponiveis.includes(value) : true;
+
+            if (!value) {
+              return true;
+            }
+
+            return anosDisponiveis.includes(value);
           }),
 
         valor: number()
@@ -58,16 +76,29 @@ export default (tipo?: 'real' | 'estimado', obterAnosDisponiveis?: () => number[
       object().shape({
         ano: number()
           .label('Ano')
-          .required()
-          .test('ano-valido', 'Ano selecionado não pertence ao período', (value) => {
+          .test('ano-valido', 'Ano selecionado não pertence ao período', function requiredCondicional(value) {
             if (!tipo || tipo === 'estimado' || !obterAnosDisponiveis) {
+              return true;
+            }
+
+            type FromType = { from?: { value: Record<string, unknown> }[] };
+            const fromArray = (this as unknown as FromType).from;
+            const raiz = fromArray?.[1]?.value;
+            const nFilhosImediatos = raiz?.n_filhos_imediatos;
+
+            if (nFilhosImediatos !== 0) {
               return true;
             }
 
             const anosDisponiveis = [...obterAnosDisponiveis()];
 
             if (anosDisponiveis.length === 0) return true;
-            return value ? anosDisponiveis.includes(value) : true;
+
+            if (!value) {
+              return true;
+            }
+
+            return anosDisponiveis.includes(value);
           }),
         valor: number()
           .label('Valor')

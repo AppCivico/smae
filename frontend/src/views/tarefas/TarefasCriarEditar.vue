@@ -62,11 +62,7 @@ const props = defineProps({
 
 const schema = ref(schemaTarefa('estimado'));
 
-const tarefaComFilhos = computed(() => {
-  console.log(emFoco.value);
-
-  return emFoco.value.n_filhos_imediatos !== 0;
-});
+const tarefaComFilhos = computed(() => emFoco.value?.n_filhos_imediatos !== 0);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
@@ -109,7 +105,7 @@ const formularioSujo = useIsFormDirty();
 const onSubmit = handleSubmit.withControlled(async (valores) => {
   const carga = valores;
 
-  if (!carga.dependencias && !emFoco?.n_filhos_imediatos) {
+  if (!carga.dependencias && !emFoco.value?.n_filhos_imediatos) {
     carga.dependencias = [];
   }
 
@@ -796,6 +792,7 @@ watch(itemParaEdicao, (novoValor) => {
         </legend>
 
         <FieldArray
+          v-if="!tarefaComFilhos"
           v-slot="{ fields, push, remove }"
           :name="nomeDoCampoDeCusto"
         >
@@ -895,6 +892,10 @@ watch(itemParaEdicao, (novoValor) => {
             </span>
           </div>
         </FieldArray>
+
+        <span v-else>
+          Variavel rastreada pelos filhos
+        </span>
       </div>
     </div>
 

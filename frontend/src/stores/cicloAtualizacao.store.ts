@@ -6,6 +6,7 @@ import type {
   VariavelGlobalCicloDto,
 } from '@back/variavel/dto/variavel.ciclo.dto';
 import { defineStore } from 'pinia';
+import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 import { useFileStore } from './file.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -58,7 +59,7 @@ type DadosASeremEnviados = {
     variavel_id: number;
     valor_realizado: string | null;
     valor_realizado_acumulado: string | null;
-  } [];
+  }[];
   aprovar: boolean;
   pedido_complementacao?: string;
 };
@@ -125,13 +126,16 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
         this.carregando = false;
       }
     },
-    async obterContagemDeVariaveisPorFase(): Promise<void> {
+    async obterContagemDeVariaveisPorFase(
+      params: ParametrosDeRequisicao | undefined,
+    ): Promise<void> {
       this.chamadasPendentes.contagemDeVariaveis = true;
       this.erros.contagemDeVariaveis = null;
 
       try {
         const resposta = await this.requestS.get(
           `${baseUrl}/plano-setorial-variavel-ciclo/total`,
+          params,
         ) as VariavelCicloFaseCountDto;
 
         this.contagemDeVariaveis = resposta;

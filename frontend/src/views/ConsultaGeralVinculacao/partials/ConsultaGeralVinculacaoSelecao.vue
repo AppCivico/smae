@@ -125,12 +125,13 @@ watch(
     :carregando="carregando"
     nao-emitir-query
     @filtro="buscarDados"
-    @update:modelValue="distribuicaoRecursosStore.$reset()"
   />
 
   <SmaeTable
+    titulo-para-rolagem-horizontal="tabela vinculação - seleção"
     :colunas="colunas"
     :dados="transferencias"
+    rolagem-horizontal
   >
     <template #celula:acao="{ linha }">
       <button

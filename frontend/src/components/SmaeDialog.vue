@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
         <p
           v-if="!!$props.subtitulo || !!$slots.subtitulo?.()"
           role="doc-subtitle"
-          class="t12 uc w700 tamarelo"
+          class="t12 uc w700 tamarelo mb0"
         >
           <slot name="subtitulo">
             {{ $props.subtitulo }}
@@ -208,5 +208,6 @@ onBeforeUnmount(() => {
 
 .botao-fechar-dialogo {
   aspect-ratio: 1;
+  flex-shrink: 0;
 }
 </style>
