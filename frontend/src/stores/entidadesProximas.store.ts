@@ -1,4 +1,3 @@
-import statusObras from '@/consts/statusObras';
 import type {
   DotacaoBuscaResponseDto,
   PdmPsResumoDto,
@@ -12,6 +11,7 @@ import type {
   SearchEntitiesNearbyResponseDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
+import statusObras from '@/consts/statusObras';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -50,6 +50,7 @@ type LocalizacaoProximidade = {
 type ItemConsultaGeralFormatado = {
   id: number;
   orcamento_realizado_id?: number;
+  distancia_metros: number;
   geo_localizacao_referencia_id?: number;
   modulo: string;
   nome: string;
@@ -326,6 +327,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             nome: '',
             cor: 'padrao',
             geo_localizacao_referencia_id: registro.geo_localizacao_referencia_id,
+            distancia_metros: registro.distancia_metros,
           };
 
           switch (chave) {

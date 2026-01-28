@@ -97,20 +97,30 @@ const colunas = computed(() => {
   ];
 
   const colunaDinamica = tipo.value === 'dotacao'
-    ? {
-      chave: 'dotacoes_encontradas',
-      label: 'Dotação / Processo / Nota de Empenho',
-      ehCabecalho: true,
-    }
-    : {
-      chave: 'localizacoes',
-      label: 'Endereço / distância (km)',
-      ehCabecalho: true,
-    };
+    ? [
+      {
+        chave: 'dotacoes_encontradas',
+        label: 'Dotação / Processo / Nota de Empenho',
+        ehCabecalho: true,
+      },
+    ]
+    : [
+      {
+        chave: 'localizacoes',
+        label: 'Endereço',
+        ehCabecalho: true,
+      },
+      {
+        chave: 'distancia_metros',
+        label: 'Distância (Km)',
+        atributosDaCelula: { class: 'nowrap' },
+        formatador: (v = 0) => `${(v || 0 / 1000).toFixed(2)} (Km)`,
+      },
+    ];
 
   return [
     colunasGerais[0],
-    colunaDinamica,
+    ...colunaDinamica,
   ].concat(colunasGerais.slice(1));
 });
 
@@ -189,6 +199,8 @@ async function handleItemSelecionado(linhaIndex: number) {
           :colunas="colunas"
           :dados="dadosParaTabela"
           :atributos-da-tabela="{ class: 'cabecalho-congelado'}"
+          titulo-para-rolagem-horizontal="Resultados consulta geral"
+          rolagem-horizontal
         >
           <template #celula:cor="{ celula }">
             <div
