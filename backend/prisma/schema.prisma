@@ -530,6 +530,13 @@ model Pessoa {
     DemandaConfigArquivoQCriei  DemandaConfigArquivo[] @relation("DemandaConfigArquivoCriador")
     DemandaConfigArquivoQRemovi DemandaConfigArquivo[] @relation("DemandaConfigArquivoRemovedor")
 
+    AreaTematicaQueCriei     AreaTematica[] @relation("Criador")
+    AreaTematicaQueAtualizei AreaTematica[] @relation("Atualizador")
+    AreaTematicaQueRemovi    AreaTematica[] @relation("Removedor")
+    AcaoQueCriei             Acao[]         @relation("Criador")
+    AcaoQueAtualizei         Acao[]         @relation("Atualizador")
+    AcaoQueRemovi            Acao[]         @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -8257,4 +8264,47 @@ model DemandaConfigArquivo {
     removedor      Pessoa?       @relation("DemandaConfigArquivoRemovedor", fields: [removido_por], references: [id])
 
     @@map("demanda_config_arquivo")
+}
+
+model AreaTematica {
+    id    Int     @id @default(autoincrement())
+    nome  String  @db.VarChar(255)
+    ativo Boolean @default(true)
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    acoes Acao[]
+
+    @@map("area_tematica")
+}
+
+model Acao {
+    id               Int     @id @default(autoincrement())
+    area_tematica_id Int
+    nome             String  @db.VarChar(255)
+    ativo            Boolean @default(true)
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    area_tematica AreaTematica @relation(fields: [area_tematica_id], references: [id])
+
+    @@map("acao")
 }
