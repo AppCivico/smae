@@ -184,6 +184,53 @@ export class DemandaConfigService {
                     select: { id: true },
                 });
 
+                // Handle upload_tokens if provided
+                if (dto.upload_tokens !== undefined) {
+                    // Get existing arquivo IDs from upload tokens
+                    const newArquivoIds = dto.upload_tokens.map((token) =>
+                        this.uploadService.checkUploadOrDownloadToken(token)
+                    );
+
+                    // Get current arquivos for this config
+                    const currentArquivos = await prismaTxn.demandaConfigArquivo.findMany({
+                        where: {
+                            demanda_config_id: id,
+                            removido_em: null,
+                        },
+                        select: {
+                            id: true,
+                            arquivo_id: true,
+                        },
+                    });
+
+                    const currentArquivoIds = currentArquivos.map((a) => a.arquivo_id);
+
+                    // Soft delete arquivos that are not in the new list
+                    const toRemove = currentArquivos.filter((a) => !newArquivoIds.includes(a.arquivo_id));
+                    for (const arquivo of toRemove) {
+                        await prismaTxn.demandaConfigArquivo.update({
+                            where: { id: arquivo.id },
+                            data: {
+                                removido_por: user.id,
+                                removido_em: new Date(Date.now()),
+                            },
+                        });
+                    }
+
+                    // Create new arquivos that don't exist yet
+                    const toCreate = newArquivoIds.filter((arquivoId) => !currentArquivoIds.includes(arquivoId));
+                    for (const arquivoId of toCreate) {
+                        await prismaTxn.demandaConfigArquivo.create({
+                            data: {
+                                demanda_config_id: id,
+                                arquivo_id: arquivoId,
+                                criado_por: user.id,
+                                criado_em: new Date(Date.now()),
+                            },
+                        });
+                    }
+                }
+
                 return demandaConfig;
             }
         );
