@@ -91,7 +91,9 @@ export class ProjetoSearchResultDto {
 
     nro_vinculos?: number;
 
-    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    @ApiPropertyOptional({
+        description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)',
+    })
     distancia_metros?: number;
 }
 
@@ -102,7 +104,9 @@ export class MetaSearchResultDto {
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
 
-    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    @ApiPropertyOptional({
+        description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)',
+    })
     distancia_metros?: number;
 }
 
@@ -133,7 +137,9 @@ export class IniciativaSearchResultDto {
 
     nro_vinculos?: number;
 
-    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    @ApiPropertyOptional({
+        description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)',
+    })
     distancia_metros?: number;
 }
 
@@ -170,7 +176,9 @@ export class AtividadeSearchResultDto {
 
     nro_vinculos?: number;
 
-    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    @ApiPropertyOptional({
+        description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)',
+    })
     distancia_metros?: number;
 }
 
@@ -199,7 +207,9 @@ export class EtapaSearchResultDto {
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
 
-    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    @ApiPropertyOptional({
+        description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)',
+    })
     distancia_metros?: number;
 }
 
@@ -246,8 +256,8 @@ export class SearchEntitiesNearbyDto {
     })
     @IsOptional()
     @IsNumber()
-    @Min(0.1)
-    @Max(10)
+    @Min(0.1, { message: 'Mínimo de 0.1 km' })
+    @Max(10, { message: 'Máximo de 10 km' })
     raio_km?: number = 2;
 
     @ApiPropertyOptional({
@@ -257,8 +267,8 @@ export class SearchEntitiesNearbyDto {
     })
     @IsOptional()
     @IsNumber()
-    @Min(100)
-    @Max(10000)
+    @Min(100, { message: 'Mínimo de 100 metros' })
+    @Max(10000, { message: 'Máximo de 10.000 metros (10 km)' })
     raio?: number;
 
     @ApiPropertyOptional({ description: 'ID da configuração da GeoCamada que representa distritos/subprefeituras' })
