@@ -480,6 +480,15 @@ export class DemandaConfigService {
     }
 
     async listAnexos(configId: number, user: PessoaFromJwt): Promise<DemandaConfigAnexoDto[]> {
+        const config = await this.prisma.demandaConfig.findFirst({
+            where: { id: configId, removido_em: null },
+            select: { id: true },
+        });
+
+        if (!config) {
+            throw new NotFoundException('Configuração não encontrada');
+        }
+
         const anexos = await this.prisma.demandaConfigArquivo.findMany({
             where: {
                 demanda_config_id: configId,
