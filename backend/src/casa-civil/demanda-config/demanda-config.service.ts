@@ -41,6 +41,7 @@ export class DemandaConfigService {
                     },
                     select: {
                         id: true,
+                        data_inicio_vigencia: true,
                         data_fim_vigencia: true,
                     },
                 });
@@ -53,20 +54,33 @@ export class DemandaConfigService {
                     activeConfig ? [activeConfig.id] : []
                 );
 
-                // If exists, update its end date to close the gap (stick to new start - 1 day)
+                // If exists, shrink or supersede the active config
                 if (activeConfig) {
                     const newEndDate = new Date(dto.data_inicio_vigencia);
                     newEndDate.setDate(newEndDate.getDate() - 1);
 
-                    await prismaTxn.demandaConfig.update({
-                        where: { id: activeConfig.id },
-                        data: {
-                            data_fim_vigencia: newEndDate,
-                            ativo: null,
-                            atualizado_por: user.id,
-                            atualizado_em: new Date(Date.now()),
-                        },
-                    });
+                    if (newEndDate < activeConfig.data_inicio_vigencia) {
+                        // New config fully supersedes the active one — soft delete it
+                        await prismaTxn.demandaConfig.update({
+                            where: { id: activeConfig.id },
+                            data: {
+                                ativo: null,
+                                removido_por: user.id,
+                                removido_em: new Date(Date.now()),
+                            },
+                        });
+                    } else {
+                        // Shrink the active config to end right before the new one starts
+                        await prismaTxn.demandaConfig.update({
+                            where: { id: activeConfig.id },
+                            data: {
+                                data_fim_vigencia: newEndDate,
+                                ativo: null,
+                                atualizado_por: user.id,
+                                atualizado_em: new Date(Date.now()),
+                            },
+                        });
+                    }
                 }
 
                 // Create new config with ativo = true
