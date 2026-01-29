@@ -511,28 +511,6 @@ export class DemandaConfigService {
         }));
     }
 
-    async removeAnexo(configId: number, anexoId: number, user: PessoaFromJwt): Promise<void> {
-        const anexo = await this.prisma.demandaConfigArquivo.findFirst({
-            where: {
-                id: anexoId,
-                demanda_config_id: configId,
-                removido_em: null,
-            },
-        });
-
-        if (!anexo) {
-            throw new NotFoundException('Anexo não encontrado');
-        }
-
-        await this.prisma.demandaConfigArquivo.update({
-            where: { id: anexoId },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
-        });
-    }
-
     // Helper methods
 
     private async checkDateOverlap(
