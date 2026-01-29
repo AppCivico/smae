@@ -1219,6 +1219,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'TransfereGov.listar',
             'TransfereGov.sincronizar',
             'CadastroTransferencia.dashboard',
+
+            'CadastroDemandaConfig.editar',
+            'CadastroDemandaConfig.inserir',
+            'CadastroDemandaConfig.remover',
+            'CadastroDemandaConfig.listar',
         ],
     },
     {
