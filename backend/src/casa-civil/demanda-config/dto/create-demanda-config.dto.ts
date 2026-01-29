@@ -2,16 +2,15 @@ import { Transform } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
-    IsNumberString,
     IsOptional,
     IsString,
     MaxLength,
-    ValidateIf,
+    ValidateIf
 } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
+import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
-import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateDemandaConfigDto {
     @IsOnlyDate()

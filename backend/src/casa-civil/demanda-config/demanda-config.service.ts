@@ -375,6 +375,15 @@ export class DemandaConfigService {
                 throw new NotFoundException('Configuração não encontrada');
             }
 
+            // Check if record is at extremes (first or last)
+            const isExtreme = await this.isRecordAtExtremes(prismaTxn, id);
+            if (!isExtreme) {
+                throw new HttpException(
+                    'Apenas o primeiro ou último registro pode ser removido para evitar lacunas',
+                    400
+                );
+            }
+
             // Soft delete the record
             await prismaTxn.demandaConfig.update({
                 where: { id },

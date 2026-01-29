@@ -21,6 +21,13 @@ CREATE TABLE "demanda_config" (
     CONSTRAINT "demanda_config_pkey" PRIMARY KEY ("id")
 );
 
+
+ALTER table demanda_config add check demanda_config_valor_minimo_non_negative check (valor_minimo >= 0);
+ALTER table demanda_config add check demanda_config_valor_maximo_non_negative check (valor_maximo >= 0);
+ALTER table demanda_config add check demanda_config_valor_maximo_greater_equal_minimo check (valor_maximo >= valor_minimo);
+ALTER table demanda_config add check demanda_config_ativo_initial_value check (ativo IS NULL OR ativo = true);
+
+
 -- CreateTable
 CREATE TABLE "demanda_config_arquivo" (
     "id" SERIAL NOT NULL,
