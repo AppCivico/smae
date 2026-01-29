@@ -437,6 +437,20 @@ export class DemandaConfigService {
 
     async appendAnexo(configId: number, dto: AppendDemandaConfigAnexoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+        // test if config exists
+        const config = await this.prisma.demandaConfig.findFirst({
+            where: {
+                id: configId,
+                removido_em: null,
+            },
+            select: { id: true, ativo: true },
+        });
+
+        if (!config) throw new NotFoundException('Configuração não encontrada');
+        const isExtreme = await this.isRecordAtExtremes(this.prisma, configId);
+        if (!isExtreme) {
+            throw new HttpException('Apenas o primeiro ou último registro pode ser editada para evitar lacunas', 400);
+        }
 
         const anexo = await this.prisma.demandaConfigArquivo.create({
             data: {
