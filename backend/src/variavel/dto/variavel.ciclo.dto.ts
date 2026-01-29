@@ -14,6 +14,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
@@ -138,13 +139,7 @@ export class VariavelGlobalAnaliseItemDto {
     @Transform(NumberTransform)
     variavel_id?: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
-        }
-    )
+    @IsNumberStringCustom(30, 30)
     @ValidateIf((object, value) => value !== '')
     @Type(() => String)
     valor_realizado: string;

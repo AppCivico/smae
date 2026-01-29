@@ -14,6 +14,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateTransferenciaDto, CreateTransferenciaParlamentarDto } from './create-transferencia.dto';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
@@ -21,43 +22,19 @@ import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 export class UpdateTransferenciaDto extends PartialType(OmitType(CreateTransferenciaDto, [])) {}
 
 export class CompletarTransferenciaDto {
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     valor: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     valor_total: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     valor_contrapartida: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     custeio: number;
 
@@ -70,13 +47,7 @@ export class CompletarTransferenciaDto {
     @ValidateIf((object, value) => value !== null)
     pct_custeio?: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     investimento: number;
 
@@ -180,13 +151,7 @@ export class UpdateTransferenciaParlamentarDto extends PartialType(
     id?: number;
 
     @IsOptional()
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     valor?: number;
 }

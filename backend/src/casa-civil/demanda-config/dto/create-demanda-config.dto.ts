@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateDemandaConfigDto {
@@ -23,22 +24,10 @@ export class CreateDemandaConfigDto {
     @ValidateIf((object, value) => value !== null)
     data_fim_vigencia?: Date;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Valor mínimo precisa ser um número com até 13 dígitos antes do ponto, e até 2 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(13, 2)
     valor_minimo: string;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Valor máximo precisa ser um número com até 13 dígitos antes do ponto, e até 2 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(13, 2)
     valor_maximo: string;
 
     @IsOptional()

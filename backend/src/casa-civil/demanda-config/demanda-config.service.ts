@@ -9,11 +9,7 @@ import { AppendDemandaConfigAnexoDto } from './dto/demanda-config-anexo.dto';
 import { CreateDemandaConfigDto } from './dto/create-demanda-config.dto';
 import { FilterDemandaConfigDto } from './dto/filter-demanda-config.dto';
 import { UpdateDemandaConfigDto } from './dto/update-demanda-config.dto';
-import {
-    DemandaConfigAnexoDto,
-    DemandaConfigDetailDto,
-    DemandaConfigDto,
-} from './entities/demanda-config.entity';
+import { DemandaConfigAnexoDto, DemandaConfigDetailDto, DemandaConfigDto } from './entities/demanda-config.entity';
 
 @Injectable()
 export class DemandaConfigService {
@@ -37,10 +33,7 @@ export class DemandaConfigService {
                     throw new HttpException('valor_maximo deve ser maior ou igual a valor_minimo', 400);
                 }
 
-                // Check for date overlaps
-                await this.checkDateOverlap(prismaTxn, dto.data_inicio_vigencia, dto.data_fim_vigencia, null);
-
-                // Find current active record
+                // Find current active record FIRST (before overlap check)
                 const activeConfig = await prismaTxn.demandaConfig.findFirst({
                     where: {
                         ativo: true,
@@ -52,7 +45,15 @@ export class DemandaConfigService {
                     },
                 });
 
-                // If exists, update its end date and set ativo to null
+                // Check for date overlaps, excluding active (it will be auto-closed)
+                await this.checkDateOverlap(
+                    prismaTxn,
+                    dto.data_inicio_vigencia,
+                    dto.data_fim_vigencia,
+                    activeConfig ? [activeConfig.id] : []
+                );
+
+                // If exists, update its end date to close the gap (stick to new start - 1 day)
                 if (activeConfig) {
                     const newEndDate = new Date(dto.data_inicio_vigencia);
                     newEndDate.setDate(newEndDate.getDate() - 1);
@@ -142,22 +143,27 @@ export class DemandaConfigService {
 
                 // Validate dates if provided
                 const newStartDate = dto.data_inicio_vigencia ?? existing.data_inicio_vigencia;
-                const newEndDate = dto.data_fim_vigencia !== undefined ? dto.data_fim_vigencia : existing.data_fim_vigencia;
+                const newEndDate =
+                    dto.data_fim_vigencia !== undefined ? dto.data_fim_vigencia : existing.data_fim_vigencia;
 
                 if (newEndDate && newEndDate < newStartDate) {
                     throw new HttpException('data_fim_vigencia deve ser maior ou igual a data_inicio_vigencia', 400);
                 }
 
                 // Validate values if provided
-                const newValorMinimo = dto.valor_minimo ? parseFloat(dto.valor_minimo) : parseFloat(existing.valor_minimo.toString());
-                const newValorMaximo = dto.valor_maximo ? parseFloat(dto.valor_maximo) : parseFloat(existing.valor_maximo.toString());
+                const newValorMinimo = dto.valor_minimo
+                    ? parseFloat(dto.valor_minimo)
+                    : parseFloat(existing.valor_minimo.toString());
+                const newValorMaximo = dto.valor_maximo
+                    ? parseFloat(dto.valor_maximo)
+                    : parseFloat(existing.valor_maximo.toString());
 
                 if (newValorMaximo < newValorMinimo) {
                     throw new HttpException('valor_maximo deve ser maior ou igual a valor_minimo', 400);
                 }
 
                 // Check for date overlaps (excluding current record)
-                await this.checkDateOverlap(prismaTxn, newStartDate, newEndDate, id);
+                await this.checkDateOverlap(prismaTxn, newStartDate, newEndDate, [id]);
 
                 // Update record
                 const demandaConfig = await prismaTxn.demandaConfig.update({
@@ -405,7 +411,10 @@ export class DemandaConfigService {
 
         return anexos.map((anexo) => ({
             id: anexo.id,
-            arquivo: BuildArquivoBaseDto(anexo.arquivo, this.uploadService.getDownloadToken.bind(this.uploadService)),
+            arquivo: BuildArquivoBaseDto(
+                anexo.arquivo,
+                (id: number, expiresIn: string) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+            ),
         }));
     }
 
@@ -436,49 +445,34 @@ export class DemandaConfigService {
     private async checkDateOverlap(
         prismaTxn: Prisma.TransactionClient,
         startDate: Date,
-        endDate: Date | null,
-        excludeId: number | null
+        endDate: Date | null | undefined,
+        excludeIds: number[]
     ): Promise<void> {
+        if (endDate === undefined) endDate = null;
+
+        // Standard interval overlap: [A,B] overlaps [C,D] iff A <= D AND B >= C
+        // Where null = infinity
+
+        const conditions: Prisma.DemandaConfigWhereInput[] = [
+            // existing.end >= new.start OR existing.end is null (infinity)
+            {
+                OR: [{ data_fim_vigencia: { gte: startDate } }, { data_fim_vigencia: null }],
+            },
+        ];
+
+        // existing.start <= new.end (only when new.end is not null)
+        // If new.end is null (infinity), any existing record that passes condition 1 overlaps
+        if (endDate !== null) {
+            conditions.push({ data_inicio_vigencia: { lte: endDate } });
+        }
+
         const where: Prisma.DemandaConfigWhereInput = {
             removido_em: null,
-            OR: [
-                // New starts during existing
-                {
-                    data_inicio_vigencia: { lte: startDate },
-                    OR: [
-                        { data_fim_vigencia: { gte: startDate } },
-                        { data_fim_vigencia: null },
-                    ],
-                },
-                // New ends during existing (if endDate is provided)
-                ...(endDate
-                    ? [
-                          {
-                              data_inicio_vigencia: { lte: endDate },
-                              OR: [
-                                  { data_fim_vigencia: { gte: startDate } },
-                                  { data_fim_vigencia: null },
-                              ],
-                          },
-                      ]
-                    : []),
-                // New encompasses existing
-                {
-                    data_inicio_vigencia: { gte: startDate },
-                    ...(endDate
-                        ? {
-                              OR: [
-                                  { data_fim_vigencia: { lte: endDate } },
-                                  { data_fim_vigencia: null },
-                              ],
-                          }
-                        : {}),
-                },
-            ],
+            AND: conditions,
         };
 
-        if (excludeId !== null) {
-            where.id = { not: excludeId };
+        if (excludeIds.length > 0) {
+            where.id = { notIn: excludeIds };
         }
 
         const overlappingCount = await prismaTxn.demandaConfig.count({ where });
@@ -525,7 +519,10 @@ export class DemandaConfigService {
             ativo: row.ativo,
             anexos: row.arquivos.map((anexo: any) => ({
                 id: anexo.id,
-                arquivo: BuildArquivoBaseDto(anexo.arquivo, this.uploadService.getDownloadToken.bind(this.uploadService)),
+                arquivo: BuildArquivoBaseDto(
+                    anexo.arquivo,
+                    (id: number, expiresIn: string) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                ),
             })),
         };
     }

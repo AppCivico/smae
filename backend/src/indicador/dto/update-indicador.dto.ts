@@ -14,6 +14,7 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { IsNumberStringCustom } from '../../common/decorators/IsNumberStringCustom';
 import { IndicadorPreviaCategorica } from '../../variavel/dto/create-variavel.dto';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
@@ -128,27 +129,13 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
      * Se nulo, a séria acumulada não será calculada quando acumulado_usa_formula for false.
      * @example "0.0"
      */
-    // maxDecimalPlaces: 30 nao existe isso nesse cara, só tem no IsNumber, mas se usar o transform,
-    // o javascript vai perder a precisao na hora do casting pra float
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(13, 2)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
     @Type(() => String)
     acumulado_valor_base?: number | null;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
     @Type(() => String)
