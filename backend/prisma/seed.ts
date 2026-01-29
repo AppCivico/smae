@@ -136,6 +136,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
     SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
+    CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
+
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
     CadastroCargo: ['', null],
@@ -199,6 +201,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['TipoAditivo.inserir', 'Inserir Tipo de Aditivo'],
         ['TipoAditivo.editar', 'Editar Tipo de Aditivo'],
         ['TipoAditivo.remover', 'Remover Tipo de Aditivo'],
+    ],
+
+    CadastroDemandaConfig: [
+        ['CadastroDemandaConfig.inserir', 'Inserir Configuração de Demanda'],
+        ['CadastroDemandaConfig.editar', 'Editar Configuração de Demanda'],
+        ['CadastroDemandaConfig.listar', 'Listar Configurações de Demanda'],
+        ['CadastroDemandaConfig.remover', 'Remover Configuração de Demanda'],
     ],
 
     AssuntoVariavel: [
