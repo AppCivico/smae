@@ -7,6 +7,7 @@ import { CreateGrupoPainelExternoDto } from './dto/create-grupo-externo.dto';
 import { FilterGrupoPainelExternoDto, GrupoPainelExternoItemDto } from './entities/grupo-externo.entity';
 import { UpdateGrupoPainelExternoDto } from './dto/update-grupo-externo.dto';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 @Injectable()
 export class GrupoPainelExternoService {
@@ -38,6 +39,7 @@ export class GrupoPainelExternoService {
         });
         if (!orgao) throw new BadRequestException('Órgão não encontrado.');
 
+        dto.participantes = UniqueNumbers(dto.participantes);
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const exists = await prismaTx.grupoPainelExterno.count({
@@ -170,7 +172,9 @@ export class GrupoPainelExternoService {
                     'Você só tem permissão para editar Grupo de Painel Externo no mesmo órgão.'
                 );
         }
+        const now = new Date(Date.now());
 
+        dto.participantes = UniqueNumbers(dto.participantes);
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             if (dto.orgao_id) {
                 // verificando se órgão não foi removido
@@ -230,7 +234,7 @@ export class GrupoPainelExternoService {
                                 removido_em: null,
                             },
                             data: {
-                                removido_em: new Date(Date.now()),
+                                removido_em: now,
                             },
                         });
                     }
@@ -250,6 +254,7 @@ export class GrupoPainelExternoService {
                                 criado_por: user.id,
                                 orgao_id: pessoa.orgao_id,
                                 pessoa_id: pessoa.pessoa_id,
+                                criado_em: now,
                             },
                         });
                     } else {
