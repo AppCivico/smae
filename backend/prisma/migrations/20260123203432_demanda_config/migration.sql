@@ -21,11 +21,22 @@ CREATE TABLE "demanda_config" (
     CONSTRAINT "demanda_config_pkey" PRIMARY KEY ("id")
 );
 
+ALTER TABLE demanda_config
+ADD CONSTRAINT demanda_config_valor_minimo_non_negative
+CHECK (valor_minimo >= 0);
 
-ALTER table demanda_config add check demanda_config_valor_minimo_non_negative check (valor_minimo >= 0);
-ALTER table demanda_config add check demanda_config_valor_maximo_non_negative check (valor_maximo >= 0);
-ALTER table demanda_config add check demanda_config_valor_maximo_greater_equal_minimo check (valor_maximo >= valor_minimo);
-ALTER table demanda_config add check demanda_config_ativo_initial_value check (ativo IS NULL OR ativo = true);
+ALTER TABLE demanda_config
+ADD CONSTRAINT demanda_config_valor_maximo_non_negative
+CHECK (valor_maximo >= 0);
+
+ALTER TABLE demanda_config
+ADD CONSTRAINT demanda_config_valor_maximo_greater_equal_minimo
+CHECK (valor_maximo >= valor_minimo);
+
+ALTER TABLE demanda_config
+ADD CONSTRAINT demanda_config_ativo_initial_value
+CHECK (ativo IS NULL OR ativo = true);
+
 
 
 -- CreateTable
