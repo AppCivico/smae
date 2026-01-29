@@ -6,15 +6,11 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DemandaConfigService } from './demanda-config.service';
-import { AppendDemandaConfigAnexoDto } from './dto/demanda-config-anexo.dto';
 import { CreateDemandaConfigDto } from './dto/create-demanda-config.dto';
+import { AppendDemandaConfigAnexoDto } from './dto/demanda-config-anexo.dto';
 import { FilterDemandaConfigDto } from './dto/filter-demanda-config.dto';
 import { UpdateDemandaConfigDto } from './dto/update-demanda-config.dto';
-import {
-    DemandaConfigAnexoDto,
-    DemandaConfigDetailDto,
-    ListDemandaConfigDto,
-} from './entities/demanda-config.entity';
+import { DemandaConfigAnexoDto, DemandaConfigDetailDto, ListDemandaConfigDto } from './entities/demanda-config.entity';
 
 @ApiTags('Configurações - Demandas')
 @Controller('demanda-config')
@@ -67,7 +63,7 @@ export class DemandaConfigController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroDemandaConfig.remover'])
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
+    @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.demandaConfigService.remove(+params.id, user);
         return '';
@@ -98,11 +94,8 @@ export class DemandaConfigController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroDemandaConfig.remover'])
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
-    async removeAnexo(
-        @Param() params: FindTwoParams,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removeAnexo(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.demandaConfigService.removeAnexo(+params.id, +params.id2, user);
         return '';
     }
