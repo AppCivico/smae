@@ -137,6 +137,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
     CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
+    CadastroAreaTematica: ['Área Temática', 'CasaCivil'],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -208,6 +209,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroDemandaConfig.editar', 'Editar Configuração de Demanda'],
         ['CadastroDemandaConfig.listar', 'Listar Configurações de Demanda'],
         ['CadastroDemandaConfig.remover', 'Remover Configuração de Demanda'],
+    ],
+
+    CadastroAreaTematica: [
+        ['CadastroAreaTematica.inserir', 'Inserir Área Temática'],
+        ['CadastroAreaTematica.editar', 'Editar Área Temática'],
+        ['CadastroAreaTematica.listar', 'Listar Áreas Temáticas'],
+        ['CadastroAreaTematica.remover', 'Remover Área Temática'],
     ],
 
     AssuntoVariavel: [

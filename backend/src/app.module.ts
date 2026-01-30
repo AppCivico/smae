@@ -24,6 +24,7 @@ import { AvisoEmailModule } from './aviso-email/aviso-email.module';
 import { BancadaModule } from './bancada/bancada.module';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { BuscaGlobalModule } from './busca-global/busca-global.module';
+import { AreaTematicaModule } from './casa-civil/area-tematica/area-tematica.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
 import { DemandaConfigModule } from './casa-civil/demanda-config/demanda-config.module';
 import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
@@ -129,6 +130,7 @@ import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerrame
         BlocoNotasModule,
         DashTransferenciaModule,
         DemandaConfigModule,
+        AreaTematicaModule,
         PessoaPrivilegioModule,
         CommonBaseModule,
         TaskModule,
