@@ -279,6 +279,60 @@ export class PreviewService implements TaskableService {
         }
     }
 
+    private async processTxtConversion(arquivo: any): Promise<number> {
+        this.logger.log(`Starting TXT conversion for arquivo ${arquivo.id}`);
+
+        // Download original TXT file from storage
+        const stream = await this.storage.getStream(arquivo.caminho);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const buffer = Buffer.concat(chunks);
+
+        this.logger.log(`Downloaded TXT file buffer, size: ${buffer.length} bytes`);
+
+        try {
+            // Read text content
+            const textContent = buffer.toString('utf-8');
+
+            // Truncate to fit one page (approximately 50 lines)
+            const truncatedText = this.truncateTxtForPreview(textContent, 50);
+
+            // Create HTML
+            const htmlContent = this.createTxtHtml(
+                truncatedText.content,
+                arquivo.nome_original,
+                truncatedText.wasTruncated
+            );
+
+            // Convert to PDF using Gotenberg
+            const pdfBuffer = await this.gotenbergService.convertHtmlToPdf(htmlContent, {
+                printBackground: true,
+                marginTop: 0.5,
+                marginBottom: 0.5,
+                marginLeft: 0.5,
+                marginRight: 0.5,
+            });
+
+            this.logger.log(`TXT conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
+
+            // Upload preview
+            const previewId = await this.uploadPreview(
+                arquivo.id,
+                arquivo.nome_original,
+                pdfBuffer,
+                'application/pdf',
+                arquivo.criado_por
+            );
+
+            return previewId;
+        } catch (error) {
+            this.logger.error(`Error converting TXT for arquivo ${arquivo.id}:`, error);
+            throw new Error(`TXT conversion failed: ${error.message}`);
+        }
+    }
+
     private createCsvHtml(csvContent: string, filename: string, maxRows: number): string {
         const lines = csvContent.split('\n').filter((line) => line.trim());
         const isTruncated = lines.length > maxRows;
@@ -472,6 +526,66 @@ export class PreviewService implements TaskableService {
         return json;
     }
 
+    private truncateTxtForPreview(textContent: string, maxLines: number): { content: string; wasTruncated: boolean } {
+        const lines = textContent.split('\n');
+
+        if (lines.length <= maxLines) {
+            return { content: textContent, wasTruncated: false };
+        }
+
+        // Take first maxLines
+        const truncatedLines = lines.slice(0, maxLines);
+
+        return {
+            content: truncatedLines.join('\n'),
+            wasTruncated: true,
+        };
+    }
+
+    private createTxtHtml(textContent: string, filename: string, wasTruncated: boolean = false): string {
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {
+                        font-family: 'Courier New', monospace;
+                        background: #ffffff;
+                        color: #000000;
+                        padding: 20px;
+                        margin: 0;
+                    }
+                    .filename {
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                        font-size: 14px;
+                        color: #333333;
+                    }
+                    .truncated-notice {
+                        color: #d32f2f;
+                        font-style: italic;
+                        margin-bottom: 10px;
+                        font-size: 12px;
+                    }
+                    pre {
+                        margin: 0;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                        font-size: 12px;
+                        line-height: 1.5;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="filename">${this.escapeHtml(filename)}</div>
+                ${wasTruncated ? '<div class="truncated-notice">⚠ Conteúdo truncado para preview (primeiras ' + textContent.split('\n').length + ' linhas)</div>' : ''}
+                <pre>${this.escapeHtml(textContent)}</pre>
+            </body>
+            </html>
+        `;
+    }
+
     private escapeHtml(text: string): string {
         const map: Record<string, string> = {
             '&': '&amp;',
@@ -621,6 +735,8 @@ export class PreviewService implements TaskableService {
                 previewArquivoId = await this.processCsvConversion(arquivo);
             } else if (tipoPreview === 'conversao_json') {
                 previewArquivoId = await this.processJsonConversion(arquivo);
+            } else if (tipoPreview === 'conversao_txt') {
+                previewArquivoId = await this.processTxtConversion(arquivo);
             } else {
                 throw new Error(`Unknown preview type: ${tipoPreview}`);
             }

@@ -36,7 +36,10 @@ export class ArquivoPreviewDto {
         enumName: 'arquivo_preview_tipo',
         description: `Tipo de preview:
 - redimensionamento: Para imagens - apenas redimensiona
-- conversao_pdf: Para documentos - converte para PDF`,
+- conversao_pdf: Para documentos - converte para PDF
+- conversao_csv: Para arquivos CSV - converte para PDF com tabela
+- conversao_json: Para arquivos JSON - converte para PDF com syntax highlighting
+- conversao_txt: Para arquivos TXT - converte para PDF`,
         example: 'conversao_pdf',
     })
     tipo: arquivo_preview_tipo | null;

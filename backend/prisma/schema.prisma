@@ -1236,6 +1236,7 @@ enum arquivo_preview_tipo {
     conversao_pdf // Para documentos - converte para PDF
     conversao_json // Para JSON, converte para html e depois para PDF
     conversao_csv // Para CSV, converte para html e depois para PDF
+    conversao_txt // Para TXT, converte para html e depois para PDF
 }
 
 model Arquivo {
