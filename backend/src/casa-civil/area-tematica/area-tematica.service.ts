@@ -16,15 +16,23 @@ export class AreaTematicaService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
-                const areaTematica = await prismaTxn.areaTematica.create({
-                    data: {
-                        nome: dto.nome,
-                        ativo: dto.ativo ?? true,
-                        criado_por: user.id,
-                        criado_em: now,
-                    },
-                    select: { id: true },
-                });
+                let areaTematica;
+                try {
+                    areaTematica = await prismaTxn.areaTematica.create({
+                        data: {
+                            nome: dto.nome,
+                            ativo: dto.ativo ?? true,
+                            criado_por: user.id,
+                            criado_em: now,
+                        },
+                        select: { id: true },
+                    });
+                } catch (error) {
+                    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                        throw new HttpException('Área temática com este nome já existe', 400);
+                    }
+                    throw error;
+                }
 
                 // Create nested acoes if provided
                 if (dto.acoes && dto.acoes.length > 0) {
@@ -130,10 +138,17 @@ export class AreaTematicaService {
                 if (dto.nome !== undefined) updateData.nome = dto.nome;
                 if (dto.ativo !== undefined) updateData.ativo = dto.ativo;
 
-                await prismaTxn.areaTematica.update({
-                    where: { id },
-                    data: updateData,
-                });
+                try {
+                    await prismaTxn.areaTematica.update({
+                        where: { id },
+                        data: updateData,
+                    });
+                } catch (error) {
+                    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                        throw new HttpException('Área temática com este nome já existe', 400);
+                    }
+                    throw error;
+                }
 
                 // Handle nested acoes if provided
                 if (dto.acoes !== undefined) {
