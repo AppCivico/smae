@@ -463,7 +463,8 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         });
 
         return agrupado;
-      }, [] as ItemConsultaGeralFormatado[]);
+      }, [] as ItemConsultaGeralFormatado[])
+        .sort((a, b) => (a.distancia_metros ?? 0) - (b.distancia_metros ?? 0));
 
       return dadosOrganizados;
     },
