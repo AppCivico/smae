@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import {
   computed, ref, watch,
 } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -35,7 +35,6 @@ const valoresIniciais = {
 };
 
 const route = useRoute();
-const router = useRouter();
 
 const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
@@ -135,10 +134,10 @@ function fecharModal() {
   vinculacaoAberta.value = -1;
 }
 
-async function handleNovaVinculacao() {
+function handleNovaVinculacao() {
   fecharModal();
 
-  await areaFiltroRef.value?.resetarPesquisa();
+  areaFiltroRef.value?.resetarPesquisa();
 }
 
 async function handleItemSelecionado(linhaIndex: number) {

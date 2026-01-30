@@ -225,7 +225,6 @@ watch(ano, () => {
         id="ano"
         v-model="ano"
         class="inputtext light mb1"
-        type="text"
       >
         <option
           v-for="anoOpcao in anosPossiveis"
