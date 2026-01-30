@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import {
   computed, ref, watch,
 } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -35,7 +35,6 @@ const valoresIniciais = {
 };
 
 const route = useRoute();
-const router = useRouter();
 
 const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
@@ -97,20 +96,32 @@ const colunas = computed(() => {
   ];
 
   const colunaDinamica = tipo.value === 'dotacao'
-    ? {
-      chave: 'dotacoes_encontradas',
-      label: 'Dotação / Processo / Nota de Empenho',
-      ehCabecalho: true,
-    }
-    : {
-      chave: 'localizacoes',
-      label: 'Endereço / distância (km)',
-      ehCabecalho: true,
-    };
+    ? [
+      {
+        chave: 'dotacoes_encontradas',
+        label: 'Dotação / Processo / Nota de Empenho',
+        ehCabecalho: true,
+      },
+    ]
+    : [
+      {
+        chave: 'localizacoes',
+        label: 'Endereço',
+        ehCabecalho: true,
+      },
+      {
+        chave: 'distancia_metros',
+        label: 'Distância',
+        atributosDaCelula: { class: 'nowrap cell--number' },
+        atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+        atributosDoRodapeDeColuna: { class: 'cell--number' },
+        formatador: (v = 0) => `${(v || 0).toFixed(0)} m`,
+      },
+    ];
 
   return [
     colunasGerais[0],
-    colunaDinamica,
+    ...colunaDinamica,
   ].concat(colunasGerais.slice(1));
 });
 
@@ -125,10 +136,10 @@ function fecharModal() {
   vinculacaoAberta.value = -1;
 }
 
-async function handleNovaVinculacao() {
+function handleNovaVinculacao() {
   fecharModal();
 
-  await areaFiltroRef.value?.resetarPesquisa();
+  areaFiltroRef.value?.resetarPesquisa();
 }
 
 async function handleItemSelecionado(linhaIndex: number) {
@@ -189,6 +200,8 @@ async function handleItemSelecionado(linhaIndex: number) {
           :colunas="colunas"
           :dados="dadosParaTabela"
           :atributos-da-tabela="{ class: 'cabecalho-congelado'}"
+          titulo-para-rolagem-horizontal="Resultados consulta geral"
+          rolagem-horizontal
         >
           <template #celula:cor="{ celula }">
             <div

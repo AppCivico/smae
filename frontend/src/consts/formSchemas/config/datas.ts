@@ -9,3 +9,8 @@ export const dataMax = testarData(import.meta.env.VITE_DATA_MAX, '2100-12-31T23:
 // Carrega os anos possíveis - começa em 2003 e termina no corrente mais cinco
 export const endYear = new Date().getFullYear() + 5;
 export const startYear = 2003;
+
+export const anosPossiveis = Array.from(
+  { length: endYear - startYear + 1 },
+  (_, i) => startYear + i,
+);

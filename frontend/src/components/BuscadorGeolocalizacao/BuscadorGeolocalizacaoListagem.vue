@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
@@ -45,6 +45,11 @@ watch(() => route.query?.endereco, () => {
 
   geolocalizadorStore.buscarPorEndereco(endereco);
 }, { immediate: true });
+
+onUnmounted(() => {
+  geolocalizadorStore.$reset();
+  entidadesProximasStore.$reset();
+});
 </script>
 
 <template>

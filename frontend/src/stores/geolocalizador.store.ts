@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 
+import type { RetornoGeoLoc } from '@back/geo-loc/entities/geo-loc.entity';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type ChamadasPendentes = {
@@ -65,7 +67,7 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
         const { linhas } = await this.requestS.post(`${baseUrl}/geolocalizar`, {
           tipo: 'Endereco',
           busca_endereco: termo,
-        });
+        }) as RetornoGeoLoc;
 
         this.enderecos = linhas ?? [];
       } catch (erro) {
@@ -88,7 +90,7 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
             lat,
             long,
           },
-        );
+        ) as RetornoGeoLoc;
 
         this.enderecos = linhas;
       } catch (erro) {
