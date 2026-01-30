@@ -7,6 +7,7 @@ import {
 import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
 import { FiltroDotacao as schema } from '@/consts/formSchemas';
+import { anosPossiveis } from '@/consts/formSchemas/config/datas';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
 import { useDotaçãoStore } from '@/stores/dotacao.store';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
@@ -227,7 +228,7 @@ watch(ano, () => {
         type="text"
       >
         <option
-          v-for="anoOpcao in [2025, 2024, 2023, 2022]"
+          v-for="anoOpcao in anosPossiveis"
           :key="`ano--${anoOpcao}`"
           :value="anoOpcao"
         >
