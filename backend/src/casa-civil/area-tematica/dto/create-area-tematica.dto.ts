@@ -20,7 +20,6 @@ export class CreateAcaoDto {
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `nome deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 
-    @IsOptional()
     @IsBoolean({ message: 'ativo precisa ser um booleano' })
     ativo: boolean;
 }

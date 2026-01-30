@@ -283,7 +283,7 @@ export class AreaTematicaService {
                     await prismaTxn.acao.update({
                         where: { id: existing.id },
                         data: {
-                            ativo: acaoDto.ativo ?? true,
+                            ativo: acaoDto.ativo,
                             atualizado_por: user.id,
                             atualizado_em: now,
                         },
@@ -295,7 +295,7 @@ export class AreaTematicaService {
                             data: {
                                 area_tematica_id: areaTematicaId,
                                 nome: acaoDto.nome,
-                                ativo: acaoDto.ativo ?? true,
+                                ativo: acaoDto.ativo,
                                 criado_por: user.id,
                                 criado_em: now,
                             },
