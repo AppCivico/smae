@@ -154,6 +154,11 @@ export function determinarTipoPreview(nomeOriginal: string, mimeType: string | n
         return 'conversao_csv';
     }
 
+    // Verifica se é TXT
+    if (extensao === 'txt' || mimeType === 'text/plain') {
+        return 'conversao_txt';
+    }
+
     // Verifica se é um tipo sem suporte
     if (PreviewConfig.EXTENSOES_SEM_SUPORTE.includes(extensao as any)) {
         return null;
