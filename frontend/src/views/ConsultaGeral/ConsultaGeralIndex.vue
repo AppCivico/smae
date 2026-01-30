@@ -111,9 +111,11 @@ const colunas = computed(() => {
       },
       {
         chave: 'distancia_metros',
-        label: 'Distância (Km)',
-        atributosDaCelula: { class: 'nowrap' },
-        formatador: (v = 0) => `${(v || 0 / 1000).toFixed(2)} (Km)`,
+        label: 'Distância',
+        atributosDaCelula: { class: 'nowrap cell--number' },
+        atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+        atributosDoRodapeDeColuna: { class: 'cell--number' },
+        formatador: (v = 0) => `${(v || 0).toFixed(0)} m`,
       },
     ];
 
