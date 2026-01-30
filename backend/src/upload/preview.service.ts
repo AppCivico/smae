@@ -579,7 +579,7 @@ export class PreviewService implements TaskableService {
             </head>
             <body>
                 <div class="filename">${this.escapeHtml(filename)}</div>
-                ${wasTruncated ? '<div class="truncated-notice">⚠ Conteúdo truncado para preview (primeiras ' + textContent.split('\n').length + ' linhas)</div>' : ''}
+                ${wasTruncated ? '<div class="truncated-notice">⚠ Conteúdo truncado para preview</div>' : ''}
                 <pre>${this.escapeHtml(textContent)}</pre>
             </body>
             </html>
