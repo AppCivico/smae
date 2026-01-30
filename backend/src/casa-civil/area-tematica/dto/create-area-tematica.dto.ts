@@ -22,7 +22,7 @@ export class CreateAcaoDto {
 
     @IsOptional()
     @IsBoolean({ message: 'ativo precisa ser um booleano' })
-    ativo?: boolean;
+    ativo: boolean;
 }
 
 export class CreateAreaTematicaDto {

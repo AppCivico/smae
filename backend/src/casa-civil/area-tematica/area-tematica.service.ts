@@ -28,16 +28,22 @@ export class AreaTematicaService {
 
                 // Create nested acoes if provided
                 if (dto.acoes && dto.acoes.length > 0) {
-                    const uniqueAcoes = this.deduplicateAcoes(dto.acoes);
-                    await prismaTxn.acao.createMany({
-                        data: uniqueAcoes.map((acao) => ({
-                            area_tematica_id: areaTematica.id,
-                            nome: acao.nome,
-                            ativo: acao.ativo ?? true,
-                            criado_por: user.id,
-                            criado_em: now,
-                        })),
-                    });
+                    try {
+                        await prismaTxn.acao.createMany({
+                            data: dto.acoes.map((acao) => ({
+                                area_tematica_id: areaTematica.id,
+                                nome: acao.nome,
+                                ativo: acao.ativo,
+                                criado_por: user.id,
+                                criado_em: now,
+                            })),
+                        });
+                    } catch (error) {
+                        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                            throw new HttpException('Ação com nome duplicado na mesma área temática', 400);
+                        }
+                        throw error;
+                    }
                 }
 
                 return areaTematica;
@@ -206,24 +212,6 @@ export class AreaTematicaService {
     }
 
     /**
-     * Deduplicates acoes by nome (case-insensitive), keeping the first occurrence
-     */
-    private deduplicateAcoes(acoes: CreateAcaoDto[]): CreateAcaoDto[] {
-        const seen = new Set<string>();
-        const unique: CreateAcaoDto[] = [];
-
-        for (const acao of acoes) {
-            const normalizedName = acao.nome.trim().toLowerCase();
-            if (!seen.has(normalizedName)) {
-                seen.add(normalizedName);
-                unique.push(acao);
-            }
-        }
-
-        return unique;
-    }
-
-    /**
      * Handles update logic for nested acoes:
      * - With id: update existing
      * - Without id: dedup by name, upsert
@@ -248,15 +236,22 @@ export class AreaTematicaService {
                     throw new HttpException(`Ação id=${acaoDto.id} não encontrada nesta área`, 400);
                 }
 
-                await prismaTxn.acao.update({
-                    where: { id: acaoDto.id },
-                    data: {
-                        nome: acaoDto.nome,
-                        ativo: acaoDto.ativo ?? true,
-                        atualizado_por: user.id,
-                        atualizado_em: now,
-                    },
-                });
+                try {
+                    await prismaTxn.acao.update({
+                        where: { id: acaoDto.id },
+                        data: {
+                            nome: acaoDto.nome,
+                            ativo: acaoDto.ativo,
+                            atualizado_por: user.id,
+                            atualizado_em: now,
+                        },
+                    });
+                } catch (error) {
+                    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                        throw new HttpException('Ação com nome duplicado na mesma área temática', 400);
+                    }
+                    throw error;
+                }
             } else {
                 // No id: check if name exists in this area, upsert
                 const existing = await prismaTxn.acao.findFirst({
@@ -280,15 +275,22 @@ export class AreaTematicaService {
                     });
                 } else {
                     // Create new
-                    await prismaTxn.acao.create({
-                        data: {
-                            area_tematica_id: areaTematicaId,
-                            nome: acaoDto.nome,
-                            ativo: acaoDto.ativo ?? true,
-                            criado_por: user.id,
-                            criado_em: now,
-                        },
-                    });
+                    try {
+                        await prismaTxn.acao.create({
+                            data: {
+                                area_tematica_id: areaTematicaId,
+                                nome: acaoDto.nome,
+                                ativo: acaoDto.ativo ?? true,
+                                criado_por: user.id,
+                                criado_em: now,
+                            },
+                        });
+                    } catch (error) {
+                        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                            throw new HttpException('Ação com nome duplicado na mesma área temática', 400);
+                        }
+                        throw error;
+                    }
                 }
             }
         }
