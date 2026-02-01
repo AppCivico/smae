@@ -8,16 +8,12 @@ import { GeoLocService } from 'src/geo-loc/geo-loc.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from 'src/upload/arquivo-preview.helper';
 import { UploadService } from 'src/upload/upload.service';
+import { ObjectDiff } from '../../common/objectDiff';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { CancelarDemandaDto, DevolverDemandaDto } from './dto/status-transition.dto';
 import { UpdateDemandaDto } from './dto/update-demanda.dto';
-import {
-    DemandaDetailDto,
-    DemandaHistoricoDto,
-    DemandaPermissoesDto,
-    ListDemandaDto
-} from './entities/demanda.entity';
+import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
 
 export const DemandaGetPermissionSet = async (
     user: PessoaFromJwt | undefined
@@ -869,8 +865,8 @@ export class DemandaService {
         demanda: any,
         user: PessoaFromJwt
     ): Promise<void> {
-        // Create snapshot with current data
-        const dadosOriginais = {
+        // Build current data object
+        const dadosAtuais = {
             orgao_id: demanda.orgao_id,
             unidade_responsavel: demanda.unidade_responsavel,
             nome_responsavel: demanda.nome_responsavel,
@@ -880,18 +876,32 @@ export class DemandaService {
             nome_projeto: demanda.nome_projeto,
             descricao: demanda.descricao,
             justificativa: demanda.justificativa,
-            valor: demanda.valor.toString(),
+            valor: demanda.valor?.toString(),
             finalidade: demanda.finalidade,
             observacao: demanda.observacao,
             area_tematica_id: demanda.area_tematica_id,
             status: demanda.status,
         };
 
+        // Get the previous snapshot to compute diff
+        const previousSnapshot = await prismaTxn.demandaSnapshot.findFirst({
+            where: { demanda_id: demanda.id },
+            orderBy: { versao: 'desc' },
+        });
+
+        let dadosDiff: Record<string, any> | null = null;
+
+        if (previousSnapshot) {
+            const previousData = previousSnapshot.dados_originais as Record<string, any>;
+            dadosDiff = ObjectDiff(previousData, dadosAtuais);
+        }
+
         await prismaTxn.demandaSnapshot.create({
             data: {
                 demanda_id: demanda.id,
                 versao: demanda.versao,
-                dados_originais: dadosOriginais,
+                dados_originais: dadosAtuais,
+                dados_diff: dadosDiff as any,
                 criado_por: user.id,
             },
         });
