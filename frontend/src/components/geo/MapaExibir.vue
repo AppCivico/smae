@@ -38,7 +38,7 @@ defineOptions({ inheritAttrs: false });
 
 const RegionsStore = useRegionsStore();
 
-const { camadas } = storeToRefs(RegionsStore);
+const { camadas: dadosDasCamadas } = storeToRefs(RegionsStore);
 
 let marcadorNoMapa = null;
 const polígonosNoMapa = [];
@@ -396,7 +396,7 @@ function chamarDesenhoDePolígonosNovos(polígonos) {
 }
 
 async function prepararCamadas(camadasFornecidas = props.camadas) {
-  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!camadas?.value?.[cur.id]
+  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!dadosDasCamadas.value?.[cur.id]
     ? acc.concat([cur.id])
     : acc), []);
 
@@ -407,10 +407,10 @@ async function prepararCamadas(camadasFornecidas = props.camadas) {
   }
 
   const camadasSelecionadas = camadasFornecidas
-    .reduce((acc, cur) => (camadas?.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
+    .reduce((acc, cur) => (dadosDasCamadas.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
       ? acc.concat({
-        ...camadas?.value?.[cur.id],
-        config: merge({}, camadas?.value?.[cur.id].config, cur.config),
+        ...dadosDasCamadas.value?.[cur.id],
+        config: merge({}, dadosDasCamadas.value?.[cur.id].config, cur.config),
       })
       : acc), []);
   chamarDesenhoDePolígonosNovos(camadasSelecionadas);
