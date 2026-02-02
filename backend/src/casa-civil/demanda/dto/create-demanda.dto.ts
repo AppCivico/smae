@@ -7,9 +7,11 @@ import {
     IsEmail,
     IsEnum,
     IsInt,
+    IsNotEmpty,
     IsOptional,
     IsString,
     MaxLength,
+    ValidateIf,
     ValidateNested,
 } from 'class-validator';
 import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
@@ -20,8 +22,9 @@ export class CreateDemandaLocalizacaoDto {
     @IsInt()
     id?: number;
 
-    @IsOptional()
+    @ValidateIf((o) => !o.id)
     @IsString()
+    @IsNotEmpty()
     geolocalizacao_token: string;
 }
 
@@ -30,7 +33,9 @@ export class CreateDemandaArquivoDto {
     @IsInt()
     id?: number;
 
+    @ValidateIf((a) => !a.id)
     @IsString()
+    @IsNotEmpty()
     upload_token: string;
 
     @IsBoolean()

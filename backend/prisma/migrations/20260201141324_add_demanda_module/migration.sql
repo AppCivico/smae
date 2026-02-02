@@ -122,7 +122,7 @@ CREATE INDEX "demanda_status_idx" ON "demanda"("status");
 CREATE INDEX "demanda_area_tematica_id_idx" ON "demanda"("area_tematica_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "demanda_acao_demanda_id_acao_id_key" ON "demanda_acao"("demanda_id", "acao_id");
+CREATE UNIQUE INDEX "demanda_acao_demanda_id_acao_id_key" ON "demanda_acao"("demanda_id", "acao_id") WHERE "removido_em" IS NULL;
 
 -- AddForeignKey
 ALTER TABLE "demanda" ADD CONSTRAINT "demanda_orgao_id_fkey" FOREIGN KEY ("orgao_id") REFERENCES "orgao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
