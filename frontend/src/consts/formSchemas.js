@@ -214,6 +214,33 @@ export const andamentoDaFase = (órgãoRequerido = false, pessoaRequerida = fals
     .required(),
 });
 
+export const areaTematica = object({
+  nome: string()
+    .label('Área')
+    .required('Preencha o nome da área')
+    .max(255, 'O nome da área deve ter no máximo 255 caracteres'),
+  ativo: boolean()
+    .label('Ativo')
+    .required('Selecione se a área está ativa'),
+  acoes: array()
+    .label('Ações')
+    .of(
+      object({
+        id: number()
+          .nullable()
+          .label('ID'),
+        nome: string()
+          .label('Ação')
+          .required('Preencha o nome da ação')
+          .max(255, 'O nome da ação deve ter no máximo 255 caracteres'),
+        ativo: boolean()
+          .label('Ativa')
+          .required('Selecione se a ação está ativa'),
+      }),
+    )
+    .min(1, 'Adicione pelo menos uma ação'),
+});
+
 export const arquivo = (semEnvio) => object()
   .shape({
     arquivo: string()
