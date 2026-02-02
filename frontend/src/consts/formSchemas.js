@@ -4668,3 +4668,23 @@ export const campoEtapaPorPortfolio = object({
     .required('Selecione uma etapa')
     .min(1, 'Selecione uma etapa'),
 });
+
+export const valoresLimites = object({
+  data_inicio_vigencia: date()
+    .label('Início da Vigência')
+    .required('Informe a data de início da vigência'),
+  data_fim_vigencia: date()
+    .label('Fim da Vigência')
+    .nullable()
+    .transform((v) => (v === '' || v === null ? null : v)),
+  valor_minimo: string()
+    .label('Valor Mínimo')
+    .required('Informe o valor mínimo'),
+  valor_maximo: string()
+    .label('Valor Máximo')
+    .required('Informe o valor máximo'),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(500, 'A observação deve ter no máximo 500 caracteres'),
+});
