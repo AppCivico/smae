@@ -1100,7 +1100,7 @@ export default [
                   título: 'Nova Área Temática',
                   limitarÀsPermissões: 'CadastroAreaTematica.inserir',
                   rotaDeEscape: 'areasTematicas.listar',
-                  rotasParaMigalhasDePão: ['areasTematicas.listar'],
+                  rotasParaMigalhasDePão: ['demandas', 'areasTematicas.listar'],
                 },
               },
               {

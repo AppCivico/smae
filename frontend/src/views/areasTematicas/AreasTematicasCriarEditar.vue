@@ -110,7 +110,9 @@ watch(valoresIniciais, (novosValores) => {
   >
     <div class="flex g2">
       <div class="f1">
-        <SmaeLabel for="nome">Área</SmaeLabel>
+        <SmaeLabel for="nome">
+          Área
+        </SmaeLabel>
         <Field
           id="nome"
           name="nome"
@@ -125,7 +127,9 @@ watch(valoresIniciais, (novosValores) => {
       </div>
 
       <div class="f1">
-        <SmaeLabel for="ativo">Ativo</SmaeLabel>
+        <SmaeLabel for="ativo">
+          Ativo
+        </SmaeLabel>
         <Field
           id="ativo"
           name="ativo"
@@ -162,7 +166,9 @@ watch(valoresIniciais, (novosValores) => {
 
           <div class="flex g2">
             <div class="f1">
-              <SmaeLabel :for="`acoes[${idx}].nome`">Ação {{ idx + 1 }}</SmaeLabel>
+              <SmaeLabel :for="`acoes[${idx}].nome`">
+                Ação {{ idx + 1 }}
+              </SmaeLabel>
               <Field
                 :id="`acoes[${idx}].nome`"
                 :name="`acoes[${idx}].nome`"
@@ -177,7 +183,9 @@ watch(valoresIniciais, (novosValores) => {
             </div>
 
             <div class="f1">
-              <SmaeLabel :for="`acoes[${idx}].ativo`">Ativa</SmaeLabel>
+              <SmaeLabel :for="`acoes[${idx}].ativo`">
+                Ativa
+              </SmaeLabel>
               <div class="flex g1">
                 <Field
                   :id="`acoes[${idx}].ativo`"
