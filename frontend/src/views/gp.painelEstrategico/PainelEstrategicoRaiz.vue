@@ -415,7 +415,7 @@ watch(
           :geo-json="locaisAgrupados.enderecos"
           :camadas="locaisAgrupados.camadas"
           class="mb1"
-          :opções-do-polígono="{
+          :opcoes-do-poligono="{
             fill: true,
             opacity: 0.5,
           }"
