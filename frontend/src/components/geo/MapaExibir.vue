@@ -1,30 +1,4 @@
-<template>
-  <KeepAlive>
-    <div
-      v-once
-      v-bind="$attrs"
-      ref="elementoMapa"
-      class="mapa br8"
-      :style="{
-        height: alturaCorrente || $props.height,
-        minHeight: $props.height
-      }"
-      @ready="mapReady"
-    />
-  </KeepAlive>
-  <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
-  <div
-    ref="elementoPainelFlutuante"
-    class="painel-flutuante__conteudo"
-    hidden
-  >
-    <component :is="() => conteudoPainelFlutuante" />
-  </div>
-</template>
 <script setup>
-import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
-import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
-
 import { useResizeObserver } from '@vueuse/core';
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster';
@@ -44,6 +18,8 @@ import {
   watch,
 } from 'vue';
 
+import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
+import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
 import { useRegionsStore } from '@/stores/regions.store';
 
 /**
@@ -578,6 +554,29 @@ watch(() => props.polígonos, (valorNovo) => {
   }
 });
 </script>
+<template>
+  <KeepAlive>
+    <div
+      v-once
+      v-bind="$attrs"
+      ref="elementoMapa"
+      class="mapa br8"
+      :style="{
+        height: alturaCorrente || $props.height,
+        minHeight: $props.height
+      }"
+      @ready="mapReady"
+    />
+  </KeepAlive>
+  <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component :is="() => conteudoPainelFlutuante" />
+  </div>
+</template>
 <style lang="less">
 .mapa {
   flex-grow: 1;
