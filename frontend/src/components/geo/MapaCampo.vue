@@ -661,16 +661,16 @@ const formularioSujo = useIsFormDirty();
             v-if="sugestãoSelecionada || (logradouroCoordenadas[0] && logradouroCoordenadas[1])"
             v-model="logradouroCoordenadas"
             :marcador="marcador"
-            :polígonos="camadasSelecionadas"
+            :poligonos="camadasSelecionadas"
             class="mb1"
             :latitude="marcador[0]"
             :longitude="marcador[1]"
-            :opções-do-polígono="{
+            :opcoes-do-poligono="{
               fill: true,
               opacity: 0.5,
             }"
             zoom="16"
-            :opções-do-marcador="{ draggable: true }"
+            :opcoes-do-marcador="{ draggable: true }"
             @marcador-foi-movido="buscarPorCoordenadas"
           />
 
