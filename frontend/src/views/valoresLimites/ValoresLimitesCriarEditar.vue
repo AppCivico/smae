@@ -7,6 +7,8 @@ import { onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { valoresLimites as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -83,8 +85,8 @@ watch(emFoco, (val) => {
           required
           type="date"
           class="inputtext light mb1"
+          :class="{ error: errors.data_inicio_vigencia }"
         />
-        <!-- :class="{ error: errors.data_inicio_vigencia }" -->
 
         <ErrorMessage
           name="data_inicio_vigencia"
@@ -103,8 +105,8 @@ watch(emFoco, (val) => {
           name="data_fim_vigencia"
           type="date"
           class="inputtext light mb1"
+          :class="{ error: errors.data_fim_vigencia }"
         />
-        <!-- :class="{ error: errors.data_fim_vigencia }" -->
 
         <ErrorMessage
           name="data_fim_vigencia"
@@ -121,14 +123,18 @@ watch(emFoco, (val) => {
         />
 
         <Field
-          id="valor_minimo"
+          v-slot="{ field, handleChange, value }"
           name="valor_minimo"
-          required
-          type="text"
-          class="inputtext light mb1"
-          placeholder="0,00"
-        />
-        <!-- :class="{ error: errors.valor_minimo }" -->
+        >
+          <MaskedFloatInput
+            class="inputtext light"
+            :class="{ error: errors.valor_minimo }"
+            :value="value"
+            :name="field.name"
+            converter-para="string"
+            @update:model-value="handleChange"
+          />
+        </Field>
 
         <ErrorMessage
           name="valor_minimo"
@@ -143,14 +149,18 @@ watch(emFoco, (val) => {
         />
 
         <Field
-          id="valor_maximo"
+          v-slot="{ field, handleChange, value }"
           name="valor_maximo"
-          required
-          type="text"
-          class="inputtext light mb1"
-          placeholder="0,00"
-        />
-        <!-- :class="{ error: errors.valor_maximo }" -->
+        >
+          <MaskedFloatInput
+            class="inputtext light"
+            :class="{ error: errors.valor_maximo }"
+            :value="value"
+            :name="field.name"
+            converter-para="string"
+            @update:model-value="handleChange"
+          />
+        </Field>
 
         <ErrorMessage
           name="valor_maximo"
@@ -173,6 +183,7 @@ watch(emFoco, (val) => {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
+          :class="{ error: errors.observacao }"
           :schema="schema"
           :name="field.name"
           :model-value="value"
@@ -206,19 +217,6 @@ watch(emFoco, (val) => {
       />
     </div>
 
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null
-        "
-      >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
-    </div>
+    <SmaeFieldsetSubmit />
   </form>
 </template>
