@@ -97,15 +97,7 @@ watch(valoresIniciais, (novosValores) => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-      @close="aoCancelar"
-    />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
   <LoadingComponent v-if="chamadasPendentes.emFoco" />
 
@@ -252,15 +244,6 @@ watch(valoresIniciais, (novosValores) => {
 
     <FormErrorsList :errors="errors" />
 
-    <div class="flex spacebetween center">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting"
-      >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
-    </div>
+    <SmaeFieldsetSubmit :disabled="isSubmitting" />
   </form>
 </template>
