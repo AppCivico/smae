@@ -75,11 +75,9 @@ watch(
   () => {
     buscarDados();
   },
+  { immediate: true },
 );
 
-onMounted(() => {
-  buscarDados();
-});
 </script>
 
 <template>
