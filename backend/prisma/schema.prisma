@@ -535,14 +535,14 @@ model Pessoa {
     DemandaQueRemovi               Demanda[]            @relation("DemandaRemovedor")
     DemandaAcaoQueCriei            DemandaAcao[]        @relation("DemandaAcaoCriador")
     DemandaAcaoQueRemovi           DemandaAcao[]        @relation("DemandaAcaoRemovedor")
-    DemandaLocalizacaoQueCriei     DemandaLocalizacao[] @relation("DemandaLocalizacaoCriador")
-    DemandaLocalizacaoQueAtualizei DemandaLocalizacao[] @relation("DemandaLocalizacaoAtualizador")
-    DemandaLocalizacaoQueRemovi    DemandaLocalizacao[] @relation("DemandaLocalizacaoRemovedor")
-    DemandaArquivoQueCriei         DemandaArquivo[]     @relation("DemandaArquivoCriador")
-    DemandaArquivoQueAtualizei     DemandaArquivo[]     @relation("DemandaArquivoAtualizador")
-    DemandaArquivoQueRemovi        DemandaArquivo[]     @relation("DemandaArquivoRemovedor")
-    DemandaHistoricoQueCriei       DemandaHistorico[]   @relation("DemandaHistoricoCriador")
-    DemandaSnapshotQueCriei        DemandaSnapshot[]    @relation("DemandaSnapshotCriador")
+    DemandaLocalizacaoQueCriei     DemandaLocalizacao[] @relation("Criador")
+    DemandaLocalizacaoQueAtualizei DemandaLocalizacao[] @relation("Atualizador")
+    DemandaLocalizacaoQueRemovi    DemandaLocalizacao[] @relation("Removedor")
+    DemandaArquivoQueCriei         DemandaArquivo[]     @relation("Criador")
+    DemandaArquivoQueAtualizei     DemandaArquivo[]     @relation("Atualizador")
+    DemandaArquivoQueRemovi        DemandaArquivo[]     @relation("Removedor")
+    DemandaHistoricoQueCriei       DemandaHistorico[]   @relation("Criador")
+    DemandaSnapshotQueCriei        DemandaSnapshot[]    @relation("Criador")
 
     AreaTematicaQueCriei     AreaTematica[] @relation("Criador")
     AreaTematicaQueAtualizei AreaTematica[] @relation("Atualizador")
@@ -1305,7 +1305,7 @@ model Arquivo {
     VariavelGlobalCicloDocumento        VariavelGlobalCicloDocumento[]
     AtualizacaoEmLote                   AtualizacaoEmLote[]
     DemandaConfigArquivos               DemandaConfigArquivo[]                @relation("DemandaConfigArquivos")
-    demandas                            DemandaArquivo[]                      @relation("DemandaArquivos")
+    demandas                            DemandaArquivo[]                      @relation("rel")
 
     @@map("arquivo")
 }
@@ -8461,9 +8461,9 @@ model DemandaLocalizacao {
 
     demanda        Demanda         @relation(fields: [demanda_id], references: [id])
     geolocalizacao GeoLocalizacao? @relation(fields: [geo_loc_id], references: [id])
-    criador        Pessoa          @relation("DemandaLocalizacaoCriador", fields: [criado_por], references: [id])
-    atualizador    Pessoa?         @relation("DemandaLocalizacaoAtualizador", fields: [atualizado_por], references: [id])
-    removedor      Pessoa?         @relation("DemandaLocalizacaoRemovedor", fields: [removido_por], references: [id])
+    criador        Pessoa          @relation("Criador", fields: [criado_por], references: [id])
+    atualizador    Pessoa?         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor      Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([demanda_id])
     @@map("demanda_localizacao")
@@ -8484,10 +8484,10 @@ model DemandaArquivo {
     removido_em    DateTime? @db.Timestamptz(6)
 
     demanda     Demanda @relation(fields: [demanda_id], references: [id])
-    arquivo     Arquivo @relation("DemandaArquivos", fields: [arquivo_id], references: [id])
-    criador     Pessoa  @relation("DemandaArquivoCriador", fields: [criado_por], references: [id])
-    atualizador Pessoa? @relation("DemandaArquivoAtualizador", fields: [atualizado_por], references: [id])
-    removedor   Pessoa? @relation("DemandaArquivoRemovedor", fields: [removido_por], references: [id])
+    arquivo     Arquivo @relation("rel", fields: [arquivo_id], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([demanda_id])
     @@map("demanda_arquivo")
@@ -8504,7 +8504,7 @@ model DemandaHistorico {
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
     demanda Demanda @relation(fields: [demanda_id], references: [id])
-    criador Pessoa  @relation("DemandaHistoricoCriador", fields: [criado_por], references: [id])
+    criador Pessoa  @relation("Criador", fields: [criado_por], references: [id])
 
     @@index([demanda_id])
     @@map("demanda_historico")
@@ -8522,7 +8522,7 @@ model DemandaSnapshot {
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
     demanda Demanda @relation(fields: [demanda_id], references: [id])
-    criador Pessoa  @relation("DemandaSnapshotCriador", fields: [criado_por], references: [id])
+    criador Pessoa  @relation("Criador", fields: [criado_por], references: [id])
 
     @@index([demanda_id])
     @@map("demanda_snapshot")

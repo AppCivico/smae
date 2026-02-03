@@ -1,15 +1,13 @@
-import { Module } from '@nestjs/common';
-import { GeoLocModule } from '../../../geo-loc/geo-loc.module';
+import { forwardRef, Module } from '@nestjs/common';
 import { PrismaModule } from '../../../prisma/prisma.module';
-import { UploadModule } from '../../../upload/upload.module';
-import { DemandaService } from '../demanda.service';
+import { DemandaModule } from '../demanda.module';
 import { DemandaAcaoController } from './acao.controller';
 import { DemandaAcaoService } from './acao.service';
 
 @Module({
-    imports: [PrismaModule, UploadModule, GeoLocModule],
+    imports: [PrismaModule, forwardRef(() => DemandaModule)],
     controllers: [DemandaAcaoController],
-    providers: [DemandaAcaoService, DemandaService],
+    providers: [DemandaAcaoService],
     exports: [DemandaAcaoService],
 })
 export class DemandaAcaoModule {}

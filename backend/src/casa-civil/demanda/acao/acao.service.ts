@@ -1,5 +1,5 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { DemandaStatus, Prisma } from '@prisma/client';
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { DemandaService } from '../demanda.service';
@@ -9,7 +9,7 @@ import { CreateDemandaAcaoDto } from './dto/acao.dto';
 export class DemandaAcaoService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly demandaService: DemandaService
+        @Inject(forwardRef(() => DemandaService)) private readonly demandaService: DemandaService
     ) {}
 
     async create(dto: CreateDemandaAcaoDto, user: PessoaFromJwt) {
