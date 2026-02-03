@@ -1069,9 +1069,13 @@ export default [
           título: 'Demandas',
           entidadeMãe: 'TransferenciasVoluntarias',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'CadastroAreaTematica.listar',
+          limitarÀsPermissões: [
+            'CadastroAreaTematica.listar',
+            'CadastroDemandaConfig.listar',
+          ],
           rotasParaMenuSecundário: [
             'areasTematicas.listar',
+            'valoresLimites.listar',
           ],
         },
         children: [
@@ -1134,6 +1138,51 @@ export default [
               },
             ],
           },
+          {
+            path: 'valores-limites',
+            component: () => import('@/views/valoresLimites/ValoresLimitesRaiz.vue'),
+            meta: {
+              título: 'Valores Limites',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroDemandaConfig.listar',
+            },
+            children: [
+              {
+                name: 'valoresLimites.listar',
+                path: '',
+                component: () => import('@/views/valoresLimites/ValoresLimitesLista.vue'),
+                meta: {
+                  título: 'Valores Limites',
+                },
+              },
+              {
+                name: 'valoresLimites.criar',
+                path: 'novo',
+                component: () => import('@/views/valoresLimites/ValoresLimitesCriarEditar.vue'),
+                meta: {
+                  título: 'Novo Valor Limite',
+                  limitarÀsPermissões: 'CadastroDemandaConfig.inserir',
+                  rotaDeEscape: 'valoresLimites.listar',
+                  rotasParaMigalhasDePão: ['valoresLimites.listar'],
+                },
+              },
+              {
+                name: 'valoresLimites.editar',
+                path: ':valorLimiteId',
+                component: () => import('@/views/valoresLimites/ValoresLimitesCriarEditar.vue'),
+                props: ({ params }) => ({
+                  valorLimiteId: Number.parseInt(params.valorLimiteId, 10) || undefined,
+                }),
+                meta: {
+                  título: 'Editar Valor Limite',
+                  limitarÀsPermissões: 'CadastroDemandaConfig.editar',
+                  rotaDeEscape: 'valoresLimites.listar',
+                  rotasParaMigalhasDePão: ['valoresLimites.listar'],
+                },
+              },
+            ],
+          },
+          // @see-rotas
         ],
       },
 
