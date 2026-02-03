@@ -4678,7 +4678,7 @@ export const valoresLimites = object({
       'A data de início não pode ser maior que a data de fim',
       (dataInicio, { resolve }) => {
         const dataFim = resolve(ref('data_fim_vigencia'));
-        return !dataFim || dataInicio < dataFim;
+        return !dataFim || dataInicio <= dataFim;
       },
     ),
   data_fim_vigencia: date()
@@ -4690,7 +4690,7 @@ export const valoresLimites = object({
       'A data de fim não pode ser menor que a data de início',
       (dataFim, { resolve }) => {
         const dataInicio = resolve(ref('data_inicio_vigencia'));
-        return !dataFim || !dataInicio || dataFim > dataInicio;
+        return !dataFim || !dataInicio || dataFim >= dataInicio;
       },
     ),
   valor_minimo: string()

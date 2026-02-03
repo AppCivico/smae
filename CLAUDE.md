@@ -13,6 +13,11 @@ Este documento contém:
 - Workflow de migrations
 - Checklist completo para CRUD
 
+## Frontend - Padrão de Props de Rotas
+
+Veja a documentação completa em:
+[frontend/src/router/helpers/README.md](frontend/src/router/helpers/README.md)
+
 ## Frontend - Padrão de Upload de Ícone/Imagem
 
 Veja a documentação completa em:

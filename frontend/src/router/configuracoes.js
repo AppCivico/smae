@@ -1170,9 +1170,7 @@ export default [
                 name: 'valoresLimites.editar',
                 path: ':valorLimiteId',
                 component: () => import('@/views/valoresLimites/ValoresLimitesCriarEditar.vue'),
-                props: ({ params }) => ({
-                  valorLimiteId: Number.parseInt(params.valorLimiteId, 10) || undefined,
-                }),
+                props: tiparPropsDeRota,
                 meta: {
                   título: 'Editar Valor Limite',
                   limitarÀsPermissões: 'CadastroDemandaConfig.editar',
