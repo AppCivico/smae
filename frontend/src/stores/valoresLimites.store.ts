@@ -10,16 +10,11 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Lista = ListDemandaConfigDto['linhas'];
 
-interface ChamadasPendentes {
-  lista: boolean;
-  emFoco: boolean;
-}
-
 interface Estado {
   lista: Lista;
   emFoco: DemandaConfigDto | null;
   chamadasPendentes: ChamadasPendentes;
-  erro: null | unknown;
+  erro: Erros;
 }
 
 export const useValoresLimitesStore = defineStore('valoresLimites', {
@@ -30,13 +25,15 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
       lista: false,
       emFoco: false,
     },
-    erro: null,
+    erro: {
+      lista: false,
+      emFoco: false,
+    },
   }),
 
   actions: {
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
-      this.chamadasPendentes.emFoco = true;
 
       try {
         const { linhas } = await this.requestS.get(
@@ -46,10 +43,10 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
 
         this.lista = linhas;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
+      } finally {
+        this.chamadasPendentes.lista = false;
       }
-      this.chamadasPendentes.lista = false;
-      this.chamadasPendentes.emFoco = false;
     },
 
     async buscarItem(id: number): Promise<void> {
@@ -62,9 +59,10 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
 
         this.emFoco = resposta;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
+      } finally {
+        this.chamadasPendentes.emFoco = false;
       }
-      this.chamadasPendentes.emFoco = false;
     },
 
     async excluirItem(id: number): Promise<boolean> {
@@ -76,7 +74,7 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.lista = erro;
         this.chamadasPendentes.lista = false;
         return false;
       }
@@ -104,10 +102,10 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
         }
 
         this.chamadasPendentes.emFoco = false;
-        this.erro = null;
+        this.erro.emFoco = null;
         return resposta;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
       }
