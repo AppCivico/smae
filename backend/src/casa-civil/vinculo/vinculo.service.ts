@@ -346,6 +346,27 @@ export class VinculoService {
                         },
                     },
                 },
+
+                demanda: {
+                    select: {
+                        id: true,
+                        nome_projeto: true,
+                        valor: true,
+                        orgao: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                        area_tematica: {
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -453,6 +474,22 @@ export class VinculoService {
                           rotulo_atividade: pdm.rotulo_atividade ?? null,
                           rotulo_iniciativa: pdm.rotulo_iniciativa ?? null,
                           rotulo_macro_tema: pdm.rotulo_macro_tema ?? null,
+                      }
+                    : null,
+                demanda: v.demanda
+                    ? {
+                          id: v.demanda.id,
+                          orgao: {
+                              id: v.demanda.orgao.id,
+                              sigla: v.demanda.orgao.sigla,
+                              descricao: v.demanda.orgao.descricao,
+                          },
+                          valor: v.demanda.valor,
+                          nome_projeto: v.demanda.nome_projeto,
+                          area_tematica: {
+                              id: v.demanda.area_tematica.id,
+                              nome: v.demanda.area_tematica.nome,
+                          },
                       }
                     : null,
             };

@@ -8105,6 +8105,9 @@ model DistribuicaoRecursoVinculo {
     orcamento_realizado_id Int?
     orcamento_realizado    OrcamentoRealizado? @relation(fields: [orcamento_realizado_id], references: [id])
 
+    demanda_id Int?
+    demanda    Demanda? @relation(fields: [demanda_id], references: [id])
+
     observacao    String?
     campo_vinculo CampoVinculo
     valor_vinculo String
@@ -8419,6 +8422,7 @@ model Demanda {
     historico                  DemandaHistorico[]
     snapshots                  DemandaSnapshot[]
     geolocalizacao_referencias GeoLocalizacaoReferencia[]
+    vinculosDistribuicao       DistribuicaoRecursoVinculo[]
 
     @@index([orgao_id])
     @@index([status])
