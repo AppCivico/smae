@@ -73,6 +73,7 @@ export class VinculoService {
                 iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
                 atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,
                 projeto_id: (dto as CreateVinculoDto).projeto_id ?? undefined,
+                demanda_id: (dto as CreateVinculoDto).demanda_id ?? undefined,
                 campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
                 valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
                 observacao: (dto as CreateVinculoDto).observacao,
@@ -519,7 +520,15 @@ export class VinculoService {
             meta_id,
             atividade_id,
             iniciativa_id,
-        }: { id?: number; projeto_id?: number; meta_id?: number; atividade_id?: number; iniciativa_id?: number },
+            demanda_id,
+        }: {
+            id?: number;
+            projeto_id?: number;
+            meta_id?: number;
+            atividade_id?: number;
+            iniciativa_id?: number;
+            demanda_id?: number;
+        },
         motivo_invalido: string,
         prismaTx?: Prisma.TransactionClient
     ): Promise<void> {
