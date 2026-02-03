@@ -7,8 +7,8 @@ import { onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
+import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { valoresLimites as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
@@ -26,7 +26,7 @@ const props = defineProps({
 });
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
 } = useForm({
   validationSchema: schema,
 });
@@ -37,22 +37,18 @@ onMounted(() => {
   }
 });
 
-const onSubmit = handleSubmit(async (carga) => {
-  const cargaManipulada = nulificadorTotal(carga);
-
+const onSubmit = handleSubmit.withControlled(async (carga) => {
   try {
     const msg = props.valorLimiteId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
     const resposta = props.valorLimiteId
-      ? await valoresLimitesStore.salvarItem(cargaManipulada, props.valorLimiteId)
-      : await valoresLimitesStore.salvarItem(cargaManipulada);
+      ? await valoresLimitesStore.salvarItem(carga, props.valorLimiteId)
+      : await valoresLimitesStore.salvarItem(carga);
 
     if (resposta) {
       alertStore.success(msg);
-      valoresLimitesStore.$reset();
-      valoresLimitesStore.buscarTudo();
       router.push({ name: 'valoresLimites.listar' });
     }
   } catch (error) {
@@ -68,13 +64,7 @@ watch(emFoco, (val) => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <CabecalhoDePagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose />
-  </div>
+  <CabecalhoDePagina />
 
   <form
     v-if="!valorLimiteId || emFoco"
@@ -93,8 +83,8 @@ watch(emFoco, (val) => {
           required
           type="date"
           class="inputtext light mb1"
-          :class="{ error: errors.data_inicio_vigencia }"
         />
+        <!-- :class="{ error: errors.data_inicio_vigencia }" -->
 
         <ErrorMessage
           name="data_inicio_vigencia"
@@ -113,8 +103,8 @@ watch(emFoco, (val) => {
           name="data_fim_vigencia"
           type="date"
           class="inputtext light mb1"
-          :class="{ error: errors.data_fim_vigencia }"
         />
+        <!-- :class="{ error: errors.data_fim_vigencia }" -->
 
         <ErrorMessage
           name="data_fim_vigencia"
@@ -137,8 +127,8 @@ watch(emFoco, (val) => {
           type="text"
           class="inputtext light mb1"
           placeholder="0,00"
-          :class="{ error: errors.valor_minimo }"
         />
+        <!-- :class="{ error: errors.valor_minimo }" -->
 
         <ErrorMessage
           name="valor_minimo"
@@ -159,8 +149,8 @@ watch(emFoco, (val) => {
           type="text"
           class="inputtext light mb1"
           placeholder="0,00"
-          :class="{ error: errors.valor_maximo }"
         />
+        <!-- :class="{ error: errors.valor_maximo }" -->
 
         <ErrorMessage
           name="valor_maximo"
@@ -194,6 +184,25 @@ watch(emFoco, (val) => {
       <ErrorMessage
         name="observacao"
         class="error-msg"
+      />
+    </div>
+
+    <div>
+      <Field
+        v-slot="{value}"
+        name="anexos"
+      >
+        <UploadDeArquivosEmLista
+          tipo="DOCUMENTO"
+          :arquivos-existentes="value"
+          apenas-novos
+          @update:model-value="ev => setFieldValue('upload_tokens', ev)"
+        />
+      </Field>
+
+      <Field
+        name="upload_tokens"
+        type="hidden"
       />
     </div>
 
