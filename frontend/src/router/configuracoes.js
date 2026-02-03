@@ -1,6 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -10,6 +11,9 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
+import AreasTematicasCriarEditar from '@/views/areasTematicas/AreasTematicasCriarEditar.vue';
+import AreasTematicasLista from '@/views/areasTematicas/AreasTematicasLista.vue';
+import AreasTematicasRaiz from '@/views/areasTematicas/AreasTematicasRaiz.vue';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
@@ -102,6 +106,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternos.listar',
   'equipesListar',
   'Workflow',
+  'demandas',
   'programaDeMetas.planosSetoriaisListar',
 ];
 
@@ -112,6 +117,7 @@ export default [
     name: 'configuracoesRaiz',
     meta: {
       limitarÀsPermissões: [
+        'CadastroAreaTematica.',
         'CadastroEmpreendimentoMDO.',
         'CadastroGrupoVariavel.',
         'CadastroOds.',
@@ -1048,6 +1054,82 @@ export default [
 
                 meta: {
                   título: 'Editar Status de Distribuição',
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      {
+        path: '/demandas',
+        name: 'demandas',
+        component: () => import('@/views/demandas/DemandasRaiz.vue'),
+        meta: {
+          título: 'Demandas',
+          entidadeMãe: 'TransferenciasVoluntarias',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroAreaTematica.listar',
+          rotasParaMenuSecundário: [
+            'areasTematicas.listar',
+          ],
+        },
+        children: [
+          {
+            path: 'areas-tematicas',
+            component: AreasTematicasRaiz,
+            meta: {
+              título: 'Áreas Temáticas',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroAreaTematica.listar',
+            },
+            children: [
+              {
+                name: 'areasTematicas.listar',
+                path: '',
+                component: AreasTematicasLista,
+                meta: {
+                  título: 'Áreas Temáticas',
+                },
+              },
+              {
+                name: 'areasTematicas.criar',
+                path: 'novo',
+                component: AreasTematicasCriarEditar,
+                meta: {
+                  título: 'Nova Área Temática',
+                  limitarÀsPermissões: 'CadastroAreaTematica.inserir',
+                  rotaDeEscape: 'areasTematicas.listar',
+                  rotasParaMigalhasDePão: ['areasTematicas.listar'],
+                },
+              },
+              {
+                name: 'areasTematicas.editar',
+                path: ':areaTematicaId',
+                component: AreasTematicasCriarEditar,
+                props: tiparPropsDeRota,
+                meta: {
+                  título: () => {
+                    const { emFoco } = useAreasTematicasStore();
+
+                    if (!emFoco) {
+                      return 'Editar Área Temática';
+                    }
+
+                    return emFoco.nome;
+                  },
+                  tituloParaMigalhaDePao: () => {
+                    const { emFoco } = useAreasTematicasStore();
+
+                    if (!emFoco) {
+                      return 'Editar Área Temática';
+                    }
+
+                    return emFoco.nome;
+                  },
+                  limitarÀsPermissões: 'CadastroAreaTematica.editar',
+                  rotaDeEscape: 'areasTematicas.listar',
+                  rotasParaMigalhasDePão: ['areasTematicas.listar'],
                 },
               },
             ],
