@@ -107,7 +107,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('sistemaEscolhido');
 
       // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
-      this.resetAllStores();
+      this.resetStores();
 
       this.router.push('/login');
     },
