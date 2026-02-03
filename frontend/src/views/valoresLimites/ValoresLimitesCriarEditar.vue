@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
@@ -28,10 +28,15 @@ const props = defineProps({
 });
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
+  values, errors, handleSubmit, resetForm, setFieldValue,
 } = useForm({
   validationSchema: schema,
 });
+
+function removerArquivo(itemId: number) {
+  const arquivosRestanes = values?.anexos.filter((anexo) => anexo.id !== itemId);
+  setFieldValue('anexos', arquivosRestanes);
+}
 
 onMounted(() => {
   if (props.valorLimiteId) {
@@ -199,6 +204,11 @@ watch(emFoco, (val) => {
     </div>
 
     <div>
+      <SmaeLabel
+        name="anexos"
+        :schema="schema"
+      />
+
       <Field
         v-slot="{value}"
         name="anexos"
@@ -206,8 +216,8 @@ watch(emFoco, (val) => {
         <UploadDeArquivosEmLista
           tipo="DOCUMENTO"
           :arquivos-existentes="value"
-          apenas-novos
           @update:model-value="ev => setFieldValue('upload_tokens', ev)"
+          @arquivo-existente-removido="removerArquivo"
         />
       </Field>
 

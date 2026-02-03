@@ -182,7 +182,7 @@ function abrirSeletorDeArquivos() {
 }
 
 watch(() => props.arquivosExistentes, () => {
-  // Força reatividade quando arquivos existentes mudam
+  emitirTokens();
 }, { deep: true });
 
 defineExpose({
