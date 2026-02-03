@@ -73,6 +73,8 @@ const onSubmit = handleSubmit(async (carga) => {
       alertStore.success(msg);
       areasTematicasStore.$reset();
       router.push({ name: 'areasTematicas.listar' });
+    } else {
+      alertStore.error('Não foi possível salvar os dados. Tente novamente.');
     }
   } catch (error) {
     alertStore.error(error);

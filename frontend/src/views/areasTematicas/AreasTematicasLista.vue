@@ -25,10 +25,18 @@ const listaOrdenada = computed(() => {
 });
 
 async function excluirArea(linha) {
-  if (await areasTematicasStore.excluirItem(linha.id)) {
-    areasTematicasStore.$reset();
-    areasTematicasStore.buscarTudo();
-    alertStore.success(`Área temática "${linha.nome}" removida.`);
+  try {
+    const resultado = await areasTematicasStore.excluirItem(linha.id);
+
+    if (resultado) {
+      areasTematicasStore.$reset();
+      areasTematicasStore.buscarTudo();
+      alertStore.success(`Área temática "${linha.nome}" removida.`);
+    } else {
+      alertStore.error(`Falha ao remover a área temática "${linha.nome}".`);
+    }
+  } catch (error) {
+    alertStore.error(error);
   }
 }
 
