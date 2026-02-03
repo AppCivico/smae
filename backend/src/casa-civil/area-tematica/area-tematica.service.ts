@@ -252,21 +252,6 @@ export class AreaTematicaService {
 
         const payloadIds = new Set(acoesDto.filter((a) => a.id).map((a) => a.id!));
         const existingMap = new Map(existingAcoes.map((a) => [a.id, a.nome]));
-        const existingNameMap = new Map(existingAcoes.map((a) => [a.nome.toLowerCase(), a.id]));
-
-        // Check for name conflicts with existing acoes
-        for (const acaoDto of acoesDto) {
-            const existingIdWithSameName = existingNameMap.get(acaoDto.nome.toLowerCase());
-            if (existingIdWithSameName !== undefined) {
-                // If updating an acao with ID, the name can match its own current name
-                if (acaoDto.id && acaoDto.id === existingIdWithSameName) {
-                    // Same acao, name unchanged - OK
-                    continue;
-                }
-                // Otherwise, conflict with another acao
-                throw new HttpException(`Já existe uma ação com o nome "${acaoDto.nome}" nesta área temática`, 400);
-            }
-        }
 
         // Process acoes from DTO
         for (const acaoDto of acoesDto) {
