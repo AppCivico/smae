@@ -4,21 +4,34 @@ CREATE TYPE "DemandaStatus" AS ENUM ('Registro', 'Validacao', 'Publicado', 'Ence
 -- CreateEnum
 CREATE TYPE "DemandaFinalidade" AS ENUM ('Custeio', 'Investimento');
 
+-- CreateEnum
+CREATE TYPE "DemandaSituacao" AS ENUM ('Concluido', 'Cancelada');
+
+-- AlterTable
+ALTER TABLE "acao" ALTER COLUMN "nome" SET DATA TYPE VARCHAR;
+
+-- AlterTable
+ALTER TABLE "area_tematica" ALTER COLUMN "nome" SET DATA TYPE VARCHAR;
+
+-- AlterTable
+ALTER TABLE "geo_localizacao_referencia" ADD COLUMN     "demanda_id" INTEGER;
+
 -- CreateTable
 CREATE TABLE "demanda" (
     "id" SERIAL NOT NULL,
     "orgao_id" INTEGER NOT NULL,
-    "unidade_responsavel" VARCHAR(255) NOT NULL,
-    "nome_responsavel" VARCHAR(255) NOT NULL,
-    "cargo_responsavel" VARCHAR(255) NOT NULL,
-    "email_responsavel" VARCHAR(255) NOT NULL,
-    "telefone_responsavel" VARCHAR(20) NOT NULL,
-    "nome_projeto" VARCHAR(255) NOT NULL,
-    "descricao" VARCHAR(2048) NOT NULL,
-    "justificativa" VARCHAR(2048) NOT NULL,
+    "unidade_responsavel" VARCHAR NOT NULL,
+    "nome_responsavel" VARCHAR NOT NULL,
+    "cargo_responsavel" VARCHAR NOT NULL,
+    "email_responsavel" VARCHAR NOT NULL,
+    "telefone_responsavel" VARCHAR NOT NULL,
+    "nome_projeto" VARCHAR NOT NULL,
+    "descricao" VARCHAR NOT NULL,
+    "justificativa" VARCHAR NOT NULL,
     "valor" DECIMAL(15,2) NOT NULL,
     "finalidade" "DemandaFinalidade" NOT NULL,
-    "observacao" VARCHAR(2048),
+    "observacao" VARCHAR,
+    "situacao_encerramento" "DemandaSituacao",
     "area_tematica_id" INTEGER NOT NULL,
     "status" "DemandaStatus" NOT NULL,
     "data_status_atual" TIMESTAMPTZ(6) NOT NULL,
@@ -122,7 +135,10 @@ CREATE INDEX "demanda_status_idx" ON "demanda"("status");
 CREATE INDEX "demanda_area_tematica_id_idx" ON "demanda"("area_tematica_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "demanda_acao_demanda_id_acao_id_key" ON "demanda_acao"("demanda_id", "acao_id") WHERE "removido_em" IS NULL;
+CREATE INDEX "demanda_acao_demanda_id_acao_id_idx" ON "demanda_acao"("demanda_id", "acao_id");
+
+-- AddForeignKey
+ALTER TABLE "geo_localizacao_referencia" ADD CONSTRAINT "geo_localizacao_referencia_demanda_id_fkey" FOREIGN KEY ("demanda_id") REFERENCES "demanda"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "demanda" ADD CONSTRAINT "demanda_orgao_id_fkey" FOREIGN KEY ("orgao_id") REFERENCES "orgao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -192,3 +208,8 @@ ALTER TABLE "demanda_snapshot" ADD CONSTRAINT "demanda_snapshot_demanda_id_fkey"
 
 -- AddForeignKey
 ALTER TABLE "demanda_snapshot" ADD CONSTRAINT "demanda_snapshot_criado_por_fkey" FOREIGN KEY ("criado_por") REFERENCES "pessoa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+
+-- Ignored by prisma
+CREATE UNIQUE INDEX "demanda_acao_demanda_id_acao_id_key" ON "demanda_acao"("demanda_id", "acao_id") WHERE "removido_em" IS NULL;
+

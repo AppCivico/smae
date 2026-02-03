@@ -1,8 +1,9 @@
 import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { DemandaStatus, Prisma } from '@prisma/client';
+import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { CreateGeoEnderecoReferenciaDto, FindGeoEnderecoReferenciaDto } from 'src/geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from 'src/geo-loc/geo-loc.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,7 +12,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { ObjectDiff } from '../../common/objectDiff';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
-import { CancelarDemandaDto, DevolverDemandaDto } from './dto/status-transition.dto';
+
 import { UpdateDemandaDto } from './dto/update-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
 
@@ -335,7 +336,7 @@ export class DemandaService {
                             demanda_id: id,
                             status_anterior: existing.status,
                             status_novo: DemandaStatus.Validacao,
-                            motivo: 'Demanda atualizada - voltou para Validação',
+                            motivo: 'Demanda atualizada - voltou para Valalidação',
                             criado_por: user.id,
                         },
                     });
@@ -451,7 +452,11 @@ export class DemandaService {
         };
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<DemandaDetailDto> {
+    async findOne(
+        id: number,
+        user: PessoaFromJwt,
+        readonly: ReadOnlyBooleanType = 'ReadOnly'
+    ): Promise<DemandaDetailDto> {
         const demanda = await this.prisma.demanda.findUnique({
             where: { id, removido_em: null },
             select: {
@@ -537,6 +542,11 @@ export class DemandaService {
 
         const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao.id);
 
+        // If ReadWrite mode and user doesn't have edit permission, throw error
+        if (readonly === 'ReadWrite' && !permissoes.pode_editar) {
+            throw new HttpException('Você não tem permissão para editar esta demanda.', 400);
+        }
+
         return {
             id: demanda.id,
             versao: demanda.versao,
@@ -621,58 +631,6 @@ export class DemandaService {
         });
     }
 
-    // Status transitions
-    async enviar(id: number, user: PessoaFromJwt): Promise<RecordWithId> {
-        return this.changeStatus(id, user, DemandaStatus.Registro, DemandaStatus.Validacao, null);
-    }
-
-    async validar(id: number, user: PessoaFromJwt): Promise<RecordWithId> {
-        // Check permission
-        if (!user.hasSomeRoles(['CadastroDemanda.validar'])) {
-            throw new HttpException('Usuário não possui permissão para validar demandas', 403);
-        }
-
-        return this.changeStatus(id, user, DemandaStatus.Validacao, DemandaStatus.Publicado, null);
-    }
-
-    async devolver(id: number, dto: DevolverDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        // Check permission
-        if (!user.hasSomeRoles(['CadastroDemanda.validar'])) {
-            throw new HttpException('Usuário não possui permissão para devolver demandas', 403);
-        }
-
-        const demanda = await this.prisma.demanda.findUnique({ where: { id, removido_em: null } });
-        if (!demanda) {
-            throw new NotFoundException('Demanda não encontrada');
-        }
-
-        if (demanda.status !== DemandaStatus.Validacao && demanda.status !== DemandaStatus.Publicado) {
-            throw new BadRequestException('Só é possível devolver demandas em Validação ou Publicado');
-        }
-
-        return this.changeStatus(id, user, demanda.status, DemandaStatus.Registro, dto.motivo);
-    }
-
-    async cancelar(id: number, dto: CancelarDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const demanda = await this.prisma.demanda.findUnique({ where: { id, removido_em: null } });
-        if (!demanda) {
-            throw new NotFoundException('Demanda não encontrada');
-        }
-
-        if (demanda.status === DemandaStatus.Encerrado) {
-            throw new BadRequestException('Demanda já está encerrada');
-        }
-
-        // Check permission: SERI or owning Gestor Municipal
-        const canCancel = user.hasSomeRoles(['CadastroDemanda.validar']) || demanda.orgao_id === user.orgao_id;
-
-        if (!canCancel) {
-            throw new HttpException('Usuário não possui permissão para cancelar esta demanda', 403);
-        }
-
-        return this.changeStatus(id, user, demanda.status, DemandaStatus.Encerrado, dto.motivo);
-    }
-
     // Historico
     async getHistorico(id: number, user: PessoaFromJwt): Promise<DemandaHistoricoDto[]> {
         const demanda = await this.prisma.demanda.findUnique({ where: { id, removido_em: null } });
@@ -738,7 +696,6 @@ export class DemandaService {
             pode_remover: false,
         };
 
-        // LUCAS: conferir se essa lógica está correta pra todas as situaçẽos com a Josi
         switch (status) {
             case DemandaStatus.Registro:
                 // dono pode editar, enviar, remover
@@ -749,13 +706,13 @@ export class DemandaService {
                 }
                 // SERI pode cancelar, remover
                 if (isSeri) {
+                    permissoes.pode_editar = true;
                     permissoes.pode_cancelar = true;
                     permissoes.pode_remover = true;
                 }
                 break;
 
             case DemandaStatus.Validacao:
-                // SERI pode validar, devolver, cancelar
                 if (isSeri) {
                     permissoes.pode_validar = true;
                     permissoes.pode_devolver = true;
@@ -764,9 +721,9 @@ export class DemandaService {
                 break;
 
             case DemandaStatus.Publicado:
-                // SERI pode editar, devolver, cancelar
                 if (isSeri) {
-                    permissoes.pode_editar = true;
+                    // Apenas pra deixar claro que *NÃO* pode editar aqui, mesmo sendo a SERI
+                    permissoes.pode_editar = false;
                     permissoes.pode_devolver = true;
                     permissoes.pode_cancelar = true;
                 }
@@ -791,12 +748,13 @@ export class DemandaService {
         }
     }
 
-    private async changeStatus(
+    async changeStatus(
         id: number,
         user: PessoaFromJwt,
         fromStatus: DemandaStatus,
         toStatus: DemandaStatus,
-        motivo: string | null
+        motivo: string | null,
+        situacaoEncerramento?: DemandaSituacao
     ): Promise<RecordWithId> {
         return this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
             const demanda = await prismaTxn.demanda.findUnique({ where: { id, removido_em: null } });
@@ -835,6 +793,11 @@ export class DemandaService {
                 updateData.data_publicado = new Date();
             } else if (toStatus === DemandaStatus.Encerrado && !demanda.data_encerrado) {
                 updateData.data_encerrado = new Date();
+            }
+
+            // Set situacao_encerramento if transitioning to Encerrado
+            if (toStatus === DemandaStatus.Encerrado && situacaoEncerramento) {
+                updateData.situacao_encerramento = situacaoEncerramento;
             }
 
             await prismaTxn.demanda.update({ where: { id }, data: updateData });

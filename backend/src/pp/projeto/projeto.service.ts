@@ -11,7 +11,7 @@ import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } fr
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { FormatCurrency } from 'src/common/format-currency';
-import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
+import { ProjetoReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -1562,7 +1562,7 @@ export class ProjetoService {
         tipo: TipoProjeto | 'AUTO',
         id: number,
         user: PessoaFromJwt | undefined,
-        readonly: ReadOnlyBooleanType
+        readonly: ProjetoReadOnlyBooleanType
     ): Promise<ProjetoDetailDto | ProjetoDetailMdoDto> {
         if (tipo == 'AUTO') {
             const projeto = await this.prisma.projeto.findFirstOrThrow({
@@ -2132,7 +2132,7 @@ export class ProjetoService {
     private async calcPermissions(
         projeto: ProjetoResumoPermisao,
         user: PessoaFromJwt | undefined,
-        readonly: ReadOnlyBooleanType
+        readonly: ProjetoReadOnlyBooleanType
     ): Promise<ProjetoPermissoesDto> {
         const camposLiberadosPorPadrao = projeto.tipo == 'MDO'; // Para MDO o estado padrão dos campos é habilitado
 

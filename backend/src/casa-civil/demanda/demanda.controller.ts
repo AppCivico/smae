@@ -8,7 +8,6 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DemandaService } from './demanda.service';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
-import { CancelarDemandaDto, DevolverDemandaDto } from './dto/status-transition.dto';
 import { UpdateDemandaDto } from './dto/update-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
 
@@ -35,7 +34,7 @@ export class DemandaController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroDemanda.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DemandaDetailDto> {
-        return await this.demandaService.findOne(+params.id, user);
+        return await this.demandaService.findOne(+params.id, user, 'ReadOnly');
     }
 
     @Patch(':id')
@@ -57,43 +56,6 @@ export class DemandaController {
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.demandaService.remove(+params.id, user);
         return '';
-    }
-
-    // Status Transitions
-    @Post(':id/enviar')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemanda.editar'])
-    async enviar(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.demandaService.enviar(+params.id, user);
-    }
-
-    @Post(':id/validar')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemanda.validar'])
-    async validar(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.demandaService.validar(+params.id, user);
-    }
-
-    @Post(':id/devolver')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemanda.validar'])
-    async devolver(
-        @Param() params: FindOneParams,
-        @Body() dto: DevolverDemandaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        return await this.demandaService.devolver(+params.id, dto, user);
-    }
-
-    @Post(':id/cancelar')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemanda.editar'])
-    async cancelar(
-        @Param() params: FindOneParams,
-        @Body() dto: CancelarDemandaDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        return await this.demandaService.cancelar(+params.id, dto, user);
     }
 
     // Historico

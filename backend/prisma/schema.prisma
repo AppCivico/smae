@@ -8241,6 +8241,11 @@ enum DemandaFinalidade {
     Investimento
 }
 
+enum DemandaSituacao {
+    Concluido
+    Cancelada
+}
+
 model DemandaConfig {
     id Int @id @default(autoincrement())
 
@@ -8300,7 +8305,7 @@ model DemandaConfigArquivo {
 
 model AreaTematica {
     id    Int     @id @default(autoincrement())
-    nome  String  @db.VarChar(255)
+    nome  String  @db.VarChar
     ativo Boolean @default(true)
 
     criado_por     Int
@@ -8323,7 +8328,7 @@ model AreaTematica {
 model Acao {
     id               Int     @id @default(autoincrement())
     area_tematica_id Int
-    nome             String  @db.VarChar(255)
+    nome             String  @db.VarChar
     ativo            Boolean @default(true)
 
     criado_por     Int
@@ -8351,19 +8356,20 @@ model Demanda {
     orgao_id Int
 
     // Dados
-    unidade_responsavel  String @db.VarChar(255)
-    nome_responsavel     String @db.VarChar(255)
-    cargo_responsavel    String @db.VarChar(255)
-    email_responsavel    String @db.VarChar(255)
-    telefone_responsavel String @db.VarChar(20)
+    unidade_responsavel  String @db.VarChar
+    nome_responsavel     String @db.VarChar
+    cargo_responsavel    String @db.VarChar
+    email_responsavel    String @db.VarChar
+    telefone_responsavel String @db.VarChar
 
     // Dados do projeto
-    nome_projeto  String            @db.VarChar(255)
-    descricao     String            @db.VarChar(2048)
-    justificativa String            @db.VarChar(2048)
-    valor         Decimal           @db.Decimal(15, 2)
-    finalidade    DemandaFinalidade
-    observacao    String?           @db.VarChar(2048)
+    nome_projeto          String            @db.VarChar
+    descricao             String            @db.VarChar
+    justificativa         String            @db.VarChar
+    valor                 Decimal           @db.Decimal(15, 2)
+    finalidade            DemandaFinalidade
+    observacao            String?           @db.VarChar
+    situacao_encerramento DemandaSituacao?
 
     // Area tematica
     area_tematica_id Int
@@ -8429,7 +8435,7 @@ model DemandaAcao {
     criador   Pessoa  @relation("DemandaAcaoCriador", fields: [criado_por], references: [id])
     removedor Pessoa? @relation("DemandaAcaoRemovedor", fields: [removido_por], references: [id])
 
-    @@unique([demanda_id, acao_id])
+    @@index([demanda_id, acao_id])
     @@map("demanda_acao")
 }
 

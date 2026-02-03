@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from '../../../common/consts';
 
-export class CreateAcaoDto {
+export class CreateAreaTematicaAcaoDto {
     @IsOptional()
     @IsInt({ message: 'id precisa ser um número' })
     id?: number;
@@ -37,6 +37,6 @@ export class CreateAreaTematicaDto {
     @IsArray({ message: 'acoes precisa ser um array' })
     @ArrayMinSize(1, { message: 'acoes deve ter pelo menos 1 item' })
     @ValidateNested({ each: true })
-    @Type(() => CreateAcaoDto)
-    acoes?: CreateAcaoDto[];
+    @Type(() => CreateAreaTematicaAcaoDto)
+    acoes?: CreateAreaTematicaAcaoDto[];
 }

@@ -2,7 +2,7 @@ import { forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/c
 import { Prisma, TipoAtualizacaoEmLote, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
+import { ProjetoReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { PessoaService } from 'src/pessoa/pessoa.service';
 import { CreateTarefaDto } from 'src/pp/tarefa/dto/create-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
@@ -26,7 +26,7 @@ export interface UpdateService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId>;
-    findOne(tipo: any, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<any>;
+    findOne(tipo: any, id: number, user: PessoaFromJwt, readonly: ProjetoReadOnlyBooleanType): Promise<any>;
 }
 
 export interface LogResultados {
