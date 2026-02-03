@@ -252,6 +252,21 @@ export class AreaTematicaService {
 
         const payloadIds = new Set(acoesDto.filter((a) => a.id).map((a) => a.id!));
         const existingMap = new Map(existingAcoes.map((a) => [a.id, a.nome]));
+        const existingNameMap = new Map(existingAcoes.map((a) => [a.nome.toLowerCase(), a.id]));
+
+        // Check for name conflicts with existing acoes
+        for (const acaoDto of acoesDto) {
+            const existingIdWithSameName = existingNameMap.get(acaoDto.nome.toLowerCase());
+            if (existingIdWithSameName !== undefined) {
+                // If updating an acao with ID, the name can match its own current name
+                if (acaoDto.id && acaoDto.id === existingIdWithSameName) {
+                    // Same acao, name unchanged - OK
+                    continue;
+                }
+                // Otherwise, conflict with another acao
+                throw new HttpException(`Já existe uma ação com o nome "${acaoDto.nome}" nesta área temática`, 400);
+            }
+        }
 
         // Process acoes from DTO
         for (const acaoDto of acoesDto) {
@@ -261,62 +276,26 @@ export class AreaTematicaService {
                     throw new HttpException(`Ação id=${acaoDto.id} não encontrada nesta área`, 400);
                 }
 
-                try {
-                    await prismaTxn.acao.update({
-                        where: { id: acaoDto.id },
-                        data: {
-                            nome: acaoDto.nome,
-                            ativo: acaoDto.ativo,
-                            atualizado_por: user.id,
-                            atualizado_em: now,
-                        },
-                    });
-                } catch (error) {
-                    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-                        throw new HttpException('Ação com nome duplicado na mesma área temática', 400);
-                    }
-                    throw error;
-                }
+                await prismaTxn.acao.update({
+                    where: { id: acaoDto.id },
+                    data: {
+                        nome: acaoDto.nome,
+                        ativo: acaoDto.ativo,
+                        atualizado_por: user.id,
+                        atualizado_em: now,
+                    },
+                });
             } else {
-                // No id: check if name exists in this area, upsert
-                const existing = await prismaTxn.acao.findFirst({
-                    where: {
+                // No id: create new (we already validated no name conflicts above)
+                await prismaTxn.acao.create({
+                    data: {
                         area_tematica_id: areaTematicaId,
                         nome: acaoDto.nome,
-                        removido_em: null,
+                        ativo: acaoDto.ativo,
+                        criado_por: user.id,
+                        criado_em: now,
                     },
-                    select: { id: true },
                 });
-
-                if (existing) {
-                    // Update existing
-                    await prismaTxn.acao.update({
-                        where: { id: existing.id },
-                        data: {
-                            ativo: acaoDto.ativo,
-                            atualizado_por: user.id,
-                            atualizado_em: now,
-                        },
-                    });
-                } else {
-                    // Create new
-                    try {
-                        await prismaTxn.acao.create({
-                            data: {
-                                area_tematica_id: areaTematicaId,
-                                nome: acaoDto.nome,
-                                ativo: acaoDto.ativo,
-                                criado_por: user.id,
-                                criado_em: now,
-                            },
-                        });
-                    } catch (error) {
-                        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-                            throw new HttpException('Ação com nome duplicado na mesma área temática', 400);
-                        }
-                        throw error;
-                    }
-                }
             }
         }
 
