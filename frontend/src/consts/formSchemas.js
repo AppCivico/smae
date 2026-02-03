@@ -4727,5 +4727,8 @@ export const valoresLimites = object({
     .label('Observação')
     .nullable()
     .max(500, 'A observação deve ter no máximo 500 caracteres'),
+  anexos: mixed()
+    .label('Documentos/Fotos/Arquivos')
+    .nullable(),
   upload_tokens: array(),
 });
