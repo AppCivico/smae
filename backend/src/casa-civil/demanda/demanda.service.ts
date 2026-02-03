@@ -358,7 +358,7 @@ export class DemandaService {
                     demanda_id: id,
                     status_anterior: existing.status,
                     status_novo: DemandaStatus.Validacao,
-                    motivo: 'Demanda atualizada - voltou para Valalidação',
+                    motivo: 'Demanda atualizada - retornou para Validação',
                     criado_por: user.id,
                 },
             });
