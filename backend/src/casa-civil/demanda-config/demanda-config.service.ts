@@ -511,6 +511,42 @@ export class DemandaConfigService {
         }));
     }
 
+    async removeAnexo(configId: number, anexoId: number, user: PessoaFromJwt): Promise<void> {
+        const config = await this.prisma.demandaConfig.findFirst({
+            where: { id: configId, removido_em: null },
+            select: { id: true },
+        });
+
+        if (!config) {
+            throw new NotFoundException('Configuração não encontrada');
+        }
+
+        const isExtreme = await this.isRecordAtExtremes(this.prisma, configId);
+        if (!isExtreme) {
+            throw new HttpException('Apenas o primeiro ou último registro pode ser editado para evitar lacunas', 400);
+        }
+
+        const anexo = await this.prisma.demandaConfigArquivo.findFirst({
+            where: {
+                id: anexoId,
+                demanda_config_id: configId,
+                removido_em: null,
+            },
+        });
+
+        if (!anexo) {
+            throw new NotFoundException('Anexo não encontrado');
+        }
+
+        await this.prisma.demandaConfigArquivo.update({
+            where: { id: anexoId },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            },
+        });
+    }
+
     // Helper methods
 
     private async checkDateOverlap(
