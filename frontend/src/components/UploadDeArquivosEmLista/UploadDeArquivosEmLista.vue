@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { TipoUpload } from '@back/upload/entities/tipo-upload';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, ref, useTemplateRef, watch,
+} from 'vue';
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import useUpload from '@/composables/useUpload';
@@ -69,7 +71,7 @@ const {
 } = useUpload();
 
 const arquivosNovos = ref<ArquivoNovo[]>([]);
-const inputRef = ref<HTMLInputElement | null>(null);
+const inputRef = useTemplateRef('inputRef');
 
 const listaUnificada = computed<ArquivoNaLista[]>(() => {
   const existentes: ArquivoNaLista[] = props.arquivosExistentes.map((arq) => ({
@@ -175,6 +177,10 @@ function limpar() {
   emitirTokens();
 }
 
+function abrirSeletorDeArquivos() {
+  inputRef.value?.click();
+}
+
 watch(() => props.arquivosExistentes, () => {
   // Força reatividade quando arquivos existentes mudam
 }, { deep: true });
@@ -244,32 +250,44 @@ defineExpose({
       </li>
     </ul>
 
-    <label
-      :for="`${id}-input`"
-      class="upload-label"
-      :class="{ 'upload-label--carregando': carregando }"
+    <input
+      :id="`${id}-input`"
+      ref="inputRef"
+      type="file"
+      :name="name"
+      :accept="accept"
+      :required="required && listaUnificada.length === 0"
+      :disabled="carregando"
+      class="upload-input"
+      @change="handleFileChange"
     >
-      <input
-        :id="`${id}-input`"
-        ref="inputRef"
-        type="file"
-        :name="name"
-        :accept="accept"
-        :required="required && listaUnificada.length === 0"
-        :disabled="carregando"
-        class="upload-input"
-        @change="handleFileChange"
-      >
-      <span class="upload-label__texto">
-        <template v-if="carregando">
-          Enviando...
-        </template>
 
-        <template v-else>
-          <slot>{{ $props.label }}</slot>
-        </template>
+    <div
+      v-if="carregando"
+      class="upload-label upload-label--carregando"
+    >
+      <span class="upload-label__texto">
+        Enviando...
       </span>
-    </label>
+    </div>
+
+    <slot v-else>
+      <button
+        class="like-a__text addlink"
+        type="button"
+        :disabled="carregando"
+        @click="abrirSeletorDeArquivos"
+      >
+        <svg
+          width="20"
+          height="20"
+        >
+          <use xlink:href="#i_+" />
+        </svg>
+
+        {{ $props.label }}
+      </button>
+    </slot>
 
     <p
       v-if="erro"
