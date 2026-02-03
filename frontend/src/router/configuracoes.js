@@ -1,6 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -1099,7 +1100,7 @@ export default [
                   título: 'Nova Área Temática',
                   limitarÀsPermissões: 'CadastroAreaTematica.inserir',
                   rotaDeEscape: 'areasTematicas.listar',
-                  rotasParaMigalhasDePão: ['demandas', 'areasTematicas.listar'],
+                  rotasParaMigalhasDePão: ['areasTematicas.listar'],
                 },
               },
               {
@@ -1108,7 +1109,24 @@ export default [
                 component: AreasTematicasCriarEditar,
                 props: tiparPropsDeRota,
                 meta: {
-                  título: 'Editar Área Temática',
+                  título: () => {
+                    const { emFoco } = useAreasTematicasStore();
+
+                    if (!emFoco) {
+                      return 'Editar Área Temática';
+                    }
+
+                    return emFoco.nome;
+                  },
+                  tituloParaMigalhaDePao: () => {
+                    const { emFoco } = useAreasTematicasStore();
+
+                    if (!emFoco) {
+                      return 'Editar Área Temática';
+                    }
+
+                    return emFoco.nome;
+                  },
                   limitarÀsPermissões: 'CadastroAreaTematica.editar',
                   rotaDeEscape: 'areasTematicas.listar',
                   rotasParaMigalhasDePão: ['areasTematicas.listar'],
