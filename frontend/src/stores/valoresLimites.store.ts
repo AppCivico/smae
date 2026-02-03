@@ -1,6 +1,10 @@
 import type { CreateDemandaConfigDto } from '@back/casa-civil/demanda-config/dto/create-demanda-config.dto';
-import type { ListDemandaConfigDto, DemandaConfigDto } from '@back/casa-civil/demanda-config/entities/demanda-config.entity';
+import type { DemandaConfigDto, ListDemandaConfigDto } from '@back/casa-civil/demanda-config/entities/demanda-config.entity';
 import { defineStore } from 'pinia';
+
+interface RecordWithId {
+  id: number;
+}
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
