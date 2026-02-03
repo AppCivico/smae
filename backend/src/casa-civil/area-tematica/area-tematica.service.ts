@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateAreaTematicaDto, CreateAcaoDto } from './dto/create-area-tematica.dto';
+import { CreateAreaTematicaDto, CreateAreaTematicaAcaoDto } from './dto/create-area-tematica.dto';
 import { UpdateAreaTematicaDto } from './dto/update-area-tematica.dto';
 import { AreaTematicaDto } from './entities/area-tematica.entity';
 
@@ -238,7 +238,7 @@ export class AreaTematicaService {
     private async handleAcoesUpdate(
         prismaTxn: Prisma.TransactionClient,
         areaTematicaId: number,
-        acoesDto: CreateAcaoDto[],
+        acoesDto: CreateAreaTematicaAcaoDto[],
         existingAcoes: { id: number; nome: string }[],
         user: PessoaFromJwt,
         now: Date

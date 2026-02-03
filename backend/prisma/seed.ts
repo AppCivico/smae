@@ -12,15 +12,15 @@ import {
     CONST_COD_NOTA_DIST_RECURSO,
     CONST_COD_NOTA_TRANSF_GOV,
     CONST_CRONO_VAR_CATEGORICA_ID,
+    CONST_PERFIL_CASA_CIVIL,
+    CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
+    CONST_PERFIL_COORDENADOR_EQUIPE,
+    CONST_PERFIL_GESTOR_OBRA,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
     CONST_TIPO_NOTA_DIST_RECURSO,
     CONST_TIPO_NOTA_TRANSF_GOV,
     CONST_VAR_SEM_UN_MEDIDA,
-    CONST_PERFIL_PARTICIPANTE_EQUIPE,
-    CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
-    CONST_PERFIL_CASA_CIVIL,
-    CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
-    CONST_PERFIL_GESTOR_OBRA,
-    CONST_PERFIL_COORDENADOR_EQUIPE,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -137,6 +137,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
     CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
+    CadastroDemanda: ['Cadastro de Demandas', 'CasaCivil'],
     CadastroAreaTematica: ['Área Temática', 'CasaCivil'],
 
     ModalidadeContratacaoMDO: ['', null],
@@ -209,6 +210,14 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroDemandaConfig.editar', 'Editar Configuração de Demanda'],
         ['CadastroDemandaConfig.listar', 'Listar Configurações de Demanda'],
         ['CadastroDemandaConfig.remover', 'Remover Configuração de Demanda'],
+    ],
+
+    CadastroDemanda: [
+        ['CadastroDemanda.inserir', 'Inserir Demanda'],
+        ['CadastroDemanda.editar', 'Editar Demanda'],
+        ['CadastroDemanda.listar', 'Listar Demandas'],
+        ['CadastroDemanda.remover', 'Remover Demanda'],
+        ['CadastroDemanda.validar', 'Validar/Publicar Demanda (SERI)'],
     ],
 
     CadastroAreaTematica: [
@@ -1232,6 +1241,12 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemandaConfig.inserir',
             'CadastroDemandaConfig.remover',
             'CadastroDemandaConfig.listar',
+
+            'CadastroDemanda.editar',
+            'CadastroDemanda.inserir',
+            'CadastroDemanda.remover',
+            'CadastroDemanda.listar',
+            'CadastroDemanda.validar',
         ],
     },
     {
@@ -1247,6 +1262,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             // TODO? Maybe precisa ter permissões para editar e remover, e ai precisaria melhorar
             // o "pode_editar" do crono
             'CadastroCronogramaTransferencia.listar',
+            'CadastroDemanda.listar',
         ],
     },
     {

@@ -8,6 +8,9 @@ This document contains patterns and conventions learned from implementing featur
 - [Service Layer Patterns](#service-layer-patterns)
 - [Controller Patterns](#controller-patterns)
 - [Privilege System](#privilege-system)
+- [Permission Builder Pattern](#permission-builder-pattern)
+- [Workflow Permission System](#workflow-permission-system)
+- [Geolocation Integration](#geolocation-integration)
 - [Migration Workflow](#migration-workflow)
 - [Seed File Structure](#seed-file-structure)
 
@@ -345,6 +348,273 @@ const privilegios: Record<string, [string, string][]> = {
 
 ---
 
+## Permission Builder Pattern
+
+For modules with role-based data access, create a permission builder function similar to `ProjetoGetPermissionSet`:
+
+```typescript
+/**
+ * Returns Prisma where clauses based on user permissions
+ * SERI users can see all records, Gestor Municipal only their orgão
+ */
+async function DemandaGetPermissionSet(
+    prisma: PrismaService,
+    user: PessoaFromJwt
+): Promise<Prisma.DemandaWhereInput[]> {
+    // SERI users have full access - no filtering
+    if (user.hasSomeRoles(['CadastroDemanda.validar'])) {
+        return [{}];
+    }
+
+    // Gestor Municipal only sees their orgão
+    return [{ orgao_id: user.orgao_id }];
+}
+```
+
+### Using the Permission Builder
+
+```typescript
+async findAll(user: PessoaFromJwt) {
+    // Get permission-based filters
+    const permissionSet = await DemandaGetPermissionSet(this.prisma, user);
+
+    const rows = await this.prisma.demanda.findMany({
+        where: {
+            removido_em: null,
+            AND: permissionSet, // Apply permission filters
+        },
+        // ... rest of query
+    });
+}
+
+async findOne(id: number, user: PessoaFromJwt) {
+    const permissionSet = await DemandaGetPermissionSet(this.prisma, user);
+
+    const demanda = await this.prisma.demanda.findFirst({
+        where: {
+            id,
+            removido_em: null,
+            AND: permissionSet, // Validates access
+        },
+    });
+
+    if (!demanda) {
+        throw new HttpException('Demanda não encontrada', 404);
+    }
+}
+```
+
+---
+
+## Workflow Permission System
+
+For entities with workflow states, create a permissions DTO with boolean flags:
+
+```typescript
+export class DemandaPermissoesDto {
+    pode_editar: boolean;
+    pode_enviar: boolean;
+    pode_validar: boolean;
+    pode_devolver: boolean;
+    pode_cancelar: boolean;
+    pode_remover: boolean;
+}
+```
+
+### Permission Builder Method
+
+```typescript
+private buildPermissions(
+    demanda: DemandaDto,
+    user: PessoaFromJwt
+): DemandaPermissoesDto {
+    const isSeri = user.hasSomeRoles(['CadastroDemanda.validar']);
+    const isOwner = demanda.orgao_id === user.orgao_id;
+
+    switch (demanda.status) {
+        case 'Registro':
+            return {
+                pode_editar: isOwner,
+                pode_enviar: isOwner,
+                pode_validar: false,
+                pode_devolver: false,
+                pode_cancelar: isSeri,
+                pode_remover: isOwner,
+            };
+        case 'Validacao':
+            return {
+                pode_editar: false,
+                pode_enviar: false,
+                pode_validar: isSeri,
+                pode_devolver: isSeri,
+                pode_cancelar: isSeri,
+                pode_remover: false,
+            };
+        // ... other states
+    }
+}
+```
+
+### Validating Permissions
+
+```typescript
+async update(id: number, dto: UpdateDemandaDto, user: PessoaFromJwt) {
+    const demanda = await this.findOne(id, user);
+    const permissoes = this.buildPermissions(demanda, user);
+
+    if (!permissoes.pode_editar) {
+        throw new HttpException('Você não tem permissão para editar esta demanda', 403);
+    }
+    // ... proceed with update
+}
+```
+
+---
+
+## Geolocation Integration
+
+### Schema Extension
+
+To enable geolocation for a new entity, add the reference field to `GeoLocalizacaoReferencia`:
+
+```prisma
+model GeoLocalizacaoReferencia {
+    // ... existing fields ...
+    demanda_id    Int?
+    demanda       Demanda?    @relation(fields: [demanda_id], references: [id])
+
+    @@index([demanda_id])
+}
+
+model Demanda {
+    // ... fields ...
+    geolocalizacao_referencias GeoLocalizacaoReferencia[]
+}
+```
+
+Update `ReferenciasValidasBase` in `src/geo-loc/entities/geo-loc.entity.ts`:
+
+```typescript
+export class ReferenciasValidasBase {
+    private static props: (keyof ReferenciasValidasBase)[] = [
+        'projeto_id',
+        'iniciativa_id',
+        'atividade_id',
+        'meta_id',
+        'etapa_id',
+        'demanda_id',  // ADDED
+    ];
+
+    demanda_id?: number | number[];  // ADDED
+
+    referencia(): 'projeto_id' | 'iniciativa_id' | 'atividade_id' | 'meta_id' | 'etapa_id' | 'demanda_id' {
+        // ... implementation
+    }
+}
+```
+
+### Module Setup
+
+Import `GeoLocModule` in your module:
+
+```typescript
+import { GeoLocModule } from '../../geo-loc/geo-loc.module';
+
+@Module({
+    imports: [PrismaModule, GeoLocModule],  // Add GeoLocModule
+    // ...
+})
+export class DemandaModule {}
+```
+
+### Service Integration
+
+Inject `GeoLocService` and use its methods:
+
+```typescript
+import { GeoLocService } from '../../geo-loc/geo-loc.service';
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
+
+@Injectable()
+export class DemandaService {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly geolocService: GeoLocService,  // Inject
+    ) {}
+
+    async create(dto: CreateDemandaDto, user: PessoaFromJwt) {
+        return await this.prisma.$transaction(async (prismaTxn) => {
+            const demanda = await prismaTxn.demanda.create({
+                data: { /* ... */ },
+            });
+
+            // Save geolocations from tokens
+            if (dto.localizacoes?.length) {
+                await this.geolocService.upsertGeolocalizacao(
+                    prismaTxn,
+                    user,
+                    CreateGeoEnderecoReferenciaDto.fromTokens(
+                        dto.localizacoes
+                            .filter(l => l.geolocalizacao_token)
+                            .map(l => l.geolocalizacao_token),
+                        { demanda_id: demanda.id }  // Reference object
+                    )
+                );
+            }
+
+            return demanda;
+        });
+    }
+
+    async findOne(id: number, user: PessoaFromJwt) {
+        const demanda = await this.prisma.demanda.findFirst({
+            where: { id, removido_em: null },
+            // ... select fields
+        });
+
+        // Load geolocations with geojson and tokens
+        const geoMap = await this.geolocService.carregaReferencias(
+            this.prisma,
+            { demanda_id: [id] }  // Reference filter
+        );
+
+        return {
+            ...demanda,
+            geolocalizacao: geoMap.get(id) || [],  // GeolocalizacaoDto[]
+        };
+    }
+}
+```
+
+### Entity DTO
+
+Use `GeolocalizacaoDto` from geo-loc module:
+
+```typescript
+import { GeolocalizacaoDto } from 'src/geo-loc/entities/geo-loc.entity';
+
+export class DemandaDetailDto {
+    // ... other fields ...
+    geolocalizacao: GeolocalizacaoDto[];
+}
+```
+
+### DTO for Tokens
+
+```typescript
+export class CreateDemandaLocalizacaoDto {
+    @IsOptional()
+    @IsInt()
+    id?: number;
+
+    @IsOptional()
+    @IsString()
+    geolocalizacao_token: string;  // Token from frontend
+}
+```
+
+---
+
 ## Migration Workflow
 
 ### Step-by-step Process
@@ -507,6 +777,24 @@ When implementing a new CRUD module:
 - [ ] Register module in app.module.ts
 - [ ] Run `npm run build` to verify
 
+### For Modules with Permission Builder:
+
+- [ ] Create `GetPermissionSet` function for role-based filtering
+- [ ] Create `PermissoesDto` with boolean flags (pode_editar, etc.)
+- [ ] Create `buildPermissions` method for workflow state logic
+- [ ] Use permission builder in `findAll`, `findOne`, `update`, `remove`
+
+### For Modules with Geolocation:
+
+- [ ] Add `[entity]_id` field to `GeoLocalizacaoReferencia` schema
+- [ ] Add reverse relation in entity model
+- [ ] Update `ReferenciasValidasBase` with new property
+- [ ] Import `GeoLocModule` in module
+- [ ] Inject `GeoLocService` in service
+- [ ] Use `upsertGeolocalizacao` in create/update methods
+- [ ] Use `carregaReferencias` in findOne method
+- [ ] Use `GeolocalizacaoDto` in entity DTO
+
 ---
 
 ## Examples
@@ -515,3 +803,10 @@ See these modules for reference implementations:
 - `src/casa-civil/demanda-config/` - Simple CRUD with file uploads
 - `src/casa-civil/area-tematica/` - CRUD with nested child entities
 - `src/casa-civil/tipo-vinculo/` - Basic CRUD pattern
+- `src/casa-civil/demanda/` - **Full-featured module with:**
+  - Permission builder pattern (`DemandaGetPermissionSet`)
+  - Workflow-based permissions (`pode_editar`, `pode_validar`, etc.)
+  - Geolocation integration with `GeoLocService`
+  - Role-based access control (SERI vs Gestor Municipal)
+- `src/pp/projeto/projeto.service.ts` - Reference for `ProjetoGetPermissionSet` pattern
+- `src/geo-loc/geo-loc.service.ts` - Geolocation service (`carregaReferencias`, `upsertGeolocalizacao`)

@@ -27,6 +27,7 @@ import { BuscaGlobalModule } from './busca-global/busca-global.module';
 import { AreaTematicaModule } from './casa-civil/area-tematica/area-tematica.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
 import { DemandaConfigModule } from './casa-civil/demanda-config/demanda-config.module';
+import { DemandaModule } from './casa-civil/demanda/demanda.module';
 import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
 import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
@@ -130,6 +131,7 @@ import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerrame
         BlocoNotasModule,
         DashTransferenciaModule,
         DemandaConfigModule,
+        DemandaModule,
         AreaTematicaModule,
         PessoaPrivilegioModule,
         CommonBaseModule,

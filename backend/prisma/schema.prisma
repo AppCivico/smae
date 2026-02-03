@@ -530,6 +530,20 @@ model Pessoa {
     DemandaConfigArquivoQCriei  DemandaConfigArquivo[] @relation("DemandaConfigArquivoCriador")
     DemandaConfigArquivoQRemovi DemandaConfigArquivo[] @relation("DemandaConfigArquivoRemovedor")
 
+    DemandaQueCriei                Demanda[]            @relation("DemandaCriador")
+    DemandaQueAtualizei            Demanda[]            @relation("DemandaAtualizador")
+    DemandaQueRemovi               Demanda[]            @relation("DemandaRemovedor")
+    DemandaAcaoQueCriei            DemandaAcao[]        @relation("DemandaAcaoCriador")
+    DemandaAcaoQueRemovi           DemandaAcao[]        @relation("DemandaAcaoRemovedor")
+    DemandaLocalizacaoQueCriei     DemandaLocalizacao[] @relation("Criador")
+    DemandaLocalizacaoQueAtualizei DemandaLocalizacao[] @relation("Atualizador")
+    DemandaLocalizacaoQueRemovi    DemandaLocalizacao[] @relation("Removedor")
+    DemandaArquivoQueCriei         DemandaArquivo[]     @relation("Criador")
+    DemandaArquivoQueAtualizei     DemandaArquivo[]     @relation("Atualizador")
+    DemandaArquivoQueRemovi        DemandaArquivo[]     @relation("Removedor")
+    DemandaHistoricoQueCriei       DemandaHistorico[]   @relation("Criador")
+    DemandaSnapshotQueCriei        DemandaSnapshot[]    @relation("Criador")
+
     AreaTematicaQueCriei     AreaTematica[] @relation("Criador")
     AreaTematicaQueAtualizei AreaTematica[] @relation("Atualizador")
     AreaTematicaQueRemovi    AreaTematica[] @relation("Removedor")
@@ -645,6 +659,7 @@ model Orgao {
     ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
     AtualizacaoEmLote                 AtualizacaoEmLote[]
+    demandas                          Demanda[]
 
     @@map("orgao")
 }
@@ -1290,6 +1305,7 @@ model Arquivo {
     VariavelGlobalCicloDocumento        VariavelGlobalCicloDocumento[]
     AtualizacaoEmLote                   AtualizacaoEmLote[]
     DemandaConfigArquivos               DemandaConfigArquivo[]                @relation("DemandaConfigArquivos")
+    demandas                            DemandaArquivo[]                      @relation("rel")
 
     @@map("arquivo")
 }
@@ -5323,6 +5339,7 @@ model GeoLocalizacao {
 
     GeoEnderecoCamada     GeoLocalizacaoCamada[]
     GeoEnderecoReferencia GeoLocalizacaoReferencia[]
+    demandas              DemandaLocalizacao[]
 
     @@map("geo_localizacao")
 }
@@ -5407,12 +5424,14 @@ model GeoLocalizacaoReferencia {
     atividade_id  Int?
     meta_id       Int?
     etapa_id      Int?
+    demanda_id    Int?
 
     projeto    Projeto?    @relation(fields: [projeto_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
     meta       Meta?       @relation(fields: [meta_id], references: [id])
     etapa      Etapa?      @relation(fields: [etapa_id], references: [id])
+    demanda    Demanda?    @relation(fields: [demanda_id], references: [id])
 
     criado_em   DateTime  @default(now()) @db.Timestamp(6)
     removido_em DateTime? @db.Timestamp(6)
@@ -5422,6 +5441,12 @@ model GeoLocalizacaoReferencia {
     removedor             Pessoa?                      @relation("removedor", fields: [removido_por], references: [id])
     vinculosDistribuicoes DistribuicaoRecursoVinculo[]
 
+    @@index([projeto_id])
+    @@index([iniciativa_id])
+    @@index([atividade_id])
+    @@index([meta_id])
+    @@index([etapa_id])
+    @@index([demanda_id])
     @@map("geo_localizacao_referencia")
 }
 
@@ -8210,6 +8235,23 @@ model ProjetoTermoEncerramento {
     @@map("projeto_termo_encerramento")
 }
 
+enum DemandaStatus {
+    Registro
+    Validacao
+    Publicado
+    Encerrado
+}
+
+enum DemandaFinalidade {
+    Custeio
+    Investimento
+}
+
+enum DemandaSituacao {
+    Concluido
+    Cancelada
+}
+
 model DemandaConfig {
     id Int @id @default(autoincrement())
 
@@ -8269,7 +8311,7 @@ model DemandaConfigArquivo {
 
 model AreaTematica {
     id    Int     @id @default(autoincrement())
-    nome  String  @db.VarChar(255)
+    nome  String  @db.VarChar
     ativo Boolean @default(true)
 
     criado_por     Int
@@ -8283,7 +8325,8 @@ model AreaTematica {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    acoes Acao[]
+    acoes    Acao[]
+    demandas Demanda[]
 
     @@map("area_tematica")
 }
@@ -8291,7 +8334,7 @@ model AreaTematica {
 model Acao {
     id               Int     @id @default(autoincrement())
     area_tematica_id Int
-    nome             String  @db.VarChar(255)
+    nome             String  @db.VarChar
     ativo            Boolean @default(true)
 
     criado_por     Int
@@ -8307,5 +8350,180 @@ model Acao {
 
     area_tematica AreaTematica @relation(fields: [area_tematica_id], references: [id])
 
+    demandas DemandaAcao[]
+
     @@map("acao")
+}
+
+model Demanda {
+    id Int @id @default(autoincrement())
+
+    // Gestor Municipal
+    orgao_id Int
+
+    // Dados
+    unidade_responsavel  String @db.VarChar
+    nome_responsavel     String @db.VarChar
+    cargo_responsavel    String @db.VarChar
+    email_responsavel    String @db.VarChar
+    telefone_responsavel String @db.VarChar
+
+    // Dados do projeto
+    nome_projeto          String            @db.VarChar
+    descricao             String            @db.VarChar
+    justificativa         String            @db.VarChar
+    valor                 Decimal           @db.Decimal(15, 2)
+    finalidade            DemandaFinalidade
+    observacao            String?           @db.VarChar
+    situacao_encerramento DemandaSituacao?
+
+    // Area tematica
+    area_tematica_id Int
+
+    // Status workflow
+    status            DemandaStatus
+    data_status_atual DateTime      @db.Timestamptz(6)
+
+    // Status
+    data_registro  DateTime? @db.Timestamptz(6)
+    data_validacao DateTime? @db.Timestamptz(6)
+    data_publicado DateTime? @db.Timestamptz(6)
+    data_encerrado DateTime? @db.Timestamptz(6)
+
+    // Calculo de prazos em cada etapa
+    dias_em_registro  Int @default(0)
+    dias_em_validacao Int @default(0)
+    dias_em_publicado Int @default(0)
+    dias_em_encerrado Int @default(0)
+
+    // Versao para controle de concorrencia otimista
+    versao Int @default(1)
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    orgao         Orgao        @relation(fields: [orgao_id], references: [id])
+    area_tematica AreaTematica @relation(fields: [area_tematica_id], references: [id])
+
+    criador     Pessoa  @relation("DemandaCriador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("DemandaAtualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("DemandaRemovedor", fields: [removido_por], references: [id])
+
+    acoes                      DemandaAcao[]
+    localizacoes               DemandaLocalizacao[]
+    arquivos                   DemandaArquivo[]
+    historico                  DemandaHistorico[]
+    snapshots                  DemandaSnapshot[]
+    geolocalizacao_referencias GeoLocalizacaoReferencia[]
+
+    @@index([orgao_id])
+    @@index([status])
+    @@index([area_tematica_id])
+    @@map("demanda")
+}
+
+model DemandaAcao {
+    id         Int @id @default(autoincrement())
+    demanda_id Int
+    acao_id    Int
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    demanda   Demanda @relation(fields: [demanda_id], references: [id])
+    acao      Acao    @relation(fields: [acao_id], references: [id])
+    criador   Pessoa  @relation("DemandaAcaoCriador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("DemandaAcaoRemovedor", fields: [removido_por], references: [id])
+
+    @@index([demanda_id, acao_id])
+    @@map("demanda_acao")
+}
+
+model DemandaLocalizacao {
+    id         Int @id @default(autoincrement())
+    demanda_id Int
+
+    // Referência para GeoLocalizacao (integração geolocalização)
+    geo_loc_id Int
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    demanda        Demanda         @relation(fields: [demanda_id], references: [id])
+    geolocalizacao GeoLocalizacao? @relation(fields: [geo_loc_id], references: [id])
+    criador        Pessoa          @relation("Criador", fields: [criado_por], references: [id])
+    atualizador    Pessoa?         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor      Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([demanda_id])
+    @@map("demanda_localizacao")
+}
+
+model DemandaArquivo {
+    id                  Int     @id @default(autoincrement())
+    demanda_id          Int
+    arquivo_id          Int
+    autoriza_divulgacao Boolean @default(false)
+    descricao           String? @db.VarChar(500)
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    demanda     Demanda @relation(fields: [demanda_id], references: [id])
+    arquivo     Arquivo @relation("rel", fields: [arquivo_id], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([demanda_id])
+    @@map("demanda_arquivo")
+}
+
+model DemandaHistorico {
+    id              Int            @id @default(autoincrement())
+    demanda_id      Int
+    status_anterior DemandaStatus?
+    status_novo     DemandaStatus
+    motivo          String?        @db.Text
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    demanda Demanda @relation(fields: [demanda_id], references: [id])
+    criador Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+
+    @@index([demanda_id])
+    @@map("demanda_historico")
+}
+
+model DemandaSnapshot {
+    id         Int @id @default(autoincrement())
+    demanda_id Int
+    versao     Int
+
+    dados_originais Json  @db.Json
+    dados_diff      Json? @db.Json
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    demanda Demanda @relation(fields: [demanda_id], references: [id])
+    criador Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+
+    @@index([demanda_id])
+    @@map("demanda_snapshot")
 }
