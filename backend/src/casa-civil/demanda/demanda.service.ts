@@ -10,10 +10,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from 'src/upload/arquivo-preview.helper';
 import { UploadService } from 'src/upload/upload.service';
 import { ObjectDiff } from '../../common/objectDiff';
-import { CreateDemandaDto } from './dto/create-demanda.dto';
+import { CreateDemandaDto, UpdateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
-
-import { UpdateDemandaDto } from './dto/update-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
 
 export const DemandaGetPermissionSet = async (
@@ -55,24 +53,24 @@ export class DemandaService {
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Validate orgao access
+                // Valida acesso ao órgão
                 await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
 
-                // Validate valor against DemandaConfig
+                // Valida valor contra DemandaConfig
                 await this.validateValor(prismaTxn, dto.valor);
 
-                // Validate area_tematica exists
+                // Valida se área temática existe
                 await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
 
-                // Validate acoes exist and belong to area
+                // Valida se ações existem e pertencem à área
                 await this.validateAcoes(prismaTxn, dto.acao_ids, dto.area_tematica_id);
 
-                // Validate arquivos (max 3 with autoriza_divulgacao=true)
+                // Valida arquivos (máx 3 com autoriza_divulgacao=true)
                 if (dto.arquivos) {
                     await this.validateArquivos(dto.arquivos);
                 }
 
-                // Create Demanda
+                // Cria Demanda
                 const demanda = await prismaTxn.demanda.create({
                     data: {
                         orgao_id: dto.orgao_id,
@@ -96,7 +94,7 @@ export class DemandaService {
                     },
                 });
 
-                // Create DemandaAcao junction records
+                // Cria registros de junção DemandaAcao
                 for (const acaoId of dto.acao_ids) {
                     await prismaTxn.demandaAcao.create({
                         data: {
@@ -107,7 +105,7 @@ export class DemandaService {
                     });
                 }
 
-                // Create geolocalizacao references via GeoLocService
+                // Cria referências de geolocalização via GeoLocService
                 const geoTokens = dto.localizacoes
                     ?.filter((l) => l.geolocalizacao_token)
                     .map((l) => l.geolocalizacao_token!);
@@ -120,7 +118,7 @@ export class DemandaService {
                     await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTxn, new Date());
                 }
 
-                // Create DemandaArquivo records
+                // Cria registros DemandaArquivo
                 if (dto.arquivos) {
                     for (const arq of dto.arquivos) {
                         const arquivoId = this.uploadService.checkUploadOrDownloadToken(arq.upload_token);
@@ -137,7 +135,7 @@ export class DemandaService {
                     }
                 }
 
-                // Create initial historico entry
+                // Cria registro inicial de histórico
                 await prismaTxn.demandaHistorico.create({
                     data: {
                         demanda_id: demanda.id,
@@ -160,189 +158,21 @@ export class DemandaService {
         return created;
     }
 
-    async update(id: number, dto: UpdateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        id: number,
+        dto: UpdateDemandaDto,
+        user: PessoaFromJwt,
+        prismaTxn?: Prisma.TransactionClient
+    ): Promise<RecordWithId> {
+        // Se um cliente de transação for fornecido, executa dentro dele (sem nova transação)
+        if (prismaTxn) {
+            return this.updateInternal(id, dto, user, prismaTxn);
+        }
+
+        // Caso contrário, cria uma nova transação
         const updated = await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Find existing demanda
-                const existing = await prismaTxn.demanda.findUnique({
-                    where: { id, removido_em: null },
-                    include: {
-                        acoes: { where: { removido_em: null } },
-                        arquivos: { where: { removido_em: null } },
-                    },
-                });
-
-                if (!existing) {
-                    throw new NotFoundException('Demanda não encontrada');
-                }
-
-                // Validate permissions based on status
-                await this.validateUpdatePermission(existing, user);
-
-                // Check if update requires versioning (Validacao or Publicado status)
-                const requiresSnapshot =
-                    existing.status === DemandaStatus.Validacao || existing.status === DemandaStatus.Publicado;
-
-                // Validate updates if provided
-                if (dto.orgao_id) {
-                    await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
-                }
-                if (dto.valor) {
-                    await this.validateValor(prismaTxn, dto.valor);
-                }
-                if (dto.area_tematica_id) {
-                    await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
-                }
-                if (dto.acao_ids) {
-                    await this.validateAcoes(
-                        prismaTxn,
-                        dto.acao_ids,
-                        dto.area_tematica_id || existing.area_tematica_id
-                    );
-                }
-                if (dto.arquivos) {
-                    await this.validateArquivos(dto.arquivos);
-                }
-
-                // Create snapshot if needed
-                if (requiresSnapshot) {
-                    await this.createSnapshot(prismaTxn, existing, user);
-                }
-
-                // Update main Demanda record
-                const updateData: Prisma.DemandaUpdateInput = {
-                    atualizador: user.id ? { connect: { id: user.id } } : undefined,
-                    atualizado_em: new Date(),
-                };
-
-                if (dto.orgao_id !== undefined) updateData.orgao = { connect: { id: dto.orgao_id } };
-                if (dto.unidade_responsavel !== undefined) updateData.unidade_responsavel = dto.unidade_responsavel;
-                if (dto.nome_responsavel !== undefined) updateData.nome_responsavel = dto.nome_responsavel;
-                if (dto.cargo_responsavel !== undefined) updateData.cargo_responsavel = dto.cargo_responsavel;
-                if (dto.email_responsavel !== undefined) updateData.email_responsavel = dto.email_responsavel;
-                if (dto.telefone_responsavel !== undefined) updateData.telefone_responsavel = dto.telefone_responsavel;
-                if (dto.nome_projeto !== undefined) updateData.nome_projeto = dto.nome_projeto;
-                if (dto.descricao !== undefined) updateData.descricao = dto.descricao;
-                if (dto.justificativa !== undefined) updateData.justificativa = dto.justificativa;
-                if (dto.valor !== undefined) updateData.valor = dto.valor;
-                if (dto.finalidade !== undefined) updateData.finalidade = dto.finalidade;
-                if (dto.observacao !== undefined) updateData.observacao = dto.observacao;
-                if (dto.area_tematica_id !== undefined)
-                    updateData.area_tematica = { connect: { id: dto.area_tematica_id } };
-
-                // If versioning, increment version and change status to Validacao
-                if (requiresSnapshot) {
-                    updateData.versao = { increment: 1 };
-                    updateData.status = DemandaStatus.Validacao;
-                    updateData.data_status_atual = new Date();
-                    updateData.data_validacao = new Date();
-
-                    // Calculate days in previous status
-                    const days = this.calculateDaysInStatus(existing.data_status_atual);
-                    if (existing.status === DemandaStatus.Validacao) {
-                        updateData.dias_em_validacao = { increment: days };
-                    } else if (existing.status === DemandaStatus.Publicado) {
-                        updateData.dias_em_publicado = { increment: days };
-                    }
-                }
-
-                await prismaTxn.demanda.update({
-                    where: { id },
-                    data: updateData,
-                });
-
-                // Update nested entities (acao_ids)
-                if (dto.acao_ids) {
-                    // Soft delete all existing
-                    await prismaTxn.demandaAcao.updateMany({
-                        where: { demanda_id: id, removido_em: null },
-                        data: { removido_por: user.id, removido_em: new Date() },
-                    });
-
-                    // Create new
-                    for (const acaoId of dto.acao_ids) {
-                        await prismaTxn.demandaAcao.create({
-                            data: {
-                                demanda_id: id,
-                                acao_id: acaoId,
-                                criado_por: user.id,
-                            },
-                        });
-                    }
-                }
-
-                // Update nested entities (localizacoes) - via GeoLocService
-                if (dto.localizacoes) {
-                    const geoTokens = dto.localizacoes
-                        .filter((l) => l.geolocalizacao_token)
-                        .map((l) => l.geolocalizacao_token!);
-
-                    const geoDto = new CreateGeoEnderecoReferenciaDto();
-                    geoDto.tokens = geoTokens.length > 0 ? geoTokens : undefined;
-                    geoDto.tipo = 'Endereco';
-                    geoDto.demanda_id = id;
-
-                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTxn, new Date());
-                }
-
-                // Update nested entities (arquivos) - upsert logic
-                if (dto.arquivos) {
-                    const existingIds = existing.arquivos.map((a) => a.id);
-                    const dtoIds = dto.arquivos.filter((a) => a.id).map((a) => a.id!);
-
-                    // Soft delete removed
-                    const toDelete = existingIds.filter((id) => !dtoIds.includes(id));
-                    for (const arqId of toDelete) {
-                        await prismaTxn.demandaArquivo.update({
-                            where: { id: arqId },
-                            data: { removido_por: user.id, removido_em: new Date() },
-                        });
-                    }
-
-                    // Update or create
-                    for (const arq of dto.arquivos) {
-                        if (arq.id && existingIds.includes(arq.id)) {
-                            // Update
-                            await prismaTxn.demandaArquivo.update({
-                                where: { id: arq.id },
-                                data: {
-                                    autoriza_divulgacao: arq.autoriza_divulgacao,
-                                    descricao: arq.descricao,
-                                    atualizado_por: user.id,
-                                    atualizado_em: new Date(),
-                                },
-                            });
-                        } else {
-                            // Create
-                            const arquivoId = this.uploadService.checkUploadOrDownloadToken(arq.upload_token);
-
-                            await prismaTxn.demandaArquivo.create({
-                                data: {
-                                    demanda_id: id,
-                                    arquivo_id: arquivoId,
-                                    autoriza_divulgacao: arq.autoriza_divulgacao,
-                                    descricao: arq.descricao,
-                                    criado_por: user.id,
-                                },
-                            });
-                        }
-                    }
-                }
-
-                // Create historico entry if status changed
-                if (requiresSnapshot) {
-                    await prismaTxn.demandaHistorico.create({
-                        data: {
-                            demanda_id: id,
-                            status_anterior: existing.status,
-                            status_novo: DemandaStatus.Validacao,
-                            motivo: 'Demanda atualizada - voltou para Valalidação',
-                            criado_por: user.id,
-                        },
-                    });
-                }
-
-                return { id };
+            async (txn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                return this.updateInternal(id, dto, user, txn);
             },
             {
                 isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
@@ -354,21 +184,204 @@ export class DemandaService {
         return updated;
     }
 
+    private async updateInternal(
+        id: number,
+        dto: UpdateDemandaDto,
+        user: PessoaFromJwt,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<RecordWithId> {
+        // Busca demanda existente
+        const existing = await prismaTxn.demanda.findUnique({
+            where: { id, removido_em: null },
+            include: {
+                acoes: { where: { removido_em: null } },
+                arquivos: { where: { removido_em: null } },
+            },
+        });
+
+        if (!existing) {
+            throw new NotFoundException('Demanda não encontrada');
+        }
+
+        // Valida permissões baseado no status
+        await this.validateUpdatePermission(existing, user);
+
+        // Verifica se atualização requer versionamento (status Validação ou Publicado)
+        const requiresSnapshot =
+            existing.status === DemandaStatus.Validacao || existing.status === DemandaStatus.Publicado;
+
+        // Valida atualizações se fornecidas
+        if (dto.orgao_id) {
+            await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
+        }
+        if (dto.valor) {
+            await this.validateValor(prismaTxn, dto.valor);
+        }
+        if (dto.area_tematica_id) {
+            await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
+        }
+        if (dto.acao_ids) {
+            await this.validateAcoes(prismaTxn, dto.acao_ids, dto.area_tematica_id || existing.area_tematica_id);
+        }
+        if (dto.arquivos) {
+            await this.validateArquivos(dto.arquivos);
+        }
+
+        // Cria snapshot se necessário
+        if (requiresSnapshot) {
+            await this.createSnapshot(prismaTxn, existing, user);
+        }
+
+        // Atualiza registro principal de Demanda
+        const updateData: Prisma.DemandaUpdateInput = {
+            atualizador: user.id ? { connect: { id: user.id } } : undefined,
+            atualizado_em: new Date(),
+        };
+
+        if (dto.orgao_id !== undefined) updateData.orgao = { connect: { id: dto.orgao_id } };
+        if (dto.unidade_responsavel !== undefined) updateData.unidade_responsavel = dto.unidade_responsavel;
+        if (dto.nome_responsavel !== undefined) updateData.nome_responsavel = dto.nome_responsavel;
+        if (dto.cargo_responsavel !== undefined) updateData.cargo_responsavel = dto.cargo_responsavel;
+        if (dto.email_responsavel !== undefined) updateData.email_responsavel = dto.email_responsavel;
+        if (dto.telefone_responsavel !== undefined) updateData.telefone_responsavel = dto.telefone_responsavel;
+        if (dto.nome_projeto !== undefined) updateData.nome_projeto = dto.nome_projeto;
+        if (dto.descricao !== undefined) updateData.descricao = dto.descricao;
+        if (dto.justificativa !== undefined) updateData.justificativa = dto.justificativa;
+        if (dto.valor !== undefined) updateData.valor = dto.valor;
+        if (dto.finalidade !== undefined) updateData.finalidade = dto.finalidade;
+        if (dto.observacao !== undefined) updateData.observacao = dto.observacao;
+        if (dto.area_tematica_id !== undefined) updateData.area_tematica = { connect: { id: dto.area_tematica_id } };
+
+        // Se versionando, incrementa versão e muda status para Validação
+        if (requiresSnapshot) {
+            updateData.versao = { increment: 1 };
+            updateData.status = DemandaStatus.Validacao;
+            updateData.data_status_atual = new Date();
+            updateData.data_validacao = new Date();
+
+            // Calcula dias no status anterior
+            const days = this.calculateDaysInStatus(existing.data_status_atual);
+            if (existing.status === DemandaStatus.Validacao) {
+                updateData.dias_em_validacao = { increment: days };
+            } else if (existing.status === DemandaStatus.Publicado) {
+                updateData.dias_em_publicado = { increment: days };
+            }
+        }
+
+        await prismaTxn.demanda.update({
+            where: { id },
+            data: updateData,
+        });
+
+        // Atualiza entidades aninhadas (acao_ids)
+        if (dto.acao_ids) {
+            // Soft delete de todos os existentes
+            await prismaTxn.demandaAcao.updateMany({
+                where: { demanda_id: id, removido_em: null },
+                data: { removido_por: user.id, removido_em: new Date() },
+            });
+
+            // Cria novos
+            for (const acaoId of dto.acao_ids) {
+                await prismaTxn.demandaAcao.create({
+                    data: {
+                        demanda_id: id,
+                        acao_id: acaoId,
+                        criado_por: user.id,
+                    },
+                });
+            }
+        }
+
+        // Atualiza entidades aninhadas (localizacoes) - via GeoLocService
+        if (dto.localizacoes) {
+            const geoTokens = dto.localizacoes
+                .filter((l) => l.geolocalizacao_token)
+                .map((l) => l.geolocalizacao_token!);
+
+            const geoDto = new CreateGeoEnderecoReferenciaDto();
+            geoDto.tokens = geoTokens.length > 0 ? geoTokens : undefined;
+            geoDto.tipo = 'Endereco';
+            geoDto.demanda_id = id;
+
+            await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTxn, new Date());
+        }
+
+        // Atualiza entidades aninhadas (arquivos) - lógica upsert
+        if (dto.arquivos) {
+            const existingIds = existing.arquivos.map((a) => a.id);
+            const dtoIds = dto.arquivos.filter((a) => a.id).map((a) => a.id!);
+
+            // Soft delete dos removidos
+            const toDelete = existingIds.filter((id) => !dtoIds.includes(id));
+            for (const arqId of toDelete) {
+                await prismaTxn.demandaArquivo.update({
+                    where: { id: arqId },
+                    data: { removido_por: user.id, removido_em: new Date() },
+                });
+            }
+
+            // Atualiza ou cria
+            for (const arq of dto.arquivos) {
+                if (arq.id && existingIds.includes(arq.id)) {
+                    // Update
+                    await prismaTxn.demandaArquivo.update({
+                        where: { id: arq.id },
+                        data: {
+                            autoriza_divulgacao: arq.autoriza_divulgacao,
+                            descricao: arq.descricao,
+                            atualizado_por: user.id,
+                            atualizado_em: new Date(),
+                        },
+                    });
+                } else {
+                    // Create
+                    const arquivoId = this.uploadService.checkUploadOrDownloadToken(arq.upload_token);
+
+                    await prismaTxn.demandaArquivo.create({
+                        data: {
+                            demanda_id: id,
+                            arquivo_id: arquivoId,
+                            autoriza_divulgacao: arq.autoriza_divulgacao,
+                            descricao: arq.descricao,
+                            criado_por: user.id,
+                        },
+                    });
+                }
+            }
+        }
+
+        // Cria registro de histórico se status mudou
+        if (requiresSnapshot) {
+            await prismaTxn.demandaHistorico.create({
+                data: {
+                    demanda_id: id,
+                    status_anterior: existing.status,
+                    status_novo: DemandaStatus.Validacao,
+                    motivo: 'Demanda atualizada - voltou para Valalidação',
+                    criado_por: user.id,
+                },
+            });
+        }
+
+        return { id };
+    }
+
     async findAll(filters: FilterDemandaDto, user: PessoaFromJwt): Promise<ListDemandaDto> {
-        // Build permission set
+        // Monta conjunto de permissões
         const permissionsSet = await DemandaGetPermissionSet(user);
 
-        // Build where clause based on filters
+        // Monta cláusula where baseada nos filtros
         const where: Prisma.DemandaWhereInput = {
             removido_em: null,
         };
 
-        // Apply permission filters
+        // Aplica filtros de permissão
         if (permissionsSet.length > 0) {
             where.AND = permissionsSet;
         }
 
-        // Apply additional filters
+        // Aplica filtros adicionais
         if (filters.status) {
             where.status = filters.status;
         }
@@ -376,7 +389,7 @@ export class DemandaService {
             where.area_tematica_id = filters.area_tematica_id;
         }
         if (filters.orgao_id) {
-            // Validate if user can access this orgao filter
+            // Valida se usuário pode acessar este filtro de órgão
             if (!user.hasSomeRoles(['CadastroDemanda.validar']) && filters.orgao_id !== user.orgao_id) {
                 throw new HttpException('Usuário não possui permissão para ver demandas de outro órgão', 403);
             }
@@ -521,7 +534,7 @@ export class DemandaService {
             throw new NotFoundException('Demanda não encontrada');
         }
 
-        // Check permissions via permission set
+        // Verifica permissões via conjunto de permissões
         const permissionsSet = await DemandaGetPermissionSet(user);
         const canAccess = await this.prisma.demanda.count({
             where: {
@@ -534,7 +547,7 @@ export class DemandaService {
             throw new HttpException('Usuário não possui acesso a esta demanda', 403);
         }
 
-        // Load geolocalizacao via GeoLocService
+        // Carrega geolocalização via GeoLocService
         const geoDto = new FindGeoEnderecoReferenciaDto();
         geoDto.demanda_id = id;
         const geoReferencias = await this.geolocService.carregaReferencias(geoDto);
@@ -542,7 +555,7 @@ export class DemandaService {
 
         const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao.id);
 
-        // If ReadWrite mode and user doesn't have edit permission, throw error
+        // Se modo ReadWrite e usuário não tem permissão de edição, lança erro
         if (readonly === 'ReadWrite' && !permissoes.pode_editar) {
             throw new HttpException('Você não tem permissão para editar esta demanda.', 400);
         }
@@ -598,13 +611,13 @@ export class DemandaService {
                 throw new NotFoundException('Demanda não encontrada');
             }
 
-            // Check permissions
+            // Verifica permissões
             const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao_id);
             if (!permissoes.pode_remover) {
                 throw new HttpException('Usuário não possui permissão para remover esta demanda', 403);
             }
 
-            // Soft delete main record
+            // Soft delete do registro principal
             await prismaTxn.demanda.update({
                 where: { id },
                 data: {
@@ -613,7 +626,7 @@ export class DemandaService {
                 },
             });
 
-            // Cascade soft delete
+            // Soft delete em cascata
             await prismaTxn.demandaAcao.updateMany({
                 where: { demanda_id: id, removido_em: null },
                 data: { removido_por: user.id, removido_em: new Date() },
@@ -631,14 +644,14 @@ export class DemandaService {
         });
     }
 
-    // Historico
+    // Histórico
     async getHistorico(id: number, user: PessoaFromJwt): Promise<DemandaHistoricoDto[]> {
         const demanda = await this.prisma.demanda.findUnique({ where: { id, removido_em: null } });
         if (!demanda) {
             throw new NotFoundException('Demanda não encontrada');
         }
 
-        // Check permissions via permission set
+        // Verifica permissões via conjunto de permissões
         const permissionsSet = await DemandaGetPermissionSet(user);
         const canAccess = await this.prisma.demanda.count({
             where: {
@@ -680,13 +693,13 @@ export class DemandaService {
     }
 
     /**
-     * Build permissions based on workflow state and user role
+     * Monta permissões baseado no estado do workflow e papel do usuário
      */
     private buildPermissions(status: DemandaStatus, user: PessoaFromJwt, demandaOrgaoId: number): DemandaPermissoesDto {
         const isSeri = user.hasSomeRoles(['CadastroDemanda.validar']);
         const isOwnerOrgao = demandaOrgaoId === user.orgao_id;
 
-        // Default: no permissions
+        // Padrão: sem permissões
         const permissoes: DemandaPermissoesDto = {
             pode_editar: false,
             pode_enviar: false,
@@ -755,67 +768,94 @@ export class DemandaService {
         fromStatus: DemandaStatus,
         toStatus: DemandaStatus,
         motivo: string | null,
-        situacaoEncerramento?: DemandaSituacao
+        situacaoEncerramento?: DemandaSituacao,
+        prismaTxn?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
-        return this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const demanda = await prismaTxn.demanda.findUnique({ where: { id, removido_em: null } });
-            if (!demanda) {
-                throw new NotFoundException('Demanda não encontrada');
+        // If a transaction client is provided, run within it (no new transaction)
+        if (prismaTxn) {
+            return this.changeStatusInternal(id, user, fromStatus, toStatus, motivo, situacaoEncerramento, prismaTxn);
+        }
+
+        // Caso contrário, cria uma nova transação
+        return this.prisma.$transaction(
+            async (txn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                return this.changeStatusInternal(id, user, fromStatus, toStatus, motivo, situacaoEncerramento, txn);
+            },
+            {
+                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+                maxWait: 15000,
+                timeout: 30000,
             }
+        );
+    }
 
-            if (demanda.status !== fromStatus) {
-                throw new BadRequestException(`Demanda não está no status esperado: ${fromStatus}`);
-            }
+    private async changeStatusInternal(
+        id: number,
+        user: PessoaFromJwt,
+        fromStatus: DemandaStatus,
+        toStatus: DemandaStatus,
+        motivo: string | null,
+        situacaoEncerramento: DemandaSituacao | undefined,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<RecordWithId> {
+        const demanda = await prismaTxn.demanda.findUnique({ where: { id, removido_em: null } });
+        if (!demanda) {
+            throw new NotFoundException('Demanda não encontrada');
+        }
 
-            // Calculate days in current status
-            const days = this.calculateDaysInStatus(demanda.data_status_atual);
+        if (demanda.status !== fromStatus) {
+            throw new BadRequestException(`Demanda não está no status esperado: ${fromStatus}`);
+        }
 
-            // Build update data
-            const updateData: Prisma.DemandaUpdateInput = {
-                status: toStatus,
-                data_status_atual: new Date(),
-                atualizador: { connect: { id: user.id } },
-                atualizado_em: new Date(),
-            };
+        const days = this.calculateDaysInStatus(demanda.data_status_atual);
 
-            // Increment days counter for previous status
-            if (fromStatus === DemandaStatus.Registro) {
-                updateData.dias_em_registro = { increment: days };
-            } else if (fromStatus === DemandaStatus.Validacao) {
-                updateData.dias_em_validacao = { increment: days };
-            } else if (fromStatus === DemandaStatus.Publicado) {
-                updateData.dias_em_publicado = { increment: days };
-            }
+        const updateData: Prisma.DemandaUpdateInput = {
+            status: toStatus,
+            data_status_atual: new Date(),
+            atualizador: { connect: { id: user.id } },
+            atualizado_em: new Date(),
+        };
 
-            // Set timestamp for new status if first time
-            if (toStatus === DemandaStatus.Validacao && !demanda.data_validacao) {
-                updateData.data_validacao = new Date();
-            } else if (toStatus === DemandaStatus.Publicado && !demanda.data_publicado) {
-                updateData.data_publicado = new Date();
-            } else if (toStatus === DemandaStatus.Encerrado && !demanda.data_encerrado) {
-                updateData.data_encerrado = new Date();
-            }
+        // Incrementa contador de dias para status anterior
+        if (fromStatus === DemandaStatus.Registro) {
+            updateData.dias_em_registro = { increment: days };
+        } else if (fromStatus === DemandaStatus.Validacao) {
+            updateData.dias_em_validacao = { increment: days };
+        } else if (fromStatus === DemandaStatus.Publicado) {
+            updateData.dias_em_publicado = { increment: days };
+        }
 
-            // Set situacao_encerramento if transitioning to Encerrado
-            if (toStatus === DemandaStatus.Encerrado && situacaoEncerramento) {
-                updateData.situacao_encerramento = situacaoEncerramento;
-            }
+        // Define timestamp para novo status se for primeira vez
+        if (toStatus === DemandaStatus.Validacao && !demanda.data_validacao) {
+            updateData.data_validacao = new Date();
+        } else if (toStatus === DemandaStatus.Publicado && !demanda.data_publicado) {
+            updateData.data_publicado = new Date();
+        } else if (toStatus === DemandaStatus.Encerrado && !demanda.data_encerrado) {
+            updateData.data_encerrado = new Date();
+        }
 
-            await prismaTxn.demanda.update({ where: { id }, data: updateData });
+        // Define situacao_encerramento se transicionando para Encerrado
+        if (toStatus === DemandaStatus.Encerrado && situacaoEncerramento) {
+            updateData.situacao_encerramento = situacaoEncerramento;
+        } else {
+            // Apenas pro futuro, hj não tem como chegar aqui pq o encerramento é final
+            updateData.situacao_encerramento = null;
+        }
 
-            // Create historico entry
-            await prismaTxn.demandaHistorico.create({
-                data: {
-                    demanda_id: id,
-                    status_anterior: fromStatus,
-                    status_novo: toStatus,
-                    motivo,
-                    criado_por: user.id,
-                },
-            });
+        await prismaTxn.demanda.update({ where: { id }, data: updateData });
 
-            return { id };
+        // Cria registro de histórico
+        await prismaTxn.demandaHistorico.create({
+            data: {
+                demanda_id: id,
+                status_anterior: fromStatus,
+                status_novo: toStatus,
+                motivo,
+                criado_por: user.id,
+            },
         });
+
+        return { id };
     }
 
     private calculateDaysInStatus(dataStatusAtual: Date): number {
@@ -829,7 +869,7 @@ export class DemandaService {
         demanda: any,
         user: PessoaFromJwt
     ): Promise<void> {
-        // Build current data object
+        // Monta objeto de dados atuais
         const dadosAtuais = {
             orgao_id: demanda.orgao_id,
             unidade_responsavel: demanda.unidade_responsavel,
@@ -845,9 +885,10 @@ export class DemandaService {
             observacao: demanda.observacao,
             area_tematica_id: demanda.area_tematica_id,
             status: demanda.status,
+            situacao_encerramento: demanda.situacao_encerramento,
         };
 
-        // Get the previous snapshot to compute diff
+        // Obtém snapshot anterior para calcular diff
         const previousSnapshot = await prismaTxn.demandaSnapshot.findFirst({
             where: { demanda_id: demanda.id },
             orderBy: { versao: 'desc' },
@@ -876,12 +917,12 @@ export class DemandaService {
         orgaoId: number,
         user: PessoaFromJwt
     ): Promise<void> {
-        // If user has validar permission, they can access any orgao
+        // Se usuário tem permissão de validar, pode acessar qualquer órgão
         if (user.hasSomeRoles(['CadastroDemanda.validar'])) {
             return;
         }
 
-        // Otherwise, user can only access their own orgao
+        // Caso contrário, usuário só pode acessar seu próprio órgão
         if (orgaoId !== user.orgao_id) {
             throw new HttpException('Usuário não possui acesso a este órgão', 403);
         }
@@ -896,7 +937,7 @@ export class DemandaService {
         });
 
         if (!config) {
-            return; // No active config, skip validation
+            return; // Sem config ativa, pula validação
         }
 
         const valorNum = parseFloat(valor);

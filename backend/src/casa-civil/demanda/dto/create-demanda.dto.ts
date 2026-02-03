@@ -114,3 +114,83 @@ export class CreateDemandaDto {
     @Type(() => CreateDemandaArquivoDto)
     arquivos?: CreateDemandaArquivoDto[];
 }
+
+export class UpdateDemandaDto {
+    @IsOptional()
+    @IsInt()
+    orgao_id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT)
+    unidade_responsavel?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT)
+    nome_responsavel?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT)
+    cargo_responsavel?: string;
+
+    @IsOptional()
+    @IsEmail()
+    @MaxLength(MAX_LENGTH_DEFAULT)
+    email_responsavel?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(20)
+    telefone_responsavel?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT)
+    nome_projeto?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_MEDIO)
+    descricao?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_MEDIO)
+    justificativa?: string;
+
+    @IsOptional()
+    @IsNumberStringCustom(13, 2)
+    valor?: string;
+
+    @IsOptional()
+    @IsEnum(DemandaFinalidade)
+    finalidade?: DemandaFinalidade;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_MEDIO)
+    observacao?: string;
+
+    @IsOptional()
+    @IsInt()
+    area_tematica_id?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    acao_ids?: number[];
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateDemandaLocalizacaoDto)
+    localizacoes?: CreateDemandaLocalizacaoDto[];
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateDemandaArquivoDto)
+    arquivos?: CreateDemandaArquivoDto[];
+}

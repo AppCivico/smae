@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DemandaService } from './demanda.service';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
-import { UpdateDemandaDto } from './dto/update-demanda.dto';
+import { UpdateDemandaDto } from './dto/create-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
 
 @ApiTags('Casa Civil - Demandas')
@@ -58,7 +58,6 @@ export class DemandaController {
         return '';
     }
 
-    // Historico
     @Get(':id/historico')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroDemanda.listar'])

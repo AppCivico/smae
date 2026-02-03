@@ -1,11 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DemandaSituacao, DemandaStatus } from '@prisma/client';
-import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { UpdateDemandaDto } from '../../dto/create-demanda.dto';
 import { DemandaPermissoesDto } from '../../entities/demanda.entity';
 
 export const DemandaAcao = {
+    editar: 'editar',
     enviar: 'enviar',
     validar: 'validar',
     devolver: 'devolver',
@@ -22,7 +24,7 @@ export class CreateDemandaAcaoDto {
     acao: DemandaAcao;
 
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Type(() => Number)
     demanda_id: number;
 
     @ApiProperty({ enum: DemandaSituacao, enumName: 'DemandaSituacao', required: false })
@@ -36,8 +38,15 @@ export class CreateDemandaAcaoDto {
     @MaxLength(MAX_LENGTH_MEDIO)
     motivo?: string;
 
+    @ApiProperty({ required: false, type: UpdateDemandaDto })
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => UpdateDemandaDto)
+    edicao?: UpdateDemandaDto;
+
     mapaPermissao(): string {
         const permissionMap: Record<DemandaAcao, string> = {
+            editar: 'pode_editar',
             enviar: 'pode_enviar',
             validar: 'pode_validar',
             devolver: 'pode_devolver',
@@ -48,6 +57,11 @@ export class CreateDemandaAcaoDto {
 
     fsmState(currentStatus: DemandaStatus): { from: DemandaStatus; to: DemandaStatus } | null {
         const transitions: Record<DemandaAcao, Partial<Record<DemandaStatus, DemandaStatus>>> = {
+            editar: {
+                [DemandaStatus.Registro]: DemandaStatus.Registro,
+                [DemandaStatus.Validacao]: DemandaStatus.Validacao,
+                [DemandaStatus.Publicado]: DemandaStatus.Publicado,
+            },
             enviar: { [DemandaStatus.Registro]: DemandaStatus.Validacao },
             validar: { [DemandaStatus.Validacao]: DemandaStatus.Publicado },
             devolver: {
