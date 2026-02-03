@@ -235,7 +235,7 @@ defineExpose({
 
         <button
           type="button"
-          class="like-a__text lista-arquivos__botao-remover"
+          class="like-a__text addlink"
           title="Remover arquivo"
           @click="removerArquivo(item)"
         >
@@ -328,15 +328,6 @@ defineExpose({
   height: 24px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.lista-arquivos__botao-remover {
-  flex-shrink: 0;
-  cursor: pointer;
-
-  &:hover {
-    color: @vermelho;
-  }
 }
 
 .upload-input {

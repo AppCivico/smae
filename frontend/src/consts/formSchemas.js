@@ -4673,56 +4673,48 @@ export const valoresLimites = object({
   data_inicio_vigencia: date()
     .label('Início da Vigência')
     .required('Informe a data de início da vigência')
-    .test('verificar-data-inicio', (dataInicio, {
-      resolve, createError,
-    }) => {
-      const dataFim = resolve(ref('data_fim_vigencia'));
-
-      if (dataFim && dataInicio > dataFim) {
-        return createError({
-          message: 'A data de início não pode ser maior que a data de fim',
-        });
-      }
-      return true;
-    }),
+    .test(
+      'verificar-data-inicio',
+      'A data de início não pode ser maior que a data de fim',
+      (dataInicio, { resolve }) => {
+        const dataFim = resolve(ref('data_fim_vigencia'));
+        return !dataFim || dataInicio < dataFim;
+      },
+    ),
   data_fim_vigencia: date()
     .label('Fim da Vigência')
     .nullable()
     .transform((v) => (v === '' || v === null ? null : v))
-    .test('verificar-data-fim', (dataFim, { resolve, createError }) => {
-      const dataInicio = resolve(ref('data_inicio_vigencia'));
-
-      if (dataFim && dataInicio && dataFim < dataInicio) {
-        return createError({
-          message: 'A data de fim não pode ser menor que a data de início',
-        });
-      }
-      return true;
-    }),
+    .test(
+      'verificar-data-fim',
+      'A data de fim não pode ser menor que a data de início',
+      (dataFim, { resolve }) => {
+        const dataInicio = resolve(ref('data_inicio_vigencia'));
+        return !dataFim || !dataInicio || dataFim > dataInicio;
+      },
+    ),
   valor_minimo: string()
     .label('Valor Mínimo')
     .required('Informe o valor mínimo')
-    .test('verificar-valor-minimo', (valorMinimo, { resolve, createError }) => {
-      const valorMaximo = resolve(ref('valor_maximo'));
-      if (valorMinimo && valorMaximo && parseFloat(valorMinimo) > parseFloat(valorMaximo)) {
-        return createError({
-          message: 'O valor mínimo não pode ser maior que o valor máximo',
-        });
-      }
-      return true;
-    }),
+    .test(
+      'verificar-valor-minimo',
+      'O valor mínimo não pode ser maior que o valor máximo',
+      (valorMinimo, { resolve }) => {
+        const valorMaximo = resolve(ref('valor_maximo'));
+        return !valorMinimo || !valorMaximo || parseFloat(valorMinimo) <= parseFloat(valorMaximo);
+      },
+    ),
   valor_maximo: string()
     .label('Valor Máximo')
     .required('Informe o valor máximo')
-    .test('verificar-valor-maximo', (valorMaximo, { resolve, createError }) => {
-      const valorMinimo = resolve(ref('valor_minimo'));
-      if (valorMaximo && valorMinimo && parseFloat(valorMaximo) < parseFloat(valorMinimo)) {
-        return createError({
-          message: 'O valor máximo não pode ser menor que o valor mínimo',
-        });
-      }
-      return true;
-    }),
+    .test(
+      'verificar-valor-maximo',
+      'O valor máximo não pode ser menor que o valor mínimo',
+      (valorMaximo, { resolve }) => {
+        const valorMinimo = resolve(ref('valor_minimo'));
+        return !valorMaximo || !valorMinimo || parseFloat(valorMaximo) >= parseFloat(valorMinimo);
+      },
+    ),
   observacao: string()
     .label('Observação')
     .nullable()
