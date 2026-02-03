@@ -1106,9 +1106,7 @@ export default [
                 name: 'areasTematicas.editar',
                 path: ':areaTematicaId',
                 component: AreasTematicasCriarEditar,
-                props: ({ params }) => ({
-                  areaTematicaId: Number.parseInt(params.areaTematicaId, 10) || undefined,
-                }),
+                props: tiparPropsDeRota,
                 meta: {
                   título: 'Editar Área Temática',
                   limitarÀsPermissões: 'CadastroAreaTematica.editar',
