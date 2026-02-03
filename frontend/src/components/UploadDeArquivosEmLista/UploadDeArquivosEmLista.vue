@@ -103,7 +103,6 @@ function emitirTokens() {
   }
 
   model.value = tokens;
-  emit('update:modelValue', tokens);
 }
 
 async function obterToken(file: File): Promise<string> {

@@ -34,6 +34,10 @@ const {
 });
 
 function removerArquivo(itemId: number) {
+  if (!itemId || !values?.anexos) {
+    return;
+  }
+
   const arquivosRestanes = values?.anexos.filter((anexo) => anexo.id !== itemId);
   setFieldValue('anexos', arquivosRestanes);
 }
