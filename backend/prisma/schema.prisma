@@ -8076,6 +8076,7 @@ model TipoVinculo {
 enum CampoVinculo {
     Endereco
     Dotacao
+    Demanda
 }
 
 model DistribuicaoRecursoVinculo {

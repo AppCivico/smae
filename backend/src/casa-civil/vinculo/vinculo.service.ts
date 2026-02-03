@@ -548,6 +548,7 @@ export class VinculoService {
                     meta_id,
                     atividade_id,
                     iniciativa_id,
+                    demanda_id,
                     removido_em: null,
                     invalidado_em: null,
                 },
