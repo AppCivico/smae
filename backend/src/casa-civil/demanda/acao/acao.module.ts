@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { GeoLocModule } from '../../../geo-loc/geo-loc.module';
 import { PrismaModule } from '../../../prisma/prisma.module';
 import { UploadModule } from '../../../upload/upload.module';
-import { GeoLocModule } from '../../../geo-loc/geo-loc.module';
 import { DemandaService } from '../demanda.service';
 import { DemandaAcaoController } from './acao.controller';
 import { DemandaAcaoService } from './acao.service';

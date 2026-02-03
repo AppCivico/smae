@@ -71,7 +71,7 @@ CREATE TABLE "demanda_acao" (
 CREATE TABLE "demanda_localizacao" (
     "id" SERIAL NOT NULL,
     "demanda_id" INTEGER NOT NULL,
-    "geo_loc_id" INTEGER,
+    "geo_loc_id" INTEGER NOT NULL,
     "criado_por" INTEGER NOT NULL,
     "criado_em" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "atualizado_por" INTEGER,
@@ -137,6 +137,36 @@ CREATE INDEX "demanda_area_tematica_id_idx" ON "demanda"("area_tematica_id");
 -- CreateIndex
 CREATE INDEX "demanda_acao_demanda_id_acao_id_idx" ON "demanda_acao"("demanda_id", "acao_id");
 
+-- CreateIndex
+CREATE INDEX "demanda_localizacao_demanda_id_idx" ON "demanda_localizacao"("demanda_id");
+
+-- CreateIndex
+CREATE INDEX "demanda_arquivo_demanda_id_idx" ON "demanda_arquivo"("demanda_id");
+
+-- CreateIndex
+CREATE INDEX "demanda_historico_demanda_id_idx" ON "demanda_historico"("demanda_id");
+
+-- CreateIndex
+CREATE INDEX "demanda_snapshot_demanda_id_idx" ON "demanda_snapshot"("demanda_id");
+
+-- CreateIndex
+CREATE INDEX "geo_localizacao_referencia_projeto_id_idx" ON "geo_localizacao_referencia"("projeto_id");
+
+-- CreateIndex
+CREATE INDEX "geo_localizacao_referencia_iniciativa_id_idx" ON "geo_localizacao_referencia"("iniciativa_id");
+
+-- CreateIndex
+CREATE INDEX "geo_localizacao_referencia_atividade_id_idx" ON "geo_localizacao_referencia"("atividade_id");
+
+-- CreateIndex
+CREATE INDEX "geo_localizacao_referencia_meta_id_idx" ON "geo_localizacao_referencia"("meta_id");
+
+-- CreateIndex
+CREATE INDEX "geo_localizacao_referencia_etapa_id_idx" ON "geo_localizacao_referencia"("etapa_id");
+
+-- CreateIndex
+CREATE INDEX "geo_localizacao_referencia_demanda_id_idx" ON "geo_localizacao_referencia"("demanda_id");
+
 -- AddForeignKey
 ALTER TABLE "geo_localizacao_referencia" ADD CONSTRAINT "geo_localizacao_referencia_demanda_id_fkey" FOREIGN KEY ("demanda_id") REFERENCES "demanda"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -171,7 +201,7 @@ ALTER TABLE "demanda_acao" ADD CONSTRAINT "demanda_acao_removido_por_fkey" FOREI
 ALTER TABLE "demanda_localizacao" ADD CONSTRAINT "demanda_localizacao_demanda_id_fkey" FOREIGN KEY ("demanda_id") REFERENCES "demanda"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "demanda_localizacao" ADD CONSTRAINT "demanda_localizacao_geo_loc_id_fkey" FOREIGN KEY ("geo_loc_id") REFERENCES "geo_localizacao"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "demanda_localizacao" ADD CONSTRAINT "demanda_localizacao_geo_loc_id_fkey" FOREIGN KEY ("geo_loc_id") REFERENCES "geo_localizacao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "demanda_localizacao" ADD CONSTRAINT "demanda_localizacao_criado_por_fkey" FOREIGN KEY ("criado_por") REFERENCES "pessoa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -211,5 +241,8 @@ ALTER TABLE "demanda_snapshot" ADD CONSTRAINT "demanda_snapshot_criado_por_fkey"
 
 
 -- Ignored by prisma
+
 CREATE UNIQUE INDEX "demanda_acao_demanda_id_acao_id_key" ON "demanda_acao"("demanda_id", "acao_id") WHERE "removido_em" IS NULL;
+
+
 

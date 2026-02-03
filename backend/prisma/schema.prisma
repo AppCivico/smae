@@ -5441,6 +5441,12 @@ model GeoLocalizacaoReferencia {
     removedor             Pessoa?                      @relation("removedor", fields: [removido_por], references: [id])
     vinculosDistribuicoes DistribuicaoRecursoVinculo[]
 
+    @@index([projeto_id])
+    @@index([iniciativa_id])
+    @@index([atividade_id])
+    @@index([meta_id])
+    @@index([etapa_id])
+    @@index([demanda_id])
     @@map("geo_localizacao_referencia")
 }
 
@@ -8444,7 +8450,7 @@ model DemandaLocalizacao {
     demanda_id Int
 
     // Referência para GeoLocalizacao (integração geolocalização)
-    geo_loc_id Int?
+    geo_loc_id Int
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -8459,6 +8465,7 @@ model DemandaLocalizacao {
     atualizador    Pessoa?         @relation("DemandaLocalizacaoAtualizador", fields: [atualizado_por], references: [id])
     removedor      Pessoa?         @relation("DemandaLocalizacaoRemovedor", fields: [removido_por], references: [id])
 
+    @@index([demanda_id])
     @@map("demanda_localizacao")
 }
 
@@ -8482,6 +8489,7 @@ model DemandaArquivo {
     atualizador Pessoa? @relation("DemandaArquivoAtualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("DemandaArquivoRemovedor", fields: [removido_por], references: [id])
 
+    @@index([demanda_id])
     @@map("demanda_arquivo")
 }
 
@@ -8498,6 +8506,7 @@ model DemandaHistorico {
     demanda Demanda @relation(fields: [demanda_id], references: [id])
     criador Pessoa  @relation("DemandaHistoricoCriador", fields: [criado_por], references: [id])
 
+    @@index([demanda_id])
     @@map("demanda_historico")
 }
 
@@ -8515,5 +8524,6 @@ model DemandaSnapshot {
     demanda Demanda @relation(fields: [demanda_id], references: [id])
     criador Pessoa  @relation("DemandaSnapshotCriador", fields: [criado_por], references: [id])
 
+    @@index([demanda_id])
     @@map("demanda_snapshot")
 }

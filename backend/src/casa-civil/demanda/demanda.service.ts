@@ -714,6 +714,7 @@ export class DemandaService {
 
             case DemandaStatus.Validacao:
                 if (isSeri) {
+                    permissoes.pode_editar = true;
                     permissoes.pode_validar = true;
                     permissoes.pode_devolver = true;
                     permissoes.pode_cancelar = true;
