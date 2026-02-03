@@ -89,14 +89,4 @@ export class DemandaConfigController {
     ): Promise<DemandaConfigAnexoDto[]> {
         return await this.demandaConfigService.listAnexos(+params.id, user);
     }
-
-    @Delete(':id/anexo/:id2')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemandaConfig.editar'])
-    @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
-    async removeAnexo(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.demandaConfigService.removeAnexo(+params.id, +params.id2, user);
-        return '';
-    }
 }
