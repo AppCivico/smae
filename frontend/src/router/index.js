@@ -137,7 +137,7 @@ router.beforeEach(async (r, from) => {
     authStore.returnUrl = r.fullPath;
     return '/login';
   }
-  if (r.path === '/nova-senha' && !authStore.reducedtoken) {
+  if (r.path === '/nova-senha' && !authStore.reducedToken) {
     return '/login';
   }
 });
