@@ -36,12 +36,16 @@ export class AreaTematicaService {
 
                 // Create nested acoes if provided
                 if (dto.acoes && dto.acoes.length > 0) {
-                    try {
-                        // Filter for unique names to avoid P2002 from Prisma
-                        const uniqueAcoes = Array.from(new Map(dto.acoes.map((acao) => [acao.nome, acao])).values());
+                    // Check for duplicate names
+                    const nomes = dto.acoes.map((a) => a.nome.toLowerCase());
+                    const nomesSet = new Set(nomes);
+                    if (nomes.length !== nomesSet.size) {
+                        throw new HttpException('Nomes de ações duplicados na requisição', 400);
+                    }
 
+                    try {
                         await prismaTxn.acao.createMany({
-                            data: uniqueAcoes.map((acao) => ({
+                            data: dto.acoes.map((acao) => ({
                                 area_tematica_id: areaTematica.id,
                                 nome: acao.nome,
                                 ativo: acao.ativo,
