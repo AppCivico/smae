@@ -57,8 +57,41 @@ const props = defineProps({
 });
 
 const control = ref(props.controlador);
+const botoesOpcoes = ref([]);
+const inputRef = ref(null);
 
 const emit = defineEmits(['change']);
+
+const opcoesFiltradas = computed(() => props.grupo.filter(
+  (x) => !control.value.participantes?.includes(x.id)
+    && String(x[props.label])?.toLowerCase().includes(control.value.busca.toLowerCase()),
+));
+
+function abrirLista() {
+  if (opcoesFiltradas.value.length === 0) return;
+  const botoes = botoesOpcoes.value.filter(Boolean);
+  if (botoes.length > 0) {
+    botoes[0].focus();
+  }
+}
+
+function navegarLista(e, indice) {
+  const botoes = botoesOpcoes.value.filter(Boolean);
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const proximo = indice < botoes.length - 1
+      ? indice + 1
+      : 0;
+    botoes[proximo]?.focus();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (indice === 0) {
+      inputRef.value?.focus();
+    } else {
+      botoes[indice - 1]?.focus();
+    }
+  }
+}
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
 // É aqui que deixamos o componente retro-compatível
@@ -129,6 +162,7 @@ function desistir(e) {
   <template v-if="grupo?.length">
     <div class="suggestion search">
       <input
+        ref="inputRef"
         v-bind="$attrs"
         v-model="control.busca"
         autocomplete="off"
@@ -138,20 +172,22 @@ function desistir(e) {
         :aria-readonly="readonly || atingiuLimite"
         @keyup.enter.stop.prevent="buscar($event, control, grupo, label)"
         @keydown.enter.stop.prevent
+        @keydown.down.prevent="abrirLista"
         @keyup.esc="desistir($event)"
       >
       <ul>
         <li
-          v-for="r in grupo.filter((x) => !control.participantes?.includes(x.id)
-            && String(x[label])?.toLowerCase().includes(control.busca.toLowerCase()))"
+          v-for="(r, indice) in opcoesFiltradas"
           :key="r.id"
         >
           <button
+            :ref="(el) => { botoesOpcoes[indice] = el }"
             type="button"
             class="like-a__text"
             :title="r.nome || r.titulo || r.descricao || r.nome_completo || undefined"
             @click="pushId(control.participantes, r.id)"
             @keyup.enter.stop.prevent="pushId(control.participantes, r.id)"
+            @keydown="navegarLista($event, indice)"
             @keyup.esc="desistir($event)"
           >
             <template v-if="r[label]">
