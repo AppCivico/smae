@@ -7,6 +7,7 @@ import {
     PublicDemandaFullDto,
     PublicDemandaSummaryDto,
     PublicGeocamadasDto,
+    PublicGeopointsDto,
 } from './entities/public-demanda.entity';
 
 @ApiTags('Publico - Demandas')
@@ -20,6 +21,16 @@ export class PublicDemandaController {
         const cached = await this.cacheKvService.get<PublicGeocamadasDto>('demandas:geocamadas');
         if (!cached) {
             throw new NotFoundException('Cache de geocamadas nao disponivel');
+        }
+        return cached.valor;
+    }
+
+    @Get('geopontos')
+    @IsPublic()
+    async getGeopoints(): Promise<PublicGeopointsDto> {
+        const cached = await this.cacheKvService.get<PublicGeopointsDto>('demandas:geopoints');
+        if (!cached) {
+            throw new NotFoundException('Cache de geopontos nao disponivel');
         }
         return cached.valor;
     }

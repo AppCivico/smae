@@ -2,6 +2,7 @@ import { IsBoolean, IsEnum, IsInt, IsOptional } from 'class-validator';
 
 export enum RefreshDemandaCacheType {
     geocamadas = 'geocamadas',
+    geopoints = 'geopoints',
     summary = 'summary',
     full = 'full',
     individual = 'individual',

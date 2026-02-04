@@ -68,11 +68,15 @@ export class RefreshDemandaService implements TaskableService {
                     case 'individual':
                         results.individual = await this.refreshAllIndividualDemandas();
                         break;
+                    case 'geopoints':
+                        results.geopoints = await this.refreshGeopoints();
+                        break;
                 }
                 return { results };
             }
 
             results.geocamadas = await this.refreshGeocamadas(params.force_all || params.force_geocamadas || false);
+            results.geopoints = await this.refreshGeopoints();
             results.summary = await this.refreshSummary();
             results.full = await this.refreshFull();
             results.individual = await this.refreshAllIndividualDemandas();
@@ -115,6 +119,36 @@ export class RefreshDemandaService implements TaskableService {
             this.logger.error(`Falha ao refresh geocamadas: ${error.message}`);
             return { success: false, error: error.message };
         }
+    }
+
+    private async refreshGeopoints(): Promise<RefreshResult> {
+        const demandas = await this.prisma.demanda.findMany({
+            where: { status: DemandaStatus.Publicado, removido_em: null },
+            select: { id: true },
+        });
+
+        const geoReferencias = await this.loadGeolocalizationForDemandas(demandas.map((d) => d.id));
+
+        const geopoints = demandas
+            .map((d) => {
+                const refs = geoReferencias.get(d.id) || [];
+                const geo = refs.find((r: any) => r.latitude && r.longitude);
+                return {
+                    id: d.id,
+                    latitude: geo?.latitude ?? null,
+                    longitude: geo?.longitude ?? null,
+                };
+            })
+            .filter((p) => p.latitude !== null && p.longitude !== null);
+
+        await this.cacheKvService.set('demandas:geopoints', {
+            refreshed_at: new Date().toISOString(),
+            total: geopoints.length,
+            points: geopoints,
+        });
+
+        this.logger.log(`GeoPoints: ${geopoints.length} pontos cacheados`);
+        return { success: true, count: geopoints.length };
     }
 
     private async refreshSummary(): Promise<RefreshResult> {
@@ -341,11 +375,11 @@ export class RefreshDemandaService implements TaskableService {
         }
 
         return {
-            orgaos: Array.from(orgaosMap.values()),
-            areas_tematicas: Array.from(areasMap.values()),
+            orgaos: Array.from(orgaosMap.values()).sort((a, b) => a.nome_exibicao.localeCompare(b.nome_exibicao)),
+            areas_tematicas: Array.from(areasMap.values()).sort((a, b) => a.nome.localeCompare(b.nome)),
             localizacoes: {
-                subprefeituras: Array.from(subprefMap.values()),
-                distritos: Array.from(distritosMap.values()),
+                subprefeituras: Array.from(subprefMap.values()).sort((a, b) => a.descricao.localeCompare(b.descricao)),
+                distritos: Array.from(distritosMap.values()).sort((a, b) => a.descricao.localeCompare(b.descricao)),
             },
             valor_range: {
                 min: minValor === Infinity ? '0' : minValor.toString(),

@@ -82,6 +82,18 @@ export class PublicGeocamadasDto {
     data: any[];
 }
 
+export class PublicGeopointDto {
+    id: number;
+    latitude: number;
+    longitude: number;
+}
+
+export class PublicGeopointsDto {
+    refreshed_at: string;
+    total: number;
+    points: PublicGeopointDto[];
+}
+
 export class PublicCacheDeletedDto {
     deleted: boolean;
 }
