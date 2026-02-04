@@ -1,7 +1,9 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
+import { CacheKVService } from '../../../common/services/cache-kv.service';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { TaskService } from '../../../task/task.service';
 import { DemandaService } from '../demanda.service';
 import { CreateDemandaAcaoDto } from './dto/acao.dto';
 
@@ -9,7 +11,9 @@ import { CreateDemandaAcaoDto } from './dto/acao.dto';
 export class DemandaAcaoService {
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => DemandaService)) private readonly demandaService: DemandaService
+        @Inject(forwardRef(() => DemandaService)) private readonly demandaService: DemandaService,
+        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
+        private readonly cacheKvService: CacheKVService
     ) {}
 
     async create(dto: CreateDemandaAcaoDto, user: PessoaFromJwt) {
@@ -67,7 +71,7 @@ export class DemandaAcaoService {
         }
 
         // Sem edição, apenas executa a mudança de status
-        return this.demandaService.changeStatus(
+        const result = await this.demandaService.changeStatus(
             dto.demanda_id,
             user,
             transition.from,
@@ -75,5 +79,23 @@ export class DemandaAcaoService {
             dto.motivo || null,
             dto.situacao_encerramento
         );
+
+        if (transition.to === DemandaStatus.Publicado || transition.from === DemandaStatus.Publicado) {
+            // Só marca como deletado no cache se for cancelar
+            if (dto.acao === 'cancelar') {
+                await this.cacheKvService.setDeleted(`demandas:${dto.demanda_id}`);
+            }
+
+            // Precisa atualizar a listagem
+            await this.taskService.create(
+                {
+                    type: 'refresh_demanda',
+                    params: { force_all: true },
+                },
+                user
+            );
+        }
+
+        return result;
     }
 }

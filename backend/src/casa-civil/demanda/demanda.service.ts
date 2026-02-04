@@ -18,6 +18,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from 'src/upload/arquivo-preview.helper';
 import { UploadService } from 'src/upload/upload.service';
 import { ObjectDiff } from '../../common/objectDiff';
+import { CacheKVService } from '../../common/services/cache-kv.service';
 import { CreateDemandaDto, UpdateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
@@ -56,7 +57,8 @@ export class DemandaService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         @Inject(forwardRef(() => GeoLocService))
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        private readonly cacheKvService: CacheKVService
     ) {}
 
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -624,6 +626,10 @@ export class DemandaService {
             const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao_id);
             if (!permissoes.pode_remover) {
                 throw new HttpException('Usuário não possui permissão para remover esta demanda', 403);
+            }
+
+            if (demanda.status === DemandaStatus.Publicado) {
+                await this.cacheKvService.setDeleted(`demandas:${id}`);
             }
 
             // Soft delete do registro principal

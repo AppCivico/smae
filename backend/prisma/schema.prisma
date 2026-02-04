@@ -5147,6 +5147,7 @@ enum task_type {
     backup_api_log_day
     restore_api_log_day
     gerar_preview_documento
+    refresh_demanda
 }
 
 enum task_status {
@@ -8531,4 +8532,14 @@ model DemandaSnapshot {
 
     @@index([demanda_id])
     @@map("demanda_snapshot")
+}
+
+model CacheKV {
+    chave         String    @id
+    valor         String
+    expiracao     DateTime?
+    criado_em     DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_em DateTime  @updatedAt @db.Timestamptz(6)
+
+    @@map("cache_kv")
 }

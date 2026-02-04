@@ -4,6 +4,10 @@ import { Prisma, task_queue, task_type } from '@prisma/client';
 import { fork } from 'child_process';
 import { DateTime } from 'luxon';
 import { resolve as resolvePath } from 'path';
+import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
+import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { PreviewService } from 'src/upload/preview.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IsCrontabEnabled } from '../common/crontab-utils';
 import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
@@ -16,6 +20,7 @@ import { CreateTaskDto, RetryConfigDto, RetryStrategy } from './dto/create-task.
 import { EchoService } from './echo/echo.service';
 import { TaskSingleDto, TaskableService } from './entities/task.entity';
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
+import { RefreshDemandaService } from './refresh_demanda/refresh-demanda.service';
 import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.service';
 import { RefreshMetaService } from './refresh_meta/refresh-meta.service';
 import { RefreshMvService } from './refresh_mv/refresh-mv.service';
@@ -23,12 +28,8 @@ import { RefreshTransferenciaService } from './refresh_transferencia/refresh-tra
 import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.service';
 import { RunReportTaskService } from './run_report/run-report.service';
 import { RunUpdateTaskService } from './run_update/run-update.service';
-import { ParseParams } from './task.parseParams';
 import { TaskContext } from './task.context';
-import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
-import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
-import { PreviewService } from 'src/upload/preview.service';
+import { ParseParams } from './task.parseParams';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
@@ -202,7 +203,10 @@ export class TaskService {
         private readonly apiLogRestoreService: ApiLogRestoreService,
         //
         @Inject(forwardRef(() => PreviewService))
-        private readonly previewService: PreviewService
+        private readonly previewService: PreviewService,
+        //
+        @Inject(forwardRef(() => RefreshDemandaService))
+        private readonly refreshDemandaService: RefreshDemandaService
     ) {
         this.enabled = IsCrontabEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -689,6 +693,7 @@ export class TaskService {
             refresh_indicador: true, // tbm só chama função no banco
             refresh_transferencia: true, // tbm só chama função no banco
             refresh_variavel: true, // tbm só chama função no banco
+            refresh_demanda: true, // tbm só chama função no banco
             aviso_email: true, // tbm só chama função no banco
             aviso_email_cronograma_tp: true, // tbm só chama função no banco
             aviso_email_nota: true, // tbm só chama função no banco
@@ -768,6 +773,9 @@ export class TaskService {
                 break;
             case 'gerar_preview_documento':
                 service = this.previewService;
+                break;
+            case 'refresh_demanda':
+                service = this.refreshDemandaService;
                 break;
             default:
                 task_type satisfies never;

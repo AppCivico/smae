@@ -6,6 +6,7 @@ import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_c
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
 import { CreateEchoDto } from './echo/dto/create-echo.dto';
 import { CreateImportacaoParlamentarDto } from './importacao_parlamentar/dto/create-parlamentar.dto';
+import { CreateRefreshDemandaDto } from './refresh_demanda/dto/create-refresh-demanda.dto';
 import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
 import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
@@ -60,6 +61,9 @@ export function ParseParams(taskType: task_type, value: any): any {
             break;
         case 'gerar_preview_documento':
             // No params class for this task yet.
+            break;
+        case 'refresh_demanda':
+            theClass = CreateRefreshDemandaDto;
             break;
         default:
             taskType satisfies never;
