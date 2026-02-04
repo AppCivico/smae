@@ -20,7 +20,6 @@ export class OrcamentoPlanejadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
-        private readonly vinculoService: VinculoService
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {

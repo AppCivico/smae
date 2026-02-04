@@ -368,6 +368,7 @@ export class ProjetoService {
         @Inject(forwardRef(() => PortfolioService))
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService,
+        @Inject(forwardRef(() => GeoLocService))
         private readonly geolocService: GeoLocService,
         private readonly blocoNotaService: BlocoNotaService,
         @Inject(forwardRef(() => TarefaService))

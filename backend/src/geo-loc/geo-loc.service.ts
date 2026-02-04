@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CampoVinculo, GeoCamadaConfig, Prisma } from '@prisma/client';
 import * as turf from '@turf/simplify';
@@ -22,7 +27,6 @@ import {
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
-import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 class GeoTokenJwtBody {
     id: number;
@@ -66,7 +70,6 @@ export class GeoLocService {
         private readonly prisma: PrismaService,
         private readonly geoApi: GeoApiService,
         private readonly smaeConfigService: SmaeConfigService,
-        private readonly vinculoService: VinculoService
     ) {}
 
     async geoLoc(input: GeoLocDto): Promise<RetornoGeoLoc> {
@@ -587,7 +590,8 @@ export class GeoLocService {
         dto: CreateGeoEnderecoReferenciaDto,
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient,
-        now: Date
+        now: Date,
+        invalidarVinculoFn?: (vinculoId: number, prismaTx: Prisma.TransactionClient) => Promise<void>
     ): Promise<UpsertEnderecoDto> {
         if (!dto.tokens)
             return {
@@ -712,10 +716,10 @@ export class GeoLocService {
             // se ainda ta na lista dos presentes, n precisa remover
             if (inputIds.filter((r) => r == prevRecord.geo_localizacao.id)[0]) continue;
 
-            if (prevRecord.vinculosDistribuicoes.length > 0) {
+            if (prevRecord.vinculosDistribuicoes.length > 0 && invalidarVinculoFn) {
                 const vinculoIds = prevRecord.vinculosDistribuicoes.map((v) => v.id);
                 for (const vinculoId of vinculoIds) {
-                    await this.vinculoService.invalidarVinculo({ id: vinculoId }, 'Endereço removido', prismaTx);
+                    await invalidarVinculoFn(vinculoId, prismaTx);
                 }
             }
 
