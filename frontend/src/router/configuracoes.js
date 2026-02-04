@@ -1,6 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
@@ -11,6 +12,7 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
+import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 import AreasTematicasCriarEditar from '@/views/areasTematicas/AreasTematicasCriarEditar.vue';
 import AreasTematicasLista from '@/views/areasTematicas/AreasTematicasLista.vue';
 import AreasTematicasRaiz from '@/views/areasTematicas/AreasTematicasRaiz.vue';
@@ -1172,7 +1174,10 @@ export default [
                 component: () => import('@/views/valoresLimites/ValoresLimitesCriarEditar.vue'),
                 props: tiparPropsDeRota,
                 meta: {
-                  título: 'Editar Valor Limite',
+                  título: () => {
+                    const { emFoco } = useValoresLimitesStore();
+                    return !emFoco ? 'Editar Valor Limite' : `Vigência a partir de ${dateToShortDate(emFoco.data_inicio_vigencia)}`;
+                  },
                   limitarÀsPermissões: 'CadastroDemandaConfig.editar',
                   rotaDeEscape: 'valoresLimites.listar',
                   rotasParaMigalhasDePão: ['valoresLimites.listar'],

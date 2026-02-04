@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
@@ -61,6 +62,10 @@ function buscarDados() {
   valoresLimitesStore.buscarTudo(route.query);
 }
 
+function montarMensagemExclusao(linha) {
+  return `Deseja excluir o item do período que se inicia em ${dateToShortDate(linha.data_inicio_vigencia)}?`;
+}
+
 async function excluirItem({ id }) {
   try {
     await valoresLimitesStore.excluirItem(id);
@@ -112,6 +117,7 @@ watch(
       name: 'valoresLimites.editar',
       params: { valorLimiteId: id }
     })"
+    :mensagem-exclusao="montarMensagemExclusao"
     @deletar="excluirItem"
   />
 </template>
