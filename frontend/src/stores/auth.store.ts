@@ -29,6 +29,18 @@ export const useAuthStore = defineStore('auth', {
     sistemaEscolhido: (localStorage.getItem('sistemaEscolhido')
       ?? 'SMAE') as ModuloSistema,
     moduloDaRotaAnterior: '' as ModuloSistema | '',
+
+    modulosAcessiveis: [] as ModuloSistema[],
+    modulosDisponiveis: [] as ModuloSistema[],
+
+    chamadasPendentes: {
+      listarModulos: false,
+      escolherModulo: false,
+    },
+    erros: {
+      listarModulos: null as unknown,
+      escolherModulo: null as unknown,
+    },
   }),
   actions: {
     async login(carga: LoginRequestBody) {
@@ -143,6 +155,82 @@ export const useAuthStore = defineStore('auth', {
       this.resetStores();
 
       this.router.push('/login');
+    },
+
+    async carregarModulos() {
+      this.chamadasPendentes.listarModulos = true;
+      this.erros.listarModulos = null;
+
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/minha-conta`,
+          null,
+          { headers: { 'smae-sistemas': Object.keys(modulos).join(',') } },
+        ) as MinhaContaDto;
+
+        const {
+          sessao: { sistemas, sistemas_disponiveis: sistemasDisponiveis },
+        } = resposta;
+
+        this.user = resposta.sessao;
+        localStorage.setItem('user', JSON.stringify(resposta.sessao));
+
+        if (Array.isArray(sistemas)) {
+          this.modulosAcessiveis = sistemas.filter((sistema) => sistema !== 'SMAE');
+          this.modulosDisponiveis = sistemasDisponiveis || [];
+        }
+      } catch (erro) {
+        this.erros.listarModulos = erro;
+      } finally {
+        this.chamadasPendentes.listarModulos = false;
+      }
+    },
+
+    async escolherModulo(sistema: ModuloSistema) {
+      this.chamadasPendentes.escolherModulo = true;
+      this.erros.escolherModulo = null;
+      this.sistemaEscolhido = sistema;
+
+      try {
+        await this.getDados(null, { headers: { 'smae-sistemas': `SMAE,${sistema}` } });
+
+        localStorage.setItem('sistemaEscolhido', sistema);
+
+        if (this.dadosDoSistemaEscolhido?.rotaInicial) {
+          const listaDeRotasPossiveis = !Array.isArray(this.dadosDoSistemaEscolhido?.rotaInicial)
+            ? [this.dadosDoSistemaEscolhido?.rotaInicial]
+            : this.dadosDoSistemaEscolhido?.rotaInicial;
+
+          const rotaFiltrada = listaDeRotasPossiveis
+            .find((rota) => this.rotaEhPermitida(rota.name));
+
+          if (rotaFiltrada) {
+            this.router.push(rotaFiltrada);
+          } else {
+            this.router.push({ name: 'cadastrosBasicos' });
+          }
+        }
+
+        this.resetStores([
+          'regions',
+          'users',
+          'tarefas',
+          'Orcamentos',
+          'processos',
+          'acompanhamentos',
+          'macrotemasPsStore',
+          'Macrotemas',
+          // Provavelmente não existem
+          'planosSetoriais',
+          'Metas',
+          'psMetas',
+        ]);
+      } catch (erro) {
+        this.sistemaEscolhido = 'SMAE' as ModuloSistema;
+        this.erros.escolherModulo = erro;
+      } finally {
+        this.chamadasPendentes.escolherModulo = false;
+      }
     },
     setPermissions() {
       const per: Record<string, Record<string, number>> = {};
