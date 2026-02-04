@@ -3,7 +3,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { UploadModule } from 'src/upload/upload.module';
 import { CacheKVModule } from '../../common/services/cache-kv.module';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
-import { DemandaAcaoModule } from './acao/acao.module';
 import { DemandaController } from './demanda.controller';
 import { DemandaService } from './demanda.service';
 import { PublicDemandaController } from './public-demanda.controller';

@@ -51,8 +51,6 @@ export const DemandaGetPermissionSet = async (
 
 @Injectable()
 export class DemandaService {
-    private readonly logger = new Logger(DemandaService.name);
-
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
@@ -74,7 +72,7 @@ export class DemandaService {
                 await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
 
                 // Valida se ações existem e pertencem à área
-                await this.validateAcoes(prismaTxn, dto.acao_ids, dto.area_tematica_id);
+                await this.validateAcoes(prismaTxn, dto.acao_ids ?? [], dto.area_tematica_id);
 
                 // Valida arquivos (máx 3 com autoriza_divulgacao=true)
                 if (dto.arquivos) {
@@ -105,16 +103,17 @@ export class DemandaService {
                     },
                 });
 
-                // Cria registros de junção DemandaAcao
-                for (const acaoId of dto.acao_ids) {
-                    await prismaTxn.demandaAcao.create({
-                        data: {
-                            demanda_id: demanda.id,
-                            acao_id: acaoId,
-                            criado_por: user.id,
-                        },
-                    });
-                }
+                if (dto.acao_ids)
+                    // Cria registros de junção DemandaAcao
+                    for (const acaoId of dto.acao_ids) {
+                        await prismaTxn.demandaAcao.create({
+                            data: {
+                                demanda_id: demanda.id,
+                                acao_id: acaoId,
+                                criado_por: user.id,
+                            },
+                        });
+                    }
 
                 // Cria referências de geolocalização via GeoLocService
                 const geoTokens = dto.localizacoes

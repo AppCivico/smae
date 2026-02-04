@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from '../../../common/consts';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateDemandaLocalizacaoDto {
     @IsOptional()
@@ -87,6 +88,7 @@ export class CreateDemandaDto {
     valor: string;
 
     @IsEnum(DemandaFinalidade)
+    @ApiProperty({ enum: DemandaFinalidade, enumName: 'DemandaFinalidade' })
     finalidade: DemandaFinalidade;
 
     @IsOptional()
@@ -97,16 +99,16 @@ export class CreateDemandaDto {
     @IsInt()
     area_tematica_id: number;
 
+    @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @ArrayMinSize(1)
-    acao_ids: number[];
+    acao_ids?: number[];
 
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => CreateDemandaLocalizacaoDto)
-    @ArrayMinSize(1)
-    localizacoes: CreateDemandaLocalizacaoDto[];
+    localizacoes?: CreateDemandaLocalizacaoDto[];
 
     @IsOptional()
     @IsArray()
