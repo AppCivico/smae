@@ -2366,9 +2366,10 @@ progress,
 .suggestion {
   position: relative;
 
+  &:focus-within input:not([aria-readonly="true"]),
   input:not([aria-readonly="true"]):focus,
   input:not([aria-readonly="true"]):active {
-    +ul {
+    + ul {
       display: block;
     }
   }
