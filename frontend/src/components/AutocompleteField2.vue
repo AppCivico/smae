@@ -119,6 +119,7 @@ function buscar(e, item, g, label) {
       <input
         v-bind="$attrs"
         v-model="control.busca"
+        autocomplete="off"
         type="text"
         class="inputtext light mb05"
         :readonly="readonly || atingiuLimite"
