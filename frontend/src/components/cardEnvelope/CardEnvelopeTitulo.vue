@@ -1,11 +1,5 @@
 <script lang="ts" setup>
-import { computed, withDefaults } from 'vue';
-
-type Slots = {
-  default(): any
-  icone(): any
-  subtitulo(): any
-};
+import { computed, useSlots, withDefaults } from 'vue';
 
 type Props = {
   titulo?: string,
@@ -15,8 +9,6 @@ type Props = {
   corBolinha?: string,
   comBolinhaEsquerda?: boolean,
 };
-
-const slots = defineSlots<Slots>();
 
 const props = withDefaults(
   defineProps<Props>(),
@@ -30,8 +22,10 @@ const props = withDefaults(
   },
 );
 
+const slots = useSlots();
+
 const temIcone = computed<boolean>(() => !!props.icone || !!slots.icone);
-const corBolinhaComputada = computed(() => props.corBolinha || props.cor);
+const corBolinhaComputada = computed<string>(() => props.corBolinha || props.cor);
 </script>
 
 <template>
