@@ -1,20 +1,25 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseEnumPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { TaskService } from '../../task/task.service';
 import { DemandaService } from './demanda.service';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { UpdateDemandaDto } from './dto/create-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
+import { RefreshDemandaCacheType } from '../../task/refresh_demanda/dto/create-refresh-demanda.dto';
 
 @ApiTags('Casa Civil - Demandas')
 @Controller('demanda')
 export class DemandaController {
-    constructor(private readonly demandaService: DemandaService) {}
+    constructor(
+        private readonly demandaService: DemandaService,
+        private readonly taskService: TaskService
+    ) {}
 
     @Post('')
     @ApiBearerAuth('access-token')
@@ -66,5 +71,44 @@ export class DemandaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DemandaHistoricoDto[]> {
         return await this.demandaService.getHistorico(+params.id, user);
+    }
+
+    @Post('refresh-cache')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.validar'])
+    async refreshCache(
+        @Body('tipo', new ParseEnumPipe(RefreshDemandaCacheType, { optional: true })) tipo?: RefreshDemandaCacheType,
+        @Body('force_geocamadas') forceGeocamadas?: boolean,
+        @CurrentUser() user?: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.taskService.create(
+            {
+                type: 'refresh_demanda',
+                params: {
+                    cache_type: tipo,
+                    force_all: !tipo,
+                    force_geocamadas: forceGeocamadas,
+                },
+            },
+            user!
+        );
+    }
+
+    @Post(':id/refresh-cache')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.validar'])
+    async refreshIndividualCache(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.taskService.create(
+            {
+                type: 'refresh_demanda',
+                params: {
+                    demanda_id: +params.id,
+                },
+            },
+            user
+        );
     }
 }

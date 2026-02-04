@@ -3,6 +3,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { UploadModule } from 'src/upload/upload.module';
 import { CacheKVModule } from '../../common/services/cache-kv.module';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
+import { TaskModule } from '../../task/task.module';
 import { DemandaController } from './demanda.controller';
 import { DemandaService } from './demanda.service';
 import { PublicDemandaController } from './public-demanda.controller';
@@ -13,6 +14,7 @@ import { PublicDemandaController } from './public-demanda.controller';
         UploadModule,
         forwardRef(() => GeoLocModule),
         CacheKVModule,
+        forwardRef(() => TaskModule),
     ],
     controllers: [DemandaController, PublicDemandaController],
     providers: [DemandaService],
