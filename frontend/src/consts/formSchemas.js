@@ -4724,3 +4724,32 @@ export const valoresLimites = object({
     .nullable(),
   upload_tokens: array(),
 });
+
+export const valoresLimitesFiltro = object({
+  data_inicio_vigencia: date()
+    .label('Início da Vigência')
+    .nullableOuVazio()
+    .test(
+      'verificar-data-inicio',
+      'A data de início não pode ser maior que a data de fim',
+      (dataInicio, { resolve }) => {
+        const dataFim = resolve(ref('data_fim_vigencia'));
+        return !dataFim || dataInicio <= dataFim;
+      },
+    ),
+  data_fim_vigencia: date()
+    .label('Fim da Vigência')
+    .nullableOuVazio()
+    .test(
+      'verificar-data-fim',
+      'A data de fim não pode ser menor que a data de início',
+      (dataFim, { resolve }) => {
+        const dataInicio = resolve(ref('data_inicio_vigencia'));
+        return !dataFim || !dataInicio || dataFim >= dataInicio;
+      },
+    ),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(500, 'A observação deve ter no máximo 500 caracteres'),
+});
