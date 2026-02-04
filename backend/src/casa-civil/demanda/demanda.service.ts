@@ -739,6 +739,7 @@ export class DemandaService {
                 }
                 // SERI pode cancelar, remover
                 if (isSeri) {
+                    permissoes.pode_enviar = true;
                     permissoes.pode_editar = true;
                     permissoes.pode_cancelar = true;
                     permissoes.pode_remover = true;

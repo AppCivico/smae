@@ -24,7 +24,7 @@ export class PublicDemandaController {
         return cached.valor;
     }
 
-    @Get('summary')
+    @Get('resumo')
     @IsPublic()
     async getSummary(): Promise<PublicDemandaSummaryDto> {
         const cached = await this.cacheKvService.get<PublicDemandaSummaryDto>('demandas:summary');
@@ -34,7 +34,7 @@ export class PublicDemandaController {
         return cached.valor;
     }
 
-    @Get('all')
+    @Get('completo')
     @IsPublic()
     async getAll(): Promise<PublicDemandaFullDto> {
         const cached = await this.cacheKvService.get<PublicDemandaFullDto>('demandas:full');
