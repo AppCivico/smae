@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { valoresLimitesFiltro as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -16,13 +17,48 @@ const route = useRoute();
 const valoresLimitesStore = useValoresLimitesStore();
 const { lista, chamadasPendentes } = storeToRefs(valoresLimitesStore);
 
-const campos = computed(() => [
+const campos = [
   {
     campos: {
-      token: { tipo: 'search' },
+      data_inicio_vigencia: { tipo: 'date' },
+      data_fim_vigencia: { tipo: 'date' },
+      observacao: { tipo: 'text' },
     },
   },
-]);
+];
+
+const listaFiltrada = computed(() => {
+  if (!lista.value) return [];
+
+  const {
+    data_inicio_vigencia: filtroInicio,
+    data_fim_vigencia: filtroFim,
+    observacao: filtroObservacao,
+  } = route.query;
+
+  return lista.value.filter((item) => {
+    if (filtroInicio && item.data_inicio_vigencia < filtroInicio) {
+      return false;
+    }
+
+    if (filtroFim && item.data_fim_vigencia < filtroFim) {
+      return false;
+    }
+
+    if (filtroFim && !item.data_fim_vigencia) {
+      return false;
+    }
+
+    if (filtroObservacao) {
+      const textoObservacao = (item.observacao || '').toLowerCase();
+      if (!textoObservacao.includes(filtroObservacao.toLowerCase())) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+});
 
 const colunas = [
   {
@@ -59,7 +95,7 @@ const colunas = [
 ];
 
 function buscarDados() {
-  valoresLimitesStore.buscarTudo(route.query);
+  valoresLimitesStore.buscarTudo();
 }
 
 function montarMensagemExclusao(linha) {
@@ -75,14 +111,9 @@ async function excluirItem({ id }) {
   }
 }
 
-watch(
-  () => route.query,
-  () => {
-    buscarDados();
-  },
-  { immediate: true },
-);
-
+onMounted(() => {
+  buscarDados();
+});
 </script>
 
 <template>
@@ -99,6 +130,7 @@ watch(
 
   <FiltroParaPagina
     :formulario="campos"
+    :schema="schema"
   />
 
   <div
@@ -112,7 +144,7 @@ watch(
     v-else
     :colunas="colunas"
     parametro-no-objeto-para-excluir="observacao"
-    :dados="lista"
+    :dados="listaFiltrada"
     :rota-editar="({ id }) => ({
       name: 'valoresLimites.editar',
       params: { valorLimiteId: id }
