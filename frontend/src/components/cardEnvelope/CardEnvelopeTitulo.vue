@@ -7,7 +7,7 @@ type Props = {
   icone?: string,
   cor?: string,
   corBolinha?: string,
-  comBolinhaEsquerda?: boolean,
+  estilo?: 'padrao' | 'com-marcador',
 };
 
 const props = withDefaults(
@@ -18,7 +18,7 @@ const props = withDefaults(
     icone: undefined,
     cor: '#221F43',
     corBolinha: undefined,
-    comBolinhaEsquerda: false,
+    estilo: 'padrao',
   },
 );
 
@@ -32,7 +32,7 @@ const corBolinhaComputada = computed<string>(() => props.corBolinha || props.cor
   <header class="card-envelope-titulo">
     <h2
       class="card-envelope-titulo__texto t20 mb0 center g1"
-      :class="{ 'card-envelope-titulo__texto--com-bolinha': comBolinhaEsquerda }"
+      :class="{ 'card-envelope-titulo__texto--com-marcador': estilo === 'com-marcador' }"
     >
       <span class="card-envelope-titulo__slot">
         <slot>
@@ -93,7 +93,7 @@ const corBolinhaComputada = computed<string>(() => props.corBolinha || props.cor
   }
 }
 
-.card-envelope-titulo__texto--com-bolinha {
+.card-envelope-titulo__texto--com-marcador {
   font-weight: 300;
   font-size: 2rem;
   line-height: 1.3;

@@ -137,7 +137,7 @@ onUnmounted(() => {
       <CardEnvelope.Titulo
         cor="#221f43"
         cor-bolinha="#F7C234"
-        com-bolinha-esquerda
+        estilo="com-marcador"
       >
         Resultado por:&nbsp;
         <strong>Endereço</strong>
@@ -185,7 +185,7 @@ onUnmounted(() => {
       <CardEnvelope.Titulo
         cor="#221f43"
         cor-bolinha="#F7C234"
-        com-bolinha-esquerda
+        estilo="com-marcador"
       >
         Resultado por:&nbsp;
         <strong>Dotação</strong>
@@ -233,7 +233,7 @@ onUnmounted(() => {
       <CardEnvelope.Titulo
         cor="#221f43"
         cor-bolinha="#F7C234"
-        com-bolinha-esquerda
+        estilo="com-marcador"
       >
         Resultado por:&nbsp;
         <strong>Demanda</strong>

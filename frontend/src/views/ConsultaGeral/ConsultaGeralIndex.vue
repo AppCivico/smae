@@ -180,7 +180,7 @@ async function handleItemSelecionado(linhaIndex: number) {
       >
         <CardEnvelope.Titulo
           cor-bolinha="#F7C234"
-          com-bolinha-esquerda
+          estilo="com-marcador"
         >
           Resultado por: &nbsp;
           <strong>{{ tiposPesquisa[tipo] }}</strong>
