@@ -1,4 +1,12 @@
-import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+} from '@nestjs/common';
 import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
@@ -47,6 +55,7 @@ export class DemandaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
+        @Inject(forwardRef(() => GeoLocService))
         private readonly geolocService: GeoLocService
     ) {}
 
@@ -640,6 +649,12 @@ export class DemandaService {
             await prismaTxn.demandaArquivo.updateMany({
                 where: { demanda_id: id, removido_em: null },
                 data: { removido_por: user.id, removido_em: new Date() },
+            });
+
+            // Caso exista vínculos, invalida.
+            await prismaTxn.distribuicaoRecursoVinculo.updateMany({
+                where: { demanda_id: id, removido_em: null },
+                data: { invalidado_em: new Date(), motivo_invalido: 'Demanda removida' },
             });
         });
     }

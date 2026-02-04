@@ -1,21 +1,24 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { UpdateVinculoDto } from './dto/update-vinculo.dto';
-import { CampoVinculo, Prisma } from '@prisma/client';
+import { CampoVinculo, DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { FilterVinculoDto } from './dto/filter-vinculo.dto';
 import { VinculoDto } from './entities/vinculo.entity';
 import { uuidv7 } from 'uuidv7';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { CONST_PERFIL_CASA_CIVIL } from 'src/common/consts';
+import { DemandaService } from '../demanda/demanda.service';
 
 @Injectable()
 export class VinculoService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        @Inject(forwardRef(() => DemandaService))
+        private readonly demandaService: DemandaService
     ) {}
 
     async upsert(dto: CreateVinculoDto | UpdateVinculoDto, user: PessoaFromJwt, id?: number): Promise<RecordWithId> {
@@ -59,38 +62,57 @@ export class VinculoService {
             delete dto.dados_extra;
         }
 
-        const created = await this.prisma.distribuicaoRecursoVinculo.upsert({
-            where: { id: id || 0 },
-            create: {
-                // Estes placeholders nunca serão utilizados, mas o Prisma obriga a definir valores para os campos (no caso de update, mesmo que aqui seja create)
-                // Isso ocorre pois o DTO de update não tem todos os campos obrigatórios do create.
-                // Mas como no DTO de criação, estes campos são obrigatórios, eles sempre estarão presentes.
-                tipo_vinculo_id: (dto as CreateVinculoDto).tipo_vinculo_id ?? 0,
-                distribuicao_id: (dto as CreateVinculoDto).distribuicao_id ?? 0,
-                geo_localizacao_referencia_id: (dto as CreateVinculoDto).geo_localizacao_referencia_id ?? undefined,
-                orcamento_realizado_id: (dto as CreateVinculoDto).orcamento_realizado_id ?? undefined,
-                meta_id: (dto as CreateVinculoDto).meta_id ?? undefined,
-                iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
-                atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,
-                projeto_id: (dto as CreateVinculoDto).projeto_id ?? undefined,
-                demanda_id: (dto as CreateVinculoDto).demanda_id ?? undefined,
-                campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
-                valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
-                observacao: (dto as CreateVinculoDto).observacao,
-                dados_extra: (dto as CreateVinculoDto).dados_extra,
-                criado_por: user.id,
-                criado_em: new Date(Date.now()),
-            },
-            update: {
-                tipo_vinculo_id: (dto as UpdateVinculoDto).tipo_vinculo_id,
-                observacao: (dto as UpdateVinculoDto).observacao,
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-            },
-            select: { id: true },
+        const upsert = await this.prisma.$transaction(async (prismaTx) => {
+            const row = await prismaTx.distribuicaoRecursoVinculo.upsert({
+                where: { id: id || 0 },
+                create: {
+                    // Estes placeholders nunca serão utilizados, mas o Prisma obriga a definir valores para os campos (no caso de update, mesmo que aqui seja create)
+                    // Isso ocorre pois o DTO de update não tem todos os campos obrigatórios do create.
+                    // Mas como no DTO de criação, estes campos são obrigatórios, eles sempre estarão presentes.
+                    tipo_vinculo_id: (dto as CreateVinculoDto).tipo_vinculo_id ?? 0,
+                    distribuicao_id: (dto as CreateVinculoDto).distribuicao_id ?? 0,
+                    geo_localizacao_referencia_id: (dto as CreateVinculoDto).geo_localizacao_referencia_id ?? undefined,
+                    orcamento_realizado_id: (dto as CreateVinculoDto).orcamento_realizado_id ?? undefined,
+                    meta_id: (dto as CreateVinculoDto).meta_id ?? undefined,
+                    iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
+                    atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,
+                    projeto_id: (dto as CreateVinculoDto).projeto_id ?? undefined,
+                    demanda_id: (dto as CreateVinculoDto).demanda_id ?? undefined,
+                    campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
+                    valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
+                    observacao: (dto as CreateVinculoDto).observacao,
+                    dados_extra: (dto as CreateVinculoDto).dados_extra,
+                    criado_por: user.id,
+                    criado_em: new Date(Date.now()),
+                },
+                update: {
+                    tipo_vinculo_id: (dto as UpdateVinculoDto).tipo_vinculo_id,
+                    observacao: (dto as UpdateVinculoDto).observacao,
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                },
+                select: { id: true },
+            });
+
+            // Quando o vínculo for em uma demanda, há mudança no status da demanda.
+            if ((dto as CreateVinculoDto).demanda_id) {
+                const demandaId = (dto as CreateVinculoDto).demanda_id!;
+                const demanda = await this.demandaService.findOne(demandaId, user);
+                await this.demandaService.changeStatus(
+                    demandaId,
+                    user,
+                    demanda.status,
+                    DemandaStatus.Encerrado,
+                    'Demanda vinculada a uma distribuição de recurso',
+                    DemandaSituacao.Concluido,
+                    prismaTx
+                );
+            }
+
+            return row;
         });
 
-        return created;
+        return upsert;
     }
 
     async findAll(filters: FilterVinculoDto): Promise<VinculoDto[]> {
@@ -607,6 +629,7 @@ export class VinculoService {
                     meta_id,
                     atividade_id,
                     iniciativa_id,
+                    demanda_id,
                 },
                 data: {
                     invalidado_em: new Date(Date.now()),
