@@ -20,6 +20,7 @@ export type Filtros = {
 type Estado = {
   linhasEndereco: Vinculo[];
   linhasDotacao: Vinculo[];
+  linhasDemanda: Vinculo[];
   lista: Vinculo[];
   tiposDeVinculo: TipoVinculoDto[];
   chamadasPendentes: {
@@ -30,6 +31,9 @@ type Estado = {
   };
   erros: {
     lista: null | unknown;
+    endereco: null | unknown;
+    dotacao: null | unknown;
+    demanda: null | unknown;
     salvar: null | unknown;
     excluir: null | unknown;
     tiposDeVinculo: null | unknown;
@@ -40,6 +44,7 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
   state: (): Estado => ({
     linhasEndereco: [],
     linhasDotacao: [],
+    linhasDemanda: [],
     lista: [],
     tiposDeVinculo: [],
     chamadasPendentes: {
@@ -50,6 +55,9 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
     },
     erros: {
       lista: null,
+      endereco: null,
+      dotacao: null,
+      demanda: null,
       salvar: null,
       excluir: null,
       tiposDeVinculo: null,
@@ -63,20 +71,27 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
 
       try {
         if (filtros?.campo_vinculo === 'Endereco') {
-          // OBSOLETO início. Trocar pela chamada simples
+          this.erros.endereco = null;
           const respostaEndereco = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasEndereco = respostaEndereco?.linhas || [];
         } else if (filtros?.campo_vinculo === 'Dotacao') {
+          this.erros.dotacao = null;
           const respostaDotacao = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasDotacao = respostaDotacao?.linhas || [];
+        } else if (filtros?.campo_vinculo === 'Demanda') {
+          this.erros.demanda = null;
+          const respostaDemanda = await this.requestS.get(
+            `${baseUrl}/distribuicao-recurso-vinculo`,
+            filtros,
+          );
+          this.linhasDemanda = respostaDemanda?.linhas || [];
         } else {
-          // OBSOLETO fim
           const resposta = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
@@ -86,6 +101,14 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
         }
       } catch (erro) {
         this.erros.lista = erro;
+        // Guarda o erro específico também
+        if (filtros?.campo_vinculo === 'Endereco') {
+          this.erros.endereco = erro;
+        } else if (filtros?.campo_vinculo === 'Dotacao') {
+          this.erros.dotacao = erro;
+        } else if (filtros?.campo_vinculo === 'Demanda') {
+          this.erros.demanda = erro;
+        }
       } finally {
         this.chamadasPendentes.lista = false;
       }
