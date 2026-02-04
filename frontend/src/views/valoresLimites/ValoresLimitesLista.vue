@@ -41,12 +41,14 @@ const listaFiltrada = computed(() => {
       return false;
     }
 
-    if (filtroFim && item.data_fim_vigencia < filtroFim) {
-      return false;
-    }
+    if (filtroFim) {
+      if (!item.data_fim_vigencia) {
+        return false;
+      }
 
-    if (filtroFim && !item.data_fim_vigencia) {
-      return false;
+      if (item.data_fim_vigencia > filtroFim) {
+        return false;
+      }
     }
 
     if (filtroObservacao) {
