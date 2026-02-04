@@ -6,6 +6,7 @@ import {
   onUpdated,
   ref,
   toRef,
+  useTemplateRef,
   watch,
 } from 'vue';
 
@@ -58,7 +59,7 @@ const props = defineProps({
 
 const control = ref(props.controlador);
 const botoesOpcoes = ref([]);
-const inputRef = ref(null);
+const inputRef = useTemplateRef('inputRef');
 
 const emit = defineEmits(['change']);
 
