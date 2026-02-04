@@ -75,6 +75,10 @@ const opcoesFiltradas = computed(() => {
   );
 });
 
+const participantesSelecionados = computed(() =>
+  props.grupo.filter((x) => control.value.participantes?.includes(x.id))
+);
+
 function abrirLista() {
   if (opcoesFiltradas.value.length === 0) return;
   const botoes = botoesOpcoes.value.filter(Boolean);
@@ -134,7 +138,9 @@ onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
 function removeParticipante(item, p) {
-  item.participantes.splice(item.participantes.indexOf(p), 1);
+  const index = item.participantes.indexOf(p);
+  if (index === -1) return;
+  item.participantes.splice(index, 1);
   emit('change', item.participantes);
 }
 
@@ -151,7 +157,7 @@ function buscar(e, item, g, label) {
   e.stopPropagation();
   const texto = normalizar(item.busca.trim());
 
-  if (texto && e.keyCode === 13) {
+  if (texto) {
     const i = g.find((x) => !item.participantes.includes(x.id)
       && normalizar(String(x[label])).includes(texto));
     if (i) {
@@ -212,7 +218,7 @@ function desistir(e) {
     </div>
     <template v-if="!readonly">
       <button
-        v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+        v-for="p in participantesSelecionados"
         :key="p.id"
         class="tagsmall"
         :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
@@ -229,7 +235,7 @@ function desistir(e) {
       </button>
     </template>
     <span
-      v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+      v-for="p in participantesSelecionados"
       v-else
       :key="p.id"
       class="tagsmall"
