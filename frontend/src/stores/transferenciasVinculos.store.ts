@@ -25,6 +25,9 @@ type Estado = {
   tiposDeVinculo: TipoVinculoDto[];
   chamadasPendentes: {
     lista: boolean;
+    endereco: boolean;
+    dotacao: boolean;
+    demanda: boolean;
     salvar: boolean;
     excluir: boolean;
     tiposDeVinculo: boolean;
@@ -49,6 +52,9 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
     tiposDeVinculo: [],
     chamadasPendentes: {
       lista: false,
+      endereco: false,
+      dotacao: false,
+      demanda: false,
       salvar: false,
       excluir: false,
       tiposDeVinculo: false,
@@ -71,26 +77,32 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
 
       try {
         if (filtros?.campo_vinculo === 'Endereco') {
+          this.chamadasPendentes.endereco = true;
           this.erros.endereco = null;
           const respostaEndereco = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasEndereco = respostaEndereco?.linhas || [];
+          this.chamadasPendentes.endereco = false;
         } else if (filtros?.campo_vinculo === 'Dotacao') {
+          this.chamadasPendentes.dotacao = true;
           this.erros.dotacao = null;
           const respostaDotacao = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasDotacao = respostaDotacao?.linhas || [];
+          this.chamadasPendentes.dotacao = false;
         } else if (filtros?.campo_vinculo === 'Demanda') {
+          this.chamadasPendentes.demanda = true;
           this.erros.demanda = null;
           const respostaDemanda = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasDemanda = respostaDemanda?.linhas || [];
+          this.chamadasPendentes.demanda = false;
         } else {
           const resposta = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
@@ -101,13 +113,15 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
         }
       } catch (erro) {
         this.erros.lista = erro;
-        // Guarda o erro específico também
         if (filtros?.campo_vinculo === 'Endereco') {
           this.erros.endereco = erro;
+          this.chamadasPendentes.endereco = false;
         } else if (filtros?.campo_vinculo === 'Dotacao') {
           this.erros.dotacao = erro;
+          this.chamadasPendentes.dotacao = false;
         } else if (filtros?.campo_vinculo === 'Demanda') {
           this.erros.demanda = erro;
+          this.chamadasPendentes.demanda = false;
         }
       } finally {
         this.chamadasPendentes.lista = false;

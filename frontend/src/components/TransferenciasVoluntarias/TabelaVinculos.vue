@@ -327,7 +327,11 @@ const colunas = [
                 Valor da Demanda
               </dt>
               <dd>
-                {{ linha.demanda.valor ? `R$ ${dinheiro(linha.demanda.valor)}` : '-' }}
+                {{
+                  linha.demanda.valor !== null && linha.demanda.valor !== undefined
+                    ? `R$ ${dinheiro(linha.demanda.valor)}`
+                    : '-'
+                }}
               </dd>
             </dl>
 

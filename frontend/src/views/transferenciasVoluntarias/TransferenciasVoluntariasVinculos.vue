@@ -152,7 +152,7 @@ onUnmounted(() => {
       />
 
       <LoadingComponent
-        v-if="chamadasPendentes.lista && !linhasEndereco.length"
+        v-if="chamadasPendentes.endereco && !linhasEndereco.length"
         class="mb1"
       />
 
@@ -200,7 +200,7 @@ onUnmounted(() => {
       />
 
       <LoadingComponent
-        v-if="chamadasPendentes.lista && !linhasDotacao.length"
+        v-if="chamadasPendentes.dotacao && !linhasDotacao.length"
         class="mb1"
       />
 
@@ -248,7 +248,7 @@ onUnmounted(() => {
       />
 
       <LoadingComponent
-        v-if="chamadasPendentes.lista && !linhasDemanda.length"
+        v-if="chamadasPendentes.demanda && !linhasDemanda.length"
         class="mb1"
       />
 
