@@ -62,10 +62,17 @@ const inputRef = ref(null);
 
 const emit = defineEmits(['change']);
 
-const opcoesFiltradas = computed(() => props.grupo.filter(
-  (x) => !control.value.participantes?.includes(x.id)
-    && String(x[props.label])?.toLowerCase().includes(control.value.busca.toLowerCase()),
-));
+function normalizar(texto) {
+  return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+const opcoesFiltradas = computed(() => {
+  const busca = normalizar(control.value.busca);
+  return props.grupo.filter(
+    (x) => !control.value.participantes?.includes(x.id)
+      && normalizar(String(x[props.label])).includes(busca),
+  );
+});
 
 function abrirLista() {
   if (opcoesFiltradas.value.length === 0) return;
@@ -141,11 +148,11 @@ function pushId(e, id) {
 function buscar(e, item, g, label) {
   e.preventDefault();
   e.stopPropagation();
-  const texto = item.busca.trim().toLowerCase();
+  const texto = normalizar(item.busca.trim());
 
   if (texto && e.keyCode === 13) {
     const i = g.find((x) => !item.participantes.includes(x.id)
-      && String(x[label]).toLowerCase().includes(texto));
+      && normalizar(String(x[label])).includes(texto));
     if (i) {
       pushId(item.participantes, i.id);
     }

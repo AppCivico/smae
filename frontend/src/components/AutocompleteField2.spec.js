@@ -110,6 +110,17 @@ describe('AutocompleteField2', () => {
       expect(botoes[0].text()).toBe('Item Três');
     });
 
+    it('filtragem ignora diacríticos', async () => {
+      const wrapper = montarComponente();
+      const input = wrapper.find('input.inputtext');
+
+      await input.setValue('tres');
+
+      const botoes = wrapper.findAll('ul button');
+      expect(botoes).toHaveLength(1);
+      expect(botoes[0].text()).toBe('Item Três');
+    });
+
     it('não exibe opções já selecionadas na lista', () => {
       const controlador = criarControlador([1]);
       const wrapper = montarComponente({ controlador });
