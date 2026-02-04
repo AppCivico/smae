@@ -184,7 +184,7 @@ function desistir(e) {
             :ref="(el) => { botoesOpcoes[indice] = el }"
             type="button"
             class="like-a__text"
-            :title="r.nome || r.titulo || r.descricao || r.nome_completo || undefined"
+            :title="r.descricao || r.nome || r.titulo || r.nome_completo || undefined"
             @click="pushId(control.participantes, r.id)"
             @keyup.enter.stop.prevent="pushId(control.participantes, r.id)"
             @keydown="navegarLista($event, indice)"
