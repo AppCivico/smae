@@ -9,7 +9,12 @@ import { DemandaService } from './demanda.service';
 import { PublicDemandaController } from './public-demanda.controller';
 
 @Module({
-    imports: [PrismaModule, UploadModule, forwardRef(() => GeoLocModule), DemandaAcaoModule, CacheKVModule],
+    imports: [
+        PrismaModule,
+        UploadModule,
+        forwardRef(() => GeoLocModule),
+        CacheKVModule,
+    ],
     controllers: [DemandaController, PublicDemandaController],
     providers: [DemandaService],
     exports: [DemandaService],
