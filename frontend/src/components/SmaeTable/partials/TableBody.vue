@@ -1,3 +1,66 @@
+<script lang="ts" setup>
+import { ref } from 'vue';
+
+import type { Coluna, Linha, Linhas } from '../tipagem';
+import { type DeleteButtonEvents, type DeleteButtonProps } from './DeleteButton.vue';
+import { type EditButtonProps } from './EditButton.vue';
+import TableRowContent from './TableRowContent.vue';
+
+type ColunaComSlots = Coluna & {
+  slots?: {
+    coluna?: string
+    celula?: string
+  }
+};
+
+type Props =
+  EditButtonProps
+  & DeleteButtonProps
+  & {
+    dados: Linhas
+    colunasFiltradas: ColunaComSlots[]
+    hasActionButton: boolean
+    temColunaDeAcoes: boolean
+    listaSlotsUsados: {
+      cabecalho: Record<string, true>
+      celula: Record<string, true>
+    }
+    personalizarLinhas?: {
+      parametro: string,
+      alvo: unknown,
+      classe: string
+    }
+  };
+
+type Emits = DeleteButtonEvents;
+
+const props = withDefaults(defineProps<Props>(), {
+  parametroDaRotaEditar: 'id',
+  parametroNoObjetoParaEditar: 'id',
+  parametroNoObjetoParaExcluir: 'descricao',
+});
+const emit = defineEmits<Emits>();
+
+// Estado para controlar quais linhas estão expandidas
+const linhasExpandidas = ref<Record<number, boolean>>({});
+
+function toggleLinha(index: number): void {
+  linhasExpandidas.value[index] = !linhasExpandidas.value[index];
+}
+
+function obterDestaqueDaLinha(linha: Linha): string | null {
+  if (!props.personalizarLinhas) {
+    return null;
+  }
+
+  if (linha[props.personalizarLinhas.parametro] === props.personalizarLinhas.alvo) {
+    return props.personalizarLinhas.classe;
+  }
+
+  return null;
+}
+</script>
+
 <template>
   <template v-if="$slots['sub-linha']">
     <tbody
@@ -53,6 +116,7 @@
           :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
           :esconder-deletar="esconderDeletar"
           :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+          :mensagem-exclusao="mensagemExclusao"
           @deletar="(ev: Linha) => emit('deletar', ev)"
         >
           <template
@@ -116,6 +180,7 @@
           :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
           :esconder-deletar="esconderDeletar"
           :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+          :mensagem-exclusao="mensagemExclusao"
           @deletar="(ev: Linha) => emit('deletar', ev)"
         >
           <template
@@ -139,69 +204,6 @@
     </slot>
   </tbody>
 </template>
-
-<script lang="ts" setup>
-import { ref } from 'vue';
-
-import type { Coluna, Linha, Linhas } from '../tipagem';
-import { type DeleteButtonEvents, type DeleteButtonProps } from './DeleteButton.vue';
-import { type EditButtonProps } from './EditButton.vue';
-import TableRowContent from './TableRowContent.vue';
-
-type ColunaComSlots = Coluna & {
-  slots?: {
-    coluna?: string
-    celula?: string
-  }
-};
-
-type Props =
-  EditButtonProps
-  & DeleteButtonProps
-  & {
-    dados: Linhas
-    colunasFiltradas: ColunaComSlots[]
-    hasActionButton: boolean
-    temColunaDeAcoes: boolean
-    listaSlotsUsados: {
-      cabecalho: Record<string, true>
-      celula: Record<string, true>
-    }
-    personalizarLinhas?: {
-      parametro: string,
-      alvo: unknown,
-      classe: string
-    }
-  };
-
-type Emits = DeleteButtonEvents;
-
-const props = withDefaults(defineProps<Props>(), {
-  parametroDaRotaEditar: 'id',
-  parametroNoObjetoParaEditar: 'id',
-  parametroNoObjetoParaExcluir: 'descricao',
-});
-const emit = defineEmits<Emits>();
-
-// Estado para controlar quais linhas estão expandidas
-const linhasExpandidas = ref<Record<number, boolean>>({});
-
-function toggleLinha(index: number): void {
-  linhasExpandidas.value[index] = !linhasExpandidas.value[index];
-}
-
-function obterDestaqueDaLinha(linha: Linha): string | null {
-  if (!props.personalizarLinhas) {
-    return null;
-  }
-
-  if (linha[props.personalizarLinhas.parametro] === props.personalizarLinhas.alvo) {
-    return props.personalizarLinhas.classe;
-  }
-
-  return null;
-}
-</script>
 
 <style scoped>
 .smae-table__toggle-cell {
