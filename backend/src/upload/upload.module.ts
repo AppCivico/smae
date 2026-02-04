@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { GotenbergService } from './gotenberg.service';
 import { PreviewService } from './preview.service';
 import { StorageService } from './storage-service';
+import { PublicUploadController } from './public-upload.controller';
 import { UploadController } from './upload.controller';
 import { UploadDiretorioController } from './upload.diretorio.controller';
 import { UploadDiretorioService } from './upload.diretorio.service';
@@ -19,7 +20,7 @@ import { UploadService } from './upload.service';
         }),
         SmaeConfigModule,
     ],
-    controllers: [UploadController, UploadDiretorioController],
+    controllers: [UploadController, UploadDiretorioController, PublicUploadController],
     providers: [UploadService, StorageService, UploadDiretorioService, GotenbergService, PreviewService],
     exports: [UploadService, GotenbergService, PreviewService],
 })

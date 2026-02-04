@@ -33,6 +33,7 @@ interface RestoreDescriptionResult {
 
 const DOWNLOAD_AUD = 'dl';
 const UPLOAD_AUD = 'upload';
+const PUBLIC_AUD = 'public';
 
 const ZipContentTypes = [
     'application/zip',
@@ -460,6 +461,30 @@ export class UploadService {
             },
             { noTimestamp: true }
         );
+    }
+
+    getPublicDownloadToken(id: number, expiresIn: string | undefined): string {
+        if (!expiresIn) expiresIn = '30d';
+
+        return this.jwtService.sign(
+            {
+                arquivo_id: id,
+                aud: PUBLIC_AUD,
+            },
+            { expiresIn: expiresIn }
+        );
+    }
+
+    checkPublicToken(token: string): number {
+        let decoded: UploadBody | null = null;
+        try {
+            decoded = this.jwtService.verify(token) as UploadBody;
+        } catch (error) {
+            console.log(error);
+        }
+        if (!decoded || decoded.aud !== PUBLIC_AUD) throw new HttpException('Token publico invalido', 400);
+
+        return decoded.arquivo_id;
     }
 
     checkDownloadToken(downloadToken: string): number {

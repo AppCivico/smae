@@ -91,7 +91,7 @@ export class RefreshDemandaService implements TaskableService {
     private async refreshGeocamadas(force: boolean): Promise<RefreshResult> {
         const cacheKey = 'demandas:geocamadas';
 
-        if (!force && await this.cacheKvService.get(cacheKey)) {
+        if (!force && (await this.cacheKvService.get(cacheKey))) {
             return { skipped: true, reason: 'Cache ja existe' };
         }
 
@@ -119,13 +119,13 @@ export class RefreshDemandaService implements TaskableService {
 
     private async refreshSummary(): Promise<RefreshResult> {
         const demandas = await this.loadPublishedDemandas();
-        const geoMap = await this.loadGeolocalizationForDemandas(demandas.map(d => d.id));
+        const geoMap = await this.loadGeolocalizationForDemandas(demandas.map((d) => d.id));
         const filters = this.buildFilters(demandas, geoMap);
 
         await this.cacheKvService.set('demandas:summary', {
             refreshed_at: new Date().toISOString(),
             total_count: demandas.length,
-            recent_demandas: demandas.slice(0, 10).map(d => ({
+            recent_demandas: demandas.slice(0, 10).map((d) => ({
                 ...this.mapToPublicItem(d),
                 geolocalizacao: geoMap.get(d.id) || [],
             })),
@@ -137,13 +137,13 @@ export class RefreshDemandaService implements TaskableService {
 
     private async refreshFull(): Promise<RefreshResult> {
         const demandas = await this.loadPublishedDemandas();
-        const geoMap = await this.loadGeolocalizationForDemandas(demandas.map(d => d.id));
+        const geoMap = await this.loadGeolocalizationForDemandas(demandas.map((d) => d.id));
         const filters = this.buildFilters(demandas, geoMap);
 
         await this.cacheKvService.set('demandas:full', {
             refreshed_at: new Date().toISOString(),
             total_count: demandas.length,
-            demandas: demandas.map(d => ({
+            demandas: demandas.map((d) => ({
                 ...this.mapToPublicItem(d),
                 geolocalizacao: geoMap.get(d.id) || [],
             })),
@@ -179,7 +179,10 @@ export class RefreshDemandaService implements TaskableService {
         const geoReferencias = await this.geolocService.carregaReferencias(geoDto);
         const geolocalizacao = geoReferencias.get(demandaId) || [];
 
-        const fileExpiry = await this.smaeConfigService.getConfigWithDefault('DEMANDA_PUBLIC_FILE_TOKEN_EXPIRY', '365d');
+        const fileExpiry = await this.smaeConfigService.getConfigWithDefault(
+            'DEMANDA_PUBLIC_FILE_TOKEN_EXPIRY',
+            '365d'
+        );
 
         await this.cacheKvService.set(cacheKey, {
             refreshed_at: new Date().toISOString(),
@@ -205,7 +208,7 @@ export class RefreshDemandaService implements TaskableService {
                         id: a.id,
                         descricao: a.descricao,
                         arquivo: BuildArquivoBaseDto(a.arquivo, (id, _exp) =>
-                            this.uploadService.getDownloadToken(id, fileExpiry).download_token
+                            this.uploadService.getPublicDownloadToken(id, fileExpiry)
                         ),
                     })),
             },
