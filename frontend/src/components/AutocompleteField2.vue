@@ -1,7 +1,12 @@
 <script setup>
 import { useField } from 'vee-validate';
 import {
-  onMounted, onUpdated, ref, toRef, watch, computed,
+  computed,
+  onMounted,
+  onUpdated,
+  ref,
+  toRef,
+  watch,
 } from 'vue';
 
 defineOptions({
@@ -103,14 +108,21 @@ function pushId(e, id) {
 function buscar(e, item, g, label) {
   e.preventDefault();
   e.stopPropagation();
-  if (e.keyCode === 13) {
+  const texto = item.busca.trim().toLowerCase();
+
+  if (texto && e.keyCode === 13) {
     const i = g.find((x) => !item.participantes.includes(x.id)
-      && String(x[label]).toLowerCase().includes(item.busca.toLowerCase()));
+      && String(x[label]).toLowerCase().includes(texto));
     if (i) {
       pushId(item.participantes, i.id);
     }
     item.busca = '';
   }
+}
+
+function desistir(e) {
+  control.value.busca = '';
+  e.target.blur();
 }
 </script>
 <template>
@@ -125,6 +137,8 @@ function buscar(e, item, g, label) {
         :readonly="readonly || atingiuLimite"
         :aria-readonly="readonly || atingiuLimite"
         @keyup.enter.stop.prevent="buscar($event, control, grupo, label)"
+        @keydown.enter.stop.prevent
+        @keyup.esc="desistir($event)"
       >
       <ul>
         <li
@@ -135,9 +149,10 @@ function buscar(e, item, g, label) {
           <button
             type="button"
             class="like-a__text"
-            tabindex="1"
             :title="r.nome || r.titulo || r.descricao || r.nome_completo || undefined"
             @click="pushId(control.participantes, r.id)"
+            @keyup.enter.stop.prevent="pushId(control.participantes, r.id)"
+            @keyup.esc="desistir($event)"
           >
             <template v-if="r[label]">
               {{ r[label] }}
@@ -159,6 +174,8 @@ function buscar(e, item, g, label) {
         :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
         type="button"
         @click="removeParticipante(control, p.id)"
+        @keyup.enter.stop.prevent="removeParticipante(control, p.id)"
+        @keyup.esc="desistir($event)"
       >
         {{ p[label] }}
         <svg
