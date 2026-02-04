@@ -11,7 +11,7 @@ import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 
 interface Props {
   dados: Vinculo[];
-  tipo: 'endereco' | 'dotacao';
+  tipo: 'endereco' | 'dotacao' | 'demanda';
   temPermissao: boolean;
 }
 
@@ -86,7 +86,11 @@ const colunas = [
   },
   {
     chave: 'valor_vinculo',
-    label: props.tipo === 'endereco' ? 'Endereço' : 'Dotação',
+    label: (() => {
+      if (props.tipo === 'endereco') return 'Endereço';
+      if (props.tipo === 'dotacao') return 'Dotação';
+      return 'Demanda';
+    })(),
   },
 ];
 </script>
@@ -96,7 +100,15 @@ const colunas = [
     v-if="dados.length === 0"
     class="p2 tc"
   >
-    Nenhum vínculo por {{ tipo === 'endereco' ? 'endereço' : 'dotação' }} cadastrado.
+    <template v-if="tipo === 'endereco'">
+      Nenhum vínculo por endereço cadastrado.
+    </template>
+    <template v-else-if="tipo === 'dotacao'">
+      Nenhum vínculo por dotação cadastrado.
+    </template>
+    <template v-else>
+      Nenhum vínculo por demanda cadastrado.
+    </template>
   </div>
 
   <div v-else>
@@ -280,6 +292,46 @@ const colunas = [
                     </dd>
                   </div>
                 </dl>
+              </dd>
+            </dl>
+
+            <dl
+              v-if="linha.demanda"
+              class="flex column g05"
+            >
+              <dt class="t12 uc w700 tc300">
+                Área Temática
+              </dt>
+              <dd>
+                {{ linha.demanda.area_tematica?.nome || '-' }}
+              </dd>
+            </dl>
+
+            <dl
+              v-if="linha.demanda"
+              class="flex column g05"
+            >
+              <dt class="t12 uc w700 tc300">
+                Órgão da Demanda
+              </dt>
+              <dd>
+                {{ linha.demanda.orgao?.sigla || '-' }}
+              </dd>
+            </dl>
+
+            <dl
+              v-if="linha.demanda"
+              class="flex column g05"
+            >
+              <dt class="t12 uc w700 tc300">
+                Valor da Demanda
+              </dt>
+              <dd>
+                {{
+                  linha.demanda.valor !== null && linha.demanda.valor !== undefined
+                    ? `R$ ${dinheiro(linha.demanda.valor)}`
+                    : '-'
+                }}
               </dd>
             </dl>
 

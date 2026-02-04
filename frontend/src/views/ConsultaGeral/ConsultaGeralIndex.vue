@@ -178,11 +178,12 @@ async function handleItemSelecionado(linhaIndex: number) {
       <article
         class="tabela-resultados "
       >
-        <CardEnvelope.Titulo>
-          <span class="tabela-resultados__titulo">
-            Resultado por: &nbsp;
-            <strong>{{ tiposPesquisa[tipo] }}</strong>
-          </span>
+        <CardEnvelope.Titulo
+          cor-bolinha="#F7C234"
+          estilo="com-marcador"
+        >
+          Resultado por: &nbsp;
+          <strong>{{ tiposPesquisa[tipo] }}</strong>
         </CardEnvelope.Titulo>
 
         <ListaLegendas
@@ -278,37 +279,9 @@ async function handleItemSelecionado(linhaIndex: number) {
 </template>
 
 <style lang="less" scoped>
-.tabela-resultados__titulo {
-  position: relative;
-  font-weight: 300;
-  font-size: 2rem;
-  line-height: 1.3;
-
-  display: flex;
-  align-items: center;
-
+.tabela-resultados {
   strong {
     font-weight: 700;
-  }
-
-  &::before {
-    content: '';
-    width: 20px;
-    height: 20px;
-    background-color: #F7C234;
-    border-radius: 100%;
-    border: 5px solid white;
-    outline: 0.46px solid #B8C0CC;
-    margin-right: 14px;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 30px;
-    width: 10px;
-    height: 0.46px;
-    background-color: #B8C0CC;
   }
 }
 

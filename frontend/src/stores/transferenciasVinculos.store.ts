@@ -20,16 +20,23 @@ export type Filtros = {
 type Estado = {
   linhasEndereco: Vinculo[];
   linhasDotacao: Vinculo[];
+  linhasDemanda: Vinculo[];
   lista: Vinculo[];
   tiposDeVinculo: TipoVinculoDto[];
   chamadasPendentes: {
     lista: boolean;
+    endereco: boolean;
+    dotacao: boolean;
+    demanda: boolean;
     salvar: boolean;
     excluir: boolean;
     tiposDeVinculo: boolean;
   };
   erros: {
     lista: null | unknown;
+    endereco: null | unknown;
+    dotacao: null | unknown;
+    demanda: null | unknown;
     salvar: null | unknown;
     excluir: null | unknown;
     tiposDeVinculo: null | unknown;
@@ -40,16 +47,23 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
   state: (): Estado => ({
     linhasEndereco: [],
     linhasDotacao: [],
+    linhasDemanda: [],
     lista: [],
     tiposDeVinculo: [],
     chamadasPendentes: {
       lista: false,
+      endereco: false,
+      dotacao: false,
+      demanda: false,
       salvar: false,
       excluir: false,
       tiposDeVinculo: false,
     },
     erros: {
       lista: null,
+      endereco: null,
+      dotacao: null,
+      demanda: null,
       salvar: null,
       excluir: null,
       tiposDeVinculo: null,
@@ -63,20 +77,33 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
 
       try {
         if (filtros?.campo_vinculo === 'Endereco') {
-          // OBSOLETO início. Trocar pela chamada simples
+          this.chamadasPendentes.endereco = true;
+          this.erros.endereco = null;
           const respostaEndereco = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasEndereco = respostaEndereco?.linhas || [];
+          this.chamadasPendentes.endereco = false;
         } else if (filtros?.campo_vinculo === 'Dotacao') {
+          this.chamadasPendentes.dotacao = true;
+          this.erros.dotacao = null;
           const respostaDotacao = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasDotacao = respostaDotacao?.linhas || [];
+          this.chamadasPendentes.dotacao = false;
+        } else if (filtros?.campo_vinculo === 'Demanda') {
+          this.chamadasPendentes.demanda = true;
+          this.erros.demanda = null;
+          const respostaDemanda = await this.requestS.get(
+            `${baseUrl}/distribuicao-recurso-vinculo`,
+            filtros,
+          );
+          this.linhasDemanda = respostaDemanda?.linhas || [];
+          this.chamadasPendentes.demanda = false;
         } else {
-          // OBSOLETO fim
           const resposta = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
@@ -86,6 +113,16 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
         }
       } catch (erro) {
         this.erros.lista = erro;
+        if (filtros?.campo_vinculo === 'Endereco') {
+          this.erros.endereco = erro;
+          this.chamadasPendentes.endereco = false;
+        } else if (filtros?.campo_vinculo === 'Dotacao') {
+          this.erros.dotacao = erro;
+          this.chamadasPendentes.dotacao = false;
+        } else if (filtros?.campo_vinculo === 'Demanda') {
+          this.erros.demanda = erro;
+          this.chamadasPendentes.demanda = false;
+        }
       } finally {
         this.chamadasPendentes.lista = false;
       }
