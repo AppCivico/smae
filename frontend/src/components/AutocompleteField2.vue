@@ -68,7 +68,7 @@ if (props.name) {
     initialValue: props.controlador.participantes,
   });
 
-  watch(control.value.participantes, (newValue) => {
+  watch(() => control.value.participantes, (newValue) => {
     handleChange(newValue);
   });
 }
