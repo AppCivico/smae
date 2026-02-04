@@ -35,7 +35,7 @@ const listaFiltrada = computed(() => {
     data_fim_vigencia: filtroFim,
   } = route.query;
 
-  const filtroObservacao = route.query.observacao.toLowerCase();
+  const filtroObservacao = (route.query.observacao || '').toLowerCase();
 
   return lista.value.filter((item) => {
     if (filtroInicio && item.data_inicio_vigencia < filtroInicio) {
