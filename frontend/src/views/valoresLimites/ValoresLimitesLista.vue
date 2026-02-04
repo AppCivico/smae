@@ -33,8 +33,9 @@ const listaFiltrada = computed(() => {
   const {
     data_inicio_vigencia: filtroInicio,
     data_fim_vigencia: filtroFim,
-    observacao: filtroObservacao,
   } = route.query;
+
+  const filtroObservacao = route.query.observacao.toLowerCase();
 
   return lista.value.filter((item) => {
     if (filtroInicio && item.data_inicio_vigencia < filtroInicio) {
@@ -53,7 +54,7 @@ const listaFiltrada = computed(() => {
 
     if (filtroObservacao) {
       const textoObservacao = (item.observacao || '').toLowerCase();
-      if (!textoObservacao.includes(filtroObservacao.toLowerCase())) {
+      if (!textoObservacao.includes(filtroObservacao)) {
         return false;
       }
     }
