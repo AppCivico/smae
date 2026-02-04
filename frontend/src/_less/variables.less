@@ -179,6 +179,11 @@
   background: -o-linear-gradient(top, @startColor, @endColor @fim);
 }
 
+.focado() {
+  outline: 2px solid @c400;
+  outline-offset: 2px;
+}
+
 // Base mixin for common scrollable properties
 ._rolavel-base() {
   position: relative;
@@ -190,14 +195,9 @@
     outline: none;
   }
 
-  &:focus-visible {
-    outline: 1px solid @c400;
-    outline-offset: 2px;
-  }
-
+  &:focus-visible,
   &:focus {
-    outline: 1px solid @c400;
-    outline-offset: 2px;
+    .focado();
   }
 }
 

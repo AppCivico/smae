@@ -238,7 +238,7 @@ details[open] summary {
   &:focus + label,
   + label:focus {
     &::before {
-      outline: 1px solid @c400;
+      .focado();
     }
   }
 
@@ -1335,8 +1335,7 @@ p {
   }
 
   &:focus-visible {
-    outline: 2px solid @c400;
-    outline-offset: 2px;
+    .focado();
   }
 
   svg {
@@ -1884,7 +1883,7 @@ body:has(dialog[open].editModal-dialog) {
   }
 
   &:focus {
-    outline: 1px solid @c400;
+    .focado();
   }
 
   &:disabled {
@@ -1949,7 +1948,7 @@ input[type='checkbox'] {
     vertical-align: text-bottom;
 
     .tablemain tr:nth-of-type(2n) & {
-      outline: 2px solid @branco;
+      .focado();
     }
 
     &::before {
@@ -2404,6 +2403,7 @@ progress,
         &:hover,
         &:active {
           color: @amarelo;
+          .focado();
         }
       }
 
@@ -2828,7 +2828,6 @@ table {
 
   .ProseMirror {
     min-height: 7em;
-    outline: 0;
     padding: 1rem;
     display: block;
     width: 100%;
@@ -3266,6 +3265,7 @@ caption {
 
 .debug {
   outline: 2px solid fuchsia;
+  outline-offset: 2px;
   border-radius: 1px;
   outline-offset: 3px;
   white-space: pre-wrap;
