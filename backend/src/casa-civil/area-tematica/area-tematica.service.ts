@@ -85,7 +85,7 @@ export class AreaTematicaService {
                         nome: true,
                         ativo: true,
                     },
-                    orderBy: { ativo: 'desc', nome: 'asc' },
+                    orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
                 },
             },
             orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
