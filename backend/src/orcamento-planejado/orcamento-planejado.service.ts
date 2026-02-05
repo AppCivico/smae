@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -20,6 +20,8 @@ export class OrcamentoPlanejadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
+        @Inject(forwardRef(() => VinculoService))
+        private readonly vinculoService: VinculoService,
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {

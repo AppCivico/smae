@@ -59,7 +59,7 @@ export class DemandaService {
         private readonly geolocService: GeoLocService,
         private readonly cacheKvService: CacheKVService,
         @Inject(forwardRef(() => VinculoService))
-        private readonly vinculoService: VinculoService,
+        private readonly vinculoService: VinculoService
     ) {}
 
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -128,15 +128,7 @@ export class DemandaService {
                     geoDto.tipo = 'Endereco';
                     geoDto.demanda_id = demanda.id;
 
-                    await this.geolocService.upsertGeolocalizacao(
-                        geoDto,
-                        user,
-                        prismaTxn,
-                        new Date(),
-                        async (vinculoId, tx) => {
-                            await this.vinculoService.invalidarVinculo({ id: vinculoId }, 'Endereço removido', tx);
-                        }
-                    );
+                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTxn, new Date());
                 }
 
                 // Cria registros DemandaArquivo
@@ -325,15 +317,7 @@ export class DemandaService {
             geoDto.tipo = 'Endereco';
             geoDto.demanda_id = id;
 
-            await this.geolocService.upsertGeolocalizacao(
-                geoDto,
-                user,
-                prismaTxn,
-                new Date(),
-                async (vinculoId, tx) => {
-                    await this.vinculoService.invalidarVinculo({ id: vinculoId }, 'Endereço removido', tx);
-                }
-            );
+            await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTxn, new Date());
         }
 
         // Atualiza entidades aninhadas (arquivos) - lógica upsert

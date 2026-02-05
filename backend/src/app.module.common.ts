@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { FeatureFlagModule } from './feature-flag/feature-flag.module';
@@ -30,7 +30,7 @@ import { UploadModule } from './upload/upload.module';
 @Module({
     imports: [
         AuthModule,
-        GeoLocModule,
+        forwardRef(() => GeoLocModule),
         ScheduleModule.forRoot(),
         SofApiModule,
         SofEntidadeModule,

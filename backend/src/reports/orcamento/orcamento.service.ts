@@ -99,6 +99,7 @@ export class OrcamentoService implements ReportableService {
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
+        @Inject(forwardRef(() => PrevisaoCustoService))
         private readonly prevCustoService: PrevisaoCustoService
     ) {}
 
