@@ -129,6 +129,10 @@ const corBolinhaComputada = computed<string>(() => props.corBolinha || props.cor
   padding-right: 1rem;
 }
 
+.card-envelope-titulo__slot:not(:has(>strong)) {
+  font-weight: bold;
+}
+
 .card-envelope-titulo__icone {
   width: max-content;
   grid-column: 3 / 4;
