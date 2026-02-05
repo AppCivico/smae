@@ -122,9 +122,9 @@ export const router = createRouter({
   },
 });
 
-router.beforeEach(async (r, from) => {
+router.beforeEach(async (to, from) => {
   const publicPages = ['/login', '/esqueci-minha-senha', '/nova-senha'];
-  const authRequired = !publicPages.includes(r.path);
+  const authRequired = !publicPages.includes(to.path);
   const authStore = useAuthStore();
 
   if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO === 'true') {
@@ -134,12 +134,14 @@ router.beforeEach(async (r, from) => {
   }
 
   if (authRequired && !authStore.user) {
-    authStore.returnUrl = r.fullPath;
+    authStore.returnUrl = to.fullPath;
     return '/login';
   }
-  if (r.path === '/nova-senha' && !authStore.reducedToken) {
+  if (to.path === '/nova-senha' && !authStore.reducedToken) {
     return '/login';
   }
+
+  return true;
 });
 
 router.afterEach((to, from) => {
