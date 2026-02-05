@@ -381,12 +381,22 @@ export const useAuthStore = defineStore('auth', {
     },
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara:
-      ({ user }) => (permissoes: string | string[]) => (Array.isArray(permissoes)
-        ? permissoes
-        : [permissoes]).some((x) => (x.slice(-1) === '.'
-        // se o valor termina com `.` ele tem que bater com o começo de algumas permissões
-        ? user.privilegios.some((y: string) => y.indexOf(x) === 0)
-        : user.privilegios.some((y: string) => x === y))),
+      ({ user }) => (permissoes: string | string[]) => {
+        const privilegios = Array.isArray(user?.privilegios)
+          ? user.privilegios
+          : [];
+
+        if (!privilegios.length) {
+          return false;
+        }
+
+        return (Array.isArray(permissoes)
+          ? permissoes
+          : [permissoes]).some((x) => (x.slice(-1) === '.'
+          // se o valor termina com `.` ele tem que bater com o começo de algumas permissões
+          ? privilegios.some((y: string) => y.indexOf(x) === 0)
+          : privilegios.some((y: string) => x === y)));
+      },
 
     rotaEhPermitida() {
       const rotasPorNome = this.router.getRoutes().reduce(
