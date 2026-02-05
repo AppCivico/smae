@@ -78,11 +78,11 @@ const listaConvertida = computed(() => {
         class="description-list__term t12 uc w700 mb05 tamarelo"
       >
         <slot
-          :name="`chave--${item.chave}`"
+          :name="`termo--${item.chave}`"
           :item="item"
         >
           <slot
-            name="chave"
+            name="termo"
             :item="item"
           >
             {{ item.titulo || item.chave }}
@@ -93,11 +93,11 @@ const listaConvertida = computed(() => {
         class="description-list__description t13"
       >
         <slot
-          :name="`valor--${item.chave}`"
+          :name="`descricao--${item.chave}`"
           :item="item"
         >
           <slot
-            name="valor"
+            name="descricao"
             :item="item"
           >
             {{ item.valor === 0 ? 0 : item.valor || '—' }}

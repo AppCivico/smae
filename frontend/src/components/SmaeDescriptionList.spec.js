@@ -135,65 +135,65 @@ describe('SmaeDescriptionList', () => {
   });
 
   describe('slots', () => {
-    it('renderiza slot "chave" para personalizar todos os termos', () => {
+    it('renderiza slot "termo" para personalizar todos os termos', () => {
       const wrapper = montarComponente(
         {
           objeto: { nome: 'João' },
         },
         {
           slots: {
-            chave: '<span data-test="chave-custom">{{ params.item.chave.toUpperCase() }}</span>',
+            termo: '<span data-test="termo-custom">{{ params.item.chave.toUpperCase() }}</span>',
           },
         },
       );
 
-      expect(wrapper.find('[data-test="chave-custom"]').exists()).toBe(true);
+      expect(wrapper.find('[data-test="termo-custom"]').exists()).toBe(true);
     });
 
-    it('renderiza slot "chave--[nome]" para chave específica', () => {
+    it('renderiza slot "termo--[nome]" para termo específico', () => {
       const wrapper = montarComponente(
         {
           objeto: { nome: 'João', idade: 30 },
         },
         {
           slots: {
-            'chave--nome': '<span data-test="chave-nome-custom">NOME ESPECIAL</span>',
+            'termo--nome': '<span data-test="termo-nome-custom">NOME ESPECIAL</span>',
           },
         },
       );
 
-      expect(wrapper.find('[data-test="chave-nome-custom"]').exists()).toBe(true);
-      expect(wrapper.find('[data-test="chave-nome-custom"]').text()).toBe('NOME ESPECIAL');
+      expect(wrapper.find('[data-test="termo-nome-custom"]').exists()).toBe(true);
+      expect(wrapper.find('[data-test="termo-nome-custom"]').text()).toBe('NOME ESPECIAL');
     });
 
-    it('renderiza slot "valor" para personalizar todos os valores', () => {
+    it('renderiza slot "descricao" para personalizar todos os valores', () => {
       const wrapper = montarComponente(
         {
           objeto: { nome: 'João' },
         },
         {
           slots: {
-            valor: '<em data-test="valor-custom">{{ params.item.valor }}</em>',
+            descricao: '<em data-test="descricao-custom">{{ params.item.valor }}</em>',
           },
         },
       );
 
-      expect(wrapper.find('[data-test="valor-custom"]').exists()).toBe(true);
+      expect(wrapper.find('[data-test="descricao-custom"]').exists()).toBe(true);
     });
 
-    it('renderiza slot "valor--[nome]" para valor específico', () => {
+    it('renderiza slot "descricao--[nome]" para descrição específica', () => {
       const wrapper = montarComponente(
         {
           objeto: { nome: 'João', idade: 30 },
         },
         {
           slots: {
-            'valor--nome': '<strong data-test="valor-nome-custom">{{ params.item.valor }}</strong>',
+            'descricao--nome': '<strong data-test="descricao-nome-custom">{{ params.item.valor }}</strong>',
           },
         },
       );
 
-      expect(wrapper.find('[data-test="valor-nome-custom"]').exists()).toBe(true);
+      expect(wrapper.find('[data-test="descricao-nome-custom"]').exists()).toBe(true);
     });
 
     it('slot específico tem prioridade sobre slot genérico', () => {
@@ -203,14 +203,14 @@ describe('SmaeDescriptionList', () => {
         },
         {
           slots: {
-            chave: '<span data-test="chave-generica">Genérico</span>',
-            'chave--nome': '<span data-test="chave-especifica">Específico</span>',
+            termo: '<span data-test="termo-generico">Genérico</span>',
+            'termo--nome': '<span data-test="termo-especifico">Específico</span>',
           },
         },
       );
 
-      expect(wrapper.find('[data-test="chave-especifica"]').exists()).toBe(true);
-      expect(wrapper.find('[data-test="chave-generica"]').exists()).toBe(false);
+      expect(wrapper.find('[data-test="termo-especifico"]').exists()).toBe(true);
+      expect(wrapper.find('[data-test="termo-generico"]').exists()).toBe(false);
     });
 
     it('expõe item no scoped slot', () => {
@@ -224,12 +224,12 @@ describe('SmaeDescriptionList', () => {
         },
         {
           slots: {
-            valor: '<span data-test="valor-slot">{{ params.item.valor }} - {{ params.item.metadados?.extra }}</span>',
+            descricao: '<span data-test="descricao-slot">{{ params.item.valor }} - {{ params.item.metadados?.extra }}</span>',
           },
         },
       );
 
-      expect(wrapper.find('[data-test="valor-slot"]').text()).toContain('João');
+      expect(wrapper.find('[data-test="descricao-slot"]').text()).toContain('João');
     });
   });
 

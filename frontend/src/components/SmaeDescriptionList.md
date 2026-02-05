@@ -58,45 +58,49 @@ type ItemDeLista = {
 
 O componente oferece slots flexíveis para personalização:
 
-### Slot `chave`
-Slot genérico para personalizar todas as chaves (termos).
+### Slot `termo`
+
+Slot genérico para personalizar todos os termos.
 
 ```vue
 <SmaeDescriptionList :objeto="dados">
-  <template #chave="{ item }">
+  <template #termo="{ item }">
     <strong>{{ item.titulo || item.chave }}</strong>
   </template>
 </SmaeDescriptionList>
 ```
 
-### Slot `chave--[nome]`
-Slot específico para uma chave. Tem prioridade sobre o slot `chave`.
+### Slot `termo--[chave]`
+
+Slot específico para um termo. Tem prioridade sobre o slot `termo`.
 
 ```vue
 <SmaeDescriptionList :objeto="dados">
-  <template #chave--nome="{ item }">
+  <template #termo--nome="{ item }">
     <span class="destaque">{{ item.titulo }}</span>
   </template>
 </SmaeDescriptionList>
 ```
 
-### Slot `valor`
-Slot genérico para personalizar todos os valores.
+### Slot `descricao`
+
+Slot genérico para personalizar todas as descrições.
 
 ```vue
 <SmaeDescriptionList :objeto="dados">
-  <template #valor="{ item }">
+  <template #descricao="{ item }">
     <em>{{ item.valor || 'N/A' }}</em>
   </template>
 </SmaeDescriptionList>
 ```
 
-### Slot `valor--[nome]`
-Slot específico para o valor de uma chave. Tem prioridade sobre o slot `valor`.
+### Slot `descricao--[chave]`
+
+Slot específico para a descrição de uma chave. Tem prioridade sobre o slot `descricao`.
 
 ```vue
 <SmaeDescriptionList :objeto="dados">
-  <template #valor--status="{ item }">
+  <template #descricao--status="{ item }">
     <span :class="['badge', item.valor]">{{ item.valor }}</span>
   </template>
 </SmaeDescriptionList>
