@@ -224,11 +224,7 @@ describe('SmaeDescriptionList', () => {
         },
         {
           slots: {
-            valor: `
-              <template #valor="{ item }">
-                <span data-test="valor-slot">{{ item.valor }} - {{ item.metadados?.extra }}</span>
-              </template>
-            `,
+            valor: '<span data-test="valor-slot">{{ params.item.valor }} - {{ params.item.metadados?.extra }}</span>',
           },
         },
       );
