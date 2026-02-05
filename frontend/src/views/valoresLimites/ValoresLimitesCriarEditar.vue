@@ -11,6 +11,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { valoresLimites as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
 import { useAlertStore } from '@/stores/alert.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
@@ -48,22 +49,20 @@ onMounted(() => {
   }
 });
 
-const onSubmit = handleSubmit.withControlled(async (carga) => {
-  try {
-    const msg = props.valorLimiteId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const msg = props.valorLimiteId
+    ? 'Dados salvos com sucesso!'
+    : 'Item adicionado com sucesso!';
 
-    const resposta = props.valorLimiteId
-      ? await valoresLimitesStore.salvarItem(carga, props.valorLimiteId)
-      : await valoresLimitesStore.salvarItem(carga);
+  const carga = nulificadorTotal(valoresControlados);
 
-    if (resposta) {
-      alertStore.success(msg);
-      router.push({ name: 'valoresLimites.listar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
+  const resposta = props.valorLimiteId
+    ? await valoresLimitesStore.salvarItem(carga, props.valorLimiteId)
+    : await valoresLimitesStore.salvarItem(carga);
+
+  if (resposta) {
+    alertStore.success(msg);
+    router.push({ name: 'valoresLimites.listar' });
   }
 });
 
@@ -89,7 +88,6 @@ watch(emFoco, (val) => {
         />
 
         <Field
-          id="data_inicio_vigencia"
           name="data_inicio_vigencia"
           required
           type="date"
@@ -110,7 +108,6 @@ watch(emFoco, (val) => {
         />
 
         <Field
-          id="data_fim_vigencia"
           name="data_fim_vigencia"
           type="date"
           class="inputtext light mb1"
