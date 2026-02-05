@@ -9,10 +9,11 @@ import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
-import BuscadorGeolocalizacaoIndex from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoIndex.vue';
-import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
+import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { CadastroDemanda as schema } from '@/consts/formSchemas/demanda';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
@@ -422,137 +423,50 @@ watch(() => values.area_tematica_id, () => {
         />
       </div>
 
-      <div class="mb1">
+      <div class="mb2">
         <SmaeLabel
           name="localizacoes"
           :schema="schema"
         />
 
-        <div
-          v-if="values.localizacoes?.length"
-          class="mb1"
-        >
-          <ul class="lista-de-localizacoes">
-            <li
-              v-for="(loc, idx) in values.localizacoes"
-              :key="idx"
-              class="flex g1 center mb05"
-            >
-              <span class="f1">
-                {{ loc.endereco || loc.descricao || `Localização ${idx + 1}` }}
-              </span>
-
-              <button
-                type="button"
-                class="like-a__text"
-                title="Remover"
-                @click="removerLocalizacao(idx)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                >
-                  <use xlink:href="#i_remove" />
-                </svg>
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <button
-          type="button"
-          class="like-a__text addlink"
-          @click="$refs.modalLocalizacao?.showModal()"
-        >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_+" />
-          </svg>
-          <span>Adicionar endereço</span>
-        </button>
-
-        <ErrorMessage
+        <Field
+          v-slot="{ value, handleChange, field }"
           name="localizacoes"
-          class="error-msg"
-        />
-
-        <dialog
-          ref="modalLocalizacao"
-          class="modal-localizacao"
         >
-          <header class="flex spacebetween center mb2">
-            <h3>Buscar Localização</h3>
-            <button
-              type="button"
-              class="like-a__text"
-              @click="$refs.modalLocalizacao?.close()"
-            >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_x" />
-              </svg>
-            </button>
-          </header>
-          <BuscadorGeolocalizacaoIndex
-            :localizacoes="values.localizacoes || []"
-            @selecao="adicionarLocalizacao($event); $refs.modalLocalizacao?.close()"
+          -{{ value }}-
+          <MapaCampo
+            :name="field.name"
+            @update:model-value="(ev) => {
+              console.log(ev);
+              handleChange(ev)
+            }"
+            @update:model="(ev) => console.log(ev)"
           />
-        </dialog>
+        </Field>
       </div>
 
-      <div class="mb1">
+      <div>
         <SmaeLabel
           name="arquivos"
           :schema="schema"
         />
 
-        <div class="flex column g1">
-          <div
-            v-for="(arquivo, idx) in values.arquivos"
-            :key="`arquivos--${idx}`"
-            class="flex g1 center"
-          >
-            <div class="f1">
-              <CampoDeArquivo
-                :id="`arquivos-${idx}`"
-                v-model="values.arquivos[idx]"
-                :name="`arquivos[${idx}]`"
-                tipo="DOCUMENTO"
-              />
-            </div>
-            <button
-              type="button"
-              class="like-a__text"
-              title="Remover"
-              @click="removerArquivo(idx)"
-            >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_remove" />
-              </svg>
-            </button>
-          </div>
+        <Field
+          v-slot="{value}"
+          name="arquivos"
+        >
+          <UploadDeArquivosEmLista
+            tipo="DOCUMENTO"
+            :arquivos-existentes="value"
+            @update:model-value="ev => setFieldValue('upload_tokens', ev)"
+            @arquivo-existente-removido="removerArquivo"
+          />
+        </Field>
 
-          <button
-            type="button"
-            class="like-a__text addlink"
-            @click="adicionarArquivo"
-          >
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_+" />
-            </svg>
-            <span>Adicionar arquivo</span>
-          </button>
-        </div>
+        <Field
+          name="upload_tokens"
+          type="hidden"
+        />
       </div>
     </fieldset>
 
@@ -573,11 +487,11 @@ watch(() => values.area_tematica_id, () => {
           as="select"
           class="inputtext light"
           :class="{ error: errors.area_tematica_id }"
-          @update:model-value="setFieldValue('area_tematica_id', Number($event))"
         >
           <option :value="null">
             Selecionar
           </option>
+
           <option
             v-for="area in listaAreasTematicas"
             :key="area.id"
@@ -653,22 +567,7 @@ watch(() => values.area_tematica_id, () => {
       </div>
     </fieldset>
 
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center g2 flexwrap">
-      <hr class="f1">
-      <button
-        type="submit"
-        class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
-      >
-        Salvar
-      </button>
-      <hr class="f1">
-    </div>
+    <SmaeFieldsetSubmit />
   </form>
 
   <div
