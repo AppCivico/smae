@@ -88,7 +88,7 @@ export class AreaTematicaService {
                     orderBy: { ativo: 'desc', nome: 'asc' },
                 },
             },
-            orderBy: { ativo: 'desc', nome: 'asc' },
+            orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
         });
 
         return areas;
@@ -108,7 +108,7 @@ export class AreaTematicaService {
                         nome: true,
                         ativo: true,
                     },
-                    orderBy: { ativo: 'desc', nome: 'asc' },
+                    orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
                 },
             },
         });
