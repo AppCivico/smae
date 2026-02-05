@@ -30,8 +30,8 @@ export const useAuthStore = defineStore('auth', {
       ?? 'SMAE') as ModuloSistema,
     moduloDaRotaAnterior: '' as ModuloSistema | '',
 
-    modulosAcessiveis: [] as ModuloSistema[],
-    modulosDisponiveis: [] as ModuloSistema[],
+    modulosAcessiveis: [] as ModuloSistema[], // aqueles que o usuário pode escolher
+    modulosDisponiveis: [] as ModuloSistema[], // aqueles visíveis na tela de escolha de módulo
 
     chamadasPendentes: {
       listarModulos: false,
@@ -186,18 +186,28 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async escolherModulo(sistema: ModuloSistema) {
+    async escolherModulo(sistema: ModuloSistema, ignorarRotaInicial = false) {
       this.chamadasPendentes.escolherModulo = true;
       this.erros.escolherModulo = null;
-      this.sistemaEscolhido = sistema;
+
+      if (!this.modulosAcessiveis.includes(sistema)) {
+        this.erros.escolherModulo = 'Você não tem acesso a este módulo.';
+        this.chamadasPendentes.escolherModulo = false;
+        return Promise.reject(new Error(this.erros.escolherModulo as string));
+      }
 
       try {
-        await this.getDados(null, { headers: { 'smae-sistemas': `SMAE,${sistema}` } });
+        await this.getDados(null, {
+          headers: { 'smae-sistemas': `SMAE,${sistema}` },
+        });
 
+        this.sistemaEscolhido = sistema;
         localStorage.setItem('sistemaEscolhido', sistema);
 
-        if (this.dadosDoSistemaEscolhido?.rotaInicial) {
-          const listaDeRotasPossiveis = !Array.isArray(this.dadosDoSistemaEscolhido?.rotaInicial)
+        if (!ignorarRotaInicial && this.dadosDoSistemaEscolhido?.rotaInicial) {
+          const listaDeRotasPossiveis = !Array.isArray(
+            this.dadosDoSistemaEscolhido?.rotaInicial,
+          )
             ? [this.dadosDoSistemaEscolhido?.rotaInicial]
             : this.dadosDoSistemaEscolhido?.rotaInicial;
 
@@ -228,10 +238,53 @@ export const useAuthStore = defineStore('auth', {
       } catch (erro) {
         this.sistemaEscolhido = 'SMAE' as ModuloSistema;
         this.erros.escolherModulo = erro;
+
+        return await Promise.reject(erro);
       } finally {
         this.chamadasPendentes.escolherModulo = false;
       }
+
+      return Promise.resolve();
     },
+
+    async sincronizarModuloComRota(): Promise<void> {
+      const moduloDaRota = this.route.meta?.entidadeMãe
+        && retornarModuloAPartirDeEntidadeMae(this.route.meta.entidadeMãe);
+
+      if (!moduloDaRota || moduloDaRota === this.sistemaCorrente) {
+        return;
+      }
+
+      if (!this.modulosAcessiveis.length && !this.chamadasPendentes.listarModulos) {
+        await this.carregarModulos();
+      }
+
+      try {
+        await this.escolherModulo(moduloDaRota, true);
+
+        if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+          console.warn('Módulo sincronizado com a rota atual com sucesso. Vamos recarregar a página para garantir que tudo seja carregado corretamente.');
+        }
+
+        window.location.reload();
+      } catch {
+        const alertStore = useAlertStore();
+        alertStore.error(
+          this.erros.escolherModulo
+            || 'Não foi possível sincronizar o módulo com a rota atual.',
+        );
+
+        if (
+          import.meta.env.VITE_EXPOR_ERROS === 'true'
+          || import.meta.env.DEV
+        ) {
+          console.warn('Não foi possível sincronizar o módulo com a rota atual. Redirecionando para a página inicial...');
+        }
+
+        this.router.push({ name: 'home' });
+      }
+    },
+
     setPermissions() {
       const per: Record<string, Record<string, number>> = {};
       if (this.user.privilegios) {
