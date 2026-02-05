@@ -86,6 +86,30 @@ $ npm run start:prod
       "senha": "!286!QDM7H"
     }'
 
+## Visualização de Dependências de Módulos
+
+Para analisar e visualizar as dependências entre os 158+ módulos NestJS:
+
+```bash
+# Gerar todas as visualizações
+./tools/generate-graphs.sh --all
+
+# Visualizador HTML interativo (recomendado)
+./tools/generate-graphs.sh --html
+open dist-graph/modules-viewer.html
+
+# Ver documentação completa
+cat tools/README.md
+```
+
+Saídas geradas em `dist-graph/`:
+- `modules-viewer.html` - Visualizador interativo com busca e zoom
+- `circular-focused.png` - Foco em dependências circulares
+- `modules-horizontal.png` - Layout em camadas arquiteturais
+- `report.md` - Relatório em texto
+
+> O diretório `dist-graph/` está no `.gitignore`.
+
 ## License
 
 SMAE é produzido com licença [AGPL](../LICENSE)
