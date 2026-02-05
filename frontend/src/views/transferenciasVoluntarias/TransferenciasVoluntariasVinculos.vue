@@ -139,7 +139,6 @@ onUnmounted(() => {
         cor-bolinha="#F7C234"
         estilo="com-marcador"
       >
-        Resultado por:&nbsp;
         <strong>Endereço</strong>
       </CardEnvelope.Titulo>
 
@@ -187,7 +186,6 @@ onUnmounted(() => {
         cor-bolinha="#F7C234"
         estilo="com-marcador"
       >
-        Resultado por:&nbsp;
         <strong>Dotação</strong>
       </CardEnvelope.Titulo>
 
@@ -235,7 +233,6 @@ onUnmounted(() => {
         cor-bolinha="#F7C234"
         estilo="com-marcador"
       >
-        Resultado por:&nbsp;
         <strong>Demanda</strong>
       </CardEnvelope.Titulo>
 
