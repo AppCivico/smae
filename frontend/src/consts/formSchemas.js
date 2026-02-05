@@ -4683,7 +4683,7 @@ export const valoresLimites = object({
     ),
   data_fim_vigencia: date()
     .label('Fim da Vigência')
-    .nullable()
+    .nullableOuVazio()
     .transform((v) => (v === '' || v === null ? null : v))
     .test(
       'verificar-data-fim',
@@ -4718,7 +4718,7 @@ export const valoresLimites = object({
   observacao: string()
     .label('Observação')
     .nullable()
-    .max(500, 'A observação deve ter no máximo 500 caracteres'),
+    .max(2048, 'A observação deve ter no máximo 500 caracteres'),
   anexos: mixed()
     .label('Documentos/Fotos/Arquivos')
     .nullable(),
