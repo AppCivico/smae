@@ -35,14 +35,14 @@ const valoresIniciais = computed(() => {
       ativo: emFoco.value.ativo ?? true,
       acoes: emFoco.value.acoes?.length > 0
         ? emFoco.value.acoes
-        : [{ nome: '', ativo: true }],
+        : [],
     };
   }
 
   return {
     nome: '',
     ativo: true,
-    acoes: [{ nome: '', ativo: true }],
+    acoes: [],
   };
 });
 
@@ -51,9 +51,11 @@ const {
   handleSubmit,
   isSubmitting,
   resetForm,
+  setFieldValue,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
+  keepValuesOnUnmount: true,
 });
 
 const formularioSujo = useIsFormDirty();
