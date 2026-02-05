@@ -1,3 +1,31 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
+
+const alertStore = useAlertStore();
+const programaHabitacionalStore = useProgramaHabitacionalStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(programaHabitacionalStore);
+
+async function excluirProgramaHabitacional(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await programaHabitacionalStore.excluirItem(id)) {
+        programaHabitacionalStore.$reset();
+        programaHabitacionalStore.buscarTudo();
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+programaHabitacionalStore.$reset();
+programaHabitacionalStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -13,9 +41,11 @@
   </div>
 
   <table class="tablemain">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
@@ -75,33 +105,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
-
-const alertStore = useAlertStore();
-const programaHabitacionalStore = useProgramaHabitacionalStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(programaHabitacionalStore);
-
-async function excluirProgramaHabitacional(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await programaHabitacionalStore.excluirItem(id)) {
-        programaHabitacionalStore.$reset();
-        programaHabitacionalStore.buscarTudo();
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-programaHabitacionalStore.$reset();
-programaHabitacionalStore.buscarTudo();
-</script>
 
 <style></style>

@@ -1,3 +1,36 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
+
+const alertStore = useAlertStore();
+const assuntosStore = useAssuntosStore();
+const { categorias, chamadasPendentes, erro } = storeToRefs(assuntosStore);
+
+const listaFiltradaPorTermoDeBusca = ref([]);
+
+async function excluirAssunto(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await assuntosStore.excluirCategoria(id)) {
+        assuntosStore.$reset();
+        assuntosStore.buscarCategorias();
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+assuntosStore.$reset();
+assuntosStore.buscarCategorias();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -18,9 +51,11 @@
     <hr class="ml2 f1">
   </div>
   <table class="tablemain">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
@@ -80,38 +115,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-
-import LocalFilter from '@/components/LocalFilter.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAssuntosStore } from '@/stores/assuntosPs.store';
-
-const alertStore = useAlertStore();
-const assuntosStore = useAssuntosStore();
-const { categorias, chamadasPendentes, erro } = storeToRefs(assuntosStore);
-
-const listaFiltradaPorTermoDeBusca = ref([]);
-
-async function excluirAssunto(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await assuntosStore.excluirCategoria(id)) {
-        assuntosStore.$reset();
-        assuntosStore.buscarCategorias();
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-assuntosStore.$reset();
-assuntosStore.buscarCategorias();
-</script>
 
 <style></style>

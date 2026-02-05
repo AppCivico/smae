@@ -1,3 +1,34 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useFontesStore } from '@/stores/fontesPs.store';
+
+const route = useRoute();
+
+const alertStore = useAlertStore();
+const fontesStore = useFontesStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(fontesStore);
+
+async function excluirFonte(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await fontesStore.excluirItem(id)) {
+        fontesStore.$reset();
+        fontesStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+fontesStore.$reset();
+fontesStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -11,9 +42,11 @@
   </div>
 
   <table class="tablemain">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
@@ -70,36 +103,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useFontesStore } from '@/stores/fontesPs.store';
-
-const route = useRoute();
-
-const alertStore = useAlertStore();
-const fontesStore = useFontesStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(fontesStore);
-
-async function excluirFonte(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await fontesStore.excluirItem(id)) {
-        fontesStore.$reset();
-        fontesStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-fontesStore.$reset();
-fontesStore.buscarTudo();
-</script>
 
 <style></style>

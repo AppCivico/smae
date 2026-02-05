@@ -1,3 +1,33 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
+
+const route = useRoute();
+const alertStore = useAlertStore();
+const empreendimentosStore = useEmpreendimentosStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(empreendimentosStore);
+
+async function excluirEmpreendimento(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await empreendimentosStore.excluirItem(id)) {
+        empreendimentosStore.$reset();
+        empreendimentosStore.buscarTudo();
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+empreendimentosStore.$reset();
+empreendimentosStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -12,10 +42,12 @@
     </SmaeLink>
   </div>
   <table class="tablemain">
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>identificador</th>
@@ -74,35 +106,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
-
-const route = useRoute();
-const alertStore = useAlertStore();
-const empreendimentosStore = useEmpreendimentosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(empreendimentosStore);
-
-async function excluirEmpreendimento(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await empreendimentosStore.excluirItem(id)) {
-        empreendimentosStore.$reset();
-        empreendimentosStore.buscarTudo();
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-empreendimentosStore.$reset();
-empreendimentosStore.buscarTudo();
-</script>
 
 <style></style>

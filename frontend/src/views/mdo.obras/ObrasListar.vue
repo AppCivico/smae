@@ -1,3 +1,57 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
+import { obras as schema } from '@/consts/formSchemas';
+import statusObras from '@/consts/statusObras';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useObrasStore } from '@/stores/obras.store';
+
+const authStore = useAuthStore();
+const route = useRoute();
+const { temPermissãoPara } = storeToRefs(authStore);
+
+const obrasStore = useObrasStore();
+
+const {
+  ultimoVistoId, lista, chamadasPendentes, erro, paginacao, totalRegistrosRevisados,
+} = storeToRefs(obrasStore);
+const alertStore = useAlertStore();
+
+async function excluirObra(id, nome) {
+  alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
+    if (await obrasStore.excluirItem(id)) {
+      obrasStore.buscarTudo();
+      alertStore.success('Obra removida.');
+    }
+  }, 'Remover');
+}
+
+async function marcarComoRevisado(id, event) {
+  // eslint-disable-next-line no-param-reassign
+  event.target.ariaBusy = 'true';
+  await obrasStore.marcarComoRevisado(id, event.target.checked);
+  // eslint-disable-next-line no-param-reassign
+  event.target.ariaBusy = 'false';
+}
+
+async function marcarTodasComoNaoRevisadas() {
+  alertStore.confirmAction(`Deseja marcar ${totalRegistrosRevisados.value} obras como não revisadas?`, async () => {
+    if (await obrasStore.marcarTodasComoNaoRevisadas()) {
+      obrasStore.buscarTudo();
+    }
+  }, 'Sim');
+}
+
+watchEffect(() => {
+  obrasStore.buscarTudo(route.query);
+});
+</script>
 <template>
   <div>
     <CabecalhoDePagina>
@@ -42,17 +96,19 @@
       tabindex="0"
     >
       <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
+        <colgroup>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
 
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+        </colgroup>
         <thead>
           <tr>
             <th>
@@ -185,57 +241,3 @@
     />
   </div>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
-
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
-import { obras as schema } from '@/consts/formSchemas';
-import statusObras from '@/consts/statusObras';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useObrasStore } from '@/stores/obras.store';
-
-const authStore = useAuthStore();
-const route = useRoute();
-const { temPermissãoPara } = storeToRefs(authStore);
-
-const obrasStore = useObrasStore();
-
-const {
-  ultimoVistoId, lista, chamadasPendentes, erro, paginacao, totalRegistrosRevisados,
-} = storeToRefs(obrasStore);
-const alertStore = useAlertStore();
-
-async function excluirObra(id, nome) {
-  alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
-    if (await obrasStore.excluirItem(id)) {
-      obrasStore.buscarTudo();
-      alertStore.success('Obra removida.');
-    }
-  }, 'Remover');
-}
-
-async function marcarComoRevisado(id, event) {
-  // eslint-disable-next-line no-param-reassign
-  event.target.ariaBusy = 'true';
-  await obrasStore.marcarComoRevisado(id, event.target.checked);
-  // eslint-disable-next-line no-param-reassign
-  event.target.ariaBusy = 'false';
-}
-
-async function marcarTodasComoNaoRevisadas() {
-  alertStore.confirmAction(`Deseja marcar ${totalRegistrosRevisados.value} obras como não revisadas?`, async () => {
-    if (await obrasStore.marcarTodasComoNaoRevisadas()) {
-      obrasStore.buscarTudo();
-    }
-  }, 'Sim');
-}
-
-watchEffect(() => {
-  obrasStore.buscarTudo(route.query);
-});
-</script>
