@@ -51,13 +51,10 @@ check_deps() {
         exit 1
     fi
 
-    # Check for graphviz
-    if command -v sfdp &> /dev/null; then
-        GRAPHVIZ_ENGINE="sfdp"
-        log_info "Using graphviz engine: sfdp"
-    elif command -v dot &> /dev/null; then
+    # Check for graphviz - use dot for stability
+    if command -v dot &> /dev/null; then
         GRAPHVIZ_ENGINE="dot"
-        log_warning "sfdp not found, falling back to dot (may fail on large graphs)"
+        log_info "Using graphviz engine: dot"
     else
         log_error "Graphviz not found. Install with: sudo apt-get install graphviz"
         exit 1
@@ -77,7 +74,7 @@ generate_png() {
 
     log_info "Generating PNG: $png_file (using $engine)..."
 
-    if "$engine" -Tpng "$dot_file" -o "$png_file" 2>&1; then
+    if "$engine" -Tpng -x "$dot_file" -o "$png_file" 2>&1; then
         log_success "Created: $png_file"
         return 0
     else

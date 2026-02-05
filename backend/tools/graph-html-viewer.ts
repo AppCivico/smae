@@ -122,30 +122,38 @@ function findCircularDependencies(modules: ModuleNode[]): string[][] {
     return cycles;
 }
 
+function generateAreaColors(modules: ModuleNode[]): Record<string, string> {
+    const palette = [
+        '#4a9eff', '#8b5cf6', '#ec4899', '#f97316', '#22c55e',
+        '#eab308', '#ef4444', '#06b6d4', '#a855f7', '#14b8a6',
+        '#3b82f6', '#f472b6', '#84cc16', '#6366f1', '#facc15'
+    ];
+    const areas = [...new Set(modules.map(m => m.area))];
+    const colors: Record<string, string> = {};
+    areas.forEach((area, i) => {
+        colors[area] = palette[i % palette.length];
+    });
+    return colors;
+}
+
 function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
     const modulesInCycles = new Set<string>();
     for (const cycle of cycles) {
         for (const mod of cycle) modulesInCycles.add(mod);
     }
 
-    // Group by area
-    const areas = new Map<string, ModuleNode[]>();
-    for (const mod of modules) {
-        if (!areas.has(mod.area)) areas.set(mod.area, []);
-        areas.get(mod.area)!.push(mod);
-    }
+    const areaColors = generateAreaColors(modules);
 
-    // Generate nodes data
     const nodesData = modules.map(m => ({
         id: m.name,
         area: m.area,
+        path: m.path,
+        imports: m.imports,
+        forwardRefs: m.forwardRefs,
         inCycle: modulesInCycles.has(m.name),
-        forwardRefCount: m.forwardRefs.length,
-        importCount: m.imports.length,
-        path: m.path
+        color: areaColors[m.area] || '#64748b'
     }));
 
-    // Generate links data
     const linksData: GraphLink[] = [];
     for (const mod of modules) {
         for (const imp of mod.imports) {
@@ -160,311 +168,777 @@ function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
         }
     }
 
-    // Area colors
-    const areaColors = [
-        '#e3f2fd', '#f3e5f5', '#e8f5e9', '#fff3e0', '#fce4ec',
-        '#e0f2f1', '#f1f8e9', '#fff8e1', '#efebe9', '#e8eaf6'
-    ];
-
-    const areaColorMap: Record<string, string> = {};
-    Array.from(areas.keys()).forEach((area, i) => {
-        areaColorMap[area] = areaColors[i % areaColors.length];
-    });
-
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMAE Module Dependencies</title>
+    <title>SMAE Module Explorer</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a24;
+            --border: #2a2a3a;
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888a0;
+            --accent-blue: #4a9eff;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-orange: #f97316;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --accent-cyan: #06b6d4;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
             overflow: hidden;
-        }
-        
-        .container {
-            display: flex;
             height: 100vh;
         }
-        
+
+        .app {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+        }
+
+        /* Header */
+        header {
+            grid-column: 1 / -1;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .view-modes {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-dark);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .view-mode {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-mode:hover {
+            color: var(--text-primary);
+        }
+
+        .view-mode.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .stats {
+            display: flex;
+            gap: 24px;
+            margin-left: auto;
+            font-size: 13px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        /* Sidebar */
         .sidebar {
-            width: 320px;
-            background: white;
-            border-right: 1px solid #ddd;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
-        
-        .sidebar-header {
+
+        .search-container {
             padding: 16px;
-            background: #1976d2;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .filter-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .filter-chip {
+            padding: 6px 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .filter-chip.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
             color: white;
         }
-        
-        .sidebar-header h1 {
-            font-size: 18px;
-            margin-bottom: 8px;
+
+        .filter-chip .count {
+            opacity: 0.7;
+            font-family: 'JetBrains Mono', monospace;
         }
-        
-        .stats {
-            display: flex;
-            gap: 16px;
-            font-size: 12px;
-            opacity: 0.9;
-        }
-        
-        .search-box {
-            padding: 12px 16px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .area-list {
+
+        .module-list {
             flex: 1;
             overflow-y: auto;
             padding: 8px;
         }
-        
-        .area-section {
-            margin-bottom: 8px;
-            border-radius: 6px;
-            overflow: hidden;
+
+        .area-group {
+            margin-bottom: 4px;
         }
-        
+
         .area-header {
             padding: 10px 12px;
+            font-size: 12px;
             font-weight: 600;
-            font-size: 13px;
+            color: var(--text-secondary);
             cursor: pointer;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            user-select: none;
+            gap: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
         }
-        
+
         .area-header:hover {
-            filter: brightness(0.95);
+            background: var(--bg-hover);
+            color: var(--text-primary);
         }
-        
-        .area-header.collapsed::after {
-            content: '▶';
+
+        .area-header .chevron {
             font-size: 10px;
+            transition: transform 0.2s;
         }
-        
-        .area-header::after {
-            content: '▼';
-            font-size: 10px;
+
+        .area-header.collapsed .chevron {
+            transform: rotate(-90deg);
         }
-        
-        .module-list {
-            max-height: 300px;
-            overflow-y: auto;
-            background: white;
-        }
-        
-        .module-item {
-            padding: 6px 12px 6px 24px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .module-item:hover {
-            background: #f5f5f5;
-        }
-        
-        .module-item.highlighted {
-            background: #fff3cd;
-        }
-        
-        .module-item.in-cycle {
-            color: #d32f2f;
-        }
-        
-        .cycle-badge {
-            background: #d32f2f;
-            color: white;
-            font-size: 9px;
-            padding: 1px 4px;
-            border-radius: 3px;
-            margin-left: auto;
-        }
-        
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .toolbar {
-            padding: 12px 16px;
-            background: white;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        
-        .toolbar button {
-            padding: 6px 12px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        
-        .toolbar button:hover {
-            background: #f5f5f5;
-        }
-        
-        .toolbar button.active {
-            background: #1976d2;
-            color: white;
-            border-color: #1976d2;
-        }
-        
-        .legend {
-            display: flex;
-            gap: 16px;
-            margin-left: auto;
-            font-size: 12px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .legend-dot {
-            width: 12px;
-            height: 12px;
+
+        .area-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
         }
-        
-        #graph-container {
-            flex: 1;
+
+        .area-modules {
+            padding-left: 20px;
+        }
+
+        .area-modules.hidden {
+            display: none;
+        }
+
+        .module-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .module-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .module-item.selected {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .module-item.in-cycle::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent-red);
+            border-radius: 50%;
+        }
+
+        .module-item.has-forward-ref::after {
+            content: '↻';
+            margin-left: auto;
+            color: var(--accent-orange);
+            font-size: 14px;
+        }
+
+        /* Main canvas */
+        .canvas-container {
+            position: relative;
             overflow: hidden;
-            background: #fafafa;
-            cursor: grab;
+            background: var(--bg-dark);
         }
-        
-        #graph-container:active {
-            cursor: grabbing;
+
+        #graph-canvas {
+            width: 100%;
+            height: 100%;
         }
-        
+
+        /* Floating controls */
+        .canvas-controls {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            background: var(--bg-card);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .canvas-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .canvas-btn:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Tooltip */
         .tooltip {
             position: absolute;
-            padding: 12px;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            border-radius: 6px;
-            font-size: 12px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s;
-            max-width: 300px;
+            max-width: 320px;
             z-index: 1000;
         }
-        
+
         .tooltip.visible {
             opacity: 1;
         }
 
-        .node-label {
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .tooltip-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .tooltip-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .tooltip-path {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tooltip-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .tooltip-stat {
+            font-size: 12px;
+        }
+
+        .tooltip-stat-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tooltip-stat-label {
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+
+        .tooltip-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--accent-red);
+            color: white;
             font-size: 10px;
-            pointer-events: none;
-            fill: #333;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-top: 8px;
         }
 
-        .link {
-            stroke-opacity: 0.4;
+        /* Detail panel */
+        .detail-panel {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 320px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: none;
         }
 
-        .link.forward-ref {
-            stroke-dasharray: 4,4;
+        .detail-panel.visible {
+            display: block;
         }
 
-        .node {
+        .detail-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .detail-close {
+            margin-left: auto;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: var(--bg-dark);
+            color: var(--text-secondary);
+            border-radius: 6px;
             cursor: pointer;
-            stroke: #fff;
+            font-size: 16px;
+        }
+
+        .detail-close:hover {
+            color: var(--text-primary);
+        }
+
+        .detail-content {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .dep-item {
+            padding: 8px 10px;
+            background: var(--bg-dark);
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .dep-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .dep-item.forward-ref {
+            border-left: 3px solid var(--accent-orange);
+        }
+
+        .dep-arrow {
+            color: var(--text-secondary);
+        }
+
+        /* Grid view */
+        .grid-view {
+            display: none;
+            padding: 24px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .grid-view.active {
+            display: block;
+        }
+
+        .grid-area {
+            margin-bottom: 32px;
+        }
+
+        .grid-area-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 8px;
+        }
+
+        .grid-module {
+            padding: 12px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid-module:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .grid-module.in-cycle {
+            border-color: var(--accent-red);
+        }
+
+        .grid-module .deps {
+            margin-left: auto;
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+
+        /* Cycle view */
+        .cycle-view {
+            display: none;
+            padding: 24px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .cycle-view.active {
+            display: block;
+        }
+
+        .cycle-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .cycle-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .cycle-number {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-red);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .cycle-title {
+            font-weight: 600;
+        }
+
+        .cycle-path {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cycle-node {
+            padding: 8px 12px;
+            background: var(--bg-dark);
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cycle-node:hover {
+            background: var(--bg-hover);
+        }
+
+        .cycle-arrow {
+            color: var(--accent-red);
+            font-weight: 600;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Node styling in SVG */
+        .node-circle {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .node-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            fill: var(--text-primary);
+            pointer-events: none;
+        }
+
+        .link-line {
+            stroke-opacity: 0.3;
+            transition: stroke-opacity 0.2s;
+        }
+
+        .link-line.forward-ref {
+            stroke-dasharray: 4 4;
+        }
+
+        .link-line.highlighted {
+            stroke-opacity: 1;
             stroke-width: 2px;
-        }
-
-        .node:hover {
-            stroke: #1976d2;
-            stroke-width: 3px;
-        }
-
-        .node.in-cycle {
-            stroke: #d32f2f;
-            stroke-width: 3px;
-        }
-
-        .node.highlighted {
-            stroke: #ff9800;
-            stroke-width: 4px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1>📦 Module Dependencies</h1>
-                <div class="stats">
-                    <span>${modules.length} modules</span>
-                    <span>${cycles.length} cycles</span>
+    <div class="app">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">📦</div>
+                <span>SMAE Modules</span>
+            </div>
+            
+            <div class="view-modes">
+                <button class="view-mode active" data-view="graph">Graph</button>
+                <button class="view-mode" data-view="grid">Grid</button>
+                <button class="view-mode" data-view="cycles">Cycles</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value" id="total-modules">0</span>
+                    <span class="stat-label">modules</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="total-cycles">0</span>
+                    <span class="stat-label">cycles</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="total-forward-refs">0</span>
+                    <span class="stat-label">forwardRefs</span>
                 </div>
             </div>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search modules...">
+        </header>
+        
+        <aside class="sidebar">
+            <div class="search-container">
+                <input type="text" class="search-input" id="search" placeholder="Search modules...">
             </div>
-            <div class="area-list" id="areaList"></div>
+            
+            <div class="filter-section">
+                <div class="filter-title">Quick Filters</div>
+                <div class="filter-chips">
+                    <button class="filter-chip" data-filter="all">All</button>
+                    <button class="filter-chip" data-filter="cycles">
+                        🔴 In Cycles
+                        <span class="count" id="cycle-count"></span>
+                    </button>
+                    <button class="filter-chip" data-filter="forward-ref">
+                        ↻ forwardRef
+                        <span class="count" id="forward-ref-count"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="module-list" id="module-list"></div>
         </aside>
         
-        <main class="main-content">
-            <div class="toolbar">
-                <button id="resetZoom">Reset View</button>
-                <button id="fitToScreen">Fit to Screen</button>
-                <button id="toggleCycles" class="active">Show Cycles</button>
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #1976d2;"></div>
-                        <span>Regular import</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #d32f2f;"></div>
-                        <span>forwardRef</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background: #ff9800; border: 2px solid #d32f2f;"></div>
-                        <span>In cycle</span>
-                    </div>
-                </div>
+        <main class="canvas-container">
+            <svg id="graph-canvas"></svg>
+            
+            <div class="grid-view" id="grid-view"></div>
+            <div class="cycle-view" id="cycle-view"></div>
+            
+            <div class="canvas-controls">
+                <button class="canvas-btn" id="zoom-in" title="Zoom In">+</button>
+                <button class="canvas-btn" id="zoom-out" title="Zoom Out">−</button>
+                <button class="canvas-btn" id="zoom-fit" title="Fit to View">⊡</button>
+                <button class="canvas-btn" id="zoom-reset" title="Reset">↺</button>
             </div>
-            <div id="graph-container"></div>
+            
+            <div class="detail-panel" id="detail-panel">
+                <div class="detail-header">
+                    <div>
+                        <div class="tooltip-name" id="detail-name"></div>
+                        <div class="tooltip-path" id="detail-path"></div>
+                    </div>
+                    <button class="detail-close" id="detail-close">×</button>
+                </div>
+                <div class="detail-content" id="detail-content"></div>
+            </div>
         </main>
     </div>
     
@@ -472,29 +946,113 @@ function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
 
     <script>
         const modulesData = ${JSON.stringify(nodesData, null, 2)};
-        const linksData = ${JSON.stringify(linksData, null, 2)};
-        const areaColorMap = ${JSON.stringify(areaColorMap)};
-        const cycles = ${JSON.stringify(cycles)};
+        const cyclesData = ${JSON.stringify(cycles, null, 2)};
+        const areaColors = ${JSON.stringify(areaColors)};
 
-        // D3 setup
-        const container = document.getElementById('graph-container');
+        // Build graph data
+        const nodes = modulesData.map(m => ({
+            ...m,
+            color: areaColors[m.area] || '#64748b'
+        }));
+
+        const links = [];
+        modulesData.forEach(mod => {
+            mod.imports.forEach(imp => {
+                if (modulesData.find(m => m.id === imp)) {
+                    links.push({ source: imp, target: mod.id, type: 'regular' });
+                }
+            });
+            mod.forwardRefs.forEach(ref => {
+                if (modulesData.find(m => m.id === ref)) {
+                    links.push({ source: ref, target: mod.id, type: 'forwardRef' });
+                }
+            });
+        });
+
+        // Update stats
+        document.getElementById('total-modules').textContent = nodes.length;
+        document.getElementById('total-cycles').textContent = cyclesData.length;
+        document.getElementById('total-forward-refs').textContent = nodes.reduce((acc, n) => acc + n.forwardRefs.length, 0);
+        document.getElementById('cycle-count').textContent = nodes.filter(n => n.inCycle).length;
+        document.getElementById('forward-ref-count').textContent = nodes.filter(n => n.forwardRefs.length > 0).length;
+
+        // Build sidebar
+        function buildSidebar(filter = 'all', search = '') {
+            const moduleList = document.getElementById('module-list');
+            moduleList.innerHTML = '';
+
+            let filteredNodes = nodes;
+            if (filter === 'cycles') {
+                filteredNodes = nodes.filter(n => n.inCycle);
+            } else if (filter === 'forward-ref') {
+                filteredNodes = nodes.filter(n => n.forwardRefs.length > 0);
+            }
+
+            if (search) {
+                filteredNodes = filteredNodes.filter(n => 
+                    n.id.toLowerCase().includes(search.toLowerCase())
+                );
+            }
+
+            // Group by area
+            const areas = {};
+            filteredNodes.forEach(n => {
+                if (!areas[n.area]) areas[n.area] = [];
+                areas[n.area].push(n);
+            });
+
+            Object.entries(areas).sort((a, b) => b[1].length - a[1].length).forEach(([area, mods]) => {
+                const group = document.createElement('div');
+                group.className = 'area-group';
+                
+                const header = document.createElement('div');
+                header.className = 'area-header';
+                header.innerHTML = \`
+                    <span class="chevron">▼</span>
+                    <span class="area-dot" style="background: \${areaColors[area] || '#64748b'}"></span>
+                    <span>\${area}</span>
+                    <span style="margin-left: auto; opacity: 0.5">\${mods.length}</span>
+                \`;
+                
+                const modulesCont = document.createElement('div');
+                modulesCont.className = 'area-modules';
+                
+                mods.forEach(mod => {
+                    const item = document.createElement('div');
+                    item.className = 'module-item' + 
+                        (mod.inCycle ? ' in-cycle' : '') +
+                        (mod.forwardRefs.length > 0 ? ' has-forward-ref' : '');
+                    item.textContent = mod.id.replace('Module', '');
+                    item.dataset.module = mod.id;
+                    item.addEventListener('click', () => selectModule(mod.id));
+                    modulesCont.appendChild(item);
+                });
+                
+                header.addEventListener('click', () => {
+                    header.classList.toggle('collapsed');
+                    modulesCont.classList.toggle('hidden');
+                });
+                
+                group.appendChild(header);
+                group.appendChild(modulesCont);
+                moduleList.appendChild(group);
+            });
+        }
+
+        // Initialize D3 graph
+        const svg = d3.select('#graph-canvas');
+        const container = document.querySelector('.canvas-container');
         const width = container.clientWidth;
         const height = container.clientHeight;
 
-        const svg = d3.select('#graph-container')
-            .append('svg')
-            .attr('width', '100%')
-            .attr('height', '100%')
-            .attr('viewBox', [0, 0, width, height]);
+        svg.attr('viewBox', [0, 0, width, height]);
 
-        // Add zoom behavior
         const g = svg.append('g');
-        
+
+        // Zoom
         const zoom = d3.zoom()
             .scaleExtent([0.1, 4])
-            .on('zoom', (event) => {
-                g.attr('transform', event.transform);
-            });
+            .on('zoom', (event) => g.attr('transform', event.transform));
 
         svg.call(zoom);
 
@@ -505,53 +1063,55 @@ function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
             .append('marker')
             .attr('id', d => \`arrow-\${d}\`)
             .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 20)
+            .attr('refX', 18)
             .attr('refY', 0)
-            .attr('markerWidth', 6)
-            .attr('markerHeight', 6)
+            .attr('markerWidth', 5)
+            .attr('markerHeight', 5)
             .attr('orient', 'auto')
             .append('path')
             .attr('d', 'M0,-5L10,0L0,5')
-            .attr('fill', d => d === 'forwardRef' ? '#d32f2f' : '#666');
+            .attr('fill', d => d === 'forwardRef' ? '#f97316' : '#64748b');
 
-        // Simulation
-        const simulation = d3.forceSimulation(modulesData)
-            .force('link', d3.forceLink(linksData).id(d => d.id).distance(80))
-            .force('charge', d3.forceManyBody().strength(-300))
+        // Force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+            .force('charge', d3.forceManyBody().strength(-400))
             .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide().radius(35))
+            .force('collision', d3.forceCollide().radius(40))
             .force('x', d3.forceX(width / 2).strength(0.05))
             .force('y', d3.forceY(height / 2).strength(0.05));
 
-        // Draw links
+        // Links
         const link = g.append('g')
             .selectAll('line')
-            .data(linksData)
+            .data(links)
             .enter()
             .append('line')
-            .attr('class', d => \`link \${d.type === 'forwardRef' ? 'forward-ref' : ''}\`)
-            .attr('stroke', d => d.type === 'forwardRef' ? '#d32f2f' : '#666')
-            .attr('stroke-width', d => d.type === 'forwardRef' ? 2 : 1)
+            .attr('class', d => \`link-line \${d.type === 'forwardRef' ? 'forward-ref' : ''}\`)
+            .attr('stroke', d => d.type === 'forwardRef' ? '#f97316' : '#4a5568')
+            .attr('stroke-width', d => d.type === 'forwardRef' ? 1.5 : 1)
             .attr('marker-end', d => \`url(#arrow-\${d.type})\`);
 
-        // Draw nodes
+        // Nodes
         const node = g.append('g')
             .selectAll('circle')
-            .data(modulesData)
+            .data(nodes)
             .enter()
             .append('circle')
-            .attr('class', d => \`node \${d.inCycle ? 'in-cycle' : ''}\`)
-            .attr('r', d => 8 + Math.min(d.importCount + d.forwardRefCount, 10))
-            .attr('fill', d => areaColorMap[d.area] || '#e3f2fd')
+            .attr('class', 'node-circle')
+            .attr('r', d => 8 + Math.min((d.imports.length + d.forwardRefs.length) * 2, 8))
+            .attr('fill', d => d.color)
+            .attr('stroke', d => d.inCycle ? '#ef4444' : '#1a1a24')
+            .attr('stroke-width', d => d.inCycle ? 3 : 2)
             .call(d3.drag()
                 .on('start', dragstarted)
                 .on('drag', dragged)
                 .on('end', dragended));
 
-        // Node labels
+        // Labels
         const label = g.append('g')
             .selectAll('text')
-            .data(modulesData)
+            .data(nodes)
             .enter()
             .append('text')
             .attr('class', 'node-label')
@@ -564,19 +1124,32 @@ function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
 
         node.on('mouseover', function(event, d) {
             tooltip.innerHTML = \`
-                <strong>\${d.id}</strong><br>
-                Area: \${d.area}<br>
-                Imports: \${d.importCount}<br>
-                forwardRefs: \${d.forwardRefCount}<br>
-                \${d.inCycle ? '<span style="color:#ff9800">⚠️ In circular dependency</span>' : ''}
+                <div class="tooltip-header">
+                    <div class="tooltip-icon" style="background: \${d.color}">\${d.id.charAt(0)}</div>
+                    <div>
+                        <div class="tooltip-name">\${d.id}</div>
+                        <div class="tooltip-path">\${d.path}</div>
+                    </div>
+                </div>
+                <div class="tooltip-stats">
+                    <div class="tooltip-stat">
+                        <div class="tooltip-stat-value">\${d.imports.length}</div>
+                        <div class="tooltip-stat-label">imports</div>
+                    </div>
+                    <div class="tooltip-stat">
+                        <div class="tooltip-stat-value">\${d.forwardRefs.length}</div>
+                        <div class="tooltip-stat-label">forwardRefs</div>
+                    </div>
+                </div>
+                \${d.inCycle ? '<div class="tooltip-badge">⚠️ In Circular Dependency</div>' : ''}
             \`;
             tooltip.classList.add('visible');
-            tooltip.style.left = event.pageX + 10 + 'px';
-            tooltip.style.top = event.pageY + 10 + 'px';
+            tooltip.style.left = event.pageX + 16 + 'px';
+            tooltip.style.top = event.pageY + 16 + 'px';
         })
-        .on('mouseout', () => tooltip.classList.remove('visible'));
+        .on('mouseout', () => tooltip.classList.remove('visible'))
+        .on('click', (event, d) => selectModule(d.id));
 
-        // Update positions
         simulation.on('tick', () => {
             link
                 .attr('x1', d => d.source.x)
@@ -593,7 +1166,6 @@ function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
                 .attr('y', d => d.y);
         });
 
-        // Drag functions
         function dragstarted(event, d) {
             if (!event.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
@@ -611,129 +1183,242 @@ function generateHTML(modules: ModuleNode[], cycles: string[][]): string {
             d.fy = null;
         }
 
-        // Toolbar buttons
-        document.getElementById('resetZoom').onclick = () => {
-            svg.transition().duration(750).call(
-                zoom.transform,
-                d3.zoomIdentity
-            );
-        };
+        // Module selection
+        let selectedModule = null;
 
-        document.getElementById('fitToScreen').onclick = () => {
+        function selectModule(moduleId) {
+            selectedModule = moduleId;
+            const mod = nodes.find(n => n.id === moduleId);
+            if (!mod) return;
+
+            // Highlight in sidebar
+            document.querySelectorAll('.module-item').forEach(item => {
+                item.classList.toggle('selected', item.dataset.module === moduleId);
+            });
+
+            // Highlight in graph
+            node.attr('opacity', d => {
+                if (d.id === moduleId) return 1;
+                if (mod.imports.includes(d.id) || mod.forwardRefs.includes(d.id)) return 1;
+                if (d.imports.includes(moduleId) || d.forwardRefs.includes(moduleId)) return 1;
+                return 0.2;
+            });
+
+            link.attr('stroke-opacity', d => {
+                if (d.source.id === moduleId || d.target.id === moduleId) return 1;
+                return 0.05;
+            });
+
+            label.attr('opacity', d => {
+                if (d.id === moduleId) return 1;
+                if (mod.imports.includes(d.id) || mod.forwardRefs.includes(d.id)) return 1;
+                if (d.imports.includes(moduleId) || d.forwardRefs.includes(moduleId)) return 1;
+                return 0.2;
+            });
+
+            // Show detail panel
+            showDetailPanel(mod);
+
+            // Center on node
+            const x = mod.x || width/2;
+            const y = mod.y || height/2;
+            svg.transition().duration(500).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(width/2, height/2).scale(1.5).translate(-x, -y)
+            );
+        }
+
+        function clearSelection() {
+            selectedModule = null;
+            document.querySelectorAll('.module-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            node.attr('opacity', 1);
+            link.attr('stroke-opacity', 0.3);
+            label.attr('opacity', 1);
+            document.getElementById('detail-panel').classList.remove('visible');
+        }
+
+        function showDetailPanel(mod) {
+            const panel = document.getElementById('detail-panel');
+            document.getElementById('detail-name').textContent = mod.id;
+            document.getElementById('detail-path').textContent = mod.path;
+
+            const content = document.getElementById('detail-content');
+            let html = '';
+
+            if (mod.inCycle) {
+                html += \`<div style="background: rgba(239,68,68,0.1); border: 1px solid var(--accent-red); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px;">
+                    <strong style="color: var(--accent-red)">⚠️ Circular Dependency</strong><br>
+                    This module is part of a dependency cycle
+                </div>\`;
+            }
+
+            if (mod.imports.length > 0) {
+                html += \`<div class="detail-section">
+                    <div class="detail-section-title">Imports (\${mod.imports.length})</div>
+                    \${mod.imports.map(imp => \`
+                        <div class="dep-item" onclick="selectModule('\${imp}')">
+                            <span class="dep-arrow">←</span>
+                            \${imp.replace('Module', '')}
+                        </div>
+                    \`).join('')}
+                </div>\`;
+            }
+
+            if (mod.forwardRefs.length > 0) {
+                html += \`<div class="detail-section">
+                    <div class="detail-section-title">forwardRef (\${mod.forwardRefs.length})</div>
+                    \${mod.forwardRefs.map(ref => \`
+                        <div class="dep-item forward-ref" onclick="selectModule('\${ref}')">
+                            <span class="dep-arrow">↻</span>
+                            \${ref.replace('Module', '')}
+                        </div>
+                    \`).join('')}
+                </div>\`;
+            }
+
+            // Find dependents
+            const dependents = nodes.filter(n => 
+                n.imports.includes(mod.id) || n.forwardRefs.includes(mod.id)
+            );
+            if (dependents.length > 0) {
+                html += \`<div class="detail-section">
+                    <div class="detail-section-title">Used By (\${dependents.length})</div>
+                    \${dependents.map(dep => \`
+                        <div class="dep-item" onclick="selectModule('\${dep.id}')">
+                            <span class="dep-arrow">→</span>
+                            \${dep.id.replace('Module', '')}
+                        </div>
+                    \`).join('')}
+                </div>\`;
+            }
+
+            content.innerHTML = html;
+            panel.classList.add('visible');
+        }
+
+        document.getElementById('detail-close').addEventListener('click', clearSelection);
+
+        // Build grid view
+        function buildGridView() {
+            const gridView = document.getElementById('grid-view');
+            const areas = {};
+            nodes.forEach(n => {
+                if (!areas[n.area]) areas[n.area] = [];
+                areas[n.area].push(n);
+            });
+
+            gridView.innerHTML = Object.entries(areas)
+                .sort((a, b) => b[1].length - a[1].length)
+                .map(([area, mods]) => \`
+                    <div class="grid-area">
+                        <div class="grid-area-title">
+                            <span class="area-dot" style="background: \${areaColors[area] || '#64748b'}"></span>
+                            \${area}
+                            <span style="opacity: 0.5; font-weight: 400">(\${mods.length})</span>
+                        </div>
+                        <div class="grid-modules">
+                            \${mods.map(m => \`
+                                <div class="grid-module \${m.inCycle ? 'in-cycle' : ''}" 
+                                     onclick="selectModule('\${m.id}'); switchView('graph')">
+                                    \${m.inCycle ? '<span style="color: var(--accent-red)">●</span>' : ''}
+                                    \${m.id.replace('Module', '')}
+                                    <span class="deps">\${m.imports.length + m.forwardRefs.length}</span>
+                                </div>
+                            \`).join('')}
+                        </div>
+                    </div>
+                \`).join('');
+        }
+
+        // Build cycle view
+        function buildCycleView() {
+            const cycleView = document.getElementById('cycle-view');
+            cycleView.innerHTML = cyclesData.map((cycle, i) => \`
+                <div class="cycle-card">
+                    <div class="cycle-header">
+                        <div class="cycle-number">\${i + 1}</div>
+                        <div class="cycle-title">\${cycle.length - 1} modules in cycle</div>
+                    </div>
+                    <div class="cycle-path">
+                        \${cycle.map((mod, j) => \`
+                            \${j > 0 ? '<span class="cycle-arrow">→</span>' : ''}
+                            <span class="cycle-node" onclick="selectModule('\${mod}'); switchView('graph')">
+                                \${mod.replace('Module', '')}
+                            </span>
+                        \`).join('')}
+                    </div>
+                </div>
+            \`).join('');
+        }
+
+        // View switching
+        function switchView(view) {
+            document.querySelectorAll('.view-mode').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+
+            document.getElementById('graph-canvas').style.display = view === 'graph' ? 'block' : 'none';
+            document.getElementById('grid-view').classList.toggle('active', view === 'grid');
+            document.getElementById('cycle-view').classList.toggle('active', view === 'cycles');
+            document.querySelector('.canvas-controls').style.display = view === 'graph' ? 'flex' : 'none';
+        }
+
+        document.querySelectorAll('.view-mode').forEach(btn => {
+            btn.addEventListener('click', () => switchView(btn.dataset.view));
+        });
+
+        // Filter chips
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                buildSidebar(chip.dataset.filter, document.getElementById('search').value);
+            });
+        });
+
+        // Search
+        document.getElementById('search').addEventListener('input', (e) => {
+            const activeFilter = document.querySelector('.filter-chip.active')?.dataset.filter || 'all';
+            buildSidebar(activeFilter, e.target.value);
+        });
+
+        // Zoom controls
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            svg.transition().duration(300).call(zoom.scaleBy, 1.5);
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            svg.transition().duration(300).call(zoom.scaleBy, 0.67);
+        });
+
+        document.getElementById('zoom-fit').addEventListener('click', () => {
             const bounds = g.node().getBBox();
-            const parent = svg.node().parentElement;
-            const fullWidth = parent.clientWidth;
-            const fullHeight = parent.clientHeight;
-            const width = bounds.width;
-            const height = bounds.height;
-            const midX = bounds.x + width / 2;
-            const midY = bounds.y + height / 2;
-            
-            if (width === 0 || height === 0) return;
-            
-            const scale = 0.8 / Math.max(width / fullWidth, height / fullHeight);
-            const translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+            const dx = bounds.width, dy = bounds.height;
+            const x = bounds.x + dx / 2, y = bounds.y + dy / 2;
+            const scale = 0.8 / Math.max(dx / width, dy / height);
+            const translate = [width / 2 - scale * x, height / 2 - scale * y];
 
             svg.transition().duration(750).call(
                 zoom.transform,
                 d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
             );
-        };
-
-        let showingCycles = true;
-        document.getElementById('toggleCycles').onclick = function() {
-            showingCycles = !showingCycles;
-            this.classList.toggle('active');
-            
-            node.style('opacity', d => {
-                if (!showingCycles) return 1;
-                return d.inCycle ? 1 : 0.3;
-            });
-            
-            link.style('opacity', d => {
-                if (!showingCycles) return 0.4;
-                const sourceInCycle = modulesData.find(m => m.id === d.source.id)?.inCycle;
-                const targetInCycle = modulesData.find(m => m.id === d.target.id)?.inCycle;
-                return (sourceInCycle && targetInCycle) ? 0.6 : 0.1;
-            });
-        };
-
-        // Build area list
-        const areaList = document.getElementById('areaList');
-        const areaGroups = {};
-        
-        modulesData.forEach(m => {
-            if (!areaGroups[m.area]) areaGroups[m.area] = [];
-            areaGroups[m.area].push(m);
         });
 
-        Object.entries(areaGroups).sort((a, b) => b[1].length - a[1].length).forEach(([area, mods]) => {
-            const section = document.createElement('div');
-            section.className = 'area-section';
-            section.innerHTML = \`
-                <div class="area-header" style="background: \${areaColorMap[area]}">
-                    <span>\${area} (\${mods.length})</span>
-                </div>
-                <div class="module-list">
-                    \${mods.map(m => \`
-                        <div class="module-item \${m.inCycle ? 'in-cycle' : ''}" data-module="\${m.id}">
-                            <span>\${m.id.replace('Module', '')}</span>
-                            \${m.inCycle ? '<span class="cycle-badge">CYCLE</span>' : ''}
-                        </div>
-                    \`).join('')}
-                </div>
-            \`;
-            
-            const header = section.querySelector('.area-header');
-            const list = section.querySelector('.module-list');
-            
-            header.addEventListener('click', () => {
-                header.classList.toggle('collapsed');
-                list.style.display = list.style.display === 'none' ? 'block' : 'none';
-            });
-            
-            section.querySelectorAll('.module-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const moduleName = item.dataset.module;
-                    const moduleData = modulesData.find(m => m.id === moduleName);
-                    
-                    if (moduleData) {
-                        // Highlight node
-                        node.classed('highlighted', d => d.id === moduleName);
-                        
-                        // Center view on node
-                        svg.transition().duration(750).call(
-                            zoom.transform,
-                            d3.zoomIdentity
-                                .translate(width / 2, height / 2)
-                                .scale(1.5)
-                                .translate(-moduleData.x, -moduleData.y)
-                        );
-                    }
-                });
-            });
-            
-            areaList.appendChild(section);
+        document.getElementById('zoom-reset').addEventListener('click', () => {
+            svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+            clearSelection();
         });
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            
-            document.querySelectorAll('.module-item').forEach(item => {
-                const name = item.dataset.module.toLowerCase();
-                item.style.display = name.includes(term) ? 'flex' : 'none';
-            });
-            
-            if (term) {
-                const matches = modulesData.filter(m => m.id.toLowerCase().includes(term));
-                node.style('opacity', d => matches.find(m => m.id === d.id) ? 1 : 0.1);
-                link.style('opacity', 0.05);
-            } else {
-                node.style('opacity', 1);
-                link.style('opacity', d => d.type === 'forwardRef' ? 0.6 : 0.4);
-            }
-        });
+        // Initialize
+        buildSidebar();
+        buildGridView();
+        buildCycleView();
+
+        // Expose selectModule globally
+        window.selectModule = selectModule;
+        window.switchView = switchView;
     </script>
 </body>
 </html>`;

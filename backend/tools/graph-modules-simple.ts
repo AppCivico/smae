@@ -166,9 +166,14 @@ function generateMermaidDiagram(modules: ModuleNode[]): string {
 function generateDotGraph(modules: ModuleNode[]): string {
     const lines = [
         'digraph NestJSModules {',
-        '    rankdir=TB;',
-        '    node [shape=box, style=filled, fillcolor=lightblue, fontname="Arial"];',
-        '    edge [fontname="Arial", fontsize=10];',
+        '    rankdir=LR;           // Left-to-Right layout',
+        '    splines=line;         // Simple straight lines (fast, stable)',
+        '    nodesep=0.4;          // Vertical spacing between nodes',
+        '    ranksep=1.5;          // Horizontal spacing between layers',
+        '    overlap=false;        // Prevent node overlap',
+        '    pack=false;           // Disable packing (faster)',
+        '    node [shape=box, style=filled, fillcolor=lightyellow, fontname="Arial", fontsize=9];',
+        '    edge [fontname="Arial", fontsize=8, arrowsize=0.6];',
         ''
     ];
     
@@ -180,13 +185,31 @@ function generateDotGraph(modules: ModuleNode[]): string {
         groups.get(area)!.push(mod.name);
     }
     
-    // Add clusters
+    // Color scheme for areas
+    const areaColors: Record<string, string> = {
+        'auth': '#e3f2fd',      // light blue
+        'casa-civil': '#fce4ec', // pink
+        'pp': '#e8f5e9',        // light green
+        'pdm': '#fff3e0',       // light orange
+        'mf': '#f3e5f5',        // light purple
+        'reports': '#e0f2f1',   // teal
+        'task': '#fff8e1',      // amber
+        'common': '#efebe9',    // brown-gray
+        'geo': '#e1f5fe',       // cyan
+        'bloco-nota': '#fbe9e7', // deep orange
+        'root': '#fafafa'       // gray
+    };
+    
+    // Add clusters with colored backgrounds
     let clusterIndex = 0;
     for (const [area, mods] of groups) {
+        const fillColor = areaColors[area] || '#ffffcc';
+        const borderColor = '#cccccc';
         lines.push(`    subgraph cluster_${clusterIndex} {`);
         lines.push(`        label="${area}";`);
         lines.push('        style=filled;');
-        lines.push('        fillcolor=lightyellow;');
+        lines.push(`        fillcolor="${fillColor}";`);
+        lines.push(`        color="${borderColor}";`);
         for (const mod of mods) {
             lines.push(`        "${mod}";`);
         }

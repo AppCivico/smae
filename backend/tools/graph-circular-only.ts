@@ -160,6 +160,8 @@ function generateFocusedGraph(modules: ModuleNode[], cycles: string[][]): string
     const lines = [
         'digraph CircularDependencies {',
         '    rankdir=TB;',
+        '    splines=line;',
+        '    overlap=false;',
         '    node [shape=box, style=filled, fontname="Arial", fontsize=10];',
         '    edge [fontname="Arial", fontsize=9];',
         '',

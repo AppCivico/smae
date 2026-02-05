@@ -1,10 +1,10 @@
 /**
  * Generate horizontal (left-to-right) layout for module dependencies
- * Groups by layer/feature area arranged horizontally
+ * Uses app.module.* files to determine architectural layers
  * Usage: npx ts-node tools/graph-horizontal.ts
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { globSync } from 'glob';
 
 interface ModuleNode {
@@ -13,6 +13,14 @@ interface ModuleNode {
     imports: string[];
     forwardRefs: string[];
     area: string;
+    layer: number;
+    featureGroup: string;
+}
+
+interface FeatureGroup {
+    name: string;
+    layer: number;
+    modules: string[];
 }
 
 function extractModules(): ModuleNode[] {
@@ -57,11 +65,152 @@ function extractModules(): ModuleNode[] {
             path: relativePath,
             imports,
             forwardRefs,
-            area
+            area,
+            layer: 0,
+            featureGroup: 'unknown'
         });
     }
     
     return modules;
+}
+
+function parseAppModuleLayers(modules: ModuleNode[]): Map<string, FeatureGroup> {
+    const featureGroups = new Map<string, FeatureGroup>();
+    
+    // Parse main app.module.ts to get layer order
+    const mainAppModulePath = './src/app.module.ts';
+    let mainContent: string;
+    try {
+        mainContent = readFileSync(mainAppModulePath, 'utf-8');
+    } catch (e) {
+        console.warn('Could not read main app.module.ts');
+        return featureGroups;
+    }
+    
+    // Layer definitions based on app.module.ts structure
+    const layerDefinitions: { pattern: RegExp; layer: number; name: string }[] = [
+        // Layer 0: Core Infrastructure
+        { pattern: /ConfigModule|PrismaModule|RequestLogModule/, layer: 0, name: 'Core Infrastructure' },
+        
+        // Layer 1: Common/Foundation
+        { pattern: /AppModuleCommon|CommonBaseModule|PessoaPrivilegioModule/, layer: 1, name: 'Common/Foundation' },
+        
+        // Layer 2: Supporting Services
+        { pattern: /AppModuleGeo|AppModuleIntegrations/, layer: 2, name: 'Supporting Services' },
+        
+        // Layer 3: Domain Modules
+        { pattern: /AppModulePdm|AppModuleProjeto|AppModuleWorkflow|AppModuleCasaCivil|AppModuleOrcamento/, layer: 3, name: 'Domain Modules' },
+        
+        // Layer 4: Cross-cutting
+        { pattern: /AppModuleReports|AppModuleTasks/, layer: 4, name: 'Cross-cutting' },
+        
+        // Layer 5: Supporting Features
+        { pattern: /AppModuleSupporting/, layer: 5, name: 'Supporting Features' },
+        
+        // Layer 6: Analytics
+        { pattern: /DuckDBModule/, layer: 6, name: 'Analytics' },
+    ];
+    
+    // Parse individual app.module.* files
+    const appModuleFiles = globSync('src/app.module.*.ts', { absolute: false });
+    
+    for (const appModuleFile of appModuleFiles) {
+        const content = readFileSync(appModuleFile, 'utf-8');
+        const groupName = basename(appModuleFile, '.ts').replace('app.module.', '');
+        
+        // Determine layer from main app.module.ts import order
+        let layer = 3; // Default to domain layer
+        for (const def of layerDefinitions) {
+            if (def.pattern.test(content) || def.pattern.test(groupName)) {
+                layer = def.layer;
+                break;
+            }
+        }
+        
+        // Extract module names from imports
+        const importedModules: string[] = [];
+        const importRegex = /import\s+\{\s*(\w+Module)\s*\}/g;
+        let match;
+        while ((match = importRegex.exec(content)) !== null) {
+            importedModules.push(match[1]);
+        }
+        
+        featureGroups.set(groupName, {
+            name: groupName,
+            layer,
+            modules: importedModules
+        });
+        
+        // Assign feature group and layer to modules
+        for (const mod of modules) {
+            if (importedModules.includes(mod.name)) {
+                mod.featureGroup = groupName;
+                mod.layer = layer;
+            }
+        }
+    }
+    
+    // Handle core modules not in any app.module.*
+    const coreModules = ['PrismaModule', 'ConfigModule', 'RequestLogModule'];
+    for (const mod of modules) {
+        if (coreModules.includes(mod.name)) {
+            mod.layer = 0;
+            mod.featureGroup = 'core';
+        }
+    }
+    
+    // Handle common modules
+    const commonModules = ['AuthModule', 'PessoaModule', 'OrgaoModule', 'UploadModule', 'ScheduleModule'];
+    for (const mod of modules) {
+        if (commonModules.includes(mod.name) && mod.featureGroup === 'unknown') {
+            mod.layer = 1;
+            mod.featureGroup = 'common';
+        }
+    }
+    
+    // Calculate layers for remaining modules based on dependencies
+    calculateLayersFromDeps(modules);
+    
+    return featureGroups;
+}
+
+function calculateLayersFromDeps(modules: ModuleNode[]): void {
+    // Iterate to propagate layer info through dependencies
+    let changed = true;
+    let iterations = 0;
+    const maxIterations = 10;
+    
+    while (changed && iterations < maxIterations) {
+        changed = false;
+        iterations++;
+        
+        for (const mod of modules) {
+            if (mod.layer === 0) continue; // Core stays at 0
+            
+            // Find all dependencies
+            const deps = [...mod.imports, ...mod.forwardRefs];
+            const depModules = deps
+                .map(d => modules.find(m => m.name === d))
+                .filter((m): m is ModuleNode => m !== undefined);
+            
+            if (depModules.length === 0) {
+                // No deps = foundation layer
+                if (mod.layer !== 1 && mod.featureGroup === 'unknown') {
+                    mod.layer = 1;
+                    changed = true;
+                }
+            } else {
+                // Layer = max(dep layers) + 1, but respect feature group if set
+                const maxDepLayer = Math.max(...depModules.map(d => d.layer), 0);
+                const targetLayer = Math.min(maxDepLayer + 1, 6);
+                
+                if (mod.featureGroup === 'unknown' && mod.layer < targetLayer) {
+                    mod.layer = targetLayer;
+                    changed = true;
+                }
+            }
+        }
+    }
 }
 
 function findCircularDependencies(modules: ModuleNode[]): string[][] {
@@ -123,152 +272,118 @@ function generateHorizontalDot(modules: ModuleNode[], cycles: string[][]): strin
         for (const mod of cycle) modulesInCycles.add(mod);
     }
 
-    // Define layers based on architectural patterns
-    const layerMap: Record<string, number> = {
-        // Layer 0: Core infrastructure
-        'PrismaModule': 0,
-        'ConfigModule': 0,
-        'ScheduleModule': 0,
-        
-        // Layer 1: Common/Shared services
-        'SmaeConfigModule': 1,
-        'CacheKVModule': 1,
-        'UploadModule': 1,
-        'CommonBaseModule': 1,
-        'DuckDBModule': 1,
-        'GraphvizModule': 1,
-        'SofApiModule': 1,
-        'SeiApiModule': 1,
-        'GeoApiModule': 1,
-        'TransfereGovApiModule': 1,
-        
-        // Layer 2: Base domain modules
-        'PessoaModule': 2,
-        'OrgaoModule': 2,
-        'PessoaPrivilegioModule': 2,
-        'EquipeRespModule': 2,
-        'GeoLocModule': 2,
-        'DotacaoModule': 2,
-        
-        // Layer 3: Feature modules
-        'WorkflowModule': 3,
-        'PdmModule': 3,
-        'ProjetoModule': 3,
-        'TransferenciaModule': 3,
-        'DemandaModule': 3,
-        'MetaModule': 3,
-        'VariavelModule': 3,
-        'IndicadorModule': 3,
-        
-        // Layer 4: Reports and aggregations
-        'ReportsModule': 4,
-        'TaskModule': 4,
-        'DashboardModule': 4,
-    };
-
-    // Calculate layer for each module based on dependencies
-    function getLayer(modName: string, visited = new Set<string>()): number {
-        if (visited.has(modName)) return 5; // Circular, put at end
-        if (layerMap[modName] !== undefined) return layerMap[modName];
-        
-        const mod = modules.find(m => m.name === modName);
-        if (!mod) return 5;
-        
-        visited.add(modName);
-        const deps = [...mod.imports, ...mod.forwardRefs];
-        if (deps.length === 0) return 1; // No deps = base layer
-        
-        const depLayers = deps.map(d => getLayer(d, new Set(visited)));
-        const maxDepLayer = Math.max(...depLayers, 0);
-        return maxDepLayer + 1;
-    }
-
-    // Build layers
+    // Group modules by layer
     const layers = new Map<number, ModuleNode[]>();
     for (const mod of modules) {
-        const layer = Math.min(getLayer(mod.name), 6);
-        if (!layers.has(layer)) layers.set(layer, []);
-        layers.get(layer)!.push(mod);
+        if (!layers.has(mod.layer)) layers.set(mod.layer, []);
+        layers.get(mod.layer)!.push(mod);
     }
+
+    // Color scheme for feature groups
+    const groupColors: Record<string, string> = {
+        'core': '#ffebee',           // red
+        'common': '#e3f2fd',         // blue
+        'geo': '#e8f5e9',            // green
+        'integrations': '#fff3e0',   // orange
+        'pdm': '#f3e5f5',            // purple
+        'projeto': '#e0f2f1',        // teal
+        'casa-civil': '#fce4ec',     // pink
+        'orcamento': '#fff8e1',      // amber
+        'reports': '#efebe9',        // brown
+        'tasks': '#e1f5fe',          // cyan
+        'supporting': '#fbe9e7',     // deep orange
+        'workflow': '#e8eaf6',       // indigo
+        'unknown': '#fafafa'         // gray
+    };
 
     const lines = [
         'digraph NestJSModulesHorizontal {',
-        '    rankdir=LR;  // Left to right layout',
+        '    rankdir=LR;',
         '    node [shape=box, style=filled, fontname="Arial", fontsize=9, margin="0.2,0.1"];',
-        '    edge [fontname="Arial", fontsize=8, arrowsize=0.7];',
-        '    splines=ortho;  // Orthogonal edges for cleaner look',
-        '    nodesep=0.4;',
-        '    ranksep=1.5;',
-        '    concentrate=true;',
+        '    edge [fontname="Arial", fontsize=8, arrowsize=0.7, color="#666666"];',
+        '    splines=line;',
+        '    nodesep=0.5;',
+        '    ranksep=2.5;',
+        '    overlap=false;',
+        '    pack=false;',
+        '    concentrate=false;',
         ''
     ];
 
-    // Color scheme
-    const areaColors: Record<string, string> = {
-        'auth': '#e3f2fd',
-        'casa-civil': '#fce4ec',
-        'pp': '#e8f5e9',
-        'pdm': '#fff3e0',
-        'mf': '#f3e5f5',
-        'reports': '#e0f2f1',
-        'task': '#fff8e1',
-        'common': '#efebe9',
-        'geo': '#e1f5fe',
-        'bloco-nota': '#fbe9e7',
-        'default': '#fafafa'
-    };
+    // Create subgraph clusters for each layer
+    const layerNames = [
+        'Core Infrastructure',
+        'Common/Foundation', 
+        'Supporting Services',
+        'Domain: PDM',
+        'Domain: Projeto',
+        'Domain: Casa Civil',
+        'Domain: Workflow',
+        'Domain: Orcamento',
+        'Cross-cutting: Reports',
+        'Cross-cutting: Tasks',
+        'Supporting Features',
+        'Analytics'
+    ];
 
-    // Create layers as clusters arranged horizontally
-    for (let i = 0; i <= 6; i++) {
-        const layerMods = layers.get(i) || [];
+    for (let layerNum = 0; layerNum <= 6; layerNum++) {
+        const layerMods = layers.get(layerNum) || [];
         if (layerMods.length === 0) continue;
 
-        lines.push(`    subgraph cluster_layer${i} {`);
-        lines.push(`        label="Layer ${i}";`);
+        lines.push(`    subgraph cluster_layer${layerNum} {`);
+        lines.push(`        label="${layerNames[layerNum] || `Layer ${layerNum}`}";`);
         lines.push('        style=filled;');
         lines.push('        fillcolor=gray95;');
-        lines.push('        color=gray70;');
-        lines.push('        penwidth=1;');
+        lines.push('        color=gray60;');
+        lines.push('        penwidth=2;');
         lines.push('        labelloc=t;');
         lines.push('        labeljust=center;');
+        lines.push('        fontsize=11;');
+        lines.push('        fontname="Arial Bold";');
         lines.push('');
 
-        // Group by area within layer
-        const areasInLayer = new Map<string, ModuleNode[]>();
+        // Group by feature group within layer
+        const groupsInLayer = new Map<string, ModuleNode[]>();
         for (const mod of layerMods) {
-            if (!areasInLayer.has(mod.area)) areasInLayer.set(mod.area, []);
-            areasInLayer.get(mod.area)!.push(mod);
+            if (!groupsInLayer.has(mod.featureGroup)) groupsInLayer.set(mod.featureGroup, []);
+            groupsInLayer.get(mod.featureGroup)!.push(mod);
         }
 
-        let areaIdx = 0;
-        for (const [area, mods] of areasInLayer) {
-            if (mods.length > 1) {
-                lines.push(`        // ${area}`);
+        // Create subgraphs for each feature group within the layer
+        let groupIdx = 0;
+        for (const [group, mods] of groupsInLayer) {
+            if (mods.length > 0) {
+                lines.push(`        // ${group}`);
                 for (const mod of mods) {
-                    const color = modulesInCycles.has(mod.name) ? '#ffccbc' : (areaColors[area] || areaColors.default);
-                    const shape = modulesInCycles.has(mod.name) ? 'box, peripheries=2' : 'box';
+                    const color = modulesInCycles.has(mod.name) ? '#ffccbc' : (groupColors[group] || groupColors.unknown);
                     const penwidth = modulesInCycles.has(mod.name) ? '2' : '1';
-                    lines.push(`        "${mod.name}" [fillcolor="${color}", shape=${shape}, penwidth=${penwidth}];`);
+                    const shape = mod.forwardRefs.length > 0 ? 'box, peripheries=2' : 'box';
+                    lines.push(`        "${mod.name}" [fillcolor="${color}", penwidth=${penwidth}, shape=${shape}];`);
                 }
                 lines.push('');
-            } else {
-                const mod = mods[0];
-                const color = modulesInCycles.has(mod.name) ? '#ffccbc' : (areaColors[area] || areaColors.default);
-                const shape = modulesInCycles.has(mod.name) ? 'box, peripheries=2' : 'box';
-                const penwidth = modulesInCycles.has(mod.name) ? '2' : '1';
-                lines.push(`        "${mod.name}" [fillcolor="${color}", shape=${shape}, penwidth=${penwidth}];`);
             }
-            areaIdx++;
+            groupIdx++;
         }
 
         lines.push('    }');
         lines.push('');
     }
 
-    // Add edges
+    // Add invisible edges to enforce layer ordering
+    const layerModules = [...layers.entries()].sort((a, b) => a[0] - b[0]);
+    for (let i = 0; i < layerModules.length - 1; i++) {
+        const currentLayer = layerModules[i][1];
+        const nextLayer = layerModules[i + 1][1];
+        if (currentLayer.length > 0 && nextLayer.length > 0) {
+            // Connect first node of current layer to first node of next layer
+            lines.push(`    "${currentLayer[0].name}" -> "${nextLayer[0].name}" [style=invis, weight=100];`);
+        }
+    }
+    lines.push('');
+
+    // Add regular edges
     const addedEdges = new Set<string>();
     for (const mod of modules) {
-        // Regular imports
         for (const imp of mod.imports) {
             if (modules.find(m => m.name === imp)) {
                 const edgeKey = `"${imp}" -> "${mod.name}"`;
@@ -293,11 +408,11 @@ function generateHorizontalDot(modules: ModuleNode[], cycles: string[][]): strin
 
     // Highlight cycle edges
     for (const cycle of cycles) {
-        if (cycle.length <= 10) {
+        if (cycle.length <= 15) { // Only show shorter cycles
             for (let i = 0; i < cycle.length - 1; i++) {
                 const from = cycle[i];
                 const to = cycle[i + 1];
-                lines.push(`    "${from}" -> "${to}" [color=darkred, penwidth=2.5, constraint=false];`);
+                lines.push(`    "${from}" -> "${to}" [color=red, penwidth=3, constraint=false];`);
             }
         }
     }
@@ -312,8 +427,24 @@ function main() {
     
     console.log(`📦 Found ${modules.length} modules`);
     
+    console.log('📚 Parsing app.module.* files for layer structure...');
+    const featureGroups = parseAppModuleLayers(modules);
+    console.log(`   Found ${featureGroups.size} feature groups`);
+    for (const [name, group] of featureGroups) {
+        console.log(`   - ${name}: Layer ${group.layer}, ${group.modules.length} modules`);
+    }
+    
     const forwardRefCount = modules.reduce((acc, m) => acc + m.forwardRefs.length, 0);
     console.log(`🔗 Found ${forwardRefCount} forwardRef dependencies`);
+    
+    console.log('\n📊 Layer distribution:');
+    const layerCounts = new Map<number, number>();
+    for (const mod of modules) {
+        layerCounts.set(mod.layer, (layerCounts.get(mod.layer) || 0) + 1);
+    }
+    for (const [layer, count] of [...layerCounts.entries()].sort((a, b) => a[0] - b[0])) {
+        console.log(`   Layer ${layer}: ${count} modules`);
+    }
     
     console.log('\n🔍 Looking for circular dependencies...');
     const cycles = findCircularDependencies(modules);
@@ -333,10 +464,9 @@ function main() {
     console.log('\n📊 Output files:');
     console.log('   - dist-graph/modules-horizontal.dot');
     console.log('\n💡 To generate PNG:');
-    console.log('   # Note: Horizontal layout works better with dot or neato');
     console.log('   dot -Tpng dist-graph/modules-horizontal.dot -o dist-graph/modules-horizontal.png');
-    console.log('   # Or for better spacing:');
-    console.log('   neato -Tpng -Goverlap=prism dist-graph/modules-horizontal.dot -o dist-graph/modules-horizontal.png');
+    console.log('   # For larger output:');
+    console.log('   dot -Tpng -Gsize="50,30!" -Gdpi=150 dist-graph/modules-horizontal.dot -o dist-graph/modules-horizontal.png');
 }
 
 main();
