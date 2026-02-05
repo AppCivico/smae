@@ -21,7 +21,7 @@ const props = defineProps({
     type: Object as () => ObjetoGenerico,
     required: false,
     default: () => null,
-    validate(value: ObjetoGenerico | null, allProps: Props) {
+    validator(value: ObjetoGenerico | null, allProps: Props) {
       return (value !== null && typeof value === 'object') || allProps.lista !== undefined;
     },
   },
@@ -29,7 +29,7 @@ const props = defineProps({
     type: Array as () => Array<ItemDeLista>,
     required: false,
     default: () => undefined,
-    validate(value: Array<ItemDeLista>, allProps: Props) {
+    validator(value: Array<ItemDeLista>, allProps: Props) {
       return (value !== undefined && Array.isArray(value)) || allProps.objeto !== undefined;
     },
   },
