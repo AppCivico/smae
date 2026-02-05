@@ -139,7 +139,7 @@ onUnmounted(() => {
         cor-bolinha="#F7C234"
         estilo="com-marcador"
       >
-        <strong>Endereço</strong>
+        Endereço
       </CardEnvelope.Titulo>
 
       <ListaLegendas
@@ -186,7 +186,7 @@ onUnmounted(() => {
         cor-bolinha="#F7C234"
         estilo="com-marcador"
       >
-        <strong>Dotação</strong>
+        Dotação
       </CardEnvelope.Titulo>
 
       <ListaLegendas
@@ -233,7 +233,7 @@ onUnmounted(() => {
         cor-bolinha="#F7C234"
         estilo="com-marcador"
       >
-        <strong>Demanda</strong>
+        Demanda
       </CardEnvelope.Titulo>
 
       <ListaLegendas
