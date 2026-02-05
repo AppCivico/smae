@@ -35,14 +35,14 @@ const valoresIniciais = computed(() => {
       ativo: emFoco.value.ativo ?? true,
       acoes: emFoco.value.acoes?.length > 0
         ? emFoco.value.acoes
-        : [{ nome: '', ativo: true }],
+        : [],
     };
   }
 
   return {
     nome: '',
     ativo: true,
-    acoes: [{ nome: '', ativo: true }],
+    acoes: [],
   };
 });
 
@@ -51,9 +51,11 @@ const {
   handleSubmit,
   isSubmitting,
   resetForm,
+  setFieldValue,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
+  keepValuesOnUnmount: true,
 });
 
 const formularioSujo = useIsFormDirty();
@@ -110,9 +112,10 @@ watch(valoresIniciais, (novosValores) => {
   >
     <div class="flex g2">
       <div class="f1">
-        <SmaeLabel for="nome">
-          Área
-        </SmaeLabel>
+        <SmaeLabel
+          name="nome"
+          :schema="schema"
+        />
         <Field
           id="nome"
           name="nome"
@@ -127,9 +130,11 @@ watch(valoresIniciais, (novosValores) => {
       </div>
 
       <div class="f1">
-        <SmaeLabel for="ativo">
-          Ativo
-        </SmaeLabel>
+        <SmaeLabel
+          name="ativo"
+          required
+          :schema="schema"
+        />
         <Field
           id="ativo"
           name="ativo"
@@ -166,7 +171,7 @@ watch(valoresIniciais, (novosValores) => {
 
           <div class="flex g2">
             <div class="f1">
-              <SmaeLabel :for="`acoes[${idx}].nome`">
+              <SmaeLabel :name="`acoes[${idx}].nome`">
                 Ação {{ idx + 1 }}
               </SmaeLabel>
               <Field
@@ -183,7 +188,7 @@ watch(valoresIniciais, (novosValores) => {
             </div>
 
             <div class="f1">
-              <SmaeLabel :for="`acoes[${idx}].ativo`">
+              <SmaeLabel :name="`acoes[${idx}].ativo`">
                 Ativa
               </SmaeLabel>
               <div class="flex g1">
@@ -201,25 +206,20 @@ watch(valoresIniciais, (novosValores) => {
                   </option>
                 </Field>
 
-                <div
-                  v-if="fields.length > 1"
-                  class="f0 flex center"
+                <button
+                  class="like-a__text"
+                  type="button"
+                  aria-label="Excluir"
+                  title="Excluir"
+                  @click="remove(idx)"
                 >
-                  <button
-                    class="like-a__text"
-                    type="button"
-                    aria-label="Excluir"
-                    title="Excluir"
-                    @click="remove(idx)"
+                  <svg
+                    width="20"
+                    height="20"
                   >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_remove" />
-                    </svg>
-                  </button>
-                </div>
+                    <use xlink:href="#i_remove" />
+                  </svg>
+                </button>
               </div>
               <ErrorMessage
                 :name="`acoes[${idx}].ativo`"

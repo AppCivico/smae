@@ -237,8 +237,7 @@ export const areaTematica = object({
           .label('Ativa')
           .required('Selecione se a ação está ativa'),
       }),
-    )
-    .min(1, 'Adicione pelo menos uma ação'),
+    ),
 });
 
 export const arquivo = (semEnvio) => object()
