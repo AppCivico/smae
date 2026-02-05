@@ -287,7 +287,7 @@ export const useAuthStore = defineStore('auth', {
 
     setPermissions() {
       const per: Record<string, Record<string, number>> = {};
-      if (this.user.privilegios) {
+      if (this.user?.privilegios) {
         this.user.privilegios.forEach((p: string) => {
           const c = p.split('.');
           if (c[1]) {
