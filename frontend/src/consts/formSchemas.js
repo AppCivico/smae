@@ -4734,6 +4734,10 @@ export const valoresLimitesFiltro = object({
       'A data de início não pode ser maior que a data de fim',
       (dataInicio, { resolve }) => {
         const dataFim = resolve(ref('data_fim_vigencia'));
+        if (dataFim && !dataInicio) {
+          return true;
+        }
+
         return !dataFim || dataInicio <= dataFim;
       },
     ),
