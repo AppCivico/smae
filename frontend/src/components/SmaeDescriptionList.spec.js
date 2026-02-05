@@ -4,6 +4,7 @@ import {
   expect,
   it,
 } from 'vitest';
+import { object, string, number } from 'yup';
 import SmaeDescriptionList from './SmaeDescriptionList.vue';
 
 describe('SmaeDescriptionList', () => {
@@ -230,6 +231,69 @@ describe('SmaeDescriptionList', () => {
       );
 
       expect(wrapper.find('[data-test="descricao-slot"]').text()).toContain('João');
+    });
+  });
+
+  describe('títulos via schema Yup', () => {
+    const schema = object({
+      nome: string().label('Nome completo'),
+      idade: number().label('Idade (anos)'),
+      cidade: string(),
+    });
+
+    it('usa label do schema como título com objeto', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João', idade: 30 },
+        schema,
+      });
+
+      const termos = wrapper.findAll('.description-list__term');
+      expect(termos[0].text()).toBe('Nome completo');
+      expect(termos[1].text()).toBe('Idade (anos)');
+    });
+
+    it('usa label do schema como título com lista', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'nome', valor: 'João' },
+          { chave: 'idade', valor: 30 },
+        ],
+        schema,
+      });
+
+      const termos = wrapper.findAll('.description-list__term');
+      expect(termos[0].text()).toBe('Nome completo');
+      expect(termos[1].text()).toBe('Idade (anos)');
+    });
+
+    it('título do item tem prioridade sobre schema', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'nome', titulo: 'Título manual', valor: 'João' },
+        ],
+        schema,
+      });
+
+      expect(wrapper.find('.description-list__term').text()).toBe('Título manual');
+    });
+
+    it('mapa de títulos tem prioridade sobre schema', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        mapaDeTitulos: { nome: 'Nome do mapa' },
+        schema,
+      });
+
+      expect(wrapper.find('.description-list__term').text()).toBe('Nome do mapa');
+    });
+
+    it('exibe chave quando campo não tem label no schema', () => {
+      const wrapper = montarComponente({
+        objeto: { cidade: 'São Paulo' },
+        schema,
+      });
+
+      expect(wrapper.find('.description-list__term').text()).toBe('cidade');
     });
   });
 

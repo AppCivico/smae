@@ -32,6 +32,35 @@ Componente para exibição de listas de descrição (`<dl>`) de forma padronizad
 />
 ```
 
+### Com schema Yup
+
+Os títulos podem ser obtidos automaticamente a partir dos `label` definidos no schema Yup, da mesma forma que o componente `SmaeLabel` faz.
+
+```vue
+<script setup>
+import { object, string, number } from 'yup';
+
+const schema = object({
+  nome: string().label('Nome completo'),
+  idade: number().label('Idade (anos)'),
+});
+</script>
+
+<template>
+  <SmaeDescriptionList
+    :objeto="{ nome: 'João', idade: 30 }"
+    :schema="schema"
+  />
+</template>
+```
+
+A ordem de prioridade para resolução de títulos é:
+
+1. `titulo` do item (quando usando `lista`)
+2. `mapaDeTitulos`
+3. `label` do schema Yup
+4. `chave` (fallback)
+
 ## Props
 
 | Prop | Tipo | Obrigatório | Descrição |
@@ -39,6 +68,7 @@ Componente para exibição de listas de descrição (`<dl>`) de forma padronizad
 | `objeto` | `Record<string, string \| number \| null \| undefined>` | Não* | Objeto simples para conversão automática em lista |
 | `lista` | `Array<ItemDeLista>` | Não* | Lista estruturada de itens |
 | `mapaDeTitulos` | `Record<string, string>` | Não | Mapa de chaves para títulos legíveis |
+| `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
 
 \* Pelo menos uma das props `objeto` ou `lista` deve ser fornecida.
 

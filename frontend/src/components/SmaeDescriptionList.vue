@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { AnyObjectSchema } from 'yup';
+
+import buscarDadosDoYup from './camposDeFormulario/helpers/buscarDadosDoYup';
 
 type ObjetoGenerico = Record<string, string | number | null | undefined>;
 
@@ -38,13 +41,27 @@ const props = defineProps({
     required: false,
     default: () => ({}),
   },
+  schema: {
+    type: Object as () => AnyObjectSchema,
+    required: false,
+    default: () => null,
+  },
 });
+
+function tituloDoSchema(chave: string): string | undefined {
+  return !props.schema
+    ? undefined
+    : buscarDadosDoYup(props.schema, chave)?.spec?.label || undefined;
+}
 
 const listaConvertida = computed(() => {
   if (Array.isArray(props.lista)) {
     return props.lista.map((item) => ({
       ...item,
-      titulo: item.titulo || props.mapaDeTitulos[item.chave] || undefined,
+      titulo: item.titulo
+        || props.mapaDeTitulos[item.chave]
+        || tituloDoSchema(item.chave)
+        || undefined,
     }));
   }
 
@@ -52,7 +69,9 @@ const listaConvertida = computed(() => {
     return Object.entries(props.objeto).map(([chave, valor]) => ({
       chave,
       valor,
-      titulo: props.mapaDeTitulos[chave] || undefined,
+      titulo: props.mapaDeTitulos[chave]
+        || tituloDoSchema(chave)
+        || undefined,
       atributosDoItem: undefined,
       metadados: undefined,
     }));
