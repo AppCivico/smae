@@ -35,7 +35,6 @@ export class CreateAreaTematicaDto {
 
     @IsOptional()
     @IsArray({ message: 'acoes precisa ser um array' })
-    @ArrayMinSize(1, { message: 'acoes deve ter pelo menos 1 item' })
     @ValidateNested({ each: true })
     @Type(() => CreateAreaTematicaAcaoDto)
     acoes?: CreateAreaTematicaAcaoDto[];
