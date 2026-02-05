@@ -1076,6 +1076,7 @@ export default [
             'CadastroDemandaConfig.listar',
           ],
           rotasParaMenuSecundário: [
+            'demandas.listar',
             'areasTematicas.listar',
             'valoresLimites.listar',
           ],
@@ -1181,6 +1182,45 @@ export default [
                   limitarÀsPermissões: 'CadastroDemandaConfig.editar',
                   rotaDeEscape: 'valoresLimites.listar',
                   rotasParaMigalhasDePão: ['valoresLimites.listar'],
+                },
+              },
+            ],
+          },
+          {
+            path: 'lista',
+            component: () => import('@/views/demandas/DemandasRaiz.vue'),
+            meta: {
+              título: 'Lista de Demandas',
+              rotaPrescindeDeChave: true,
+            },
+            children: [
+              {
+                name: 'demandas.listar',
+                path: '',
+                component: () => import('@/views/demandas/DemandasLista.vue'),
+                meta: {
+                  título: 'Lista de Demandas',
+                },
+              },
+              {
+                name: 'demandas.criar',
+                path: 'novo',
+                component: () => import('@/views/demandas/DemandasCriarEditar.vue'),
+                meta: {
+                  título: 'Nova Demanda',
+                  rotaDeEscape: 'demandas.listar',
+                  rotasParaMigalhasDePão: ['demandas', 'demandas.listar'],
+                },
+              },
+              {
+                name: 'demandas.editar',
+                path: ':demandaId',
+                component: () => import('@/views/demandas/DemandasCriarEditar.vue'),
+                props: tiparPropsDeRota,
+                meta: {
+                  título: 'Editar Demanda',
+                  rotaDeEscape: 'demandas.listar',
+                  rotasParaMigalhasDePão: ['demandas.listar'],
                 },
               },
             ],
