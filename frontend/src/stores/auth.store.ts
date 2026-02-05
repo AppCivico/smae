@@ -51,6 +51,13 @@ export const useAuthStore = defineStore('auth', {
         )) as AccessToken | ReducedAccessToken;
 
         if ('reduced_access_token' in token) {
+          this.token = null;
+          this.user = null;
+          this.permissions = null;
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('permissions');
+
           this.reducedToken = token.reduced_access_token;
           this.router.push('/nova-senha');
           return;
