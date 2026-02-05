@@ -191,18 +191,13 @@ export class AreaTematicaService {
 
                 if (!existing) throw new HttpException('Área temática não encontrada', 404);
 
-                // Check if any acao is in use
                 for (const acao of existing.acoes) {
-                    // TODO: uncomment when demanda_acao table exists
-                    // const emUso = await prismaTxn.demandaAcao.count({
-                    //     where: { acao_id: acao.id },
-                    // });
-                    // if (emUso > 0) {
-                    //     throw new HttpException(
-                    //         'Não é possível remover a área temática pois possui ações em uso',
-                    //         400
-                    //     );
-                    // }
+                    const emUso = await prismaTxn.demandaAcao.count({
+                        where: { acao_id: acao.id, removido_em: null },
+                    });
+                    if (emUso > 0) {
+                        throw new HttpException('Não é possível remover a área temática pois possui ações em uso', 400);
+                    }
                 }
 
                 // Soft delete all acoes
@@ -291,17 +286,12 @@ export class AreaTematicaService {
         // Handle missing acoes (in DB but not in payload)
         for (const [acaoId, acaoNome] of existingMap) {
             if (!payloadIds.has(acaoId)) {
-                // Check if in use
-                // TODO: uncomment when demanda_acao table exists
-                // const emUso = await prismaTxn.demandaAcao.count({
-                //     where: { acao_id: acaoId },
-                // });
-                // if (emUso > 0) {
-                //     throw new HttpException(
-                //         `Ação "${acaoNome}" está em uso e não pode ser removida`,
-                //         400
-                //     );
-                // }
+                const emUso = await prismaTxn.demandaAcao.count({
+                    where: { acao_id: acaoId, removido_em: null },
+                });
+                if (emUso > 0) {
+                    throw new HttpException(`Ação "${acaoNome}" está em uso e não pode ser removida`, 400);
+                }
 
                 // Soft delete
                 await prismaTxn.acao.update({
