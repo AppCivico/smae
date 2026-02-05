@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { GeoReferenciaTipo, ModuloSistema, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { DemandaFinalidade, DemandaStatus, GeoReferenciaTipo, ModuloSistema, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { GeoJSON } from 'geojson';
 
@@ -213,6 +213,52 @@ export class EtapaSearchResultDto {
     distancia_metros?: number;
 }
 
+export class DemandaSearchResultDto {
+    @ApiProperty()
+    id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
+
+    @ApiProperty()
+    nome_projeto: string;
+
+    @ApiProperty({ enum: DemandaStatus })
+    status: DemandaStatus;
+
+    @ApiProperty({ enum: DemandaFinalidade })
+    finalidade: DemandaFinalidade;
+
+    @ApiProperty()
+    valor: string;
+
+    @ApiProperty()
+    area_tematica_nome: string;
+
+    @ApiProperty()
+    orgao_sigla: string;
+
+    @ApiProperty()
+    unidade_responsavel: string;
+
+    @ApiProperty()
+    nome_responsavel: string;
+
+    @ApiProperty()
+    data_status_atual: string;
+
+    @ApiProperty({ type: () => [GeoInfoBaseDto] })
+    localizacoes: GeoInfoBaseDto[];
+
+    @ApiPropertyOptional({ description: 'Número de vínculos com distribuição de recursos' })
+    nro_vinculos?: number;
+
+    @ApiPropertyOptional({
+        description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)',
+    })
+    distancia_metros?: number;
+}
+
 export class PdmRotuloInfo {
     id: number;
     nome: string;
@@ -305,6 +351,9 @@ export class SearchEntitiesNearbyResponseDto {
 
     @ApiProperty({ type: [EtapaSearchResultDto] })
     etapas: EtapaSearchResultDto[];
+
+    @ApiProperty({ type: [DemandaSearchResultDto] })
+    demandas: DemandaSearchResultDto[];
 
     @ApiProperty({ type: [PdmRotuloInfo], description: 'Informações de rótulos para PDMs relevantes.' })
     pdm_info: PdmRotuloInfo[];
