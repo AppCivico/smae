@@ -3,16 +3,18 @@ import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
-import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 
 /**
  * Orcamento (Budget) modules aggregation
  * Consolidates budget-related modules across different domains:
  * - Dotacao (budget allocation)
+ * - DotacaoBusca (budget search)
  * - OrcamentoPlanejado (planned budget)
  * - OrcamentoRealizado (actual/realized budget)
- * - OrcamentoPrevisto (forecasted budget)
+ * - Orcamento reports (report-specific budget modules)
+ * 
+ * Note: OrcamentoPrevistoModule is in AppModuleProjeto (PP-specific)
  */
 @Module({
     imports: [
@@ -21,7 +23,6 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
         OrcamentoModule,
         OrcamentoPlanejadoModule,
         OrcamentoRealizadoModule,
-        OrcamentoPrevistoModule,
     ],
 })
 export class AppModuleOrcamento {}

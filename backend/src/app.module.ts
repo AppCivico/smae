@@ -14,51 +14,29 @@ import { AllExceptionsFilter } from './any-error.filter';
 import { AppController } from './app.controller';
 import { AppModuleCasaCivil } from './app.module.casa-civil';
 import { AppModuleCommon } from './app.module.common';
+import { AppModuleGeo } from './app.module.geo';
+import { AppModuleIntegrations } from './app.module.integrations';
 import { AppModuleOrcamento } from './app.module.orcamento';
 import { AppModulePdm } from './app.module.pdm';
 import { AppModuleProjeto } from './app.module.projeto';
+import { AppModuleReports } from './app.module.reports';
+import { AppModuleSupporting } from './app.module.supporting';
+import { AppModuleTasks } from './app.module.tasks';
 import { AppModuleWorkflow } from './app.module.workflow';
 import { AppService } from './app.service';
-import { AtualizacaoEmLoteModule } from './atualizacao-em-lote/atualizacao-em-lote.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
-import { AvisoEmailModule } from './aviso-email/aviso-email.module';
-import { BancadaModule } from './bancada/bancada.module';
-import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
-import { BuscaGlobalModule } from './busca-global/busca-global.module';
-import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/categoria-assunto-variavel.module';
+import { ContentInterceptor } from './content.interceptor';
 import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
-import { ContentInterceptor } from './content.interceptor';
-import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
-import { DashboardModule } from './dashboard/dashboard.module';
-import { EleicaoModule } from './eleicao/eleicao.module';
-import { GeoBuscaModule } from './geo-busca/geo-busca.module';
-import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
-import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
-import { MinhaContaModule } from './minha-conta/minha-conta.module';
-import { PartidoModule } from './partido/partido.module';
-import { PortfolioTagModule } from './pp/portfolio-tag/portfolio-tag.module';
-import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerramento.module';
-import { ProjetoTipoAditivoModule } from './tipo-aditivo/tipo-aditivo.module';
-import { TipoEncerramentoModule } from './projeto-tipo-encerramento/tipo-encerramento.module';
-import { ParlamentarModule } from './parlamentar/parlamentar.modules';
-import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
-import { PrismaErrorFilter } from './prisma-error.filter';
-import { PrismaModule } from './prisma/prisma.module';
 import { exceptionFactory } from './common/validation/validation-exception-factory';
-import { ReportsModule } from './reports/relatorios/reports.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaErrorFilter } from './prisma-error.filter';
+import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { RequestLogModule } from './request_log/request_log.module';
-import { RunReportModule } from './task/run_report/run-report.module';
-import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-basico.module';
-import { TaskModule } from './task/task.module';
-import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
-import { WikiLinkModule } from './wiki-link/wiki-link.module';
-import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
-import { UtilsService } from './reports/utils/utils.service';
 
 // Hacks pro JS
 /*
@@ -68,20 +46,9 @@ import { UtilsService } from './reports/utils/utils.service';
     return this.toString();
 };
 
-/**
- * Main application module
- * 
- * Module organization:
- * - AppModuleCommon: Base/common modules (Auth, Pessoa, Orgao, Upload, etc.)
- * - AppModulePdm: PDM (Plano de Metas) related modules
- * - AppModuleProjeto: Project management related modules
- * - AppModuleWorkflow: Workflow configuration and management modules
- * - AppModuleCasaCivil: Casa Civil related modules (Demanda, Transferencia, etc.)
- * - AppModuleOrcamento: Budget/financial modules
- */
 @Module({
     imports: [
-        // Core
+        // ========== Core Infrastructure ==========
         ConfigModule.forRoot(),
         PrismaModule,
         RequestLogModule,
@@ -90,47 +57,54 @@ import { UtilsService } from './reports/utils/utils.service';
             serveRoot: '/public',
         }),
 
-        // Feature module groups
+        // ========== Common/Foundation ==========
+        // Base services: Auth, Pessoa, Upload, Scheduling, etc.
         AppModuleCommon,
-        AppModulePdm,
-        AppModuleProjeto,
-        AppModuleWorkflow,
-        AppModuleCasaCivil,
-        AppModuleOrcamento,
-
-        // Reports & Dashboards
-        ReportsModule,
-        DashboardModule,
-        PainelEstrategicoModule,
-        PSMFDashboardModule,
-        RunReportModule,
-
-        // Cross-cutting concerns
-        TaskModule,
-        AvisoEmailModule,
-        BlocoNotasModule,
-        MinhaContaModule,
         CommonBaseModule,
         PessoaPrivilegioModule,
 
-        // Supporting modules
-        BancadaModule,
-        PartidoModule,
-        ParlamentarModule,
-        EleicaoModule,
-        CTPConfigModule,
-        TipoEncerramentoModule,
-        TermoEncerramentoModule,
-        CategoriaAssuntoVariavelModule,
-        SyncCadastroBasicoModule,
+        // ========== Geographic ==========
+        // Location services, geocoding, geographic search
+        AppModuleGeo,
+
+        // ========== External Integrations ==========
+        // SEI, SOF, TransfereGov, etc.
+        AppModuleIntegrations,
+
+        // ========== Domain: PDM (Plano de Metas) ==========
+        // Meta, Indicador, Variavel, Cronograma, Painel, etc.
+        AppModulePdm,
+
+        // ========== Domain: Projects (PP) ==========
+        // Projeto, Tarefa, Portfolio, Orcamento PP, etc.
+        AppModuleProjeto,
+
+        // ========== Domain: Workflow ==========
+        // Workflow configuration and execution
+        AppModuleWorkflow,
+
+        // ========== Domain: Casa Civil ==========
+        // Demanda, Transferencia, DistribuicaoRecurso, Vinculo
+        AppModuleCasaCivil,
+
+        // ========== Domain: Budget (non-PP) ==========
+        // Dotacao, OrcamentoPlanejado, OrcamentoRealizado
+        AppModuleOrcamento,
+
+        // ========== Cross-cutting: Reports ==========
+        // All report generation modules
+        AppModuleReports,
+
+        // ========== Cross-cutting: Background Tasks ==========
+        // Scheduled jobs, refresh tasks, email tasks
+        AppModuleTasks,
+
+        // ========== Supporting Features ==========
+        // Notifications, search, utilities, etc.
+        AppModuleSupporting,
+
+        // ========== Analytics ==========
         DuckDBModule,
-        TransfereGovApiModule,
-        GeoBuscaModule,
-        BuscaGlobalModule,
-        AtualizacaoEmLoteModule,
-        WikiLinkModule,
-        ClassificacaoModule,
-        PortfolioTagModule,
     ],
     controllers: [AppController],
     providers: [
@@ -178,7 +152,6 @@ import { UtilsService } from './reports/utils/utils.service';
                 exceptionFactory: exceptionFactory,
             }),
         },
-        UtilsService,
     ],
 })
 export class AppModule implements NestModule {
