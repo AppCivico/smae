@@ -256,7 +256,7 @@ export const useAuthStore = defineStore('auth', {
 
     async sincronizarModuloComRota(): Promise<void> {
       const moduloDaRota = this.route.meta?.entidadeMãe
-        && retornarModuloAPartirDeEntidadeMae(this.route.meta.entidadeMãe);
+        && retornarModuloAPartirDeEntidadeMae(this.route.meta?.entidadeMãe);
 
       if (!moduloDaRota || moduloDaRota === this.sistemaCorrente) {
         return;
@@ -343,7 +343,7 @@ export const useAuthStore = defineStore('auth', {
       }
 
       return (
-        retornarModuloAPartirDeEntidadeMae(this.route.meta.entidadeMãe)
+        retornarModuloAPartirDeEntidadeMae(this.route.meta?.entidadeMãe)
         || this.moduloDaRotaAnterior
         || this.sistemaEscolhido
       );
