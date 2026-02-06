@@ -1,12 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-    IsArray,
-    IsBoolean,
-    IsOptional,
-    IsString,
-    MaxLength,
-    ValidateIf
-} from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
@@ -17,11 +10,11 @@ export class CreateDemandaConfigDto {
     @Transform(DateTransform)
     data_inicio_vigencia: Date;
 
+    @ValidateIf((object, value) => value !== null)
     @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
-    @ValidateIf((object, value) => value !== null)
-    data_fim_vigencia?: Date;
+    data_fim_vigencia?: Date | null;
 
     @IsNumberStringCustom(13, 2)
     valor_minimo: string;
