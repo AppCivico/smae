@@ -10,6 +10,7 @@ type ItemDeLista = {
   chave: string;
   titulo?: string;
   valor: string | number | null | undefined;
+  larguraBase?: string;
   atributosDoItem?: Record<string, unknown>;
   metadados?: Record<string, unknown>;
 };
@@ -56,13 +57,26 @@ function tituloDoSchema(chave: string): string | undefined {
 
 const listaConvertida = computed(() => {
   if (Array.isArray(props.lista)) {
-    return props.lista.map((item) => ({
-      ...item,
-      titulo: item.titulo
-        || props.mapaDeTitulos[item.chave]
-        || tituloDoSchema(item.chave)
-        || undefined,
-    }));
+    return props.lista.map((item) => {
+      const atributos = { ...item.atributosDoItem };
+
+      if (item.larguraBase) {
+        const styleExistente = atributos.style || {};
+        atributos.style = {
+          ...(typeof styleExistente === 'object' ? styleExistente : {}),
+          flexBasis: item.larguraBase,
+        };
+      }
+
+      return {
+        ...item,
+        titulo: item.titulo
+          || props.mapaDeTitulos[item.chave]
+          || tituloDoSchema(item.chave)
+          || undefined,
+        atributosDoItem: atributos,
+      };
+    });
   }
 
   if (props.objeto !== null) {

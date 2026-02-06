@@ -385,4 +385,99 @@ describe('SmaeDescriptionList', () => {
       expect(wrapper.find('.description-list__description').text()).toBe('0');
     });
   });
+
+  describe('propriedade larguraBase', () => {
+    it('aplica flex-basis quando larguraBase é fornecida', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.attributes('style')).toContain('flex-basis: 20em');
+    });
+
+    it('aplica flex-basis com porcentagem', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'descricao',
+            valor: 'Texto longo',
+            larguraBase: '100%',
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.attributes('style')).toContain('flex-basis: 100%');
+    });
+
+    it('preserva atributosDoItem.style existente quando adiciona larguraBase', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+            atributosDoItem: {
+              style: { color: 'red', fontSize: '14px' },
+            },
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style).toContain('flex-basis: 20em');
+      expect(style).toContain('color: red');
+      expect(style).toContain('font-size: 14px');
+    });
+
+    it('não aplica flex-basis quando larguraBase não é fornecida', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style || '').not.toContain('flex-basis');
+    });
+
+    it('permite múltiplos itens com larguraBase diferentes', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'id',
+            valor: '123',
+            larguraBase: '5em',
+          },
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+          },
+          {
+            chave: 'descricao',
+            valor: 'Texto longo',
+            larguraBase: '100%',
+          },
+        ],
+      });
+
+      const items = wrapper.findAll('.description-list__item');
+      expect(items[0].attributes('style')).toContain('flex-basis: 5em');
+      expect(items[1].attributes('style')).toContain('flex-basis: 20em');
+      expect(items[2].attributes('style')).toContain('flex-basis: 100%');
+    });
+  });
 });

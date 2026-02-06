@@ -79,6 +79,7 @@ type ItemDeLista = {
   chave: string;                           // Identificador único do item
   titulo?: string;                         // Título exibido (opcional)
   valor: string | number | null | undefined; // Valor a ser exibido
+  larguraBase?: string;                    // Largura base do item (ex: '20em', '100%')
   atributosDoItem?: Record<string, unknown>; // Atributos HTML extras para o item
   metadados?: Record<string, unknown>;       // Dados extras para uso em slots
 };
@@ -138,7 +139,43 @@ Slot específico para a descrição de uma chave. Tem prioridade sobre o slot `d
 
 ## Controlando largura dos itens
 
-A largura dos itens pode ser controlada através da prop `atributosDoItem` usando as classes utilitárias `fbLARGURAem` disponíveis em `_base.less`:
+### Usando a propriedade `larguraBase` (recomendado)
+
+A largura dos itens pode ser controlada através da propriedade `larguraBase`, que aceita qualquer valor CSS válido para `flex-basis`:
+
+```vue
+<SmaeDescriptionList
+  :lista="[
+    {
+      chave: 'id',
+      titulo: 'ID',
+      valor: '12345',
+      larguraBase: '5em'
+    },
+    {
+      chave: 'nome',
+      titulo: 'Nome completo',
+      valor: 'João da Silva',
+      larguraBase: '20em'
+    },
+    {
+      chave: 'descricao',
+      titulo: 'Descrição',
+      valor: 'Uma descrição mais longa que precisa de mais espaço',
+      larguraBase: '100%'  // Ocupa largura total
+    },
+  ]"
+/>
+```
+
+**Valores comuns:**
+- `'20em'`, `'25em'`, `'50em'` - Larguras fixas em em
+- `'100%'` - Ocupa 100% da largura disponível
+- `'50%'` - Ocupa metade da largura
+
+### Usando classes CSS (alternativa)
+
+Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através de `atributosDoItem`:
 
 | Classe | Largura |
 |--------|---------|
@@ -149,8 +186,7 @@ A largura dos itens pode ser controlada através da prop `atributosDoItem` usand
 | `fb20em` | 20em |
 | `fb25em` | 25em |
 | `fb50em` | 50em |
-
-### Exemplo de uso com larguras personalizadas
+| `fb100` | 100% |
 
 ```vue
 <SmaeDescriptionList
@@ -162,20 +198,16 @@ A largura dos itens pode ser controlada através da prop `atributosDoItem` usand
       atributosDoItem: { class: 'fb5em' }
     },
     {
-      chave: 'nome',
-      titulo: 'Nome completo',
-      valor: 'João da Silva',
-      atributosDoItem: { class: 'fb20em' }
-    },
-    {
       chave: 'descricao',
       titulo: 'Descrição',
-      valor: 'Uma descrição mais longa que precisa de mais espaço',
-      atributosDoItem: { class: 'fb50em' }
+      valor: 'Texto longo',
+      atributosDoItem: { class: 'f1 fb100' }  // f1 = flex: 1, fb100 = flex-basis: 100%
     },
   ]"
 />
 ```
+
+**Nota:** A propriedade `larguraBase` é preferível por ser mais explícita e não depender de classes CSS globais.
 
 ## Estrutura HTML gerada
 
