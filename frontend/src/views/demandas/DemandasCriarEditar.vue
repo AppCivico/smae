@@ -28,7 +28,9 @@ const areasTematicasStore = useAreasTematicasStore();
 
 const { organs: listaOrgaos } = storeToRefs(organsStore);
 const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
-const { emFoco, erro } = storeToRefs(demandasStore);
+const {
+  emFoco, itemParaEdicao, geolocalizacaoPorToken, erro,
+} = storeToRefs(demandasStore);
 
 const props = defineProps({
   demandaId: {
@@ -46,6 +48,7 @@ const {
   setFieldValue,
 } = useForm({
   validationSchema: schema,
+  initialValues: itemParaEdicao.value,
 });
 
 const areaTematicaSelecionada = computed(() => listaAreasTematicas.value
@@ -115,7 +118,7 @@ onMounted(() => {
   ]).then();
 });
 
-watch(emFoco, (novosValores) => {
+watch(itemParaEdicao, (novosValores) => {
   resetForm({ values: novosValores });
 });
 
@@ -433,14 +436,12 @@ watch(() => values.area_tematica_id, () => {
           v-slot="{ value, handleChange, field }"
           name="localizacoes"
         >
-          -{{ value }}-
+          <pre class="debug">value: {{ value }}</pre>
           <MapaCampo
             :name="field.name"
-            @update:model-value="(ev) => {
-              console.log(ev);
-              handleChange(ev)
-            }"
-            @update:model="(ev) => console.log(ev)"
+            :model-value="value"
+            :geolocalização-por-token="geolocalizacaoPorToken"
+            @update:model="handleChange"
           />
         </Field>
       </div>

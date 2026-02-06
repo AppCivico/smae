@@ -132,5 +132,9 @@ export const useDemandasStore = defineStore('demandasStore', {
         descricao: arq.descricao ?? undefined,
       })) || [],
     }),
+
+    geolocalizacaoPorToken: ({ emFoco }) => (Array.isArray(emFoco?.geolocalizacao)
+      ? Object.groupBy(emFoco.geolocalizacao, (cur) => cur.token)
+      : {}),
   },
 });
