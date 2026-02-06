@@ -5,12 +5,14 @@ import { createRouter, createWebHistory } from 'vue-router';
 import $eventHub from '@/components/eventHub';
 import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
+// eslint-disable-next-line import/no-cycle
 import { useAuthStore } from '@/stores/auth.store';
 import { Home } from '@/views';
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import AuthLayout from '@/views/auth/AuthLayout.vue';
 import Panorama from '@/views/Panorama.vue';
 
+// eslint-disable-next-line import/no-cycle
 import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
@@ -20,6 +22,7 @@ import envios from './envios';
 import ferramentas from './ferramentas';
 import graficos from './graficos';
 import metas from './metas';
+// eslint-disable-next-line import/no-cycle
 import monitoramento from './monitoramento';
 import obras from './obras';
 import painelEstratégico from './painelEstrategico';
@@ -28,6 +31,7 @@ import parlamentares from './parlamentares';
 import planejamentoEMonitoramentoRoutes from './planejamentoEMonitoramento/index.routes';
 import projetos from './projetos';
 import oportunidades from './ps.oportunidades';
+import publico from './publico';
 import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
 import variaveis from './variaveis';
@@ -94,6 +98,7 @@ export const router = createRouter({
     oportunidades,
     panoramaTransferencias,
     variaveis,
+    publico,
 
     {
       path: '/lista-de-icones',
@@ -124,7 +129,7 @@ export const router = createRouter({
 
 router.beforeEach(async (to, from) => {
   const publicPages = ['/login', '/esqueci-minha-senha', '/nova-senha'];
-  const authRequired = !publicPages.includes(to.path);
+  const authRequired = !publicPages.includes(to.path) && !to.path.startsWith('/publico');
   const authStore = useAuthStore();
 
   if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO === 'true') {
@@ -140,8 +145,12 @@ router.beforeEach(async (to, from) => {
   if (to.path === '/nova-senha' && !authStore.reducedToken) {
     return '/login';
   }
+<<<<<<< HEAD
 
   return true;
+=======
+  return undefined;
+>>>>>>> dc93c881e (feat: Adicionar página pública de detalhes de demanda)
 });
 
 router.afterEach((to, from) => {
