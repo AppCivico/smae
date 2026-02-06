@@ -29,6 +29,7 @@ import { ProjetoModalidadeContratacaoModule } from './pp/_mdo/modalidade-contrat
 import { ContratoModule } from './pp/contrato/contrato.module';
 import { ContratoAditivoModule } from './pp/contrato-aditivo/contrato-aditivo.module';
 import { EmpreendimentoModule } from './pp/empreendimento/empreendimento.module';
+import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
 
 @Module({
     imports: [
@@ -62,6 +63,7 @@ import { EmpreendimentoModule } from './pp/empreendimento/empreendimento.module'
         ContratoModule,
         ContratoAditivoModule,
         EmpreendimentoModule,
+        PainelEstrategicoModule,
     ],
     controllers: [],
     providers: [],
