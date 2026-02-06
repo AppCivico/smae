@@ -730,7 +730,7 @@ const formularioSujo = useIsFormDirty();
             name="cep"
             class="inputtext light mb1"
             :disabled="!logradouroCoordenadas[0] || !logradouroCoordenadas[1]"
-            data-maska="#####-###'"
+            data-maska="#####-###"
           />
           <ErrorMessage
             class="error-msg mb1"
