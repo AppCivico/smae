@@ -29,6 +29,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TaskService } from '../../task/task.service';
 import { UploadService } from '../../upload/upload.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
+import { DemandasService } from '../demandas/demandas.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
@@ -92,6 +93,8 @@ export class ReportsService {
         @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
+        @Inject(forwardRef(() => DemandasService))
+        private readonly demandasService: DemandasService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}
 
@@ -407,6 +410,9 @@ export class ReportsService {
                 service = this.psMonitoramentoMensal;
                 break;
             case 'AtvPendentes':
+            case 'Demandas':
+                service = this.demandasService;
+                break;
                 service = this.casaCivilAtividadesPendentesService;
                 break;
             default:

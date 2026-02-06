@@ -3617,6 +3617,7 @@ enum FonteRelatorio {
     AtvPendentes
     PSMonitoramentoMensal
     PSIndicadores
+    Demandas
 }
 
 enum RelatorioVisibilidade {

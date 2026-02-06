@@ -17,11 +17,10 @@ import { TransferenciasModule } from '../transferencias/transferencias.module';
 import { PPObrasModule } from '../pp-obras/pp-obras.module';
 import { TribunalDeContasModule } from '../tribunal-de-contas/tribunal-de-contas.module';
 import { PsMonitoramentoMensalModule } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.module';
-import {
-    CasaCivilAtividadesPendentesModule
-} from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
+import { CasaCivilAtividadesPendentesModule } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
 import { PessoaModule } from '../../pessoa/pessoa.module';
 import { TaskModule } from '../../task/task.module';
+import { DemandasModule } from '../demandas/demandas.module';
 
 @Module({
     imports: [
@@ -42,10 +41,11 @@ import { TaskModule } from '../../task/task.module';
         forwardRef(() => PsMonitoramentoMensalModule),
         forwardRef(() => CasaCivilAtividadesPendentesModule),
         forwardRef(() => TaskModule),
+        forwardRef(() => DemandasModule),
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
-        })
+        }),
     ],
     controllers: [ReportsController],
     providers: [ReportsService],

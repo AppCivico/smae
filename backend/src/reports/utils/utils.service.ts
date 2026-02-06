@@ -6,6 +6,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { MetasGetPermissionSet } from '../../meta/meta.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from '../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
+import { CreateRelDemandasDto } from '../demandas/dto/create-demandas.dto';
 import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { PdmCreateOrcamentoExecutadoDto as CreateRelPdmOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
@@ -169,6 +170,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'AtvPendentes':
             theClass = CreateCasaCivilAtividadesPendentesFilterDto;
+            break;
+        case 'Demandas':
+            theClass = CreateRelDemandasDto;
             break;
         default:
             fonte satisfies never;

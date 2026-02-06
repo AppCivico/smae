@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CasaCivilAtividadesPendentesModule } from './reports/casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
+import { DemandasModule } from './reports/demandas/demandas.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
@@ -43,6 +44,7 @@ import { TribunalDeContasModule } from './reports/tribunal-de-contas/tribunal-de
         CasaCivilAtividadesPendentesModule,
         ProjetoOrcamentoModule,
         ReportProjetoPrevisaoCustoModule,
+        DemandasModule,
     ],
 })
 export class AppModuleReports {}

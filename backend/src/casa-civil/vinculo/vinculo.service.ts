@@ -107,6 +107,8 @@ export class VinculoService {
                     DemandaSituacao.Concluido,
                     prismaTx
                 );
+
+                // Aqui vamos também enviar um e-mail para o gestor municipal indicando que a Demanda registrada foi recebida através da emenda (estadual ou federal)
             }
 
             return row;
