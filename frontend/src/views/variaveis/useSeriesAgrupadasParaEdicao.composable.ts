@@ -61,10 +61,6 @@ export function useSeriesFilhasAgrupadasParaEdicao(
             });
           });
       });
-
-      Object.keys(seriesPorTipo).forEach((key) => {
-        seriesPorTipo[key].sort((a, b) => (a.variavel?.titulo || '').localeCompare(b.variavel?.titulo || ''));
-      });
     }
 
     return seriesPorTipo;
