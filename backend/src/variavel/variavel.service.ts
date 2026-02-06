@@ -2984,8 +2984,8 @@ export class VariavelService {
             where: { variavel_mae_id: variavelId, removido_em: null, tipo: 'Global' },
             orderBy: [
                 { supraregional: 'asc' }, // falso primeiro
-                { regiao: { codigo: { sort: 'asc', nulls: 'last' } } },
-                { titulo: 'asc' },
+                { regiao: { descricao: 'asc' } },
+                { codigo: 'asc' },
             ],
             select: {
                 id: true,

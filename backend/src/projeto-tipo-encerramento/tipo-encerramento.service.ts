@@ -2,7 +2,11 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTipoEncerramentoDto, FilterTipoEncerramentoDto, UpdateTipoEncerramentoDto } from './dto/tipo-encerramento.dto';
+import {
+    CreateTipoEncerramentoDto,
+    FilterTipoEncerramentoDto,
+    UpdateTipoEncerramentoDto,
+} from './dto/tipo-encerramento.dto';
 
 @Injectable()
 export class TipoEncerramentoService {
@@ -50,7 +54,7 @@ export class TipoEncerramentoService {
     async update(tipo: TipoProjeto, id: number, dto: UpdateTipoEncerramentoDto, user: PessoaFromJwt) {
         const self = await this.prisma.projetoTipoEncerramento.findFirst({
             where: { id: id, tipo: tipo, removido_em: null },
-            select: { id: true },
+            select: { id: true, habilitar_info_adicional: true },
         });
         if (!self) throw new HttpException('Tipo de encerramento não encontrado', 404);
 
@@ -65,6 +69,23 @@ export class TipoEncerramentoService {
             });
             if (similarExists > 0)
                 throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
+
+        if (self.habilitar_info_adicional && !dto.habilitar_info_adicional) {
+            // check if no termoEncaerramento
+            const count = await this.prisma.projetoTermoEncerramento.count({
+                where: {
+                    justificativa_id: id,
+                    removido_em: null,
+                    ultima_versao: true,
+                },
+            });
+            if (count > 0) {
+                throw new HttpException(
+                    'Não é possível desabilitar a informação adicional: existem termos de encerramento que a utilizam.',
+                    400
+                );
+            }
         }
 
         await this.prisma.projetoTipoEncerramento.update({
