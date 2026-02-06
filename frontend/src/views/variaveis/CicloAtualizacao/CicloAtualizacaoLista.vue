@@ -173,21 +173,9 @@ watch(() => route.query, (query) => {
           </LoadingComponent>
           <sup
             v-else
-            class="info tipinfo"
+            class="info"
           >
             {{ contagemDeVariaveisPorFase[tab.id] || 0 }}
-
-            <div>
-              <template v-if="!contagemDeVariaveisPorFase[tab.id]">
-                Não há variáveis em aberto na fase de <b>{{ tab.etiqueta }}</b>
-              </template>
-
-              <template v-else>
-                Há <b>{{ contagemDeVariaveisPorFase[tab.id] }}</b>
-                / {{ contagemDeVariaveis?.total }}
-                variáveis em aberto na fase de <b>{{ tab.etiqueta }}</b>
-              </template>
-            </div>
           </sup>
         </template>
 
