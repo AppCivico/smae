@@ -134,11 +134,60 @@ npx serve dist-graph
   - **Camada 3**: Módulos de features
   - **Camada 4+**: Relatórios e agregações
 
+## Validação de Módulos
+
+### Verificar Módulos Órfãos
+
+**Script:** `check-module-imports.ts`
+
+Verifica se todos os módulos `.module.ts` estão sendo importados em algum lugar da aplicação NestJS.
+
+**Como usar:**
+```bash
+# Via npm script (recomendado)
+npm run check:modules
+
+# Ou diretamente
+npx ts-node tools/check-module-imports.ts
+```
+
+**O que ele faz:**
+- ✅ Escaneia todos os arquivos `*.module.ts` no projeto
+- 🔍 Verifica se cada módulo é importado em `app.module.ts`, `app.module.*.ts` ou em outro módulo
+- ❌ Identifica módulos "órfãos" que não são importados em lugar nenhum
+- 📊 Gera relatório agrupado por diretório
+
+**Exemplo de saída:**
+```
+📋 MODULE IMPORT VALIDATION REPORT
+======================================================================
+
+📊 Summary:
+   Total modules found: 158
+   ✅ Imported modules: 156
+   ❌ Orphaned modules: 2
+
+🔍 Orphaned Modules (not imported anywhere):
+──────────────────────────────────────────────────────────────────────
+
+📁 ./src/dashboard/
+   ❌ DashboardModule
+      File: ./src/dashboard/dashboard.module.ts
+```
+
+**Ação recomendada:**
+1. Importar o módulo em um dos arquivos `app.module.*.ts`
+2. Ou remover o módulo se ele não for mais necessário
+3. Verificar se o módulo é importado dinamicamente (pode ser ignorado)
+
 ## Scripts Individuais
 
 Cada script pode ser executado diretamente:
 
 ```bash
+# Validação de módulos
+npm run check:modules
+
 # Gráfico completo
 npx ts-node tools/graph-modules-simple.ts
 

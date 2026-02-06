@@ -33,7 +33,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --forceExit",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --forceExit",
-    "test:e2e:ci": "jest --config ./test/jest-e2e.json --coverage --forceExit --ci --reporters=default --reporters=jest-junit"
+    "test:e2e:ci": "jest --config ./test/jest-e2e.json --coverage --forceExit --ci --reporters=default --reporters=jest-junit",
+    "check:modules": "ts-node tools/check-module-imports.ts"
   },
   "dependencies": {
     "@dagrejs/graphlib": "^2.2.4",

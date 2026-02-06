@@ -16,6 +16,7 @@ import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerrame
 import { TipoEncerramentoModule } from './projeto-tipo-encerramento/tipo-encerramento.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 /**
  * Supporting modules aggregation
@@ -47,6 +48,7 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
         WikiLinkModule,
         ClassificacaoModule,
         PortfolioTagModule,
+        DashboardModule
     ],
 })
 export class AppModuleSupporting {}

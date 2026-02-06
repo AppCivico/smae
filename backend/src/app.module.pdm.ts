@@ -14,6 +14,7 @@ import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
 import { MetaModule } from './meta/meta.module';
 import { MonitMetasModule as MfMetasModule } from './mf/metas/metas.module';
 import { MfModule } from './mf/mf.module';
+import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 import { PainelModule } from './painel/painel.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { PdmModule } from './pdm/pdm.module';
@@ -51,6 +52,7 @@ import { VariavelModule } from './variavel/variavel.module';
         MonitoramentoMensalModule,
         VariavelCategoricaModule,
         EquipeRespModule,
+        PSMFDashboardModule,
     ],
     controllers: [],
     providers: [],
