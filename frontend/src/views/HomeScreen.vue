@@ -1,121 +1,21 @@
 <script setup lang="ts">
-import type { MinhaContaDto } from '@back/minha-conta/models/minha-conta.dto.ts';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
-import type { ModuloSistema, ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
+import type { ModulosDoSistema } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
-import requestS from '@/helpers/requestS';
-import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { useMacrotemasStore } from '@/stores/macrotemas.store';
-import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
-import { useMetasStore } from '@/stores/metas.store';
-import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { useProcessosStore } from '@/stores/processos.store';
-import { useRegionsStore } from '@/stores/regions.store';
-import { useTarefasStore } from '@/stores/tarefas.store';
-import { useUsersStore } from '@/stores/users.store';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const authStore = useAuthStore();
-const router = useRouter();
-
-const emEspera = ref(false);
-const erro = ref(null);
-const sessao = ref(null);
 
 const {
-  dadosDoSistemaEscolhido,
-  sistemaEscolhido,
-  rotaEhPermitida,
+  user: sessao,
+  modulosAcessiveis,
+  modulosDisponiveis,
+  chamadasPendentes,
+  erros,
 } = storeToRefs(authStore);
 
-const modulosAcessiveis = ref<ModuloSistema[]>([]);
-const modulosDisponiveis = ref<ModuloSistema[]>([]);
-
-// PRA-FAZER: mover para o gerenciador de estado `auth.store`
-async function escolher(opção: keyof ModulosDoSistema) {
-  emEspera.value = true;
-  erro.value = null;
-  sistemaEscolhido.value = opção;
-
-  authStore.getDados(null, { headers: { 'smae-sistemas': `SMAE,${opção}` } })
-    .then(() => {
-      // PRA-FAZER: persistir o auth.store no navegador
-      localStorage.setItem('sistemaEscolhido', opção);
-
-      if (dadosDoSistemaEscolhido.value?.rotaInicial) {
-        const listaDeRotasPossiveis = !Array.isArray(dadosDoSistemaEscolhido.value?.rotaInicial)
-          ? [dadosDoSistemaEscolhido.value?.rotaInicial]
-          : dadosDoSistemaEscolhido.value?.rotaInicial;
-
-        const rotaFiltrada = listaDeRotasPossiveis
-          .find((rota: RotaInicial) => rotaEhPermitida.value(rota.name));
-
-        if (rotaFiltrada) {
-          router.push(rotaFiltrada);
-        } else {
-          router.push({ name: 'cadastrosBasicos' });
-        }
-      }
-
-      useRegionsStore().$reset();
-      useUsersStore().$reset();
-      useTarefasStore().$reset();
-      useOrcamentosStore().$reset();
-      useMetasStore().$reset();
-      usePlanosSetoriaisStore().$reset();
-      useProcessosStore().$reset();
-      useAcompanhamentosStore().$reset();
-      useMacrotemasStore().$reset();
-      useMacrotemasPsStore().$reset();
-    })
-    .catch((err) => {
-      sistemaEscolhido.value = 'SMAE';
-      erro.value = err;
-    })
-    .finally(() => {
-      emEspera.value = false;
-    });
-}
-
-async function iniciar() {
-  emEspera.value = true;
-  erro.value = null;
-
-  requestS.get(`${baseUrl}/minha-conta`, null, { headers: { 'smae-sistemas': Object.keys(módulos).join(',') } })
-    .then((resposta) => {
-      const {
-        sessao: { sistemas, sistemas_disponiveis: sistemasDisponiveis },
-      } = resposta as MinhaContaDto;
-
-      sessao.value = resposta.sessao;
-
-      if (Array.isArray(sistemas)) {
-        modulosAcessiveis.value.splice(0, modulosAcessiveis.value.length);
-
-        sistemas
-          .forEach((sistema: ModuloSistema) => {
-            if (sistema !== 'SMAE') {
-              modulosAcessiveis.value.push(sistema);
-            }
-          });
-        modulosDisponiveis.value.splice(0, modulosDisponiveis.value.length, ...sistemasDisponiveis);
-      }
-    })
-    .catch((err) => {
-      erro.value = err;
-    })
-    .finally(() => {
-      emEspera.value = false;
-    });
-}
-
-iniciar();
+authStore.carregarModulos();
 </script>
 <template>
   <div
@@ -168,7 +68,7 @@ iniciar();
         flex g05 center"
           :disabled="!módulos[sistema as keyof ModulosDoSistema]?.rotaInicial
             || !modulosAcessiveis.includes(sistema)"
-          @click="escolher(sistema)"
+          @click="authStore.escolherModulo(sistema)"
         >
           <img
             v-if="módulos[sistema as keyof ModulosDoSistema]?.ícone"
@@ -187,14 +87,14 @@ iniciar();
     </ul>
 
     <ErrorComponent
-      v-if="erro"
+      v-if="erros.listarModulos || erros.escolherModulo"
       class="fb100"
     >
-      {{ erro }}
+      {{ erros.listarModulos || erros.escolherModulo }}
     </ErrorComponent>
 
     <LoadingComponent
-      v-if="emEspera"
+      v-if="chamadasPendentes.listarModulos || chamadasPendentes.escolherModulo"
       class="fb100"
     />
   </div>
