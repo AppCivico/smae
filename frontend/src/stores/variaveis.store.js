@@ -179,7 +179,7 @@ export const useVariaveisStore = defineStore('Variaveis', {
     async updateValores(params) {
       let segmento;
 
-      switch (this.route.meta.entidadeMãe) {
+      switch (this.route.meta?.entidadeMãe) {
         case 'pdm':
           segmento = 'indicador-variavel-serie';
           break;
