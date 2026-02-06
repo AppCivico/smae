@@ -61,11 +61,21 @@ const listaConvertida = computed(() => {
       const atributos = { ...item.atributosDoItem };
 
       if (item.larguraBase) {
-        const styleExistente = atributos.style || {};
-        atributos.style = {
-          ...(typeof styleExistente === 'object' ? styleExistente : {}),
-          flexBasis: item.larguraBase,
-        };
+        const styleExistente = atributos.style;
+
+        if (typeof styleExistente === 'string') {
+          const separator = styleExistente.trim().endsWith(';') ? ' ' : '; ';
+          atributos.style = `${styleExistente}${separator}flex-basis: ${item.larguraBase};`;
+        } else if (typeof styleExistente === 'object' && styleExistente !== null) {
+          atributos.style = {
+            ...styleExistente,
+            flexBasis: item.larguraBase,
+          };
+        } else {
+          atributos.style = {
+            flexBasis: item.larguraBase,
+          };
+        }
       }
 
       return {

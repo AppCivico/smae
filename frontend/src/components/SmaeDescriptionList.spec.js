@@ -479,5 +479,67 @@ describe('SmaeDescriptionList', () => {
       expect(items[1].attributes('style')).toContain('flex-basis: 20em');
       expect(items[2].attributes('style')).toContain('flex-basis: 100%');
     });
+
+    it('lida com atributosDoItem.style como string', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+            atributosDoItem: {
+              style: 'color: red;',
+            },
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style).toContain('color: red');
+      expect(style).toContain('flex-basis: 20em');
+    });
+
+    it('lida com atributosDoItem.style como string sem ponto e vírgula final', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+            atributosDoItem: {
+              style: 'color: red',
+            },
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style).toContain('color: red');
+      expect(style).toContain('flex-basis: 20em');
+      expect(style).toMatch(/red;\s*flex-basis/);
+    });
+
+    it('lida com atributosDoItem.style como string com múltiplas propriedades', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+            atributosDoItem: {
+              style: 'color: red; font-size: 14px;',
+            },
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style).toContain('color: red');
+      expect(style).toContain('font-size: 14px');
+      expect(style).toContain('flex-basis: 20em');
+    });
   });
 });
