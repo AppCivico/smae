@@ -4726,7 +4726,7 @@ export const valoresLimites = object({
 
 export const valoresLimitesFiltro = object({
   data_inicio_vigencia: date()
-    .label('Início da Vigência')
+    .label('Início da Vigência a partir de')
     .nullableOuVazio()
     .test(
       'verificar-data-inicio',
@@ -4741,7 +4741,7 @@ export const valoresLimitesFiltro = object({
       },
     ),
   data_fim_vigencia: date()
-    .label('Fim da Vigência')
+    .label('Fim da Vigência até')
     .nullableOuVazio()
     .test(
       'verificar-data-fim',
