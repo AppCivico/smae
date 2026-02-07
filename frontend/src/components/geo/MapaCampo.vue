@@ -653,10 +653,10 @@ const formularioSujo = useIsFormDirty();
         buscando dados
       </LoadingComponent>
 
-      <Transition
-        name="expand"
-      >
-        <div class="mb1">
+      <div class="mb1">
+        <Transition
+          name="expand"
+        >
           <MapaExibir
             v-if="sugestãoSelecionada || (logradouroCoordenadas[0] && logradouroCoordenadas[1])"
             v-model="logradouroCoordenadas"
@@ -673,49 +673,48 @@ const formularioSujo = useIsFormDirty();
             :opcoes-do-marcador="{ draggable: true }"
             @marcador-foi-movido="buscarPorCoordenadas"
           />
+        </Transition>
+        <dl
+          class="flex flexwrap g2 mb1"
+          :class="{
+            loading: buscandoEndereços
+          }"
+        >
+          <div class="f1 mb1">
+            <dt class="t12 uc w700 mb05 tamarelo">
+              Latitude
+            </dt>
+            <dd class="t13">
+              {{ logradouroCoordenadas[0] }}
+            </dd>
+          </div>
 
-          <dl
-            class="flex flexwrap g2 mb1"
-            :class="{
-              loading: buscandoEndereços
-            }"
-          >
-            <div class="f1 mb1">
+          <div class="f1 mb1">
+            <dt class="t12 uc w700 mb05 tamarelo">
+              Longitude
+            </dt>
+            <dd class="t13">
+              {{ logradouroCoordenadas[1] }}
+            </dd>
+          </div>
+
+          <template v-if="Array.isArray(sugestãoSelecionada?.camadas)">
+            <div
+              v-for="camada in
+                sugestãoSelecionada.camadas"
+              :key="camada.id"
+              class="f2 mb1"
+            >
               <dt class="t12 uc w700 mb05 tamarelo">
-                Latitude
+                {{ camada.descricao }}
               </dt>
               <dd class="t13">
-                {{ logradouroCoordenadas[0] }}
+                {{ camada.titulo }}
               </dd>
             </div>
-
-            <div class="f1 mb1">
-              <dt class="t12 uc w700 mb05 tamarelo">
-                Longitude
-              </dt>
-              <dd class="t13">
-                {{ logradouroCoordenadas[1] }}
-              </dd>
-            </div>
-
-            <template v-if="Array.isArray(sugestãoSelecionada?.camadas)">
-              <div
-                v-for="camada in
-                  sugestãoSelecionada.camadas"
-                :key="camada.id"
-                class="f2 mb1"
-              >
-                <dt class="t12 uc w700 mb05 tamarelo">
-                  {{ camada.descricao }}
-                </dt>
-                <dd class="t13">
-                  {{ camada.titulo }}
-                </dd>
-              </div>
-            </template>
-          </dl>
-        </div>
-      </Transition>
+          </template>
+        </dl>
+      </div>
 
       <div class="flex g2 flexwrap">
         <div class="f2 fb100">
