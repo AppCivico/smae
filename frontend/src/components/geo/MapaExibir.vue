@@ -6,8 +6,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
 import { debounce, merge } from 'lodash';
-import { storeToRefs } from 'pinia';
 import {
+  computed,
   defineEmits,
   defineOptions,
   defineProps,
@@ -38,15 +38,13 @@ defineOptions({ inheritAttrs: false });
 
 const RegionsStore = useRegionsStore();
 
-const { camadas } = storeToRefs(RegionsStore);
-
 let marcadorNoMapa = null;
-const polígonosNoMapa = [];
+const poligonosNoMapa = [];
 const geoJsonsNoMapa = [];
 
 const grupoDeElementosNoMapa = () => L.featureGroup(
   []
-    .concat(polígonosNoMapa)
+    .concat(poligonosNoMapa)
     .concat(geoJsonsNoMapa),
 );
 
@@ -92,7 +90,7 @@ const props = defineProps({
     default: null,
   },
   // opções para o marcador, se for mais fácil mandar separado
-  opçõesDoMarcador: {
+  opcoesDoMarcador: {
     type: Object,
     default: null,
   },
@@ -102,22 +100,25 @@ const props = defineProps({
     default: () => ({
     }),
   },
-  // disparam busca na API
+  // dispara busca na API apenas para as camadas que não tem as propriedades
+  // `geom_geojson` e `config` preenchidas, para evitar buscas desnecessárias,
+  // caso a camada já tenha sido buscada antes ou as propriedades tenham sido
+  //  preenchidas manualmente
   camadas: {
     type: Array,
     default: () => [],
   },
   // puros! Não disparam busca na API
-  polígonos: {
+  poligonos: {
     type: Array,
     default: () => [],
   },
   // opções para os polígonos, se for mais fácil mandar separado
-  opçõesDoPolígono: {
+  opcoesDoPoligono: {
     type: Object,
     default: null,
   },
-  permitirAdição: {
+  permitirAdicao: {
     type: Boolean,
     default: false,
   },
@@ -136,7 +137,7 @@ const props = defineProps({
     default: 13,
   },
   // opções para o mapa
-  opçõesDoMapa: {
+  opcoesDoMapa: {
     type: Object,
     default: null,
   },
@@ -152,6 +153,14 @@ const emits = defineEmits([
 ]);
 
 const slots = useSlots();
+
+const camadasPorId = computed(() => props.camadas.reduce((acc, cur) => {
+  acc[cur.id] = cur.config && cur.geom_geojson
+    ? cur
+    : RegionsStore.camadas?.[cur.id];
+
+  return acc;
+}, {}));
 
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
@@ -238,11 +247,11 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
 function criarMarcadores(marcadores = []) {
   marcadores.forEach((marcador, i) => {
     if (marcador.coordenadas || Array.isArray(marcador)) {
-      const opções = { ...props.opçõesDoMarcador, ...marcador.opções };
+      const opções = { ...props.opcoesDoMarcador, ...marcador.opções };
 
       marcadorNoMapa = marcador.coordenadas
         ? L.marker(marcador?.coordenadas, opções)
-        : L.marker(marcador, props.opçõesDoMarcador);
+        : L.marker(marcador, props.opcoesDoMarcador);
 
       atribuirPainelFlutuante(marcadorNoMapa, marcador);
 
@@ -360,7 +369,7 @@ function criarPolígono(dadosDoPolígono) {
   config = {
     config,
     // mapear propriedade para manter compatibilidade com o backend
-    ...props.opçõesDoPolígono,
+    ...props.opcoesDoPoligono,
     ...dadosDoPolígono.config,
   };
 
@@ -371,24 +380,24 @@ function criarPolígono(dadosDoPolígono) {
 
   atribuirPainelFlutuante(polígono, dadosDoPolígono);
 
-  polígonosNoMapa.push(polígono);
+  poligonosNoMapa.push(polígono);
 }
 
-function chamarDesenhoDePolígonosNovos(polígonos) {
-  const idsNovos = polígonos
+function chamarDesenhoDePolígonosNovos(poligonos) {
+  const idsNovos = poligonos
     .reduce((acc, cur) => { if (cur.id) { acc[cur.id] = true; } return acc; }, {});
 
-  for (let i = polígonosNoMapa.length - 1; i >= 0; i -= 1) {
-    if (polígonosNoMapa[i].id && !idsNovos[polígonosNoMapa[i].id]) {
-      polígonosNoMapa[i].remove();
-      polígonosNoMapa.splice(i, 1);
+  for (let i = poligonosNoMapa.length - 1; i >= 0; i -= 1) {
+    if (poligonosNoMapa[i].id && !idsNovos[poligonosNoMapa[i].id]) {
+      poligonosNoMapa[i].remove();
+      poligonosNoMapa.splice(i, 1);
     } else {
-      idsNovos[polígonosNoMapa[i].id] = undefined;
+      idsNovos[poligonosNoMapa[i].id] = undefined;
     }
   }
 
-  for (let i = 0; i < polígonos.length; i += 1) {
-    const polígono = polígonos[i];
+  for (let i = 0; i < poligonos.length; i += 1) {
+    const polígono = poligonos[i];
     if (!polígono.id || idsNovos[polígono.id]) {
       criarPolígono(polígono);
     }
@@ -396,21 +405,21 @@ function chamarDesenhoDePolígonosNovos(polígonos) {
 }
 
 async function prepararCamadas(camadasFornecidas = props.camadas) {
-  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!camadas?.value?.[cur.id]
+  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!camadasPorId.value?.[cur.id]
     ? acc.concat([cur.id])
     : acc), []);
 
   if (camadasABuscar.length) {
     await RegionsStore.buscarCamadas({
-      camada_ids: camadasFornecidas.map((x) => x.id),
+      camada_ids: camadasABuscar,
     });
   }
 
   const camadasSelecionadas = camadasFornecidas
-    .reduce((acc, cur) => (camadas?.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
+    .reduce((acc, cur) => (camadasPorId.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
       ? acc.concat({
-        ...camadas?.value?.[cur.id],
-        config: merge({}, camadas?.value?.[cur.id].config, cur.config),
+        ...camadasPorId.value?.[cur.id],
+        config: merge({}, camadasPorId.value?.[cur.id].config, cur.config),
       })
       : acc), []);
   chamarDesenhoDePolígonosNovos(camadasSelecionadas);
@@ -430,7 +439,7 @@ async function iniciarMapa(element) {
   mapa = L
     .map(element, {
       scrollWheelZoom: false,
-      ...props.opçõesDoMapa,
+      ...props.opcoesDoMapa,
     })
     .setView([Number(props.latitude), Number(props.longitude)], Number(props.zoom));
 
@@ -448,7 +457,7 @@ async function iniciarMapa(element) {
     shadowSize: [48, 48],
   });
 
-  if (!props.opçõesDoMapa?.scrollWheelZoom) {
+  if (!props.opcoesDoMapa?.scrollWheelZoom) {
     mapa.on('focus', () => { mapa.scrollWheelZoom.enable(); });
     mapa.on('blur', () => { mapa.scrollWheelZoom.disable(); });
   }
@@ -473,8 +482,8 @@ async function iniciarMapa(element) {
     }
   }
 
-  for (let i = 0; i < props.polígonos.length; i += 1) {
-    criarPolígono(props.polígonos[i]);
+  for (let i = 0; i < props.poligonos.length; i += 1) {
+    criarPolígono(props.poligonos[i]);
   }
 
   if (props.camadas.length) {
@@ -548,7 +557,7 @@ watch(() => props.marcador, (valorNovo) => {
   }
 });
 
-watch(() => props.polígonos, (valorNovo) => {
+watch(() => props.poligonos, (valorNovo) => {
   if (mapa) {
     chamarDesenhoDePolígonosNovos(valorNovo);
   }
