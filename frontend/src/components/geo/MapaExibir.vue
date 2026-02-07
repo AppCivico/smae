@@ -6,8 +6,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
 import { debounce, merge } from 'lodash';
-import { storeToRefs } from 'pinia';
 import {
+  computed,
   defineEmits,
   defineOptions,
   defineProps,
@@ -37,8 +37,6 @@ function svgParaDataUrl(svgString) {
 defineOptions({ inheritAttrs: false });
 
 const RegionsStore = useRegionsStore();
-
-const { camadas: dadosDasCamadas } = storeToRefs(RegionsStore);
 
 let marcadorNoMapa = null;
 const poligonosNoMapa = [];
@@ -102,7 +100,10 @@ const props = defineProps({
     default: () => ({
     }),
   },
-  // disparam busca na API
+  // dispara busca na API apenas para as camadas que não tem as propriedades
+  // `geom_geojson` e `config` preenchidas, para evitar buscas desnecessárias,
+  // caso a camada já tenha sido buscada antes ou as propriedades tenham sido
+  //  preenchidas manualmente
   camadas: {
     type: Array,
     default: () => [],
@@ -152,6 +153,14 @@ const emits = defineEmits([
 ]);
 
 const slots = useSlots();
+
+const camadasPorId = computed(() => props.camadas.reduce((acc, cur) => {
+  acc[cur.id] = cur.config && cur.geom_geojson
+    ? cur
+    : RegionsStore.camadas?.[cur.id];
+
+  return acc;
+}, {}));
 
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
@@ -396,21 +405,21 @@ function chamarDesenhoDePolígonosNovos(poligonos) {
 }
 
 async function prepararCamadas(camadasFornecidas = props.camadas) {
-  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!dadosDasCamadas.value?.[cur.id]
+  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!camadasPorId.value?.[cur.id]
     ? acc.concat([cur.id])
     : acc), []);
 
   if (camadasABuscar.length) {
     await RegionsStore.buscarCamadas({
-      camada_ids: camadasFornecidas.map((x) => x.id),
+      camada_ids: camadasABuscar,
     });
   }
 
   const camadasSelecionadas = camadasFornecidas
-    .reduce((acc, cur) => (dadosDasCamadas.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
+    .reduce((acc, cur) => (camadasPorId.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
       ? acc.concat({
-        ...dadosDasCamadas.value?.[cur.id],
-        config: merge({}, dadosDasCamadas.value?.[cur.id].config, cur.config),
+        ...camadasPorId.value?.[cur.id],
+        config: merge({}, camadasPorId.value?.[cur.id].config, cur.config),
       })
       : acc), []);
   chamarDesenhoDePolígonosNovos(camadasSelecionadas);
