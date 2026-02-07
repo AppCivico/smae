@@ -97,18 +97,7 @@ export class VinculoService {
             // Quando o vínculo for em uma demanda, há mudança no status da demanda.
             if ((dto as CreateVinculoDto).demanda_id) {
                 const demandaId = (dto as CreateVinculoDto).demanda_id!;
-                const demanda = await this.demandaService.findOne(demandaId, user);
-                await this.demandaService.changeStatus(
-                    demandaId,
-                    user,
-                    demanda.status,
-                    DemandaStatus.Encerrado,
-                    'Demanda vinculada a uma distribuição de recurso',
-                    DemandaSituacao.Concluido,
-                    prismaTx
-                );
-
-                // Aqui vamos também enviar um e-mail para o gestor municipal indicando que a Demanda registrada foi recebida através da emenda (estadual ou federal)
+                await this.processaVinculoPorDemanda(prismaTx, demandaId, user, row.id);
             }
 
             return row;
@@ -731,5 +720,97 @@ export class VinculoService {
         const recipientes = [...new Set([...gestoresCasaCivil].map((item) => item.email))];
 
         return recipientes;
+    }
+
+    /*
+     * Processa as regras de negócio relacionadas a um vínculo em uma demanda, como mudança de status da demanda e envio de email para o gestor municipal.
+     * TODO?: Envio de e-mail para parlamentares relevantes.
+     */
+    private async processaVinculoPorDemanda(
+        prismaTx: Prisma.TransactionClient,
+        demandaId: number,
+        user: PessoaFromJwt,
+        vinculoId: number
+    ): Promise<void> {
+        const demanda = await this.demandaService.findOne(demandaId, user);
+        await this.demandaService.changeStatus(
+            demandaId,
+            user,
+            demanda.status,
+            DemandaStatus.Encerrado,
+            'Demanda vinculada a uma distribuição de recurso',
+            DemandaSituacao.Concluido,
+            prismaTx
+        );
+
+        // Buscar o vínculo recém-criado para obter dados da transferência
+        const vinculo = await prismaTx.distribuicaoRecursoVinculo.findFirst({
+            where: {
+                id: vinculoId,
+                demanda_id: demandaId,
+                removido_em: null,
+            },
+            select: {
+                distribuicao: {
+                    select: {
+                        transferencia: {
+                            select: {
+                                identificador: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+        });
+
+        if (!vinculo) {
+            throw new InternalServerErrorException('Erro ao buscar vínculo da demanda para envio de e-mail');
+        }
+
+        // Buscar configuração do órgão para o rodapé do e-mail
+        const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+        const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+        if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+
+        const orgao = await prismaTx.orgao.findUnique({
+            where: { id: orgaoId },
+            select: { descricao: true },
+        });
+
+        if (!orgao) {
+            throw new InternalServerErrorException('Erro ao buscar dados do órgão para envio de e-mail');
+        }
+
+        // Obter URL base do SMAE
+        const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+        // Envio de e-mail para o gestor municipal indicando que a Demanda registrada foi recebida através da emenda (estadual ou federal)
+        const email = demanda.email_responsavel;
+
+        // Formatar o valor com 2 casas decimais e trocar ponto por vírgula
+        const valorNumerico = parseFloat(demanda.valor);
+        const valorFormatado = valorNumerico.toFixed(2).replace('.', ',');
+
+        await prismaTx.emaildbQueue.create({
+            data: {
+                id: uuidv7(),
+                config_id: 1,
+                subject: 'Demanda associada à Transferência Voluntária',
+                template: 'demanda-vinculada.html',
+                to: email,
+                variables: {
+                    nome_responsavel: demanda.nome_responsavel,
+                    transferencia_identificador: vinculo.distribuicao.transferencia.identificador,
+                    nome_projeto: demanda.nome_projeto,
+                    valor: valorFormatado,
+                    area_tematica: demanda.area_tematica.nome,
+                    orgao_nome: orgao.descricao,
+                    smae_url: smaeUrl,
+                },
+            },
+        });
     }
 }
