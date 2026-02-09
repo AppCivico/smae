@@ -32,7 +32,6 @@ const props = defineProps<{
       class="tc varal-etapas__item"
       :class="{
         'varal-etapas__item--atual': item.atual,
-        'varal-etapas__item--selecionada': item.status === 'atual',
         'varal-etapas__item--concluida': item.status === 'concluida',
         'varal-etapas__item--cancelada': item.status === 'encerrada-cancelada',
         // 'varal-etapas__item--selecionada': item.status === '',
@@ -136,7 +135,7 @@ const props = defineProps<{
   }
 }
 
-.varal-etapas__item--selecionada {
+.varal-etapas__item--atual {
   &::after {
     background-color: @amarelo;
   }

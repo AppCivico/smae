@@ -5,6 +5,9 @@ import {
 
 export const CadastroDemanda = object()
   .shape({
+    id: number()
+      .nullable(),
+
     // Recurso Financeiro
     valor: string()
       .label('Valor (mínimo de R$ 10.000,00)')
@@ -103,7 +106,11 @@ export const CadastroDemanda = object()
         ],
         'Selecione um encaminhamento válido',
       )
-      .required(),
+      .when('id', {
+        is: (val: string) => !!val,
+        then: (s) => s.required(),
+        otherwise: (s) => s.nullable(),
+      }),
     encaminhamento_justificativa: string()
       .label('Justificativa')
       .max(2048)

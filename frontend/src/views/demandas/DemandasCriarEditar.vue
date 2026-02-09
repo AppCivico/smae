@@ -64,7 +64,6 @@ const {
   setFieldValue,
 } = useForm({
   validationSchema: schema,
-  initialValues: itemParaEdicao.value,
 });
 
 const areaTematicaSelecionada = computed(() => listaAreasTematicas.value
@@ -78,24 +77,22 @@ const labelDoBotaoSubmit = computed(() => {
   return encaminhamento?.label || 'Salvar';
 });
 
-const onSubmit = handleSubmit(async (carga) => {
-  const orgaoId = carga.orgao_id[0];
-  const dadosEdicao = {
-    ...carga,
-    orgao_id: orgaoId,
-  };
-
+const onSubmit = handleSubmit.withControlled(async ({
+  encaminhamento,
+  encaminhamento_justificativa: encaminhamentoJustificativa,
+  ...dadosEdicao
+}) => {
   let r: boolean;
 
   if (props.demandaId) {
     r = await demandasStore.atualizarItem({
-      acao: carga.encaminhamento,
+      acao: encaminhamento,
       demanda_id: props.demandaId,
       edicao: dadosEdicao,
-      motivo: carga.encaminhamento_justificativa,
+      motivo: encaminhamentoJustificativa,
     });
   } else {
-    r = await demandasStore.salvarItem(dadosEdicao, props.demandaId);
+    r = await demandasStore.criarItem(dadosEdicao);
   }
 
   if (r) {
@@ -137,12 +134,19 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
     },
   ];
 
-  switch (itemParaEdicao.value.status) {
+  switch (itemParaEdicao.value?.status) {
     case 'Registro':
       return etapas.map<EtapaDoVaral>((item) => ({
         ...item,
-        status: item.id === 'Registro' ? 'pendente' : 'pendente',
+        status: 'pendente',
         atual: item.id === 'Registro',
+      }));
+
+    case 'Validacao':
+      return etapas.map<EtapaDoVaral>((item) => ({
+        ...item,
+        status: 'pendente',
+        atual: item.id === 'Validacao',
       }));
 
     case 'Encerrado':
@@ -171,13 +175,10 @@ onMounted(() => {
 watch(itemParaEdicao, (novosValores) => {
   if (novosValores) {
     resetForm({
-      values: {
-        ...novosValores,
-        orgao_id: [novosValores.orgao.id],
-      },
+      values: novosValores,
     });
   }
-});
+}, { immediate: true });
 
 watch(() => values.area_tematica_id, () => {
   setFieldValue('acao_ids', []);
@@ -213,6 +214,11 @@ watch(() => values.area_tematica_id, () => {
     class="flex column g2"
     @submit.prevent="onSubmit"
   >
+    <Field
+      name="id"
+      hidden
+    />
+
     <!-- Recurso Financeiro -->
     <fieldset class="p0 mb2">
       <legend class="t16 w700 tc300 mb1">
@@ -297,10 +303,11 @@ watch(() => values.area_tematica_id, () => {
             :class="{ error: errors.orgao_id }"
           >
             <AutocompleteField2
+              unique
               :model-value="value"
               :controlador="{
                 busca: '',
-                participantes: value || []
+                participantes: value ? [value] : []
               }"
               label="sigla"
               :grupo="listaOrgaos || []"

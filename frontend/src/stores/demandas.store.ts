@@ -121,7 +121,14 @@ export const useDemandasStore = defineStore('demandasStore', {
   getters: {
     itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
-      orgao_id: [emFoco?.orgao?.id ?? undefined],
+      orgao_id: emFoco?.orgao?.id ?? undefined,
+      arquivos:
+        emFoco?.arquivos?.map((arq) => ({
+          id: arq.id,
+          autoriza_divulgacao: arq.autoriza_divulgacao,
+          descricao: arq.descricao ?? undefined,
+        })) || [],
+      localizacoes: emFoco?.geolocalizacao?.map((g) => ({ id: g.id })) || [],
     }),
 
     geolocalizacaoPorToken: ({ emFoco }) => (Array.isArray(emFoco?.geolocalizacao)
