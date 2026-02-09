@@ -3,9 +3,9 @@ export interface EtapaDoVaral {
   responsavel?: string;
   nome: string;
   duracao?: string;
+  atual: boolean,
   status:
   | 'concluida'
-  | 'atual'
   | 'pendente'
   | 'encerrada-atendida'
   | 'encerrada-cancelada';
@@ -31,9 +31,10 @@ const props = defineProps<{
       :key="index"
       class="tc varal-etapas__item"
       :class="{
-        'varal-etapas__item--atual': item.status === 'atual',
+        'varal-etapas__item--atual': item.atual,
         'varal-etapas__item--selecionada': item.status === 'atual',
         'varal-etapas__item--concluida': item.status === 'concluida',
+        'varal-etapas__item--cancelada': item.status === 'encerrada-cancelada',
         // 'varal-etapas__item--selecionada': item.status === '',
       }"
     >

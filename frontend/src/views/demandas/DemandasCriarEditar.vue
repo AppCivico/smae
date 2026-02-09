@@ -88,19 +88,11 @@ const onSubmit = handleSubmit(async (carga) => {
   let r: boolean;
 
   if (props.demandaId) {
-    let situacaoEncerramento;
-    if (carga.encaminhamento === 'enviar') {
-      situacaoEncerramento = 'Concluido';
-    } else if (carga.encaminhamento === 'cancelar') {
-      situacaoEncerramento = 'Cancelada';
-    }
-
     r = await demandasStore.atualizarItem({
       acao: carga.encaminhamento,
       demanda_id: props.demandaId,
       edicao: dadosEdicao,
       motivo: carga.encaminhamento_justificativa,
-      situacao_encerramento: situacaoEncerramento,
     });
   } else {
     r = await demandasStore.salvarItem(dadosEdicao, props.demandaId);
@@ -132,16 +124,16 @@ function toggleAcao(acaoId) {
 const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   const etapas: EtapaDoVaralComId[] = [
     {
-      id: 'Registro', responsavel: 'Gestor Municipal', nome: 'Registro', duracao: '1 dia', status: 'concluida',
+      id: 'Registro', responsavel: 'Gestor Municipal', nome: 'Registro', duracao: '1 dia', status: 'pendente', atual: true,
     },
     {
-      id: 'Validacao', responsavel: 'SERI', nome: 'Validação', duracao: '12 dias', status: 'concluida',
+      id: 'Validacao', responsavel: 'SERI', nome: 'Validação', duracao: '12 dias', status: 'pendente', atual: false,
     },
     {
-      id: 'Publicacao', responsavel: 'SERI', nome: 'Publicada', duracao: '6 dias', status: 'concluida',
+      id: 'Publicacao', responsavel: 'SERI', nome: 'Publicada', duracao: '6 dias', status: 'pendente', atual: false,
     },
     {
-      id: 'Encerramento', responsavel: 'SERI', nome: 'Encerrada', duracao: 'Atendida', status: 'encerrada-atendida',
+      id: 'Encerramento', responsavel: 'SERI', nome: 'Encerrada', duracao: 'Atendida', status: 'encerrada-atendida', atual: false,
     },
   ];
 
@@ -149,7 +141,15 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
     case 'Registro':
       return etapas.map<EtapaDoVaral>((item) => ({
         ...item,
-        status: item.id === 'Registro' ? 'atual' : 'pendente',
+        status: item.id === 'Registro' ? 'pendente' : 'pendente',
+        atual: item.id === 'Registro',
+      }));
+
+    case 'Encerrado':
+      return etapas.map<EtapaDoVaral>((item) => ({
+        ...item,
+        status: item.id === 'Encerramento' ? 'encerrada-atendida' : 'concluida',
+        atual: item.id === 'Encerramento',
       }));
 
     default:
@@ -648,7 +648,10 @@ watch(() => values.area_tematica_id, () => {
     </fieldset>
 
     {{ values.encaminhamento }}
-    <fieldset class="sessao-encaminhamento">
+    <fieldset
+      v-if="$props.demandaId"
+      class="sessao-encaminhamento"
+    >
       <h3>Encaminhamento da demanda</h3>
 
       <div>
