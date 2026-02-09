@@ -320,6 +320,57 @@ describe('AutocompleteField2', () => {
     });
   });
 
+  describe('unique', () => {
+    it('emite valor único (não array) ao selecionar item', async () => {
+      const controlador = criarControlador();
+      const wrapper = montarComponente({ controlador, unique: true });
+
+      const botao = wrapper.findAll('ul button')[0];
+      await botao.trigger('click');
+
+      expect(wrapper.emitted('change')[0][0]).toBe(1);
+    });
+
+    it('limita seleção a um único item', async () => {
+      const controlador = criarControlador([1]);
+      const wrapper = montarComponente({ controlador, unique: true });
+
+      const botao = wrapper.findAll('ul button')[0];
+      await botao.trigger('click');
+
+      expect(controlador.participantes).toHaveLength(1);
+    });
+
+    it('define input como readonly quando um item já está selecionado', () => {
+      const controlador = criarControlador([1]);
+      const wrapper = montarComponente({ controlador, unique: true });
+
+      const input = wrapper.find('input.inputtext');
+      expect(input.attributes('readonly')).toBeDefined();
+    });
+
+    it('emite null ao remover o item selecionado', async () => {
+      const controlador = criarControlador([1]);
+      const wrapper = montarComponente({ controlador, unique: true });
+
+      const tag = wrapper.find('.tagsmall');
+      await tag.trigger('click');
+
+      const changeEvents = wrapper.emitted('change');
+      expect(changeEvents[changeEvents.length - 1][0]).toBeNull();
+    });
+
+    it('emite null quando retornarArrayVazio é true e grupo está vazio', () => {
+      const wrapper = montarComponente({
+        grupo: [],
+        retornarArrayVazio: true,
+        unique: true,
+      });
+
+      expect(wrapper.emitted('change')[0][0]).toBeNull();
+    });
+  });
+
   describe('acessibilidade', () => {
     it('input tem aria-readonly quando readonly', () => {
       const wrapper = montarComponente({ readonly: true });
