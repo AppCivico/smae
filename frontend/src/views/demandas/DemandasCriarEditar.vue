@@ -116,17 +116,6 @@ function removerArquivo(idx) {
   setFieldValue('arquivos', arquivos);
 }
 
-function toggleAcao(acaoId) {
-  const acaoIds = [...(values.acao_ids || [])];
-  const index = acaoIds.indexOf(acaoId);
-  if (index === -1) {
-    acaoIds.push(acaoId);
-  } else {
-    acaoIds.splice(index, 1);
-  }
-  setFieldValue('acao_ids', acaoIds);
-}
-
 const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   const etapas: EtapaDoVaralComId[] = [
     {
@@ -577,6 +566,7 @@ watch(() => values.area_tematica_id, () => {
           as="select"
           class="inputtext light"
           :class="{ error: errors.area_tematica_id }"
+          @update:model-value="setFieldValue('acao_ids', [])"
         >
           <option :value="null">
             Selecionar
@@ -606,20 +596,22 @@ watch(() => values.area_tematica_id, () => {
           :schema="schema"
         />
 
-        <div class="flex column g05 start">
-          <label
-            v-for="acao in acoesDaAreaTematica"
-            :key="acao.id"
-            class="flex g1 center"
-          >
-            <input
-              type="checkbox"
-              :checked="values.acao_ids?.includes(acao.id)"
-              @change="toggleAcao(acao.id)"
-            >
-            <span>{{ acao.nome }}</span>
-          </label>
-        </div>
+        <Field
+          v-slot="{ handleChange, value }"
+          name="acao_ids"
+          :class="{ error: errors.acao_ids }"
+        >
+          <AutocompleteField2
+            :model-value="value"
+            :controlador="{
+              busca: '',
+              participantes: value || []
+            }"
+            label="nome"
+            :grupo="acoesDaAreaTematica"
+            @change="handleChange"
+          />
+        </Field>
 
         <ErrorMessage
           name="acao_ids"
