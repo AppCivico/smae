@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -13,12 +13,21 @@ import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
+import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
 import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { CadastroDemanda as schema } from '@/consts/formSchemas/demanda';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
+
+type EtapaDoVaralComId = EtapaDoVaral & {
+  id:
+  'Registro' |
+  'Validacao' |
+  'Publicacao' |
+  'Encerramento'
+};
 
 const router = useRouter();
 const alertStore = useAlertStore();
@@ -29,7 +38,7 @@ const areasTematicasStore = useAreasTematicasStore();
 const { organs: listaOrgaos } = storeToRefs(organsStore);
 const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 const {
-  emFoco, itemParaEdicao, geolocalizacaoPorToken, erro,
+  itemParaEdicao, geolocalizacaoPorToken, erro,
 } = storeToRefs(demandasStore);
 
 const props = defineProps({
@@ -58,11 +67,13 @@ const acoesDaAreaTematica = computed(() => areaTematicaSelecionada.value?.acoes 
 
 const onSubmit = handleSubmit(async (carga) => {
   try {
+    const orgaoId = carga.orgao_id[0];
+
     const msg = props.demandaId
       ? 'Dados salvos com sucesso!'
       : 'Demanda adicionada com sucesso!';
 
-    const r = await demandasStore.salvarItem(carga, props.demandaId);
+    const r = await demandasStore.salvarItem({ ...carga, orgao_id: orgaoId }, props.demandaId);
 
     if (r) {
       alertStore.success(msg);
@@ -73,22 +84,6 @@ const onSubmit = handleSubmit(async (carga) => {
     alertStore.error(error);
   }
 });
-
-function adicionarLocalizacao(endereco) {
-  const localizacoes = [...(values.localizacoes || []), endereco];
-  setFieldValue('localizacoes', localizacoes);
-}
-
-function removerLocalizacao(idx) {
-  const localizacoes = [...(values.localizacoes || [])];
-  localizacoes.splice(idx, 1);
-  setFieldValue('localizacoes', localizacoes);
-}
-
-function adicionarArquivo() {
-  const arquivos = [...(values.arquivos || []), { autoriza_divulgacao: false }];
-  setFieldValue('arquivos', arquivos);
-}
 
 function removerArquivo(idx) {
   const arquivos = [...(values.arquivos || [])];
@@ -107,6 +102,34 @@ function toggleAcao(acaoId) {
   setFieldValue('acao_ids', acaoIds);
 }
 
+const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
+  const etapas: EtapaDoVaralComId[] = [
+    {
+      id: 'Registro', responsavel: 'Gestor Municipal', nome: 'Registro', duracao: '1 dia', status: 'concluida',
+    },
+    {
+      id: 'Validacao', responsavel: 'SERI', nome: 'Validação', duracao: '12 dias', status: 'concluida',
+    },
+    {
+      id: 'Publicacao', responsavel: 'SERI', nome: 'Publicada', duracao: '6 dias', status: 'concluida',
+    },
+    {
+      id: 'Encerramento', responsavel: 'SERI', nome: 'Encerrada', duracao: 'Atendida', status: 'encerrada-atendida',
+    },
+  ];
+
+  switch (itemParaEdicao.value.status) {
+    case 'Registro':
+      return etapas.map<EtapaDoVaral>((item) => ({
+        ...item,
+        status: item.id === 'Registro' ? 'atual' : 'pendente',
+      }));
+
+    default:
+      return etapas;
+  }
+});
+
 onMounted(() => {
   if (props.demandaId) {
     demandasStore.buscarItem(props.demandaId);
@@ -119,7 +142,14 @@ onMounted(() => {
 });
 
 watch(itemParaEdicao, (novosValores) => {
-  resetForm({ values: novosValores });
+  if (novosValores) {
+    resetForm({
+      values: {
+        ...novosValores,
+        orgao_id: [novosValores.orgao.id],
+      },
+    });
+  }
 });
 
 watch(() => values.area_tematica_id, () => {
@@ -129,6 +159,26 @@ watch(() => values.area_tematica_id, () => {
 
 <template>
   <CabecalhoDePagina />
+
+  <SmaeVaralEtapas
+    class="mb2"
+    desativar-navegacao
+    :etapas="itemsVaralEtapas"
+  >
+    <template #default="{ item }">
+      <div class="flex column g025 tl">
+        <h6 class="etapas-item t14">
+          {{ item.responsavel }}
+        </h6>
+        <h5 class="etapas-item etapas-item--principal t18">
+          {{ item.nome }}
+        </h5>
+        <h6 class="etapas-item t12">
+          {{ item.duracao }}
+        </h6>
+      </div>
+    </template>
+  </SmaeVaralEtapas>
 
   <form
     class="flex column g2"
@@ -581,28 +631,15 @@ watch(() => values.area_tematica_id, () => {
   </div>
 </template>
 
-<style scoped>
-.modal-localizacao {
-  width: 90vw;
-  max-width: 1000px;
-  padding: 2rem;
-  border: 1px solid var(--c300);
-  border-radius: 8px;
-}
-
-.modal-localizacao::backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.lista-de-localizacoes {
-  list-style: none;
-  padding: 0;
+<style lang="less" scoped>
+.etapas-item {
   margin: 0;
-}
+  color: #595959;
+  font-weight: 300;
 
-.lista-de-localizacoes li {
-  padding: 0.5rem;
-  background: var(--c50);
-  border-radius: 4px;
+  &--principal {
+    font-weight: 600;
+    color: #333333;
+  }
 }
 </style>

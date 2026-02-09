@@ -110,27 +110,9 @@ export const useDemandasStore = defineStore('demandasStore', {
   },
 
   getters: {
-    itemParaEdicao: ({ emFoco }): Partial<CreateDemandaDto> => ({
-      orgao_id: emFoco?.orgao?.id ?? undefined,
-      unidade_responsavel: emFoco?.unidade_responsavel || '',
-      nome_responsavel: emFoco?.nome_responsavel || '',
-      cargo_responsavel: emFoco?.cargo_responsavel || '',
-      email_responsavel: emFoco?.email_responsavel || '',
-      telefone_responsavel: emFoco?.telefone_responsavel || '',
-      nome_projeto: emFoco?.nome_projeto || '',
-      descricao: emFoco?.descricao || '',
-      justificativa: emFoco?.justificativa || '',
-      valor: emFoco?.valor || '',
-      finalidade: emFoco?.finalidade ?? undefined,
-      observacao: emFoco?.observacao || '',
-      area_tematica_id: emFoco?.area_tematica?.id ?? undefined,
-      acao_ids: emFoco?.acoes?.map((a) => a.id) || [],
-      localizacoes: emFoco?.geolocalizacao?.map((g) => ({ id: g.id })) || [],
-      arquivos: emFoco?.arquivos?.map((arq) => ({
-        id: arq.id,
-        autoriza_divulgacao: arq.autoriza_divulgacao,
-        descricao: arq.descricao ?? undefined,
-      })) || [],
+    itemParaEdicao: ({ emFoco }) => ({
+      ...emFoco,
+      orgao_id: [emFoco?.orgao?.id ?? undefined],
     }),
 
     geolocalizacaoPorToken: ({ emFoco }) => (Array.isArray(emFoco?.geolocalizacao)
