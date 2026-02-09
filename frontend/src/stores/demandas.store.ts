@@ -1,5 +1,6 @@
 import type { DemandaDetailDto, DemandaDto, ListDemandaDto } from '@back/casa-civil/demanda/entities/demanda.entity';
-import type { CreateDemandaDto, UpdateDemandaDto } from '@back/casa-civil/demanda/dto/create-demanda.dto';
+import type { CreateDemandaDto } from '@back/casa-civil/demanda/dto/create-demanda.dto';
+import type { CreateDemandaAcaoDto } from '@back/casa-civil/demanda/acao/dto/acao.dto';
 import type { FilterDemandaDto } from '@back/casa-civil/demanda/dto/filter-demanda.dto';
 import { defineStore } from 'pinia';
 
@@ -73,18 +74,26 @@ export const useDemandasStore = defineStore('demandasStore', {
       this.chamadasPendentes.lista = false;
     },
 
-    async salvarItem(
-      params: CreateDemandaDto | UpdateDemandaDto,
-      id?: number,
-    ): Promise<boolean> {
+    async criarItem(params: CreateDemandaDto): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
       try {
-        if (id) {
-          await this.requestS.patch(`${baseUrl}/demanda/${id}`, params);
-        } else {
-          await this.requestS.post(`${baseUrl}/demanda`, params);
-        }
+        await this.requestS.post(`${baseUrl}/demanda`, params);
+        this.chamadasPendentes.emFoco = false;
+        return true;
+      } catch (erro: unknown) {
+        this.erro = erro;
+        this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
+
+    async atualizarItem(params: CreateDemandaAcaoDto): Promise<boolean> {
+      this.chamadasPendentes.emFoco = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.patch(`${baseUrl}/demanda-acao`, params);
         this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro: unknown) {
