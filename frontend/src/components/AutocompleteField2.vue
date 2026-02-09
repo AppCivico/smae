@@ -118,8 +118,9 @@ if (props.name) {
       : props.controlador.participantes,
   });
 
-  watch(() => control.value.participantes.length, (newValue) => {
-    handleChange(props.unique ? (newValue[0] ?? null) : newValue);
+  watch(() => control.value.participantes.length, () => {
+    const arr = control.value.participantes;
+    handleChange(props.unique ? (arr[0] ?? null) : arr);
   });
 }
 
