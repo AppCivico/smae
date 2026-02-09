@@ -45,6 +45,9 @@ export default [
     name: 'consultaGeral',
   },
   {
+    name: 'demandas',
+  },
+  {
     name: 'configuracoesRaiz',
   },
 
