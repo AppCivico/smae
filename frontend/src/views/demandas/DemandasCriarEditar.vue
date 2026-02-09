@@ -29,6 +29,14 @@ type EtapaDoVaralComId = EtapaDoVaral & {
   'Encerramento'
 };
 
+const camposEncaminhamento = [
+  { label: 'Manter em análise', valor: 'editar' },
+  { label: 'Solicitar ajuste', valor: 'devolver' },
+  { label: 'Cancelar demanda', valor: 'cancelar' },
+  { label: 'Publicar demanda', valor: 'enviar' },
+  { label: 'Validar?', valor: 'validar' },
+];
+
 const router = useRouter();
 const alertStore = useAlertStore();
 const organsStore = useOrgansStore();
@@ -51,7 +59,6 @@ const props = defineProps({
 const {
   errors,
   handleSubmit,
-  isSubmitting,
   resetForm,
   values,
   setFieldValue,
@@ -66,22 +73,36 @@ const areaTematicaSelecionada = computed(() => listaAreasTematicas.value
 const acoesDaAreaTematica = computed(() => areaTematicaSelecionada.value?.acoes || []);
 
 const onSubmit = handleSubmit(async (carga) => {
-  try {
-    const orgaoId = carga.orgao_id[0];
+  const orgaoId = carga.orgao_id[0];
+  const dadosEdicao = {
+    ...carga,
+    orgao_id: orgaoId,
+  };
 
-    const msg = props.demandaId
-      ? 'Dados salvos com sucesso!'
-      : 'Demanda adicionada com sucesso!';
+  let r: boolean;
 
-    const r = await demandasStore.salvarItem({ ...carga, orgao_id: orgaoId }, props.demandaId);
-
-    if (r) {
-      alertStore.success(msg);
-      demandasStore.$reset();
-      router.push({ name: 'demandas.listar' });
+  if (props.demandaId) {
+    let situacaoEncerramento;
+    if (carga.encaminhamento === 'enviar') {
+      situacaoEncerramento = 'Concluido';
+    } else if (carga.encaminhamento === 'cancelar') {
+      situacaoEncerramento = 'Cancelada';
     }
-  } catch (error) {
-    alertStore.error(error);
+
+    r = await demandasStore.atualizarItem({
+      acao: carga.encaminhamento,
+      demanda_id: props.demandaId,
+      edicao: dadosEdicao,
+      motivo: carga.encaminhamento_justificativa,
+      situacao_encerramento: situacaoEncerramento,
+    });
+  } else {
+    r = await demandasStore.salvarItem(dadosEdicao, props.demandaId);
+  }
+
+  if (r) {
+    demandasStore.$reset();
+    router.push({ name: 'demandas.listar' });
   }
 });
 
@@ -170,9 +191,11 @@ watch(() => values.area_tematica_id, () => {
         <h6 class="etapas-item t14">
           {{ item.responsavel }}
         </h6>
+
         <h5 class="etapas-item etapas-item--principal t18">
           {{ item.nome }}
         </h5>
+
         <h6 class="etapas-item t12">
           {{ item.duracao }}
         </h6>
@@ -618,6 +641,66 @@ watch(() => values.area_tematica_id, () => {
       </div>
     </fieldset>
 
+    {{ values.encaminhamento }}
+    <fieldset class="sessao-encaminhamento">
+      <h3>Encaminhamento da demanda</h3>
+
+      <div>
+        <div class="flex g2 start pt05 pb05">
+          <label
+            v-for="campoEncaminhamento in camposEncaminhamento"
+            :key="`encaminhamento--${campoEncaminhamento.valor}`"
+            class="flex g05 center"
+          >
+            <Field
+              name="encaminhamento"
+              type="radio"
+              :value="campoEncaminhamento.valor"
+              @update:model-value="setFieldValue('encaminhamento_justificativa', null)"
+            />
+            <span>{{ campoEncaminhamento.label }}</span>
+          </label>
+        </div>
+
+        <ErrorMessage
+          name="encaminhamento"
+          class="error-msg"
+        />
+      </div>
+
+      <div
+        v-if="['devolver', 'cancelar'].includes(values.encaminhamento)"
+        class="mt1"
+      >
+        <SmaeLabel
+          name="encaminhamento_justificativa"
+          :schema="schema"
+        />
+
+        <Field
+          v-slot="{ handleChange, value, field}"
+          name="encaminhamento_justificativa"
+        >
+          <SmaeText
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :class="{ error: errors[field.name] }"
+            :schema="schema"
+            :name="field.name"
+            :model-value="value"
+            anular-vazio
+            @update:model-value="handleChange"
+          />
+        </Field>
+
+        <ErrorMessage
+          name="encaminhamento_justificativa"
+          class="error-msg"
+        />
+      </div>
+    </fieldset>
+
     <SmaeFieldsetSubmit />
   </form>
 
@@ -634,12 +717,35 @@ watch(() => values.area_tematica_id, () => {
 <style lang="less" scoped>
 .etapas-item {
   margin: 0;
-  color: #595959;
+  color: @cinza-medio;
   font-weight: 300;
 
   &--principal {
     font-weight: 600;
     color: #333333;
+  }
+}
+
+fieldset {
+  border-top: 1.5px solid @c300;
+}
+
+fieldset legend {
+  color: @c300;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 130%;
+}
+
+.sessao-encaminhamento {
+  border-top: 4px solid #F7C234;
+  padding: 16px;
+
+  h3 {
+    font-weight: 700;
+    font-style: Bold;
+    font-size: 1rem;
+    line-height: 130%;
   }
 }
 </style>
