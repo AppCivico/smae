@@ -661,7 +661,7 @@ watch(itemParaEdicao, (novosValores) => {
       <h3>Encaminhamento da demanda</h3>
 
       <div>
-        <div class="flex g2 start pt05 pb05">
+        <div class="flex flexwrap g2 start pt05 pb05">
           <label
             v-for="campoEncaminhamento in camposEncaminhamento"
             :key="`encaminhamento--${campoEncaminhamento.valor}`"

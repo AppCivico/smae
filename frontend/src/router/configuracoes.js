@@ -108,7 +108,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternos.listar',
   'equipesListar',
   'Workflow',
-  'demandas',
+  'configuracaoDemandas',
   'programaDeMetas.planosSetoriaisListar',
 ];
 
@@ -1064,8 +1064,8 @@ export default [
       },
 
       {
-        path: '/demandas',
-        name: 'demandas',
+        path: '/configuracao-demandas',
+        name: 'configuracaoDemandas',
         component: () => import('@/views/demandas/DemandasRaiz.vue'),
         meta: {
           título: 'Demandas',
@@ -1076,7 +1076,6 @@ export default [
             'CadastroDemandaConfig.listar',
           ],
           rotasParaMenuSecundário: [
-            'demandas.listar',
             'areasTematicas.listar',
             'valoresLimites.listar',
           ],
@@ -1186,46 +1185,6 @@ export default [
               },
             ],
           },
-          {
-            path: 'lista',
-            component: () => import('@/views/demandas/DemandasRaiz.vue'),
-            meta: {
-              título: 'Lista de Demandas',
-              rotaPrescindeDeChave: true,
-            },
-            children: [
-              {
-                name: 'demandas.listar',
-                path: '',
-                component: () => import('@/views/demandas/DemandasLista.vue'),
-                meta: {
-                  título: 'Lista de Demandas',
-                },
-              },
-              {
-                name: 'demandas.criar',
-                path: 'novo',
-                component: () => import('@/views/demandas/DemandasCriarEditar.vue'),
-                meta: {
-                  título: 'Nova Demanda',
-                  rotaDeEscape: 'demandas.listar',
-                  rotasParaMigalhasDePão: ['demandas', 'demandas.listar'],
-                },
-              },
-              {
-                name: 'demandas.editar',
-                path: ':demandaId',
-                component: () => import('@/views/demandas/DemandasCriarEditar.vue'),
-                props: tiparPropsDeRota,
-                meta: {
-                  título: 'Editar Demanda',
-                  rotaDeEscape: 'demandas.listar',
-                  rotasParaMigalhasDePão: ['demandas.listar'],
-                },
-              },
-            ],
-          },
-          // @see-rotas
         ],
       },
 
