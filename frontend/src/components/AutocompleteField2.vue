@@ -55,6 +55,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  unique: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const control = ref(props.controlador);
@@ -110,11 +114,13 @@ function navegarLista(e, indice) {
 if (props.name) {
   const name = toRef(props, 'name');
   const { handleChange } = useField(name, undefined, {
-    initialValue: props.controlador.participantes,
+    initialValue: props.unique
+      ? (props.controlador.participantes[0] ?? null)
+      : props.controlador.participantes,
   });
 
   watch(() => control.value.participantes, (newValue) => {
-    handleChange(newValue);
+    handleChange(props.unique ? (newValue[0] ?? null) : newValue);
   });
 }
 
@@ -122,11 +128,14 @@ function start() {
   control.value = props.controlador;
 
   if (props.retornarArrayVazio && props.grupo.length === 0) {
-    emit('change', []);
+    emit('change', props.unique ? null : []);
   }
 }
 
 const atingiuLimite = computed(() => {
+  if (props.unique) {
+    return control.value.participantes.length >= 1;
+  }
   if (props.numeroMaximoDeParticipantes) {
     return control.value.participantes.length >= props.numeroMaximoDeParticipantes;
   }
@@ -137,11 +146,15 @@ start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
+function emitChange(participantes) {
+  emit('change', props.unique ? (participantes[0] ?? null) : participantes);
+}
+
 function removeParticipante(item, p) {
   const index = item.participantes.indexOf(p);
   if (index === -1) return;
   item.participantes.splice(index, 1);
-  emit('change', item.participantes);
+  emitChange(item.participantes);
 }
 
 function pushId(e, id) {
@@ -149,7 +162,7 @@ function pushId(e, id) {
     return;
   }
   e.push(id);
-  emit('change', [...new Set(e)]);
+  emitChange([...new Set(e)]);
 }
 
 function buscar(e, item, g, label) {
