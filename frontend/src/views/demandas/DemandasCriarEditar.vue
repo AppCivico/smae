@@ -38,7 +38,6 @@ const todosOsCamposEncaminhamento = [
 ];
 
 const router = useRouter();
-const alertStore = useAlertStore();
 const organsStore = useOrgansStore();
 const demandasStore = useDemandasStore();
 const areasTematicasStore = useAreasTematicasStore();
@@ -119,21 +118,20 @@ function removerArquivo(idx) {
 const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   const etapas: EtapaDoVaralComId[] = [
     {
-      id: 'Registro', responsavel: 'Gestor Municipal', nome: 'Registro', duracao: '1 dia', status: 'pendente', atual: true,
+      id: 'Registro', responsavel: 'Gestor Municipal', nome: 'Registro', observacao: null, status: 'pendente', atual: true,
     },
     {
-      id: 'Validacao', responsavel: 'SERI', nome: 'Validação', duracao: '12 dias', status: 'pendente', atual: false,
+      id: 'Validacao', responsavel: 'SERI', nome: 'Validação', observacao: null, status: 'pendente', atual: false,
     },
     {
-      id: 'Publicado', responsavel: 'SERI', nome: 'Publicada', duracao: '6 dias', status: 'pendente', atual: false,
+      id: 'Publicado', responsavel: 'SERI', nome: 'Publicada', observacao: null, status: 'pendente', atual: false,
     },
     {
-      id: 'Encerrado', responsavel: 'SERI', nome: 'Encerrada', duracao: 'Atendida', status: 'pendente', atual: false,
+      id: 'Encerrado', responsavel: 'SERI', nome: 'Encerrada', observacao: itemParaEdicao.value.situacao_encerramento || null, status: 'pendente', atual: false,
     },
   ];
 
   const statusAtual = itemParaEdicao.value?.status;
-  console.log(statusAtual);
 
   const indiceAtual = etapas.findIndex((e) => e.id === statusAtual);
 
@@ -141,15 +139,25 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
 
   return etapas.map((etapa, i) => {
     let status: EtapaDoVaral['status'] = 'pendente';
-    console.log(indiceAtual, i);
 
     if (i < indiceAtual) {
       status = 'concluida';
-    } else if (i === indiceAtual && etapa.id === 'Encerramento') {
-      status = 'encerrada-atendida';
+    } else if (i === indiceAtual && etapa.id === 'Encerrado') {
+      if (itemParaEdicao.value.situacao_encerramento === 'Cancelada') {
+        status = 'encerrada-cancelada';
+      } else {
+        status = 'encerrada-atendida';
+      }
     }
 
-    return { ...etapa, atual: i === indiceAtual, status };
+    const tempoNaEtapa = itemParaEdicao.value?.[`dias_em_${etapa.id.toLowerCase()}`];
+
+    return {
+      ...etapa,
+      atual: i === indiceAtual,
+      observacao: etapa.observacao || (tempoNaEtapa && `${tempoNaEtapa} dias`) || null,
+      status,
+    };
   });
 });
 
@@ -196,7 +204,7 @@ watch(() => values.area_tematica_id, () => {
         </h5>
 
         <h6 class="etapas-item t12">
-          {{ item.duracao }}
+          {{ item.observacao }}
         </h6>
       </div>
     </template>
