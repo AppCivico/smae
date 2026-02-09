@@ -121,9 +121,10 @@ export const useDemandasStore = defineStore('demandasStore', {
   getters: {
     itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
-      acao_ids: emFoco?.acoes?.map((i) => i.id) ?? undefined,
-      orgao_id: emFoco?.orgao?.id ?? undefined,
-      area_tematica_id: emFoco?.area_tematica?.id ?? undefined,
+      acao_ids: emFoco?.acoes?.map((i) => i.id) ?? [],
+      finalidade: emFoco?.finalidade ?? '',
+      orgao_id: emFoco?.orgao?.id ?? 0,
+      area_tematica_id: emFoco?.area_tematica?.id ?? 0,
       arquivos:
         emFoco?.arquivos?.map((arq) => ({
           id: arq.id,

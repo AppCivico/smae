@@ -259,7 +259,7 @@ watch(itemParaEdicao, (novosValores) => {
             class="inputtext light"
             :class="{ error: errors.finalidade }"
           >
-            <option :value="null">
+            <option value="">
               Selecionar
             </option>
 
