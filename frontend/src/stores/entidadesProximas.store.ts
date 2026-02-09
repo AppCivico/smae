@@ -9,6 +9,7 @@ import type {
   PdmRotuloInfo,
   ProjetoSearchResultDto,
   SearchEntitiesNearbyResponseDto,
+  DemandaSearchResultDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
 import statusObras from '@/consts/statusObras';
@@ -76,6 +77,7 @@ export const LegendasStatus = {
   projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
   programaDeMetas: { item: 'Programa de Metas', color: '#4074BF' },
   planoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
+  demandas: { item: 'Demandas', color: '#964df6' },
 };
 
 export const useEntidadesProximasStore = defineStore('entidadesProximas', {
@@ -309,10 +311,13 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         'obras',
         'projetos',
         'etapas',
+        'demandas',
       ] as const;
 
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
-        type Grupo = (EtapaSearchResultDto | ProjetoSearchResultDto)[] | undefined;
+        type Grupo = (EtapaSearchResultDto
+        | ProjetoSearchResultDto
+        | DemandaSearchResultDto)[] | undefined;
         // eslint-disable-next-line max-len
         const grupo: Grupo = (dadosPorGeo[chave as keyof SearchEntitiesNearbyResponseDto] || undefined);
 
@@ -433,6 +438,29 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                   }
                 }
               }
+
+              break;
+            }
+
+            case 'demandas': {
+              const demanda = registro as DemandaSearchResultDto;
+
+              dadosParciais = {
+                ...dadosParciais,
+                nome: demanda.nome_projeto || '',
+                orgao: demanda.orgao_sigla || '',
+                cor: LegendasStatus.demandas.color,
+                nro_vinculos: Number(demanda.nro_vinculos ?? 0),
+                status: demanda.status ? {
+                  valor: demanda.status,
+                  nome: demanda.status,
+                } : undefined,
+                detalhes: {
+                  'Área Temática': demanda.area_tematica_nome,
+                  'Unidade Responsável': demanda.unidade_responsavel,
+                  Responsável: demanda.nome_responsavel,
+                },
+              };
 
               break;
             }
