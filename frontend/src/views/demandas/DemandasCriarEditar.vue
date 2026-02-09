@@ -72,6 +72,12 @@ const areaTematicaSelecionada = computed(() => listaAreasTematicas.value
 
 const acoesDaAreaTematica = computed(() => areaTematicaSelecionada.value?.acoes || []);
 
+const labelDoBotaoSubmit = computed(() => {
+  const encaminhamento = camposEncaminhamento
+    .find((c) => c.valor === values.encaminhamento);
+  return encaminhamento?.label || 'Salvar';
+});
+
 const onSubmit = handleSubmit(async (carga) => {
   const orgaoId = carga.orgao_id[0];
   const dadosEdicao = {
@@ -701,7 +707,14 @@ watch(() => values.area_tematica_id, () => {
       </div>
     </fieldset>
 
-    <SmaeFieldsetSubmit />
+    <SmaeFieldsetSubmit>
+      <button
+        class="btn big"
+        type="submit"
+      >
+        {{ labelDoBotaoSubmit }}
+      </button>
+    </SmaeFieldsetSubmit>
   </form>
 
   <div
