@@ -79,9 +79,7 @@ const opcoesFiltradas = computed(() => {
   );
 });
 
-const participantesSelecionados = computed(() =>
-  props.grupo.filter((x) => control.value.participantes?.includes(x.id))
-);
+const participantesSelecionados = computed(() => props.grupo.filter((x) => control.value.participantes?.includes(x.id)));
 
 function abrirLista() {
   if (opcoesFiltradas.value.length === 0) return;
@@ -119,7 +117,7 @@ if (props.name) {
       : props.controlador.participantes,
   });
 
-  watch(() => control.value.participantes, (newValue) => {
+  watch(() => control.value.participantes.length, (newValue) => {
     handleChange(props.unique ? (newValue[0] ?? null) : newValue);
   });
 }
