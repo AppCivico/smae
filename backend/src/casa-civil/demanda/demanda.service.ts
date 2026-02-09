@@ -122,9 +122,7 @@ export class DemandaService {
                     }
 
                 // Cria referências de geolocalização via GeoLocService
-                const geoTokens = dto.localizacoes
-                    ?.filter((l) => l.geolocalizacao_token)
-                    .map((l) => l.geolocalizacao_token!);
+                const geoTokens = dto.localizacoes?.filter((l) => l);
                 if (geoTokens && geoTokens.length > 0) {
                     const geoDto = new CreateGeoEnderecoReferenciaDto();
                     geoDto.tokens = geoTokens;
@@ -311,9 +309,7 @@ export class DemandaService {
 
         // Atualiza entidades aninhadas (localizacoes) - via GeoLocService
         if (dto.localizacoes) {
-            const geoTokens = dto.localizacoes
-                .filter((l) => l.geolocalizacao_token)
-                .map((l) => l.geolocalizacao_token!);
+            const geoTokens = dto.localizacoes.filter((l) => l);
 
             const geoDto = new CreateGeoEnderecoReferenciaDto();
             geoDto.tokens = geoTokens.length > 0 ? geoTokens : undefined;

@@ -17,18 +17,6 @@ import {
 import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from '../../../common/consts';
 import { ApiProperty } from '@nestjs/swagger';
-
-export class CreateDemandaLocalizacaoDto {
-    @IsOptional()
-    @IsInt()
-    id?: number;
-
-    @ValidateIf((o) => !o.id)
-    @IsString()
-    @IsNotEmpty()
-    geolocalizacao_token: string;
-}
-
 export class CreateDemandaArquivoDto {
     @IsOptional()
     @IsInt()
@@ -106,9 +94,8 @@ export class CreateDemandaDto {
 
     @IsOptional()
     @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreateDemandaLocalizacaoDto)
-    localizacoes?: CreateDemandaLocalizacaoDto[];
+    @IsString({ each: true })
+    localizacoes?: string[];
 
     @IsOptional()
     @IsArray()
@@ -186,9 +173,8 @@ export class UpdateDemandaDto {
 
     @IsOptional()
     @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreateDemandaLocalizacaoDto)
-    localizacoes?: CreateDemandaLocalizacaoDto[];
+    @IsString({ each: true })
+    localizacoes?: string[];
 
     @IsOptional()
     @IsArray()
