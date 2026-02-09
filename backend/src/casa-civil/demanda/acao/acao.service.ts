@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
-import { DemandaStatus, Prisma } from '@prisma/client';
+import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { CacheKVService } from '../../../common/services/cache-kv.service';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -58,7 +58,7 @@ export class DemandaAcaoService {
                         transition.from,
                         transition.to,
                         dto.motivo || null,
-                        dto.situacao_encerramento,
+                        dto.acao === 'cancelar' ? DemandaSituacao.Cancelada : undefined,
                         prismaTxn
                     );
                 },
@@ -77,7 +77,7 @@ export class DemandaAcaoService {
             transition.from,
             transition.to,
             dto.motivo || null,
-            dto.situacao_encerramento
+            dto.acao === 'cancelar' ? DemandaSituacao.Cancelada : undefined
         );
 
         if (transition.to === DemandaStatus.Publicado || transition.from === DemandaStatus.Publicado) {

@@ -1,4 +1,4 @@
-import { DemandaFinalidade, DemandaStatus } from '@prisma/client';
+import { DemandaFinalidade, DemandaSituacao, DemandaStatus } from '@prisma/client';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { GeolocalizacaoDto } from 'src/geo-loc/entities/geo-loc.entity';
@@ -55,6 +55,7 @@ export class DemandaDetailDto extends DemandaDto {
     dias_em_validacao: number;
     dias_em_publicado: number;
     dias_em_encerrado: number;
+    situacao_encerramento: DemandaSituacao | null;
 }
 
 export class ListDemandaDto {

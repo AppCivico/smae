@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DemandaSituacao, DemandaStatus } from '@prisma/client';
+import { DemandaStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
@@ -26,11 +26,6 @@ export class CreateDemandaAcaoDto {
     @IsInt()
     @Type(() => Number)
     demanda_id: number;
-
-    @ApiProperty({ enum: DemandaSituacao, enumName: 'DemandaSituacao', required: false })
-    @IsOptional()
-    @IsEnum(DemandaSituacao)
-    situacao_encerramento?: DemandaSituacao;
 
     @ApiProperty({ required: false })
     @IsOptional()
@@ -86,10 +81,6 @@ export class CreateDemandaAcaoDto {
             if (!this.motivo || this.motivo.trim() === '') {
                 throw new Error('Motivo é obrigatório para esta ação');
             }
-        }
-
-        if (this.acao === 'cancelar' && !this.situacao_encerramento) {
-            throw new Error('Situação de encerramento é obrigatória para cancelar uma demanda');
         }
     }
 

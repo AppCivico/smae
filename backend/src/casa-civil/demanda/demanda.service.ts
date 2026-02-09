@@ -518,6 +518,7 @@ export class DemandaService {
                 dias_em_validacao: true,
                 dias_em_publicado: true,
                 dias_em_encerrado: true,
+                situacao_encerramento: true,
                 acoes: {
                     where: { removido_em: null },
                     select: {
@@ -598,6 +599,7 @@ export class DemandaService {
             dias_em_validacao: demanda.dias_em_validacao,
             dias_em_publicado: demanda.dias_em_publicado,
             dias_em_encerrado: demanda.dias_em_encerrado,
+            situacao_encerramento: demanda.situacao_encerramento,
             acoes: demanda.acoes.map((a) => a.acao),
             geolocalizacao,
             arquivos: demanda.arquivos.map((a) => ({
