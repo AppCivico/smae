@@ -79,7 +79,8 @@ const opcoesFiltradas = computed(() => {
   );
 });
 
-const participantesSelecionados = computed(() => props.grupo.filter((x) => control.value.participantes?.includes(x.id)));
+const participantesSelecionados = computed(() => props.grupo
+  .filter((x) => control.value.participantes?.includes(x.id)));
 
 function abrirLista() {
   if (opcoesFiltradas.value.length === 0) return;
