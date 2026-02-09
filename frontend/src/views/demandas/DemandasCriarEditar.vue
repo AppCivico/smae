@@ -25,8 +25,8 @@ type EtapaDoVaralComId = EtapaDoVaral & {
   id:
   'Registro' |
   'Validacao' |
-  'Publicacao' |
-  'Encerramento'
+  'Publicado' |
+  'Encerrado'
 };
 
 const todosOsCamposEncaminhamento = [
@@ -179,10 +179,6 @@ watch(itemParaEdicao, (novosValores) => {
     });
   }
 }, { immediate: true });
-
-watch(() => values.area_tematica_id, () => {
-  setFieldValue('acao_ids', []);
-});
 </script>
 
 <template>
@@ -574,7 +570,7 @@ watch(() => values.area_tematica_id, () => {
           as="select"
           class="inputtext light"
           :class="{ error: errors.area_tematica_id }"
-          @update:model-value="setFieldValue('acao_ids', [])"
+          @change="setFieldValue('acao_ids', [])"
         >
           <option :value="null">
             Selecionar
