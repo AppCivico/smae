@@ -2,7 +2,7 @@
 export interface EtapaDoVaral {
   responsavel?: string;
   nome: string;
-  duracao?: string;
+  observacao?: string | null;
   atual: boolean,
   status:
   | 'concluida'
@@ -30,12 +30,12 @@ const props = defineProps<{
       v-for="(item, index) in $props.etapas"
       :key="index"
       class="tc varal-etapas__item"
-      :class="{
-        'varal-etapas__item--atual': item.atual,
-        'varal-etapas__item--concluida': item.status === 'concluida',
-        'varal-etapas__item--cancelada': item.status === 'encerrada-cancelada',
-        // 'varal-etapas__item--selecionada': item.status === '',
-      }"
+      :class="[
+        {
+          'varal-etapas__item--atual': item.atual,
+        },
+        `varal-etapas__item--${item.status}`
+      ]"
     >
       <button
         :id="`tab-${index}`"
@@ -120,24 +120,31 @@ const props = defineProps<{
 }
 
 .varal-etapas__item--concluida {
-  &::before {
-    background-color: @amarelo;
-  }
-
-  &::after {
+  &::before, &::after {
     background-color: @amarelo;
   }
 }
 
 .varal-etapas__item--atual {
-  &::before {
+  &::before, &::after {
     background-color: @amarelo;
   }
 }
 
-.varal-etapas__item--atual {
-  &::after {
-    background-color: @amarelo;
+.varal-etapas__item--encerrada-cancelada,
+.varal-etapas__item--encerrada-atendida {
+  color: #fff;
+}
+
+.varal-etapas__item--encerrada-cancelada {
+  &::before, &::after {
+    background-color: @vermelho;
+  }
+}
+
+.varal-etapas__item--encerrada-atendida {
+  &::before, &::after {
+    background-color: @verde;
   }
 }
 
@@ -162,6 +169,14 @@ const props = defineProps<{
 
     .varal-etapas__item--atual & {
       background-color: @amarelo;
+    }
+
+    .varal-etapas__item--encerrada-cancelada & {
+      background-color: @vermelho;
+    }
+
+    .varal-etapas__item--encerrada-atendida & {
+      background-color: @verde;
     }
   }
 
