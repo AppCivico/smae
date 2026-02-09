@@ -29,7 +29,7 @@ type EtapaDoVaralComId = EtapaDoVaral & {
   'Encerramento'
 };
 
-const camposEncaminhamento = [
+const todosOsCamposEncaminhamento = [
   { label: 'Manter em análise', valor: 'editar' },
   { label: 'Solicitar ajuste', valor: 'devolver' },
   { label: 'Cancelar demanda', valor: 'cancelar' },
@@ -48,6 +48,15 @@ const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 const {
   itemParaEdicao, geolocalizacaoPorToken, erro,
 } = storeToRefs(demandasStore);
+
+const camposEncaminhamento = computed(() => {
+  const permissoes = itemParaEdicao.value?.permissoes;
+
+  return todosOsCamposEncaminhamento.map((campo) => ({
+    ...campo,
+    desabilitado: !permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes],
+  }));
+});
 
 const props = defineProps({
   demandaId: {
@@ -72,7 +81,7 @@ const areaTematicaSelecionada = computed(() => listaAreasTematicas.value
 const acoesDaAreaTematica = computed(() => areaTematicaSelecionada.value?.acoes || []);
 
 const labelDoBotaoSubmit = computed(() => {
-  const encaminhamento = camposEncaminhamento
+  const encaminhamento = camposEncaminhamento.value
     .find((c) => c.valor === values.encaminhamento);
   return encaminhamento?.label || 'Salvar';
 });
@@ -127,38 +136,32 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
       id: 'Validacao', responsavel: 'SERI', nome: 'Validação', duracao: '12 dias', status: 'pendente', atual: false,
     },
     {
-      id: 'Publicacao', responsavel: 'SERI', nome: 'Publicada', duracao: '6 dias', status: 'pendente', atual: false,
+      id: 'Publicado', responsavel: 'SERI', nome: 'Publicada', duracao: '6 dias', status: 'pendente', atual: false,
     },
     {
-      id: 'Encerramento', responsavel: 'SERI', nome: 'Encerrada', duracao: 'Atendida', status: 'encerrada-atendida', atual: false,
+      id: 'Encerrado', responsavel: 'SERI', nome: 'Encerrada', duracao: 'Atendida', status: 'pendente', atual: false,
     },
   ];
 
-  switch (itemParaEdicao.value?.status) {
-    case 'Registro':
-      return etapas.map<EtapaDoVaral>((item) => ({
-        ...item,
-        status: 'pendente',
-        atual: item.id === 'Registro',
-      }));
+  const statusAtual = itemParaEdicao.value?.status;
+  console.log(statusAtual);
 
-    case 'Validacao':
-      return etapas.map<EtapaDoVaral>((item) => ({
-        ...item,
-        status: 'pendente',
-        atual: item.id === 'Validacao',
-      }));
+  const indiceAtual = etapas.findIndex((e) => e.id === statusAtual);
 
-    case 'Encerrado':
-      return etapas.map<EtapaDoVaral>((item) => ({
-        ...item,
-        status: item.id === 'Encerramento' ? 'encerrada-atendida' : 'concluida',
-        atual: item.id === 'Encerramento',
-      }));
+  if (indiceAtual === -1) return etapas;
 
-    default:
-      return etapas;
-  }
+  return etapas.map((etapa, i) => {
+    let status: EtapaDoVaral['status'] = 'pendente';
+    console.log(indiceAtual, i);
+
+    if (i < indiceAtual) {
+      status = 'concluida';
+    } else if (i === indiceAtual && etapa.id === 'Encerramento') {
+      status = 'encerrada-atendida';
+    }
+
+    return { ...etapa, atual: i === indiceAtual, status };
+  });
 });
 
 onMounted(() => {
@@ -654,7 +657,7 @@ watch(() => values.area_tematica_id, () => {
       </div>
     </fieldset>
 
-    {{ values.encaminhamento }}
+    -{{ values.encaminhamento }}-
     <fieldset
       v-if="$props.demandaId"
       class="sessao-encaminhamento"
@@ -667,11 +670,13 @@ watch(() => values.area_tematica_id, () => {
             v-for="campoEncaminhamento in camposEncaminhamento"
             :key="`encaminhamento--${campoEncaminhamento.valor}`"
             class="flex g05 center"
+            :class="{ 'opacity50': campoEncaminhamento.desabilitado }"
           >
             <Field
               name="encaminhamento"
               type="radio"
               :value="campoEncaminhamento.valor"
+              :disabled="campoEncaminhamento.desabilitado"
               @update:model-value="setFieldValue('encaminhamento_justificativa', null)"
             />
             <span>{{ campoEncaminhamento.label }}</span>
