@@ -15,7 +15,7 @@ export const CadastroDemanda = object()
 
     // Contato do Proponente
     orgao_id: number()
-      .label('Órgão')
+      .label('Gestor Municipal')
       .required(),
     unidade_responsavel: string()
       .label('Unidade Responsável')
