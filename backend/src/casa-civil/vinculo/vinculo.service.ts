@@ -21,89 +21,90 @@ export class VinculoService {
         private readonly demandaService: DemandaService
     ) {}
 
-    async upsert(dto: CreateVinculoDto | UpdateVinculoDto, user: PessoaFromJwt, id?: number): Promise<RecordWithId> {
-        if (id) {
-            const self = await this.prisma.distribuicaoRecursoVinculo.findFirst({
-                where: { id, removido_em: null },
-                select: { id: true },
-            });
-            if (!self) throw new HttpException('Vínculo não encontrado', 404);
-        } else {
-            // Verificações de criação
-            const createDto = dto as CreateVinculoDto;
-
-            // Precisa ter projeto ou meta/iniciativa/atividade.
-            if (!createDto.meta_id && !createDto.projeto_id && !createDto.iniciativa_id && !createDto.atividade_id)
-                throw new HttpException('É necessário informar uma meta, projeto, iniciativa ou atividade', 400);
-
-            if (createDto.campo_vinculo === CampoVinculo.Endereco && !createDto.geo_localizacao_referencia_id) {
-                throw new HttpException(
-                    'É necessário informar a referência de localização geográfica para vínculos do tipo endereço',
-                    400
-                );
-            }
-
-            if (createDto.campo_vinculo === CampoVinculo.Dotacao && !createDto.orcamento_realizado_id) {
-                throw new HttpException(
-                    'É necessário informar o orçamento realizado para vínculos do tipo dotação',
-                    400
-                );
-            }
-            // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
+    async create(dto: CreateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // Validações de criação
+        if (!dto.meta_id && !dto.projeto_id && !dto.iniciativa_id && !dto.atividade_id) {
+            throw new HttpException('É necessário informar uma meta, projeto, iniciativa ou atividade', 400);
         }
 
-        // Processando dados extra como JSON
-        try {
-            if ('dados_extra' in dto && dto.dados_extra) {
-                dto.dados_extra = JSON.parse(dto.dados_extra as unknown as string) as any;
-            }
-        } catch (error) {
-            // Caso tenha erro no parse, ignorar o dado extra.
-            delete dto.dados_extra;
+        if (dto.campo_vinculo === CampoVinculo.Endereco && !dto.geo_localizacao_referencia_id) {
+            throw new HttpException(
+                'É necessário informar a referência de localização geográfica para vínculos do tipo endereço',
+                400
+            );
         }
 
-        const upsert = await this.prisma.$transaction(async (prismaTx) => {
-            const row = await prismaTx.distribuicaoRecursoVinculo.upsert({
-                where: { id: id || 0 },
-                create: {
-                    // Estes placeholders nunca serão utilizados, mas o Prisma obriga a definir valores para os campos (no caso de update, mesmo que aqui seja create)
-                    // Isso ocorre pois o DTO de update não tem todos os campos obrigatórios do create.
-                    // Mas como no DTO de criação, estes campos são obrigatórios, eles sempre estarão presentes.
-                    tipo_vinculo_id: (dto as CreateVinculoDto).tipo_vinculo_id ?? 0,
-                    distribuicao_id: (dto as CreateVinculoDto).distribuicao_id ?? 0,
-                    geo_localizacao_referencia_id: (dto as CreateVinculoDto).geo_localizacao_referencia_id ?? undefined,
-                    orcamento_realizado_id: (dto as CreateVinculoDto).orcamento_realizado_id ?? undefined,
-                    meta_id: (dto as CreateVinculoDto).meta_id ?? undefined,
-                    iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
-                    atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,
-                    projeto_id: (dto as CreateVinculoDto).projeto_id ?? undefined,
-                    demanda_id: (dto as CreateVinculoDto).demanda_id ?? undefined,
-                    campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
-                    valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
-                    observacao: (dto as CreateVinculoDto).observacao,
-                    dados_extra: (dto as CreateVinculoDto).dados_extra,
+        if (dto.campo_vinculo === CampoVinculo.Dotacao && !dto.orcamento_realizado_id) {
+            throw new HttpException(
+                'É necessário informar o orçamento realizado para vínculos do tipo dotação',
+                400
+            );
+        }
+        // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
+
+        const dadosExtra = this.parseDadosExtra(dto.dados_extra);
+
+        return await this.prisma.$transaction(async (prismaTx) => {
+            const row = await prismaTx.distribuicaoRecursoVinculo.create({
+                data: {
+                    tipo_vinculo_id: dto.tipo_vinculo_id,
+                    distribuicao_id: dto.distribuicao_id,
+                    geo_localizacao_referencia_id: dto.geo_localizacao_referencia_id,
+                    orcamento_realizado_id: dto.orcamento_realizado_id,
+                    meta_id: dto.meta_id,
+                    iniciativa_id: dto.iniciativa_id,
+                    atividade_id: dto.atividade_id,
+                    projeto_id: dto.projeto_id,
+                    demanda_id: dto.demanda_id,
+                    campo_vinculo: dto.campo_vinculo,
+                    valor_vinculo: dto.valor_vinculo,
+                    observacao: dto.observacao,
+                    dados_extra: dadosExtra,
                     criado_por: user.id,
-                    criado_em: new Date(Date.now()),
-                },
-                update: {
-                    tipo_vinculo_id: (dto as UpdateVinculoDto).tipo_vinculo_id,
-                    observacao: (dto as UpdateVinculoDto).observacao,
-                    atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
+                    criado_em: new Date(),
                 },
                 select: { id: true },
             });
 
             // Quando o vínculo for em uma demanda, há mudança no status da demanda.
-            if ((dto as CreateVinculoDto).demanda_id) {
-                const demandaId = (dto as CreateVinculoDto).demanda_id!;
-                await this.processaVinculoPorDemanda(prismaTx, demandaId, user, row.id);
+            if (dto.demanda_id) {
+                await this.processaVinculoPorDemanda(prismaTx, dto.demanda_id, user, row.id);
             }
 
             return row;
         });
+    }
 
-        return upsert;
+    async update(id: number, dto: UpdateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.prisma.distribuicaoRecursoVinculo.findFirst({
+            where: { id, removido_em: null },
+            select: { id: true },
+        });
+        if (!self) throw new HttpException('Vínculo não encontrado', 404);
+
+        const dadosExtra = this.parseDadosExtra(dto.dados_extra);
+
+        await this.prisma.distribuicaoRecursoVinculo.update({
+            where: { id },
+            data: {
+                tipo_vinculo_id: dto.tipo_vinculo_id,
+                observacao: dto.observacao,
+                dados_extra: dadosExtra,
+                atualizado_por: user.id,
+                atualizado_em: new Date(),
+            },
+        });
+
+        return { id };
+    }
+
+    private parseDadosExtra(dadosExtra: string | undefined): any {
+        if (!dadosExtra) return undefined;
+        try {
+            return JSON.parse(dadosExtra);
+        } catch (error) {
+            return undefined;
+        }
     }
 
     async findAll(filters: FilterVinculoDto): Promise<VinculoDto[]> {
