@@ -10,6 +10,8 @@ import {
 import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
+import { uuidv7 } from 'uuidv7';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { CreateGeoEnderecoReferenciaDto, FindGeoEnderecoReferenciaDto } from 'src/geo-loc/entities/geo-loc.entity';
@@ -59,7 +61,8 @@ export class DemandaService {
         private readonly geolocService: GeoLocService,
         private readonly cacheKvService: CacheKVService,
         @Inject(forwardRef(() => VinculoService))
-        private readonly vinculoService: VinculoService
+        private readonly vinculoService: VinculoService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -879,6 +882,21 @@ export class DemandaService {
             },
         });
 
+        // Envio de e-mail quando demanda retorna ao status Registro
+        if (toStatus === DemandaStatus.Registro && fromStatus !== DemandaStatus.Registro) {
+            await this.enviarEmailDemanda(
+                prismaTxn,
+                id,
+                'Solicitado ajuste da Demanda',
+                'demanda-ajuste-solicitado.html'
+            );
+        }
+
+        // Envio de e-mail quando demanda é cancelada
+        if (toStatus === DemandaStatus.Encerrado && situacaoEncerramento === DemandaSituacao.Cancelada) {
+            await this.enviarEmailDemanda(prismaTxn, id, 'Demanda cancelada', 'demanda-cancelada.html');
+        }
+
         return { id };
     }
 
@@ -1025,5 +1043,76 @@ export class DemandaService {
         if (autorizados.length > 3) {
             throw new BadRequestException('Máximo de 3 arquivos com autorização de divulgação permitidos');
         }
+    }
+
+    /**
+     * Método genérico para enviar e-mails relacionados a demandas.
+     * Reúne as informações da demanda e envia o e-mail com o assunto e template especificados.
+     */
+    private async enviarEmailDemanda(
+        prismaTxn: Prisma.TransactionClient,
+        demandaId: number,
+        subject: string,
+        template: string
+    ): Promise<void> {
+        // Buscar dados da demanda
+        const demanda = await prismaTxn.demanda.findUnique({
+            where: { id: demandaId },
+            select: {
+                nome_responsavel: true,
+                email_responsavel: true,
+                nome_projeto: true,
+                valor: true,
+                area_tematica: {
+                    select: {
+                        nome: true,
+                    },
+                },
+            },
+        });
+
+        if (!demanda) {
+            return; // Se não encontrar a demanda, não envia email
+        }
+
+        // Buscar configuração do órgão
+        const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+        const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+        if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+
+        const orgao = await prismaTxn.orgao.findUnique({
+            where: { id: orgaoId },
+            select: { descricao: true },
+        });
+
+        if (!orgao) {
+            throw new Error('Erro ao buscar dados do órgão para envio de e-mail');
+        }
+
+        // Obter URL base do SMAE
+        const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+        // Formatar o valor com 2 casas decimais e trocar ponto por vírgula
+        const valorNumerico = parseFloat(demanda.valor.toString());
+        const valorFormatado = valorNumerico.toFixed(2).replace('.', ',');
+
+        // Enviar e-mail
+        await prismaTxn.emaildbQueue.create({
+            data: {
+                id: uuidv7(),
+                config_id: 1,
+                subject,
+                template,
+                to: demanda.email_responsavel,
+                variables: {
+                    nome_responsavel: demanda.nome_responsavel,
+                    nome_projeto: demanda.nome_projeto,
+                    valor: valorFormatado,
+                    area_tematica: demanda.area_tematica.nome,
+                    orgao_nome: orgao.descricao,
+                    smae_url: smaeUrl,
+                },
+            },
+        });
     }
 }
