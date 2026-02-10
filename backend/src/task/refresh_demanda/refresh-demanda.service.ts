@@ -132,11 +132,14 @@ export class RefreshDemandaService implements TaskableService {
         const geopoints = demandas
             .map((d) => {
                 const refs = geoReferencias.get(d.id) || [];
-                const geo = refs.find((r: any) => r.latitude && r.longitude);
+                const geo = refs.find((r: any) => r.endereco?.geometry?.coordinates);
+                // console.dir({ refs }, { depth: null });
+                // GeoJSON coordinates are [longitude, latitude]
+                const coordinates = geo?.endereco?.geometry?.coordinates;
                 return {
                     id: d.id,
-                    latitude: geo?.latitude ?? null,
-                    longitude: geo?.longitude ?? null,
+                    latitude: coordinates?.[1] ?? null,
+                    longitude: coordinates?.[0] ?? null,
                 };
             })
             .filter((p) => p.latitude !== null && p.longitude !== null);
