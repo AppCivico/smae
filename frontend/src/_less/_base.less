@@ -1855,11 +1855,9 @@ body:has(dialog[open].editModal-dialog) {
 // LESS não tem [**placeholder selectors** como no
 // SASS](https://sass-lang.com/documentation/style-rules/placeholder-selectors/)
 .input-checkbox-and-radio() {
-  label:has(> &),
-  form div:has(> label > &) {
+  label:has(> &) {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
   }
 
   appearance: none;
@@ -1873,6 +1871,10 @@ body:has(dialog[open].editModal-dialog) {
   appearance: none;
   cursor: pointer;
   vertical-align: text-bottom;
+
+  label > & {
+    margin-right: 0.5rem;
+  }
 
   &:hover {
     background-color: fadeout(@amarelo, 80%);
