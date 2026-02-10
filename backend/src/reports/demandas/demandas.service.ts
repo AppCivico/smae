@@ -119,19 +119,10 @@ export class DemandasService implements ReportableService {
                     WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'rua' IS NOT NULL 
                     THEN g.geom_geojson->'properties'->>'rua' 
                 END AS endereco,
-                COALESCE(
-                    NULLIF(
-                        CASE 
-                            WHEN glr.tipo = 'Endereco' THEN g.geom_geojson->'properties'->>'bairro' 
-                        END,
-                        ''
-                    ),
-                    (
-                        SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
-                        FROM UNNEST(g.calc_regioes_nivel_3) AS regiao_id
-                        JOIN regiao r ON r.id = regiao_id AND r.nivel = 3
-                    )
-                ) AS bairro,
+                CASE 
+                    WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'bairro' IS NOT NULL 
+                    THEN g.geom_geojson->'properties'->>'bairro' 
+                END AS bairro,
                 (
                     SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
                     FROM UNNEST(g.calc_regioes_nivel_3) AS regiao_id
