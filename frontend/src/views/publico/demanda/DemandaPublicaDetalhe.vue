@@ -98,7 +98,11 @@ const dadosDemanda = computed(() => {
 });
 
 function urlImagem(arquivo) {
-  return `${arquivo.caminho_completo}?download_token=${arquivo.download_token}`;
+  const url = new URL(arquivo.caminho_completo, import.meta.env.VITE_API_URL);
+  if (arquivo.download_token) {
+    url.searchParams.set('download_token', arquivo.download_token);
+  }
+  return url.toString();
 }
 
 async function buscarDemanda() {
