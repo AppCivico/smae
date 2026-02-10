@@ -128,6 +128,10 @@ onMounted(() => {
     portfoliosStore.buscarTudo();
   }
 
+  if (props.etapaId) {
+    etapasProjetosStore.buscarPorId(props.etapaId);
+  }
+
   // Etapas padrão pra preencher o select
   if (contextoEtapa.value === 'configuracoes') {
     etapasProjetosStore.buscarEtapasPadrao();
