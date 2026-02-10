@@ -146,12 +146,7 @@ router.beforeEach(async (to, from) => {
   if (to.path === '/nova-senha' && !authStore.reducedToken) {
     return '/login';
   }
-<<<<<<< HEAD
-
-  return true;
-=======
   return undefined;
->>>>>>> dc93c881e (feat: Adicionar página pública de detalhes de demanda)
 });
 
 router.afterEach((to, from) => {
