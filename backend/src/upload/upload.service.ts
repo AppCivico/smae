@@ -5,6 +5,8 @@ import AdmZip from 'adm-zip';
 import * as sharp from 'sharp';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
 import { read } from 'xlsx';
+import { JSDOM } from 'jsdom';
+import DOMPurify from 'dompurify';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
@@ -342,17 +344,46 @@ export class UploadService {
         const isSvg = /\.svg$/i.test(originalname);
         if (isSvg && !config.allowSvg) return null;
 
-        const width = await this.smaeConfig.getConfigNumberWithDefault(config.configKeys.width, config.defaultWidth);
-        const height = await this.smaeConfig.getConfigNumberWithDefault(config.configKeys.height, config.defaultHeight);
-        const quality = await this.smaeConfig.getConfigNumberWithDefault(
-            config.configKeys.quality,
-            config.defaultQuality
-        );
+        let thumbnailBuffer: Buffer;
+        let fileName: string;
+        let mimeType: string;
 
-        const thumbnailBuffer = await sharp(file.buffer)
-            .resize(width, height, { fit: config.fit, withoutEnlargement: true })
-            .webp({ quality })
-            .toBuffer();
+        if (isSvg) {
+            // Sanitize SVG with DOMPurify to remove dangerous tags/attributes
+            const window = new JSDOM('').window;
+            const purify = DOMPurify(window);
+            const svgString = file.buffer.toString('utf-8');
+
+            const cleanSvg = purify.sanitize(svgString, {
+                USE_PROFILES: { svg: true, svgFilters: true },
+            });
+
+            thumbnailBuffer = Buffer.from(cleanSvg, 'utf-8');
+            fileName = 'thumbnail.svg';
+            mimeType = 'image/svg+xml';
+        } else {
+            // Convert raster images to WebP
+            const width = await this.smaeConfig.getConfigNumberWithDefault(
+                config.configKeys.width,
+                config.defaultWidth
+            );
+            const height = await this.smaeConfig.getConfigNumberWithDefault(
+                config.configKeys.height,
+                config.defaultHeight
+            );
+            const quality = await this.smaeConfig.getConfigNumberWithDefault(
+                config.configKeys.quality,
+                config.defaultQuality
+            );
+
+            thumbnailBuffer = await sharp(file.buffer)
+                .resize(width, height, { fit: config.fit, withoutEnlargement: true })
+                .webp({ quality })
+                .toBuffer();
+
+            fileName = 'thumbnail.webp';
+            mimeType = 'image/webp';
+        }
 
         const thumbnailId = await this.nextSequence();
         const thumbnailKey = [
@@ -360,11 +391,11 @@ export class UploadService {
             'thumbnail',
             `original-arquivo-id-${originalArquivoId}`,
             `arquivo-id-${thumbnailId}`,
-            'thumbnail.webp',
+            fileName,
         ].join('/');
 
         await this.storage.putBlob(thumbnailKey, thumbnailBuffer, {
-            'Content-Type': 'image/webp',
+            'Content-Type': mimeType,
             'x-user-id': String(userId),
             'x-tipo': 'THUMBNAIL',
             'x-original-arquivo-id': String(originalArquivoId),
@@ -376,8 +407,8 @@ export class UploadService {
                 criado_por: userId,
                 criado_em: new Date(Date.now()),
                 caminho: thumbnailKey,
-                nome_original: 'thumbnail.webp',
-                mime_type: 'image/webp',
+                nome_original: fileName,
+                mime_type: mimeType,
                 tamanho_bytes: thumbnailBuffer.length,
                 tipo: 'THUMBNAIL',
             },

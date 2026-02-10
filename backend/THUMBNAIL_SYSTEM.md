@@ -12,7 +12,8 @@ Sistema completo de geração de thumbnails para uploads de imagens com processa
 
 Um trabalhador de tarefa dedicado processa a geração de thumbnails de forma assíncrona:
 - Busca o arquivo original do armazenamento
-- Gera thumbnail WebP usando sharp
+- **SVG**: Sanitiza o SVG usando DOMPurify (remove tags/atributos perigosos como `<script>`, event handlers) e mantém formato SVG
+- **Raster (PNG/JPG)**: Converte para WebP usando sharp com redimensionamento
 - Armazena o thumbnail no S3 em `uploads/thumbnail/original-arquivo-id-{id}/`
 - Vincula o thumbnail via `thumbnail_arquivo_id` na tabela Arquivo
 - Não bloqueante: falhas não impedem a conclusão da tarefa
@@ -308,9 +309,11 @@ GROUP BY tipo;
 
 Thumbnails são gerados automaticamente para novos uploads:
 1. Usuário faz upload de imagem via `/upload`
-2. Validação de imagem é executada (verificação de conteúdo usando sharp)
+2. Validação de imagem é executada (verificação de conteúdo usando sharp para raster, validação de tags SVG para vetores)
 3. Arquivo original é criado
-4. Geração de thumbnail é acionada (não bloqueante)
+4. Geração de thumbnail é acionada (não bloqueante):
+   - **SVG**: Sanitizado com DOMPurify para remover XSS e mantido como SVG
+   - **PNG/JPG**: Convertido para WebP com dimensões configuráveis
 5. Se a geração de thumbnail falhar, o upload original ainda é bem-sucedido
 
 ### Regeneração Manual
@@ -324,11 +327,12 @@ Para regenerar um thumbnail para um arquivo existente:
 
 O trabalhador de tarefa (`ThumbnailService`):
 1. Baixa o arquivo original do S3
-2. Gera thumbnail usando sharp com configuração específica do tipo
-3. Converte para formato WebP
-4. Faz upload do thumbnail para S3
-5. Cria registro Arquivo com `tipo: 'THUMBNAIL'`
-6. Vincula via `thumbnail_arquivo_id` no Arquivo original
+2. Gera thumbnail com processamento específico por formato:
+   - **SVG**: Sanitiza usando DOMPurify (remove `<script>`, event handlers, javascript: URIs) mantendo formato vetorial
+   - **Raster**: Redimensiona e converte para WebP usando sharp
+3. Faz upload do thumbnail para S3 (`thumbnail.svg` ou `thumbnail.webp`)
+4. Cria registro Arquivo com `tipo: 'THUMBNAIL'` e mime-type correto (`image/svg+xml` ou `image/webp`)
+5. Vincula via `thumbnail_arquivo_id` no Arquivo original
 
 ## Arquivos Modificados/Criados
 
@@ -361,6 +365,19 @@ O trabalhador de tarefa (`ThumbnailService`):
 - [ ] Verificar tabela task_queue → tarefas processadas com sucesso
 - [ ] Verificar respostas da API → tokens de thumbnail incluídos
 - [ ] Falha na geração de thumbnail → upload original ainda bem-sucedido
+
+## Segurança
+
+### Sanitização de SVG
+
+Arquivos SVG carregados são automaticamente sanitizados usando DOMPurify antes de serem armazenados como thumbnails. Isso remove:
+- Tags `<script>` e conteúdo executável
+- Event handlers (onclick, onload, etc.)
+- javascript: URIs
+- Tags `<foreignObject>` com conteúdo HTML
+- Outras construções que podem representar riscos de XSS
+
+O arquivo SVG **original** permanece inalterado no upload principal. Apenas o thumbnail é sanitizado, garantindo que a versão servida para visualização seja segura enquanto preserva o arquivo original para casos de uso legítimos.
 
 ## Solução de Problemas
 
