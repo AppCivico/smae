@@ -104,7 +104,7 @@ export default {
           meta: {
             título: 'Nova Demanda',
             rotaDeEscape: 'demandas.listar',
-            rotasParaMigalhasDePão: ['demandas', 'demandas.listar'],
+            rotasParaMigalhasDePão: ['demandas.listar'],
           },
         },
         {
