@@ -46,6 +46,7 @@ import * as MinioJS from 'minio';
 import { deveGerarPreview } from './arquivo-preview.helper';
 import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 import { arquivo_preview_status } from '@prisma/client';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 
 @Injectable()
 export class UploadService {
@@ -55,7 +56,8 @@ export class UploadService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly storage: StorageService,
-        private readonly uploadDiretorio: UploadDiretorioService
+        private readonly uploadDiretorio: UploadDiretorioService,
+        private readonly smaeConfig: SmaeConfigService
     ) {}
 
     async upload(
@@ -229,14 +231,21 @@ export class UploadService {
             createUploadDto.tipo === TipoUpload.ICONE_TAG ||
             createUploadDto.tipo === TipoUpload.ICONE_PORTFOLIO
         ) {
-            if (file.size > 204800) {
-                throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
+            const maxIconSize = await this.smaeConfig.getConfigNumberWithDefault('UPLOAD_MAX_SIZE_ICON_BYTES', 512000);
+            if (file.size > maxIconSize) {
+                const maxSizeKB = Math.round(maxIconSize / 1024);
+                throw new HttpException(`O arquivo de ícone precisa ser menor que ${maxSizeKB} kilobytes.`, 400);
             } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
             }
         } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
-            if (file.size > 1048576 * 10) {
-                throw new HttpException('O arquivo de importação precisa ser menor que 10 megabytes.', 400);
+            const maxBudgetImportSize = await this.smaeConfig.getConfigNumberWithDefault(
+                'UPLOAD_MAX_SIZE_BUDGET_IMPORT_BYTES',
+                10485760
+            );
+            if (file.size > maxBudgetImportSize) {
+                const maxSizeMB = Math.round(maxBudgetImportSize / (1024 * 1024));
+                throw new HttpException(`O arquivo de importação precisa ser menor que ${maxSizeMB} megabytes.`, 400);
             } else if (/\.(xls|xlsx|csv)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo de ícone precisa ser xls, XLSX ou CSV.', 400);
             }
@@ -245,8 +254,14 @@ export class UploadService {
         } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
             if (/(\.png|svg)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
-            } else if (file.size > 1048576) {
-                throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
+            }
+            const maxLogoPdmSize = await this.smaeConfig.getConfigNumberWithDefault(
+                'UPLOAD_MAX_SIZE_LOGO_PDM_BYTES',
+                1048576
+            );
+            if (file.size > maxLogoPdmSize) {
+                const maxSizeMB = Math.round(maxLogoPdmSize / (1024 * 1024));
+                throw new HttpException(`O arquivo de Logo do PDM precisa ser menor que ${maxSizeMB} Megabyte`, 400);
             }
         } else if (createUploadDto.tipo === TipoUpload.FOTO_PARLAMENTAR) {
             if (/(\.png|jpg|jpeg)$/i.test(file.originalname) == false) {
