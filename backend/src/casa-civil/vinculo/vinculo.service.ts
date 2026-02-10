@@ -30,8 +30,8 @@ export class VinculoService {
 
     async create(dto: CreateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // Validações de criação
-        if (!dto.meta_id && !dto.projeto_id && !dto.iniciativa_id && !dto.atividade_id) {
-            throw new HttpException('É necessário informar uma meta, projeto, iniciativa ou atividade', 400);
+        if (!dto.meta_id && !dto.projeto_id && !dto.iniciativa_id && !dto.atividade_id && !dto.demanda_id) {
+            throw new HttpException('É necessário informar uma meta, projeto, iniciativa, atividade ou demanda', 400);
         }
 
         if (dto.campo_vinculo === CampoVinculo.Endereco && !dto.geo_localizacao_referencia_id) {
