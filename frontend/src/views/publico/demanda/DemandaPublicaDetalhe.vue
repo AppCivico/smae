@@ -15,6 +15,8 @@ const props = defineProps({
   },
 });
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 const demanda = ref(null);
 const camadasGeo = ref([]);
 const chamadasPendentes = ref({
@@ -98,7 +100,7 @@ const dadosDemanda = computed(() => {
 });
 
 function urlImagem(arquivo) {
-  const url = new URL(arquivo.caminho_completo, import.meta.env.VITE_API_URL);
+  const url = new URL(arquivo.caminho_completo, baseUrl);
   if (arquivo.download_token) {
     url.searchParams.set('download_token', arquivo.download_token);
   }
@@ -111,7 +113,7 @@ async function buscarDemanda() {
 
   try {
     const resposta = await requestS.get(
-      `${import.meta.env.VITE_API_URL}/public/demandas/${props.id}`,
+      `${baseUrl}/public/demandas/${props.id}`,
       null,
       { AlertarErros: false },
     );
@@ -133,7 +135,7 @@ async function buscarGeoCamadas() {
 
   try {
     const resposta = await requestS.get(
-      `${import.meta.env.VITE_API_URL}/public/demandas/geocamadas`,
+      `${baseUrl}/public/demandas/geocamadas`,
       null,
       { AlertarErros: false },
     );
