@@ -129,7 +129,8 @@ export const router = createRouter({
 
 router.beforeEach(async (to, from) => {
   const publicPages = ['/login', '/esqueci-minha-senha', '/nova-senha'];
-  const authRequired = !publicPages.includes(to.path) && !to.path.startsWith('/publico');
+  const authRequired = !publicPages.includes(to.path)
+    && !to.matched.some((record) => record.meta.publico);
   const authStore = useAuthStore();
 
   if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO === 'true') {

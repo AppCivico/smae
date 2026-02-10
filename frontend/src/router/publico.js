@@ -5,6 +5,9 @@ import PublicLayout from '@/views/publico/PublicLayout.vue';
 export default {
   path: '/publico',
   component: PublicLayout,
+  meta: {
+    publico: true,
+  },
   children: [
     {
       path: 'demandas/:id',
