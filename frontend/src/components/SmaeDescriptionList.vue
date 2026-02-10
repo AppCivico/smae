@@ -66,7 +66,18 @@ function normalizarItem(campo: ConfigOuChave): ConfigDeItem {
     : campo;
 }
 
-const itensNormalizados = computed(() => props.itensSelecionados?.map(normalizarItem));
+const mapaDeItens = computed<Map<string, ConfigDeItem>>(() => {
+  if (!props.itensSelecionados) {
+    return new Map();
+  }
+
+  return new Map(
+    props.itensSelecionados.map((campo) => {
+      const config = normalizarItem(campo);
+      return [config.chave, config];
+    }),
+  );
+});
 
 function aplicarLarguraBase(
   atributos: Record<string, unknown>,
@@ -95,29 +106,30 @@ function aplicarLarguraBase(
 }
 
 function resolverTitulo(chave: string, tituloExplicito?: string): string | undefined {
-  if (tituloExplicito) {
-    return tituloExplicito;
-  }
-
-  const configDoItem = itensNormalizados.value?.find((c) => c.chave === chave);
-
-  return configDoItem?.titulo
+  return tituloExplicito
+    || mapaDeItens.value.get(chave)?.titulo
     || tituloDoSchema(chave)
     || undefined;
 }
 
+function montarItem(config: ConfigDeItem, item: ItemDeLista): ItemDeLista {
+  const larguraBase = item.larguraBase || config.larguraBase;
+  const atributosMesclados = { ...config.atributosDoItem, ...item.atributosDoItem };
+
+  return {
+    ...item,
+    titulo: resolverTitulo(item.chave, item.titulo),
+    atributosDoItem: aplicarLarguraBase(atributosMesclados, larguraBase),
+  };
+}
+
 const listaConvertida = computed(() => {
+  const mapa = mapaDeItens.value;
+
   if (Array.isArray(props.lista)) {
     return props.lista.map((item) => {
-      const configDoItem = itensNormalizados.value?.find((c) => c.chave === item.chave);
-      const larguraBase = item.larguraBase || configDoItem?.larguraBase;
-      const atributosMesclados = { ...configDoItem?.atributosDoItem, ...item.atributosDoItem };
-
-      return {
-        ...item,
-        titulo: resolverTitulo(item.chave, item.titulo),
-        atributosDoItem: aplicarLarguraBase(atributosMesclados, larguraBase),
-      };
+      const config = mapa.get(item.chave);
+      return montarItem(config || { chave: item.chave }, item);
     });
   }
 
@@ -127,29 +139,25 @@ const listaConvertida = computed(() => {
 
   const { objeto } = props;
 
-  return itensNormalizados.value
-    ? itensNormalizados.value.reduce<ItemDeLista[]>((acc, item) => {
-      if (item.chave in objeto) {
-        acc.push({
-          chave: item.chave,
-          valor: objeto[item.chave],
-          titulo: resolverTitulo(item.chave, item.titulo),
-          atributosDoItem: aplicarLarguraBase(
-            { ...item.atributosDoItem },
-            item.larguraBase,
-          ),
-          metadados: undefined,
-        });
+  if (mapa.size) {
+    return [...mapa.entries()].reduce<ItemDeLista[]>((acc, [chave, config]) => {
+      if (chave in objeto) {
+        acc.push(montarItem(config, {
+          chave,
+          valor: objeto[chave],
+        }));
       }
       return acc;
-    }, [])
-    : Object.entries(objeto).map(([chave, valor]) => ({
-      chave,
-      valor,
-      titulo: resolverTitulo(chave),
-      atributosDoItem: undefined,
-      metadados: undefined,
-    }));
+    }, []);
+  }
+
+  return Object.entries(objeto).map(([chave, valor]) => ({
+    chave,
+    valor,
+    titulo: resolverTitulo(chave),
+    atributosDoItem: undefined,
+    metadados: undefined,
+  }));
 });
 
 </script>
