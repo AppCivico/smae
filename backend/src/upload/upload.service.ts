@@ -28,13 +28,6 @@ interface TokenResponse {
     mime_type: string;
 }
 
-interface RestoreDescriptionResult {
-    total: number;
-    restored: number;
-    errors: number;
-    skipped: number;
-}
-
 const DOWNLOAD_AUD = 'dl';
 const UPLOAD_AUD = 'upload';
 const PUBLIC_AUD = 'public';
@@ -49,6 +42,7 @@ const ZipContentTypes = [
 import * as MinioJS from 'minio';
 import { deveGerarPreview } from './arquivo-preview.helper';
 import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
+import { RestaurarDescricaoResponseDto } from './dto/restaurar-descricao-response.dto';
 import { arquivo_preview_status } from '@prisma/client';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 
@@ -312,8 +306,20 @@ export class UploadService {
         const isSvg = /\.svg$/i.test(file.originalname);
 
         if (isSvg) {
-            const head = file.buffer.subarray(0, 512).toString('utf-8').trim();
-            if (!head.includes('<svg')) {
+            // Parse full file buffer with JSDOM to validate SVG structure
+            try {
+                const svgString = file.buffer.toString('utf-8');
+                const dom = new JSDOM(svgString, { contentType: 'image/svg+xml' });
+                const document = dom.window.document;
+
+                // Validate that the parsed document contains a top-level <svg> element
+                if (!document.querySelector('svg')) {
+                    throw new HttpException('O arquivo não é um SVG válido.', 400);
+                }
+
+                dom.window.close();
+            } catch (error) {
+                if (error instanceof HttpException) throw error;
                 throw new HttpException('O arquivo não é um SVG válido.', 400);
             }
         } else {
@@ -338,7 +344,10 @@ export class UploadService {
         userId: number
     ): Promise<number | null> {
         const config = THUMBNAIL_TYPES[tipoUpload];
-        if (!config) return null;
+        if (!config) {
+            this.logger.debug(`Thumbnail config not found for tipoUpload: ${tipoUpload}`);
+            return null;
+        }
 
         const originalname = 'originalname' in file ? file.originalname : '';
         const isSvg = /\.svg$/i.test(originalname);
@@ -349,18 +358,24 @@ export class UploadService {
         let mimeType: string;
 
         if (isSvg) {
-            // Sanitize SVG with DOMPurify to remove dangerous tags/attributes
-            const window = new JSDOM('').window;
-            const purify = DOMPurify(window);
-            const svgString = file.buffer.toString('utf-8');
+            const dom = new JSDOM('');
+            try {
+                // Sanitize SVG with DOMPurify to remove dangerous tags/attributes
+                const window = dom.window;
+                const purify = DOMPurify(window);
+                const svgString = file.buffer.toString('utf-8');
 
-            const cleanSvg = purify.sanitize(svgString, {
-                USE_PROFILES: { svg: true, svgFilters: true },
-            });
+                const cleanSvg = purify.sanitize(svgString, {
+                    USE_PROFILES: { svg: true, svgFilters: true },
+                });
 
-            thumbnailBuffer = Buffer.from(cleanSvg, 'utf-8');
-            fileName = 'thumbnail.svg';
-            mimeType = 'image/svg+xml';
+                thumbnailBuffer = Buffer.from(cleanSvg, 'utf-8');
+                fileName = 'thumbnail.svg';
+                mimeType = 'image/svg+xml';
+            } finally {
+                // Always close the JSDOM window to prevent memory leaks
+                dom.window.close();
+            }
         } else {
             // Convert raster images to WebP
             const width = await this.smaeConfig.getConfigNumberWithDefault(
@@ -401,24 +416,26 @@ export class UploadService {
             'x-original-arquivo-id': String(originalArquivoId),
         });
 
-        await this.prisma.arquivo.create({
-            data: {
-                id: thumbnailId,
-                criado_por: userId,
-                criado_em: new Date(Date.now()),
-                caminho: thumbnailKey,
-                nome_original: fileName,
-                mime_type: mimeType,
-                tamanho_bytes: thumbnailBuffer.length,
-                tipo: 'THUMBNAIL',
-            },
-            select: { id: true },
-        });
-
-        await this.prisma.arquivo.update({
-            where: { id: originalArquivoId },
-            data: { thumbnail_arquivo_id: thumbnailId },
-        });
+        // Use transaction to ensure atomic create and update
+        await this.prisma.$transaction([
+            this.prisma.arquivo.create({
+                data: {
+                    id: thumbnailId,
+                    criado_por: userId,
+                    criado_em: new Date(Date.now()),
+                    caminho: thumbnailKey,
+                    nome_original: fileName,
+                    mime_type: mimeType,
+                    tamanho_bytes: thumbnailBuffer.length,
+                    tipo: 'THUMBNAIL',
+                },
+                select: { id: true },
+            }),
+            this.prisma.arquivo.update({
+                where: { id: originalArquivoId },
+                data: { thumbnail_arquivo_id: thumbnailId },
+            }),
+        ]);
 
         return thumbnailId;
     }
@@ -751,8 +768,8 @@ export class UploadService {
         }
     }
 
-    async restauraDescricaoPeloMetadado(batchSize = 500): Promise<RestoreDescriptionResult> {
-        const result: RestoreDescriptionResult = {
+    async restauraDescricaoPeloMetadado(batchSize = 500): Promise<RestaurarDescricaoResponseDto> {
+        const result: RestaurarDescricaoResponseDto = {
             total: 0,
             restored: 0,
             errors: 0,
@@ -1102,7 +1119,7 @@ export class UploadService {
             `Processing thumbnails in batch${tipoFiltro ? ` for tipo=${tipoFiltro}` : ' for all thumbnail types'}`
         );
 
-        const where: any = {
+        const where: Prisma.ArquivoWhereInput = {
             thumbnail_arquivo_id: null,
         };
 
