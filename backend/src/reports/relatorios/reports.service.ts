@@ -876,6 +876,8 @@ export class ReportsService {
                 return 'Plano Setorial - Previsão de Custo';
             case FonteRelatorio.PSIndicadores:
                 return 'Plano Setorial - Indicadores';
+            case FonteRelatorio.Demandas:
+                return 'Demandas';
             default:
                 return 'Desconhecido';
         }

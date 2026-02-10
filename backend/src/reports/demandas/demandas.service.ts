@@ -119,27 +119,28 @@ export class DemandasService implements ReportableService {
                     WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'rua' IS NOT NULL 
                     THEN g.geom_geojson->'properties'->>'rua' 
                 END AS endereco,
-                CASE 
-                    WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'bairro' IS NOT NULL 
-                    THEN g.geom_geojson->'properties'->>'bairro' 
-                END AS bairro,
+                COALESCE(
+                    NULLIF(
+                        CASE 
+                            WHEN glr.tipo = 'Endereco' THEN g.geom_geojson->'properties'->>'bairro' 
+                        END,
+                        ''
+                    ),
+                    (
+                        SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
+                        FROM UNNEST(g.calc_regioes_nivel_3) AS regiao_id
+                        JOIN regiao r ON r.id = regiao_id AND r.nivel = 3
+                    )
+                ) AS bairro,
                 (
                     SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
-                    FROM geo_localizacao_referencia glr_sub
-                    JOIN geo_localizacao g_sub ON g_sub.id = glr_sub.geo_localizacao_id
-                    CROSS JOIN UNNEST(g_sub.calc_regioes_nivel_1) AS regiao_id
-                    JOIN regiao r ON r.id = regiao_id AND r.nivel = 1
-                    WHERE glr_sub.demanda_id = glr.demanda_id
-                      AND glr_sub.removido_em IS NULL
+                    FROM UNNEST(g.calc_regioes_nivel_3) AS regiao_id
+                    JOIN regiao r ON r.id = regiao_id AND r.nivel = 3
                 ) AS subprefeitura,
                 (
                     SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
-                    FROM geo_localizacao_referencia glr_dist
-                    JOIN geo_localizacao g_dist ON g_dist.id = glr_dist.geo_localizacao_id
-                    CROSS JOIN UNNEST(g_dist.calc_regioes_nivel_2) AS regiao_id
-                    JOIN regiao r ON r.id = regiao_id AND r.nivel = 2
-                    WHERE glr_dist.demanda_id = glr.demanda_id
-                      AND glr_dist.removido_em IS NULL
+                    FROM UNNEST(g.calc_regioes_nivel_4) AS regiao_id
+                    JOIN regiao r ON r.id = regiao_id AND r.nivel = 4
                 ) AS distrito
             FROM geo_localizacao_referencia glr
             LEFT JOIN geo_localizacao g ON g.id = glr.geo_localizacao_id
@@ -316,14 +317,14 @@ export class DemandasService implements ReportableService {
                 { value: 'distrito', label: 'Distrito' },
             ];
 
-            const tmpFileEnderecos = _ctx.getTmpFile('demandas_enderecos.csv');
+            const tmpFileEnderecos = _ctx.getTmpFile('enderecos.csv');
             const csvOptsEnderecos: CsvWriterOptions<RelDemandasEnderecosDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: fieldsEnderecos,
             };
             await WriteCsvToFile(dados.enderecos, tmpFileEnderecos.stream, csvOptsEnderecos);
-            out.push({ name: 'demandas_enderecos.csv', localFile: tmpFileEnderecos.path });
+            out.push({ name: 'enderecos.csv', localFile: tmpFileEnderecos.path });
         }
 
         return out;
