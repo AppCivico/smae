@@ -18,7 +18,10 @@ export class RelDemandasDto {
     observacao: string | null;
     area_tematica: string;
     acoes: string;
-    localizacao: string;
+}
+
+export class RelDemandasEnderecosDto {
+    nome_projeto: string;
     cep: string;
     endereco: string;
     bairro: string;
@@ -28,4 +31,5 @@ export class RelDemandasDto {
 
 export class DemandasRelatorioDto {
     linhas: RelDemandasDto[];
+    enderecos: RelDemandasEnderecosDto[];
 }

@@ -12,7 +12,7 @@ import {
     ReportableService,
 } from '../utils/utils.service';
 import { CreateRelDemandasDto } from './dto/create-demandas.dto';
-import { DemandasRelatorioDto, RelDemandasDto } from './entities/demandas.entity';
+import { DemandasRelatorioDto, RelDemandasDto, RelDemandasEnderecosDto } from './entities/demandas.entity';
 
 type WhereCond = {
     whereString: string;
@@ -39,7 +39,11 @@ class RetornoDbDemandas {
     observacao: string | null;
     area_tematica_nome: string;
     acoes_concatenadas: string | null;
-    localizacoes_concatenadas: string | null;
+}
+
+class RetornoDbEnderecos {
+    demanda_id: number;
+    nome_projeto: string;
     cep: string | null;
     endereco: string | null;
     bairro: string | null;
@@ -54,6 +58,7 @@ export class DemandasService implements ReportableService {
     async asJSON(dto: CreateRelDemandasDto, user: PessoaFromJwt | null = null): Promise<DemandasRelatorioDto> {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
         const out_demandas: RelDemandasDto[] = [];
+        const out_enderecos: RelDemandasEnderecosDto[] = [];
 
         const sql = `
             WITH acoes_agg AS (
@@ -64,59 +69,6 @@ export class DemandasService implements ReportableService {
                 JOIN acao a ON a.id = da.acao_id AND a.removido_em IS NULL
                 WHERE da.removido_em IS NULL
                 GROUP BY da.demanda_id
-            ),
-            localizacoes_agg AS (
-                SELECT
-                    glr.demanda_id,
-                    STRING_AGG(
-                        DISTINCT g.endereco_exibicao,
-                        ', '
-                        ORDER BY g.endereco_exibicao
-                    ) AS localizacoes_concatenadas,
-                    STRING_AGG(
-                        DISTINCT CASE 
-                            WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'cep' IS NOT NULL 
-                            THEN g.geom_geojson->'properties'->>'cep' 
-                        END,
-                        ', '
-                    ) FILTER (WHERE glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'cep' IS NOT NULL) AS cep,
-                    STRING_AGG(
-                        DISTINCT CASE 
-                            WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'rua' IS NOT NULL 
-                            THEN g.geom_geojson->'properties'->>'rua' 
-                        END,
-                        ', '
-                    ) FILTER (WHERE glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'rua' IS NOT NULL) AS endereco,
-                    STRING_AGG(
-                        DISTINCT CASE 
-                            WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'bairro' IS NOT NULL 
-                            THEN g.geom_geojson->'properties'->>'bairro' 
-                        END,
-                        ', '
-                    ) FILTER (WHERE glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'bairro' IS NOT NULL) AS bairro,
-                    (
-                        SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
-                        FROM geo_localizacao_referencia glr_sub
-                        JOIN geo_localizacao g_sub ON g_sub.id = glr_sub.geo_localizacao_id
-                        CROSS JOIN UNNEST(g_sub.calc_regioes_nivel_1) AS regiao_id
-                        JOIN regiao r ON r.id = regiao_id AND r.nivel = 1
-                        WHERE glr_sub.demanda_id = glr.demanda_id
-                          AND glr_sub.removido_em IS NULL
-                    ) AS subprefeitura,
-                    (
-                        SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
-                        FROM geo_localizacao_referencia glr_dist
-                        JOIN geo_localizacao g_dist ON g_dist.id = glr_dist.geo_localizacao_id
-                        CROSS JOIN UNNEST(g_dist.calc_regioes_nivel_2) AS regiao_id
-                        JOIN regiao r ON r.id = regiao_id AND r.nivel = 2
-                        WHERE glr_dist.demanda_id = glr.demanda_id
-                          AND glr_dist.removido_em IS NULL
-                    ) AS distrito
-                FROM geo_localizacao_referencia glr
-                LEFT JOIN geo_localizacao g ON g.id = glr.geo_localizacao_id
-                WHERE glr.demanda_id IS NOT NULL
-                  AND glr.removido_em IS NULL
-                GROUP BY glr.demanda_id
             )
             SELECT
                 d.id,
@@ -137,18 +89,11 @@ export class DemandasService implements ReportableService {
                 d.finalidade::text AS finalidade,
                 d.observacao,
                 at.nome AS area_tematica_nome,
-                acoes.acoes_concatenadas,
-                loc.localizacoes_concatenadas,
-                loc.cep,
-                loc.endereco,
-                loc.bairro,
-                loc.subprefeitura,
-                loc.distrito
+                acoes.acoes_concatenadas
             FROM demanda d
             JOIN orgao o ON o.id = d.orgao_id
             JOIN area_tematica at ON at.id = d.area_tematica_id
             LEFT JOIN acoes_agg acoes ON acoes.demanda_id = d.id
-            LEFT JOIN localizacoes_agg loc ON loc.demanda_id = d.id
             ${whereCond.whereString}
             ORDER BY d.data_registro DESC, d.id
         `;
@@ -157,8 +102,62 @@ export class DemandasService implements ReportableService {
 
         this.convertRowsDemandasInto(rows, out_demandas);
 
+        // Buscar endereços separadamente
+        const whereEnderecosString = whereCond.whereString
+            ? whereCond.whereString + ' AND glr.demanda_id IS NOT NULL AND glr.removido_em IS NULL'
+            : 'WHERE glr.demanda_id IS NOT NULL AND glr.removido_em IS NULL';
+
+        const sqlEnderecos = `
+            SELECT
+                glr.demanda_id,
+                d.nome_projeto,
+                CASE 
+                    WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'cep' IS NOT NULL 
+                    THEN g.geom_geojson->'properties'->>'cep' 
+                END AS cep,
+                CASE 
+                    WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'rua' IS NOT NULL 
+                    THEN g.geom_geojson->'properties'->>'rua' 
+                END AS endereco,
+                CASE 
+                    WHEN glr.tipo = 'Endereco' AND g.geom_geojson->'properties'->>'bairro' IS NOT NULL 
+                    THEN g.geom_geojson->'properties'->>'bairro' 
+                END AS bairro,
+                (
+                    SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
+                    FROM geo_localizacao_referencia glr_sub
+                    JOIN geo_localizacao g_sub ON g_sub.id = glr_sub.geo_localizacao_id
+                    CROSS JOIN UNNEST(g_sub.calc_regioes_nivel_1) AS regiao_id
+                    JOIN regiao r ON r.id = regiao_id AND r.nivel = 1
+                    WHERE glr_sub.demanda_id = glr.demanda_id
+                      AND glr_sub.removido_em IS NULL
+                ) AS subprefeitura,
+                (
+                    SELECT STRING_AGG(DISTINCT r.descricao, ', ' ORDER BY r.descricao)
+                    FROM geo_localizacao_referencia glr_dist
+                    JOIN geo_localizacao g_dist ON g_dist.id = glr_dist.geo_localizacao_id
+                    CROSS JOIN UNNEST(g_dist.calc_regioes_nivel_2) AS regiao_id
+                    JOIN regiao r ON r.id = regiao_id AND r.nivel = 2
+                    WHERE glr_dist.demanda_id = glr.demanda_id
+                      AND glr_dist.removido_em IS NULL
+                ) AS distrito
+            FROM geo_localizacao_referencia glr
+            LEFT JOIN geo_localizacao g ON g.id = glr.geo_localizacao_id
+            JOIN demanda d ON d.id = glr.demanda_id
+            ${whereEnderecosString}
+            ORDER BY d.nome_projeto, glr.id
+        `;
+
+        const rowsEnderecos = await this.prisma.$queryRawUnsafe<RetornoDbEnderecos[]>(
+            sqlEnderecos,
+            ...whereCond.queryParams
+        );
+
+        this.convertRowsEnderecosInto(rowsEnderecos, out_enderecos);
+
         return {
             linhas: out_demandas,
+            enderecos: out_enderecos,
         };
     }
 
@@ -246,7 +245,14 @@ export class DemandasService implements ReportableService {
                 observacao: this.formatExcelString(db.observacao),
                 area_tematica: this.formatExcelString(db.area_tematica_nome),
                 acoes: this.formatExcelString(db.acoes_concatenadas),
-                localizacao: this.formatExcelString(db.localizacoes_concatenadas),
+            });
+        }
+    }
+
+    private convertRowsEnderecosInto(input: RetornoDbEnderecos[], out: RelDemandasEnderecosDto[]) {
+        for (const db of input) {
+            out.push({
+                nome_projeto: this.formatExcelString(db.nome_projeto),
                 cep: this.formatExcelString(db.cep),
                 endereco: this.formatExcelString(db.endereco),
                 bairro: this.formatExcelString(db.bairro),
@@ -288,11 +294,6 @@ export class DemandasService implements ReportableService {
             { value: 'area_tematica', label: 'Área Temática' },
             { value: 'acoes', label: 'Ação' },
             { value: 'localizacao', label: 'Localização' },
-            { value: 'cep', label: 'CEP' },
-            { value: 'endereco', label: 'Endereço' },
-            { value: 'bairro', label: 'Bairro' },
-            { value: 'subprefeitura', label: 'Subprefeitura' },
-            { value: 'distrito', label: 'Distrito' },
         ];
 
         const tmpFile = _ctx.getTmpFile('demandas.csv');
@@ -303,6 +304,27 @@ export class DemandasService implements ReportableService {
         };
         await WriteCsvToFile(dados.linhas, tmpFile.stream, csvOpts);
         out.push({ name: 'demandas.csv', localFile: tmpFile.path });
+
+        // Gerar planilha de endereços
+        if (dados.enderecos.length > 0) {
+            const fieldsEnderecos = [
+                { value: 'nome_projeto', label: 'Nome do Projeto' },
+                { value: 'cep', label: 'CEP' },
+                { value: 'endereco', label: 'Endereço' },
+                { value: 'bairro', label: 'Bairro' },
+                { value: 'subprefeitura', label: 'Subprefeitura' },
+                { value: 'distrito', label: 'Distrito' },
+            ];
+
+            const tmpFileEnderecos = _ctx.getTmpFile('demandas_enderecos.csv');
+            const csvOptsEnderecos: CsvWriterOptions<RelDemandasEnderecosDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
+                fields: fieldsEnderecos,
+            };
+            await WriteCsvToFile(dados.enderecos, tmpFileEnderecos.stream, csvOptsEnderecos);
+            out.push({ name: 'demandas_enderecos.csv', localFile: tmpFileEnderecos.path });
+        }
 
         return out;
     }
