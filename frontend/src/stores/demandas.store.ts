@@ -131,11 +131,14 @@ export const useDemandasStore = defineStore('demandasStore', {
           autoriza_divulgacao: arq.autoriza_divulgacao,
           descricao: arq.descricao ?? undefined,
         })) || [],
-      localizacoes: emFoco?.geolocalizacao?.map((g) => ({ id: g.id })) || [],
+      localizacoes: emFoco?.geolocalizacao?.map((g) => g.token) || [],
     }),
 
     geolocalizacaoPorToken: ({ emFoco }) => (Array.isArray(emFoco?.geolocalizacao)
-      ? Object.groupBy(emFoco.geolocalizacao, (cur) => cur.token)
+      ? emFoco?.geolocalizacao.reduce((acc, cur) => {
+        acc[cur.token] = cur;
+        return acc;
+      }, {} as { [key: string]: any })
       : {}),
   },
 });
