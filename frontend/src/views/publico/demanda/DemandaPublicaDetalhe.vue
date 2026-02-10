@@ -113,6 +113,9 @@ async function buscarDemanda() {
     );
 
     demanda.value = resposta.demanda;
+    if (!demanda.value) {
+      erro.value = 'Demanda não encontrada.';
+    }
   } catch (e) {
     erro.value = 'Não foi possível carregar as informações da demanda.';
     console.error('Erro ao buscar demanda pública:', e);
@@ -297,12 +300,5 @@ onMounted(() => {
   object-fit: cover;
   .br(16px);
   .bs(0 2px 8px rgba(0, 0, 0, 0.1));
-}
-
-.demanda-publica__imagem-legenda {
-  font-size: 0.875rem;
-  color: @c500;
-  margin: 0;
-  text-align: center;
 }
 </style>
