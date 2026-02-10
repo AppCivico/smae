@@ -1087,8 +1087,9 @@ export class DemandaService {
             throw new Error('Erro ao buscar dados do órgão para envio de e-mail');
         }
 
-        // Obter URL base do SMAE
+        // Obter URL base do SMAE e construir URL específica da demanda
         const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+        const demandaUrl = `${smaeUrl}/transferencias-voluntarias/demandas/${demandaId}`;
 
         // Formatar o valor com 2 casas decimais e trocar ponto por vírgula
         const valorNumerico = parseFloat(demanda.valor.toString());
@@ -1108,7 +1109,7 @@ export class DemandaService {
                     valor: valorFormatado,
                     area_tematica: demanda.area_tematica.nome,
                     orgao_nome: orgao.descricao,
-                    smae_url: smaeUrl,
+                    smae_url: demandaUrl,
                 },
             },
         });
