@@ -634,5 +634,26 @@ describe('SmaeDescriptionList', () => {
       expect(style).toContain('font-size: 14px');
       expect(style).toContain('flex-basis: 20em');
     });
+
+    it('lida com atributosDoItem.style como array (formato Vue)', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+            atributosDoItem: {
+              style: [{ color: 'red' }, { fontSize: '14px' }],
+            },
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style).toContain('color: red');
+      expect(style).toContain('font-size: 14px');
+      expect(style).toContain('flex-basis: 20em');
+    });
   });
 });

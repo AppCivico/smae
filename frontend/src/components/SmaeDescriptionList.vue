@@ -93,6 +93,8 @@ function aplicarLarguraBase(
   if (typeof styleExistente === 'string') {
     const separator = styleExistente.trim().endsWith(';') ? ' ' : '; ';
     resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+  } else if (Array.isArray(styleExistente)) {
+    resultado.style = [...styleExistente, { flexBasis: larguraBase }];
   } else if (typeof styleExistente === 'object' && styleExistente !== null) {
     resultado.style = {
       ...styleExistente as Record<string, unknown>,
