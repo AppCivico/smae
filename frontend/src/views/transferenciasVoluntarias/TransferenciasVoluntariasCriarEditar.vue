@@ -78,6 +78,10 @@ async function salvarTransferencia(cargaManipulada) {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
 
+    if (r) {
+      alertStore.success('Transferência voluntária salva.');
+    }
+
     TransferenciasVoluntarias.buscarItem(r.id);
 
     if (!route.params.transferenciaId) {
