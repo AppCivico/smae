@@ -4,12 +4,12 @@ import type {
   ProjetoObraResumoDto,
 } from '@back/dotacao-busca/dto/dotacao-busca.dto';
 import type {
+  DemandaSearchResultDto,
   EtapaSearchResultDto,
   MetaIniAtvLookupInfoDto,
   PdmRotuloInfo,
   ProjetoSearchResultDto,
   SearchEntitiesNearbyResponseDto,
-  DemandaSearchResultDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
 import statusObras from '@/consts/statusObras';
@@ -58,7 +58,7 @@ type ItemConsultaGeralFormatado = {
   nro_vinculos: number;
   localizacoes: LocalizacaoGeoJSON[];
   cor: string;
-  portfolio_programa?: string;
+  portfolio_programa_area?: string;
   orgao?: string;
   status?: {
     valor: string;
@@ -198,7 +198,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 id: obra.id || 0,
                 nome: obra.nome || '',
                 cor: LegendasStatus.obras.color,
-                portfolio_programa: obra.portfolio_titulo || '',
+                portfolio_programa_area: obra.portfolio_titulo || '',
                 orgao: obra.orgao_responsavel_sigla || '',
                 status: obra.status ? {
                   valor: obra.status,
@@ -222,7 +222,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 id: projeto.id || 0,
                 nome: projeto.nome || '',
                 cor: LegendasStatus.projetos.color,
-                portfolio_programa: projeto.portfolio_titulo || '',
+                portfolio_programa_area: projeto.portfolio_titulo || '',
                 orgao: projeto.orgao_responsavel_sigla || '',
                 status: projeto.status ? {
                   valor: projeto.status,
@@ -343,7 +343,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 ...dadosParciais,
                 nome: obra.nome ?? '',
                 cor: LegendasStatus.obras.color,
-                portfolio_programa: obra.portfolio_titulo || '',
+                portfolio_programa_area: obra.portfolio_titulo || '',
                 orgao: obra.orgao_responsavel_sigla || '',
                 nro_vinculos: Number(obra.nro_vinculos ?? 0),
                 status: obra.status ? {
@@ -368,7 +368,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 ...dadosParciais,
                 nome: projeto.nome ?? '',
                 cor: LegendasStatus.projetos.color,
-                portfolio_programa: projeto.portfolio_titulo || '',
+                portfolio_programa_area: projeto.portfolio_titulo || '',
                 orgao: projeto.orgao_responsavel_sigla || '',
                 nro_vinculos: Number(projeto.nro_vinculos ?? 0),
                 status: projeto.status ? {
@@ -397,7 +397,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
                   if (pdmInfo) {
                     dadosParciais.pdm_info = pdmInfo;
-                    dadosParciais.portfolio_programa = pdmInfo.nome || '';
+                    dadosParciais.portfolio_programa_area = pdmInfo.nome || '';
 
                     if (['PDM', 'ProgramaDeMetas'].indexOf(pdmInfo.sistema) > -1) {
                       dadosParciais.cor = LegendasStatus.programaDeMetas.color;
@@ -450,13 +450,13 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 nome: demanda.nome_projeto || '',
                 orgao: demanda.orgao_sigla || '',
                 cor: LegendasStatus.demandas.color,
+                portfolio_programa_area: demanda.area_tematica_nome,
                 nro_vinculos: Number(demanda.nro_vinculos ?? 0),
                 status: demanda.status ? {
                   valor: demanda.status,
                   nome: demanda.status,
                 } : undefined,
                 detalhes: {
-                  'Área Temática': demanda.area_tematica_nome,
                   'Unidade Responsável': demanda.unidade_responsavel,
                   Responsável: demanda.nome_responsavel,
                 },
