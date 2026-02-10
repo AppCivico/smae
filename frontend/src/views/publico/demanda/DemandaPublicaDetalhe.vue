@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import ErrorComponent from '@/components/ErrorComponent.vue';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import dinheiro from '@/helpers/dinheiro';
@@ -11,7 +12,11 @@ import requestS from '@/helpers/requestS';
 const route = useRoute();
 
 const demanda = ref(null);
-const chamadasPendentes = ref({ emFoco: false });
+const camadasGeo = ref([]);
+const chamadasPendentes = ref({
+  emFoco: false,
+  geocamadas: false,
+});
 const erro = ref(null);
 
 const dadosDemanda = computed(() => {
@@ -112,8 +117,78 @@ async function buscarDemanda() {
   }
 }
 
+async function buscarGeoCamadas() {
+  chamadasPendentes.value.geocamadas = true;
+
+  try {
+    const resposta = await requestS.get(
+      `${import.meta.env.VITE_API_URL}/public/demandas/geocamadas`,
+      null,
+      { AlertarErros: false },
+    );
+
+    camadasGeo.value = resposta.data || [];
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Erro ao buscar camadas geográficas:', e);
+    camadasGeo.value = [];
+  } finally {
+    chamadasPendentes.value.geocamadas = false;
+  }
+}
+
+const marcadoresGeoJson = computed(() => {
+  if (!demanda.value?.geolocalizacao?.length) {
+    return [];
+  }
+
+  const features = [];
+
+  demanda.value.geolocalizacao.forEach((geo) => {
+    if (geo.endereco?.geometry?.coordinates) {
+      features.push({
+        ...geo.endereco, // Já é GeoJSON
+        properties: {
+          ...geo.endereco.properties,
+          // tooltip
+          rotulo: demanda.value.nome_projeto,
+        },
+      });
+    }
+  });
+
+  return features;
+});
+
+const camadasParaMapa = computed(() => {
+  if (!demanda.value?.geolocalizacao?.length) {
+    return [];
+  }
+
+  const camadasIds = new Set();
+
+  demanda.value.geolocalizacao.forEach((geo) => {
+    geo.camadas?.forEach((camada) => {
+      camadasIds.add(camada.id);
+    });
+  });
+
+  return camadasGeo.value
+    .filter((camada) => camadasIds.has(camada.id))
+    .map((camada) => ({
+      id: camada.id,
+      geom_geojson: camada.geom_geojson,
+      config: {
+        color: camada.cor || '#3388ff',
+        fillOpacity: 0.2,
+        weight: 2,
+      },
+    }));
+});
+
 onMounted(() => {
   buscarDemanda();
+  buscarGeoCamadas();
 });
 </script>
 
@@ -167,11 +242,14 @@ onMounted(() => {
         v-if="demanda.geolocalizacao?.length"
         class="demanda-publica__secao"
       >
-        <div class="demanda-publica__mapa-placeholder">
-          <p class="demanda-publica__mapa-texto">
-            Mapinha do Sobral
-          </p>
-        </div>
+        <LoadingComponent v-if="chamadasPendentes.geocamadas" />
+
+        <MapaExibir
+          v-else
+          :geo-json="marcadoresGeoJson"
+          :camadas="camadasParaMapa"
+          height="500px"
+        />
       </section>
     </div>
   </div>
@@ -179,13 +257,6 @@ onMounted(() => {
 
 <style lang="less" scoped>
 @import '@/_less/variables.less';
-
-.demanda-publica__subtitulo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: @primary;
-  margin: 0 0 1rem 0;
-}
 
 .demanda-publica__lista-acoes {
   list-style-position: inside;
@@ -229,22 +300,5 @@ onMounted(() => {
   color: @c500;
   margin: 0;
   text-align: center;
-}
-
-.demanda-publica__mapa-placeholder {
-  width: 100%;
-  height: 400px;
-  background-color: @c50;
-  border: 2px dashed @c200;
-  .br(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.demanda-publica__mapa-texto {
-  font-size: 1rem;
-  color: @c400;
-  font-style: italic;
 }
 </style>
