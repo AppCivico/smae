@@ -103,7 +103,7 @@ export class VinculoService {
         try {
             return JSON.parse(dadosExtra);
         } catch (error) {
-            return undefined;
+            throw new HttpException('dados_extra não é um JSON válido', 400);
         }
     }
 
