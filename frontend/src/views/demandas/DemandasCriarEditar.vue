@@ -518,7 +518,6 @@ watch(itemParaEdicao, (novosValores) => {
           v-slot="{ value, handleChange, field }"
           name="localizacoes"
         >
-          <pre class="debug">value: {{ value }}</pre>
           <MapaCampo
             :name="field.name"
             :model-value="value"
