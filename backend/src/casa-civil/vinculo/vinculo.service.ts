@@ -1,4 +1,11 @@
-import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -35,11 +42,24 @@ export class VinculoService {
         }
 
         if (dto.campo_vinculo === CampoVinculo.Dotacao && !dto.orcamento_realizado_id) {
-            throw new HttpException(
-                'É necessário informar o orçamento realizado para vínculos do tipo dotação',
-                400
-            );
+            throw new HttpException('É necessário informar o orçamento realizado para vínculos do tipo dotação', 400);
         }
+
+        if (dto.demanda_id) {
+            const demanda = await this.prisma.demanda.findUnique({
+                where: { id: dto.demanda_id },
+                select: { status: true },
+            });
+
+            if (!demanda) {
+                throw new NotFoundException('Demanda não encontrada');
+            }
+
+            if (demanda.status !== DemandaStatus.Publicado) {
+                throw new HttpException('Apenas demandas publicadas podem ser vinculadas', 400);
+            }
+        }
+
         // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
 
         const dadosExtra = this.parseDadosExtra(dto.dados_extra);
