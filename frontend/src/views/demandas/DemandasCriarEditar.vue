@@ -675,7 +675,7 @@ watch(itemParaEdicao, (novosValores) => {
               :value="campoEncaminhamento.valor"
               @update:model-value="setFieldValue('encaminhamento_justificativa', null)"
             />
-            <span>{{ campoEncaminhamento.label }}</span>
+            {{ campoEncaminhamento.label }}
           </label>
         </div>
 
