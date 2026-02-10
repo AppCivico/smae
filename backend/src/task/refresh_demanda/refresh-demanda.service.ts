@@ -130,17 +130,19 @@ export class RefreshDemandaService implements TaskableService {
         const geoReferencias = await this.loadGeolocalizationForDemandas(demandas.map((d) => d.id));
 
         const geopoints = demandas
-            .map((d) => {
+            .flatMap((d) => {
                 const refs = geoReferencias.get(d.id) || [];
-                const geo = refs.find((r: any) => r.endereco?.geometry?.coordinates);
-                // console.dir({ refs }, { depth: null });
                 // GeoJSON coordinates are [longitude, latitude]
-                const coordinates = geo?.endereco?.geometry?.coordinates;
-                return {
-                    id: d.id,
-                    latitude: coordinates?.[1] ?? null,
-                    longitude: coordinates?.[0] ?? null,
-                };
+                return refs
+                    .filter((r: any) => r.endereco?.geometry?.coordinates)
+                    .map((r: any) => {
+                        const coordinates = r.endereco.geometry.coordinates;
+                        return {
+                            id: d.id,
+                            latitude: coordinates[1],
+                            longitude: coordinates[0],
+                        };
+                    });
             })
             .filter((p) => p.latitude !== null && p.longitude !== null);
 
