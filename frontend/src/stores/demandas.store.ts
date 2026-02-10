@@ -125,12 +125,7 @@ export const useDemandasStore = defineStore('demandasStore', {
       finalidade: emFoco?.finalidade ?? '',
       orgao_id: emFoco?.orgao?.id ?? 0,
       area_tematica_id: emFoco?.area_tematica?.id ?? 0,
-      arquivos:
-        emFoco?.arquivos?.map((arq) => ({
-          id: arq.id,
-          autoriza_divulgacao: arq.autoriza_divulgacao,
-          descricao: arq.descricao ?? undefined,
-        })) || [],
+      arquivos: emFoco?.arquivos || [],
       localizacoes: emFoco?.geolocalizacao?.map((g) => g.token) || [],
     }),
 
