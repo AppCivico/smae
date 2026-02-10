@@ -29,14 +29,6 @@ type EtapaDoVaralComId = EtapaDoVaral & {
   'Encerrado'
 };
 
-const todosOsCamposEncaminhamento = [
-  { label: 'Manter em análise', valor: 'editar' },
-  { label: 'Solicitar ajuste', valor: 'devolver' },
-  { label: 'Cancelar demanda', valor: 'cancelar' },
-  { label: 'Publicar demanda', valor: 'enviar' },
-  { label: 'Validar?', valor: 'validar' },
-];
-
 const router = useRouter();
 const organsStore = useOrgansStore();
 const demandasStore = useDemandasStore();
@@ -48,13 +40,22 @@ const {
   itemParaEdicao, geolocalizacaoPorToken, erro,
 } = storeToRefs(demandasStore);
 
+const todosOsCamposEncaminhamento = computed(() => [
+  {
+    label: itemParaEdicao.value?.status === 'Registro'
+      ? 'Salvar previa' : 'Manter em análise',
+    valor: 'editar',
+  },
+  { label: 'Solicitar ajuste', valor: 'devolver' },
+  { label: 'Cancelar demanda', valor: 'cancelar' },
+  { label: 'Validar', valor: 'enviar' },
+  { label: 'Publicar', valor: 'validar' },
+]);
+
 const camposEncaminhamento = computed(() => {
   const permissoes = itemParaEdicao.value?.permissoes;
 
-  return todosOsCamposEncaminhamento.map((campo) => ({
-    ...campo,
-    desabilitado: !permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes],
-  }));
+  return todosOsCamposEncaminhamento.value.filter((campo) => permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes]);
 });
 
 const props = defineProps({
@@ -652,12 +653,14 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </fieldset>
 
-    -{{ values.encaminhamento }}-
     <fieldset
       v-if="$props.demandaId"
       class="sessao-encaminhamento"
+      aria-labelledby="titulo-encaminhamento"
     >
-      <h3>Encaminhamento da demanda</h3>
+      <h3 id="titulo-encaminhamento">
+        Encaminhamento da demanda
+      </h3>
 
       <div>
         <div class="flex flexwrap g2 start pt05 pb05">
@@ -665,13 +668,11 @@ watch(itemParaEdicao, (novosValores) => {
             v-for="campoEncaminhamento in camposEncaminhamento"
             :key="`encaminhamento--${campoEncaminhamento.valor}`"
             class="flex g05 center"
-            :class="{ 'opacity50': campoEncaminhamento.desabilitado }"
           >
             <Field
               name="encaminhamento"
               type="radio"
               :value="campoEncaminhamento.valor"
-              :disabled="campoEncaminhamento.desabilitado"
               @update:model-value="setFieldValue('encaminhamento_justificativa', null)"
             />
             <span>{{ campoEncaminhamento.label }}</span>
