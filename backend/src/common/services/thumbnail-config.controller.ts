@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { THUMBNAIL_TYPES, ThumbnailTypeConfig } from '../../upload/thumbnail-config';
 import { SmaeConfigService } from './smae-config.service';
 import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
+import { UpdateThumbnailConfigDto } from './thumbnail-config-dto/update-thumbnail-config.dto';
 
 interface ThumbnailConfigDto {
     tipo: string;
@@ -21,12 +22,6 @@ interface ThumbnailConfigDto {
 
 interface ThumbnailConfigResponseDto {
     configs: ThumbnailConfigDto[];
-}
-
-interface UpdateThumbnailConfigDto {
-    width?: number;
-    height?: number;
-    quality?: number;
 }
 
 @ApiTags('Configurações de Thumbnail')
@@ -74,7 +69,7 @@ export class ThumbnailConfigController {
     async findOne(@Param('tipo') tipo: string): Promise<ThumbnailConfigDto> {
         const config = THUMBNAIL_TYPES[tipo];
         if (!config) {
-            throw new Error(`Tipo de thumbnail inválido: ${tipo}`);
+            throw new BadRequestException(`Tipo de thumbnail inválido: ${tipo}`);
         }
 
         const width = await this.smaeConfigService.getConfigNumberWithDefault(
@@ -107,7 +102,7 @@ export class ThumbnailConfigController {
     async update(@Param('tipo') tipo: string, @Body() dto: UpdateThumbnailConfigDto): Promise<SmaeConfigDto[]> {
         const config = THUMBNAIL_TYPES[tipo];
         if (!config) {
-            throw new Error(`Tipo de thumbnail inválido: ${tipo}`);
+            throw new BadRequestException(`Tipo de thumbnail inválido: ${tipo}`);
         }
 
         const results: SmaeConfigDto[] = [];

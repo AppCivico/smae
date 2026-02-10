@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TaskableService } from '../task/entities/task.entity';
+import { CONST_BOT_USER_ID } from '../common/consts';
 import { StorageService } from './storage-service';
 import { UploadService } from './upload.service';
 import { isThumbnailType } from './thumbnail-config';
@@ -70,7 +71,7 @@ export class ThumbnailService implements TaskableService {
                 arquivoId,
                 file,
                 tipoUpload,
-                arquivo.criado_por || 1 // fallback to system user if no creator
+                arquivo.criado_por || CONST_BOT_USER_ID
             );
 
             if (thumbnailId) {
