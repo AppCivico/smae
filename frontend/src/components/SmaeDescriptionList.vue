@@ -6,14 +6,19 @@ import buscarDadosDoYup from './camposDeFormulario/helpers/buscarDadosDoYup';
 
 type ObjetoGenerico = Record<string, string | number | null | undefined>;
 
-type ItemDeLista = {
+type ConfigDeItem = {
   chave: string;
   titulo?: string;
-  valor: string | number | null | undefined;
   larguraBase?: string;
   atributosDoItem?: Record<string, unknown>;
+};
+
+type ItemDeLista = ConfigDeItem & {
+  valor: string | number | null | undefined;
   metadados?: Record<string, unknown>;
 };
+
+type ConfigOuChave = string | ConfigDeItem;
 
 type Props = {
   objeto?: ObjetoGenerico;
@@ -37,10 +42,10 @@ const props = defineProps({
       return (value !== undefined && Array.isArray(value)) || allProps.objeto !== undefined;
     },
   },
-  mapaDeTitulos: {
-    type: Object as () => Record<string, string>,
+  itensSelecionados: {
+    type: Array as () => Array<ConfigOuChave>,
     required: false,
-    default: () => ({}),
+    default: () => undefined,
   },
   schema: {
     type: Object as () => AnyObjectSchema,
@@ -55,50 +60,94 @@ function tituloDoSchema(chave: string): string | undefined {
     : buscarDadosDoYup(props.schema, chave)?.spec?.label || undefined;
 }
 
+function normalizarItem(campo: ConfigOuChave): ConfigDeItem {
+  return typeof campo === 'string'
+    ? { chave: campo }
+    : campo;
+}
+
+const itensNormalizados = computed(() => props.itensSelecionados?.map(normalizarItem));
+
+function aplicarLarguraBase(
+  atributos: Record<string, unknown>,
+  larguraBase?: string,
+): Record<string, unknown> {
+  if (!larguraBase) {
+    return atributos;
+  }
+
+  const resultado = { ...atributos };
+  const styleExistente = resultado.style;
+
+  if (typeof styleExistente === 'string') {
+    const separator = styleExistente.trim().endsWith(';') ? ' ' : '; ';
+    resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+  } else if (typeof styleExistente === 'object' && styleExistente !== null) {
+    resultado.style = {
+      ...styleExistente as Record<string, unknown>,
+      flexBasis: larguraBase,
+    };
+  } else {
+    resultado.style = { flexBasis: larguraBase };
+  }
+
+  return resultado;
+}
+
+function resolverTitulo(chave: string, tituloExplicito?: string): string | undefined {
+  if (tituloExplicito) {
+    return tituloExplicito;
+  }
+
+  const configDoItem = itensNormalizados.value?.find((c) => c.chave === chave);
+
+  return configDoItem?.titulo
+    || tituloDoSchema(chave)
+    || undefined;
+}
+
 const listaConvertida = computed(() => {
   if (Array.isArray(props.lista)) {
     return props.lista.map((item) => {
-      const atributos = { ...item.atributosDoItem };
-
-      if (item.larguraBase) {
-        const styleExistente = atributos.style;
-
-        if (typeof styleExistente === 'string') {
-          const separator = styleExistente.trim().endsWith(';') ? ' ' : '; ';
-          atributos.style = `${styleExistente}${separator}flex-basis: ${item.larguraBase};`;
-        } else if (typeof styleExistente === 'object' && styleExistente !== null) {
-          atributos.style = {
-            ...styleExistente,
-            flexBasis: item.larguraBase,
-          };
-        } else {
-          atributos.style = {
-            flexBasis: item.larguraBase,
-          };
-        }
-      }
+      const configDoItem = itensNormalizados.value?.find((c) => c.chave === item.chave);
+      const larguraBase = item.larguraBase || configDoItem?.larguraBase;
+      const atributosMesclados = { ...configDoItem?.atributosDoItem, ...item.atributosDoItem };
 
       return {
         ...item,
-        titulo: item.titulo
-          || props.mapaDeTitulos[item.chave]
-          || tituloDoSchema(item.chave)
-          || undefined,
-        atributosDoItem: atributos,
+        titulo: resolverTitulo(item.chave, item.titulo),
+        atributosDoItem: aplicarLarguraBase(atributosMesclados, larguraBase),
       };
     });
   }
 
   if (props.objeto !== null) {
-    return Object.entries(props.objeto).map(([chave, valor]) => ({
-      chave,
-      valor,
-      titulo: props.mapaDeTitulos[chave]
-        || tituloDoSchema(chave)
-        || undefined,
-      atributosDoItem: undefined,
-      metadados: undefined,
-    }));
+    const { objeto } = props;
+    const entradas = itensNormalizados.value
+      ? itensNormalizados.value.reduce<ItemDeLista[]>((acc, item) => {
+        if (item.chave in objeto) {
+          acc.push({
+            chave: item.chave,
+            valor: objeto[item.chave],
+            titulo: resolverTitulo(item.chave, item.titulo),
+            atributosDoItem: aplicarLarguraBase(
+              { ...item.atributosDoItem },
+              item.larguraBase,
+            ),
+            metadados: undefined,
+          });
+        }
+        return acc;
+      }, [])
+      : Object.entries(props.objeto).map(([chave, valor]) => ({
+        chave,
+        valor,
+        titulo: resolverTitulo(chave),
+        atributosDoItem: undefined,
+        metadados: undefined,
+      }));
+
+    return entradas;
   }
 
   return [];
