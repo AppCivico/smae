@@ -55,7 +55,7 @@ const {
 } = inicializarPortfolioStore();
 
 const {
-  chamadasPendentes, erro, etapasPorId, etapasPadrao,
+  chamadasPendentes, erro, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
@@ -129,8 +129,8 @@ onMounted(() => {
   }
 
   // Etapas padrão pra preencher o select
-  if (props.etapaId) {
-    etapasProjetosStore.buscarPorId(props.etapaId);
+  if (contextoEtapa.value === 'configuracoes') {
+    etapasProjetosStore.buscarEtapasPadrao();
   }
 });
 
