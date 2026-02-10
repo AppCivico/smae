@@ -9,10 +9,34 @@ import SmaeTable from '../SmaeTable/SmaeTable.vue';
 import SmallModal from '../SmallModal.vue';
 import UploadDeArquivosEmLista from '../UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 
+interface ArquivoDocumentoBase {
+  descricao: string;
+  autoriza_divulgacao: boolean;
+  arquivo: {
+    nome_original: string;
+    download_token: string;
+    preview: {
+      mime_type: string;
+      atualizado_em: string;
+    };
+  };
+}
+
+type ArquivoDocumento = ArquivoDocumentoBase & (
+  | { id: string; upload_token?: string }
+  | { id?: undefined; upload_token: string }
+);
+
 type Props = {
-  modelValue?: DemandaArquivoDto[]
+  modelValue?: ArquivoDocumento[]
 };
 
+type Emits = {
+  (event: 'update:modelValue', value: ArquivoDocumento[]): void;
+  (event: 'update:modelValue1', value: ArquivoDocumento[]): void;
+};
+
+const emit = defineEmits<Emits>();
 const props = withDefaults(
   defineProps<Props>(),
   { modelValue: () => [] },
@@ -21,8 +45,7 @@ const props = withDefaults(
 const inputRef = useTemplateRef('inputRef');
 
 const exibirModal = ref<boolean>(false);
-
-const arquivosLocais = ref<DemandaArquivoDto[]>([]);
+const arquivosLocais = ref<ArquivoDocumento[]>([]);
 
 const {
   uploadArquivo,
@@ -43,10 +66,6 @@ function abrirSeletorDeArquivos() {
   inputRef.value?.click();
 }
 
-async function obterToken(file: File): Promise<string> {
-  return uploadArquivo(file, 'DOCUMENTO');
-}
-
 async function handleFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -54,13 +73,21 @@ async function handleFileChange(event: Event) {
   if (!file) return;
 
   try {
-    const token = await obterToken(file);
+    const token = await uploadArquivo(file, 'DOCUMENTO');
 
-    // arquivosNovos.value.push({
-    //   upload_token: token,
-    //   nome_original: file.name,
-    //   tamanho_bytes: file.size,
-    // });
+    arquivosLocais.value.push({
+      upload_token: token,
+      descricao: 'desc',
+      autoriza_divulgacao: false,
+      arquivo: {
+        nome_original: file.name,
+        download_token: token,
+        preview: {
+          mime_type: file.type,
+          atualizado_em: new Date().toISOString(),
+        },
+      },
+    });
 
     // emitirTokens();
   } catch {
@@ -72,7 +99,7 @@ async function handleFileChange(event: Event) {
 
 watch(() => props.modelValue, (val) => {
   arquivosLocais.value = val;
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -80,14 +107,16 @@ watch(() => props.modelValue, (val) => {
     :active="exibirModal"
     @close="fecharModal"
   >
-    <input
-      ref="inputRef"
-      type="file"
-      :disabled="carregando"
-      class="upload-input"
-      @change="handleFileChange"
-    >
-    <!--
+    <form action="">
+      <input
+        ref="inputRef"
+        style="display:none;"
+        type="file"
+        :disabled="carregando"
+        class="upload-input"
+        @change="handleFileChange"
+      >
+      <!--
       :id="`${id}-input`"
 
     :name="name"
@@ -95,12 +124,23 @@ watch(() => props.modelValue, (val) => {
       :required="required && listaUnificada.length === 0"
       -->
 
-    <UploadDeArquivosEmLista />
-  </SmallModal>
+      <!-- <UploadDeArquivosEmLista /> -->
+      <button
+        class="mt1 like-a__text addlink"
+        type="button"
+        @click="abrirSeletorDeArquivos"
+      >
+        <svg
+          width="20"
+          height="20"
+        >
+          <use xlink:href="#i_+" />
+        </svg>
 
-  <div>
-    <!-- {{ props.modelValue }} -->
-  </div>
+        Selecionar arquivo
+      </button>
+    </form>
+  </SmallModal>
 
   <SmaeTable
     :dados="arquivosLocais"
