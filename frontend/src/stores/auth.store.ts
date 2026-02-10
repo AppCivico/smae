@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: JSON.parse(localStorage.getItem('token') || 'null'),
     reducedToken: null as string | null,
-    returnUrl: null,
+    returnUrl: null as string | null,
     permissions: JSON.parse(localStorage.getItem('permissions') || 'null'),
     sistemaEscolhido: (localStorage.getItem('sistemaEscolhido')
       ?? 'SMAE') as ModuloSistema,
