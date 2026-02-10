@@ -121,36 +121,35 @@ const listaConvertida = computed(() => {
     });
   }
 
-  if (props.objeto !== null) {
-    const { objeto } = props;
-    const entradas = itensNormalizados.value
-      ? itensNormalizados.value.reduce<ItemDeLista[]>((acc, item) => {
-        if (item.chave in objeto) {
-          acc.push({
-            chave: item.chave,
-            valor: objeto[item.chave],
-            titulo: resolverTitulo(item.chave, item.titulo),
-            atributosDoItem: aplicarLarguraBase(
-              { ...item.atributosDoItem },
-              item.larguraBase,
-            ),
-            metadados: undefined,
-          });
-        }
-        return acc;
-      }, [])
-      : Object.entries(props.objeto).map(([chave, valor]) => ({
-        chave,
-        valor,
-        titulo: resolverTitulo(chave),
-        atributosDoItem: undefined,
-        metadados: undefined,
-      }));
-
-    return entradas;
+  if (!props.objeto) {
+    return [];
   }
 
-  return [];
+  const { objeto } = props;
+
+  return itensNormalizados.value
+    ? itensNormalizados.value.reduce<ItemDeLista[]>((acc, item) => {
+      if (item.chave in objeto) {
+        acc.push({
+          chave: item.chave,
+          valor: objeto[item.chave],
+          titulo: resolverTitulo(item.chave, item.titulo),
+          atributosDoItem: aplicarLarguraBase(
+            { ...item.atributosDoItem },
+            item.larguraBase,
+          ),
+          metadados: undefined,
+        });
+      }
+      return acc;
+    }, [])
+    : Object.entries(objeto).map(([chave, valor]) => ({
+      chave,
+      valor,
+      titulo: resolverTitulo(chave),
+      atributosDoItem: undefined,
+      metadados: undefined,
+    }));
 });
 
 </script>
