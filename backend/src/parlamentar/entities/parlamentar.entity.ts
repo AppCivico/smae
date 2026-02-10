@@ -21,6 +21,7 @@ export class ParlamentarDetailDto {
     email: string | null;
     em_atividade: boolean;
     foto: string | null;
+    foto_thumbnail: string | null;
     cpf: string;
 
     // Dados do mandato corrente

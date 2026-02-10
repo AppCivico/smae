@@ -1283,6 +1283,11 @@ model Arquivo {
     preview_criado_em     DateTime? @db.Timestamptz(6)
     preview_atualizado_em DateTime? @db.Timestamptz(6)
 
+    // Campos de thumbnail (para tipos de upload de imagem: ICONE_TAG, ICONE_PORTFOLIO, LOGO_PDM, FOTO_PARLAMENTAR)
+    thumbnail_arquivo_id Int?     @unique /// FK para o arquivo de thumbnail gerado (self-reference)
+    thumbnail_arquivo    Arquivo? @relation("ArquivoThumbnail", fields: [thumbnail_arquivo_id], references: [id], onDelete: SetNull)
+    thumbnail_de         Arquivo? @relation("ArquivoThumbnail")
+
     IconeTermosEncerramento ProjetoTermoEncerramento[] @relation("icone_termo")
 
     Tag                             Tag[]
@@ -5148,6 +5153,7 @@ enum task_type {
     backup_api_log_day
     restore_api_log_day
     gerar_preview_documento
+    gerar_thumbnail_imagem
     refresh_demanda
 }
 

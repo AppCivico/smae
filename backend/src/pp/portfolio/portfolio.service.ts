@@ -139,7 +139,7 @@ export class PortfolioService {
             data_criacao: Date2YMD.toStringOrNull(r.data_criacao),
             grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
-            icone_impressao: r.icone_impressao ? this.montarIconeDto({ id: r.icone_impressao }) : null,
+            icone_impressao: r.icone_impressao ? await this.montarIconeDto({ id: r.icone_impressao }) : null,
         };
     }
 
@@ -236,21 +236,25 @@ export class PortfolioService {
 
         if (filterId && listActive.length == 0) throw new NotFoundException('Portfólio não encontrado.');
 
-        return listActive.map((r) => {
-            let pode_editar = isFullAdmin;
+        return Promise.all(
+            listActive.map(async (r) => {
+                let pode_editar = isFullAdmin;
 
-            if (!pode_editar && isAdminNoOrgao && orgao_id) {
-                // orgao precisa ser exclusivamente o orgao da pessoa para que ela possa editar
-                pode_editar = r.orgaos.length == 1 && r.orgaos[0].orgao.id == orgao_id;
-            }
+                if (!pode_editar && isAdminNoOrgao && orgao_id) {
+                    // orgao precisa ser exclusivamente o orgao da pessoa para que ela possa editar
+                    pode_editar = r.orgaos.length == 1 && r.orgaos[0].orgao.id == orgao_id;
+                }
 
-            return {
-                pode_editar: pode_editar,
-                ...r,
-                orgaos: r.orgaos.map((rr) => rr.orgao),
-                icone_impressao: r.icone_impressao ? this.montarIconeDto({ id: r.icone_impressao }) : null,
-            };
-        });
+                return {
+                    pode_editar: pode_editar,
+                    ...r,
+                    orgaos: r.orgaos.map((rr) => rr.orgao),
+                    icone_impressao: r.icone_impressao
+                        ? await this.montarIconeDto({ id: r.icone_impressao })
+                        : null,
+                };
+            })
+        );
     }
 
     async update(
@@ -502,12 +506,25 @@ export class PortfolioService {
     /**
      * Monta o DTO do ícone com download token.
      */
-    private montarIconeDto(icone: { id: number } | null): PortfolioIconeDto | null {
+    private async montarIconeDto(icone: { id: number } | null): Promise<PortfolioIconeDto | null> {
         if (!icone) return null;
+
+        let thumbnail_download_token: string | null = null;
+        const arquivo = await this.prisma.arquivo.findUnique({
+            where: { id: icone.id },
+            select: { thumbnail_arquivo_id: true },
+        });
+        if (arquivo?.thumbnail_arquivo_id) {
+            thumbnail_download_token = this.uploadService.getDownloadToken(
+                arquivo.thumbnail_arquivo_id,
+                '1 days'
+            ).download_token;
+        }
 
         return {
             id: icone.id,
             download_token: this.uploadService.getDownloadToken(icone.id, '1 days').download_token,
+            thumbnail_download_token,
         };
     }
 }

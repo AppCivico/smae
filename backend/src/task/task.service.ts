@@ -8,6 +8,7 @@ import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service'
 import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PreviewService } from 'src/upload/preview.service';
+import { ThumbnailService } from 'src/upload/thumbnail.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IsCrontabEnabled } from '../common/crontab-utils';
 import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
@@ -204,6 +205,9 @@ export class TaskService {
         //
         @Inject(forwardRef(() => PreviewService))
         private readonly previewService: PreviewService,
+        //
+        @Inject(forwardRef(() => ThumbnailService))
+        private readonly thumbnailService: ThumbnailService,
         //
         @Inject(forwardRef(() => RefreshDemandaService))
         private readonly refreshDemandaService: RefreshDemandaService
@@ -773,6 +777,9 @@ export class TaskService {
                 break;
             case 'gerar_preview_documento':
                 service = this.previewService;
+                break;
+            case 'gerar_thumbnail_imagem':
+                service = this.thumbnailService;
                 break;
             case 'refresh_demanda':
                 service = this.refreshDemandaService;

@@ -239,6 +239,9 @@ export class ParlamentarService {
                 email: true,
                 em_atividade: true,
                 foto_upload_id: true,
+                foto: {
+                    select: { thumbnail_arquivo_id: true },
+                },
                 cpf: true,
 
                 equipe: {
@@ -383,6 +386,11 @@ export class ParlamentarService {
             foto: parlamentar.foto_upload_id
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
                 : null,
+            foto_thumbnail:
+                parlamentar.foto_upload_id && parlamentar.foto?.thumbnail_arquivo_id
+                    ? this.uploadService.getDownloadToken(parlamentar.foto.thumbnail_arquivo_id, '1 days')
+                          .download_token
+                    : null,
             cpf: parlamentar.cpf ?? '000.000.000-00',
 
             ultimo_mandato: mandatoCorrente

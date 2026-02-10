@@ -25,6 +25,7 @@ import { DownloadOptions } from './dto/download-options';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
 import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
+import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/solicitar-thumbnail.dto';
 
 interface RestoreDescriptionResponse {
     total: number;
@@ -140,6 +141,39 @@ export class UploadController {
         Logger.log(`User ${user.id} (${user.nome_exibicao}) initiated batch preview processing for all files`);
 
         const result = await this.uploadService.processarPreviewsPendentes(user.id);
+
+        return {
+            ...result,
+            message: `Processados ${result.total} arquivos. Agendados: ${result.agendados}, Pulados: ${result.pulados}.`,
+        };
+    }
+
+    @Post('solicitar-thumbnail')
+    @ApiBearerAuth('access-token')
+    async solicitarThumbnail(
+        @Body() dto: SolicitarThumbnailDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<SolicitarThumbnailResponseDto> {
+        return await this.uploadService.solicitarThumbnail(dto.token, user.id);
+    }
+
+    @Post('processar-thumbnails-pendentes')
+    @ApiBearerAuth('access-token')
+    @ApiQuery({
+        name: 'tipo',
+        required: false,
+        type: String,
+        description: 'Filtrar por tipo específico (ICONE_TAG, ICONE_PORTFOLIO, LOGO_PDM, FOTO_PARLAMENTAR)',
+    })
+    async processarThumbnailsPendentes(
+        @CurrentUser() user: PessoaFromJwt,
+        @Query('tipo') tipo?: string
+    ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
+        Logger.log(
+            `User ${user.id} (${user.nome_exibicao}) initiated batch thumbnail processing${tipo ? ` for tipo=${tipo}` : ''}`
+        );
+
+        const result = await this.uploadService.processarThumbnailsPendentes(user.id, tipo);
 
         return {
             ...result,

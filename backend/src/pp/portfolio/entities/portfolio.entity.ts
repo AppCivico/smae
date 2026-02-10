@@ -4,6 +4,7 @@ import { IdSiglaDescricao } from '../../../common/dto/IdSigla.dto';
 export class PortfolioIconeDto {
     id: number;
     download_token: string;
+    thumbnail_download_token: string | null;
 }
 
 export class PortfolioDto {

@@ -66,6 +66,7 @@ export class ListPdm extends PickType(PdmDto, ['pode_editar', 'perm_level']) {
     possui_iniciativa: boolean;
     possui_atividade: boolean;
     logo: string | null;
+    logo_thumbnail: string | null;
 
     nivel_orcamento: string | null;
 
