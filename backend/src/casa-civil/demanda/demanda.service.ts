@@ -1091,9 +1091,12 @@ export class DemandaService {
         const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
         const demandaUrl = `${smaeUrl}/transferencias-voluntarias/demandas/${demandaId}`;
 
-        // Formatar o valor com 2 casas decimais e trocar ponto por vírgula
+        // Formatar o valor no padrão brasileiro (pt-BR): separador de milhares (.) e decimal (,)
         const valorNumerico = parseFloat(demanda.valor.toString());
-        const valorFormatado = valorNumerico.toFixed(2).replace('.', ',');
+        const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
 
         // Enviar e-mail
         await prismaTxn.emaildbQueue.create({
