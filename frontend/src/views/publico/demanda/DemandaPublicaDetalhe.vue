@@ -1,5 +1,7 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
 
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
@@ -199,9 +201,21 @@ const camadasParaMapa = computed(() => {
     }));
 });
 
-onMounted(() => {
+function carregarDados() {
+  demanda.value = null;
+  erro.value = null;
+  camadasGeo.value = [];
+
   buscarDemanda();
   buscarGeoCamadas();
+}
+
+onMounted(() => {
+  carregarDados();
+});
+
+watch(() => props.id, () => {
+  carregarDados();
 });
 </script>
 
