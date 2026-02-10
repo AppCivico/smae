@@ -8,6 +8,7 @@ import {
 import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
+import ModalDeDocumentos from '@/components/arquivos/ModalDeDocumentos.vue';
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
@@ -16,7 +17,6 @@ import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
 import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { CadastroDemanda as schema } from '@/consts/formSchemas/demanda';
-import { useAlertStore } from '@/stores/alert.store';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -94,6 +94,14 @@ const onSubmit = handleSubmit.withControlled(async ({
   let r: boolean;
 
   if (props.demandaId) {
+    // dadosEdicao.arquivos = [
+    //   {
+    //     upload_token: dadosEdicao.upload_tokens[0],
+    //     autoriza_divulgacao: true,
+    //     descricao: 'desc',
+    //   },
+    // ];
+
     r = await demandasStore.atualizarItem({
       acao: encaminhamento,
       demanda_id: props.demandaId,
@@ -538,12 +546,13 @@ watch(itemParaEdicao, (novosValores) => {
           v-slot="{value}"
           name="arquivos"
         >
-          <UploadDeArquivosEmLista
+          <!-- <UploadDeArquivosEmLista
             tipo="DOCUMENTO"
             :arquivos-existentes="value"
             @update:model-value="ev => setFieldValue('upload_tokens', ev)"
             @arquivo-existente-removido="removerArquivo"
-          />
+          /> -->
+          <ModalDeDocumentos :model-value="value" />
         </Field>
 
         <Field
