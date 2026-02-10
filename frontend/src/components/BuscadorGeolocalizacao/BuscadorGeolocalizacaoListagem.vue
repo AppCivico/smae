@@ -23,13 +23,20 @@ const {
 } = storeToRefs(geolocalizadorStore);
 
 const raio = ref(2000);
+const raioErro = ref('');
 
 const emitirSelecao = debounce(() => {
-  if (!raio.value) {
-    raio.value = 2000;
+  const valor = Number(raio.value);
+
+  if (Number.isNaN(valor) || valor <= 0) {
+    raioErro.value = 'O raio deve ser um número positivo.';
+    return;
   }
+
+  raioErro.value = '';
+
   if (selecionado.value) {
-    emit('selecao', { endereco: selecionado.value, raio: raio.value });
+    emit('selecao', { endereco: selecionado.value, raio: valor });
   }
 }, 500);
 
@@ -92,6 +99,14 @@ onUnmounted(() => {
     </datalist>
   </div>
 
+  <div
+    v-if="raioErro"
+    class="fb100 error-msg"
+    role="alert"
+  >
+    {{ raioErro }}
+  </div>
+
   <SmaeTable
     :colunas="[
       { chave: 'seletor', atributosDaColuna: { class: 'col--minimum' } },
@@ -100,7 +115,7 @@ onUnmounted(() => {
       { chave: 'endereco.properties.cep', label: 'cep' },
     ]"
     :dados="enderecos"
-    class="fb0 f1 rolavel-verticalmente"
+    class="fb0 f1 mt1 rolavel-verticalmente"
   >
     <template #cabecalho:seletor />
     <template #celula:seletor="{ linha }">
