@@ -129,6 +129,21 @@ export default {
       },
     },
     {
+      name: 'PortfolioDemandas Publico',
+      path: '/portfolio-demandas-publico',
+      component: {
+        beforeRouteEnter(to, from, next) {
+          window.open('/publico/demandas', '_blank', 'noopener,noreferrer');
+          next(false);
+        },
+      },
+      meta: {
+        título: 'Portfólio de Demandas',
+        íconeParaMenu: '<svg width="20" height="20"><use xlink:href="#i_document" /></svg>',
+        entidadeMãe: 'TransferenciasVoluntarias',
+      },
+    },
+    {
       name: 'TransferenciasVoluntariaCriar',
       path: 'novo',
       component: TransferenciasVoluntariasCriarEditar,

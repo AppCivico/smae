@@ -1,5 +1,6 @@
 import tiparPropsDeRota from '@/router/helpers/tiparPropsDeRota';
 import DemandaPublicaDetalhe from '@/views/publico/demanda/DemandaPublicaDetalhe.vue';
+import DemandasLista from '@/views/publico/demanda/DemandasLista.vue';
 import PublicLayout from '@/views/publico/PublicLayout.vue';
 
 export default {
@@ -9,6 +10,14 @@ export default {
     publico: true,
   },
   children: [
+    {
+      path: 'demandas',
+      name: 'demandasPublicas',
+      component: DemandasLista,
+      meta: {
+        título: 'Portfólio de Demandas',
+      },
+    },
     {
       path: 'demandas/:id',
       name: 'demandaPublica',

@@ -48,6 +48,9 @@ export default [
     name: 'demandas',
   },
   {
+    name: 'PortfolioDemandas Publico',
+  },
+  {
     name: 'configuracoesRaiz',
   },
 
