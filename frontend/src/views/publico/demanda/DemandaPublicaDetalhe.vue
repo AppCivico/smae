@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
@@ -9,7 +8,12 @@ import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS';
 
-const route = useRoute();
+const props = defineProps({
+  id: {
+    type: [String, Number],
+    required: true,
+  },
+});
 
 const demanda = ref(null);
 const camadasGeo = ref([]);
@@ -103,7 +107,7 @@ async function buscarDemanda() {
 
   try {
     const resposta = await requestS.get(
-      `${import.meta.env.VITE_API_URL}/public/demandas/${route.params.id}`,
+      `${import.meta.env.VITE_API_URL}/public/demandas/${props.id}`,
       null,
       { AlertarErros: false },
     );
