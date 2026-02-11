@@ -508,8 +508,6 @@ export class DistribuicaoRecursoService {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
-
-            AND: permissionSet,
         };
 
         let orderByClause:
