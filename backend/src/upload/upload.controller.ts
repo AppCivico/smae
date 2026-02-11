@@ -19,13 +19,14 @@ import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IpAddress } from '../common/decorators/current-ip';
+import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { DownloadOptions } from './dto/download-options';
+import { ProcessarThumbnailsQueryDto } from './dto/processar-thumbnails-query.dto';
+import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/solicitar-thumbnail.dto';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
-import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
-import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/solicitar-thumbnail.dto';
 
 interface RestoreDescriptionResponse {
     total: number;
@@ -159,19 +160,12 @@ export class UploadController {
 
     @Post('processar-thumbnails-pendentes')
     @ApiBearerAuth('access-token')
-    @ApiQuery({
-        name: 'tipo',
-        required: false,
-        type: String,
-        description: 'Filtrar por tipo específico (ICONE_TAG, ICONE_PORTFOLIO, LOGO_PDM, FOTO_PARLAMENTAR)',
-    })
     @Roles(['SMAE.superadmin'])
     async processarThumbnailsPendentes(
         @CurrentUser() user: PessoaFromJwt,
-        @Query('tipo') tipo?: string,
-        @Query('reprocessar') reprocessar?: boolean
+        @Query() dto: ProcessarThumbnailsQueryDto
     ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
-        const result = await this.uploadService.processarThumbnailsPendentes(user.id, tipo, reprocessar);
+        const result = await this.uploadService.processarThumbnailsPendentes(user.id, dto.tipo, dto.reprocessar);
 
         return {
             ...result,
