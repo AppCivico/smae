@@ -21,6 +21,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  removerLinhasDecoracao: {
+    type: Boolean,
+    default: false,
+  },
 });
 </script>
 
@@ -35,6 +39,7 @@ defineProps({
     v-bind="$attrs"
     :is="as"
     class="smae-fieldset-submit flex center g2"
+    :class="{ 'smae-fieldset-submit--remover-linhas-decoracao': $props.removerLinhasDecoracao }"
   >
     <slot>
       <button
@@ -52,11 +57,22 @@ defineProps({
 
 <style lang="less" scoped>
 .smae-fieldset-submit {
+  display: flex;
+  justify-content: center;
+
   &::before, &::after {
     flex-grow: 1;
     content: '';
     height: 1.5px;
     background-color: @c100;
+  }
+}
+
+.smae-fieldset-submit--remover-linhas-decoracao {
+  border-top: 0 !important;
+
+  &::before, &::after {
+    content: initial;
   }
 }
 </style>

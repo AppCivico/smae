@@ -44,11 +44,11 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
       .max(250)
       .required(),
     nome_responsavel: string()
-      .label('Nome do Responsável')
+      .label('Nome do Ponto Focal')
       .max(250)
       .required(),
     cargo_responsavel: string()
-      .label('Cargo do Responsável')
+      .label('Cargo do Ponto Focal')
       .max(250)
       .required(),
     email_responsavel: string()
@@ -67,7 +67,7 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
       .max(250)
       .required(),
     descricao: string()
-      .label('Descrição')
+      .label('Proposta')
       .max(2048)
       .required(),
     justificativa: string()

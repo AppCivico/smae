@@ -70,7 +70,13 @@ const camposEncaminhamento = computed(() => {
   return todosOsCamposEncaminhamento.value.filter((campo) => permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes]);
 });
 
-const bloquearCampos = computed(() => camposEncaminhamento.value.length === 0);
+const bloquearCampos = computed(() => {
+  if (!itemParaEdicao.value?.id) {
+    return false;
+  }
+
+  return camposEncaminhamento.value.length === 0;
+});
 
 const props = defineProps({
   demandaId: {
@@ -273,10 +279,6 @@ watch(itemParaEdicao, (novosValores) => {
             :disabled="bloquearCampos"
             :aria-disabled="bloquearCampos"
           >
-            <option value="">
-              Selecionar
-            </option>
-
             <option
               v-for="finalidade in ['Custeio', 'Investimento']"
               :key="`demanda-finalidade--${finalidade}`"
@@ -618,10 +620,6 @@ watch(itemParaEdicao, (novosValores) => {
           :aria-disabled="bloquearCampos"
           @change="setFieldValue('acao_ids', [])"
         >
-          <option :value="null">
-            Selecionar
-          </option>
-
           <option
             v-for="area in listaAreasTematicas"
             :key="area.id"
@@ -775,7 +773,7 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </fieldset>
 
-    <SmaeFieldsetSubmit>
+    <SmaeFieldsetSubmit remover-linhas-decoracao>
       <button
         class="btn big"
         type="submit"

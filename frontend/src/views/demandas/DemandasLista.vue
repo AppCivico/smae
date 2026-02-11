@@ -91,7 +91,7 @@ onMounted(() => {
     </template>
 
     <template #acoes="{ linha }">
-      <div class="flex g1 justifyleft">
+      <div class="flex g1 justifyleft wfull">
         <SmaeLink
           :to="{
             name: 'demandas.editar',
