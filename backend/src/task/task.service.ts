@@ -701,6 +701,7 @@ export class TaskService {
             aviso_email: true, // tbm só chama função no banco
             aviso_email_cronograma_tp: true, // tbm só chama função no banco
             aviso_email_nota: true, // tbm só chama função no banco
+            gerar_thumbnail_imagem: true, // overhead gigante, pouca chance de leak
         };
 
         if (map[type]) return true;
