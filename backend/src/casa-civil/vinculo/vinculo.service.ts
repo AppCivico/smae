@@ -55,8 +55,24 @@ export class VinculoService {
                 throw new NotFoundException('Demanda não encontrada');
             }
 
-            if (demanda.status !== DemandaStatus.Publicado) {
-                throw new HttpException('Apenas demandas publicadas podem ser vinculadas', 400);
+            if (demanda.status !== DemandaStatus.Publicado && demanda.status !== DemandaStatus.Encerrado) {
+                throw new HttpException('Apenas demandas publicadas ou encerradas podem ser vinculadas', 400);
+            }
+
+            // Verifica se já existe um vínculo ativo entre esta demanda e esta distribuição
+            const vinculoExistente = await this.prisma.distribuicaoRecursoVinculo.findFirst({
+                where: {
+                    demanda_id: dto.demanda_id,
+                    distribuicao_id: dto.distribuicao_id,
+                    removido_em: null,
+                },
+            });
+
+            if (vinculoExistente) {
+                throw new HttpException(
+                    'Já existe um vínculo ativo entre esta demanda e esta distribuição de recurso',
+                    400
+                );
             }
         }
 
