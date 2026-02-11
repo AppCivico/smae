@@ -45,6 +45,7 @@ export class DemandaDto {
     data_status_atual: string;
     criado_em: string;
     situacao_encerramento: DemandaSituacao | null;
+    localizacao?: string;
     permissoes: DemandaPermissoesDto;
 }
 

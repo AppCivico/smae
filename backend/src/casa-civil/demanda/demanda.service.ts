@@ -439,16 +439,65 @@ export class DemandaService {
                         nome: true,
                     },
                 },
+                localizacoes: {
+                    where: { removido_em: null },
+                    select: {
+                        geolocalizacao: {
+                            select: {
+                                calc_regioes_nivel_3: true,
+                            },
+                        },
+                    },
+                },
                 status: true,
                 data_status_atual: true,
                 criado_em: true,
             },
         });
 
+        // Coleta todos os IDs de regiões de nível 3 para buscar de uma vez
+        const regioesNivel3Ids = new Set<number>();
+        demandas.forEach((d) => {
+            d.localizacoes.forEach((loc) => {
+                if (loc.geolocalizacao) {
+                    loc.geolocalizacao.calc_regioes_nivel_3.forEach((id) => regioesNivel3Ids.add(id));
+                }
+            });
+        });
+
+        // Busca os nomes das regiões de nível 3
+        const regioesMap = new Map<number, string>();
+        if (regioesNivel3Ids.size > 0) {
+            const regioes = await this.prisma.regiao.findMany({
+                where: {
+                    id: { in: Array.from(regioesNivel3Ids) },
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    descricao: true,
+                },
+            });
+            regioes.forEach((r) => regioesMap.set(r.id, r.descricao));
+        }
+
         return {
             linhas: await Promise.all(
                 demandas.map(async (d) => {
                     const permissoes = this.buildPermissions(d.status, user, d.orgao.id);
+
+                    // Monta a string de localização com as subprefeituras
+                    const subprefeituras = new Set<string>();
+                    d.localizacoes.forEach((loc) => {
+                        if (loc.geolocalizacao) {
+                            loc.geolocalizacao.calc_regioes_nivel_3.forEach((id) => {
+                                const nome = regioesMap.get(id);
+                                if (nome) subprefeituras.add(nome);
+                            });
+                        }
+                    });
+                    const localizacao = Array.from(subprefeituras).sort().join(', ');
+
                     return {
                         id: d.id,
                         versao: d.versao,
@@ -472,6 +521,7 @@ export class DemandaService {
                         data_status_atual: Date2YMD.toString(d.data_status_atual),
                         criado_em: Date2YMD.toString(d.criado_em),
                         situacao_encerramento: d.situacao_encerramento,
+                        localizacao,
                         permissoes,
                     };
                 })
