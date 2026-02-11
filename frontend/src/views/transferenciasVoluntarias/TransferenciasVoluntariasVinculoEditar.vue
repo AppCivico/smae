@@ -111,6 +111,14 @@ function obterPortfolioOuModulo() {
   }
   return '-';
 }
+
+function obterLabelCampoVinculo() {
+  const campo = vinculoAtual.value?.campo_vinculo;
+  if (campo === 'Endereco') return 'Endereço';
+  if (campo === 'Dotacao') return 'Dotação';
+  if (campo === 'Demanda') return 'Demanda';
+  return '-';
+}
 </script>
 
 <template>
@@ -207,7 +215,7 @@ function obterPortfolioOuModulo() {
       <div class="flex g2 flexwrap mt1">
         <dl class="f1">
           <dt class="t14 w700 mb05 tamarelo">
-            {{ vinculoAtual.campo_vinculo === 'Endereco' ? 'Endereço' : 'Dotação' }}
+            {{ obterLabelCampoVinculo() }}
           </dt>
           <dd>
             {{ vinculoAtual.valor_vinculo || '-' }}
