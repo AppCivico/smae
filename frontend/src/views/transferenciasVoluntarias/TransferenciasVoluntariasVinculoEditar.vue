@@ -27,7 +27,7 @@ const alertStore = useAlertStore();
 const vinculosStore = useTransferenciasVinculosStore();
 
 const {
-  linhasEndereco, linhasDotacao, tiposDeVinculo, chamadasPendentes,
+  linhasEndereco, linhasDotacao, linhasDemanda, tiposDeVinculo, chamadasPendentes,
 } = storeToRefs(vinculosStore);
 
 const vinculoAtual = computed(() => {
@@ -35,7 +35,12 @@ const vinculoAtual = computed(() => {
   if (vinculoEndereco) return vinculoEndereco;
 
   const vinculoDotacao = linhasDotacao.value.find((v) => v.id === props.vinculoId);
-  return vinculoDotacao || null;
+  if (vinculoDotacao) return vinculoDotacao;
+
+  const vinculoDemanda = linhasDemanda.value.find((v) => v.id === props.vinculoId);
+  if (vinculoDemanda) return vinculoDemanda;
+
+  return null;
 });
 
 const itemParaEdicao = computed(() => ({
