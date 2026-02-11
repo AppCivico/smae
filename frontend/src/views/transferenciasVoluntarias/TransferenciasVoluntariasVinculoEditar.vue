@@ -27,7 +27,7 @@ const alertStore = useAlertStore();
 const vinculosStore = useTransferenciasVinculosStore();
 
 const {
-  linhasEndereco, linhasDotacao, tiposDeVinculo, chamadasPendentes,
+  linhasEndereco, linhasDotacao, linhasDemanda, tiposDeVinculo, chamadasPendentes,
 } = storeToRefs(vinculosStore);
 
 const vinculoAtual = computed(() => {
@@ -35,7 +35,12 @@ const vinculoAtual = computed(() => {
   if (vinculoEndereco) return vinculoEndereco;
 
   const vinculoDotacao = linhasDotacao.value.find((v) => v.id === props.vinculoId);
-  return vinculoDotacao || null;
+  if (vinculoDotacao) return vinculoDotacao;
+
+  const vinculoDemanda = linhasDemanda.value.find((v) => v.id === props.vinculoId);
+  if (vinculoDemanda) return vinculoDemanda;
+
+  return null;
 });
 
 const itemParaEdicao = computed(() => ({
@@ -104,6 +109,14 @@ function obterPortfolioOuModulo() {
   if (vinculoAtual.value?.meta) {
     return 'PDM/Meta';
   }
+  return '-';
+}
+
+function obterLabelCampoVinculo() {
+  const campo = vinculoAtual.value?.campo_vinculo;
+  if (campo === 'Endereco') return 'Endereço';
+  if (campo === 'Dotacao') return 'Dotação';
+  if (campo === 'Demanda') return 'Demanda';
   return '-';
 }
 </script>
@@ -202,7 +215,7 @@ function obterPortfolioOuModulo() {
       <div class="flex g2 flexwrap mt1">
         <dl class="f1">
           <dt class="t14 w700 mb05 tamarelo">
-            {{ vinculoAtual.campo_vinculo === 'Endereco' ? 'Endereço' : 'Dotação' }}
+            {{ obterLabelCampoVinculo() }}
           </dt>
           <dd>
             {{ vinculoAtual.valor_vinculo || '-' }}
