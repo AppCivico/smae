@@ -259,12 +259,18 @@ const demandasFiltradas = computed(() => {
 
   if (route.query.valor_min) {
     const min = parseFloat(route.query.valor_min);
-    resultado = resultado.filter((d) => parseFloat(d.valor) >= min);
+    resultado = resultado.filter((d) => {
+      const valor = parseFloat(d.valor);
+      return !Number.isNaN(valor) && valor >= min;
+    });
   }
 
   if (route.query.valor_max) {
     const max = parseFloat(route.query.valor_max);
-    resultado = resultado.filter((d) => parseFloat(d.valor) <= max);
+    resultado = resultado.filter((d) => {
+      const valor = parseFloat(d.valor);
+      return !Number.isNaN(valor) && valor <= max;
+    });
   }
 
   return resultado;
