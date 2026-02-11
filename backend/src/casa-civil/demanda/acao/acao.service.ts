@@ -15,7 +15,6 @@ export class DemandaAcaoService {
         @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
         private readonly cacheKvService: CacheKVService
     ) {}
-
     async create(dto: CreateDemandaAcaoDto, user: PessoaFromJwt) {
         try {
             dto.validaDependencias();
@@ -46,7 +45,7 @@ export class DemandaAcaoService {
 
         // Se houver dados de edição e o usuário tiver permissão para editar, executa ambos em uma transação
         if (dto.edicao && demanda.permissoes.pode_editar) {
-            return this.prisma.$transaction(
+            const result = await this.prisma.$transaction(
                 async (prismaTxn: Prisma.TransactionClient) => {
                     // Primeiro atualiza os dados
                     await this.demandaService.update(dto.demanda_id, dto.edicao!, user, prismaTxn);
@@ -68,6 +67,17 @@ export class DemandaAcaoService {
                     timeout: 30000,
                 }
             );
+
+            // Após a transação, processa cache e task
+            await this.handlePostStatusChange(
+                dto.demanda_id,
+                transition.from,
+                transition.to,
+                dto.acao === 'cancelar',
+                user
+            );
+
+            return result;
         }
 
         // Sem edição, apenas executa a mudança de status
@@ -80,22 +90,41 @@ export class DemandaAcaoService {
             dto.acao === 'cancelar' ? DemandaSituacao.Cancelada : undefined
         );
 
-        if (transition.to === DemandaStatus.Publicado || transition.from === DemandaStatus.Publicado) {
+        // Processa cache e task após mudança de status
+        await this.handlePostStatusChange(
+            dto.demanda_id,
+            transition.from,
+            transition.to,
+            dto.acao === 'cancelar',
+            user
+        );
+
+        return result;
+    }
+
+    private async handlePostStatusChange(
+        demandaId: number,
+        fromStatus: DemandaStatus,
+        toStatus: DemandaStatus,
+        isCancelar: boolean,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        if (toStatus === DemandaStatus.Publicado || fromStatus === DemandaStatus.Publicado) {
             // Só marca como deletado no cache se for cancelar
-            if (dto.acao === 'cancelar') {
-                await this.cacheKvService.setDeleted(`demandas:${dto.demanda_id}`);
+            if (isCancelar) {
+                await this.cacheKvService.setDeleted(`demandas:${demandaId}`);
             }
 
             // Precisa atualizar a listagem
             await this.taskService.create(
                 {
                     type: 'refresh_demanda',
-                    params: { force_all: true },
+                    params: {
+                        // tudo exceto refreshGeocamadas
+                    },
                 },
                 user
             );
         }
-
-        return result;
     }
 }
