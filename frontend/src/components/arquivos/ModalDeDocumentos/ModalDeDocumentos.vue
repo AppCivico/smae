@@ -326,6 +326,7 @@ watch(exibirModal, (exibir) => {
       {
         chave: 'arquivo.nome_original',
         label: 'Nome',
+        ehCabecalho: true
       },
       {
         chave: 'descricao',
@@ -347,6 +348,24 @@ watch(exibirModal, (exibir) => {
       },
     ]"
   >
+    <template #celula:arquivo__nome_original="{ linha }">
+      <component
+        :is="linha.id && linha.arquivo.download_token ? 'SmaeLink' : 'span'"
+        :to="linha.id && obterUrlDownload(linha.arquivo.download_token)"
+        class="flex center g05"
+      >
+        {{ linha.arquivo.nome_original }}
+
+        <svg
+          v-if="!linha.id"
+          width="24"
+          height="24"
+        >
+          <use xlink:href="#i_clock" />
+        </svg>
+      </component>
+    </template>
+
     <template
       v-if="!$props.disabled"
       #acoes="{linha}"
