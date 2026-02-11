@@ -182,7 +182,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 });
 
 watch(() => props.modelValue, (val) => {
-  arquivosLocais.value = val;
+  arquivosLocais.value = val ? [...val] : [];
   resetForm({ });
 }, { immediate: true });
 
