@@ -432,6 +432,7 @@ export class DemandaService {
                 valor: true,
                 finalidade: true,
                 observacao: true,
+                situacao_encerramento: true,
                 area_tematica: {
                     select: {
                         id: true,
@@ -470,6 +471,7 @@ export class DemandaService {
                         status: d.status,
                         data_status_atual: Date2YMD.toString(d.data_status_atual),
                         criado_em: Date2YMD.toString(d.criado_em),
+                        situacao_encerramento: d.situacao_encerramento,
                         permissoes,
                     };
                 })

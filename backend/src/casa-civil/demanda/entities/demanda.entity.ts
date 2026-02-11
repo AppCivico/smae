@@ -44,6 +44,7 @@ export class DemandaDto {
     status: DemandaStatus;
     data_status_atual: string;
     criado_em: string;
+    situacao_encerramento: DemandaSituacao | null;
     permissoes: DemandaPermissoesDto;
 }
 
@@ -55,7 +56,6 @@ export class DemandaDetailDto extends DemandaDto {
     dias_em_validacao: number;
     dias_em_publicado: number;
     dias_em_encerrado: number;
-    situacao_encerramento: DemandaSituacao | null;
 }
 
 export class ListDemandaDto {
