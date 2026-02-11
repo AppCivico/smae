@@ -121,6 +121,8 @@ async function handleFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
 
+  console.log(file);
+
   if (!file) return;
 
   try {
