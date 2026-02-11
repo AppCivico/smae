@@ -21,8 +21,8 @@ export interface ThumbnailTypeConfig {
 
 export const THUMBNAIL_TYPES: Record<string, ThumbnailTypeConfig> = {
     [TipoUpload.ICONE_TAG]: {
-        defaultWidth: 128,
-        defaultHeight: 128,
+        defaultWidth: 256,
+        defaultHeight: 256,
         defaultQuality: 80,
         fit: 'inside',
         allowSvg: true,
@@ -33,8 +33,8 @@ export const THUMBNAIL_TYPES: Record<string, ThumbnailTypeConfig> = {
         },
     },
     [TipoUpload.ICONE_PORTFOLIO]: {
-        defaultWidth: 256,
-        defaultHeight: 256,
+        defaultWidth: 512,
+        defaultHeight: 512,
         defaultQuality: 80,
         fit: 'inside',
         allowSvg: true,
@@ -45,8 +45,8 @@ export const THUMBNAIL_TYPES: Record<string, ThumbnailTypeConfig> = {
         },
     },
     [TipoUpload.LOGO_PDM]: {
-        defaultWidth: 256,
-        defaultHeight: 256,
+        defaultWidth: 512,
+        defaultHeight: 512,
         defaultQuality: 80,
         fit: 'inside',
         allowSvg: true,
@@ -57,8 +57,8 @@ export const THUMBNAIL_TYPES: Record<string, ThumbnailTypeConfig> = {
         },
     },
     [TipoUpload.FOTO_PARLAMENTAR]: {
-        defaultWidth: 200,
-        defaultHeight: 200,
+        defaultWidth: 768,
+        defaultHeight: 768,
         defaultQuality: 80,
         fit: 'cover',
         allowSvg: false,

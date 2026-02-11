@@ -1,10 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { JSDOM } from 'jsdom';
+import DOMPurify from 'dompurify';
+import * as sharp from 'sharp';
 import { PrismaService } from '../prisma/prisma.service';
 import { TaskableService } from '../task/entities/task.entity';
 import { CONST_BOT_USER_ID } from '../common/consts';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { StorageService } from './storage-service';
-import { UploadService } from './upload.service';
-import { isThumbnailType } from './thumbnail-config';
+import { THUMBNAIL_TYPES, isThumbnailType } from './thumbnail-config';
 
 @Injectable()
 export class ThumbnailService implements TaskableService {
@@ -13,7 +16,7 @@ export class ThumbnailService implements TaskableService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly storage: StorageService,
-        private readonly uploadService: UploadService
+        private readonly smaeConfig: SmaeConfigService
     ) {}
 
     /**
@@ -66,8 +69,8 @@ export class ThumbnailService implements TaskableService {
                 originalname: arquivo.nome_original,
             };
 
-            // Use the existing generateAndStoreThumbnail method from UploadService
-            const thumbnailId = await this.uploadService.generateAndStoreThumbnail(
+            // Generate and store the thumbnail
+            const thumbnailId = await this.generateAndStoreThumbnail(
                 arquivoId,
                 file,
                 tipoUpload,
@@ -75,7 +78,9 @@ export class ThumbnailService implements TaskableService {
             );
 
             if (thumbnailId) {
-                this.logger.log(`[Job ${jobId}] Thumbnail generated successfully for arquivo ${arquivoId}, thumbnail ID: ${thumbnailId}`);
+                this.logger.log(
+                    `[Job ${jobId}] Thumbnail generated successfully for arquivo ${arquivoId}, thumbnail ID: ${thumbnailId}`
+                );
                 return { success: true, arquivo_id: arquivoId, thumbnail_arquivo_id: thumbnailId };
             } else {
                 this.logger.warn(`[Job ${jobId}] Thumbnail generation skipped for arquivo ${arquivoId}`);
@@ -92,5 +97,117 @@ export class ThumbnailService implements TaskableService {
      */
     outputToJson(executeOutput: any, _inputParams: any, _jobId: string): JSON {
         return JSON.stringify(executeOutput) as any;
+    }
+
+    /**
+     * Generates a thumbnail from the original file and stores it
+     */
+    async generateAndStoreThumbnail(
+        originalArquivoId: number,
+        file: Express.Multer.File | { buffer: Buffer },
+        tipoUpload: string,
+        userId: number
+    ): Promise<number | null> {
+        const config = THUMBNAIL_TYPES[tipoUpload];
+        if (!config) {
+            this.logger.debug(`Thumbnail config not found for tipoUpload: ${tipoUpload}`);
+            return null;
+        }
+
+        const originalname = 'originalname' in file ? file.originalname : '';
+        const isSvg = /\.svg$/i.test(originalname);
+        if (isSvg && !config.allowSvg) return null;
+
+        let thumbnailBuffer: Buffer;
+        let fileName: string;
+        let mimeType: string;
+
+        if (isSvg) {
+            const dom = new JSDOM('');
+            try {
+                // Sanitize SVG with DOMPurify to remove dangerous tags/attributes
+                const window = dom.window;
+                const purify = DOMPurify(window);
+                const svgString = file.buffer.toString('utf-8');
+
+                const cleanSvg = purify.sanitize(svgString, {
+                    USE_PROFILES: { svg: true, svgFilters: true },
+                });
+
+                thumbnailBuffer = Buffer.from(cleanSvg, 'utf-8');
+                fileName = 'thumbnail.svg';
+                mimeType = 'image/svg+xml';
+            } finally {
+                // Always close the JSDOM window to prevent memory leaks
+                dom.window.close();
+            }
+        } else {
+            // Convert raster images to WebP
+            const width = await this.smaeConfig.getConfigNumberWithDefault(
+                config.configKeys.width,
+                config.defaultWidth
+            );
+            const height = await this.smaeConfig.getConfigNumberWithDefault(
+                config.configKeys.height,
+                config.defaultHeight
+            );
+            const quality = await this.smaeConfig.getConfigNumberWithDefault(
+                config.configKeys.quality,
+                config.defaultQuality
+            );
+
+            thumbnailBuffer = await sharp(file.buffer)
+                .resize(width, height, { fit: config.fit, withoutEnlargement: true })
+                .webp({ quality })
+                .toBuffer();
+
+            fileName = 'thumbnail.webp';
+            mimeType = 'image/webp';
+        }
+
+        const thumbnailId = await this.nextSequence();
+        const thumbnailKey = [
+            'uploads',
+            'thumbnail',
+            `original-arquivo-id-${originalArquivoId}`,
+            `arquivo-id-${thumbnailId}`,
+            fileName,
+        ].join('/');
+
+        await this.storage.putBlob(thumbnailKey, thumbnailBuffer, {
+            'Content-Type': mimeType,
+            'x-user-id': String(userId),
+            'x-tipo': 'THUMBNAIL',
+            'x-original-arquivo-id': String(originalArquivoId),
+        });
+
+        // Use transaction to ensure atomic create and update
+        await this.prisma.$transaction([
+            this.prisma.arquivo.create({
+                data: {
+                    id: thumbnailId,
+                    criado_por: userId,
+                    criado_em: new Date(Date.now()),
+                    caminho: thumbnailKey,
+                    nome_original: fileName,
+                    mime_type: mimeType,
+                    tamanho_bytes: thumbnailBuffer.length,
+                    tipo: 'THUMBNAIL',
+                },
+                select: { id: true },
+            }),
+            this.prisma.arquivo.update({
+                where: { id: originalArquivoId },
+                data: { thumbnail_arquivo_id: thumbnailId },
+            }),
+        ]);
+
+        return thumbnailId;
+    }
+
+    private async nextSequence(): Promise<number> {
+        const nextVal: any[] = await this.prisma.$queryRaw`select nextval('arquivo_id_seq'::regclass) as id`;
+        const arquivoId = Number(nextVal[0].id);
+        return arquivoId;
     }
 }

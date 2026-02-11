@@ -35,6 +35,7 @@ export class CreateUploadDto {
         deprecated: true,
         description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08',
     })
+    @ApiProperty({ deprecated: true })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 

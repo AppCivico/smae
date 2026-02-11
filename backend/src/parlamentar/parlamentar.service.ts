@@ -973,7 +973,8 @@ export class ParlamentarService {
                     });
 
                     if (!existingComparecimento) {
-                        throw new HttpException('Não foi possível encontrar dados de comparecimento para esta eleição/região. Informe o número de comparecimento.',
+                        throw new HttpException(
+                            'Não foi possível encontrar dados de comparecimento para esta eleição/região. Informe o número de comparecimento.',
                             400
                         );
                     }
@@ -982,9 +983,7 @@ export class ParlamentarService {
 
                 // Valida numero_votos <= comparecimento
                 if (dto.numero_votos > finalComparecimento) {
-                    throw new HttpException('Número de votos não pode ser maior que o comparecimento',
-                        400
-                    );
+                    throw new HttpException('Número de votos não pode ser maior que o comparecimento', 400);
                 }
 
                 // Sempre calcula o percentual

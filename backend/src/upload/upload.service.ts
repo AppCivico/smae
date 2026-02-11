@@ -1,16 +1,20 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
+import { Prisma, arquivo_preview_status } from '@prisma/client';
 import AdmZip from 'adm-zip';
+import { JSDOM } from 'jsdom';
+import * as MinioJS from 'minio';
 import * as sharp from 'sharp';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
 import { read } from 'xlsx';
-import { JSDOM } from 'jsdom';
-import DOMPurify from 'dompurify';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { deveGerarPreview } from './arquivo-preview.helper';
+import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
+import { RestaurarDescricaoResponseDto } from './dto/restaurar-descricao-response.dto';
 import { DownloadBody } from './entities/download.body';
 import { Download } from './entities/download.entity';
 import { TipoUpload } from './entities/tipo-upload';
@@ -39,12 +43,6 @@ const ZipContentTypes = [
     'application/x-zip-compressed',
     'application/x-zip',
 ];
-import * as MinioJS from 'minio';
-import { deveGerarPreview } from './arquivo-preview.helper';
-import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
-import { RestaurarDescricaoResponseDto } from './dto/restaurar-descricao-response.dto';
-import { arquivo_preview_status } from '@prisma/client';
-import { SmaeConfigService } from '../common/services/smae-config.service';
 
 @Injectable()
 export class UploadService {
@@ -106,6 +104,13 @@ export class UploadService {
             originalname = createUploadDto.descricao ?? 'upload.bin';
         }
 
+        const rejectUpload = await this.smaeConfig.getConfigBooleanWithDefault('REJEITAR_UPLOAD_COM_DESCRICAO', false);
+        if (rejectUpload && createUploadDto.descricao)
+            throw new HttpException(
+                'O uso do campo "descrição" está obsoleto desde 2024-07-08 e não é permitido, envie apenas para o documento/FK.',
+                400
+            );
+
         const arquivoId = await this.nextSequence();
 
         const key = [
@@ -150,16 +155,8 @@ export class UploadService {
             select: { id: true },
         });
 
-        // Generate thumbnail for image upload types (non-blocking)
-        if (isThumbnailType(String(createUploadDto.tipo))) {
-            try {
-                await this.generateAndStoreThumbnail(arquivoId, file, String(createUploadDto.tipo), user.id);
-            } catch (error) {
-                this.logger.warn(
-                    `Falha ao gerar thumbnail para arquivo ${arquivoId} (tipo ${createUploadDto.tipo}): ${error?.message ?? error}`
-                );
-            }
-        }
+        // Schedule thumbnail generation task if applicable
+        await this.agendarThumbnailSeNecessario(arquivoId, String(createUploadDto.tipo), user.id);
 
         // Schedule preview task if applicable
         await this.agendarPreviewSeNecessario(
@@ -227,6 +224,36 @@ export class UploadService {
         Logger.log(`Preview scheduled for arquivo ${arquivoId}, task ${task.id}, type: ${resultado.tipoPreview}`);
     }
 
+    private async agendarThumbnailSeNecessario(arquivoId: number, tipo: string, userId: number): Promise<void> {
+        if (!isThumbnailType(tipo)) {
+            return;
+        }
+
+        const arquivo = await this.prisma.arquivo.findUnique({
+            where: { id: arquivoId },
+            select: { thumbnail_arquivo_id: true },
+        });
+
+        if (arquivo?.thumbnail_arquivo_id) {
+            this.logger.debug(`Thumbnail already exists for arquivo ${arquivoId}, skipping task creation`);
+            return;
+        }
+
+        const task = await this.prisma.task_queue.create({
+            data: {
+                type: 'gerar_thumbnail_imagem',
+                status: 'pending',
+                pessoa_id: userId,
+                params: {
+                    arquivo_id: arquivoId,
+                    tipo_upload: tipo,
+                },
+            },
+        });
+
+        this.logger.log(`Thumbnail scheduled for arquivo ${arquivoId}, task ${task.id}, type: ${tipo}`);
+    }
+
     async getById(id: number) {
         return this.prisma.arquivo.findFirstOrThrow({
             where: { id: id },
@@ -276,7 +303,10 @@ export class UploadService {
             await this.validateImageContent(file);
         } else if (createUploadDto.tipo === TipoUpload.FOTO_PARLAMENTAR) {
             if (/(\.png|jpg|jpeg)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo de foto do parlamentar precisa ser um arquivo PNG, JPG ou JPEG', 400);
+                throw new HttpException(
+                    'O arquivo de foto do parlamentar precisa ser um arquivo PNG, JPG ou JPEG',
+                    400
+                );
             }
             const maxFotoParlamentarSize = await this.smaeConfig.getConfigNumberWithDefault(
                 'UPLOAD_MAX_SIZE_FOTO_PARLAMENTAR_BYTES',
@@ -307,20 +337,20 @@ export class UploadService {
 
         if (isSvg) {
             // Parse full file buffer with JSDOM to validate SVG structure
+            const dom = new JSDOM(file.buffer.toString('utf-8'), { contentType: 'image/svg+xml' });
             try {
-                const svgString = file.buffer.toString('utf-8');
-                const dom = new JSDOM(svgString, { contentType: 'image/svg+xml' });
                 const document = dom.window.document;
 
                 // Validate that the parsed document contains a top-level <svg> element
                 if (!document.querySelector('svg')) {
                     throw new HttpException('O arquivo não é um SVG válido.', 400);
                 }
-
-                dom.window.close();
             } catch (error) {
                 if (error instanceof HttpException) throw error;
                 throw new HttpException('O arquivo não é um SVG válido.', 400);
+            } finally {
+                // Always close the JSDOM window to prevent memory leaks
+                dom.window.close();
             }
         } else {
             try {
@@ -335,109 +365,6 @@ export class UploadService {
                 );
             }
         }
-    }
-
-    async generateAndStoreThumbnail(
-        originalArquivoId: number,
-        file: Express.Multer.File | { buffer: Buffer },
-        tipoUpload: string,
-        userId: number
-    ): Promise<number | null> {
-        const config = THUMBNAIL_TYPES[tipoUpload];
-        if (!config) {
-            this.logger.debug(`Thumbnail config not found for tipoUpload: ${tipoUpload}`);
-            return null;
-        }
-
-        const originalname = 'originalname' in file ? file.originalname : '';
-        const isSvg = /\.svg$/i.test(originalname);
-        if (isSvg && !config.allowSvg) return null;
-
-        let thumbnailBuffer: Buffer;
-        let fileName: string;
-        let mimeType: string;
-
-        if (isSvg) {
-            const dom = new JSDOM('');
-            try {
-                // Sanitize SVG with DOMPurify to remove dangerous tags/attributes
-                const window = dom.window;
-                const purify = DOMPurify(window);
-                const svgString = file.buffer.toString('utf-8');
-
-                const cleanSvg = purify.sanitize(svgString, {
-                    USE_PROFILES: { svg: true, svgFilters: true },
-                });
-
-                thumbnailBuffer = Buffer.from(cleanSvg, 'utf-8');
-                fileName = 'thumbnail.svg';
-                mimeType = 'image/svg+xml';
-            } finally {
-                // Always close the JSDOM window to prevent memory leaks
-                dom.window.close();
-            }
-        } else {
-            // Convert raster images to WebP
-            const width = await this.smaeConfig.getConfigNumberWithDefault(
-                config.configKeys.width,
-                config.defaultWidth
-            );
-            const height = await this.smaeConfig.getConfigNumberWithDefault(
-                config.configKeys.height,
-                config.defaultHeight
-            );
-            const quality = await this.smaeConfig.getConfigNumberWithDefault(
-                config.configKeys.quality,
-                config.defaultQuality
-            );
-
-            thumbnailBuffer = await sharp(file.buffer)
-                .resize(width, height, { fit: config.fit, withoutEnlargement: true })
-                .webp({ quality })
-                .toBuffer();
-
-            fileName = 'thumbnail.webp';
-            mimeType = 'image/webp';
-        }
-
-        const thumbnailId = await this.nextSequence();
-        const thumbnailKey = [
-            'uploads',
-            'thumbnail',
-            `original-arquivo-id-${originalArquivoId}`,
-            `arquivo-id-${thumbnailId}`,
-            fileName,
-        ].join('/');
-
-        await this.storage.putBlob(thumbnailKey, thumbnailBuffer, {
-            'Content-Type': mimeType,
-            'x-user-id': String(userId),
-            'x-tipo': 'THUMBNAIL',
-            'x-original-arquivo-id': String(originalArquivoId),
-        });
-
-        // Use transaction to ensure atomic create and update
-        await this.prisma.$transaction([
-            this.prisma.arquivo.create({
-                data: {
-                    id: thumbnailId,
-                    criado_por: userId,
-                    criado_em: new Date(Date.now()),
-                    caminho: thumbnailKey,
-                    nome_original: fileName,
-                    mime_type: mimeType,
-                    tamanho_bytes: thumbnailBuffer.length,
-                    tipo: 'THUMBNAIL',
-                },
-                select: { id: true },
-            }),
-            this.prisma.arquivo.update({
-                where: { id: originalArquivoId },
-                data: { thumbnail_arquivo_id: thumbnailId },
-            }),
-        ]);
-
-        return thumbnailId;
     }
 
     private checkShapeFile(file: Express.Multer.File) {
@@ -846,12 +773,6 @@ export class UploadService {
     }
 
     async solicitarPreview(token: string, userId: number): Promise<SolicitarPreviewResponseDto> {
-        // Decode token to get arquivo_id
-        console.log('=====================');
-
-        console.log(token);
-        console.log('=====================');
-
         const arquivoId = this.checkUploadOrDownloadToken(token);
 
         // Get arquivo details
