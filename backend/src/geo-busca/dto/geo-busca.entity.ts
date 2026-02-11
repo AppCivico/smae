@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DemandaFinalidade, DemandaStatus, GeoReferenciaTipo, ModuloSistema, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import {
+    DemandaFinalidade,
+    DemandaSituacao,
+    DemandaStatus,
+    GeoReferenciaTipo,
+    ModuloSistema,
+    ProjetoStatus,
+    TipoProjeto,
+} from '@prisma/client';
 import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { GeoJSON } from 'geojson';
 
@@ -225,6 +233,9 @@ export class DemandaSearchResultDto {
 
     @ApiProperty({ enum: DemandaStatus })
     status: DemandaStatus;
+
+    @ApiPropertyOptional({ enum: DemandaSituacao })
+    situacao_encerramento?: DemandaSituacao | null;
 
     @ApiProperty({ enum: DemandaFinalidade })
     finalidade: DemandaFinalidade;

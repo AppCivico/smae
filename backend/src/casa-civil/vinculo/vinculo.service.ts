@@ -815,9 +815,12 @@ export class VinculoService {
         // Envio de e-mail para o gestor municipal indicando que a Demanda registrada foi recebida através da emenda (estadual ou federal)
         const email = demanda.email_responsavel;
 
-        // Formatar o valor com 2 casas decimais e trocar ponto por vírgula
+        // Formatar o valor em reais com separadores de milhar (.) e decimais (,)
         const valorNumerico = parseFloat(demanda.valor);
-        const valorFormatado = valorNumerico.toFixed(2).replace('.', ',');
+        const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
 
         await prismaTx.emaildbQueue.create({
             data: {
