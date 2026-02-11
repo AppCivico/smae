@@ -278,6 +278,7 @@ watch(exibirModal, (exibir) => {
           class="like-a__text addlink"
           type="button"
           :disabled="carregando"
+          :aria-busy="carregando"
           @click="abrirSeletorDeArquivos"
         >
           <svg

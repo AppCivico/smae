@@ -29,9 +29,9 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
       ativo: false,
     },
     erro: {
-      lista: false,
-      emFoco: false,
-      ativo: false,
+      lista: null,
+      emFoco: null,
+      ativo: null,
     },
   }),
 
