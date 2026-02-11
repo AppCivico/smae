@@ -37,6 +37,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PrismaErrorFilter } from './prisma-error.filter';
 import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { RequestLogModule } from './request_log/request_log.module';
+import { SysadminModule } from './sysadmin/sysadmin.module';
 
 // Hacks pro JS
 /*
@@ -98,6 +99,10 @@ import { RequestLogModule } from './request_log/request_log.module';
         // ========== Cross-cutting: Background Tasks ==========
         // Scheduled jobs, refresh tasks, email tasks
         AppModuleTasks,
+
+        // ========== Cross-cutting: SysAdmin Operations ==========
+        // Reprocessing, sync, restore operations
+        SysadminModule,
 
         // ========== Supporting Features ==========
         // Notifications, search, utilities, etc.

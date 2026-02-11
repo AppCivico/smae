@@ -11,7 +11,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { deveGerarPreview } from './arquivo-preview.helper';
-import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
+import { SolicitarPreviewResponseDto } from '../sysadmin/dto/upload/solicitar-preview.dto';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { RestaurarDescricaoResponseDto } from './dto/restaurar-descricao-response.dto';

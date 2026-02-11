@@ -7,10 +7,11 @@ import { AppModulePdm } from './app.module.pdm';
 import { AppModuleProjeto } from './app.module.projeto';
 import { AppModuleWorkflow } from './app.module.workflow';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
+import { SysadminModule } from './sysadmin/sysadmin.module';
 
 /**
  * Swagger configuration for SMAE API documentation
- * 
+ *
  * URL Structure:
  * - /api/ - Base/Common modules (login, auth, pessoa, etc.) - MAIN PAGE
  * - /api/swagger - Full application (all modules)
@@ -49,6 +50,7 @@ Usar o link do swagger + "-json"
 - [Módulos Workflow](/api/swagger-workflow)
 - [Módulos Orçamento](/api/swagger-orcamento)
 - [Módulos de bloco de notas](/api/swagger-bloco-notas)
+- [Módulos Sysadmin](/api/swagger-sysadmin)
 `;
 
 /**
@@ -158,6 +160,10 @@ export function setupSwaggerDocumentation(app: INestApplication): void {
     // 8. Bloco de Notas
     const blocoNotasConfig = createBaseConfig('SMAE - OpenAPI - Bloco de notas');
     setupSwaggerModule('api/swagger-bloco-notas', app, blocoNotasConfig.build(), [BlocoNotasModule]);
+
+    // 9. Sysadmin
+    const sysadminConfig = createBaseConfig('SMAE - OpenAPI - Módulos Sysadmin');
+    setupSwaggerModule('api/swagger-sysadmin', app, sysadminConfig.build(), [SysadminModule]);
 }
 
 /**

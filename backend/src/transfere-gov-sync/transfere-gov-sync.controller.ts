@@ -5,7 +5,6 @@ import {
     FilterTransfereGovListDto,
     FilterTransfereGovTransferenciasDto,
     TransfereGovDto,
-    TransfereGovSyncDto,
     TransfereGovTransferenciasDto,
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
@@ -22,36 +21,12 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 export class TransfereGovController {
     constructor(private readonly transfereGovSyncService: TransfereGovSyncService) {}
 
-    @Post('sync')
-    @ApiBearerAuth('access-token')
-    @Roles(['TransfereGov.sincronizar'])
-    async manualSync(): Promise<TransfereGovSyncDto> {
-        const newItems = await this.transfereGovSyncService.manualSync();
-        return { novos_itens: newItems.map((item) => item.id) };
-    }
-
     @Get('lista')
     @ApiBearerAuth('access-token')
     @ApiPaginatedResponse(TransfereGovDto)
     @Roles(['TransfereGov.listar'])
     async listaComunicados(@Query() params: FilterTransfereGovListDto): Promise<PaginatedDto<TransfereGovDto>> {
         return await this.transfereGovSyncService.listaComunicados(params);
-    }
-
-    @Post('sync-transferencias-especiais')
-    @ApiBearerAuth('access-token')
-    @Roles(['TransfereGov.sincronizar'])
-    async manualSyncOportunidadesEspeciais(): Promise<TransfereGovSyncDto> {
-        const newItems = await this.transfereGovSyncService.manualSyncOportunidadesEspeciais();
-        return { novos_itens: newItems.map((item) => item.id) };
-    }
-
-    @Post('sync-transferencias-completo')
-    @ApiBearerAuth('access-token')
-    @Roles(['TransfereGov.sincronizar'])
-    async manualSyncTransferencias(): Promise<TransfereGovSyncDto> {
-        const newItems = await this.transfereGovSyncService.manualSyncTransferencias();
-        return { novos_itens: newItems.map((item) => item.id) };
     }
 
     @Get('transferencia')

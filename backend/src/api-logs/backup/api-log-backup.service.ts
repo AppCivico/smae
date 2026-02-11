@@ -5,7 +5,7 @@ import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskableService } from 'src/task/entities/task.entity';
-import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto';
+import { CreateApiLogDayDto } from '../../sysadmin/dto/api-log/create-api-log-day.dto';
 import { tryDecodeJson } from '../utils/json-utils';
 import { Date2YMD } from '../../common/date2ymd';
 
