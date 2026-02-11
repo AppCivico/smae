@@ -537,12 +537,6 @@ watch(itemParaEdicao, (novosValores) => {
           v-slot="{value}"
           name="arquivos"
         >
-          <!-- <UploadDeArquivosEmLista
-            tipo="DOCUMENTO"
-            :arquivos-existentes="value"
-            @update:model-value="ev => setFieldValue('upload_tokens', ev)"
-            @arquivo-existente-removido="removerArquivo"
-          /> -->
           <ModalDeDocumentos :model-value="value" />
         </Field>
 
