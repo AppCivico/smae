@@ -8,7 +8,7 @@ import {
 import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import ModalDeDocumentos from '@/components/arquivos/ModalDeDocumentos.vue';
+import ModalDeDocumentos from '@/components/arquivos/ModalDeDocumentos/ModalDeDocumentos.vue';
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
