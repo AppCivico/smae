@@ -582,13 +582,14 @@ watch(itemParaEdicao, (novosValores) => {
         />
 
         <Field
-          v-slot="{value}"
+          v-slot="{value, handleChange}"
           name="arquivos"
         >
           <ModalDeDocumentos
             :model-value="value"
             :disabled="bloquearCampos"
             :aria-disabled="bloquearCampos"
+            @update:model-value="handleChange"
           />
         </Field>
 
