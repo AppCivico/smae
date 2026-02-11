@@ -439,10 +439,10 @@ export class DemandaService {
                         nome: true,
                     },
                 },
-                localizacoes: {
+                geolocalizacao_referencias: {
                     where: { removido_em: null },
                     select: {
-                        geolocalizacao: {
+                        geo_localizacao: {
                             select: {
                                 calc_regioes_nivel_3: true,
                             },
@@ -458,10 +458,8 @@ export class DemandaService {
         // Coleta todos os IDs de regiões de nível 3 para buscar de uma vez
         const regioesNivel3Ids = new Set<number>();
         demandas.forEach((d) => {
-            d.localizacoes.forEach((loc) => {
-                if (loc.geolocalizacao) {
-                    loc.geolocalizacao.calc_regioes_nivel_3.forEach((id) => regioesNivel3Ids.add(id));
-                }
+            d.geolocalizacao_referencias.forEach((ref) => {
+                ref.geo_localizacao.calc_regioes_nivel_3.forEach((id) => regioesNivel3Ids.add(id));
             });
         });
 
@@ -488,13 +486,11 @@ export class DemandaService {
 
                     // Monta a string de localização com as subprefeituras
                     const subprefeituras = new Set<string>();
-                    d.localizacoes.forEach((loc) => {
-                        if (loc.geolocalizacao) {
-                            loc.geolocalizacao.calc_regioes_nivel_3.forEach((id) => {
-                                const nome = regioesMap.get(id);
-                                if (nome) subprefeituras.add(nome);
-                            });
-                        }
+                    d.geolocalizacao_referencias.forEach((ref) => {
+                        ref.geo_localizacao.calc_regioes_nivel_3.forEach((id) => {
+                            const nome = regioesMap.get(id);
+                            if (nome) subprefeituras.add(nome);
+                        });
                     });
                     const localizacao = Array.from(subprefeituras).sort().join(', ');
 
