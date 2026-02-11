@@ -1,46 +1,55 @@
-<script setup>
+<script setup lang="ts">
 import { useField } from 'vee-validate';
 import {
-  computed, ref, watch, nextTick, onMounted,
+  computed, ref, watch, nextTick, onMounted, type Ref,
 } from 'vue';
 
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 
-const props = defineProps({
-  nameMin: { type: String, required: true },
-  nameMax: { type: String, required: true },
-  min: { type: Number, default: 0 },
-  max: { type: Number, default: 100 },
-  step: { type: Number, default: null },
-  formatarMoeda: { type: Boolean, default: true },
-  precision: { type: Number, default: 3 },
-  mostrarInputs: { type: Boolean, default: false },
+interface Props {
+  nameMin: string;
+  nameMax: string;
+  min?: number;
+  max?: number;
+  step?: number | null;
+  formatarMoeda?: boolean;
+  precision?: number;
+  mostrarInputs?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  min: 0,
+  max: 100,
+  step: null,
+  formatarMoeda: true,
+  precision: 3,
+  mostrarInputs: false,
 });
 
-const stepCalculado = computed(() => {
+const stepCalculado = computed<number>(() => {
   if (props.step !== null && props.step !== undefined) {
     return props.step;
   }
   return 0.01;
 });
 
-const { value: valorMin, setValue: setMin } = useField(() => props.nameMin);
-const { value: valorMax, setValue: setMax } = useField(() => props.nameMax);
+const { value: valorMin, setValue: setMin } = useField<number | string | null>(() => props.nameMin);
+const { value: valorMax, setValue: setMax } = useField<number | string | null>(() => props.nameMax);
 
-const inputMinRef = ref(null);
-const inputMaxRef = ref(null);
-const ready = ref(false);
+const inputMinRef = ref<HTMLInputElement | null>(null);
+const inputMaxRef = ref<HTMLInputElement | null>(null);
+const ready = ref<boolean>(false);
 
-const sliderMin = ref(
+const sliderMin = ref<number>(
   valorMin.value !== undefined && valorMin.value !== null && valorMin.value !== ''
-    ? parseFloat(valorMin.value)
+    ? parseFloat(String(valorMin.value))
     : props.min,
 );
 
-const sliderMax = ref(
+const sliderMax = ref<number>(
   valorMax.value !== undefined && valorMax.value !== null && valorMax.value !== ''
-    ? parseFloat(valorMax.value)
+    ? parseFloat(String(valorMax.value))
     : props.max,
 );
 
@@ -54,7 +63,9 @@ if (valorMax.value === undefined || valorMax.value === null || valorMax.value ==
 const thumbWidth = 20;
 const thumbWidthVar = `${thumbWidth}px`;
 
-function updateRanges(method = 'ceil') {
+type RoundingMethod = 'ceil' | 'floor';
+
+function updateRanges(method: RoundingMethod = 'ceil'): void {
   if (!inputMinRef.value || !inputMaxRef.value) return;
 
   const { min } = props;
@@ -126,49 +137,51 @@ function updateRanges(method = 'ceil') {
   );
 }
 
-function atualizarMin(event) {
-  const novo = parseFloat(event.target.value);
+function atualizarMin(event: Event): void {
+  const target = event.target as HTMLInputElement;
+  const novo = parseFloat(target.value);
   sliderMin.value = novo;
   setMin(novo);
   updateRanges('ceil');
 }
 
-function atualizarMax(event) {
-  const novo = parseFloat(event.target.value);
+function atualizarMax(event: Event): void {
+  const target = event.target as HTMLInputElement;
+  const novo = parseFloat(target.value);
   sliderMax.value = novo;
   setMax(novo);
   updateRanges('floor');
 }
 
-function handleMinFocus() {
+function handleMinFocus(): void {
   updateRanges('ceil');
 }
 
-function handleMaxFocus() {
+function handleMaxFocus(): void {
   updateRanges('floor');
 }
 
-const inputMinValue = ref('');
-const inputMaxValue = ref('');
+const inputMinValue = ref<string>('');
+const inputMaxValue = ref<string>('');
 
-function formatarParaInput(valor) {
+function formatarParaInput(valor: number): string {
   if (props.formatarMoeda) {
     return dinheiro(valor, { style: 'decimal' });
   }
   return valor.toString();
 }
 
-watch(() => props.min, () => {
+watch(() => props.min, (): void => {
   updateRanges('ceil');
 });
 
-watch(() => props.max, () => {
+watch(() => props.max, (): void => {
   updateRanges('ceil');
 });
 
-watch(valorMin, (novo) => {
+watch(valorMin, (novo: number | string | null | undefined): void => {
   if (novo !== undefined && novo !== null && novo !== '') {
-    const valor = parseFloat(novo);
+    const valor = parseFloat(String(novo));
     if (valor !== sliderMin.value) {
       sliderMin.value = valor;
       updateRanges('ceil');
@@ -176,9 +189,9 @@ watch(valorMin, (novo) => {
   }
 });
 
-watch(valorMax, (novo) => {
+watch(valorMax, (novo: number | string | null | undefined): void => {
   if (novo !== undefined && novo !== null && novo !== '') {
-    const valor = parseFloat(novo);
+    const valor = parseFloat(String(novo));
     if (valor !== sliderMax.value) {
       sliderMax.value = valor;
       updateRanges('floor');
@@ -186,15 +199,15 @@ watch(valorMax, (novo) => {
   }
 });
 
-watch(sliderMin, (valor) => {
+watch(sliderMin, (valor: number): void => {
   inputMinValue.value = formatarParaInput(valor);
 });
 
-watch(sliderMax, (valor) => {
+watch(sliderMax, (valor: number): void => {
   inputMaxValue.value = formatarParaInput(valor);
 });
 
-onMounted(async () => {
+onMounted(async (): Promise<void> => {
   await nextTick();
 
   if (inputMinRef.value && inputMaxRef.value) {
@@ -210,8 +223,9 @@ onMounted(async () => {
   ready.value = true;
 });
 
-function atualizarMinViaInput(event) {
-  const valorString = event.target.value;
+function atualizarMinViaInput(event: Event): void {
+  const target = event.target as HTMLInputElement;
+  const valorString = target.value;
   const valor = toFloat(valorString);
 
   if (!Number.isNaN(valor)) {
@@ -222,8 +236,9 @@ function atualizarMinViaInput(event) {
   }
 }
 
-function atualizarMaxViaInput(event) {
-  const valorString = event.target.value;
+function atualizarMaxViaInput(event: Event): void {
+  const target = event.target as HTMLInputElement;
+  const valorString = target.value;
   const valor = toFloat(valorString);
 
   if (!Number.isNaN(valor)) {
@@ -234,13 +249,13 @@ function atualizarMaxViaInput(event) {
   }
 }
 
-const valorMinFormatado = computed(() => (
+const valorMinFormatado = computed<string | number>(() => (
   props.formatarMoeda
     ? dinheiro(sliderMin.value, { style: 'currency', currency: 'BRL' })
     : sliderMin.value
 ));
 
-const valorMaxFormatado = computed(() => (
+const valorMaxFormatado = computed<string | number>(() => (
   props.formatarMoeda
     ? dinheiro(sliderMax.value, { style: 'currency', currency: 'BRL' })
     : sliderMax.value
