@@ -126,6 +126,7 @@ export class UploadController {
 
     @Post('solicitar-preview')
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
     async solicitarPreview(
         @Body() dto: SolicitarPreviewDto,
         @CurrentUser() user: PessoaFromJwt
@@ -138,8 +139,6 @@ export class UploadController {
     async processarPreviewsPendentes(
         @CurrentUser() user: PessoaFromJwt
     ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
-        Logger.log(`User ${user.id} (${user.nome_exibicao}) initiated batch preview processing for all files`);
-
         const result = await this.uploadService.processarPreviewsPendentes(user.id);
 
         return {
@@ -150,6 +149,7 @@ export class UploadController {
 
     @Post('solicitar-thumbnail')
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
     async solicitarThumbnail(
         @Body() dto: SolicitarThumbnailDto,
         @CurrentUser() user: PessoaFromJwt
@@ -165,15 +165,13 @@ export class UploadController {
         type: String,
         description: 'Filtrar por tipo específico (ICONE_TAG, ICONE_PORTFOLIO, LOGO_PDM, FOTO_PARLAMENTAR)',
     })
+    @Roles(['SMAE.superadmin'])
     async processarThumbnailsPendentes(
         @CurrentUser() user: PessoaFromJwt,
-        @Query('tipo') tipo?: string
+        @Query('tipo') tipo?: string,
+        @Query('reprocessar') reprocessar?: boolean
     ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
-        Logger.log(
-            `User ${user.id} (${user.nome_exibicao}) initiated batch thumbnail processing${tipo ? ` for tipo=${tipo}` : ''}`
-        );
-
-        const result = await this.uploadService.processarThumbnailsPendentes(user.id, tipo);
+        const result = await this.uploadService.processarThumbnailsPendentes(user.id, tipo, reprocessar);
 
         return {
             ...result,

@@ -8,6 +8,7 @@ import { CONST_BOT_USER_ID } from '../common/consts';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { StorageService } from './storage-service';
 import { THUMBNAIL_TYPES, isThumbnailType } from './thumbnail-config';
+import { GerarThumbnailDto } from './dto/gerar-thumbnail.dto';
 
 @Injectable()
 export class ThumbnailService implements TaskableService {
@@ -22,7 +23,7 @@ export class ThumbnailService implements TaskableService {
     /**
      * TaskableService implementation - execute the thumbnail generation job
      */
-    async executeJob(params: any, jobId: string): Promise<any> {
+    async executeJob(params: GerarThumbnailDto, jobId: string): Promise<any> {
         const arquivoId = params.arquivo_id;
         const tipoUpload = params.tipo_upload;
 
@@ -49,10 +50,9 @@ export class ThumbnailService implements TaskableService {
                 throw new Error('Arquivo not found');
             }
 
-            // If thumbnail already exists, skip (unless explicitly reprocessing)
-            if (arquivo.thumbnail_arquivo_id) {
+            if (arquivo.thumbnail_arquivo_id && !params.reprocessar) {
                 this.logger.log(`Thumbnail already exists for arquivo ${arquivoId}, skipping`);
-                return;
+                return { success: false, arquivo_id: arquivoId, reason: 'Already exists' };
             }
 
             // Download original file from storage

@@ -23,6 +23,7 @@ import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
 import { THUMBNAIL_TYPES, isThumbnailType } from './thumbnail-config';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { GerarThumbnailDto } from './dto/gerar-thumbnail.dto';
 
 const AdmZipLib = require('adm-zip');
 
@@ -350,7 +351,7 @@ export class UploadService {
                 throw new HttpException('O arquivo não é um SVG válido.', 400);
             } finally {
                 // Always close the JSDOM window to prevent memory leaks
-                dom.window.close();
+                if (dom && dom.window) dom.window.close();
             }
         } else {
             try {
@@ -1004,13 +1005,6 @@ export class UploadService {
             };
         }
 
-        if (arquivo.thumbnail_arquivo_id) {
-            return {
-                aceito: false,
-                mensagem: 'Thumbnail já existe para este arquivo',
-            };
-        }
-
         // Schedule thumbnail task
         const task = await this.prisma.task_queue.create({
             data: {
@@ -1020,7 +1014,8 @@ export class UploadService {
                 params: {
                     arquivo_id: arquivoId,
                     tipo_upload: arquivo.tipo,
-                },
+                    reprocessar: true,
+                } satisfies GerarThumbnailDto,
             },
         });
 
@@ -1034,14 +1029,15 @@ export class UploadService {
 
     async processarThumbnailsPendentes(
         userId: number,
-        tipoFiltro?: string
+        tipoFiltro: string | undefined,
+        reprocessar: boolean | undefined
     ): Promise<{ total: number; agendados: number; pulados: number }> {
         this.logger.log(
             `Processing thumbnails in batch${tipoFiltro ? ` for tipo=${tipoFiltro}` : ' for all thumbnail types'}`
         );
 
         const where: Prisma.ArquivoWhereInput = {
-            thumbnail_arquivo_id: null,
+            thumbnail_arquivo_id: reprocessar ? undefined : null,
         };
 
         if (tipoFiltro) {
@@ -1084,7 +1080,8 @@ export class UploadService {
                         params: {
                             arquivo_id: arquivo.id,
                             tipo_upload: arquivo.tipo,
-                        },
+                            reprocessar: reprocessar,
+                        } satisfies GerarThumbnailDto,
                     },
                 });
 

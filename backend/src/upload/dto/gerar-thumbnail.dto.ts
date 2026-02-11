@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class GerarThumbnailDto {
     @IsInt()
@@ -6,4 +6,8 @@ export class GerarThumbnailDto {
 
     @IsString()
     tipo_upload: string;
+
+    @IsOptional()
+    @IsBoolean()
+    reprocessar?: boolean;
 }
