@@ -295,7 +295,8 @@ watch(itemParaEdicao, (novosValores) => {
         v-if="
           errors.valor
             && valoresLimitesAtivo
-            && parseInt(values.valor) > parseInt(valoresLimitesAtivo?.valor_maximo)
+            && valoresLimitesAtivo.valor_maximo != null
+            && parseFloat(values.valor) > parseFloat(valoresLimitesAtivo.valor_maximo)
         "
         class="barra-limite"
       >

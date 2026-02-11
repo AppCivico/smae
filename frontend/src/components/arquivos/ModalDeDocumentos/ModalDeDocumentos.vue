@@ -186,6 +186,19 @@ watch(() => props.modelValue, (val) => {
   resetForm({ });
 }, { immediate: true });
 
+function onDeletarArquivo(linha: Record<string, unknown>) {
+  const linhaTyped = linha as unknown as ArquivoDocumento;
+  const index = arquivosLocais.value.findIndex(
+    (item) => (linhaTyped.id && item.id === linhaTyped.id)
+      || item.arquivo.nome_original === linhaTyped.arquivo.nome_original,
+  );
+
+  if (index !== -1) {
+    arquivosLocais.value.splice(index, 1);
+    emit('update:modelValue', arquivosLocais.value);
+  }
+}
+
 watch(exibirModal, (exibir) => {
   if (exibir) {
     alterouArquivo.value = false;
@@ -360,6 +373,7 @@ watch(exibirModal, (exibir) => {
       <DeleteButton
         :linha="linha"
         parametro-no-objeto-para-excluir="arquivo.nome_original"
+        @deletar="onDeletarArquivo"
       />
     </template>
   </SmaeTable>
