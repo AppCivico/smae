@@ -15,10 +15,12 @@ import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
-import { CadastroDemanda as schema } from '@/consts/formSchemas/demanda';
+import { CadastroDemandaSchema } from '@/consts/formSchemas/demanda';
+import dinheiro from '@/helpers/dinheiro';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
+import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
 type EtapaDoVaralComId = EtapaDoVaral & {
   id:
@@ -32,12 +34,21 @@ const router = useRouter();
 const organsStore = useOrgansStore();
 const demandasStore = useDemandasStore();
 const areasTematicasStore = useAreasTematicasStore();
+const valoresLimitesStore = useValoresLimitesStore();
 
 const { organs: listaOrgaos } = storeToRefs(organsStore);
 const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
+const { ativo: valoresLimitesAtivo } = storeToRefs(valoresLimitesStore);
 const {
   itemParaEdicao, geolocalizacaoPorToken, erro,
 } = storeToRefs(demandasStore);
+
+const schema = computed(() => (
+  CadastroDemandaSchema({
+    valorMinimo: valoresLimitesAtivo.value?.valor_minimo,
+    valorMaximo: valoresLimitesAtivo.value?.valor_maximo,
+  })
+));
 
 const todosOsCamposEncaminhamento = computed(() => [
   {
@@ -169,6 +180,7 @@ onMounted(() => {
   Promise.all([
     areasTematicasStore.buscarTudo(),
     organsStore.getAll(),
+    valoresLimitesStore.buscarAtivo(),
   ]).then();
 });
 
@@ -277,6 +289,17 @@ watch(itemParaEdicao, (novosValores) => {
             class="error-msg"
           />
         </div>
+      </div>
+
+      <div
+        v-if="
+          errors.valor
+            && valoresLimitesAtivo
+            && parseInt(values.valor) > parseInt(valoresLimitesAtivo?.valor_maximo)
+        "
+        class="barra-limite"
+      >
+        Valor máximo de {{ dinheiro(valoresLimitesAtivo.valor_maximo, { style: 'currency' }) }}
       </div>
     </fieldset>
 
@@ -742,6 +765,13 @@ watch(itemParaEdicao, (novosValores) => {
     font-weight: 600;
     color: #333333;
   }
+}
+
+.barra-limite {
+  background-color: @amarelo;
+  text-align: center;
+  width: 100%;
+  padding: 10px;
 }
 
 fieldset {

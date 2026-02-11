@@ -2,27 +2,30 @@ import { type DemandaAcao } from '@back/casa-civil/demanda/acao/dto/acao.dto';
 import {
   object, number, string, array, mixed,
 } from './initSchema';
+import dinheiro from '@/helpers/dinheiro';
 
-export const CadastroDemanda = object()
+export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => object()
   .shape({
     id: number()
       .nullable(),
 
     // Recurso Financeiro
     valor: string()
-      .label('Valor (mínimo de R$ 10.000,00)')
+      .label(`Valor (mínimo de ${dinheiro(valorMinimo, { style: 'currency' })})`)
       .required()
-      .test('valor-minimo', 'Valor mínimo de R$ 10.000,00', (valor) => {
-        const valorMinimoPossivel = 10000;
-
+      .test('valor-minimo-e-maximo', (valor, { createError }) => {
         if (!valor) {
           return false;
         }
 
         const valorNumero = parseInt(valor, 10);
 
-        if (Number.isNaN(valorNumero) || valorMinimoPossivel > valorNumero) {
-          return false;
+        if (Number.isNaN(valorNumero) || valorNumero < valorMinimo) {
+          return createError({ message: `Valor mínimo de ${dinheiro(valorMinimo, { style: 'currency' })}` });
+        }
+
+        if (valorNumero > valorMaximo) {
+          return createError({ message: `Valor máximo de ${dinheiro(valorMaximo, { style: 'currency' })}` });
         }
 
         return true;

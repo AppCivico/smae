@@ -13,21 +13,25 @@ type Lista = ListDemandaConfigDto['linhas'];
 interface Estado {
   lista: Lista;
   emFoco: DemandaConfigDto | null;
-  chamadasPendentes: ChamadasPendentes;
-  erro: Erros;
+  ativo: DemandaConfigDto | null;
+  chamadasPendentes: ChamadasPendentes & { ativo: boolean };
+  erro: Erros & { ativo: unknown };
 }
 
 export const useValoresLimitesStore = defineStore('valoresLimites', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
+    ativo: null,
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      ativo: false,
     },
     erro: {
       lista: false,
       emFoco: false,
+      ativo: false,
     },
   }),
 
@@ -62,6 +66,22 @@ export const useValoresLimitesStore = defineStore('valoresLimites', {
         this.erro.emFoco = erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
+      }
+    },
+
+    async buscarAtivo(): Promise<void> {
+      this.chamadasPendentes.ativo = true;
+
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/demanda-config/ativo`,
+        ) as DemandaConfigDto;
+
+        this.ativo = resposta;
+      } catch (erro: unknown) {
+        this.erro.ativo = erro;
+      } finally {
+        this.chamadasPendentes.ativo = false;
       }
     },
 
