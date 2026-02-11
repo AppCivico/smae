@@ -181,7 +181,7 @@ watch(valorMin, (novo: number | string | null | undefined): void => {
   if (novo !== undefined && novo !== null && novo !== '') {
     const valor = parseFloat(String(novo));
     if (valor !== sliderMin.value) {
-      sliderMin.value = valor;
+      sliderMin.value = Math.max(props.min, Math.min(Math.min(props.max, sliderMax.value), valor));
       updateRanges('ceil');
     }
   }
@@ -191,7 +191,7 @@ watch(valorMax, (novo: number | string | null | undefined): void => {
   if (novo !== undefined && novo !== null && novo !== '') {
     const valor = parseFloat(String(novo));
     if (valor !== sliderMax.value) {
-      sliderMax.value = valor;
+      sliderMax.value = Math.max(Math.max(props.min, sliderMin.value), Math.min(props.max, valor));
       updateRanges('floor');
     }
   }
