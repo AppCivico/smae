@@ -551,7 +551,11 @@ export class GeoBuscaService {
         const demandaIds = [...new Set(referencias.filter((r) => r.demanda_id).map((r) => r.demanda_id!))];
         if (demandaIds.length > 0) {
             const demandasData = await this.prisma.demanda.findMany({
-                where: { id: { in: demandaIds }, removido_em: null, status: 'Publicado' },
+                where: {
+                    id: { in: demandaIds },
+                    removido_em: null,
+                    OR: [{ status: 'Publicado' }, { status: 'Encerrado', situacao_encerramento: 'Concluido' }],
+                },
                 select: {
                     id: true,
                     nome_projeto: true,

@@ -754,15 +754,19 @@ export class VinculoService {
         vinculoId: number
     ): Promise<void> {
         const demanda = await this.demandaService.findOne(demandaId, user);
-        await this.demandaService.changeStatus(
-            demandaId,
-            user,
-            demanda.status,
-            DemandaStatus.Encerrado,
-            'Demanda vinculada a uma distribuição de recurso',
-            DemandaSituacao.Concluido,
-            prismaTx
-        );
+
+        // Só altera o status para Encerrado se ainda estiver Publicado (primeiro vínculo)
+        if (demanda.status === DemandaStatus.Publicado) {
+            await this.demandaService.changeStatus(
+                demandaId,
+                user,
+                demanda.status,
+                DemandaStatus.Encerrado,
+                'Demanda vinculada a uma distribuição de recurso',
+                DemandaSituacao.Concluido,
+                prismaTx
+            );
+        }
 
         // Buscar o vínculo recém-criado para obter dados da transferência
         const vinculo = await prismaTx.distribuicaoRecursoVinculo.findFirst({
