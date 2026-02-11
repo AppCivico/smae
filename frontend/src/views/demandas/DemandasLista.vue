@@ -6,6 +6,7 @@ import ListaLegendas from '@/components/ListaLegendas.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dinheiro from '@/helpers/dinheiro';
+import truncate from '@/helpers/texto/truncate';
 import { useDemandasStore } from '@/stores/demandas.store';
 
 const legendas = {
@@ -76,6 +77,7 @@ onMounted(() => {
       { chave: 'nome_projeto', label: 'Nome do Projeto' },
       { chave: 'area_tematica.nome', label: 'Área Temática' },
       { chave: 'valor', label: 'Valor', formatador: v => dinheiro(v, { style: 'currency' }) },
+      { chave: 'localizacao', label: 'Localizacao', formatador: v => truncate(v, 110) },
     ]"
   >
     <template #celula:orgao__nome_exibicao="{linha}">
@@ -89,26 +91,28 @@ onMounted(() => {
     </template>
 
     <template #acoes="{ linha }">
-      <SmaeLink
-        :to="{
-          name: 'demandas.editar',
-          params: { demandaId: linha.id },
-        }"
-      >
-        <svg
-          width="20"
-          height="20"
+      <div class="flex g1 justifyleft">
+        <SmaeLink
+          :to="{
+            name: 'demandas.editar',
+            params: { demandaId: linha.id },
+          }"
         >
-          <use xlink:href="#i_edit" />
-        </svg>
-      </SmaeLink>
+          <svg
+            width="20"
+            height="20"
+          >
+            <use xlink:href="#i_edit" />
+          </svg>
+        </SmaeLink>
 
-      <DeleteButton
-        v-if="linha.permissoes.pode_remover"
-        :linha="linha"
-        parametro-no-objeto-para-excluir="nome_projeto"
-        @deletar="(item) => excluirItem(item)"
-      />
+        <DeleteButton
+          v-if="linha.permissoes.pode_remover"
+          :linha="linha"
+          parametro-no-objeto-para-excluir="nome_projeto"
+          @deletar="(item) => excluirItem(item)"
+        />
+      </div>
     </template>
   </SmaeTable>
 </template>
