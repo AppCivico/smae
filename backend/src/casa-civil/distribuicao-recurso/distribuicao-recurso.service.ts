@@ -475,10 +475,6 @@ export class DistribuicaoRecursoService {
         filters: FilterDistribuicaoRecursoDto,
         user: PessoaFromJwt
     ): Promise<PaginatedWithPagesDto<DistribuicaoRecursoDto>> {
-        // Caso seja do perfil "Gestor(a) de Distribuição de Recurso"
-        // Só pode ver dists que são do seu órgão.
-        const permissionSet = await this.distribuicaoRecursoPermissionSet(user);
-
         if (filters.transferencia_id) {
             const transferencia = await this.prisma.transferencia.findFirst({
                 where: {

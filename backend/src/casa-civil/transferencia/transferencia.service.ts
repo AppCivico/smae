@@ -1091,7 +1091,14 @@ export class TransferenciaService {
     permissionSet(user: PessoaFromJwt) {
         const permissionsSet: Prisma.Enumerable<Prisma.TransferenciaWhereInput> = [];
 
-        if (!user.hasSomeRoles(['CadastroTransferencia.administrador'])) {
+        // Administradores veem todas as transferências
+        if (user.hasSomeRoles(['CadastroTransferencia.administrador'])) {
+            return permissionsSet;
+        }
+
+        // Gestores de Distribuição de Recurso só veem transferências
+        // que possuem pelo menos uma distribuição do seu órgão
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
             permissionsSet.push({
