@@ -93,7 +93,7 @@ export default {
           path: '',
           component: () => import('@/views/demandas/DemandasLista.vue'),
           meta: {
-            título: 'Lista de Demandas',
+            título: 'Demandas',
             tituloParaMigalhaDePao: 'Demandas',
           },
         },
