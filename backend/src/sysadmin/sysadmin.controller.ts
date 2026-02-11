@@ -1,38 +1,26 @@
-import { Body, Controller, Get, Inject, Logger, Param, Post, Query, UseGuards, forwardRef } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiOkResponse,
-    ApiOperation,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, Logger, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { task_type } from '@prisma/client';
+import { ApiLogRestoreService } from '../api-logs/restore/api-log-restore.service';
+import { AtualizacaoEmLoteService } from '../atualizacao-em-lote/atualizacao-em-lote.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { TaskService } from '../task/task.service';
-import { UploadService } from '../upload/upload.service';
-import { TransfereGovSyncService } from '../transfere-gov-sync/transfere-gov-sync.service';
-import { ApiLogRestoreService } from '../api-logs/restore/api-log-restore.service';
 import { ReportsService } from '../reports/relatorios/reports.service';
-import { AtualizacaoEmLoteService } from '../atualizacao-em-lote/atualizacao-em-lote.service';
-import { RefreshCacheDto } from './dto/demanda/refresh-cache.dto';
-import { ProcessarThumbnailsQueryDto } from './dto/upload/processar-thumbnails-query.dto';
-import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/upload/solicitar-thumbnail.dto';
-import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/upload/solicitar-preview.dto';
-import { TransfereGovSyncDto } from './dto/transfere-gov/transfere-gov-sync.dto';
+import { TaskService } from '../task/task.service';
+import { TransfereGovSyncService } from '../transfere-gov-sync/transfere-gov-sync.service';
+import { RestaurarDescricaoResponseDto } from '../upload/dto/restaurar-descricao-response.dto';
+import { UploadService } from '../upload/upload.service';
 import { CreateApiLogDayDto } from './dto/api-log/create-api-log-day.dto';
+import { RefreshCacheDto } from './dto/demanda/refresh-cache.dto';
+import { TransfereGovSyncDto } from './dto/transfere-gov/transfere-gov-sync.dto';
+import { ProcessarThumbnailsQueryDto } from './dto/upload/processar-thumbnails-query.dto';
+import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/upload/solicitar-preview.dto';
+import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/upload/solicitar-thumbnail.dto';
 
-interface RestoreDescriptionResponse {
-    total: number;
-    restored: number;
-    errors: number;
-    skipped: number;
+class RestoreDescriptionResponseDto extends RestaurarDescricaoResponseDto {
     message: string;
 }
 
@@ -45,22 +33,11 @@ interface RestoreDescriptionResponse {
 @ApiBearerAuth('access-token')
 export class SysadminController {
     constructor(
-        @Inject(forwardRef(() => TaskService))
         private readonly taskService: TaskService,
-
-        @Inject(forwardRef(() => UploadService))
         private readonly uploadService: UploadService,
-
-        @Inject(forwardRef(() => TransfereGovSyncService))
         private readonly transfereGovSyncService: TransfereGovSyncService,
-
-        @Inject(forwardRef(() => ApiLogRestoreService))
         private readonly apiRestoreService: ApiLogRestoreService,
-
-        @Inject(forwardRef(() => ReportsService))
         private readonly reportsService: ReportsService,
-
-        @Inject(forwardRef(() => AtualizacaoEmLoteService))
         private readonly atualizacaoEmLoteService: AtualizacaoEmLoteService
     ) {}
 
@@ -80,10 +57,7 @@ export class SysadminController {
             'Dispara atualização do cache de demandas. Pode atualizar tudo ou apenas um tipo específico (geocamadas, geopoints, summary, full, individual).',
     })
     @ApiResponse({ status: 201, description: 'Task de atualização criada com sucesso' })
-    async refreshDemandaCache(
-        @Body() dto: RefreshCacheDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
+    async refreshDemandaCache(@Body() dto: RefreshCacheDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.taskService.create(
             {
                 type: 'refresh_demanda',
@@ -189,6 +163,12 @@ export class SysadminController {
      * Agenda geração de previews para documentos
      */
     @Post('processar-previews-pendentes')
+    @Roles(['SMAE.superadmin'])
+    @ApiOperation({
+        summary: 'Processa previews pendentes em lote',
+        description: 'Agenda tarefas de geração de previews para documentos que ainda não possuem preview gerado.',
+    })
+    @ApiResponse({ status: 201, description: 'Processamento iniciado' })
     async processarPreviewsPendentes(
         @CurrentUser() user: PessoaFromJwt
     ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
@@ -204,14 +184,9 @@ export class SysadminController {
      * Restaura descrições de arquivos a partir dos metadados
      */
     @Post('admin/restore-descriptions')
-    @Roles(['SMAE.superadmin'])
-    @ApiQuery({
-        name: 'batchSize',
-        required: false,
-        type: Number,
-        description: 'Número de registros a processar por lote',
-    })
+    @Roles(['SMAE.sysadmin'])
     @ApiOperation({
+        deprecated: true,
         summary: 'Restaura descrições de arquivos',
         description: 'Restaura as descrições dos arquivos a partir dos metadados armazenados',
     })
@@ -219,7 +194,7 @@ export class SysadminController {
     async restoreDescriptions(
         @Query('batchSize') batchSize = 50,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<RestoreDescriptionResponse> {
+    ): Promise<RestoreDescriptionResponseDto> {
         Logger.log(
             `User ${user.id} (${user.nome_exibicao}) initiated description restoration process with batchSize=${batchSize} `
         );
@@ -290,7 +265,6 @@ export class SysadminController {
      * Cria task assíncrona para restauração dos logs do DuckDB
      */
     @Post('logs/restore')
-    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(['SMAE.sysadmin'])
     @ApiOkResponse({
         description: 'ID da task criada para restauração.',
@@ -323,7 +297,6 @@ export class SysadminController {
      * Remove logs restaurados de um dia específico
      */
     @Post('logs/drop')
-    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(['SMAE.sysadmin'])
     @ApiOperation({
         summary: 'Remove logs restaurados de um dia específico',
@@ -357,6 +330,7 @@ export class SysadminController {
      * Atualiza a configuração de parâmetros disponíveis para geração de relatórios
      */
     @Get('relatorios/sync-parametros')
+    @Roles(['SMAE.superadmin'])
     @ApiOperation({
         summary: 'Sincroniza parâmetros dos relatórios',
         description: 'Atualiza a configuração de parâmetros disponíveis para geração de relatórios no sistema',

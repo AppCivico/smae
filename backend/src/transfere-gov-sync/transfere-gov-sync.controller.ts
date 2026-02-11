@@ -8,6 +8,7 @@ import {
     TransfereGovTransferenciasDto,
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
+import { TransfereGovSyncDto } from '../sysadmin/dto/transfere-gov/transfere-gov-sync.dto';
 import { TransfereGovSyncService } from './transfere-gov-sync.service';
 import { ApiPaginatedResponse } from '../auth/decorators/paginated.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';

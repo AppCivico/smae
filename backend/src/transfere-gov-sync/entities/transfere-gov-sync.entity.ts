@@ -44,10 +44,6 @@ export class FilterTransfereGovListDto {
     tipo?: ComunicadoTipo;
 }
 
-export class TransfereGovSyncDto {
-    novos_itens: number[];
-}
-
 export class TransfereGovTransferenciasDto {
     id: number;
     tipo: TransfereGovOportunidadeTipo;
