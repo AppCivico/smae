@@ -242,6 +242,11 @@ watch(exibirModal, (exibir) => {
             class="mb0"
           />
         </label>
+
+        <ErrorMessage
+          class="error-msg mb1"
+          name="autoriza_divulgacao"
+        />
       </div>
 
       <div class="mb1">
