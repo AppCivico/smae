@@ -39,6 +39,10 @@
   &:empty {
     display: none;
   }
+
+  &:not(:has(*:not(:empty))) {
+    display: none;
+  }
 }
 
 .painel-flutuante__conteudo {
