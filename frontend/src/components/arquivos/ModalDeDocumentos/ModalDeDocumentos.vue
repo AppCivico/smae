@@ -32,23 +32,12 @@ type ArquivoDocumento = ArquivoDocumentoBase & (
 );
 
 type Props = {
+  disabled?: boolean,
   modelValue?: ArquivoDocumento[]
 };
 
 type Emits = {
   (event: 'update:modelValue', value: ArquivoDocumento[]): void;
-};
-
-const valoresIniciais: {
-  id?: string;
-  descricao: string;
-  autoriza_divulgacao: boolean;
-  arquivo: File | undefined;
-} = {
-  id: undefined,
-  descricao: '',
-  autoriza_divulgacao: false,
-  arquivo: undefined,
 };
 
 const {
@@ -358,7 +347,10 @@ watch(exibirModal, (exibir) => {
       },
     ]"
   >
-    <template #acoes="{linha}">
+    <template
+      v-if="!$props.disabled"
+      #acoes="{linha}"
+    >
       <button
         class="like-a__text"
         @click="handleEditarItem(linha)"
@@ -382,6 +374,8 @@ watch(exibirModal, (exibir) => {
   <button
     class="mt1 like-a__text addlink"
     type="button"
+    :disabled="$props.disabled"
+    :aria-disabled="$props.disabled"
     @click="abrirModal"
   >
     <svg

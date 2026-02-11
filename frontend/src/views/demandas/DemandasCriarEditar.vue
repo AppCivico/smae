@@ -5,7 +5,9 @@ import {
   Field,
   useForm,
 } from 'vee-validate';
-import { computed, onMounted, watch } from 'vue';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
 import { useRouter } from 'vue-router';
 
 import ModalDeDocumentos from '@/components/arquivos/ModalDeDocumentos/ModalDeDocumentos.vue';
@@ -68,6 +70,8 @@ const camposEncaminhamento = computed(() => {
   return todosOsCamposEncaminhamento.value.filter((campo) => permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes]);
 });
 
+const bloquearCampos = computed(() => camposEncaminhamento.value.length === 0);
+
 const props = defineProps({
   demandaId: {
     type: Number,
@@ -119,12 +123,6 @@ const onSubmit = handleSubmit.withControlled(async ({
     router.push({ name: 'demandas.listar' });
   }
 });
-
-function removerArquivo(idx) {
-  const arquivos = [...(values.arquivos || [])];
-  arquivos.splice(idx, 1);
-  setFieldValue('arquivos', arquivos);
-}
 
 const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   const etapas: EtapaDoVaralComId[] = [
@@ -249,6 +247,8 @@ watch(itemParaEdicao, (novosValores) => {
               :class="{ error: errors.valor }"
               :value="value"
               :name="field.name"
+              :disabled="bloquearCampos"
+              :aria-disabled="bloquearCampos"
               converter-para="string"
               @update:model-value="handleChange"
             />
@@ -270,6 +270,8 @@ watch(itemParaEdicao, (novosValores) => {
             as="select"
             class="inputtext light"
             :class="{ error: errors.finalidade }"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
           >
             <option value="">
               Selecionar
@@ -332,6 +334,8 @@ watch(itemParaEdicao, (novosValores) => {
               label="sigla"
               :grupo="listaOrgaos || []"
               :numero-maximo-de-participantes="1"
+              :readonly="bloquearCampos"
+              :aria-disabled="bloquearCampos"
               @change="handleChange"
             />
           </Field>
@@ -354,6 +358,8 @@ watch(itemParaEdicao, (novosValores) => {
             class="inputtext light"
             maxlength="250"
             :class="{ error: errors.unidade_responsavel }"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
           />
 
           <ErrorMessage
@@ -376,6 +382,8 @@ watch(itemParaEdicao, (novosValores) => {
             class="inputtext light"
             maxlength="250"
             :class="{ error: errors.nome_responsavel }"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
           />
 
           <ErrorMessage
@@ -396,6 +404,8 @@ watch(itemParaEdicao, (novosValores) => {
             class="inputtext light"
             maxlength="250"
             :class="{ error: errors.cargo_responsavel }"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
           />
 
           <ErrorMessage
@@ -418,6 +428,8 @@ watch(itemParaEdicao, (novosValores) => {
             class="inputtext light"
             maxlength="250"
             :class="{ error: errors.email_responsavel }"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
           />
 
           <ErrorMessage
@@ -438,6 +450,8 @@ watch(itemParaEdicao, (novosValores) => {
             class="inputtext light"
             maxlength="20"
             :class="{ error: errors.telefone_responsavel }"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
           />
 
           <ErrorMessage
@@ -466,6 +480,8 @@ watch(itemParaEdicao, (novosValores) => {
           class="inputtext light"
           maxlength="250"
           :class="{ error: errors.nome_projeto }"
+          :disabled="bloquearCampos"
+          :aria-disabled="bloquearCampos"
         />
 
         <ErrorMessage
@@ -492,6 +508,8 @@ watch(itemParaEdicao, (novosValores) => {
             :schema="schema"
             :name="field.name"
             :model-value="value"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
             anular-vazio
             @update:model-value="handleChange"
           />
@@ -521,6 +539,8 @@ watch(itemParaEdicao, (novosValores) => {
             :schema="schema"
             :name="field.name"
             :model-value="value"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
             anular-vazio
             @update:model-value="handleChange"
           />
@@ -546,6 +566,8 @@ watch(itemParaEdicao, (novosValores) => {
             :name="field.name"
             :model-value="value"
             :geolocalização-por-token="geolocalizacaoPorToken"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
             @update:model="handleChange"
           />
         </Field>
@@ -561,7 +583,11 @@ watch(itemParaEdicao, (novosValores) => {
           v-slot="{value}"
           name="arquivos"
         >
-          <ModalDeDocumentos :model-value="value" />
+          <ModalDeDocumentos
+            :model-value="value"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
+          />
         </Field>
 
         <Field
@@ -588,6 +614,8 @@ watch(itemParaEdicao, (novosValores) => {
           as="select"
           class="inputtext light"
           :class="{ error: errors.area_tematica_id }"
+          :disabled="bloquearCampos"
+          :aria-disabled="bloquearCampos"
           @change="setFieldValue('acao_ids', [])"
         >
           <option :value="null">
@@ -631,6 +659,8 @@ watch(itemParaEdicao, (novosValores) => {
             }"
             label="nome"
             :grupo="acoesDaAreaTematica"
+            :readonly="bloquearCampos"
+            :aria-disabled="bloquearCampos"
             @change="handleChange"
           />
         </Field>
@@ -659,6 +689,8 @@ watch(itemParaEdicao, (novosValores) => {
             :schema="schema"
             :name="field.name"
             :model-value="value"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
             anular-vazio
             @update:model-value="handleChange"
           />
@@ -672,7 +704,7 @@ watch(itemParaEdicao, (novosValores) => {
     </fieldset>
 
     <fieldset
-      v-if="$props.demandaId"
+      v-if="$props.demandaId && camposEncaminhamento.length"
       class="sessao-encaminhamento"
       aria-labelledby="titulo-encaminhamento"
     >
@@ -681,7 +713,10 @@ watch(itemParaEdicao, (novosValores) => {
       </h3>
 
       <div>
-        <div class="flex flexwrap g2 start pt05 pb05">
+        <div
+          v-if="camposEncaminhamento.length"
+          class="flex flexwrap g2 start pt05 pb05"
+        >
           <label
             v-for="campoEncaminhamento in camposEncaminhamento"
             :key="`encaminhamento--${campoEncaminhamento.valor}`"
@@ -691,6 +726,8 @@ watch(itemParaEdicao, (novosValores) => {
               name="encaminhamento"
               type="radio"
               :value="campoEncaminhamento.valor"
+              :disabled="bloquearCampos"
+              :aria-disabled="bloquearCampos"
               @update:model-value="setFieldValue('encaminhamento_justificativa', null)"
             />
             {{ campoEncaminhamento.label }}
@@ -724,6 +761,8 @@ watch(itemParaEdicao, (novosValores) => {
             :schema="schema"
             :name="field.name"
             :model-value="value"
+            :disabled="bloquearCampos"
+            :aria-disabled="bloquearCampos"
             anular-vazio
             @update:model-value="handleChange"
           />
@@ -740,6 +779,8 @@ watch(itemParaEdicao, (novosValores) => {
       <button
         class="btn big"
         type="submit"
+        :disabled="bloquearCampos"
+        :aria-disabled="bloquearCampos"
       >
         {{ labelDoBotaoSubmit }}
       </button>
