@@ -75,7 +75,7 @@ onMounted(() => {
       { chave: 'orgao.nome_exibicao', label: 'gestor municipal' },
       { chave: 'nome_projeto', label: 'Nome do Projeto' },
       { chave: 'area_tematica.nome', label: 'Área Temática' },
-      { chave: 'valor', label: 'Valor', formatador: dinheiro },
+      { chave: 'valor', label: 'Valor', formatador: v => dinheiro(v, { style: 'currency' }) },
     ]"
   >
     <template #celula:orgao__nome_exibicao="{linha}">
