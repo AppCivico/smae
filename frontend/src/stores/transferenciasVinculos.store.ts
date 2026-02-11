@@ -15,7 +15,16 @@ export type Filtros = {
   transferencia_id?: number;
   distribuicao_id?: number;
   tipo_vinculo_id?: number;
+  demanda_id?: number;
 } | null;
+
+export type DadosDoVinculo = Filtros & {
+  orcamento_realizado_id?: number;
+  geo_localizacao_referencia_id?: number;
+  dados_extra?: string;
+  observacao?: string | null;
+  valor_vinculo?: string;
+};
 
 type Estado = {
   linhasEndereco: Vinculo[];
@@ -128,7 +137,7 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
       }
     },
 
-    async salvarItem(params: Record<string, unknown>, id = 0) {
+    async salvarItem(params: DadosDoVinculo, id = 0) {
       this.chamadasPendentes.salvar = true;
       this.erros.salvar = null;
 

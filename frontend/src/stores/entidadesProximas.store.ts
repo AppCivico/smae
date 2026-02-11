@@ -48,7 +48,7 @@ type LocalizacaoProximidade = {
   geo_camada_codigo: string;
 };
 
-type ItemConsultaGeralFormatado = {
+export type ItemConsultaGeralFormatado = {
   id: number;
   orcamento_realizado_id?: number;
   distancia_metros: number;

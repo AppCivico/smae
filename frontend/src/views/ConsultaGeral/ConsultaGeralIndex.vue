@@ -259,7 +259,7 @@ async function handleItemSelecionado(linhaIndex: number) {
             <ConsultaGeralVinculacaoIndex
               :exibindo="linhaIndex == vinculacaoAberta"
               :dados="linha"
-              :tipo="tipo"
+              :tipo="linha.modulo === 'demandas' ? 'demanda' : tipo"
               @fechar="fecharModal"
               @vinculado="handleNovaVinculacao"
             />
