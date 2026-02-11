@@ -227,7 +227,7 @@ function atualizarMinViaInput(event: Event): void {
   const valor = toFloat(valorString);
 
   if (!Number.isNaN(valor)) {
-    sliderMin.value = Math.max(props.min, Math.min(props.max, valor));
+    sliderMin.value = Math.max(props.min, Math.min(Math.min(props.max, sliderMax.value), valor));
     setMin(sliderMin.value);
     updateRanges('ceil');
     inputMinValue.value = formatarParaInput(sliderMin.value);
@@ -240,7 +240,7 @@ function atualizarMaxViaInput(event: Event): void {
   const valor = toFloat(valorString);
 
   if (!Number.isNaN(valor)) {
-    sliderMax.value = Math.max(props.min, Math.min(props.max, valor));
+    sliderMax.value = Math.max(Math.max(props.min, sliderMin.value), Math.min(props.max, valor));
     setMax(sliderMax.value);
     updateRanges('floor');
     inputMaxValue.value = formatarParaInput(sliderMax.value);
