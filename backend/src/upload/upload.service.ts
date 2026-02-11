@@ -1,20 +1,29 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
+import { Prisma, arquivo_preview_status } from '@prisma/client';
 import AdmZip from 'adm-zip';
+import { JSDOM } from 'jsdom';
+import * as MinioJS from 'minio';
+import * as sharp from 'sharp';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
 import { read } from 'xlsx';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { deveGerarPreview } from './arquivo-preview.helper';
+import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
+import { RestaurarDescricaoResponseDto } from './dto/restaurar-descricao-response.dto';
 import { DownloadBody } from './entities/download.body';
 import { Download } from './entities/download.entity';
 import { TipoUpload } from './entities/tipo-upload';
 import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
+import { THUMBNAIL_TYPES, isThumbnailType } from './thumbnail-config';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { GerarThumbnailDto } from './dto/gerar-thumbnail.dto';
 
 const AdmZipLib = require('adm-zip');
 
@@ -22,13 +31,6 @@ interface TokenResponse {
     stream: NodeJS.ReadableStream;
     nome: string;
     mime_type: string;
-}
-
-interface RestoreDescriptionResult {
-    total: number;
-    restored: number;
-    errors: number;
-    skipped: number;
 }
 
 const DOWNLOAD_AUD = 'dl';
@@ -42,11 +44,6 @@ const ZipContentTypes = [
     'application/x-zip-compressed',
     'application/x-zip',
 ];
-import * as MinioJS from 'minio';
-import { deveGerarPreview } from './arquivo-preview.helper';
-import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
-import { arquivo_preview_status } from '@prisma/client';
-import { SmaeConfigService } from '../common/services/smae-config.service';
 
 @Injectable()
 export class UploadService {
@@ -108,6 +105,13 @@ export class UploadService {
             originalname = createUploadDto.descricao ?? 'upload.bin';
         }
 
+        const rejectUpload = await this.smaeConfig.getConfigBooleanWithDefault('REJEITAR_UPLOAD_COM_DESCRICAO', false);
+        if (rejectUpload && createUploadDto.descricao)
+            throw new HttpException(
+                'O uso do campo "descrição" está obsoleto desde 2024-07-08 e não é permitido, envie apenas para o documento/FK.',
+                400
+            );
+
         const arquivoId = await this.nextSequence();
 
         const key = [
@@ -151,6 +155,9 @@ export class UploadService {
             },
             select: { id: true },
         });
+
+        // Schedule thumbnail generation task if applicable
+        await this.agendarThumbnailSeNecessario(arquivoId, String(createUploadDto.tipo), user.id);
 
         // Schedule preview task if applicable
         await this.agendarPreviewSeNecessario(
@@ -218,6 +225,36 @@ export class UploadService {
         Logger.log(`Preview scheduled for arquivo ${arquivoId}, task ${task.id}, type: ${resultado.tipoPreview}`);
     }
 
+    private async agendarThumbnailSeNecessario(arquivoId: number, tipo: string, userId: number): Promise<void> {
+        if (!isThumbnailType(tipo)) {
+            return;
+        }
+
+        const arquivo = await this.prisma.arquivo.findUnique({
+            where: { id: arquivoId },
+            select: { thumbnail_arquivo_id: true },
+        });
+
+        if (arquivo?.thumbnail_arquivo_id) {
+            this.logger.debug(`Thumbnail already exists for arquivo ${arquivoId}, skipping task creation`);
+            return;
+        }
+
+        const task = await this.prisma.task_queue.create({
+            data: {
+                type: 'gerar_thumbnail_imagem',
+                status: 'pending',
+                pessoa_id: userId,
+                params: {
+                    arquivo_id: arquivoId,
+                    tipo_upload: tipo,
+                },
+            },
+        });
+
+        this.logger.log(`Thumbnail scheduled for arquivo ${arquivoId}, task ${task.id}, type: ${tipo}`);
+    }
+
     async getById(id: number) {
         return this.prisma.arquivo.findFirstOrThrow({
             where: { id: id },
@@ -238,6 +275,7 @@ export class UploadService {
             } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
             }
+            await this.validateImageContent(file);
         } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
             const maxBudgetImportSize = await this.smaeConfig.getConfigNumberWithDefault(
                 'UPLOAD_MAX_SIZE_BUDGET_IMPORT_BYTES',
@@ -263,18 +301,67 @@ export class UploadService {
                 const maxSizeMB = Math.round(maxLogoPdmSize / (1024 * 1024));
                 throw new HttpException(`O arquivo de Logo do PDM precisa ser menor que ${maxSizeMB} Megabyte`, 400);
             }
+            await this.validateImageContent(file);
         } else if (createUploadDto.tipo === TipoUpload.FOTO_PARLAMENTAR) {
             if (/(\.png|jpg|jpeg)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo PNG, JPG ou JPEG', 400);
-            } else if (file.size > 1048576 * 5) {
-                throw new HttpException('O arquivo de imagem do parlamentar precisa ser menor que 5 Megabyte', 400);
+                throw new HttpException(
+                    'O arquivo de foto do parlamentar precisa ser um arquivo PNG, JPG ou JPEG',
+                    400
+                );
             }
+            const maxFotoParlamentarSize = await this.smaeConfig.getConfigNumberWithDefault(
+                'UPLOAD_MAX_SIZE_FOTO_PARLAMENTAR_BYTES',
+                5242880
+            );
+            if (file.size > maxFotoParlamentarSize) {
+                const maxSizeMB = Math.round(maxFotoParlamentarSize / (1024 * 1024));
+                throw new HttpException(
+                    `O arquivo de imagem do parlamentar precisa ser menor que ${maxSizeMB} Megabyte`,
+                    400
+                );
+            }
+            await this.validateImageContent(file);
         } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_PARLAMENTAR) {
             if (/(\.sqlite)$/i.test(file.originalname) == false) {
                 throw new HttpException('O arquivo para importação de parlamentares precisa ser um .sqlite.', 400);
             } else if (file.size > 1048576 * 100) {
                 throw new HttpException(
                     'O arquivo para importação de parlamentares precisa ser menor que 100 Megabyte',
+                    400
+                );
+            }
+        }
+    }
+
+    private async validateImageContent(file: Express.Multer.File): Promise<void> {
+        const isSvg = /\.svg$/i.test(file.originalname);
+
+        if (isSvg) {
+            // Parse full file buffer with JSDOM to validate SVG structure
+            const dom = new JSDOM(file.buffer.toString('utf-8'), { contentType: 'image/svg+xml' });
+            try {
+                const document = dom.window.document;
+
+                // Validate that the parsed document contains a top-level <svg> element
+                if (!document.querySelector('svg')) {
+                    throw new HttpException('O arquivo não é um SVG válido.', 400);
+                }
+            } catch (error) {
+                if (error instanceof HttpException) throw error;
+                throw new HttpException('O arquivo não é um SVG válido.', 400);
+            } finally {
+                // Always close the JSDOM window to prevent memory leaks
+                if (dom && dom.window) dom.window.close();
+            }
+        } else {
+            try {
+                const metadata = await sharp(file.buffer).metadata();
+                if (!metadata.width || !metadata.height) {
+                    throw new Error('Imagem sem dimensões');
+                }
+            } catch {
+                throw new HttpException(
+                    'O arquivo não é uma imagem válida. Verifique se o conteúdo corresponde à extensão.',
                     400
                 );
             }
@@ -609,8 +696,8 @@ export class UploadService {
         }
     }
 
-    async restauraDescricaoPeloMetadado(batchSize = 500): Promise<RestoreDescriptionResult> {
-        const result: RestoreDescriptionResult = {
+    async restauraDescricaoPeloMetadado(batchSize = 500): Promise<RestaurarDescricaoResponseDto> {
+        const result: RestaurarDescricaoResponseDto = {
             total: 0,
             restored: 0,
             errors: 0,
@@ -687,12 +774,6 @@ export class UploadService {
     }
 
     async solicitarPreview(token: string, userId: number): Promise<SolicitarPreviewResponseDto> {
-        // Decode token to get arquivo_id
-        console.log('=====================');
-
-        console.log(token);
-        console.log('=====================');
-
         const arquivoId = this.checkUploadOrDownloadToken(token);
 
         // Get arquivo details
@@ -889,6 +970,131 @@ export class UploadService {
 
         this.logger.log(
             `Batch preview processing completed. Total: ${arquivos.length}, Scheduled: ${agendados}, Skipped: ${pulados}`
+        );
+
+        return {
+            total: arquivos.length,
+            agendados,
+            pulados,
+        };
+    }
+
+    async solicitarThumbnail(token: string, userId: number): Promise<{ aceito: boolean; mensagem: string }> {
+        const arquivoId = this.checkUploadOrDownloadToken(token);
+
+        const arquivo = await this.prisma.arquivo.findUnique({
+            where: { id: arquivoId },
+            select: {
+                id: true,
+                tipo: true,
+                thumbnail_arquivo_id: true,
+            },
+        });
+
+        if (!arquivo) {
+            return {
+                aceito: false,
+                mensagem: 'Arquivo não encontrado',
+            };
+        }
+
+        if (!isThumbnailType(arquivo.tipo)) {
+            return {
+                aceito: false,
+                mensagem: `Tipo de arquivo ${arquivo.tipo} não suporta geração de thumbnail`,
+            };
+        }
+
+        // Schedule thumbnail task
+        const task = await this.prisma.task_queue.create({
+            data: {
+                type: 'gerar_thumbnail_imagem',
+                status: 'pending',
+                pessoa_id: userId,
+                params: {
+                    arquivo_id: arquivoId,
+                    tipo_upload: arquivo.tipo,
+                    reprocessar: true,
+                } satisfies GerarThumbnailDto,
+            },
+        });
+
+        this.logger.log(`Thumbnail manually requested for arquivo ${arquivoId} by user ${userId}, task ${task.id}`);
+
+        return {
+            aceito: true,
+            mensagem: 'Thumbnail agendado para geração',
+        };
+    }
+
+    async processarThumbnailsPendentes(
+        userId: number,
+        tipoFiltro: string | undefined,
+        reprocessar: boolean | undefined
+    ): Promise<{ total: number; agendados: number; pulados: number }> {
+        this.logger.log(
+            `Processing thumbnails in batch${tipoFiltro ? ` for tipo=${tipoFiltro}` : ' for all thumbnail types'}`
+        );
+
+        const where: Prisma.ArquivoWhereInput = {
+            thumbnail_arquivo_id: reprocessar ? undefined : null,
+        };
+
+        if (tipoFiltro) {
+            if (!isThumbnailType(tipoFiltro)) {
+                throw new HttpException(`Tipo ${tipoFiltro} não é um tipo válido para thumbnail`, 400);
+            }
+            where.tipo = tipoFiltro;
+        } else {
+            where.tipo = { in: Object.keys(THUMBNAIL_TYPES) };
+        }
+
+        const arquivos = await this.prisma.arquivo.findMany({
+            where,
+            select: {
+                id: true,
+                tipo: true,
+                thumbnail_arquivo_id: true,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+        });
+
+        let agendados = 0;
+        let pulados = 0;
+
+        for (const arquivo of arquivos) {
+            if (!isThumbnailType(arquivo.tipo)) {
+                pulados++;
+                continue;
+            }
+
+            try {
+                // Create thumbnail task
+                const task = await this.prisma.task_queue.create({
+                    data: {
+                        type: 'gerar_thumbnail_imagem',
+                        status: 'pending',
+                        pessoa_id: userId,
+                        params: {
+                            arquivo_id: arquivo.id,
+                            tipo_upload: arquivo.tipo,
+                            reprocessar: reprocessar,
+                        } satisfies GerarThumbnailDto,
+                    },
+                });
+
+                this.logger.debug(`Scheduled thumbnail task ${task.id} for arquivo ${arquivo.id}`);
+                agendados++;
+            } catch (error) {
+                this.logger.error(`Error scheduling thumbnail for arquivo ${arquivo.id}:`, error);
+                pulados++;
+            }
+        }
+
+        this.logger.log(
+            `Batch thumbnail processing completed. Total: ${arquivos.length}, Scheduled: ${agendados}, Skipped: ${pulados}`
         );
 
         return {

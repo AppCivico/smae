@@ -19,12 +19,14 @@ import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IpAddress } from '../common/decorators/current-ip';
+import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { DownloadOptions } from './dto/download-options';
+import { ProcessarThumbnailsQueryDto } from './dto/processar-thumbnails-query.dto';
+import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/solicitar-thumbnail.dto';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
-import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 
 interface RestoreDescriptionResponse {
     total: number;
@@ -125,6 +127,7 @@ export class UploadController {
 
     @Post('solicitar-preview')
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
     async solicitarPreview(
         @Body() dto: SolicitarPreviewDto,
         @CurrentUser() user: PessoaFromJwt
@@ -137,9 +140,32 @@ export class UploadController {
     async processarPreviewsPendentes(
         @CurrentUser() user: PessoaFromJwt
     ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
-        Logger.log(`User ${user.id} (${user.nome_exibicao}) initiated batch preview processing for all files`);
-
         const result = await this.uploadService.processarPreviewsPendentes(user.id);
+
+        return {
+            ...result,
+            message: `Processados ${result.total} arquivos. Agendados: ${result.agendados}, Pulados: ${result.pulados}.`,
+        };
+    }
+
+    @Post('solicitar-thumbnail')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async solicitarThumbnail(
+        @Body() dto: SolicitarThumbnailDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<SolicitarThumbnailResponseDto> {
+        return await this.uploadService.solicitarThumbnail(dto.token, user.id);
+    }
+
+    @Post('processar-thumbnails-pendentes')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async processarThumbnailsPendentes(
+        @CurrentUser() user: PessoaFromJwt,
+        @Query() dto: ProcessarThumbnailsQueryDto
+    ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
+        const result = await this.uploadService.processarThumbnailsPendentes(user.id, dto.tipo, dto.reprocessar);
 
         return {
             ...result,

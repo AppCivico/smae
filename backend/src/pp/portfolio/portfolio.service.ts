@@ -124,7 +124,12 @@ export class PortfolioService {
                 data_criacao: true,
                 orcamento_execucao_disponivel_meses: true,
                 nivel_regionalizacao: true,
-                icone_impressao: true,
+                icone: {
+                    select: {
+                        id: true,
+                        thumbnail_arquivo_id: true,
+                    },
+                },
                 PortfolioGrupoPortfolio: {
                     where: { removido_em: null },
                     select: {
@@ -139,7 +144,7 @@ export class PortfolioService {
             data_criacao: Date2YMD.toStringOrNull(r.data_criacao),
             grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
-            icone_impressao: r.icone_impressao ? this.montarIconeDto({ id: r.icone_impressao }) : null,
+            icone_impressao: r.icone ? this.montarIconeDto(r.icone) : null,
         };
     }
 
@@ -218,7 +223,12 @@ export class PortfolioService {
                 nivel_maximo_tarefa: true,
                 nivel_regionalizacao: true,
                 modelo_clonagem: true,
-                icone_impressao: true,
+                icone: {
+                    select: {
+                        id: true,
+                        thumbnail_arquivo_id: true,
+                    },
+                },
                 orgaos: {
                     select: {
                         orgao: {
@@ -248,7 +258,7 @@ export class PortfolioService {
                 pode_editar: pode_editar,
                 ...r,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
-                icone_impressao: r.icone_impressao ? this.montarIconeDto({ id: r.icone_impressao }) : null,
+                icone_impressao: r.icone ? this.montarIconeDto(r.icone) : null,
             };
         });
     }
@@ -500,14 +510,19 @@ export class PortfolioService {
     }
 
     /**
-     * Monta o DTO do ícone com download token.
+     * Monta o DTO do ícone com download token (sem queries, usando dados pré-carregados).
      */
-    private montarIconeDto(icone: { id: number } | null): PortfolioIconeDto | null {
+    private montarIconeDto(
+        icone: { id: number; thumbnail_arquivo_id: number | null } | null
+    ): PortfolioIconeDto | null {
         if (!icone) return null;
 
         return {
             id: icone.id,
             download_token: this.uploadService.getDownloadToken(icone.id, '1 days').download_token,
+            thumbnail_download_token: icone.thumbnail_arquivo_id
+                ? this.uploadService.getDownloadToken(icone.thumbnail_arquivo_id, '1 days').download_token
+                : null,
         };
     }
 }
