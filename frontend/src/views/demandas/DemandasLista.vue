@@ -2,10 +2,21 @@
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 
+import ListaLegendas from '@/components/ListaLegendas.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dinheiro from '@/helpers/dinheiro';
 import { useDemandasStore } from '@/stores/demandas.store';
+
+const legendas = {
+  status: [
+    { id: 'Registro', item: 'Registrada', color: '#9F045F' },
+    { id: 'Validacao', item: 'Validada', color: '#F2890D' },
+    { id: 'Publicado', item: 'Publicada', color: '#4074BF' },
+    { id: 'Encerrado-Cancelada', item: 'Encerrada (Cancelada)', color: '#EE3B2B' },
+    { id: 'Encerrado-Concluido', item: 'Encerrada (Concluída)', color: '#8EC122' },
+  ],
+};
 
 const demandasStore = useDemandasStore();
 const { lista } = storeToRefs(demandasStore);
@@ -13,6 +24,15 @@ const { lista } = storeToRefs(demandasStore);
 function buscarTudo() {
   demandasStore.$reset();
   demandasStore.buscarTudo();
+}
+
+function corDoStatus({ status, situacao_encerramento }): string | undefined {
+  let nomeStatus = status;
+  if (nomeStatus === 'Encerrado') {
+    nomeStatus += `-${situacao_encerramento}`;
+  }
+
+  return legendas.status.find((l) => l.id === nomeStatus)?.color;
 }
 
 async function excluirItem({ id }) {
@@ -40,16 +60,34 @@ onMounted(() => {
     </SmaeLink>
   </div>
 
+  <ListaLegendas
+    :titulo="''"
+    :legendas="legendas"
+    :borda="false"
+    align="left"
+    orientacao="horizontal"
+  />
+
   <SmaeTable
+    class="relative"
     :dados="lista"
     :colunas="[
-      { chave: 'status', label: 'status' },
       { chave: 'orgao.nome_exibicao', label: 'gestor municipal' },
       { chave: 'nome_projeto', label: 'Nome do Projeto' },
       { chave: 'area_tematica.nome', label: 'Área Temática' },
       { chave: 'valor', label: 'Valor', formatador: dinheiro },
     ]"
   >
+    <template #celula:orgao__nome_exibicao="{linha}">
+      <span
+        class="status"
+        :style="{ color: corDoStatus(linha) }"
+        :title="[linha.status, linha.situacao_encerramento].join(' ')"
+      />
+
+      {{ linha.orgao.nome_exibicao }}
+    </template>
+
     <template #acoes="{ linha }">
       <SmaeLink
         :to="{
@@ -74,3 +112,21 @@ onMounted(() => {
     </template>
   </SmaeTable>
 </template>
+
+<style lang="less" scoped>
+:deep(.smae-table__linha) {
+  position: relative;
+}
+
+.status {
+  position: absolute;
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: currentColor;
+  left: -20px;
+  top: 14px;
+
+}
+</style>

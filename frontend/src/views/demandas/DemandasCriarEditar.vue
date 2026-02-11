@@ -15,7 +15,6 @@ import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
-import UploadDeArquivosEmLista from '@/components/UploadDeArquivosEmLista/UploadDeArquivosEmLista.vue';
 import { CadastroDemanda as schema } from '@/consts/formSchemas/demanda';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
@@ -94,14 +93,6 @@ const onSubmit = handleSubmit.withControlled(async ({
   let r: boolean;
 
   if (props.demandaId) {
-    // dadosEdicao.arquivos = [
-    //   {
-    //     upload_token: dadosEdicao.upload_tokens[0],
-    //     autoriza_divulgacao: true,
-    //     descricao: 'desc',
-    //   },
-    // ];
-
     r = await demandasStore.atualizarItem({
       acao: encaminhamento,
       demanda_id: props.demandaId,
