@@ -18,5 +18,6 @@ import { UploadModule } from '../upload/upload.module';
     ],
     controllers: [AtualizacaoEmLoteController],
     providers: [AtualizacaoEmLoteService],
+    exports: [AtualizacaoEmLoteService],
 })
 export class AtualizacaoEmLoteModule {}

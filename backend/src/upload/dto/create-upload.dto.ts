@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 import { TipoUpload } from '../entities/tipo-upload';
-import { ArquivoPreviewDto } from './arquivo-preview.dto';
+import { ArquivoPreviewDto } from '../../sysadmin/dto/upload/solicitar-preview.dto';
 
 export class CreateUploadDto {
     /**

@@ -9,7 +9,7 @@ import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload
 import { UploadService } from '../../upload/upload.service';
 import { TaskableService } from '../entities/task.entity';
 import { TaskContext } from '../task.context';
-import { CreateRefreshDemandaDto } from './dto/create-refresh-demanda.dto';
+import { CreateRefreshDemandaDto } from '../../sysadmin/dto/demanda/create-refresh-demanda.dto';
 
 interface RefreshResult {
     success?: boolean;

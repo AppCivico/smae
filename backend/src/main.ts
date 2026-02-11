@@ -27,9 +27,6 @@ async function bootstrap() {
 
     app.setGlobalPrefix('api');
 
-    // Setup Swagger documentation
-    setupSwaggerDocumentation(app);
-
     // Request/Response logging
     app.use(
         expressWinston.logger({
@@ -67,19 +64,18 @@ async function bootstrap() {
         });
     }
 
+    // Setup Swagger documentation
+    const loadedRoutes = setupSwaggerDocumentation(app);
+
     const port = process.env.PORT || 3001;
     await app.listen(port, '0.0.0.0').then(() => {
         console.log(`SMAE API running on port ${port}`);
         console.log('');
+
         console.log('Swagger Documentation:');
-        console.log(`  - Main (/api):     http://localhost:${port}/api          (Base modules - login, auth)`);
-        console.log(`  - Full API:        http://localhost:${port}/api/swagger   (All modules)`);
-        console.log(`  - PDM:             http://localhost:${port}/api/swagger-pdm`);
-        console.log(`  - Projetos:        http://localhost:${port}/api/swagger-projetos`);
-        console.log(`  - Casa Civil:      http://localhost:${port}/api/swagger-casa-civil`);
-        console.log(`  - Workflow:        http://localhost:${port}/api/swagger-workflow`);
-        console.log(`  - Orçamento:       http://localhost:${port}/api/swagger-orcamento`);
-        console.log(`  - Bloco de Notas:  http://localhost:${port}/api/swagger-bloco-notas`);
+        loadedRoutes.forEach((route) => {
+            console.log(`  - ${route.route}: ${route.title} (${route.tags.length} tags, ${route.moduleCount} modules)`);
+        });
     });
 }
 

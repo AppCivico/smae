@@ -1,12 +1,12 @@
 import { task_type } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto';
+import { CreateApiLogDayDto } from '../sysadmin/dto/api-log/create-api-log-day.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
 import { CreateEchoDto } from './echo/dto/create-echo.dto';
 import { CreateImportacaoParlamentarDto } from './importacao_parlamentar/dto/create-parlamentar.dto';
-import { CreateRefreshDemandaDto } from './refresh_demanda/dto/create-refresh-demanda.dto';
+import { CreateRefreshDemandaDto } from '../sysadmin/dto/demanda/create-refresh-demanda.dto';
 import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
 import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';

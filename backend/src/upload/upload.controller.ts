@@ -19,22 +19,11 @@ import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IpAddress } from '../common/decorators/current-ip';
-import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { DownloadOptions } from './dto/download-options';
-import { ProcessarThumbnailsQueryDto } from './dto/processar-thumbnails-query.dto';
-import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from './dto/solicitar-thumbnail.dto';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
-
-interface RestoreDescriptionResponse {
-    total: number;
-    restored: number;
-    errors: number;
-    skipped: number;
-    message: string;
-}
 
 @Controller('')
 @ApiTags('Upload, Download e Diretórios')
@@ -100,76 +89,4 @@ export class UploadController {
         await this.uploadService.updateDir(dto, uploadOrDlToken);
     }
 
-    @Post('admin/restore-descriptions')
-    @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
-    @ApiQuery({
-        name: 'batchSize',
-        required: false,
-        type: Number,
-        description: 'Número de registros a processar por lote',
-    })
-    async restoreDescriptions(
-        @Query('batchSize') batchSize = 50,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RestoreDescriptionResponse> {
-        Logger.log(
-            `User ${user.id} (${user.nome_exibicao}) initiated description restoration process with batchSize=${batchSize} `
-        );
-
-        const result = await this.uploadService.restauraDescricaoPeloMetadado(parseInt(String(batchSize), 10));
-
-        return {
-            ...result,
-            message: `Successfully restored ${result.restored} descriptions of ${result.total} records. Skipped: ${result.skipped}, Errors: ${result.errors}.`,
-        };
-    }
-
-    @Post('solicitar-preview')
-    @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
-    async solicitarPreview(
-        @Body() dto: SolicitarPreviewDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<SolicitarPreviewResponseDto> {
-        return await this.uploadService.solicitarPreview(dto.token, user.id);
-    }
-
-    @Post('processar-previews-pendentes')
-    @ApiBearerAuth('access-token')
-    async processarPreviewsPendentes(
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
-        const result = await this.uploadService.processarPreviewsPendentes(user.id);
-
-        return {
-            ...result,
-            message: `Processados ${result.total} arquivos. Agendados: ${result.agendados}, Pulados: ${result.pulados}.`,
-        };
-    }
-
-    @Post('solicitar-thumbnail')
-    @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
-    async solicitarThumbnail(
-        @Body() dto: SolicitarThumbnailDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<SolicitarThumbnailResponseDto> {
-        return await this.uploadService.solicitarThumbnail(dto.token, user.id);
-    }
-
-    @Post('processar-thumbnails-pendentes')
-    @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
-    async processarThumbnailsPendentes(
-        @CurrentUser() user: PessoaFromJwt,
-        @Query() dto: ProcessarThumbnailsQueryDto
-    ): Promise<{ total: number; agendados: number; pulados: number; message: string }> {
-        const result = await this.uploadService.processarThumbnailsPendentes(user.id, dto.tipo, dto.reprocessar);
-
-        return {
-            ...result,
-            message: `Processados ${result.total} arquivos. Agendados: ${result.agendados}, Pulados: ${result.pulados}.`,
-        };
-    }
 }

@@ -74,10 +74,4 @@ export class ReportsController {
         return null;
     }
 
-    @Get('sync-parametros')
-    @ApiBearerAuth('access-token')
-    async syncParametros() {
-        await this.reportsService.syncRelatoriosParametros();
-        return '';
-    }
 }

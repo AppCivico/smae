@@ -5,11 +5,9 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { TaskService } from '../../task/task.service';
 import { DemandaService } from './demanda.service';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
-import { RefreshCacheDto } from './dto/refresh-cache.dto';
 import { UpdateDemandaDto } from './dto/create-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
 
@@ -17,8 +15,7 @@ import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entitie
 @Controller('demanda')
 export class DemandaController {
     constructor(
-        private readonly demandaService: DemandaService,
-        private readonly taskService: TaskService
+        private readonly demandaService: DemandaService
     ) {}
 
     @Post('')
@@ -73,41 +70,4 @@ export class DemandaController {
         return await this.demandaService.getHistorico(+params.id, user);
     }
 
-    @Post('refresh-cache')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemanda.validar'])
-    async refreshCache(
-        @Body() dto: RefreshCacheDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        return await this.taskService.create(
-            {
-                type: 'refresh_demanda',
-                params: {
-                    cache_type: dto.tipo,
-                    force_all: !dto.tipo,
-                    force_geocamadas: dto.force_geocamadas,
-                },
-            },
-            user
-        );
-    }
-
-    @Post(':id/refresh-cache')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroDemanda.validar'])
-    async refreshIndividualCache(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        return await this.taskService.create(
-            {
-                type: 'refresh_demanda',
-                params: {
-                    demanda_id: +params.id,
-                },
-            },
-            user
-        );
-    }
 }
