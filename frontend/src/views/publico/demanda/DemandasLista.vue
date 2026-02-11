@@ -320,8 +320,12 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
       >
         <div class="flex g2 flexwrap mb1">
           <div class="f1">
-            <label class="label">Gestor Municipal</label>
+            <label
+              class="label"
+              for="orgao_id"
+            >Gestor Municipal</label>
             <Field
+              id="orgao_id"
               name="orgao_id"
               as="select"
               class="inputtext light"
@@ -340,8 +344,12 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
           </div>
 
           <div class="f1">
-            <label class="label">Área Temática</label>
+            <label
+              class="label"
+              for="area_tematica_id"
+            >Área Temática</label>
             <Field
+              id="area_tematica_id"
               name="area_tematica_id"
               as="select"
               class="inputtext light"
@@ -360,8 +368,12 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
           </div>
 
           <div class="f1">
-            <label class="label">Subprefeitura/Distrito</label>
+            <label
+              class="label"
+              for="localizacao_id"
+            >Subprefeitura/Distrito</label>
             <Field
+              id="localizacao_id"
               name="localizacao_id"
               as="select"
               class="inputtext light"
