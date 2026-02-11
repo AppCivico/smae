@@ -28,7 +28,7 @@ function buscarTudo() {
 
 function corDoStatus({ status, situacao_encerramento }): string | undefined {
   let nomeStatus = status;
-  if (nomeStatus === 'Encerrado') {
+  if (nomeStatus === 'Encerrado' && situacao_encerramento) {
     nomeStatus += `-${situacao_encerramento}`;
   }
 
@@ -120,7 +120,7 @@ onMounted(() => {
 
 .status {
   position: absolute;
-  display: inline-block;
+  display: block;
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;

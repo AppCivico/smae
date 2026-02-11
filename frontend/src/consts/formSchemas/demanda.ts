@@ -18,13 +18,13 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
           return false;
         }
 
-        const valorNumero = parseInt(valor, 10);
+        const valorNumero = parseFloat(valor);
 
         if (Number.isNaN(valorNumero) || valorNumero < valorMinimo) {
           return createError({ message: `Valor mínimo de ${dinheiro(valorMinimo, { style: 'currency' })}` });
         }
 
-        if (valorNumero > valorMaximo) {
+        if (valorMaximo && valorNumero > valorMaximo) {
           return createError({ message: `Valor máximo de ${dinheiro(valorMaximo, { style: 'currency' })}` });
         }
 
