@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useField } from 'vee-validate';
 import {
-  computed, ref, watch, nextTick, onMounted, type Ref,
+  computed, ref, watch, nextTick, onMounted,
 } from 'vue';
 
 import dinheiro from '@/helpers/dinheiro';
@@ -10,8 +10,8 @@ import toFloat from '@/helpers/toFloat';
 interface Props {
   nameMin: string;
   nameMax: string;
-  min?: number;
-  max?: number;
+  min: number;
+  max: number;
   step?: number | null;
   formatarMoeda?: boolean;
   precision?: number;
@@ -19,8 +19,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  min: 0,
-  max: 100,
   step: null,
   formatarMoeda: true,
   precision: 3,
@@ -71,28 +69,8 @@ function updateRanges(method: RoundingMethod = 'ceil'): void {
   const { min } = props;
   const { max } = props;
   const step = stepCalculado.value;
-  let minValue = sliderMin.value;
-  let maxValue = sliderMax.value;
-
-  // Garantir que os valores estejam dentro do range
-  minValue = Math.max(min, Math.min(max, minValue));
-  maxValue = Math.max(min, Math.min(max, maxValue));
-
-  // Garantir que min <= max
-  if (minValue > maxValue) {
-    const temp = minValue;
-    minValue = maxValue;
-    maxValue = temp;
-  }
-
-  if (minValue !== sliderMin.value) {
-    sliderMin.value = minValue;
-    setMin(minValue);
-  }
-  if (maxValue !== sliderMax.value) {
-    sliderMax.value = maxValue;
-    setMax(maxValue);
-  }
+  const minValue = sliderMin.value;
+  const maxValue = sliderMax.value;
 
   const midValue = (maxValue - minValue) / 2;
   let mid = minValue + Math[method](midValue / step) * step;
@@ -101,8 +79,28 @@ function updateRanges(method: RoundingMethod = 'ceil'): void {
 
   const range = max - min;
 
-  if (range === 0) return;
+  // Quando range é 0 (min === max), cria um range artificial para renderização
+  if (range === 0) {
+    // Cria um range artificial de ±1 ao redor do valor único
+    const artificialMin = min - 1;
+    const artificialMax = max + 1;
+    const artificialMid = min; // O meio é o valor único
 
+    inputMinRef.value.style.flexBasis = `calc(50% + ${thumbWidthVar})`;
+    inputMinRef.value.min = artificialMin.toString();
+    inputMinRef.value.max = artificialMid.toString();
+
+    inputMaxRef.value.style.flexBasis = `calc(50% + ${thumbWidthVar})`;
+    inputMaxRef.value.min = artificialMid.toString();
+    inputMaxRef.value.max = artificialMax.toString();
+
+    // Ambos os thumbs ficam no final de seus ranges (100%)
+    inputMinRef.value.style.setProperty('--gradient-position', `calc(100% + (-0.5 * ${thumbWidthVar}))`);
+    inputMaxRef.value.style.setProperty('--gradient-position', `calc(0% + (0.5 * ${thumbWidthVar}))`);
+    return;
+  }
+
+  // Cálculo normal: divide o range baseado no ponto médio
   const leftWidthPercent = (((mid - min) / range) * 100).toFixed(props.precision);
   const rightWidthPercent = (((max - mid) / range) * 100).toFixed(props.precision);
 
@@ -117,8 +115,8 @@ function updateRanges(method: RoundingMethod = 'ceil'): void {
   const minRange = mid - min;
   const maxRange = max - mid;
 
-  const minFill = minRange > 0 ? (minValue - min) / minRange : 0;
-  const maxFill = maxRange > 0 ? (maxValue - mid) / maxRange : 0;
+  const minFill = (minValue - min) / minRange || 0;
+  const maxFill = (maxValue - mid) / maxRange || 0;
 
   const minFillPercentage = (minFill * 100).toFixed(props.precision);
   const maxFillPercentage = (maxFill * 100).toFixed(props.precision);
@@ -260,6 +258,8 @@ const valorMaxFormatado = computed<string | number>(() => (
     ? dinheiro(sliderMax.value, { style: 'currency', currency: 'BRL' })
     : sliderMax.value
 ));
+
+const isReadonly = computed<boolean>(() => props.min === props.max);
 </script>
 
 <template>
@@ -274,6 +274,8 @@ const valorMaxFormatado = computed<string | number>(() => (
         :step="stepCalculado"
         :value="sliderMin"
         :data-ready="ready"
+        :data-readonly="isReadonly"
+        :aria-readonly="isReadonly"
         class="range-input"
         :aria-label="mostrarInputs ? 'Slider valor mínimo' : 'Valor mínimo'"
         @input="atualizarMin"
@@ -288,6 +290,8 @@ const valorMaxFormatado = computed<string | number>(() => (
         :step="stepCalculado"
         :value="sliderMax"
         :data-ready="ready"
+        :data-readonly="isReadonly"
+        :aria-readonly="isReadonly"
         class="range-input"
         :aria-label="mostrarInputs ? 'Slider valor máximo' : 'Valor máximo'"
         @input="atualizarMax"
@@ -320,6 +324,7 @@ const valorMaxFormatado = computed<string | number>(() => (
           :min="formatarMoeda ? undefined : min"
           :max="formatarMoeda ? undefined : max"
           :step="formatarMoeda ? undefined : stepCalculado"
+          :readonly="isReadonly"
           :class="['inputtext light', { 'with-prefix': formatarMoeda }]"
           placeholder="Mínimo"
           aria-label="Valor mínimo"
@@ -337,6 +342,7 @@ const valorMaxFormatado = computed<string | number>(() => (
           :type="formatarMoeda ? 'text' : 'number'"
           :min="formatarMoeda ? undefined : min"
           :max="formatarMoeda ? undefined : max"
+          :readonly="isReadonly"
           :step="formatarMoeda ? undefined : stepCalculado"
           :class="['inputtext light', { 'with-prefix': formatarMoeda }]"
           placeholder="Máximo"
@@ -537,6 +543,13 @@ const valorMaxFormatado = computed<string | number>(() => (
 
   &:focus-visible::-moz-range-thumb {
     box-shadow: 0 0 0 3px fade(@amarelo, 30%), 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  // Estado readonly: desabilita interação
+  &[data-readonly="true"] {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 

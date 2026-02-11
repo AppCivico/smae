@@ -401,10 +401,11 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
           <div class="f1">
             <label class="label">Valor</label>
             <SmaeRangeInput
+              v-if="filtros?.valor_range"
               name-min="valor_min"
               name-max="valor_max"
-              :min="parseFloat(filtros?.valor_range?.min || 0)"
-              :max="parseFloat(filtros?.valor_range?.max || 10000000)"
+              :min="parseFloat(filtros.valor_range.min)"
+              :max="parseFloat(filtros.valor_range.max)"
               mostrar-inputs
             />
           </div>
@@ -440,7 +441,10 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
             {{ dados.nome_projeto }}
           </p>
 
-          <dl v-if="dados.finalidade || dados.valor">
+          <dl
+            v-if="dados.finalidade || dados.valor"
+            class="dl-full-width"
+          >
             <div v-if="dados.finalidade">
               <dt>Finalidade</dt>
               <dd>{{ dados.finalidade }}</dd>
