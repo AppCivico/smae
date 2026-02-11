@@ -14,12 +14,17 @@ type Emits = {
 
 const emit = defineEmits<Emits>();
 
+const limitesDeRaio = {
+  minimo: 100,
+  maximo: 10000,
+};
+
 const route = useRoute();
 const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
 
 const {
-  enderecos, selecionado,
+  enderecos, selecionado, chamadasPendentes,
 } = storeToRefs(geolocalizadorStore);
 
 const raio = ref(2000);
@@ -30,6 +35,11 @@ const emitirSelecao = debounce(() => {
 
   if (Number.isNaN(valor) || valor <= 0) {
     raioErro.value = 'O raio deve ser um número positivo.';
+    return;
+  }
+
+  if (valor < limitesDeRaio.minimo || valor > limitesDeRaio.maximo) {
+    raioErro.value = `O raio deve estar entre ${limitesDeRaio.minimo} m e ${limitesDeRaio.maximo} m.`;
     return;
   }
 
@@ -60,73 +70,80 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex g1 center mb1">
-    <label
-      for="raio"
-      class="label tc300 mb0"
+  <template v-if="enderecos.length">
+    <SmaeTable
+      :colunas="[
+        { chave: 'seletor', atributosDaColuna: { class: 'col--minimum' } },
+        { chave: 'endereco.properties.rua', label: 'endereço' },
+        { chave: 'endereco.properties.bairro', label: 'bairro' },
+        { chave: 'endereco.properties.cep', label: 'cep' },
+      ]"
+      :dados="enderecos"
+      class="fb0 f1 mb1 rolavel-verticalmente"
     >
-      Raio (m)
-    </label>
-    <input
-      id="raio"
-      v-model="raio"
-      class="inputtext light f1"
-      name="raio"
-      type="number"
-      min="100"
-      max="10000"
-      step="100"
-      :aria-disabled="!enderecos.length"
-      list="sugestoes-raio"
-      @change="emitirSelecao"
-    >
-    <datalist id="sugestoes-raio">
-      <option value="100">
-        100 m
-      </option>
-      <option value="500">
-        500 m
-      </option>
-      <option value="1000">
-        1 km
-      </option>
-      <option value="2000">
-        2 km
-      </option>
-      <option value="5000">
-        5 km
-      </option>
-    </datalist>
-  </div>
+      <template #cabecalho:seletor />
+      <template #celula:seletor="{ linha }">
+        <input
+          v-model="selecionado"
+          type="radio"
+          class="inputcheckbox"
+          name="endereco_selecionado"
+          :value="linha"
+          :disabled="!!raioErro"
+          @change="emitirSelecao"
+        >
+      </template>
+    </SmaeTable>
 
-  <div
-    v-if="raioErro"
-    class="fb100 error-msg"
-    role="alert"
-  >
-    {{ raioErro }}
-  </div>
-
-  <SmaeTable
-    :colunas="[
-      { chave: 'seletor', atributosDaColuna: { class: 'col--minimum' } },
-      { chave: 'endereco.properties.rua', label: 'endereço' },
-      { chave: 'endereco.properties.bairro', label: 'bairro' },
-      { chave: 'endereco.properties.cep', label: 'cep' },
-    ]"
-    :dados="enderecos"
-    class="fb0 f1 mt1 rolavel-verticalmente"
-  >
-    <template #cabecalho:seletor />
-    <template #celula:seletor="{ linha }">
+    <div class="flex g1 center">
+      <label
+        for="raio"
+        class="label tc300 mb0"
+      >
+        Raio (m)
+      </label>
       <input
-        v-model="selecionado"
-        type="radio"
-        class="inputcheckbox"
-        name="endereco_selecionado"
-        :value="linha"
+        id="raio"
+        v-model="raio"
+        class="inputtext light f1"
+        name="raio"
+        type="number"
+        :min="limitesDeRaio.minimo"
+        :max="limitesDeRaio.maximo"
+        step="100"
+        :aria-disabled="!enderecos.length"
+        list="sugestoes-raio"
         @change="emitirSelecao"
       >
-    </template>
-  </SmaeTable>
+      <datalist id="sugestoes-raio">
+        <option value="100">
+          100 m
+        </option>
+        <option value="500">
+          500 m
+        </option>
+        <option value="1000">
+          1 km
+        </option>
+        <option value="2000">
+          2 km
+        </option>
+        <option value="5000">
+          5 km
+        </option>
+      </datalist>
+    </div>
+
+    <div
+      v-if="raioErro"
+      class="error-msg"
+      role="alert"
+    >
+      {{ raioErro }}
+    </div>
+  </template>
+  <ErrorComponent
+    v-else-if="!chamadasPendentes.buscandoEndereco && $route.query.endereco"
+    erro="Nenhum endereço encontrado. Tente refazer sua busca."
+  />
 </template>
