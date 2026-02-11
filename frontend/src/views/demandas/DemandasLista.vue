@@ -126,7 +126,7 @@ onMounted(() => {
   border-radius: 50%;
   background-color: currentColor;
   left: -20px;
-  top: 14px;
+  align-self: center;
 
 }
 </style>
