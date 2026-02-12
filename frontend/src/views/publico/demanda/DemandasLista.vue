@@ -496,6 +496,8 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
         v-else
         :colunas="colunasDemandas"
         :dados="demandasFiltradas"
+        :rolagem-horizontal="true"
+        titulo-para-rolagem-horizontal="Demandas"
       >
         <template #celula:acao="{ linha }">
           <SmaeLink
