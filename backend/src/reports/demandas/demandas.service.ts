@@ -288,7 +288,6 @@ export class DemandasService implements ReportableService {
             { value: 'observacao', label: 'Observação' },
             { value: 'area_tematica', label: 'Área Temática' },
             { value: 'acoes', label: 'Ação' },
-            { value: 'localizacao', label: 'Localização' },
         ];
 
         const tmpFile = _ctx.getTmpFile('demandas.csv');
