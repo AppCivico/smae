@@ -1,6 +1,7 @@
 import { DemandaFinalidade } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
+    arrayMinSize,
     ArrayMinSize,
     IsArray,
     IsBoolean,
@@ -94,6 +95,7 @@ export class CreateDemandaDto {
 
     @IsOptional()
     @IsArray()
+    @ArrayMinSize(1, { message: 'Pelo menos uma localização deve ser informada.' })
     @IsString({ each: true })
     localizacoes?: string[];
 
@@ -173,6 +175,7 @@ export class UpdateDemandaDto {
 
     @IsOptional()
     @IsArray()
+    @ArrayMinSize(1, { message: 'Pelo menos uma localização deve ser informada.' })
     @IsString({ each: true })
     localizacoes?: string[];
 
