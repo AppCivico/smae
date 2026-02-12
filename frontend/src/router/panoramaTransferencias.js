@@ -7,5 +7,6 @@ export default {
   meta: {
     entidadeMãe: 'TransferenciasVoluntarias',
     título: 'Quadro de atividades',
+    limitarÀsPermissões: 'CadastroTransferencia.listar',
   },
 };
