@@ -31,7 +31,7 @@ export class DistribuicaoStatusController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferencia.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DistribuicaoStatusDto> {
         return await this.distribuicaoStatusService.findOne(+params.id, user);
     }
