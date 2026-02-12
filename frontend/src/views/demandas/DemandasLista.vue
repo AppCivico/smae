@@ -1,13 +1,20 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { FiltroDemandaSchema } from '@/consts/formSchemas/demanda';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
+import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
+import { useOrgansStore } from '@/stores/organs.store';
+
+const route = useRoute();
 
 const mapaStatus = {
   Registro: 'Em registro',
@@ -15,6 +22,13 @@ const mapaStatus = {
   Publicado: 'Publicada',
   Encerrado: 'Encerrada',
 };
+
+const opcoesStatus = [
+  { id: 'Registro', label: 'Em registro' },
+  { id: 'Validacao', label: 'Em Validação' },
+  { id: 'Publicado', label: 'Publicada' },
+  { id: 'Encerrado', label: 'Encerrada' },
+];
 
 const legendas = {
   status: [
@@ -27,11 +41,48 @@ const legendas = {
 };
 
 const demandasStore = useDemandasStore();
+const organsStore = useOrgansStore();
+const areasTematicasStore = useAreasTematicasStore();
+
 const { lista } = storeToRefs(demandasStore);
+const { orgaosComNome: listaOrgaos } = storeToRefs(organsStore);
+const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
+
+const opcoesOrgaos = computed(() => listaOrgaos.value.map((o) => ({
+  id: o.id,
+  label: o.nome_completo,
+})));
+
+const opcoesAreasTematicas = computed(() => (listaAreasTematicas.value as any[]).map((a) => ({
+  id: a.id,
+  label: a.nome,
+})));
+
+const camposDeFiltro = computed<import('@/components/FiltroParaPagina.vue').Formulario>(() => [
+  {
+    campos: {
+      status: {
+        tipo: 'select' as const,
+        opcoes: opcoesStatus,
+      },
+      orgao_id: {
+        tipo: 'select' as const,
+        opcoes: opcoesOrgaos.value,
+      },
+      area_tematica_id: {
+        tipo: 'select' as const,
+        opcoes: opcoesAreasTematicas.value,
+      },
+      palavra_chave: {
+        tipo: 'search',
+      },
+    },
+  },
+]);
 
 function buscarTudo() {
   demandasStore.$reset();
-  demandasStore.buscarTudo();
+  demandasStore.buscarTudo(route.query);
 }
 
 function corDoStatus({ status, situacao_encerramento }): string | undefined {
@@ -50,8 +101,24 @@ async function excluirItem({ id }) {
 }
 
 onMounted(() => {
-  buscarTudo();
+  Promise.all([
+    organsStore.getAll(),
+    areasTematicasStore.buscarTudo(),
+    buscarTudo(),
+  ]).then();
 });
+
+watch(
+  () => [
+    () => route.query.status,
+    () => route.query.orgao_id,
+    () => route.query.area_tematica_id,
+    () => route.query.palavra_chave,
+  ],
+  () => {
+    buscarTudo();
+  },
+);
 </script>
 
 <template>
@@ -67,6 +134,12 @@ onMounted(() => {
       Nova Demanda
     </SmaeLink>
   </div>
+
+  <FiltroParaPagina
+    class="mb2"
+    :formulario="camposDeFiltro"
+    :schema="FiltroDemandaSchema as any"
+  />
 
   <ListaLegendas
     :titulo="''"

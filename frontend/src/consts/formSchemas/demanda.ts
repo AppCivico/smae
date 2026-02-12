@@ -121,4 +121,20 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
       }),
   });
 
+export const FiltroDemandaSchema = object()
+  .shape({
+    status: string()
+      .label('Status')
+      .nullableOuVazio(),
+    orgao_id: number()
+      .label('Gestor Municipal')
+      .nullableOuVazio(),
+    area_tematica_id: number()
+      .label('Área Temática')
+      .nullableOuVazio(),
+    palavra_chave: string()
+      .label('Palavra-chave')
+      .nullableOuVazio(),
+  });
+
 export default { };
