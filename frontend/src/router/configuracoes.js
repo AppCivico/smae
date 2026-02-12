@@ -119,7 +119,8 @@ export default [
     name: 'configuracoesRaiz',
     meta: {
       limitarÀsPermissões: [
-        'CadastroAreaTematica.',
+        'CadastroAreaTematica.editar',
+        'CadastroAreaTematica.inserir',
         'CadastroEmpreendimentoMDO.',
         'CadastroGrupoVariavel.',
         'CadastroOds.',
