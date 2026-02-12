@@ -1290,6 +1290,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'AndamentoWorkflow.listar',
             'CadastroVinculo.listar',
             'CadastroDemanda.listar',
+            'CadastroDemanda.inserir',
             'CadastroParlamentar.listar',
         ],
     },
