@@ -794,6 +794,7 @@ export class DemandaService {
                 if (isOwnerOrgao) {
                     permissoes.pode_editar = true;
                     permissoes.pode_enviar = true;
+                    permissoes.pode_cancelar = true;
                     // Não pode remover se foi devolvida após publicação
                     permissoes.pode_remover = dataPublicado === null;
                 }
