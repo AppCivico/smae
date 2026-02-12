@@ -91,6 +91,17 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
     // Arquivos
     arquivos: array()
       .label('Documentos/Fotos/Arquivos')
+      .test(
+        'max-publicos',
+        'No máximo 3 arquivos públicos são permitidos',
+        (value) => {
+          if (!value) return true;
+          const publicos = value.filter(
+            (item: { autoriza_divulgacao?: boolean }) => item.autoriza_divulgacao,
+          );
+          return publicos.length <= 3;
+        },
+      )
       .nullable(),
 
     // Encaminhamento

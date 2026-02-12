@@ -340,7 +340,9 @@ watch(itemParaEdicao, (novosValores) => {
         "
         class="barra-limite mt1"
       >
-        Valor máximo de {{ dinheiro(valoresLimitesAtivo.valor_maximo, { style: 'currency' }) }}
+        Valor acima de
+        {{ dinheiro(valoresLimitesAtivo.valor_maximo, { style: 'currency' }) }}
+        tem menor chance de ser atendido
       </div>
     </fieldset>
 
@@ -636,9 +638,9 @@ watch(itemParaEdicao, (novosValores) => {
           />
         </Field>
 
-        <Field
-          name="upload_tokens"
-          type="hidden"
+        <ErrorMessage
+          name="arquivos"
+          class="error-msg"
         />
       </div>
     </fieldset>
