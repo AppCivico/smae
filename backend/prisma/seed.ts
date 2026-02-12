@@ -1261,6 +1261,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroAreaTematica.listar',
             'CadastroDemandaConfig.listar',
             'AndamentoWorkflow.listar',
+            'CadastroTransferencia.editar',
             // TODO? Maybe precisa ter permissões para editar e remover, e ai precisaria melhorar
             // o "pode_editar" do crono
             'CadastroCronogramaTransferencia.listar',
