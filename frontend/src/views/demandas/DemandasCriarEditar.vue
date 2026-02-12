@@ -60,8 +60,8 @@ const todosOsCamposEncaminhamento = computed(() => [
   },
   { label: 'Solicitar ajuste', valor: 'devolver' },
   { label: 'Encaminhar para validação', valor: 'enviar' },
-  { label: 'Cancelar demanda', valor: 'cancelar' },
   { label: 'Publicar', valor: 'validar' },
+  { label: 'Cancelar demanda', valor: 'cancelar' },
 ]);
 
 const camposEncaminhamento = computed(() => {

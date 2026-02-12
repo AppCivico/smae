@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
+  nextTick,
   ref, useTemplateRef, watch,
 } from 'vue';
 
@@ -47,7 +48,6 @@ const {
   handleSubmit,
   resetForm,
   validateField,
-  values,
 } = useForm({
   validationSchema: schema,
 });
@@ -74,6 +74,7 @@ const {
 } = useUpload();
 
 function abrirModal() {
+  resetForm({ values: { autoriza_divulgacao: false } });
   arquivoSelecionado.value = null;
   nomeArquivoSelecionado.value = '';
   exibirModal.value = true;
@@ -87,8 +88,10 @@ function abrirSeletorDeArquivos() {
   inputRef.value?.click();
 }
 
-function handleEditarItem(linha) {
+async function handleEditarItem(linha) {
   abrirModal();
+
+  await nextTick();
 
   resetForm({
     values: {
@@ -182,8 +185,10 @@ watch(() => props.modelValue, (val) => {
   arquivosLocais.value = val ? [...val] : [];
 }, { immediate: true });
 
-watch(exibirModal, () => {
-  resetForm({ values: { autoriza_divulgacao: false } });
+watch(exibirModal, (exibir) => {
+  if (exibir) {
+    alterouArquivo.value = false;
+  }
 });
 
 function onDeletarArquivo(linha: Record<string, unknown>) {
@@ -198,12 +203,6 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
     emit('update:modelValue', arquivosLocais.value);
   }
 }
-
-watch(exibirModal, (exibir) => {
-  if (exibir) {
-    alterouArquivo.value = false;
-  }
-});
 </script>
 
 <template>
