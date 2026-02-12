@@ -43,6 +43,12 @@ const colunasDemandas = [
     chave: 'valor',
     label: 'Valor',
     formatador: (valor) => dinheiro(valor, { style: 'currency', currency: 'BRL' }),
+    atributosDaCelula: {
+      class: 'cell--number',
+    },
+    atributosDoCabecalhoDeColuna: {
+      class: 'cell--number',
+    },
   },
   {
     chave: 'finalidade',
