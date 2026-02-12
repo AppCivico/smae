@@ -15,6 +15,7 @@ import {
     UnifiedTableResponseDto,
     UnifiedTableHeadersDto,
 } from './dto/busca-global.entity';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 enum UnifiedEntityType {
     PROJETO = 'projeto',
@@ -75,7 +76,7 @@ export class BuscaGlobalService {
         }
     }
 
-    async getUnifiedTableData(dto: UnifiedSearchInputDto): Promise<UnifiedTableResponseDto> {
+    async getUnifiedTableData(dto: UnifiedSearchInputDto, user: PessoaFromJwt): Promise<UnifiedTableResponseDto> {
         const headers: UnifiedTableHeadersDto = {
             mainColumn: 'Endereço',
             col1: 'Portfólio/Macro Tema',
@@ -86,7 +87,10 @@ export class BuscaGlobalService {
             dynamic_metadados: 'Detalhes', // Header for the column containing the array of metadata
         };
 
-        const searchResults: SearchEntitiesNearbyResponseDto = await this.geoBuscaService.searchEntitiesNearby(dto);
+        const searchResults: SearchEntitiesNearbyResponseDto = await this.geoBuscaService.searchEntitiesNearby(
+            dto,
+            user
+        );
 
         const allRows: UnifiedTableRowDto[] = [];
         let processingOrder = 0;

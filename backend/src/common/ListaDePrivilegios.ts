@@ -281,6 +281,7 @@ export type ListaDePrivilegios =
     | 'Menu.AtualizacaoEmLote.MDO'
     | 'Menu.metas'
     | 'Menu.meta.pdm'
+    | 'Menu.demandas'
     | 'Menu.cc_consulta_geral'
     | 'Menu.historico_monitoramento_ps'
     | 'Menu.historico_monitoramento_pdm'

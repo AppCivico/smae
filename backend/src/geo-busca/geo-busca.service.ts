@@ -11,6 +11,7 @@ import {
     SearchEntitiesNearbyDto,
     SearchEntitiesNearbyResponseDto,
 } from './dto/geo-busca.entity';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 const MAX_RESULTS_GEOLOC = 1000; // Max GeoLocalizacao records to fetch initially
 
@@ -18,7 +19,10 @@ const MAX_RESULTS_GEOLOC = 1000; // Max GeoLocalizacao records to fetch initiall
 export class GeoBuscaService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async searchEntitiesNearby(dto: SearchEntitiesNearbyDto): Promise<SearchEntitiesNearbyResponseDto> {
+    async searchEntitiesNearby(
+        dto: SearchEntitiesNearbyDto,
+        user: PessoaFromJwt
+    ): Promise<SearchEntitiesNearbyResponseDto> {
         const { lat, lon, raio_km = 2, raio, regiao_id, geo_camada_config_id, geo_camada_codigo } = dto;
 
         // TODO: O raio_km provavelmente será dropado.
@@ -549,7 +553,7 @@ export class GeoBuscaService {
 
         // Demandas
         const demandaIds = [...new Set(referencias.filter((r) => r.demanda_id).map((r) => r.demanda_id!))];
-        if (demandaIds.length > 0) {
+        if (demandaIds.length > 0 && user.hasSomeRoles(['Menu.demandas'])) {
             const demandasData = await this.prisma.demanda.findMany({
                 where: {
                     id: { in: demandaIds },
