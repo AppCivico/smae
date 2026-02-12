@@ -47,6 +47,7 @@ const {
   handleSubmit,
   resetForm,
   validateField,
+  values,
 } = useForm({
   validationSchema: schema,
 });
@@ -182,7 +183,7 @@ watch(() => props.modelValue, (val) => {
 }, { immediate: true });
 
 watch(exibirModal, () => {
-  resetForm({ values: {} });
+  resetForm({ values: { autoriza_divulgacao: false } });
 });
 
 function onDeletarArquivo(linha: Record<string, unknown>) {
