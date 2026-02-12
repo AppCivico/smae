@@ -31,6 +31,9 @@ function carregarVinculos() {
   const filtros:Filtros = {};
 
   switch (true) {
+    case props.dados.modulo === 'demandas':
+      filtros.demanda_id = props.dados.id;
+      break;
     case props.dados.modulo === 'obras':
     case props.dados.modulo === 'projetos':
       filtros.projeto_id = props.dados.id;

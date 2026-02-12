@@ -302,6 +302,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
       return dadosOrganizados;
     },
+
     entidadesPorProximidade({ dadosPorGeo }) {
       if (!dadosPorGeo || Object.keys(dadosPorGeo).length === 0) {
         return [];
@@ -457,6 +458,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                   nome: demanda.status,
                 } : undefined,
                 detalhes: {
+                  Descrição: demanda.descricao,
                   'Unidade Responsável': demanda.unidade_responsavel,
                   Responsável: demanda.nome_responsavel,
                 },
