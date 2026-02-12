@@ -9,6 +9,13 @@ import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
 import { useDemandasStore } from '@/stores/demandas.store';
 
+const mapaStatus = {
+  Registro: 'Em registro',
+  Validacao: 'Em Validação',
+  Publicado: 'Publicada',
+  Encerrado: 'Encerrada',
+};
+
 const legendas = {
   status: [
     { id: 'Registro', item: 'Registrada', color: '#9F045F' },
@@ -73,6 +80,7 @@ onMounted(() => {
     class="relative"
     :dados="lista"
     :colunas="[
+      { chave: 'status', label: '' },
       { chave: 'orgao.nome_exibicao', label: 'gestor municipal' },
       { chave: 'nome_projeto', label: 'Nome do Projeto' },
       { chave: 'area_tematica.nome', label: 'Área Temática' },
@@ -80,14 +88,15 @@ onMounted(() => {
       { chave: 'localizacao', label: 'Localizacao', formatador: v => truncate(v, 110) },
     ]"
   >
-    <template #celula:orgao__nome_exibicao="{linha}">
+    <template #celula:status="{linha}">
       <span
         class="status"
-        :style="{ color: corDoStatus(linha) }"
+        :style="{ background: corDoStatus(linha) }"
         :title="[linha.status, linha.situacao_encerramento].join(' ')"
-      />
-
-      {{ linha.orgao.nome_exibicao }}
+      >
+        {{ mapaStatus[linha.status] }}
+        <template v-if="linha.situacao_encerramento">({{ linha.situacao_encerramento }})</template>
+      </span>
     </template>
 
     <template #acoes="{ linha }">
@@ -123,14 +132,14 @@ onMounted(() => {
 }
 
 .status {
-  position: absolute;
+  width: fit-content;
+  color: #fff;
   display: block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background-color: currentColor;
-  left: -20px;
+  padding: 0.5rem;
+  margin: auto;
+  border-radius: 10px;
   align-self: center;
-
+  white-space: nowrap;
+  text-align: center;
 }
 </style>

@@ -4,7 +4,7 @@ import {
 } from './initSchema';
 import dinheiro from '@/helpers/dinheiro';
 
-export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => object()
+export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
   .shape({
     id: number()
       .nullable(),
@@ -22,10 +22,6 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
 
         if (Number.isNaN(valorNumero) || valorNumero < valorMinimo) {
           return createError({ message: `Valor mínimo de ${dinheiro(valorMinimo, { style: 'currency' })}` });
-        }
-
-        if (valorMaximo && valorNumero > valorMaximo) {
-          return createError({ message: `Valor máximo de ${dinheiro(valorMaximo, { style: 'currency' })}` });
         }
 
         return true;
@@ -67,7 +63,7 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
       .max(250)
       .required(),
     descricao: string()
-      .label('Proposta')
+      .label('Descrição')
       .max(2048)
       .required(),
     justificativa: string()
@@ -76,7 +72,7 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
       .required(),
     localizacoes: array()
       .label('Localização (Distrito/Subprefeitura)')
-      .nullable(),
+      .min(1, 'Selecione pelo menos um endereço'),
 
     // Área Temática
     area_tematica_id: number()
@@ -85,7 +81,8 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0, valorMaximo = 0 }) => o
     acao_ids: array()
       .label('Ações')
       .of(number())
-      .nullable(),
+      .min(1, 'Selecione pelo menos uma ação')
+      .required('Selecione pelo menos uma ação'),
     observacao: string()
       .label('Observação')
       .max(2048)

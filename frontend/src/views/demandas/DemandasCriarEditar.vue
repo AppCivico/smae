@@ -51,7 +51,6 @@ const {
 const schema = computed(() => (
   CadastroDemandaSchema({
     valorMinimo: valoresLimitesAtivo.value?.valor_minimo,
-    valorMaximo: valoresLimitesAtivo.value?.valor_maximo,
   })
 ));
 
@@ -211,6 +210,7 @@ onMounted(() => {
 
   resetForm({
     values: {
+      localizacoes: [],
       orgao_id: authStore.user.orgao_id,
     },
   });
@@ -325,12 +325,11 @@ watch(itemParaEdicao, (novosValores) => {
 
       <div
         v-if="
-          errors.valor
-            && valoresLimitesAtivo
+          valoresLimitesAtivo
             && valoresLimitesAtivo.valor_maximo != null
             && parseFloat(values.valor) > parseFloat(valoresLimitesAtivo.valor_maximo)
         "
-        class="barra-limite"
+        class="barra-limite mt1"
       >
         Valor máximo de {{ dinheiro(valoresLimitesAtivo.valor_maximo, { style: 'currency' }) }}
       </div>
@@ -603,6 +602,11 @@ watch(itemParaEdicao, (novosValores) => {
             @update:model="handleChange"
           />
         </Field>
+
+        <ErrorMessage
+          name="localizacoes"
+          class="error-msg"
+        />
       </div>
 
       <div>
@@ -666,10 +670,7 @@ watch(itemParaEdicao, (novosValores) => {
         />
       </div>
 
-      <div
-        v-if="acoesDaAreaTematica.length"
-        class="mb1"
-      >
+      <div class="mb1">
         <SmaeLabel
           name="acao_ids"
           :schema="schema"
