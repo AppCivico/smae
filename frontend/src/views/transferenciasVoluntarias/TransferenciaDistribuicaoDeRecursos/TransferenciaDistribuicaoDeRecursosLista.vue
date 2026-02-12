@@ -1,3 +1,55 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useIsFormDirty } from 'vee-validate';
+import { onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import SmaeLink from '@/components/SmaeLink.vue';
+import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+
+const router = useRouter();
+const { params } = useRoute();
+
+const formularioSujo = useIsFormDirty();
+
+const alertStore = useAlertStore();
+const distribuicaoRecursos = useDistribuicaoRecursosStore();
+
+const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
+
+async function excluirDistribuição({ id, nome }) {
+  alertStore.confirmAction(`Deseja mesmo remover o item "${nome}"?`, async () => {
+    if (await distribuicaoRecursos.excluirItem(id)) {
+      distribuicaoRecursos.$reset();
+      distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
+      alertStore.success('Distribuição removida.');
+    }
+  }, 'Remover');
+}
+
+function voltarTela() {
+  router.push({
+    name: 'TransferenciasVoluntariasDetalhes',
+    params: {
+      ...params,
+    },
+  });
+}
+
+async function iniciar() {
+  distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
+}
+
+iniciar();
+
+onUnmounted(() => {
+  distribuicaoRecursos.$reset();
+});
+</script>
+
 <template>
   <div>
     <div class="flex spacebetween center mb2 mt2">
@@ -57,6 +109,7 @@
               </td>
               <td class="tr">
                 <SmaeLink
+                  v-if="item.pode_editar"
                   class="like-a__text"
                   aria-label="editar"
                   title="editar"
@@ -152,55 +205,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useIsFormDirty } from 'vee-validate';
-import { onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import SmaeLink from '@/components/SmaeLink.vue';
-import dateToField from '@/helpers/dateToField';
-import dinheiro from '@/helpers/dinheiro';
-import { useAlertStore } from '@/stores/alert.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-
-const router = useRouter();
-const { params } = useRoute();
-
-const formularioSujo = useIsFormDirty();
-
-const alertStore = useAlertStore();
-const distribuicaoRecursos = useDistribuicaoRecursosStore();
-
-const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
-
-async function excluirDistribuição({ id, nome }) {
-  alertStore.confirmAction(`Deseja mesmo remover o item "${nome}"?`, async () => {
-    if (await distribuicaoRecursos.excluirItem(id)) {
-      distribuicaoRecursos.$reset();
-      distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
-      alertStore.success('Distribuição removida.');
-    }
-  }, 'Remover');
-}
-
-function voltarTela() {
-  router.push({
-    name: 'TransferenciasVoluntariasDetalhes',
-    params: {
-      ...params,
-    },
-  });
-}
-
-async function iniciar() {
-  distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
-}
-
-iniciar();
-
-onUnmounted(() => {
-  distribuicaoRecursos.$reset();
-});
-</script>

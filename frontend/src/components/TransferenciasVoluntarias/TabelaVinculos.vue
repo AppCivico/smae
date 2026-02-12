@@ -7,6 +7,7 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import statusObras from '@/consts/statusObras';
 import dinheiro from '@/helpers/dinheiro';
+import { useAuthStore } from '@/stores/auth.store';
 import { LegendasStatus } from '@/stores/entidadesProximas.store';
 import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 
@@ -23,6 +24,8 @@ const temVinculosInvalidados = computed(() => props.dados.some((v) => v.invalida
 const emit = defineEmits<{
   excluir: [vinculo: Vinculo];
 }>();
+
+const { temPermissãoPara } = useAuthStore();
 
 const labelsDetalhesVinculo: Record<keyof VinculoDetalheObraDto, string> = {
   grupo_tematico_nome: 'Grupo Temático',
@@ -234,7 +237,7 @@ const colunas = computed(() => {
         </SmaeLink>
 
         <button
-          v-if="temPermissao"
+          v-if="!!temPermissãoPara('CadastroVinculo.remover')"
           class="like-a__text"
           type="button"
           aria-label="Remover item"

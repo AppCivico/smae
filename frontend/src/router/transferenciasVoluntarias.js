@@ -272,6 +272,7 @@ export default {
         título: 'Notas',
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroNota.listar',
       },
       children: [
         /* LISTAR NOTAS */
@@ -356,7 +357,7 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: 'CadastroTransferencia.listar',
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
@@ -369,6 +370,7 @@ export default {
           component: TransferenciasVoluntariasCriarEditar,
           path: '',
           props: tiparPropsDeRota,
+          limitarÀsPermissões: 'CadastroTransferencia.editar',
         },
         {
           name: 'TransferenciasVoluntariasDetalhes',
@@ -436,6 +438,7 @@ export default {
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
         ],
+        limitarÀsPermissões: 'CadastroTransferenciaAnexo.listar',
       },
       children: [
         /* INCLUSÃO DE DOCUMENTO */
@@ -552,6 +555,7 @@ export default {
             título: 'Cronograma',
             títuloParaMenu: 'Cronograma',
             rotasParaMenuSecundário,
+            limitarÀsPermissões: 'CadastroCronogramaTransferencia.listar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',

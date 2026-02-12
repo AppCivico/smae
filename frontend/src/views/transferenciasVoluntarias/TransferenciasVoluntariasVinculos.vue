@@ -175,7 +175,7 @@ onUnmounted(() => {
         v-else
         :dados="dadosEndereco"
         tipo="endereco"
-        :tem-permissao="!!temPermissãoPara('CadastroTransferencia.editar')"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
         @excluir="excluirVinculo"
       />
     </CardEnvelope.Conteudo>
@@ -222,7 +222,7 @@ onUnmounted(() => {
         v-else
         :dados="dadosDotacao"
         tipo="dotacao"
-        :tem-permissao="!!temPermissãoPara('CadastroTransferencia.editar')"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
         @excluir="excluirVinculo"
       />
     </CardEnvelope.Conteudo>
@@ -261,7 +261,7 @@ onUnmounted(() => {
         v-else
         :dados="dadosDemanda"
         tipo="demanda"
-        :tem-permissao="!!temPermissãoPara('CadastroTransferencia.editar')"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
         @excluir="excluirVinculo"
       />
     </CardEnvelope.Conteudo>
