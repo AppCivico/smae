@@ -32,11 +32,9 @@ async function excluirArea(linha) {
       areasTematicasStore.$reset();
       areasTematicasStore.buscarTudo();
       alertStore.success(`Área temática "${linha.nome}" removida.`);
-    } else {
-      alertStore.error(`Falha ao remover a área temática "${linha.nome}".`);
     }
   } catch (error) {
-    alertStore.error(error);
+    console.error(error);
   }
 }
 

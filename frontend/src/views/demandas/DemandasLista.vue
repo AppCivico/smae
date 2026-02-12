@@ -4,31 +4,21 @@ import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
-import ListaLegendas from '@/components/ListaLegendas.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { FiltroDemandaSchema } from '@/consts/formSchemas/demanda';
 import dinheiro from '@/helpers/dinheiro';
+import filtrarObjetos from '@/helpers/filtrarObjetos';
 import truncate from '@/helpers/texto/truncate';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 
+import MapaStatus from './MapaStatus';
+
 const route = useRoute();
 
-const mapaStatus = {
-  Registro: 'Em registro',
-  Validacao: 'Em Validação',
-  Publicado: 'Publicada',
-  Encerrado: 'Encerrada',
-};
-
-const opcoesStatus = [
-  { id: 'Registro', label: 'Em registro' },
-  { id: 'Validacao', label: 'Em Validação' },
-  { id: 'Publicado', label: 'Publicada' },
-  { id: 'Encerrado', label: 'Encerrada' },
-];
+const opcoesStatus = Object.entries(MapaStatus).map(([id, label]) => ({ id, label }));
 
 const legendas = {
   status: [
@@ -100,6 +90,8 @@ async function excluirItem({ id }) {
   buscarTudo();
 }
 
+const demandasFiltradas = computed(() => filtrarObjetos(lista.value, route.query.palavra_chave));
+
 onMounted(() => {
   Promise.all([
     organsStore.getAll(),
@@ -138,27 +130,19 @@ watch(
   <FiltroParaPagina
     class="mb2"
     :formulario="camposDeFiltro"
-    :schema="FiltroDemandaSchema as any"
-  />
-
-  <ListaLegendas
-    :titulo="''"
-    :legendas="legendas"
-    :borda="false"
-    align="left"
-    orientacao="horizontal"
+    :schema="FiltroDemandaSchema"
   />
 
   <SmaeTable
     class="relative"
-    :dados="lista"
+    :dados="demandasFiltradas"
     :colunas="[
-      { chave: 'status', label: '' },
       { chave: 'orgao.nome_exibicao', label: 'gestor municipal' },
       { chave: 'nome_projeto', label: 'Nome do Projeto' },
       { chave: 'area_tematica.nome', label: 'Área Temática' },
       { chave: 'valor', label: 'Valor', formatador: v => dinheiro(v, { style: 'currency' }) },
       { chave: 'localizacao', label: 'Localizacao', formatador: v => truncate(v, 110) },
+      { chave: 'status', label: '' },
     ]"
   >
     <template #celula:status="{linha}">
@@ -167,7 +151,7 @@ watch(
         :style="{ background: corDoStatus(linha) }"
         :title="[linha.status, linha.situacao_encerramento].join(' ')"
       >
-        {{ mapaStatus[linha.status] }}
+        {{ MapaStatus[linha.status] }}
         <template v-if="linha.situacao_encerramento">({{ linha.situacao_encerramento }})</template>
       </span>
     </template>
@@ -209,7 +193,7 @@ watch(
   color: #fff;
   display: block;
   padding: 0.5rem;
-  margin: auto;
+  margin-right: auto;
   border-radius: 10px;
   align-self: center;
   white-space: nowrap;

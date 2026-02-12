@@ -26,12 +26,10 @@ import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
+import MapaStatus, { StatusDemanda } from './MapaStatus';
+
 type EtapaDoVaralComId = EtapaDoVaral & {
-  id:
-  'Registro' |
-  'Validacao' |
-  'Publicado' |
-  'Encerrado'
+  id: StatusDemanda;
 };
 
 const router = useRouter();
@@ -153,16 +151,16 @@ const onSubmit = handleSubmit.withControlled(async ({
 const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   const etapas: EtapaDoVaralComId[] = [
     {
-      id: 'Registro', responsavel: 'Gestor Municipal', nome: 'Registro', observacao: null, status: 'pendente', atual: true,
+      id: 'Registro', responsavel: 'Gestor Municipal', nome: MapaStatus.Registro, observacao: null, status: 'pendente', atual: true,
     },
     {
-      id: 'Validacao', responsavel: 'SERI', nome: 'Validação', observacao: null, status: 'pendente', atual: false,
+      id: 'Validacao', responsavel: 'SERI', nome: MapaStatus.Validacao, observacao: null, status: 'pendente', atual: false,
     },
     {
-      id: 'Publicado', responsavel: 'SERI', nome: 'Publicada', observacao: null, status: 'pendente', atual: false,
+      id: 'Publicado', responsavel: 'SERI', nome: MapaStatus.Publicado, observacao: null, status: 'pendente', atual: false,
     },
     {
-      id: 'Encerrado', responsavel: 'SERI', nome: 'Encerrada', observacao: itemParaEdicao.value.situacao_encerramento || null, status: 'pendente', atual: false,
+      id: 'Encerrado', responsavel: 'SERI', nome: MapaStatus.Encerrado, observacao: itemParaEdicao.value.situacao_encerramento || null, status: 'pendente', atual: false,
     },
   ];
 
