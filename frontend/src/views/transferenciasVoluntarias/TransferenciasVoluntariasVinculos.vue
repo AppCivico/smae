@@ -227,46 +227,47 @@ onUnmounted(() => {
       />
     </CardEnvelope.Conteudo>
 
-    <template v-if="temPermissãoPara('Menu.demandas')">
-      <CardEnvelope.Conteudo class="flex column g1">
-        <CardEnvelope.Titulo
-          cor="#221f43"
-          cor-bolinha="#F7C234"
-          estilo="com-marcador"
+    <CardEnvelope.Conteudo
+      v-if="temPermissãoPara('Menu.demandas')"
+      class="flex column g1"
+    >
+      <CardEnvelope.Titulo
+        cor="#221f43"
+        cor-bolinha="#F7C234"
+        estilo="com-marcador"
+      >
+        Demanda
+      </CardEnvelope.Titulo>
+
+      <LoadingComponent
+        v-if="chamadasPendentes.demanda && !linhasDemanda.length"
+        class="mb1"
+      />
+
+      <ErrorComponent
+        v-else-if="erros.demanda"
+        :erro="erros.demanda"
+      >
+        <p class="mb1">
+          Erro ao carregar vínculos por demanda.
+        </p>
+        <button
+          type="button"
+          class="btn"
+          @click="carregarDemanda"
         >
-          Demanda
-        </CardEnvelope.Titulo>
+          Tentar novamente
+        </button>
+      </ErrorComponent>
 
-        <LoadingComponent
-          v-if="chamadasPendentes.demanda && !linhasDemanda.length"
-          class="mb1"
-        />
-
-        <ErrorComponent
-          v-else-if="erros.demanda"
-          :erro="erros.demanda"
-        >
-          <p class="mb1">
-            Erro ao carregar vínculos por demanda.
-          </p>
-          <button
-            type="button"
-            class="btn"
-            @click="carregarDemanda"
-          >
-            Tentar novamente
-          </button>
-        </ErrorComponent>
-
-        <TabelaVinculos
-          v-else
-          :dados="dadosDemanda"
-          tipo="demanda"
-          :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
-          @excluir="excluirVinculo"
-        />
-      </CardEnvelope.Conteudo>
-    </template>
+      <TabelaVinculos
+        v-else
+        :dados="dadosDemanda"
+        tipo="demanda"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
+        @excluir="excluirVinculo"
+      />
+    </CardEnvelope.Conteudo>
   </div>
 
   <router-view />
