@@ -203,6 +203,39 @@ const camadasParaMapa = computed(() => {
     }));
 });
 
+function formatarEndereco(geo) {
+  const enderecoProps = geo.endereco?.properties;
+  if (!enderecoProps) return geo.endereco_exibicao || '';
+
+  const partes = [];
+
+  if (enderecoProps.rua) {
+    partes.push(enderecoProps.numero ? `${enderecoProps.rua}, ${enderecoProps.numero}` : enderecoProps.rua);
+  }
+
+  if (enderecoProps.bairro) {
+    partes.push(enderecoProps.bairro);
+  }
+
+  const cidadeEstado = [];
+  if (enderecoProps.cidade) {
+    cidadeEstado.push(enderecoProps.cidade);
+  }
+  if (enderecoProps.estado) {
+    const siglaEstado = enderecoProps.codigo_estado || enderecoProps.estado;
+    cidadeEstado.push(siglaEstado);
+  }
+  if (cidadeEstado.length > 0) {
+    partes.push(cidadeEstado.join(' - '));
+  }
+
+  if (enderecoProps.cep) {
+    partes.push(enderecoProps.cep);
+  }
+
+  return partes.join(', ');
+}
+
 function carregarDados() {
   demanda.value = null;
   erro.value = null;
@@ -273,12 +306,26 @@ watch(() => props.id, () => {
       >
         <LoadingComponent v-if="chamadasPendentes.geocamadas" />
 
-        <MapaExibir
-          v-else
-          :geo-json="marcadoresGeoJson"
-          :camadas="camadasParaMapa"
-          height="500px"
-        />
+        <template v-else>
+          <p
+            v-for="geo in demanda.geolocalizacao"
+            :key="geo.token"
+            class="flex g05"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_map_pin" /></svg>
+
+            {{ formatarEndereco(geo) }}
+          </p>
+
+          <MapaExibir
+            :geo-json="marcadoresGeoJson"
+            :camadas="camadasParaMapa"
+            height="500px"
+          />
+        </template>
       </section>
     </div>
   </div>
