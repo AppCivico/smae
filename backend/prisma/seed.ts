@@ -139,6 +139,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
     CadastroDemanda: ['Cadastro de Demandas', 'CasaCivil'],
     CadastroAreaTematica: ['Área Temática', 'CasaCivil'],
+    CadastroNota: ['Notas', 'SMAE'],
+    CadastroTransferenciaAnexo: ['Anexos de Transferências', 'CasaCivil'],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -225,6 +227,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroAreaTematica.editar', 'Editar Área Temática'],
         ['CadastroAreaTematica.listar', 'Listar Áreas Temáticas'],
         ['CadastroAreaTematica.remover', 'Remover Área Temática'],
+    ],
+
+    CadastroNota: [
+        ['CadastroNota.inserir', 'Inserir Nota'],
+        ['CadastroNota.editar', 'Editar Nota'],
+        ['CadastroNota.listar', 'Listar Notas'],
+        ['CadastroNota.remover', 'Remover Nota'],
     ],
 
     AssuntoVariavel: [
@@ -533,6 +542,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['TransfereGov.listar', 'Listar oportunidades e comunicados do TransfereGov'],
         ['TransfereGov.atualizar', 'Atualizar oportunidades do TransfereGov'],
         ['TransfereGov.sincronizar', 'Sincronizar oportunidades e comunicados do TransfereGov'],
+    ],
+    CadastroTransferenciaAnexo: [
+        ['CadastroTransferenciaAnexo.inserir', 'Inserir Anexo de Transferência'],
+        ['CadastroTransferenciaAnexo.editar', 'Editar Anexo de Transferência'],
+        ['CadastroTransferenciaAnexo.listar', 'Listar Anexos de Transferência'],
+        ['CadastroTransferenciaAnexo.remover', 'Remover Anexo de Transferência'],
     ],
     CadastroWorkflow: [
         ['CadastroWorkflows.editar', 'Editar Workflows'],
@@ -1237,6 +1252,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'TransfereGov.sincronizar',
             'CadastroTransferencia.dashboard',
 
+            'CadastroTransferenciaAnexo.inserir',
+            'CadastroTransferenciaAnexo.editar',
+            'CadastroTransferenciaAnexo.listar',
+            'CadastroTransferenciaAnexo.remover',
+
             'CadastroDemandaConfig.editar',
             'CadastroDemandaConfig.inserir',
             'CadastroDemandaConfig.remover',
@@ -1247,6 +1267,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemanda.remover',
             'CadastroDemanda.listar',
             'CadastroDemanda.validar',
+
+            'CadastroNota.inserir',
+            'CadastroNota.editar',
+            'CadastroNota.remover',
+            'CadastroNota.listar',
         ],
     },
     {

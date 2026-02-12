@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
     BuscaNotaDto,
@@ -23,24 +24,28 @@ export class NotaController {
 
     @Post()
     @ApiBearerAuth('access-token')
+    @Roles(['CadastroNota.inserir'])
     async create(@Body() createTagDto: CreateNotaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithIdJwt> {
         return await this.tipoNotaService.create(createTagDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get('busca-por-bloco')
+    @Roles(['CadastroNota.listar'])
     async findAll(@Query() filter: BuscaNotaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListTipoNotaDto> {
         return { linhas: await this.tipoNotaService.findAll(filter, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get(':id_jwt')
+    @Roles(['CadastroNota.listar'])
     async findOne(@Param() params: FindNotaParam, @CurrentUser() user: PessoaFromJwt): Promise<TipoNotaDetail> {
         return await this.tipoNotaService.findOne(params.id_jwt, user);
     }
 
     @Delete(':id_jwt/resposta/:id')
     @ApiBearerAuth('access-token')
+    @Roles(['CadastroNota.editar'])
     @HttpCode(HttpStatus.ACCEPTED)
     async deleteResposta(@Param() params: DeleteNotaRespostaParam, @CurrentUser() user: PessoaFromJwt) {
         await this.tipoNotaService.removeResposta(params.id_jwt, params.id, user);
@@ -49,6 +54,7 @@ export class NotaController {
 
     @Patch(':id_jwt/resposta')
     @ApiBearerAuth('access-token')
+    @Roles(['CadastroNota.editar'])
     async novaResposta(
         @Param() params: FindNotaParam,
         @Body() dto: NovaRespostaDto,
@@ -59,6 +65,7 @@ export class NotaController {
 
     @Patch(':id_jwt')
     @ApiBearerAuth('access-token')
+    @Roles(['CadastroNota.editar'])
     async update(
         @Param() params: FindNotaParam,
         @Body() updateTagDto: UpdateNotaDto,
@@ -69,6 +76,7 @@ export class NotaController {
 
     @Delete(':id_jwt')
     @ApiBearerAuth('access-token')
+    @Roles(['CadastroNota.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindNotaParam, @CurrentUser() user: PessoaFromJwt) {
