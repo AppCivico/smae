@@ -128,6 +128,7 @@ export type ListaDePrivilegios =
     | 'CadastroPartido.editar'
     | 'CadastroPartido.remover'
     | 'CadastroParlamentar.inserir'
+    | 'CadastroParlamentar.listar'
     | 'CadastroParlamentar.editar'
     | 'CadastroParlamentar.remover'
     | 'CadastroTransferencia.inserir'

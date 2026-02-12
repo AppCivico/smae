@@ -1231,6 +1231,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             ...TVCadastroBasico,
             'CadastroParlamentar.editar',
             'CadastroParlamentar.inserir',
+            'CadastroParlamentar.listar',
             'CadastroParlamentar.remover',
             'Reports.remover.CasaCivil',
             'Reports.executar.CasaCivil',
@@ -1289,6 +1290,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferencia.editar',
             'CadastroVinculo.listar',
             'CadastroDemanda.listar',
+            'CadastroParlamentar.listar',
         ],
     },
     {
