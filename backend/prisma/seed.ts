@@ -529,6 +529,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroParlamentar: [
         ['CadastroParlamentar.editar', 'Editar Parlamentar'],
         ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
+        ['CadastroParlamentar.listar', 'Listar Parlamentar'],
         ['CadastroParlamentar.remover', 'Remover Parlamentar'],
         ['SMAE.acesso_telefone', 'Ver todos os telefones do parlamentar'],
     ],
