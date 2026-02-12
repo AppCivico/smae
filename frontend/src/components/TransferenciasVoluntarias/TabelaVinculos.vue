@@ -102,6 +102,9 @@ const colunas = computed(() => {
       atributosDaCelula: {
         class: 'cell--number',
       },
+      atributosDoCabecalhoDeColuna: {
+        class: 'cell--number',
+      },
     },
     {
       chave: 'tipo_vinculo.nome',
