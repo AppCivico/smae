@@ -220,6 +220,7 @@ export class DemandasService implements ReportableService {
     private convertRowsDemandasInto(input: RetornoDbDemandas[], out: RelDemandasDto[]) {
         for (const db of input) {
             out.push({
+                id: db.id,
                 status: db.status as any,
                 data_registro: Date2YMD.toStringOrNull(db.data_registro) ?? '',
                 data_publicado: Date2YMD.toStringOrNull(db.data_publicado),
@@ -244,6 +245,7 @@ export class DemandasService implements ReportableService {
     private convertRowsEnderecosInto(input: RetornoDbEnderecos[], out: RelDemandasEnderecosDto[]) {
         for (const db of input) {
             out.push({
+                demanda_id: db.demanda_id,
                 nome_projeto: this.formatExcelString(db.nome_projeto),
                 cep: this.formatExcelString(db.cep),
                 endereco: this.formatExcelString(db.endereco),
@@ -265,6 +267,7 @@ export class DemandasService implements ReportableService {
         const out: FileOutput[] = [];
 
         const fields = [
+            { value: 'id', label: 'ID' },
             { value: 'status', label: 'Status' },
             { value: 'data_registro', label: 'Data de Registro' },
             { value: 'data_publicado', label: 'Data de Publicação' },
@@ -300,6 +303,7 @@ export class DemandasService implements ReportableService {
         // Gerar planilha de endereços
         if (dados.enderecos.length > 0) {
             const fieldsEnderecos = [
+                { value: 'demanda_id', label: 'ID da Demanda' },
                 { value: 'nome_projeto', label: 'Nome do Projeto' },
                 { value: 'cep', label: 'CEP' },
                 { value: 'endereco', label: 'Endereço' },

@@ -1,6 +1,7 @@
 import { DemandaFinalidade, DemandaStatus } from '@prisma/client';
 
 export class RelDemandasDto {
+    id: number;
     status: DemandaStatus;
     data_registro: string;
     data_publicado: string | null;
@@ -21,6 +22,7 @@ export class RelDemandasDto {
 }
 
 export class RelDemandasEnderecosDto {
+    demanda_id: number;
     nome_projeto: string;
     cep: string;
     endereco: string;
