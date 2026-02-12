@@ -1932,7 +1932,7 @@ export class PessoaService implements OnModuleInit {
         }
 
         const liberadoVersao31 = await this.smaeConfigService.getConfigWithDefault('LIBERA_SPRINT_31', false);
-        if (!liberadoVersao31) {
+        if (liberadoVersao31) {
             if (ret.privilegios.includes('CadastroDemanda.listar')) {
                 ret.privilegios.push('Menu.demandas');
             }
