@@ -691,13 +691,8 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
-            // Gestor de Distribuição de Recurso só pode editar distribuições
-            // que pertencem ao seu órgão
-            let pode_editar = true;
-            if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-                if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-                pode_editar = r.orgao_gestor.id === user.orgao_id;
-            }
+            // Gestor de Distribuição de Recurso não pode editar distribuições
+            const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
 
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
@@ -1018,13 +1013,8 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso só pode editar distribuições
-        // que pertencem ao seu órgão
-        let pode_editar = true;
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-            pode_editar = row.orgao_gestor.id === user.orgao_id;
-        }
+        // Gestor de Distribuição de Recurso não pode editar distribuições
+        const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1173,12 +1163,9 @@ export class DistribuicaoRecursoService {
     async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const self = await this.findOne(id, user);
 
-        // Validar se o usuário pode editar a distribuição
-        if (!self.pode_editar) {
-            throw new HttpException(
-                'Você não tem permissão para editar esta distribuição. Apenas distribuições do seu órgão podem ser editadas.',
-                403
-            );
+        // Gestor de Distribuição de Recurso não pode editar distribuições
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para editar distribuições.', 403);
         }
 
         this.checkDuplicateSei(dto);
@@ -1805,21 +1792,9 @@ export class DistribuicaoRecursoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        // Validar se o usuário pode remover a distribuição
+        // Gestor de Distribuição de Recurso não pode remover distribuições
         if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const distribuicao = await this.prisma.distribuicaoRecurso.findFirst({
-                where: { id, removido_em: null },
-                select: { orgao_gestor_id: true },
-            });
-
-            if (!distribuicao || distribuicao.orgao_gestor_id !== user.orgao_id) {
-                throw new HttpException(
-                    'Você não tem permissão para remover esta distribuição. Apenas distribuições do seu órgão podem ser removidas.',
-                    403
-                );
-            }
+            throw new HttpException('Você não tem permissão para remover distribuições.', 403);
         }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {

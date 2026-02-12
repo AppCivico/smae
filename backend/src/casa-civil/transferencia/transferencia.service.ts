@@ -350,24 +350,9 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        // Validar se o usuário pode editar a transferência
+        // Gestor de Distribuição de Recurso não pode editar transferências
         if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const temDistribuicaoDoOrgao = await this.prisma.distribuicaoRecurso.count({
-                where: {
-                    transferencia_id: id,
-                    orgao_gestor_id: user.orgao_id,
-                    removido_em: null,
-                },
-            });
-
-            if (temDistribuicaoDoOrgao === 0) {
-                throw new HttpException(
-                    'Você não tem permissão para editar esta transferência. Apenas transferências com distribuições do seu órgão podem ser editadas.',
-                    403
-                );
-            }
+            throw new HttpException('Você não tem permissão para editar transferências.', 403);
         }
 
         const agora = new Date(Date.now());
@@ -1531,22 +1516,8 @@ export class TransferenciaService {
         });
         if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso só pode editar transferências
-        // que possuem pelo menos uma distribuição do seu órgão
-        let pode_editar = true;
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const temDistribuicaoDoOrgao = await this.prisma.distribuicaoRecurso.count({
-                where: {
-                    transferencia_id: row.id,
-                    orgao_gestor_id: user.orgao_id,
-                    removido_em: null,
-                },
-            });
-
-            pode_editar = temDistribuicaoDoOrgao > 0;
-        }
+        // Gestor de Distribuição de Recurso não pode editar transferências
+        const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
 
         return {
             id: row.id,
@@ -1658,24 +1629,9 @@ export class TransferenciaService {
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
-        // Validar se o usuário pode remover a transferência
+        // Gestor de Distribuição de Recurso não pode remover transferências
         if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const temDistribuicaoDoOrgao = await this.prisma.distribuicaoRecurso.count({
-                where: {
-                    transferencia_id: id,
-                    orgao_gestor_id: user.orgao_id,
-                    removido_em: null,
-                },
-            });
-
-            if (temDistribuicaoDoOrgao === 0) {
-                throw new HttpException(
-                    'Você não tem permissão para remover esta transferência. Apenas transferências com distribuições do seu órgão podem ser removidas.',
-                    403
-                );
-            }
+            throw new HttpException('Você não tem permissão para remover transferências.', 403);
         }
 
         await this.prisma.transferencia.update({
@@ -1688,21 +1644,9 @@ export class TransferenciaService {
     }
 
     async append_document(transferenciaId: number, dto: CreateTransferenciaAnexoDto, user: PessoaFromJwt) {
-        // Validar se o usuário pode adicionar documento à transferência
+        // Gestor de Distribuição de Recurso não pode adicionar documentos
         if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const temDistribuicaoDoOrgao = await this.prisma.distribuicaoRecurso.count({
-                where: {
-                    transferencia_id: transferenciaId,
-                    orgao_gestor_id: user.orgao_id,
-                    removido_em: null,
-                },
-            });
-
-            if (temDistribuicaoDoOrgao === 0) {
-                throw new HttpException('Você não tem permissão para adicionar documentos nesta transferência.', 403);
-            }
+            throw new HttpException('Você não tem permissão para adicionar documentos nesta transferência.', 403);
         }
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
@@ -1778,21 +1722,9 @@ export class TransferenciaService {
         dto: UpdateTransferenciaAnexoDto,
         user: PessoaFromJwt
     ) {
-        // Validar se o usuário pode atualizar documento da transferência
+        // Gestor de Distribuição de Recurso não pode atualizar documentos
         if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const temDistribuicaoDoOrgao = await this.prisma.distribuicaoRecurso.count({
-                where: {
-                    transferencia_id: transferenciaId,
-                    orgao_gestor_id: user.orgao_id,
-                    removido_em: null,
-                },
-            });
-
-            if (temDistribuicaoDoOrgao === 0) {
-                throw new HttpException('Você não tem permissão para atualizar documentos nesta transferência.', 403);
-            }
+            throw new HttpException('Você não tem permissão para atualizar documentos nesta transferência.', 403);
         }
 
         this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
@@ -1821,21 +1753,9 @@ export class TransferenciaService {
     }
 
     async remove_document(transferenciaId: number, transferenciaAnexoId: number, user: PessoaFromJwt) {
-        // Validar se o usuário pode remover documento da transferência
+        // Gestor de Distribuição de Recurso não pode remover documentos
         if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-
-            const temDistribuicaoDoOrgao = await this.prisma.distribuicaoRecurso.count({
-                where: {
-                    transferencia_id: transferenciaId,
-                    orgao_gestor_id: user.orgao_id,
-                    removido_em: null,
-                },
-            });
-
-            if (temDistribuicaoDoOrgao === 0) {
-                throw new HttpException('Você não tem permissão para remover documentos nesta transferência.', 403);
-            }
+            throw new HttpException('Você não tem permissão para remover documentos nesta transferência.', 403);
         }
 
         await this.prisma.transferenciaAnexo.updateMany({
