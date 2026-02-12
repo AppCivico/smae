@@ -3446,6 +3446,33 @@ export const relatórioAtividadesPendentes = relatorioValidacaoBase.concat(objec
   }),
 }));
 
+export const relatórioDeDemandas = relatorioValidacaoBase.concat(object({
+  parametros: object({
+    status: array()
+      .label('Status')
+      .of(string())
+      .min(1, 'Selecione pelo menos um status')
+      .required('Status é obrigatório'),
+    data_registro_inicio: date()
+      .nullable()
+      .label('Data de início')
+      .transform((v) => (v === '' ? null : v)),
+    data_registro_fim: date()
+      .nullable()
+      .min(ref('data_registro_inicio'), 'Data final deve ser posterior à data inicial')
+      .label('Data final')
+      .transform((v) => (v === '' ? null : v)),
+    orgao_id: number()
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .label('Gestor Municipal'),
+    area_tematica_id: number()
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .label('Área temática'),
+  }),
+}));
+
 export const relatórioMensal = object({
   fonte: string()
     .required(),

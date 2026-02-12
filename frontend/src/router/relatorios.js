@@ -43,6 +43,7 @@ export default {
       'RelatóriosDeTransferênciasVoluntárias',
       'RelatóriosDeTribunalDeContas',
       'RelatóriosDeAtividadesPendentes',
+      'relatóriosDeDemandas',
 
       // MDO
       'RelatóriosDePortfolioObras',
@@ -323,6 +324,39 @@ export default {
             rotaDeEscape: 'RelatóriosDeAtividadesPendentes',
             rotasParaMigalhasDePão: [
               'RelatóriosDeAtividadesPendentes',
+            ],
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'demandas',
+      meta: {
+        título: 'Demandas',
+        títuloParaMenu: 'Demandas',
+        limitarÀsPermissões: 'Reports.executar.CasaCivil',
+      },
+      children: [
+        {
+          path: '',
+          name: 'relatóriosDeDemandas',
+          component: ListaDeRelatorios,
+          meta: {
+            fonteDoRelatorio: 'Demandas',
+            rotaNovoRelatorio: 'relatóriosDeDemandas.novo',
+          },
+        },
+        {
+          component: () => import('@/views/relatorios/NovoRelatorioDeDemandas.vue'),
+          path: 'novo',
+          name: 'relatóriosDeDemandas.novo',
+          meta: {
+            título: 'Novo relatório de demandas',
+            tituloParaMigalhaDePao: 'Novo relatório',
+            rotaDeEscape: 'relatóriosDeDemandas',
+            rotasParaMigalhasDePão: [
+              'relatóriosDeDemandas',
             ],
           },
         },
