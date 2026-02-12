@@ -1285,6 +1285,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
 
             'CadastroTransferencia.listar',
             'CadastroClassificacao.listar',
+            'CadastroAreaTematica.listar',
+            'CadastroDemandaConfig.listar',
             'AndamentoWorkflow.listar',
             'CadastroTransferencia.editar',
             'CadastroVinculo.listar',
