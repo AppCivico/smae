@@ -1072,8 +1072,8 @@ export default [
           entidadeMãe: 'TransferenciasVoluntarias',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
-            'CadastroAreaTematica.listar',
-            'CadastroDemandaConfig.listar',
+            'CadastroAreaTematica.inserir',
+            'CadastroDemandaConfig.inserir',
           ],
           rotasParaMenuSecundário: [
             'areasTematicas.listar',
