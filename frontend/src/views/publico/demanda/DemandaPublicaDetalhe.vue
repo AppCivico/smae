@@ -101,12 +101,14 @@ const dadosDemanda = computed(() => {
   return dados;
 });
 
-function urlImagem(arquivo) {
-  const url = new URL(arquivo.caminho_completo, baseUrl);
-  if (arquivo.download_token) {
-    url.searchParams.set('download_token', arquivo.download_token);
-  }
-  return url.toString();
+function urlImagem(arquivoItem) {
+  const { arquivo } = arquivoItem;
+
+  const token = arquivo.preview?.status === 'concluido' && arquivo.preview.download_token
+    ? arquivo.preview.download_token
+    : arquivo.download_token;
+
+  return `${baseUrl}/public/arquivos/${token}`;
 }
 
 async function buscarDemanda() {
