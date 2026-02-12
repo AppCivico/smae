@@ -1283,11 +1283,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
             'SMAE.gestor_distribuicao_recurso',
 
-            'CadastroTransferencia.listar',
-            'CadastroClassificacao.listar',
             'CadastroAreaTematica.listar',
             'CadastroDemandaConfig.listar',
-            'AndamentoWorkflow.listar',
+
             'CadastroVinculo.listar',
             'CadastroDemanda.listar',
             'CadastroDemanda.inserir',
