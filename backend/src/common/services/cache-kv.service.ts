@@ -53,6 +53,8 @@ export class CacheKVService {
     }
 
     async setDeleted(chave: string): Promise<void> {
-        await this.set(chave, { deleted: true });
+        await this.prisma.cacheKV.delete({
+            where: { chave },
+        });
     }
 }

@@ -69,13 +69,7 @@ export class DemandaAcaoService {
             );
 
             // Após a transação, processa cache e task
-            await this.handlePostStatusChange(
-                dto.demanda_id,
-                transition.from,
-                transition.to,
-                dto.acao === 'cancelar',
-                user
-            );
+            await this.handlePostStatusChange(dto.demanda_id, transition.from, transition.to, user);
 
             return result;
         }
@@ -91,13 +85,7 @@ export class DemandaAcaoService {
         );
 
         // Processa cache e task após mudança de status
-        await this.handlePostStatusChange(
-            dto.demanda_id,
-            transition.from,
-            transition.to,
-            dto.acao === 'cancelar',
-            user
-        );
+        await this.handlePostStatusChange(dto.demanda_id, transition.from, transition.to, user);
 
         return result;
     }
@@ -106,14 +94,10 @@ export class DemandaAcaoService {
         demandaId: number,
         fromStatus: DemandaStatus,
         toStatus: DemandaStatus,
-        isCancelar: boolean,
         user: PessoaFromJwt
     ): Promise<void> {
         if (toStatus === DemandaStatus.Publicado || fromStatus === DemandaStatus.Publicado) {
-            // Só marca como deletado no cache se for cancelar
-            if (isCancelar) {
-                await this.cacheKvService.setDeleted(`demandas:${demandaId}`);
-            }
+            await this.cacheKvService.setDeleted(`demandas:${demandaId}`);
 
             // Precisa atualizar a listagem
             await this.taskService.create(
