@@ -101,7 +101,7 @@ onMounted(() => {
 });
 
 watch(
-  () => [
+  [
     () => route.query.status,
     () => route.query.orgao_id,
     () => route.query.area_tematica_id,
