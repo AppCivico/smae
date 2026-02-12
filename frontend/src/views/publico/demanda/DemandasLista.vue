@@ -57,7 +57,18 @@ const colunasDemandas = [
   {
     chave: 'geolocalizacao',
     label: 'Localização',
-    formatador: (valor) => valor?.[0]?.descricao || '—',
+    formatador: (valor) => {
+      const mapaDeSubPrefeituras = valor?.reduce((acc, item) => {
+        const subPrefeitura = item?.regioes?.nivel_3?.[0]?.descricao;
+        if (subPrefeitura) {
+          acc.set(subPrefeitura, true);
+        }
+        return acc;
+      }, new Map());
+      return mapaDeSubPrefeituras?.size
+        ? Array.from(mapaDeSubPrefeituras.keys()).sort((a, b) => a.localeCompare(b)).join(', ')
+        : '—';
+    },
   },
   {
     chave: 'acao',
