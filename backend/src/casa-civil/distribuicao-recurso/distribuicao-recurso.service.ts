@@ -1,4 +1,12 @@
-import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -683,6 +691,14 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
+            // Gestor de Distribuição de Recurso só pode editar distribuições
+            // que pertencem ao seu órgão
+            let pode_editar = true;
+            if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+                if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+                pode_editar = r.orgao_gestor.id === user.orgao_id;
+            }
+
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
                 pct_valor_transferencia = Math.round((r.valor.toNumber() / r.transferencia.valor.toNumber()) * 100);
@@ -810,6 +826,7 @@ export class DistribuicaoRecursoService {
                 distribuicao_agencia: r.distribuicao_agencia,
                 distribuicao_conta: r.distribuicao_conta,
                 distribuicao_banco: r.distribuicao_banco,
+                pode_editar: pode_editar,
             } satisfies DistribuicaoRecursoDto;
         });
 
@@ -1001,6 +1018,14 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
+        // Gestor de Distribuição de Recurso só pode editar distribuições
+        // que pertencem ao seu órgão
+        let pode_editar = true;
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+            pode_editar = row.orgao_gestor.id === user.orgao_id;
+        }
+
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
                 id: r.id,
@@ -1141,11 +1166,21 @@ export class DistribuicaoRecursoService {
             distribuicao_agencia: row.distribuicao_agencia,
             distribuicao_conta: row.distribuicao_conta,
             distribuicao_banco: row.distribuicao_banco,
+            pode_editar: pode_editar,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
     async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const self = await this.findOne(id, user);
+
+        // Validar se o usuário pode editar a distribuição
+        if (!self.pode_editar) {
+            throw new HttpException(
+                'Você não tem permissão para editar esta distribuição. Apenas distribuições do seu órgão podem ser editadas.',
+                403
+            );
+        }
+
         this.checkDuplicateSei(dto);
 
         if (dto.orgao_gestor_id != undefined && dto.orgao_gestor_id != self.orgao_gestor.id) {
@@ -1770,6 +1805,23 @@ export class DistribuicaoRecursoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        // Validar se o usuário pode remover a distribuição
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+
+            const distribuicao = await this.prisma.distribuicaoRecurso.findFirst({
+                where: { id, removido_em: null },
+                select: { orgao_gestor_id: true },
+            });
+
+            if (!distribuicao || distribuicao.orgao_gestor_id !== user.orgao_id) {
+                throw new HttpException(
+                    'Você não tem permissão para remover esta distribuição. Apenas distribuições do seu órgão podem ser removidas.',
+                    403
+                );
+            }
+        }
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
                 where: {

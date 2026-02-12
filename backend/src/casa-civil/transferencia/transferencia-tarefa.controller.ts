@@ -59,6 +59,10 @@ export class TransferenciaTarefaController {
     ): Promise<RecordWithId> {
         const transferencia = await this.transferenciaService.findOneTransferencia(params.id, user);
 
+        if (!transferencia.pode_editar) {
+            throw new HttpException('Você não tem permissão para criar tarefas nesta transferência.', 403);
+        }
+
         return await this.tarefaService.create({ transferencia_id: transferencia.id }, dto, user);
     }
 
@@ -136,10 +140,12 @@ export class TransferenciaTarefaController {
         if (dto.atualizacao_do_realizado) {
             // acessa como read-only pra personalizar a mensagem de erro, caso aconteça
             const transferencia = await this.transferenciaService.findOneTransferencia(params.id, user);
-            console.log(`dto.atualizacao_do_realizado=true`);
+
+            if (!transferencia.pode_editar) {
+                throw new HttpException('Você não tem permissão para atualizar tarefas nesta transferência.', 403);
+            }
+
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
-            console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
-            console.log(dto);
 
             // if (transferencia.permissoes.apenas_leitura && transferencia.permissoes.sou_responsavel == false) {
             //     throw new HttpException(
@@ -152,6 +158,10 @@ export class TransferenciaTarefaController {
         } else {
             const transferencia = await this.transferenciaService.findOneTransferencia(params.id, user);
 
+            if (!transferencia.pode_editar) {
+                throw new HttpException('Você não tem permissão para atualizar tarefas nesta transferência.', 403);
+            }
+
             return await this.tarefaService.update({ transferencia_id: transferencia.id }, params.id2, dto, user);
         }
     }
@@ -163,6 +173,10 @@ export class TransferenciaTarefaController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const transferencia = await this.transferenciaService.findOneTransferencia(params.id, user);
+
+        if (!transferencia.pode_editar) {
+            throw new HttpException('Você não tem permissão para remover tarefas nesta transferência.', 403);
+        }
 
         await this.tarefaService.remove({ transferencia_id: transferencia.id }, params.id2, user);
         return '';

@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -92,6 +92,23 @@ export class DistribuicaoRecursoStatusService {
         dto: CreateDistribuicaoRecursoStatusDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        // Validar se o usuário pode editar o status da distribuição
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+
+            const distribuicao = await this.prisma.distribuicaoRecurso.findFirst({
+                where: { id: distribuicao_id, removido_em: null },
+                select: { orgao_gestor_id: true },
+            });
+
+            if (!distribuicao || distribuicao.orgao_gestor_id !== user.orgao_id) {
+                throw new HttpException(
+                    'Você não tem permissão para registrar status nesta distribuição. Apenas distribuições do seu órgão podem ser editadas.',
+                    403
+                );
+            }
+        }
+
         if (dto.status_base_id == undefined && dto.status_id == undefined)
             throw new HttpException('É necessário enviar um ID de status.', 400);
 
@@ -207,6 +224,23 @@ export class DistribuicaoRecursoStatusService {
         dto: UpdateDistribuicaoRecursoStatusDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        // Validar se o usuário pode editar o status da distribuição
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+
+            const distribuicao = await this.prisma.distribuicaoRecurso.findFirst({
+                where: { id: distribuicao_id, removido_em: null },
+                select: { orgao_gestor_id: true },
+            });
+
+            if (!distribuicao || distribuicao.orgao_gestor_id !== user.orgao_id) {
+                throw new HttpException(
+                    'Você não tem permissão para atualizar status nesta distribuição. Apenas distribuições do seu órgão podem ser editadas.',
+                    403
+                );
+            }
+        }
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             // Verificando se existe status mais novo. Ou seja, não pode editar.
             const self = await prismaTx.distribuicaoRecursoStatus.findFirstOrThrow({
@@ -252,6 +286,23 @@ export class DistribuicaoRecursoStatusService {
     }
 
     async remove(distribuicao_id: number, id: number, user: PessoaFromJwt) {
+        // Validar se o usuário pode remover o status da distribuição
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+
+            const distribuicao = await this.prisma.distribuicaoRecurso.findFirst({
+                where: { id: distribuicao_id, removido_em: null },
+                select: { orgao_gestor_id: true },
+            });
+
+            if (!distribuicao || distribuicao.orgao_gestor_id !== user.orgao_id) {
+                throw new HttpException(
+                    'Você não tem permissão para remover status nesta distribuição. Apenas distribuições do seu órgão podem ser editadas.',
+                    403
+                );
+            }
+        }
+
         const exists = await this.prisma.distribuicaoRecursoStatus.findFirst({
             where: {
                 id,
