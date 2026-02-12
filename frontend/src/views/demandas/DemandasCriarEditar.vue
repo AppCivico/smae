@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -6,7 +7,7 @@ import {
   useForm,
 } from 'vee-validate';
 import {
-  computed, onMounted, ref, watch,
+  computed, onMounted, watch,
 } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -20,6 +21,7 @@ import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue'
 import { CadastroDemandaSchema } from '@/consts/formSchemas/demanda';
 import dinheiro from '@/helpers/dinheiro';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
@@ -37,8 +39,9 @@ const organsStore = useOrgansStore();
 const demandasStore = useDemandasStore();
 const areasTematicasStore = useAreasTematicasStore();
 const valoresLimitesStore = useValoresLimitesStore();
+const authStore = useAuthStore();
 
-const { organs: listaOrgaos } = storeToRefs(organsStore);
+const { orgaosComNome: listaOrgaos } = storeToRefs(organsStore);
 const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 const { ativo: valoresLimitesAtivo } = storeToRefs(valoresLimitesStore);
 const {
@@ -95,10 +98,28 @@ const {
   validationSchema: schema,
 });
 
-const areaTematicaSelecionada = computed(() => listaAreasTematicas.value
-  ?.find((a) => a.id === values.area_tematica_id));
+const listaAreasTematicasFiltradas = computed(() => {
+  if (props.demandaId) {
+    return listaAreasTematicas.value;
+  }
 
-const acoesDaAreaTematica = computed(() => areaTematicaSelecionada.value?.acoes || []);
+  return listaAreasTematicas.value.filter((item) => item.ativo);
+});
+
+const acoesDaAreaTematica = computed(() => {
+  const areaTematicaSelecionada = listaAreasTematicas.value
+    ?.find((a) => a.id === values.area_tematica_id);
+
+  if (!areaTematicaSelecionada) {
+    return [];
+  }
+
+  if (props.demandaId) {
+    return areaTematicaSelecionada.acoes;
+  }
+
+  return areaTematicaSelecionada.acoes.filter((item) => item.ativo);
+});
 
 const labelDoBotaoSubmit = computed(() => {
   const encaminhamento = camposEncaminhamento.value
@@ -177,15 +198,22 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
 });
 
 onMounted(() => {
-  if (props.demandaId) {
-    demandasStore.buscarItem(props.demandaId);
-  }
-
   Promise.all([
     areasTematicasStore.buscarTudo(),
     organsStore.getAll(),
     valoresLimitesStore.buscarAtivo(),
   ]).then();
+
+  if (props.demandaId) {
+    demandasStore.buscarItem(props.demandaId);
+    return;
+  }
+
+  resetForm({
+    values: {
+      orgao_id: authStore.user.orgao_id,
+    },
+  });
 });
 
 watch(itemParaEdicao, (novosValores) => {
@@ -333,7 +361,7 @@ watch(itemParaEdicao, (novosValores) => {
                 busca: '',
                 participantes: value ? [value] : []
               }"
-              label="sigla"
+              label="nome_completo"
               :grupo="listaOrgaos || []"
               :numero-maximo-de-participantes="1"
               :readonly="bloquearCampos"
@@ -447,11 +475,13 @@ watch(itemParaEdicao, (novosValores) => {
           />
 
           <Field
+            v-maska
             name="telefone_responsavel"
-            type="tel"
-            class="inputtext light"
-            maxlength="20"
+            class="inputtext light mb1"
             :class="{ error: errors.telefone_responsavel }"
+            type="text"
+            maxlength="15"
+            data-maska="(##) #####-####'"
             :disabled="bloquearCampos"
             :aria-disabled="bloquearCampos"
           />
@@ -622,7 +652,7 @@ watch(itemParaEdicao, (novosValores) => {
           @change="setFieldValue('acao_ids', [])"
         >
           <option
-            v-for="area in listaAreasTematicas"
+            v-for="area in listaAreasTematicasFiltradas"
             :key="area.id"
             :value="area.id"
           >

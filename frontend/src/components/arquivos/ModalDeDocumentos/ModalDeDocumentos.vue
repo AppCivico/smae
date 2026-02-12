@@ -46,6 +46,7 @@ const {
   setFieldValue,
   handleSubmit,
   resetForm,
+  validateField,
 } = useForm({
   validationSchema: schema,
 });
@@ -109,9 +110,11 @@ function handleFileChange(event: Event) {
 
   arquivoSelecionado.value = file;
   nomeArquivoSelecionado.value = file.name;
-  setFieldValue('arquivo', file);
 
   input.value = '';
+
+  setFieldValue('arquivo', file);
+  validateField('arquivo');
 }
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
