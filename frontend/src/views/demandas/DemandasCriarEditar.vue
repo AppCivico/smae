@@ -112,7 +112,18 @@ const acoesDaAreaTematica = computed(() => {
   }
 
   if (props.demandaId) {
-    return areaTematicaSelecionada.acoes;
+    return areaTematicaSelecionada.acoes.map((item) => {
+      let { nome } = item;
+
+      if (!item.ativo) {
+        nome = `(INATIVO) - ${item.nome}`;
+      }
+
+      return {
+        ...item,
+        nome,
+      };
+    });
   }
 
   return areaTematicaSelecionada.acoes.filter((item) => item.ativo);
@@ -657,6 +668,8 @@ watch(itemParaEdicao, (novosValores) => {
             v-for="area in listaAreasTematicasFiltradas"
             :key="area.id"
             :value="area.id"
+            :disabled="!area.ativo"
+            :aria-disabled="!area.ativo"
           >
             {{ area.nome }}
           </option>
