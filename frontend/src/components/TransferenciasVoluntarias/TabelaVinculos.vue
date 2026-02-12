@@ -7,6 +7,7 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import statusObras from '@/consts/statusObras';
 import dinheiro from '@/helpers/dinheiro';
+import { LegendasStatus } from '@/stores/entidadesProximas.store';
 import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 
 interface Props {
@@ -58,41 +59,77 @@ function obterStatusTraduzido(linha: Vinculo): string {
   return objetoVinculado.status;
 }
 
-const colunas = [
-  {
-    chave: 'distribuicao_recurso.orgao.sigla',
-    label: 'Órgão Responsável',
-  },
-  {
-    chave: 'distribuicao_recurso.nome',
-    label: 'Distribuição',
-  },
-  {
-    chave: 'distribuicao_recurso.valor',
-    label: 'Valor',
-    formatador: (valor: number | null) => {
-      if (valor === null || valor === undefined) return '-';
-      const formatado = dinheiro(valor);
-      return formatado ? `R$ ${formatado}` : '-';
+function obterModuloDoVinculo(vinculo: Vinculo): { label: string; cor: string } {
+  if (vinculo.projeto?.tipo === 'MDO') {
+    return { label: LegendasStatus.obras.item, cor: LegendasStatus.obras.color };
+  }
+  if (vinculo.projeto?.tipo === 'Projeto') {
+    return { label: LegendasStatus.projetos.item, cor: LegendasStatus.projetos.color };
+  }
+  if (vinculo.meta || vinculo.iniciativa || vinculo.atividade) {
+    if (vinculo.pdm?.tipo === 'PS') {
+      return {
+        label: LegendasStatus.planoSetorial.item,
+        cor: LegendasStatus.planoSetorial.color,
+      };
+    }
+    return {
+      label: LegendasStatus.programaDeMetas.item,
+      cor: LegendasStatus.programaDeMetas.color,
+    };
+  }
+  return { label: '-', cor: '#cccccc' };
+}
+
+const colunas = computed(() => {
+  const colunasBase = [
+    {
+      chave: 'distribuicao_recurso.orgao.sigla',
+      label: 'Órgão Responsável',
     },
-  },
-  {
-    chave: 'tipo_vinculo.nome',
-    label: 'Tipo de Vínculo',
-  },
-  {
-    chave: 'objeto_vinculado',
-    label: 'Projeto/Obra/Meta',
-  },
-  {
-    chave: 'valor_vinculo',
-    label: (() => {
-      if (props.tipo === 'endereco') return 'Endereço';
-      if (props.tipo === 'dotacao') return 'Dotação';
-      return 'Demanda';
-    })(),
-  },
-];
+    {
+      chave: 'distribuicao_recurso.nome',
+      label: 'Distribuição',
+    },
+    {
+      chave: 'distribuicao_recurso.valor',
+      label: 'Valor',
+      formatador: (valor: number | null) => {
+        if (valor === null || valor === undefined) return '-';
+        const formatado = dinheiro(valor);
+        return formatado ? `R$ ${formatado}` : '-';
+      },
+      atributosDaCelula: {
+        class: 'cell--number',
+      },
+    },
+    {
+      chave: 'tipo_vinculo.nome',
+      label: 'Tipo de Vínculo',
+    },
+    {
+      chave: 'objeto_vinculado',
+      label: 'Projeto/Obra/Meta',
+    },
+    {
+      chave: 'valor_vinculo',
+      label: (() => {
+        if (props.tipo === 'endereco') return 'Endereço';
+        if (props.tipo === 'dotacao') return 'Dotação';
+        return 'Demanda';
+      })(),
+    },
+  ];
+
+  if (props.tipo === 'endereco' || props.tipo === 'dotacao') {
+    colunasBase.push({
+      chave: 'modulo',
+      label: 'Módulo',
+    });
+  }
+
+  return colunasBase;
+});
 </script>
 
 <template>
@@ -148,6 +185,15 @@ const colunas = [
       rolagem-horizontal
       @deletar="(vinculo: Vinculo) => emit('excluir', vinculo)"
     >
+      <template #celula:modulo="{ linha }">
+        <span
+          class="modulo-badge"
+          :style="{ backgroundColor: obterModuloDoVinculo(linha).cor }"
+        >
+          {{ obterModuloDoVinculo(linha).label }}
+        </span>
+      </template>
+
       <template #acoes="{ linha }">
         <SmaeTooltip
           v-if="linha.invalidado_em"
@@ -203,7 +249,7 @@ const colunas = [
       </template>
 
       <template #sub-linha="{ linha }">
-        <td colspan="7">
+        <td :colspan="colunas.length + 1">
           <div class="flex flexwrap g2">
             <dl
               v-if="linha.projeto?.portfolio"
@@ -352,3 +398,16 @@ const colunas = [
     </SmaeTable>
   </div>
 </template>
+
+<style lang="less" scoped>
+.modulo-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  white-space: nowrap;
+}
+</style>

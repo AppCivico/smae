@@ -236,14 +236,6 @@ onUnmounted(() => {
         Demanda
       </CardEnvelope.Titulo>
 
-      <ListaLegendas
-        :legendas="legendas"
-        :borda="false"
-        orientacao="horizontal"
-        align="left"
-        titulo=""
-      />
-
       <LoadingComponent
         v-if="chamadasPendentes.demanda && !linhasDemanda.length"
         class="mb1"
