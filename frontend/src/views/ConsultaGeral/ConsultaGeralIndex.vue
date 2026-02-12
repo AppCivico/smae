@@ -14,6 +14,7 @@ import type { Coluna } from '@/components/SmaeTable/tipagem.ts';
 import SmallModal from '@/components/SmallModal.vue';
 import DetalhamentoDeVinculosPorItem from '@/components/TransferenciasVoluntarias/DetalhamentoDeVinculosPorItem.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
+import { useAuthStore } from '@/stores/auth.store';
 import { LegendasStatus, useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 
@@ -21,9 +22,15 @@ import ConsultaGeralVinculacaoIndex from '../ConsultaGeralVinculacao/ConsultaGer
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 
-const legendas = {
-  status: Object.values(LegendasStatus),
-};
+const legendas = computed(() => {
+  const status = Object.values(LegendasStatus);
+
+  return {
+    status: useAuthStore().temPermissãoPara('Menu.demandas')
+      ? status
+      : status.filter((s) => s.item !== 'Demandas'),
+  };
+});
 
 const tiposPesquisa = {
   endereco: 'Endereço',
