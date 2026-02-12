@@ -559,6 +559,7 @@ export class GeoBuscaService {
                 select: {
                     id: true,
                     nome_projeto: true,
+                    descricao: true,
                     status: true,
                     situacao_encerramento: true,
                     finalidade: true,
@@ -579,6 +580,7 @@ export class GeoBuscaService {
                     geo_localizacao_referencia_id:
                         entityGeoInfoMap.get(`demanda-${d.id}`)?.[0]?.geo_localizacao_id || 0,
                     nome_projeto: d.nome_projeto,
+                    descricao: d.descricao,
                     status: d.status,
                     situacao_encerramento: d.situacao_encerramento,
                     finalidade: d.finalidade,

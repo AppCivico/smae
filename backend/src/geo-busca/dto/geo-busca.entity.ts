@@ -247,6 +247,9 @@ export class DemandaSearchResultDto {
     area_tematica_nome: string;
 
     @ApiProperty()
+    descricao: string;
+
+    @ApiProperty()
     orgao_sigla: string;
 
     @ApiProperty()
