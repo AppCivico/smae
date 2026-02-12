@@ -179,8 +179,11 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 
 watch(() => props.modelValue, (val) => {
   arquivosLocais.value = val ? [...val] : [];
-  resetForm({ });
 }, { immediate: true });
+
+watch(exibirModal, () => {
+  resetForm({ values: {} });
+});
 
 function onDeletarArquivo(linha: Record<string, unknown>) {
   const linhaTyped = linha as unknown as ArquivoDocumento;
