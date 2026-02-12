@@ -451,6 +451,7 @@ export class DemandaService {
                 },
                 status: true,
                 data_status_atual: true,
+                data_publicado: true,
                 criado_em: true,
             },
         });
@@ -482,7 +483,7 @@ export class DemandaService {
         return {
             linhas: await Promise.all(
                 demandas.map(async (d) => {
-                    const permissoes = this.buildPermissions(d.status, user, d.orgao.id);
+                    const permissoes = this.buildPermissions(d.status, user, d.orgao.id, d.data_publicado);
 
                     // Monta a string de localização com as subprefeituras
                     const subprefeituras = new Set<string>();
@@ -561,6 +562,7 @@ export class DemandaService {
                 },
                 status: true,
                 data_status_atual: true,
+                data_publicado: true,
                 criado_em: true,
                 dias_em_registro: true,
                 dias_em_validacao: true,
@@ -614,7 +616,7 @@ export class DemandaService {
         const geoReferencias = await this.geolocService.carregaReferencias(geoDto);
         const geolocalizacao = geoReferencias.get(id) || [];
 
-        const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao.id);
+        const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao.id, demanda.data_publicado);
 
         // Se modo ReadWrite e usuário não tem permissão de edição, lança erro
         if (readonly === 'ReadWrite' && !permissoes.pode_editar) {
@@ -674,7 +676,7 @@ export class DemandaService {
             }
 
             // Verifica permissões
-            const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao_id);
+            const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao_id, demanda.data_publicado);
             if (!permissoes.pode_remover) {
                 throw new HttpException('Usuário não possui permissão para remover esta demanda', 403);
             }
@@ -767,7 +769,12 @@ export class DemandaService {
     /**
      * Monta permissões baseado no estado do workflow e papel do usuário
      */
-    private buildPermissions(status: DemandaStatus, user: PessoaFromJwt, demandaOrgaoId: number): DemandaPermissoesDto {
+    private buildPermissions(
+        status: DemandaStatus,
+        user: PessoaFromJwt,
+        demandaOrgaoId: number,
+        dataPublicado: Date | null
+    ): DemandaPermissoesDto {
         const isSeri = user.hasSomeRoles(['CadastroDemanda.validar']);
         const isOwnerOrgao = demandaOrgaoId === user.orgao_id;
 
@@ -787,14 +794,16 @@ export class DemandaService {
                 if (isOwnerOrgao) {
                     permissoes.pode_editar = true;
                     permissoes.pode_enviar = true;
-                    permissoes.pode_remover = true;
+                    // Não pode remover se foi devolvida após publicação
+                    permissoes.pode_remover = dataPublicado === null;
                 }
                 // SERI pode cancelar, remover
                 if (isSeri) {
                     permissoes.pode_enviar = true;
                     permissoes.pode_editar = true;
                     permissoes.pode_cancelar = true;
-                    permissoes.pode_remover = true;
+                    // Não pode remover se foi devolvida após publicação
+                    permissoes.pode_remover = dataPublicado === null;
                 }
                 break;
 
@@ -825,10 +834,10 @@ export class DemandaService {
     }
 
     private async validateUpdatePermission(
-        demanda: { id: number; status: DemandaStatus; orgao_id: number },
+        demanda: { id: number; status: DemandaStatus; orgao_id: number; data_publicado: Date | null },
         user: PessoaFromJwt
     ): Promise<void> {
-        const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao_id);
+        const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao_id, demanda.data_publicado);
 
         if (!permissoes.pode_editar) {
             throw new HttpException('Usuário não possui permissão para editar esta demanda', 403);
