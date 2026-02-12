@@ -152,6 +152,7 @@ export class VinculoService {
                 iniciativa_id: filters.iniciativa_id,
                 atividade_id: filters.atividade_id,
                 projeto_id: filters.projeto_id,
+                demanda_id: filters.demanda_id,
                 campo_vinculo: filters.campo_vinculo,
                 distribuicao: {
                     id: filters.distribuicao_id,
