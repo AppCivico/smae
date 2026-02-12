@@ -1291,6 +1291,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroVinculo.listar',
             'CadastroDemanda.listar',
             'CadastroDemanda.inserir',
+            'CadastroDemanda.editar',
             'CadastroParlamentar.listar',
         ],
     },
