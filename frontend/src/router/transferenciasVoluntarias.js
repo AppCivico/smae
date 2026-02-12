@@ -141,6 +141,9 @@ export default {
         título: 'Portfólio de Demandas',
         íconeParaMenu: '<svg width="20" height="20"><use xlink:href="#i_document" /></svg>',
         entidadeMãe: 'TransferenciasVoluntarias',
+        limitarÀsPermissões: [
+          'CadastroDemanda.listar',
+        ],
       },
     },
     {
