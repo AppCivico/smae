@@ -131,8 +131,12 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 
       alvo.descricao = values.descricao;
       alvo.autoriza_divulgacao = values.autoriza_divulgacao;
+      if (alterouArquivo.value) {
+        alvo.id = undefined;
+      }
 
       if (token) {
+        alvo.upload_token = token;
         alvo.arquivo = {
           nome_original: file.name,
           download_token: token,
