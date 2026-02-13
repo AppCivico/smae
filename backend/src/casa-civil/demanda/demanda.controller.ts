@@ -11,6 +11,7 @@ import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { UpdateDemandaDto } from './dto/create-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
 import { CreateDemandaAcaoDto } from './dto/acao.dto';
+import { OrgaoReduzidoDto } from 'src/orgao/entities/orgao.entity';
 
 @ApiTags('Casa Civil - Demandas')
 @Controller('demanda')
@@ -29,6 +30,13 @@ export class DemandaController {
     @Roles(['CadastroDemanda.listar'])
     async findAll(@Query() filters: FilterDemandaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListDemandaDto> {
         return await this.demandaService.findAll(filters, user);
+    }
+
+    @Get('orgao-para-demandas')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.listar'])
+    async orgaoParaDemandas(@CurrentUser() user: PessoaFromJwt): Promise<OrgaoReduzidoDto[]> {
+        return await this.demandaService.findOrgaosComDemandas(user);
     }
 
     @Get(':id')

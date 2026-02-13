@@ -26,6 +26,9 @@ import { CreateDemandaDto, UpdateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
 import { TaskService } from '../../task/task.service';
+import { OrgaoService } from '../../orgao/orgao.service';
+import { FilterOrgaoDto } from '../../orgao/dto/filter-orgao.dto';
+import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 
 export const DemandaGetPermissionSet = async (
     user: PessoaFromJwt | undefined
@@ -62,7 +65,8 @@ export class DemandaService {
         private readonly geolocService: GeoLocService,
         private readonly cacheKvService: CacheKVService,
         private readonly smaeConfigService: SmaeConfigService,
-        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService
+        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
+        private readonly orgaoService: OrgaoService
     ) {}
 
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -533,6 +537,37 @@ export class DemandaService {
                 })
             ),
         };
+    }
+
+    /**
+     * Busca todos os órgãos que possuem demandas, respeitando as permissões do usuário.
+     * Usa groupBy para obter a lista de orgao_ids distintos e retorna os dados reduzidos dos órgãos.
+     */
+    async findOrgaosComDemandas(user: PessoaFromJwt): Promise<OrgaoReduzidoDto[]> {
+        // Monta conjunto de permissões
+        const permissionsSet = await DemandaGetPermissionSet(user);
+
+        // Busca orgao_ids distintos usando groupBy
+        const orgaoIdsResult = await this.prisma.demanda.groupBy({
+            by: ['orgao_id'],
+            where: {
+                removido_em: null,
+                AND: permissionsSet,
+            },
+            _count: { orgao_id: true },
+        });
+
+        const orgaoIds = orgaoIdsResult.map((r) => r.orgao_id);
+        if (orgaoIds.length === 0) {
+            return [];
+        }
+
+        // Busca os órgãos usando o serviço existente
+        const filterDto = new FilterOrgaoDto();
+        filterDto.ids = orgaoIds;
+        filterDto.limit = orgaoIds.length + 1;
+
+        return this.orgaoService.findReducedOrgao(filterDto);
     }
 
     async findOne(
