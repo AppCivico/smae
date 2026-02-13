@@ -6,8 +6,8 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
-import SmaeStatusPills from '@/components/SmaeStatusPills.vue';
-import SmaeStatusPillsItem from '@/components/SmaeStatusPillsItem.vue';
+import SmaeStatusPills from '@/components/SmaeStatusPills/SmaeStatusPills.vue';
+import SmaeStatusPillsItem from '@/components/SmaeStatusPills/SmaeStatusPillsItem.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { FiltroDemandaSchema } from '@/consts/formSchemas/demanda';
