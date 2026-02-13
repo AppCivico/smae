@@ -114,11 +114,13 @@ watch(statusSelecionados, (valorStatusSelecionado) => {
   }
 
   router.replace({
-    query: {
-      ...route.query,
-      status: status || undefined,
-      situacao: situacao || undefined,
-    },
+    query: Object.assign(
+      structuredClone(route.query),
+      {
+        status: status || undefined,
+        situacao: situacao || undefined,
+      },
+    ),
   });
 });
 
