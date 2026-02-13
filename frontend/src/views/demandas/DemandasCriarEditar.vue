@@ -219,22 +219,18 @@ const dadosUltimoHistorico = computed(() => {
 
   const { ultimo_historico: ultimoHistorico } = itemParaEdicao.value;
 
+  const estaCancelado = ultimoHistorico.status_novo === 'Encerrado';
+
   const dados = [
     {
-      chave: 'status_anterior',
-      titulo: 'Último Status',
-      valor: MapaStatus[ultimoHistorico.status_anterior] || ultimoHistorico.status_anterior,
-      larguraBase: '20em',
-    },
-    {
       chave: 'criador_nome_exibicao',
-      titulo: 'Responsável',
+      titulo: estaCancelado ? 'Cancelamento solicitado por' : 'Ajuste solicitado por',
       valor: ultimoHistorico.criado_por.nome_exibicao,
       larguraBase: '20em',
     },
     {
       chave: 'motivo',
-      titulo: 'Motivo',
+      titulo: estaCancelado ? 'Motivo do cancelamento' : 'Motivo do ajuste',
       valor: ultimoHistorico.motivo,
       larguraBase: '100%',
     },
