@@ -13,7 +13,7 @@ type Emits = {
 
 type Props = {
   items: StatusPillItem[];
-  modelValue: string | string[];
+  modelValue: string | string[] | null;
   multiplo?: boolean;
 };
 
@@ -41,7 +41,7 @@ function alternar(valor: string) {
       : [...selecionados.value, valor];
     emit('update:modelValue', novos);
   } else {
-    emit('update:modelValue', estaSelecionado(valor) ? '' : valor);
+    emit('update:modelValue', estaSelecionado(valor) ? null : valor);
   }
 }
 </script>
