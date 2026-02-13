@@ -32,7 +32,7 @@ const chamadasPendentes = ref({
 });
 const erro = ref(null);
 
-function obterAreaTemativaComAcoes(demandaItem) {
+function obterAreaTematicaComAcoes(demandaItem) {
   if (!demandaItem.area_tematica?.nome) {
     return undefined;
   }
@@ -74,7 +74,7 @@ const dadosDemanda = computed(() => {
     {
       chave: 'area_tematica',
       titulo: 'Área Temática',
-      valor: obterAreaTemativaComAcoes(demanda.value),
+      valor: obterAreaTematicaComAcoes(demanda.value),
       larguraBase: '20em',
     },
   ];
