@@ -102,6 +102,7 @@ onMounted(() => {
     areasTematicasStore.buscarTudo(),
     buscarTudo(),
   ]).then();
+  console.log();
 });
 
 watch(statusSelecionados, (valorStatusSelecionado) => {
