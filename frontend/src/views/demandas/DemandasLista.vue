@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import SmaeStatusPills from '@/components/SmaeStatusPills.vue';
+import SmaeStatusPillsItem from '@/components/SmaeStatusPillsItem.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { FiltroDemandaSchema } from '@/consts/formSchemas/demanda';
@@ -30,11 +31,11 @@ const statusInicial = (() => {
 const statusSelecionados = ref<string | null>(statusInicial);
 
 const itemsStatusDemanda = [
-  { valor: 'Registro', label: 'Em registro', cor: '#D4619A' },
-  { valor: 'Validacao', label: 'Em validação', cor: '#E6810F' },
-  { valor: 'Publicado', label: 'Publicada', cor: '#2749A8' },
-  { valor: 'Encerrado_Cancelada', label: 'Encerrada (Cancelada)', cor: '#D93737' },
-  { valor: 'Encerrado_Concluido', label: 'Encerrada (Atendida)', cor: '#7A9A2E' },
+  { valor: 'Registro', label: 'Em registro', cor: '#E885BE' },
+  { valor: 'Validacao', label: 'Em validação', cor: '#F2890D' },
+  { valor: 'Publicado', label: 'Publicada', cor: '#4074BF' },
+  { valor: 'Encerrado_Cancelada', label: 'Encerrada (Cancelada)', cor: '#EE3B2B' },
+  { valor: 'Encerrado_Concluido', label: 'Encerrada (Atendida)', cor: '#8EC122' },
 ];
 
 const demandasStore = useDemandasStore();
@@ -177,14 +178,15 @@ watch(
     ]"
   >
     <template #celula:status="{linha}">
-      <span
-        class="status"
-        :style="{ background: corDoStatus(linha) }"
-        :title="[linha.status, linha.situacao_encerramento].join(' ')"
+      <SmaeStatusPillsItem
+        ativo
+        :cor="corDoStatus(linha)"
       >
         {{ MapaStatus[linha.status] }}
-        <template v-if="linha.situacao_encerramento">({{ linha.situacao_encerramento }})</template>
-      </span>
+        <template v-if="linha.situacao_encerramento">
+          ({{ linha.situacao_encerramento }})
+        </template>
+      </SmaeStatusPillsItem>
     </template>
 
     <template #acoes="{ linha }">
