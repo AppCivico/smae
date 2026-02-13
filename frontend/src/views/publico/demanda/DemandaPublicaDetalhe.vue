@@ -4,7 +4,6 @@ import {
   computed, onMounted, ref, watch,
 } from 'vue';
 
-import ErrorComponent from '@/components/ErrorComponent.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
@@ -256,19 +255,24 @@ watch(() => props.id, () => {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
+
+  <CabecalhoDePagina class="mb2" />
+
   <LoadingComponent v-if="chamadasPendentes.emFoco" />
-  <ErrorComponent
+
+  <article
+    class="erro-demanda"
     v-else-if="erro"
   >
-    {{ erro }}
-  </ErrorComponent>
+    <h2>Demanda Indisponível</h2>
+    <img src="@/assets/erro-demanda.svg" alt="">
+    <p>Entre em contato com a Secretaria Executiva de Relações Institucionais (SERI)</p>
+  </article>
   <div
     v-else-if="demanda"
     class="demanda-publica"
   >
-    <MigalhasDePão class="mb1" />
-
-    <CabecalhoDePagina class="mb2" />
 
     <SmaeDescriptionList :lista="dadosDemanda" />
 
@@ -348,5 +352,14 @@ watch(() => props.id, () => {
   object-fit: cover;
   .br(16px);
   .bs(0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.erro-demanda {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 2rem;
 }
 </style>
