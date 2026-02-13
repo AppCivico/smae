@@ -16,7 +16,6 @@ import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
 import { CadastroDemandaSchema } from '@/consts/formSchemas/demanda';
@@ -214,31 +213,6 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   });
 });
 
-const dadosUltimoHistorico = computed(() => {
-  if (!itemParaEdicao.value?.ultimo_historico?.motivo) return [];
-
-  const { ultimo_historico: ultimoHistorico } = itemParaEdicao.value;
-
-  const estaCancelado = ultimoHistorico.status_novo === 'Encerrado';
-
-  const dados = [
-    {
-      chave: 'criador_nome_exibicao',
-      titulo: estaCancelado ? 'Cancelamento solicitado por' : 'Ajuste solicitado por',
-      valor: ultimoHistorico.criado_por.nome_exibicao,
-      larguraBase: '20em',
-    },
-    {
-      chave: 'motivo',
-      titulo: estaCancelado ? 'Motivo do cancelamento' : 'Motivo do ajuste',
-      valor: ultimoHistorico.motivo,
-      larguraBase: '100%',
-    },
-  ];
-
-  return dados;
-});
-
 onMounted(() => {
   Promise.all([
     areasTematicasStore.buscarTudo(),
@@ -293,10 +267,38 @@ watch(itemParaEdicao, (novosValores) => {
     </template>
   </SmaeVaralEtapas>
 
-  <SmaeDescriptionList
-    v-if="dadosUltimoHistorico.length"
-    :lista="dadosUltimoHistorico"
-  />
+  <div
+    v-if="itemParaEdicao?.ultimo_historico?.motivo"
+    class="balao-historico mb2"
+    :class="[
+      itemParaEdicao.situacao_encerramento
+        && `balao-historico--${itemParaEdicao.situacao_encerramento}`
+    ]"
+  >
+    <div class="balao-historico__item">
+      <span class="balao-historico__titulo">
+        {{ itemParaEdicao.ultimo_historico.status_novo === 'Encerrado'
+          ? 'Cancelamento solicitado por'
+          : 'Ajuste solicitado por' }}
+      </span>
+
+      <span class="balao-historico__valor">
+        {{ itemParaEdicao.ultimo_historico.criado_por.nome_exibicao }}
+      </span>
+    </div>
+
+    <div class="balao-historico__item f1">
+      <span class="balao-historico__titulo">
+        {{ itemParaEdicao.ultimo_historico.status_novo === 'Encerrado'
+          ? 'Motivo do cancelamento'
+          : 'Motivo do ajuste' }}
+      </span>
+
+      <span class="balao-historico__valor">
+        {{ itemParaEdicao.ultimo_historico.motivo }}
+      </span>
+    </div>
+  </div>
 
   <form
     class="flex column g2"
@@ -908,8 +910,74 @@ fieldset legend {
   line-height: 130%;
 }
 
+.balao-historico {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: relative;
+  padding: 20px 16px;
+  border-width: 1px solid #D9D9D9;
+  border-radius: 45px 5px;
+  box-shadow: 2px 3px 10px 0px #00000033;
+  background: #FAFAFA;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 8px;
+    background: @amarelo;
+    border-radius: 3px;
+  }
+
+  &::before {
+    bottom: 0;
+    left: 16px;
+  }
+
+  &::after {
+    top: 0;
+    right: -2px;
+  }
+
+  &.balao-historico--Cancelada {
+    &::before, &::after {
+      background: @vermelho;
+    }
+  }
+
+  &.balao-historico--Concluido {
+    &::before, &::after {
+      background: @verde;
+    }
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__titulo {
+    font-weight: 300;
+    font-size: 1.143rem;
+    line-height: 1.714rem;
+    color: @cinza-medio;
+  }
+
+  &__valor {
+    font-weight: 400;
+    font-size: 1.429rem;
+    line-height: 1.714rem;
+    letter-spacing: 0%;
+    color: #333333;
+  }
+}
+
 .sessao-encaminhamento {
-  border-top: 4px solid #F7C234;
+  border-top: 4px solid @amarelo;
   padding: 16px;
 
   h3 {
