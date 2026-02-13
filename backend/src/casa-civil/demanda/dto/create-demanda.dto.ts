@@ -18,6 +18,17 @@ import {
 import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from '../../../common/consts';
 import { ApiProperty } from '@nestjs/swagger';
+
+export const DemandaAcao = {
+    editar: 'editar',
+    enviar: 'enviar',
+    validar: 'validar',
+    devolver: 'devolver',
+    cancelar: 'cancelar',
+} as const;
+
+export type DemandaAcao = (typeof DemandaAcao)[keyof typeof DemandaAcao];
+
 export class CreateDemandaArquivoDto {
     @IsOptional()
     @IsInt()
@@ -104,6 +115,19 @@ export class CreateDemandaDto {
     @ValidateNested({ each: true })
     @Type(() => CreateDemandaArquivoDto)
     arquivos?: CreateDemandaArquivoDto[];
+
+    @ApiProperty({ enum: DemandaAcao, enumName: 'DemandaAcao', required: false })
+    @IsOptional()
+    @IsEnum(DemandaAcao, {
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(DemandaAcao).join(', '),
+    })
+    acao?: DemandaAcao;
+
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_MEDIO)
+    motivo?: string;
 }
 
 export class UpdateDemandaDto {

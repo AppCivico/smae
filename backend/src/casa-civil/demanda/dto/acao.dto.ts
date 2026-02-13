@@ -3,18 +3,8 @@ import { DemandaStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
-import { UpdateDemandaDto } from '../../dto/create-demanda.dto';
-import { DemandaPermissoesDto } from '../../entities/demanda.entity';
-
-export const DemandaAcao = {
-    editar: 'editar',
-    enviar: 'enviar',
-    validar: 'validar',
-    devolver: 'devolver',
-    cancelar: 'cancelar',
-} as const;
-
-export type DemandaAcao = (typeof DemandaAcao)[keyof typeof DemandaAcao];
+import { DemandaAcao, UpdateDemandaDto } from './create-demanda.dto';
+import { DemandaPermissoesDto } from '../entities/demanda.entity';
 
 export class CreateDemandaAcaoDto {
     @ApiProperty({ enum: DemandaAcao, enumName: 'DemandaAcao' })

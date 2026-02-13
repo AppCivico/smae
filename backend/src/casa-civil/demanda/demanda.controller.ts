@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -10,13 +10,12 @@ import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { UpdateDemandaDto } from './dto/create-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
+import { CreateDemandaAcaoDto } from './dto/acao.dto';
 
 @ApiTags('Casa Civil - Demandas')
 @Controller('demanda')
 export class DemandaController {
-    constructor(
-        private readonly demandaService: DemandaService
-    ) {}
+    constructor(private readonly demandaService: DemandaService) {}
 
     @Post('')
     @ApiBearerAuth('access-token')
@@ -69,5 +68,19 @@ export class DemandaController {
     ): Promise<DemandaHistoricoDto[]> {
         return await this.demandaService.getHistorico(+params.id, user);
     }
+}
 
+@ApiTags('Casa Civil - Demandas')
+@Controller('demanda-acao')
+export class DemandaAcaoController {
+    constructor(private readonly demandaService: DemandaService) {}
+
+    @Patch()
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.editar', 'CadastroDemanda.validar'])
+    @ApiResponse({ description: 'sucesso ao executar ação', status: 200 })
+    @HttpCode(HttpStatus.OK)
+    async create(@Body() dto: CreateDemandaAcaoDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.demandaService.createAcao(dto, user);
+    }
 }

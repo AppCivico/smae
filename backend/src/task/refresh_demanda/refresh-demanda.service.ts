@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { DemandaFinalidade, DemandaStatus } from '@prisma/client';
 import { CacheKVService } from '../../common/services/cache-kv.service';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
@@ -39,7 +39,9 @@ export class RefreshDemandaService implements TaskableService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cacheKvService: CacheKVService,
+        @Inject(forwardRef(() => GeoLocService))
         private readonly geolocService: GeoLocService,
+        @Inject(forwardRef(() => UploadService))
         private readonly uploadService: UploadService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}

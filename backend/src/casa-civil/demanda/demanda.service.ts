@@ -10,21 +10,22 @@ import {
 import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
-import { uuidv7 } from 'uuidv7';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { CreateGeoEnderecoReferenciaDto, FindGeoEnderecoReferenciaDto } from 'src/geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from 'src/geo-loc/geo-loc.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from 'src/upload/arquivo-preview.helper';
 import { UploadService } from 'src/upload/upload.service';
+import { uuidv7 } from 'uuidv7';
 import { ObjectDiff } from '../../common/objectDiff';
 import { CacheKVService } from '../../common/services/cache-kv.service';
-import { VinculoService } from '../vinculo/vinculo.service';
+import { CreateDemandaAcaoDto } from './dto/acao.dto';
 import { CreateDemandaDto, UpdateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
+import { TaskService } from '../../task/task.service';
 
 export const DemandaGetPermissionSet = async (
     user: PessoaFromJwt | undefined
@@ -60,9 +61,8 @@ export class DemandaService {
         @Inject(forwardRef(() => GeoLocService))
         private readonly geolocService: GeoLocService,
         private readonly cacheKvService: CacheKVService,
-        @Inject(forwardRef(() => VinculoService))
-        private readonly vinculoService: VinculoService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService
     ) {}
 
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -168,6 +168,15 @@ export class DemandaService {
                 timeout: 30000,
             }
         );
+
+        // Se uma ação foi solicitada, executa após a criação usando o serviço de ações
+        if (dto.acao) {
+            const acaoDto = new CreateDemandaAcaoDto();
+            acaoDto.acao = dto.acao;
+            acaoDto.demanda_id = created.id;
+            acaoDto.motivo = dto.motivo;
+            await this.createAcao(acaoDto, user);
+        }
 
         return created;
     }
@@ -1203,5 +1212,102 @@ export class DemandaService {
                 },
             },
         });
+    }
+
+    async createAcao(dto: CreateDemandaAcaoDto, user: PessoaFromJwt) {
+        try {
+            dto.validaDependencias();
+        } catch (error: any) {
+            throw new HttpException(error.message, 400);
+        }
+
+        // Apenas testa se pode ler, pois a ação será testado abaixo
+        const demanda = await this.findOne(dto.demanda_id, user, 'ReadOnly');
+
+        if (!dto.podeExecutar(demanda.permissoes)) {
+            throw new HttpException(`Não é possível executar ação ${dto.acao} no momento`, 400);
+        }
+
+        // Se a ação for 'editar', apenas atualiza os dados sem mudar o status
+        if (dto.acao === 'editar') {
+            if (!dto.edicao) {
+                throw new HttpException('Dados de edição são obrigatórios para a ação editar', 400);
+            }
+            // Executa a atualização (sem mudança de status)
+            return this.update(dto.demanda_id, dto.edicao, user);
+        }
+
+        // Para outras ações (enviar, validar, devolver, cancelar)
+        const transition = dto.fsmState(demanda.status);
+        if (!transition)
+            throw new HttpException(`Ação ${dto.acao} não pode ser executada no status atual: ${demanda.status}`, 400);
+
+        // Se houver dados de edição e o usuário tiver permissão para editar, executa ambos em uma transação
+        if (dto.edicao && demanda.permissoes.pode_editar) {
+            const result = await this.prisma.$transaction(
+                async (prismaTxn: Prisma.TransactionClient) => {
+                    // Primeiro atualiza os dados
+                    await this.update(dto.demanda_id, dto.edicao!, user, prismaTxn);
+
+                    // Depois executa a mudança de status
+                    return this.changeStatus(
+                        dto.demanda_id,
+                        user,
+                        transition.from,
+                        transition.to,
+                        dto.motivo || null,
+                        dto.acao === 'cancelar' ? DemandaSituacao.Cancelada : undefined,
+                        prismaTxn
+                    );
+                },
+                {
+                    isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+                    maxWait: 15000,
+                    timeout: 30000,
+                }
+            );
+
+            // Após a transação, processa cache e task
+            await this.handlePostStatusChange(dto.demanda_id, transition.from, transition.to, user);
+
+            return result;
+        }
+
+        // Sem edição, apenas executa a mudança de status
+        const result = await this.changeStatus(
+            dto.demanda_id,
+            user,
+            transition.from,
+            transition.to,
+            dto.motivo || null,
+            dto.acao === 'cancelar' ? DemandaSituacao.Cancelada : undefined
+        );
+
+        // Processa cache e task após mudança de status
+        await this.handlePostStatusChange(dto.demanda_id, transition.from, transition.to, user);
+
+        return result;
+    }
+
+    private async handlePostStatusChange(
+        demandaId: number,
+        fromStatus: DemandaStatus,
+        toStatus: DemandaStatus,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        if (toStatus === DemandaStatus.Publicado || fromStatus === DemandaStatus.Publicado) {
+            await this.cacheKvService.setDeleted(`demandas:${demandaId}`);
+
+            // Precisa atualizar a listagem
+            await this.taskService.create(
+                {
+                    type: 'refresh_demanda',
+                    params: {
+                        // tudo exceto refreshGeocamadas
+                    },
+                },
+                user
+            );
+        }
     }
 }
