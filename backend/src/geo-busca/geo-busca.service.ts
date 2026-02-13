@@ -344,8 +344,7 @@ export class GeoBuscaService {
                 seenIniIdsForLookup.add(i.id);
                 response.iniciativas.push({
                     id: i.id,
-                    geo_localizacao_referencia_id:
-                        entityGeoInfoMap.get(`iniciativa-${i.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`iniciativa-${i.id}`)?.[0]?.id || 0,
                     titulo: i.titulo,
                     codigo: i.codigo,
                     meta_id: i.meta.id,
@@ -385,8 +384,7 @@ export class GeoBuscaService {
                 seenAtvIdsForLookup.add(a.id);
                 response.atividades.push({
                     id: a.id,
-                    geo_localizacao_referencia_id:
-                        entityGeoInfoMap.get(`atividade-${a.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`atividade-${a.id}`)?.[0]?.id || 0,
                     titulo: a.titulo,
                     codigo: a.codigo,
                     iniciativa_id: a.iniciativa.id,
@@ -440,7 +438,7 @@ export class GeoBuscaService {
 
                 response.etapas.push({
                     id: e.id,
-                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`etapa-${e.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`etapa-${e.id}`)?.[0]?.id || 0,
                     titulo: e.titulo ?? `Etapa ID ${e.id}`,
                     cronograma_id: e.cronograma_id,
                     meta_id: metaId ?? 0,
@@ -581,8 +579,7 @@ export class GeoBuscaService {
 
                 response.demandas.push({
                     id: d.id,
-                    geo_localizacao_referencia_id:
-                        entityGeoInfoMap.get(`demanda-${d.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`demanda-${d.id}`)?.[0]?.id || 0,
                     nome_projeto: d.nome_projeto,
                     descricao: d.descricao,
                     status: d.status,
