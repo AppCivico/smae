@@ -16,6 +16,8 @@ interface Props {
   formatarMoeda?: boolean;
   precision?: number;
   mostrarInputs?: boolean;
+  minSelecionado?: number | null;
+  maxSelecionado?: number | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,6 +25,8 @@ const props = withDefaults(defineProps<Props>(), {
   formatarMoeda: true,
   precision: 3,
   mostrarInputs: false,
+  minSelecionado: null,
+  maxSelecionado: null,
 });
 
 const stepCalculado = computed<number>(() => {
@@ -39,17 +43,29 @@ const inputMinRef = ref<HTMLInputElement | null>(null);
 const inputMaxRef = ref<HTMLInputElement | null>(null);
 const ready = ref<boolean>(false);
 
-const sliderMin = ref<number>(
-  valorMin.value !== undefined && valorMin.value !== null && valorMin.value !== ''
-    ? parseFloat(String(valorMin.value))
-    : props.min,
-);
+function obterValorInicialMin(): number {
+  if (valorMin.value !== undefined && valorMin.value !== null && valorMin.value !== '') {
+    return parseFloat(String(valorMin.value));
+  }
+  if (props.minSelecionado !== null && props.minSelecionado !== undefined) {
+    return props.minSelecionado;
+  }
+  return props.min;
+}
 
-const sliderMax = ref<number>(
-  valorMax.value !== undefined && valorMax.value !== null && valorMax.value !== ''
-    ? parseFloat(String(valorMax.value))
-    : props.max,
-);
+function obterValorInicialMax(): number {
+  if (valorMax.value !== undefined && valorMax.value !== null && valorMax.value !== '') {
+    return parseFloat(String(valorMax.value));
+  }
+  if (props.maxSelecionado !== null && props.maxSelecionado !== undefined) {
+    return props.maxSelecionado;
+  }
+  return props.max;
+}
+
+const sliderMin = ref<number>(obterValorInicialMin());
+
+const sliderMax = ref<number>(obterValorInicialMax());
 
 if (valorMin.value === undefined || valorMin.value === null || valorMin.value === '') {
   setMin(sliderMin.value);
@@ -175,6 +191,22 @@ watch(() => props.min, (): void => {
 
 watch(() => props.max, (): void => {
   updateRanges('ceil');
+});
+
+watch(() => props.minSelecionado, (novo): void => {
+  if (novo !== null && novo !== undefined) {
+    sliderMin.value = novo;
+    setMin(novo);
+    updateRanges('ceil');
+  }
+});
+
+watch(() => props.maxSelecionado, (novo): void => {
+  if (novo !== null && novo !== undefined) {
+    sliderMax.value = novo;
+    setMax(novo);
+    updateRanges('floor');
+  }
 });
 
 watch(valorMin, (novo: number | string | null | undefined): void => {

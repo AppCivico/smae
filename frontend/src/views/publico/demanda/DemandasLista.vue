@@ -1,5 +1,4 @@
 <script setup>
-import { Field } from 'vee-validate';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -187,16 +186,20 @@ async function buscarGeoCamadas() {
   }
 }
 
+const temFiltrosNaUrl = computed(() => Object.keys(route.query).length > 0);
+
 onMounted(async () => {
-  await Promise.all([
+  const promessas = [
     carregarResumo(),
     carregarGeopontos(),
     buscarGeoCamadas(),
-  ]);
+  ];
 
-  if (Object.keys(route.query).length > 0) {
-    await carregarDatasetCompleto();
+  if (temFiltrosNaUrl.value) {
+    promessas.push(carregarDatasetCompleto());
   }
+
+  await Promise.all(promessas);
 });
 
 function obterPropriedadesDemanda(demandaId) {
@@ -244,8 +247,8 @@ const demandasFiltradas = computed(() => {
 
   if (route.query.orgao_id) {
     const ids = Array.isArray(route.query.orgao_id)
-      ? route.query.orgao_id
-      : [route.query.orgao_id];
+      ? route.query.orgao_id.map(String)
+      : [String(route.query.orgao_id)];
     resultado = resultado.filter((d) => {
       const gmId = d.gestor_municipal?.id;
       return gmId != null && ids.includes(String(gmId));
@@ -254,8 +257,8 @@ const demandasFiltradas = computed(() => {
 
   if (route.query.area_tematica_id) {
     const ids = Array.isArray(route.query.area_tematica_id)
-      ? route.query.area_tematica_id
-      : [route.query.area_tematica_id];
+      ? route.query.area_tematica_id.map(String)
+      : [String(route.query.area_tematica_id)];
     resultado = resultado.filter((d) => {
       const atId = d.area_tematica?.id;
       return atId != null && ids.includes(String(atId));
@@ -343,10 +346,9 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
               class="label"
               for="orgao_id"
             >Gestor Municipal</label>
-            <Field
+            <select
               id="orgao_id"
               name="orgao_id"
-              as="select"
               class="inputtext light"
             >
               <option value="">
@@ -356,10 +358,11 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
                 v-for="orgao in filtros?.orgaos || []"
                 :key="orgao.id"
                 :value="orgao.id"
+                :selected="String(route.query.orgao_id) === String(orgao.id)"
               >
                 {{ orgao.nome_exibicao }}
               </option>
-            </Field>
+            </select>
           </div>
 
           <div class="f1">
@@ -367,10 +370,9 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
               class="label"
               for="area_tematica_id"
             >Área Temática</label>
-            <Field
+            <select
               id="area_tematica_id"
               name="area_tematica_id"
-              as="select"
               class="inputtext light"
             >
               <option value="">
@@ -380,10 +382,11 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
                 v-for="area in filtros?.areas_tematicas || []"
                 :key="area.id"
                 :value="area.id"
+                :selected="String(route.query.area_tematica_id) === String(area.id)"
               >
                 {{ area.nome }}
               </option>
-            </Field>
+            </select>
           </div>
 
           <div class="f1">
@@ -391,10 +394,9 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
               class="label"
               for="localizacao_id"
             >Subprefeitura/Distrito</label>
-            <Field
+            <select
               id="localizacao_id"
               name="localizacao_id"
-              as="select"
               class="inputtext light"
             >
               <option value="">
@@ -408,6 +410,7 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
                   v-for="sub in filtros.localizacoes.subprefeituras"
                   :key="`sub-${sub.id}`"
                   :value="sub.id"
+                  :selected="String(route.query.localizacao_id) === String(sub.id)"
                 >
                   {{ sub.descricao }}
                 </option>
@@ -420,11 +423,12 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
                   v-for="distrito in filtros.localizacoes.distritos"
                   :key="`dist-${distrito.id}`"
                   :value="distrito.id"
+                  :selected="String(route.query.localizacao_id) === String(distrito.id)"
                 >
                   {{ distrito.descricao }}
                 </option>
               </optgroup>
-            </Field>
+            </select>
           </div>
         </div>
 
@@ -437,6 +441,8 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
               name-max="valor_max"
               :min="parseFloat(filtros.valor_range.min)"
               :max="parseFloat(filtros.valor_range.max)"
+              :min-selecionado="route.query.valor_min ? parseFloat(route.query.valor_min) : null"
+              :max-selecionado="route.query.valor_max ? parseFloat(route.query.valor_max) : null"
               mostrar-inputs
             />
           </div>
@@ -545,7 +551,7 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
 }
 
 .filtros-demandas {
-  padding: 1.5rem;
+  padding: 1.5rem 0;
   .br(4px);
 }
 
