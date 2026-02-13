@@ -157,7 +157,9 @@ const onSubmit = handleSubmit.withControlled(async ({
       motivo: encaminhamentoJustificativa,
     });
   } else {
-    dadosEdicao.acao = encaminhamento;
+    if (encaminhamento === 'enviar') {
+      dadosEdicao.acao = encaminhamento;
+    }
     r = await demandasStore.criarItem(dadosEdicao);
   }
 
