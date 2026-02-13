@@ -1,7 +1,5 @@
 <script setup>
-import {
-  computed, onMounted, ref, watch,
-} from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
@@ -203,12 +201,6 @@ onMounted(async () => {
 
   await Promise.all(promessas);
 });
-
-watch(() => route.query, async (novaQuery) => {
-  if (Object.keys(novaQuery).length > 0 && !datasetCompletoCarregado.value) {
-    await carregarDatasetCompleto();
-  }
-}, { deep: true });
 
 function obterPropriedadesDemanda(demandaId) {
   const resumo = resumoDemandas.value.find((d) => d.id === demandaId);
