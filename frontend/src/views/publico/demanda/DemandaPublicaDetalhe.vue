@@ -8,6 +8,7 @@ import ErrorComponent from '@/components/ErrorComponent.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS';
 import { useDemandaPublicaStore } from '@/stores/demandaPublica.store';
@@ -30,6 +31,17 @@ const chamadasPendentes = ref({
   geocamadas: false,
 });
 const erro = ref(null);
+
+function obterAreaTematicaComAcoes(demandaItem) {
+  if (!demandaItem.area_tematica?.nome) {
+    return undefined;
+  }
+  if (demandaItem.acoes?.length) {
+    const acoesList = combinadorDeListas(demandaItem.acoes, ', ', 'nome');
+    return `${demandaItem.area_tematica.nome} - Ações: ${acoesList}`;
+  }
+  return demandaItem.area_tematica.nome;
+}
 
 const dadosDemanda = computed(() => {
   if (!demanda.value) return [];
@@ -62,20 +74,10 @@ const dadosDemanda = computed(() => {
     {
       chave: 'area_tematica',
       titulo: 'Área Temática',
-      valor: demanda.value.area_tematica?.nome,
+      valor: obterAreaTematicaComAcoes(demanda.value),
       larguraBase: '20em',
     },
   ];
-
-  if (demanda.value.acoes?.length) {
-    dados.push({
-      chave: 'acoes',
-      titulo: 'Ações',
-      valor: demanda.value.acoes.map((a) => a.nome).join(', '),
-      larguraBase: '20em',
-      metadados: { acoes: demanda.value.acoes },
-    });
-  }
 
   dados.push(
     {
@@ -126,6 +128,7 @@ async function buscarDemanda() {
     }
   } catch (e) {
     erro.value = 'Não foi possível carregar as informações da demanda.';
+    // eslint-disable-next-line no-console
     console.error('Erro ao buscar demanda pública:', e);
   } finally {
     chamadasPendentes.value.emFoco = false;
@@ -267,18 +270,7 @@ watch(() => props.id, () => {
 
     <CabecalhoDePagina class="mb2" />
 
-    <SmaeDescriptionList :lista="dadosDemanda">
-      <template #descricao--acoes="{ item }">
-        <ul class="demanda-publica__lista-acoes">
-          <li
-            v-for="acao in item.metadados.acoes"
-            :key="acao.id"
-          >
-            {{ acao.nome }}
-          </li>
-        </ul>
-      </template>
-    </SmaeDescriptionList>
+    <SmaeDescriptionList :lista="dadosDemanda" />
 
     <div class="flex column g2">
       <section
@@ -333,19 +325,6 @@ watch(() => props.id, () => {
 
 <style lang="less" scoped>
 @import '@/_less/variables.less';
-
-.demanda-publica__lista-acoes {
-  list-style-position: inside;
-  padding: 0;
-  margin: 0;
-
-  li {
-    font-size: 1rem;
-    color: @escuro;
-    line-height: 1.5;
-    margin-bottom: 0.5rem;
-  }
-}
 
 .demanda-publica__galeria {
   display: grid;
