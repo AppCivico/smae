@@ -7,6 +7,7 @@ import { TaskModule } from '../../task/task.module';
 import { DemandaController } from './demanda.controller';
 import { DemandaService } from './demanda.service';
 import { PublicDemandaController } from './public-demanda.controller';
+import { OrgaoModule } from '../../orgao/orgao.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { PublicDemandaController } from './public-demanda.controller';
         forwardRef(() => GeoLocModule),
         CacheKVModule,
         forwardRef(() => TaskModule),
+        forwardRef(() => OrgaoModule),
     ],
     controllers: [DemandaController, PublicDemandaController],
     providers: [DemandaService],

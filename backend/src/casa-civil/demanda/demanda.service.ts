@@ -65,7 +65,11 @@ export class DemandaService {
         private readonly geolocService: GeoLocService,
         private readonly cacheKvService: CacheKVService,
         private readonly smaeConfigService: SmaeConfigService,
-        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
+        //
+        @Inject(forwardRef(() => TaskService))
+        private readonly taskService: TaskService,
+        //
+        @Inject(forwardRef(() => OrgaoService))
         private readonly orgaoService: OrgaoService
     ) {}
 
