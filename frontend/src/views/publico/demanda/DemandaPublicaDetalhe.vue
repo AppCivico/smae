@@ -4,7 +4,6 @@ import {
   computed, onMounted, ref, watch,
 } from 'vue';
 
-import ErrorComponent from '@/components/ErrorComponent.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
@@ -267,7 +266,7 @@ watch(() => props.id, () => {
     v-else-if="erro"
   >
     <h2>Demanda Indisponível</h2>
-    <img src="@/assets/erro-demanda.svg">
+    <img src="@/assets/erro-demanda.svg" alt="">
     <p>Entre em contato com a Secretaria Executiva de Relações Institucionais (SERI)</p>
   </article>
   <div
