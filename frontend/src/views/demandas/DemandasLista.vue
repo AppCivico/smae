@@ -182,9 +182,12 @@ watch(
         ativo
         :cor="corDoStatus(linha)"
       >
-        {{ MapaStatus[linha.status] }}
         <template v-if="linha.situacao_encerramento">
-          ({{ linha.situacao_encerramento }})
+          {{ linha.situacao_encerramento }}
+        </template>
+
+        <template v-else>
+          {{ MapaStatus[linha.status] }}
         </template>
       </SmaeStatusPillsItem>
     </template>
