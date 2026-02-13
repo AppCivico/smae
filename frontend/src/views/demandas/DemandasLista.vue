@@ -27,15 +27,20 @@ const statusInicial = (() => {
   const { status, situacao } = route.query;
   if (!status) return null;
   return situacao ? `${status}_${situacao}` : String(status);
-})();
-const statusSelecionados = ref<string | null>(statusInicial);
+});
+const statusSelecionados = ref<string | null>(statusInicial());
+
+const mapaSituacaoEncerramento = {
+  Concluido: 'Concluida',
+  Cancelado: 'Cancelada',
+};
 
 const itemsStatusDemanda = [
   { valor: 'Registro', label: 'Em registro', cor: '#E885BE' },
   { valor: 'Validacao', label: 'Em validação', cor: '#F2890D' },
   { valor: 'Publicado', label: 'Publicada', cor: '#4074BF' },
-  { valor: 'Encerrado_Cancelada', label: 'Encerrada (Cancelada)', cor: '#EE3B2B' },
-  { valor: 'Encerrado_Concluido', label: 'Encerrada (Atendida)', cor: '#8EC122' },
+  { valor: 'Encerrado_Cancelada', label: 'Cancelada', cor: '#EE3B2B' },
+  { valor: 'Encerrado_Concluido', label: 'Concluida', cor: '#8EC122' },
 ];
 
 const demandasStore = useDemandasStore();
@@ -102,7 +107,6 @@ onMounted(() => {
     areasTematicasStore.buscarTudo(),
     buscarTudo(),
   ]).then();
-  console.log();
 });
 
 watch(statusSelecionados, (valorStatusSelecionado) => {
@@ -135,6 +139,8 @@ watch(
     () => route.query.palavra_chave,
   ],
   () => {
+    statusSelecionados.value = statusInicial();
+
     buscarTudo();
   },
 );
@@ -184,7 +190,7 @@ watch(
         :cor="corDoStatus(linha)"
       >
         <template v-if="linha.situacao_encerramento">
-          {{ linha.situacao_encerramento }}
+          {{ mapaSituacaoEncerramento[linha.situacao_encerramento] || linha.situacao_encerramento }}
         </template>
 
         <template v-else>
