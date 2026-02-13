@@ -4,7 +4,7 @@ import { UploadModule } from 'src/upload/upload.module';
 import { CacheKVModule } from '../../common/services/cache-kv.module';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
 import { TaskModule } from '../../task/task.module';
-import { DemandaController } from './demanda.controller';
+import { DemandaAcaoController, DemandaController } from './demanda.controller';
 import { DemandaService } from './demanda.service';
 import { PublicDemandaController } from './public-demanda.controller';
 import { OrgaoModule } from '../../orgao/orgao.module';
@@ -18,7 +18,7 @@ import { OrgaoModule } from '../../orgao/orgao.module';
         forwardRef(() => TaskModule),
         forwardRef(() => OrgaoModule),
     ],
-    controllers: [DemandaController, PublicDemandaController],
+    controllers: [DemandaController, PublicDemandaController, DemandaAcaoController],
     providers: [DemandaService],
     exports: [DemandaService],
 })
