@@ -1,11 +1,15 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional } from 'class-validator';
-import { DemandaStatus } from '@prisma/client';
+import { DemandaSituacao, DemandaStatus } from '@prisma/client';
 
 export class FilterDemandaDto {
     @IsOptional()
     @IsEnum(DemandaStatus)
     status?: DemandaStatus;
+
+    @IsOptional()
+    @IsEnum(DemandaSituacao)
+    situacao?: DemandaSituacao;
 
     @IsOptional()
     @IsInt()

@@ -424,6 +424,9 @@ export class DemandaService {
             }
             where.orgao_id = filters.orgao_id;
         }
+        if (filters.situacao) {
+            where.situacao_encerramento = filters.situacao;
+        }
 
         const demandas = await this.prisma.demanda.findMany({
             where,
