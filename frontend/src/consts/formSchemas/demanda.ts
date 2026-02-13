@@ -1,8 +1,8 @@
 import { type DemandaAcao } from '@back/casa-civil/demanda/acao/dto/acao.dto';
+import dinheiro from '@/helpers/dinheiro';
 import {
   object, number, string, array, mixed,
 } from './initSchema';
-import dinheiro from '@/helpers/dinheiro';
 
 export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
   .shape({
@@ -123,7 +123,7 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
         otherwise: (s) => s.nullable(),
       }),
     encaminhamento_justificativa: string()
-      .label('Justificativa')
+      .label('Motivo')
       .max(2048)
       .when('encaminhamento', {
         is: (val: string) => ['devolver', 'cancelar'].includes(val),

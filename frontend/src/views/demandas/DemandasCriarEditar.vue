@@ -16,6 +16,7 @@ import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
 import { CadastroDemandaSchema } from '@/consts/formSchemas/demanda';
@@ -31,6 +32,13 @@ import MapaStatus, { StatusDemanda } from './MapaStatus';
 type EtapaDoVaralComId = EtapaDoVaral & {
   id: StatusDemanda;
 };
+
+const props = defineProps({
+  demandaId: {
+    type: Number,
+    default: 0,
+  },
+});
 
 const router = useRouter();
 const organsStore = useOrgansStore();
@@ -54,12 +62,13 @@ const schema = computed(() => (
 
 const todosOsCamposEncaminhamento = computed(() => [
   {
-    label: itemParaEdicao.value?.status === 'Registro'
+    label: !itemParaEdicao.value?.id || itemParaEdicao.value.status === 'Registro'
       ? 'Salvar previa' : 'Manter em análise',
     valor: 'editar',
+    default: true,
   },
   { label: 'Solicitar ajuste', valor: 'devolver' },
-  { label: 'Encaminhar para validação', valor: 'enviar' },
+  { label: 'Encaminhar para validação', valor: 'enviar', default: true },
   { label: 'Publicar', valor: 'validar' },
   { label: 'Cancelar demanda', valor: 'cancelar' },
 ]);
@@ -67,7 +76,13 @@ const todosOsCamposEncaminhamento = computed(() => [
 const camposEncaminhamento = computed(() => {
   const permissoes = itemParaEdicao.value?.permissoes;
 
-  return todosOsCamposEncaminhamento.value.filter((campo) => permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes]);
+  return todosOsCamposEncaminhamento.value.filter((campo) => {
+    if (!props.demandaId) {
+      return campo.default;
+    }
+
+    return permissoes?.[`pode_${campo.valor}` as keyof typeof permissoes];
+  });
 });
 
 const bloquearCampos = computed(() => {
@@ -76,13 +91,6 @@ const bloquearCampos = computed(() => {
   }
 
   return camposEncaminhamento.value.length === 0;
-});
-
-const props = defineProps({
-  demandaId: {
-    type: Number,
-    default: 0,
-  },
 });
 
 const {
@@ -150,6 +158,7 @@ const onSubmit = handleSubmit.withControlled(async ({
       motivo: encaminhamentoJustificativa,
     });
   } else {
+    dadosEdicao.acao = encaminhamento;
     r = await demandasStore.criarItem(dadosEdicao);
   }
 
@@ -205,6 +214,35 @@ const itemsVaralEtapas = computed<EtapaDoVaralComId[]>(() => {
   });
 });
 
+const dadosUltimoHistorico = computed(() => {
+  if (!itemParaEdicao.value?.ultimo_historico?.motivo) return [];
+
+  const { ultimo_historico: ultimoHistorico } = itemParaEdicao.value;
+
+  const dados = [
+    {
+      chave: 'status_anterior',
+      titulo: 'Último Status',
+      valor: MapaStatus[ultimoHistorico.status_anterior] || ultimoHistorico.status_anterior,
+      larguraBase: '20em',
+    },
+    {
+      chave: 'criador_nome_exibicao',
+      titulo: 'Responsável',
+      valor: ultimoHistorico.criado_por.nome_exibicao,
+      larguraBase: '20em',
+    },
+    {
+      chave: 'motivo',
+      titulo: 'Motivo',
+      valor: ultimoHistorico.motivo,
+      larguraBase: '100%',
+    },
+  ];
+
+  return dados;
+});
+
 onMounted(() => {
   Promise.all([
     areasTematicasStore.buscarTudo(),
@@ -258,6 +296,11 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </template>
   </SmaeVaralEtapas>
+
+  <SmaeDescriptionList
+    v-if="dadosUltimoHistorico.length"
+    :lista="dadosUltimoHistorico"
+  />
 
   <form
     class="flex column g2"
@@ -747,7 +790,6 @@ watch(itemParaEdicao, (novosValores) => {
     </fieldset>
 
     <fieldset
-      v-if="$props.demandaId && camposEncaminhamento.length"
       class="sessao-encaminhamento"
       aria-labelledby="titulo-encaminhamento"
     >
