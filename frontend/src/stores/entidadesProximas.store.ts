@@ -1,3 +1,4 @@
+import statusObras from '@/consts/statusObras';
 import type {
   DotacaoBuscaResponseDto,
   PdmPsResumoDto,
@@ -12,7 +13,6 @@ import type {
   SearchEntitiesNearbyResponseDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
-import statusObras from '@/consts/statusObras';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -50,7 +50,7 @@ type LocalizacaoProximidade = {
 
 export type ItemConsultaGeralFormatado = {
   id: number;
-  orcamento_realizado_id?: number;
+  orcamento_realizado_id?: number | null;
   distancia_metros: number;
   geo_localizacao_referencia_id?: number;
   modulo: string;
@@ -240,8 +240,8 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 ...dadosParciais,
                 id: pdmPs.meta_id || 0,
                 nome: pdmPs.meta_titulo || '',
+                portfolio_programa_area: pdmPs.pdm_nome || '',
                 orgao: pdmPs.orgaos_sigla?.join(', ') || '',
-                cor: LegendasStatus.programaDeMetas.color,
                 meta_info: {
                   id: pdmPs.meta_id || 0,
                   codigo: pdmPs.meta_codigo || '',
@@ -251,6 +251,19 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                   nro_vinculos: pdmPs.nro_vinculos,
                 } as MetaIniAtvLookupInfoDto,
               };
+
+              switch (pdmPs.pdm_tipo) {
+                case 'PDM':
+                  dadosParciais.cor = LegendasStatus.programaDeMetas.color;
+                  break;
+
+                case 'PS':
+                  dadosParciais.cor = LegendasStatus.planoSetorial.color;
+                  break;
+
+                default:
+                  break;
+              }
 
               const detalhes: Record<string, string | null | undefined> = {};
 
