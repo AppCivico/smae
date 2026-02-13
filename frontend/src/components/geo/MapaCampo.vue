@@ -10,7 +10,7 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineModel, defineOptions, nextTick, ref, toRef,
+  computed, defineModel, defineOptions, ref, toRef,
 } from 'vue';
 
 import MapaExibir from '@/components/geo/MapaExibir.vue';
@@ -250,11 +250,14 @@ function abrirEdição(índice) {
 }
 
 function adicionarItem() {
-  model.value.push('');
+  redefinirFormulário();
+  sugestãoSelecionada.value = null;
+  sugestõesDeEndereços.value.splice(0);
+  termoDeBusca.value = '';
+  marcador.value = [];
+  logradouroCoordenadas.value = [];
 
-  nextTick().then(() => {
-    abrirEdição(model.value.length - 1);
-  });
+  ediçãoDeEndereçoAberta.value = Infinity;
 }
 
 const onSubmit = handleSubmit(async () => {
@@ -288,7 +291,12 @@ const onSubmit = handleSubmit(async () => {
     if (!resposta.token) {
       throw new Error('token ausente da resposta');
     }
-    model.value[ediçãoDeEndereçoAberta.value] = resposta.token;
+
+    if (ediçãoDeEndereçoAberta.value === Infinity) {
+      model.value.push(resposta.token);
+    } else {
+      model.value[ediçãoDeEndereçoAberta.value] = resposta.token;
+    }
     endereçosTemporários.value[resposta.token] = cloneDeep(resposta);
     handleChange(model.value);
 
