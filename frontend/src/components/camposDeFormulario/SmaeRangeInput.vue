@@ -194,7 +194,7 @@ watch(() => props.max, (): void => {
 });
 
 watch(() => props.minSelecionado, (novo): void => {
-  if (novo !== null && novo !== undefined && valorMin.value === undefined) {
+  if (novo !== null && novo !== undefined) {
     sliderMin.value = novo;
     setMin(novo);
     updateRanges('ceil');
@@ -202,7 +202,7 @@ watch(() => props.minSelecionado, (novo): void => {
 });
 
 watch(() => props.maxSelecionado, (novo): void => {
-  if (novo !== null && novo !== undefined && valorMax.value === undefined) {
+  if (novo !== null && novo !== undefined) {
     sliderMax.value = novo;
     setMax(novo);
     updateRanges('floor');
