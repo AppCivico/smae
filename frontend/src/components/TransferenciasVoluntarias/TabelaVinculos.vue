@@ -66,7 +66,7 @@ function obterModuloDoVinculo(vinculo: Vinculo): { label: string; cor: string } 
   if (vinculo.projeto?.tipo === 'MDO') {
     return { label: LegendasStatus.obras.item, cor: LegendasStatus.obras.color };
   }
-  if (vinculo.projeto?.tipo === 'Projeto') {
+  if (vinculo.projeto?.tipo === 'PP') {
     return { label: LegendasStatus.projetos.item, cor: LegendasStatus.projetos.color };
   }
   if (vinculo.meta || vinculo.iniciativa || vinculo.atividade) {
