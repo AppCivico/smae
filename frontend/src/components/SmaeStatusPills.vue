@@ -7,22 +7,26 @@ export interface StatusPillItem {
   cor: string;
 }
 
-const props = withDefaults(defineProps<{
+type Emits = {
+  'update:modelValue': [valor: string | string[] | null];
+};
+
+type Props = {
   items: StatusPillItem[];
   modelValue: string | string[];
   multiplo?: boolean;
-}>(), {
+};
+
+const emit = defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
   multiplo: false,
 });
-
-const emit = defineEmits<{
-  'update:modelValue': [valor: string | string[]];
-}>();
 
 const selecionados = computed<string[]>(() => {
   if (Array.isArray(props.modelValue)) {
     return props.modelValue;
   }
+
   return props.modelValue ? [props.modelValue] : [];
 });
 
@@ -68,14 +72,14 @@ function alternar(valor: string) {
 .status-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 20px;
   align-items: center;
 }
 
 .status-pill {
-  padding: 6px 16px;
-  border: 1.5px solid var(--pill-cor);
-  border-radius: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--pill-cor);
+  border-radius: 4px;
   background: transparent;
   color: var(--pill-cor);
   font-size: 14px;

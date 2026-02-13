@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia';
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import SmaeStatusPills from '@/components/SmaeStatusPills.vue';
@@ -20,27 +20,16 @@ import { useOrgansStore } from '@/stores/organs.store';
 import MapaStatus from './MapaStatus';
 
 const route = useRoute();
+const router = useRouter();
 
-const opcoesStatus = Object.entries(MapaStatus).map(([id, label]) => ({ id, label }));
+const statusSelecionados = ref<string | null>(null);
 
-const legendas = {
-  status: [
-    { id: 'Registro', item: 'Registrada', color: '#9F045F' },
-    { id: 'Validacao', item: 'Validada', color: '#F2890D' },
-    { id: 'Publicado', item: 'Publicada', color: '#4074BF' },
-    { id: 'Encerrado-Cancelada', item: 'Encerrada (Cancelada)', color: '#EE3B2B' },
-    { id: 'Encerrado-Concluido', item: 'Encerrada (Concluída)', color: '#8EC122' },
-  ],
-};
-
-const statusSelecionados = ref([]);
-
-const items = [
+const itemsStatusDemanda = [
   { valor: 'Registro', label: 'Em registro', cor: '#D4619A' },
   { valor: 'Validacao', label: 'Em validação', cor: '#E6810F' },
   { valor: 'Publicado', label: 'Publicada', cor: '#2749A8' },
   { valor: 'Encerrado_Cancelada', label: 'Encerrada (Cancelada)', cor: '#D93737' },
-  { valor: 'Encerrado_Atendida', label: 'Encerrada (Atendida)', cor: '#7A9A2E' },
+  { valor: 'Encerrado_Concluido', label: 'Encerrada (Atendida)', cor: '#7A9A2E' },
 ];
 
 const demandasStore = useDemandasStore();
@@ -64,10 +53,6 @@ const opcoesAreasTematicas = computed(() => (listaAreasTematicas.value as any[])
 const camposDeFiltro = computed<import('@/components/FiltroParaPagina.vue').Formulario>(() => [
   {
     campos: {
-      status: {
-        tipo: 'select' as const,
-        opcoes: opcoesStatus,
-      },
       orgao_id: {
         tipo: 'select' as const,
         opcoes: opcoesOrgaos.value,
@@ -91,10 +76,10 @@ function buscarTudo() {
 function corDoStatus({ status, situacao_encerramento }): string | undefined {
   let nomeStatus = status;
   if (nomeStatus === 'Encerrado' && situacao_encerramento) {
-    nomeStatus += `-${situacao_encerramento}`;
+    nomeStatus += `_${situacao_encerramento}`;
   }
 
-  return legendas.status.find((l) => l.id === nomeStatus)?.color;
+  return itemsStatusDemanda.find((l) => l.valor === nomeStatus)?.cor;
 }
 
 async function excluirItem({ id }) {
@@ -113,9 +98,29 @@ onMounted(() => {
   ]).then();
 });
 
+watch(statusSelecionados, (valorStatusSelecionado) => {
+  let status = valorStatusSelecionado;
+  let situacao;
+
+  if (valorStatusSelecionado?.includes('_')) {
+    const [valorStatus, valorSituacao] = valorStatusSelecionado.split('_');
+    status = valorStatus;
+    situacao = valorSituacao;
+  }
+
+  router.replace({
+    query: {
+      ...route.query,
+      status: status || undefined,
+      situacao: situacao || undefined,
+    },
+  });
+});
+
 watch(
   [
     () => route.query.status,
+    () => route.query.situacao,
     () => route.query.orgao_id,
     () => route.query.area_tematica_id,
     () => route.query.palavra_chave,
@@ -149,8 +154,7 @@ watch(
   <SmaeStatusPills
     v-model="statusSelecionados"
     class="mb2"
-    :items="items"
-    multiplo
+    :items="itemsStatusDemanda"
   />
 
   <SmaeTable
