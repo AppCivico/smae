@@ -22,7 +22,12 @@ import MapaStatus from './MapaStatus';
 const route = useRoute();
 const router = useRouter();
 
-const statusSelecionados = ref<string | null>(null);
+const statusInicial = (() => {
+  const { status, situacao } = route.query;
+  if (!status) return null;
+  return situacao ? `${status}_${situacao}` : String(status);
+})();
+const statusSelecionados = ref<string | null>(statusInicial);
 
 const itemsStatusDemanda = [
   { valor: 'Registro', label: 'Em registro', cor: '#D4619A' },
