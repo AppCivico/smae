@@ -1,9 +1,12 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch } from 'vue';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
+import SmaeStatusPills from '@/components/SmaeStatusPills.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { FiltroDemandaSchema } from '@/consts/formSchemas/demanda';
@@ -29,6 +32,16 @@ const legendas = {
     { id: 'Encerrado-Concluido', item: 'Encerrada (Concluída)', color: '#8EC122' },
   ],
 };
+
+const statusSelecionados = ref([]);
+
+const items = [
+  { valor: 'Registro', label: 'Em registro', cor: '#D4619A' },
+  { valor: 'Validacao', label: 'Em validação', cor: '#E6810F' },
+  { valor: 'Publicado', label: 'Publicada', cor: '#2749A8' },
+  { valor: 'Encerrado_Cancelada', label: 'Encerrada (Cancelada)', cor: '#D93737' },
+  { valor: 'Encerrado_Atendida', label: 'Encerrada (Atendida)', cor: '#7A9A2E' },
+];
 
 const demandasStore = useDemandasStore();
 const organsStore = useOrgansStore();
@@ -131,6 +144,13 @@ watch(
     class="mb2"
     :formulario="camposDeFiltro"
     :schema="FiltroDemandaSchema"
+  />
+
+  <SmaeStatusPills
+    v-model="statusSelecionados"
+    class="mb2"
+    :items="items"
+    multiplo
   />
 
   <SmaeTable
