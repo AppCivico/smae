@@ -1,4 +1,5 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
@@ -9,6 +10,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS';
+import { useDemandaPublicaStore } from '@/stores/demandaPublica.store';
 
 const props = defineProps({
   id: {
@@ -19,7 +21,9 @@ const props = defineProps({
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-const demanda = ref(null);
+const demandaPublicaStore = useDemandaPublicaStore();
+const { emFoco: demanda } = storeToRefs(demandaPublicaStore);
+
 const camadasGeo = ref([]);
 const chamadasPendentes = ref({
   emFoco: false,
@@ -116,13 +120,7 @@ async function buscarDemanda() {
   erro.value = null;
 
   try {
-    const resposta = await requestS.get(
-      `${baseUrl}/public/demandas/${props.id}`,
-      null,
-      { AlertarErros: false },
-    );
-
-    demanda.value = resposta.demanda;
+    await demandaPublicaStore.buscarItem(props.id);
     if (!demanda.value) {
       erro.value = 'Demanda não encontrada.';
     }
@@ -237,7 +235,7 @@ function formatarEndereco(geo) {
 }
 
 function carregarDados() {
-  demanda.value = null;
+  demandaPublicaStore.emFoco = null;
   erro.value = null;
   camadasGeo.value = [];
 
@@ -265,6 +263,8 @@ watch(() => props.id, () => {
     v-else-if="demanda"
     class="demanda-publica"
   >
+    <MigalhasDePão class="mb1" />
+
     <CabecalhoDePagina class="mb2" />
 
     <SmaeDescriptionList :lista="dadosDemanda">

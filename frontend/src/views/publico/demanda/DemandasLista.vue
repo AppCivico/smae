@@ -320,6 +320,8 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
 
 <template>
   <div class="portfolio-demandas">
+    <MigalhasDePão class="mb1" />
+
     <!-- Cabeçalho -->
     <CabecalhoDePagina>
       <template #titulo>
