@@ -616,6 +616,25 @@ export class DemandaService {
         const geoReferencias = await this.geolocService.carregaReferencias(geoDto);
         const geolocalizacao = geoReferencias.get(id) || [];
 
+        // Busca o histórico mais recente
+        const ultimoHistorico = await this.prisma.demandaHistorico.findFirst({
+            where: { demanda_id: id },
+            orderBy: { criado_em: 'desc' },
+            select: {
+                id: true,
+                status_anterior: true,
+                status_novo: true,
+                motivo: true,
+                criado_em: true,
+                criador: {
+                    select: {
+                        id: true,
+                        nome_exibicao: true,
+                    },
+                },
+            },
+        });
+
         const permissoes = this.buildPermissions(demanda.status, user, demanda.orgao.id, demanda.data_publicado);
 
         // Se modo ReadWrite e usuário não tem permissão de edição, lança erro
@@ -662,6 +681,16 @@ export class DemandaService {
                 ),
             })),
             permissoes,
+            ultimo_historico: ultimoHistorico
+                ? {
+                      id: ultimoHistorico.id,
+                      status_anterior: ultimoHistorico.status_anterior,
+                      status_novo: ultimoHistorico.status_novo,
+                      motivo: ultimoHistorico.motivo,
+                      criado_por: ultimoHistorico.criador,
+                      criado_em: Date2YMD.toString(ultimoHistorico.criado_em),
+                  }
+                : null,
         };
     }
 

@@ -57,6 +57,7 @@ export class DemandaDetailDto extends DemandaDto {
     dias_em_validacao: number;
     dias_em_publicado: number;
     dias_em_encerrado: number;
+    ultimo_historico: DemandaHistoricoDto | null;
 }
 
 export class ListDemandaDto {
