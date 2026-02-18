@@ -50,6 +50,7 @@ const { selecionado } = storeToRefs(geolocalizadorStore);
       fill: true,
       opacity: 0.5,
     }"
+    agrupar-marcadores="auto"
     zoom="16"
   >
     <template #painel-flutuante="slotProps">
