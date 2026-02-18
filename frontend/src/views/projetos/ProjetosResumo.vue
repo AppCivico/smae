@@ -271,12 +271,14 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div class="flex g2 mb2">
       <table class="tablemain">
-        <col class="col--minimum">
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
+        <colgroup>
+          <col class="col--minimum">
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+        </colgroup>
         <thead>
           <tr>
             <th
