@@ -273,7 +273,6 @@ watch(() => props.id, () => {
     v-else-if="demanda"
     class="demanda-publica"
   >
-
     <SmaeDescriptionList :lista="dadosDemanda" />
 
     <div class="flex column g2">
@@ -320,6 +319,7 @@ watch(() => props.id, () => {
             :geo-json="marcadoresGeoJson"
             :camadas="camadasParaMapa"
             height="500px"
+            agrupar-marcadores="auto"
           />
         </template>
       </section>
