@@ -76,7 +76,13 @@ const props = defineProps({
     }),
   },
   agruparMarcadores: {
-    type: Boolean,
+    type: [
+      Boolean,
+      String,
+    ],
+    default: false,
+    validator: (value) => typeof value === 'boolean'
+      || (value === 'string' && value === 'auto'),
   },
   // aceitar tanto um par de coordenadas em forma de array,
   // quanto um objeto já com:
@@ -153,6 +159,42 @@ const emits = defineEmits([
 ]);
 
 const slots = useSlots();
+
+const deveSeAgruparMarcadores = computed(() => {
+  switch (true) {
+    case props.agruparMarcadores:
+      return true;
+
+    case props.agruparMarcadores !== 'auto':
+      return false;
+
+    default: {
+      const lista = Array.isArray(props.geoJson)
+        ? props.geoJson
+        : [props.geoJson];
+
+      const coordenadasVistas = new Set();
+
+      return lista.some((item) => {
+        if (item?.geometry?.type !== 'Point') {
+          return false;
+        }
+        const chave = item.geometry.coordinates?.join(',');
+
+        if (!chave) {
+          return false;
+        }
+
+        if (coordenadasVistas.has(chave)) {
+          return true;
+        }
+
+        coordenadasVistas.add(chave);
+        return false;
+      });
+    }
+  }
+});
 
 const camadasPorId = computed(() => props.camadas.reduce((acc, cur) => {
   acc[cur.id] = cur.config && cur.geom_geojson
@@ -263,7 +305,7 @@ function criarMarcadores(marcadores = []) {
       // Poderia ser um nome melhor, né?
       marcadorNoMapa.índice = i;
 
-      if (props.agruparMarcadores) {
+      if (deveSeAgruparMarcadores.value) {
         grupoDeMarcadores.addLayer(marcadorNoMapa);
       } else {
         marcadorNoMapa.addTo(mapa);
@@ -271,7 +313,7 @@ function criarMarcadores(marcadores = []) {
     }
   });
 
-  if (props.agruparMarcadores) {
+  if (deveSeAgruparMarcadores.value) {
     mapa.addLayer(grupoDeMarcadores);
   }
 }
@@ -314,7 +356,7 @@ function criarGeoJson(dados) {
 
     atribuirPainelFlutuante(geoJson, dados?.properties);
 
-    if (props.agruparMarcadores) {
+    if (deveSeAgruparMarcadores.value) {
       grupoDeMarcadores.addLayer(geoJson);
     } else {
       geoJson.addTo(mapa);
@@ -350,7 +392,7 @@ function prepararGeoJsonS(items) {
 
     // ativar o agrupamento aqui, porque ele deve ser do array completo, mas a
     // inserção de geoJSONs tem que ser um por um, porque podem ser de vários tipos
-    if (props.agruparMarcadores) {
+    if (deveSeAgruparMarcadores.value) {
       mapa.addLayer(grupoDeMarcadores);
     }
 
@@ -432,7 +474,7 @@ async function iniciarMapa(element) {
     return;
   }
 
-  if (props.agruparMarcadores) {
+  if (deveSeAgruparMarcadores.value) {
     grupoDeMarcadores = L.markerClusterGroup(props.opcoesDeAgrupamento);
   }
 
