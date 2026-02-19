@@ -5,7 +5,8 @@ import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { UploadService } from './upload.service';
 
 @ApiTags('Publico - Arquivos')
-@Controller('public/arquivos')
+// não usar public/ pois são os arquivos statics da api para email
+@Controller('publico/arquivos')
 export class PublicUploadController {
     constructor(private readonly uploadService: UploadService) {}
 

@@ -113,7 +113,7 @@ function urlImagem(arquivoItem) {
     ? arquivo.preview.download_token
     : arquivo.download_token;
 
-  return `${baseUrl}/public/arquivos/${token}`;
+  return `${baseUrl}/publico/arquivos/${token}`;
 }
 
 async function buscarDemanda() {
@@ -139,7 +139,7 @@ async function buscarGeoCamadas() {
 
   try {
     const resposta = await requestS.get(
-      `${baseUrl}/public/demandas/geocamadas`,
+      `${baseUrl}/publico/demandas/geocamadas`,
       null,
       { AlertarErros: false },
     );

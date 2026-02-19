@@ -11,7 +11,8 @@ import {
 } from './entities/public-demanda.entity';
 
 @ApiTags('Publico - Demandas')
-@Controller('public/demandas')
+// não usar public/ pois são os arquivos statics da api para email
+@Controller('publico/demandas')
 export class PublicDemandaController {
     constructor(private readonly cacheKvService: CacheKVService) {}
 
