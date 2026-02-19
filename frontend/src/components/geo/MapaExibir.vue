@@ -160,39 +160,37 @@ const emits = defineEmits([
 
 const slots = useSlots();
 
-const deveSeAgruparMarcadores = computed(() => {
-  switch (true) {
-    case props.agruparMarcadores:
-      return true;
+// Conjunto de chaves de coordenadas que aparecem mais de uma vez no geoJson,
+// usado no modo 'auto' para agrupar apenas os pontos sobrepostos.
+const coordenadasDuplicadas = computed(() => {
+  if (props.agruparMarcadores !== 'auto') return new Set();
 
-    case props.agruparMarcadores !== 'auto':
-      return false;
+  const lista = Array.isArray(props.geoJson) ? props.geoJson : [props.geoJson];
+  const vistas = new Set();
+  const duplicadas = new Set();
 
-    default: {
-      const lista = Array.isArray(props.geoJson)
-        ? props.geoJson
-        : [props.geoJson];
-
-      const coordenadasVistas = new Set();
-
-      return lista.some((item) => {
-        if (item?.geometry?.type !== 'Point') {
-          return false;
-        }
-        const chave = item.geometry.coordinates?.join(',');
-
-        if (!chave) {
-          return false;
-        }
-
-        if (coordenadasVistas.has(chave)) {
-          return true;
-        }
-
-        coordenadasVistas.add(chave);
-        return false;
-      });
+  lista.forEach((item) => {
+    if (item?.geometry?.type !== 'Point') return;
+    const chave = item.geometry.coordinates?.join(',');
+    if (!chave) return;
+    if (vistas.has(chave)) {
+      duplicadas.add(chave);
+    } else {
+      vistas.add(chave);
     }
+  });
+
+  return duplicadas;
+});
+
+const deveSeAgruparMarcadores = computed(() => {
+  switch (props.agruparMarcadores) {
+    case true:
+      return true;
+    case 'auto':
+      return coordenadasDuplicadas.value.size > 0;
+    default:
+      return false;
   }
 });
 
@@ -356,7 +354,11 @@ function criarGeoJson(dados) {
 
     atribuirPainelFlutuante(geoJson, dados?.properties);
 
-    if (deveSeAgruparMarcadores.value) {
+    const chave = dados.geometry.coordinates?.join(',');
+    const deveAgrupar = props.agruparMarcadores === true
+      || (props.agruparMarcadores === 'auto' && coordenadasDuplicadas.value.has(chave));
+
+    if (deveAgrupar && grupoDeMarcadores) {
       grupoDeMarcadores.addLayer(geoJson);
     } else {
       geoJson.addTo(mapa);
@@ -392,7 +394,7 @@ function prepararGeoJsonS(items) {
 
     // ativar o agrupamento aqui, porque ele deve ser do array completo, mas a
     // inserção de geoJSONs tem que ser um por um, porque podem ser de vários tipos
-    if (deveSeAgruparMarcadores.value) {
+    if (deveSeAgruparMarcadores.value && mapa && grupoDeMarcadores) {
       mapa.addLayer(grupoDeMarcadores);
     }
 
@@ -474,7 +476,7 @@ async function iniciarMapa(element) {
     return;
   }
 
-  if (deveSeAgruparMarcadores.value) {
+  if (props.agruparMarcadores === true || props.agruparMarcadores === 'auto') {
     grupoDeMarcadores = L.markerClusterGroup(props.opcoesDeAgrupamento);
   }
 
