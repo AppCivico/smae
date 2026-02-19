@@ -790,6 +790,7 @@ watch(itemParaEdicao, (novosValores) => {
     </fieldset>
 
     <fieldset
+      v-if="camposEncaminhamento.length"
       class="sessao-encaminhamento"
       aria-labelledby="titulo-encaminhamento"
     >
@@ -798,10 +799,7 @@ watch(itemParaEdicao, (novosValores) => {
       </h3>
 
       <div>
-        <div
-          v-if="camposEncaminhamento.length"
-          class="flex flexwrap g2 start pt05 pb05"
-        >
+        <div class="flex flexwrap g2 start pt05 pb05">
           <label
             v-for="campoEncaminhamento in camposEncaminhamento"
             :key="`encaminhamento--${campoEncaminhamento.valor}`"
