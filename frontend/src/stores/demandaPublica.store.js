@@ -17,7 +17,7 @@ export const useDemandaPublicaStore = defineStore('demandaPublica', {
 
       try {
         const resposta = await this.requestS.get(
-          `${baseUrl}/public/demandas/${id}`,
+          `${baseUrl}/publico/demandas/${id}`,
           null,
           { AlertarErros: false },
         );

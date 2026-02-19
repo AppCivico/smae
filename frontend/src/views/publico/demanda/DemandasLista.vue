@@ -14,7 +14,7 @@ import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS';
 
 const route = useRoute();
-const baseUrl = `${import.meta.env.VITE_API_URL}/public/demandas`;
+const baseUrl = `${import.meta.env.VITE_API_URL}/publico/demandas`;
 
 const colunasDemandas = [
   {
