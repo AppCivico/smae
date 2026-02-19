@@ -1,33 +1,38 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { task_type } from '@prisma/client';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { TaskService } from 'src/task/task.service';
-import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto';
-import { ApiLogRestoreService } from './api-log-restore.service.js';
+import { ApiLogRestoreService } from '../../api-logs/restore/api-log-restore.service';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { TaskService } from '../../task/task.service';
+import { CreateApiLogDayDto } from '../dto/api-log/create-api-log-day.dto';
 
-@ApiTags('Api Logs')
-@Controller('logs')
-export class ApiLogManagementController {
+@ApiTags('SysAdmin - Operações de Reprocessamento e Sincronização')
+@ApiBearerAuth('access-token')
+@Controller()
+export class SysadminLogsController {
     constructor(
+        @Inject(TaskService)
         private readonly taskService: TaskService,
+
+        @Inject(ApiLogRestoreService)
         private readonly apiRestoreService: ApiLogRestoreService
     ) {}
 
-    @Post('restore')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(['SMAE.sysadmin'])
+    /**
+     * Restaura logs de API de um dia específico
+     * Cria task assíncrona para restauração dos logs do DuckDB
+     */
+    @Post('logs/restore')
+    @Roles(['SMAE.sysadmin'], 'Restaura logs de API de um dia específico')
     @ApiOkResponse({
         description: 'ID da task criada para restauração.',
         schema: {
             example: { taskId: 123 },
         },
     })
-    @ApiBearerAuth('access-token')
+    @ApiResponse({ status: 201, description: 'Task de restauração criada com sucesso' })
     async restoreApiLogs(
         @Body() dto: CreateApiLogDayDto,
         @CurrentUser() user: PessoaFromJwt
@@ -44,11 +49,15 @@ export class ApiLogManagementController {
         return { taskId: task.id };
     }
 
-    @Post('drop')
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    /**
+     * Remove logs restaurados de um dia específico
+     */
+    @Post('logs/drop')
     @Roles(['SMAE.sysadmin'])
-    @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Dropa dados restaurados do dia informado (UTC).' })
+    @ApiOperation({
+        summary: 'Remove logs restaurados de um dia específico',
+        description: 'Dropa dados restaurados do dia informado (UTC)',
+    })
     @ApiResponse({
         status: 200,
         description: 'Drop concluído com sucesso.',

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { RetryOperation } from '../../common/RetryOperation';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
@@ -10,6 +10,7 @@ export class RefreshVariavelService implements TaskableService {
     private readonly logger = new Logger(RefreshVariavelService.name);
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => VariavelService))
         private readonly variavelService: VariavelService
     ) {}
 

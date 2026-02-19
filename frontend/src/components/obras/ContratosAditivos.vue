@@ -156,14 +156,16 @@ function limparCamposRelacionados(tipo_aditivo_id) {
   </LoadingComponent>
 
   <table class="tablemain mb2">
-    <col class="col--minimum">
-    <col>
-    <col class="col--data">
-    <col class="col--minimum">
-    <col class="col--minimum">
-    <col class="col--data">
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col class="col--minimum">
+      <col>
+      <col class="col--data">
+      <col class="col--minimum">
+      <col class="col--minimum">
+      <col class="col--data">
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
 
     <thead>
       <tr>

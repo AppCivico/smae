@@ -32,6 +32,7 @@ export class PdmDto {
     possui_contexto_meta: boolean;
     possui_complementacao_meta: boolean;
     logo: string | null;
+    logo_thumbnail: string | null;
     ativo: boolean;
     rotulo_iniciativa: string;
     rotulo_atividade: string;

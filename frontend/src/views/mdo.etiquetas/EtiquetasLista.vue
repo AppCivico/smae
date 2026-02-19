@@ -1,3 +1,33 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+
+const route = useRoute();
+const alertStore = useAlertStore();
+const etiquetasStore = useEtiquetasStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(etiquetasStore);
+
+async function excluirEtiqueta(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await etiquetasStore.excluirItem(id)) {
+        etiquetasStore.$reset();
+        etiquetasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removida.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+etiquetasStore.$reset();
+etiquetasStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -13,9 +43,11 @@
   </div>
 
   <table class="tablemain">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>Etiqueta</th>
@@ -72,35 +104,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
-
-const route = useRoute();
-const alertStore = useAlertStore();
-const etiquetasStore = useEtiquetasStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(etiquetasStore);
-
-async function excluirEtiqueta(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await etiquetasStore.excluirItem(id)) {
-        etiquetasStore.$reset();
-        etiquetasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success(`"${descricao}" removida.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-etiquetasStore.$reset();
-etiquetasStore.buscarTudo();
-</script>
 
 <style></style>

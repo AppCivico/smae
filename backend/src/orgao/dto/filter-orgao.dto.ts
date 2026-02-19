@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class FilterOrgaoDto {
@@ -14,4 +14,9 @@ export class FilterOrgaoDto {
     @IsInt()
     @Min(1)
     limit?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    ids: number[];
 }

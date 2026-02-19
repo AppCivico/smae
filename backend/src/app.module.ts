@@ -12,70 +12,32 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AllExceptionsFilter } from './any-error.filter';
 import { AppController } from './app.controller';
+import { AppModuleCasaCivil } from './app.module.casa-civil';
 import { AppModuleCommon } from './app.module.common';
+import { AppModuleGeo } from './app.module.geo';
+import { AppModuleIntegrations } from './app.module.integrations';
+import { AppModuleOrcamento } from './app.module.orcamento';
 import { AppModulePdm } from './app.module.pdm';
 import { AppModuleProjeto } from './app.module.projeto';
+import { AppModuleReports } from './app.module.reports';
+import { AppModuleSupporting } from './app.module.supporting';
+import { AppModuleTasks } from './app.module.tasks';
+import { AppModuleWorkflow } from './app.module.workflow';
 import { AppService } from './app.service';
-import { AtualizacaoEmLoteModule } from './atualizacao-em-lote/atualizacao-em-lote.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
-import { AvisoEmailModule } from './aviso-email/aviso-email.module';
-import { BancadaModule } from './bancada/bancada.module';
-import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
-import { BuscaGlobalModule } from './busca-global/busca-global.module';
-import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
-import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
-import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
-import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
-import { WorkflowAndamentoModule } from './casa-civil/workflow/andamento/workflow-andamento.module';
-import { WorkflowEtapaModule } from './casa-civil/workflow/configuracao/etapa/workflow-etapa.module';
-import { WorkflowFaseModule } from './casa-civil/workflow/configuracao/fase/workflow-fase.module';
-import { WorkflowfluxoFaseModule } from './casa-civil/workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
-import { WorkflowFluxoTarefaModule } from './casa-civil/workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
-import { WorkflowFluxoModule } from './casa-civil/workflow/configuracao/fluxo/workflow-fluxo.module';
-import { WorkflowSituacaoModule } from './casa-civil/workflow/configuracao/situacao/workflow-situacao.module';
-import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/workflow-tarefa.module';
-import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
-import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/categoria-assunto-variavel.module';
+import { ContentInterceptor } from './content.interceptor';
 import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
-import { ContentInterceptor } from './content.interceptor';
-import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
-import { DashboardModule } from './dashboard/dashboard.module';
-import { DotacaoModule } from './dotacao/dotacao.module';
-import { EleicaoModule } from './eleicao/eleicao.module';
-import { GeoBuscaModule } from './geo-busca/geo-busca.module';
-import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
-import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
-import { MinhaContaModule } from './minha-conta/minha-conta.module';
-import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
-import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
-import { ParlamentarModule } from './parlamentar/parlamentar.modules';
-import { PartidoModule } from './partido/partido.module';
-import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
-import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
-import { PrismaErrorFilter } from './prisma-error.filter';
-import { PrismaModule } from './prisma/prisma.module';
 import { exceptionFactory } from './common/validation/validation-exception-factory';
-import { OrcamentoModule } from './reports/orcamento/orcamento.module';
-import { ReportsModule } from './reports/relatorios/reports.module';
-import { UtilsService } from './reports/utils/utils.service';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaErrorFilter } from './prisma-error.filter';
+import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { RequestLogModule } from './request_log/request_log.module';
-import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-basico.module';
-import { RunReportModule } from './task/run_report/run-report.module';
-import { TaskModule } from './task/task.module';
-import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
-import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
-import { WikiLinkModule } from './wiki-link/wiki-link.module';
-import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
-import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
-import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
-import { PortfolioTagModule } from './pp/portfolio-tag/portfolio-tag.module';
-import { TipoEncerramentoModule } from './projeto-tipo-encerramento/tipo-encerramento.module';
-import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerramento.module';
+import { SysadminModule } from './sysadmin/sysadmin.module';
 
 // Hacks pro JS
 /*
@@ -87,65 +49,67 @@ import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerrame
 
 @Module({
     imports: [
+        // ========== Core Infrastructure ==========
         ConfigModule.forRoot(),
         PrismaModule,
-        AppModuleCommon,
-        AppModulePdm,
-        AppModuleProjeto,
         RequestLogModule,
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        ReportsModule,
-        MinhaContaModule,
-        DotacaoModule,
-        OrcamentoModule,
-        OrcamentoPlanejadoModule,
-        OrcamentoRealizadoModule,
-        OrcamentoPrevistoModule,
-        DashboardModule,
-        BancadaModule,
-        PartidoModule,
-        ParlamentarModule,
-        EleicaoModule,
-        TransferenciaModule,
-        DistribuicaoRecursoModule,
-        AvisoEmailModule,
-        CTPConfigModule,
-        WorkflowModule,
-        WorkflowEtapaModule,
-        WorkflowFaseModule,
-        WorkflowSituacaoModule,
-        WorkflowTarefaModule,
-        WorkflowFluxoModule,
-        WorkflowfluxoFaseModule,
-        WorkflowFluxoTarefaModule,
-        WorkflowAndamentoModule,
-        WorkflowAndamentoFaseModule,
-        TermoEncerramentoModule,
-        TipoEncerramentoModule,
-        BlocoNotasModule,
-        DashTransferenciaModule,
-        PessoaPrivilegioModule,
+
+        // ========== Common/Foundation ==========
+        // Base services: Auth, Pessoa, Upload, Scheduling, etc.
+        AppModuleCommon,
         CommonBaseModule,
-        TaskModule,
-        ClassificacaoModule,
-        PainelEstrategicoModule,
-        CategoriaAssuntoVariavelModule,
-        PSMFDashboardModule,
-        SyncCadastroBasicoModule,
-        RunReportModule,
+        PessoaPrivilegioModule,
+
+        // ========== Geographic ==========
+        // Location services, geocoding, geographic search
+        AppModuleGeo,
+
+        // ========== External Integrations ==========
+        // SEI, SOF, TransfereGov, etc.
+        AppModuleIntegrations,
+
+        // ========== Domain: PDM (Plano de Metas) ==========
+        // Meta, Indicador, Variavel, Cronograma, Painel, etc.
+        AppModulePdm,
+
+        // ========== Domain: Projects (PP) ==========
+        // Projeto, Tarefa, Portfolio, Orcamento PP, etc.
+        AppModuleProjeto,
+
+        // ========== Domain: Workflow ==========
+        // Workflow configuration and execution
+        AppModuleWorkflow,
+
+        // ========== Domain: Casa Civil ==========
+        // Demanda, Transferencia, DistribuicaoRecurso, Vinculo
+        AppModuleCasaCivil,
+
+        // ========== Domain: Budget (non-PP) ==========
+        // Dotacao, OrcamentoPlanejado, OrcamentoRealizado
+        AppModuleOrcamento,
+
+        // ========== Cross-cutting: Reports ==========
+        // All report generation modules
+        AppModuleReports,
+
+        // ========== Cross-cutting: Background Tasks ==========
+        // Scheduled jobs, refresh tasks, email tasks
+        AppModuleTasks,
+
+        // ========== Cross-cutting: SysAdmin Operations ==========
+        // Reprocessing, sync, restore operations
+        SysadminModule,
+
+        // ========== Supporting Features ==========
+        // Notifications, search, utilities, etc.
+        AppModuleSupporting,
+
+        // ========== Analytics ==========
         DuckDBModule,
-        TransfereGovApiModule,
-        GeoBuscaModule,
-        BuscaGlobalModule,
-        AtualizacaoEmLoteModule,
-        WikiLinkModule,
-        DotacaoBuscaModule,
-        TipoVinculoModule,
-        VinculoModule,
-        PortfolioTagModule,
     ],
     controllers: [AppController],
     providers: [
@@ -193,7 +157,6 @@ import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerrame
                 exceptionFactory: exceptionFactory,
             }),
         },
-        UtilsService,
     ],
 })
 export class AppModule implements NestModule {

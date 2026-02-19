@@ -350,6 +350,11 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // Gestor de Distribuição de Recurso não pode editar transferências
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para editar transferências.', 403);
+        }
+
         const agora = new Date(Date.now());
         let workflowCriado: boolean = false;
         const updated = await this.prisma.$transaction(
@@ -1091,7 +1096,14 @@ export class TransferenciaService {
     permissionSet(user: PessoaFromJwt) {
         const permissionsSet: Prisma.Enumerable<Prisma.TransferenciaWhereInput> = [];
 
-        if (!user.hasSomeRoles(['CadastroTransferencia.administrador'])) {
+        // Administradores veem todas as transferências
+        if (user.hasSomeRoles(['CadastroTransferencia.administrador'])) {
+            return permissionsSet;
+        }
+
+        // Gestores de Distribuição de Recurso só veem transferências
+        // que possuem pelo menos uma distribuição do seu órgão
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
             permissionsSet.push({
@@ -1504,6 +1516,9 @@ export class TransferenciaService {
         });
         if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
+        // Gestor de Distribuição de Recurso não pode editar transferências
+        const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+
         return {
             id: row.id,
             identificador: row.identificador,
@@ -1609,10 +1624,16 @@ export class TransferenciaService {
 
                     return uniqueModules;
                 }, [] as ModuloSistema[]),
+            pode_editar: pode_editar,
         } satisfies TransferenciaDetailDto;
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
+        // Gestor de Distribuição de Recurso não pode remover transferências
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para remover transferências.', 403);
+        }
+
         await this.prisma.transferencia.update({
             where: { id },
             data: {
@@ -1623,6 +1644,11 @@ export class TransferenciaService {
     }
 
     async append_document(transferenciaId: number, dto: CreateTransferenciaAnexoDto, user: PessoaFromJwt) {
+        // Gestor de Distribuição de Recurso não pode adicionar documentos
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para adicionar documentos nesta transferência.', 403);
+        }
+
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
 
         const documento = await this.prisma.$transaction(
@@ -1696,6 +1722,11 @@ export class TransferenciaService {
         dto: UpdateTransferenciaAnexoDto,
         user: PessoaFromJwt
     ) {
+        // Gestor de Distribuição de Recurso não pode atualizar documentos
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para atualizar documentos nesta transferência.', 403);
+        }
+
         this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
@@ -1722,6 +1753,11 @@ export class TransferenciaService {
     }
 
     async remove_document(transferenciaId: number, transferenciaAnexoId: number, user: PessoaFromJwt) {
+        // Gestor de Distribuição de Recurso não pode remover documentos
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para remover documentos nesta transferência.', 403);
+        }
+
         await this.prisma.transferenciaAnexo.updateMany({
             where: { transferencia_id: transferenciaId, removido_em: null, id: transferenciaAnexoId },
             data: {

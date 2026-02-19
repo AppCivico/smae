@@ -1,3 +1,48 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const route = useRoute();
+const alertStore = useAlertStore();
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
+
+const tagsStore = useTagsPsStore();
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
+
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
+const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
+
+async function excluirTag(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await tagsStore.excluirItem(id)) {
+        tagsStore.$reset();
+        tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`Tag "${descricao}" removida.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+tagsStore.$reset();
+tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+</script>
 <template>
   <header class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || "Tags" }}</h1>
@@ -12,11 +57,13 @@
   </header>
 
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>Tags</th>
@@ -98,48 +145,3 @@
     </tbody>
   </table>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import { defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-const route = useRoute();
-const alertStore = useAlertStore();
-
-const authStore = useAuthStore();
-const { temPermissãoPara } = storeToRefs(authStore);
-
-const tagsStore = useTagsPsStore();
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
-
-const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
-const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
-
-async function excluirTag(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await tagsStore.excluirItem(id)) {
-        tagsStore.$reset();
-        tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success(`Tag "${descricao}" removida.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-tagsStore.$reset();
-tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-</script>

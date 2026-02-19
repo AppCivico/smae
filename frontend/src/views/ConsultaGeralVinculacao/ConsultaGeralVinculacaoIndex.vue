@@ -7,17 +7,19 @@ import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import PaginacaoInicial from '@/consts/PaginacaoInicial';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
+import type { ItemConsultaGeralFormatado } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVinculosStore, type Filtros } from '@/stores/transferenciasVinculos.store';
+import type { Filtros, DadosDoVinculo } from '@/stores/transferenciasVinculos.store';
+import { useTransferenciasVinculosStore } from '@/stores/transferenciasVinculos.store';
 
 import ConsultaGeralVinculacaoRegistro, { VinculacaoFormulario } from './partials/ConsultaGeralVinculacaoRegistro.vue';
 import ConsultaGeralVinculacaoSelecao from './partials/ConsultaGeralVinculacaoSelecao.vue';
 
 type Props = {
-  dados: Record<string, unknown>,
-  tipo: 'dotacao' | 'endereco'
-  exibindo: boolean
+  dados: ItemConsultaGeralFormatado;
+  tipo: 'dotacao' | 'endereco' | 'demanda';
+  exibindo: boolean;
 };
 
 type Emits = {
@@ -75,6 +77,10 @@ const entidade = computed<Filtros | void>(() => {
   const filtros: Filtros = {};
 
   switch (true) {
+    case props.dados.modulo === 'demandas':
+      filtros.demanda_id = props.dados.id as number;
+      break;
+
     case props.dados.modulo === 'obras':
     case props.dados.modulo === 'projetos':
       filtros.projeto_id = props.dados.id as number;
@@ -109,6 +115,7 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
   const mapaTipo = {
     dotacao: 'Dotacao',
     endereco: 'Endereco',
+    demanda: 'Demanda',
   };
 
   try {
@@ -137,19 +144,25 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
       }
 
       valorVinculo = selecionado.value.endereco.properties.string_endereco;
+    } else if (props.tipo === 'demanda') {
+      valorVinculo = props.dados.nome as string || '';
     }
 
-    const dados = {
+    const dados: DadosDoVinculo = {
       distribuicao_id: distribuicaoSelecionadaId.value,
       tipo_vinculo_id,
       observacao,
       campo_vinculo: campoVinculo,
-      geo_localizacao_referencia_id: props.dados.geo_localizacao_referencia_id,
-      orcamento_realizado_id: props.dados.orcamento_realizado_id,
       valor_vinculo: valorVinculo,
-      dados_extra: JSON.stringify(selecionado.value) || undefined,
       ...entidade.value,
     };
+
+    if (props.tipo === 'dotacao') {
+      dados.orcamento_realizado_id = props.dados.orcamento_realizado_id;
+    } else if (props.tipo === 'endereco') {
+      dados.geo_localizacao_referencia_id = props.dados.geo_localizacao_referencia_id;
+      dados.dados_extra = JSON.stringify(selecionado.value) || undefined;
+    }
 
     await vinculosStore.salvarItem(dados);
 

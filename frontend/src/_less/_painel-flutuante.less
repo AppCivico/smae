@@ -39,6 +39,10 @@
   &:empty {
     display: none;
   }
+
+  &:not(:has(*:not(:empty))) {
+    display: none;
+  }
 }
 
 .painel-flutuante__conteudo {
@@ -127,6 +131,14 @@
     overflow: hidden;
     align-self: start;
     min-width: min-content;
+  }
+}
+
+.painel-flutuante .dl-full-width {
+  grid-template-columns: 1fr;
+
+  &::before {
+    content: none;
   }
 }
 

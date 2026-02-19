@@ -38,6 +38,7 @@ import {
     TransfereGovTransferenciasDto,
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
+import { TransfereGovSyncDto } from '../sysadmin/dto/transfere-gov/transfere-gov-sync.dto';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {

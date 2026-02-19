@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -92,6 +92,11 @@ export class DistribuicaoRecursoStatusService {
         dto: CreateDistribuicaoRecursoStatusDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        // Gestor de Distribuição de Recurso não pode criar status
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para registrar status em distribuições.', 403);
+        }
+
         if (dto.status_base_id == undefined && dto.status_id == undefined)
             throw new HttpException('É necessário enviar um ID de status.', 400);
 
@@ -207,6 +212,11 @@ export class DistribuicaoRecursoStatusService {
         dto: UpdateDistribuicaoRecursoStatusDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        // Gestor de Distribuição de Recurso não pode atualizar status
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para atualizar status em distribuições.', 403);
+        }
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             // Verificando se existe status mais novo. Ou seja, não pode editar.
             const self = await prismaTx.distribuicaoRecursoStatus.findFirstOrThrow({
@@ -252,6 +262,11 @@ export class DistribuicaoRecursoStatusService {
     }
 
     async remove(distribuicao_id: number, id: number, user: PessoaFromJwt) {
+        // Gestor de Distribuição de Recurso não pode remover status
+        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+            throw new HttpException('Você não tem permissão para remover status de distribuições.', 403);
+        }
+
         const exists = await this.prisma.distribuicaoRecursoStatus.findFirst({
             where: {
                 id,

@@ -1,11 +1,3 @@
-<template>
-  <slot
-    :aplicar-query-strings="aplicarFiltros"
-    :detectar-mudancas="detectarMudancas"
-    :formulario-sujo="!!camposSujos.length"
-    :pendente="pendente"
-  />
-</template>
 <script setup lang="ts">
 import type { UrlParams } from '@vueuse/core';
 import { cloneDeep, isEqualWith, pick } from 'lodash';
@@ -157,3 +149,11 @@ onMounted(() => {
   });
 });
 </script>
+<template>
+  <slot
+    :aplicar-query-strings="aplicarFiltros"
+    :detectar-mudancas="detectarMudancas"
+    :formulario-sujo="!!camposSujos.length"
+    :pendente="pendente"
+  />
+</template>

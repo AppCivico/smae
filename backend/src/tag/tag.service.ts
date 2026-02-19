@@ -69,6 +69,11 @@ export class TagService {
                 ods_id: true,
                 icone: true,
                 arquivo_icone_id: true,
+                ArquivoIcone: {
+                    select: {
+                        thumbnail_arquivo_id: true,
+                    },
+                },
                 ods: {
                     select: { id: true, titulo: true },
                 },
@@ -76,12 +81,31 @@ export class TagService {
             orderBy: { descricao: 'asc' },
         });
 
-        for (const item of listActive) {
-            if (item.arquivo_icone_id)
-                item.icone = this.uploadService.getDownloadToken(item.arquivo_icone_id, '1 days').download_token;
-        }
+        return listActive.map((item) => {
+            let icone = item.icone;
+            let icone_thumbnail: string | null = null;
 
-        return listActive;
+            if (item.arquivo_icone_id) {
+                icone = this.uploadService.getDownloadToken(item.arquivo_icone_id, '1 days').download_token;
+
+                if (item.ArquivoIcone?.thumbnail_arquivo_id) {
+                    icone_thumbnail = this.uploadService.getDownloadToken(
+                        item.ArquivoIcone.thumbnail_arquivo_id,
+                        '1 days'
+                    ).download_token;
+                }
+            }
+
+            return {
+                id: item.id,
+                descricao: item.descricao,
+                pdm_id: item.pdm_id,
+                ods_id: item.ods_id,
+                icone,
+                icone_thumbnail,
+                ods: item.ods,
+            };
+        });
     }
 
     async update(tipo: TipoPdmType, id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {

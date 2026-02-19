@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { Transform, Type } from 'class-transformer';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
@@ -141,13 +142,7 @@ export class CreateContratoDto {
     data_base_ano?: number;
 
     @IsOptional()
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     valor?: string;
 }

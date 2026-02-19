@@ -1,95 +1,146 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { UpdateVinculoDto } from './dto/update-vinculo.dto';
-import { CampoVinculo, Prisma } from '@prisma/client';
+import { CampoVinculo, DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { FilterVinculoDto } from './dto/filter-vinculo.dto';
 import { VinculoDto } from './entities/vinculo.entity';
 import { uuidv7 } from 'uuidv7';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { CONST_PERFIL_CASA_CIVIL } from 'src/common/consts';
+import { DemandaService } from '../demanda/demanda.service';
 
 @Injectable()
 export class VinculoService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        @Inject(forwardRef(() => DemandaService))
+        private readonly demandaService: DemandaService
     ) {}
 
-    async upsert(dto: CreateVinculoDto | UpdateVinculoDto, user: PessoaFromJwt, id?: number): Promise<RecordWithId> {
-        if (id) {
-            const self = await this.prisma.distribuicaoRecursoVinculo.findFirst({
-                where: { id, removido_em: null },
+    async create(dto: CreateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // Validações de criação
+        if (!dto.meta_id && !dto.projeto_id && !dto.iniciativa_id && !dto.atividade_id && !dto.demanda_id) {
+            throw new HttpException('É necessário informar uma meta, projeto, iniciativa, atividade ou demanda', 400);
+        }
+
+        if (dto.campo_vinculo === CampoVinculo.Endereco && !dto.geo_localizacao_referencia_id) {
+            throw new HttpException(
+                'É necessário informar a referência de localização geográfica para vínculos do tipo endereço',
+                400
+            );
+        }
+
+        if (dto.campo_vinculo === CampoVinculo.Dotacao && !dto.orcamento_realizado_id) {
+            throw new HttpException('É necessário informar o orçamento realizado para vínculos do tipo dotação', 400);
+        }
+
+        if (dto.demanda_id) {
+            const demanda = await this.prisma.demanda.findUnique({
+                where: { id: dto.demanda_id },
+                select: { status: true },
+            });
+
+            if (!demanda) {
+                throw new NotFoundException('Demanda não encontrada');
+            }
+
+            if (demanda.status !== DemandaStatus.Publicado && demanda.status !== DemandaStatus.Encerrado) {
+                throw new HttpException('Apenas demandas publicadas ou encerradas podem ser vinculadas', 400);
+            }
+
+            // Verifica se já existe um vínculo ativo entre esta demanda e esta distribuição
+            const vinculoExistente = await this.prisma.distribuicaoRecursoVinculo.findFirst({
+                where: {
+                    demanda_id: dto.demanda_id,
+                    distribuicao_id: dto.distribuicao_id,
+                    removido_em: null,
+                },
+            });
+
+            if (vinculoExistente) {
+                throw new HttpException(
+                    'Já existe um vínculo ativo entre esta demanda e esta distribuição de recurso',
+                    400
+                );
+            }
+        }
+
+        // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
+
+        const dadosExtra = this.parseDadosExtra(dto.dados_extra);
+
+        return await this.prisma.$transaction(async (prismaTx) => {
+            const row = await prismaTx.distribuicaoRecursoVinculo.create({
+                data: {
+                    tipo_vinculo_id: dto.tipo_vinculo_id,
+                    distribuicao_id: dto.distribuicao_id,
+                    geo_localizacao_referencia_id: dto.geo_localizacao_referencia_id,
+                    orcamento_realizado_id: dto.orcamento_realizado_id,
+                    meta_id: dto.meta_id,
+                    iniciativa_id: dto.iniciativa_id,
+                    atividade_id: dto.atividade_id,
+                    projeto_id: dto.projeto_id,
+                    demanda_id: dto.demanda_id,
+                    campo_vinculo: dto.campo_vinculo,
+                    valor_vinculo: dto.valor_vinculo,
+                    observacao: dto.observacao,
+                    dados_extra: dadosExtra,
+                    criado_por: user.id,
+                    criado_em: new Date(),
+                },
                 select: { id: true },
             });
-            if (!self) throw new HttpException('Vínculo não encontrado', 404);
-        } else {
-            // Verificações de criação
-            const createDto = dto as CreateVinculoDto;
 
-            // Precisa ter projeto ou meta/iniciativa/atividade.
-            if (!createDto.meta_id && !createDto.projeto_id && !createDto.iniciativa_id && !createDto.atividade_id)
-                throw new HttpException('É necessário informar uma meta, projeto, iniciativa ou atividade', 400);
-
-            if (createDto.campo_vinculo === CampoVinculo.Endereco && !createDto.geo_localizacao_referencia_id) {
-                throw new HttpException(
-                    'É necessário informar a referência de localização geográfica para vínculos do tipo endereço',
-                    400
-                );
+            // Quando o vínculo for em uma demanda, há mudança no status da demanda.
+            if (dto.demanda_id) {
+                await this.processaVinculoPorDemanda(prismaTx, dto.demanda_id, user, row.id);
             }
 
-            if (createDto.campo_vinculo === CampoVinculo.Dotacao && !createDto.orcamento_realizado_id) {
-                throw new HttpException(
-                    'É necessário informar o orçamento realizado para vínculos do tipo dotação',
-                    400
-                );
-            }
-            // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
-        }
+            return row;
+        });
+    }
 
-        // Processando dados extra como JSON
-        try {
-            if ('dados_extra' in dto && dto.dados_extra) {
-                dto.dados_extra = JSON.parse(dto.dados_extra as unknown as string) as any;
-            }
-        } catch (error) {
-            // Caso tenha erro no parse, ignorar o dado extra.
-            delete dto.dados_extra;
-        }
-
-        const created = await this.prisma.distribuicaoRecursoVinculo.upsert({
-            where: { id: id || 0 },
-            create: {
-                // Estes placeholders nunca serão utilizados, mas o Prisma obriga a definir valores para os campos (no caso de update, mesmo que aqui seja create)
-                // Isso ocorre pois o DTO de update não tem todos os campos obrigatórios do create.
-                // Mas como no DTO de criação, estes campos são obrigatórios, eles sempre estarão presentes.
-                tipo_vinculo_id: (dto as CreateVinculoDto).tipo_vinculo_id ?? 0,
-                distribuicao_id: (dto as CreateVinculoDto).distribuicao_id ?? 0,
-                geo_localizacao_referencia_id: (dto as CreateVinculoDto).geo_localizacao_referencia_id ?? undefined,
-                orcamento_realizado_id: (dto as CreateVinculoDto).orcamento_realizado_id ?? undefined,
-                meta_id: (dto as CreateVinculoDto).meta_id ?? undefined,
-                iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
-                atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,
-                projeto_id: (dto as CreateVinculoDto).projeto_id ?? undefined,
-                campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
-                valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
-                observacao: (dto as CreateVinculoDto).observacao,
-                dados_extra: (dto as CreateVinculoDto).dados_extra,
-                criado_por: user.id,
-                criado_em: new Date(Date.now()),
-            },
-            update: {
-                tipo_vinculo_id: (dto as UpdateVinculoDto).tipo_vinculo_id,
-                observacao: (dto as UpdateVinculoDto).observacao,
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-            },
+    async update(id: number, dto: UpdateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.prisma.distribuicaoRecursoVinculo.findFirst({
+            where: { id, removido_em: null },
             select: { id: true },
         });
+        if (!self) throw new HttpException('Vínculo não encontrado', 404);
 
-        return created;
+        const dadosExtra = this.parseDadosExtra(dto.dados_extra);
+
+        await this.prisma.distribuicaoRecursoVinculo.update({
+            where: { id },
+            data: {
+                tipo_vinculo_id: dto.tipo_vinculo_id,
+                observacao: dto.observacao,
+                dados_extra: dadosExtra,
+                atualizado_por: user.id,
+                atualizado_em: new Date(),
+            },
+        });
+
+        return { id };
+    }
+
+    private parseDadosExtra(dadosExtra: string | undefined): any {
+        if (!dadosExtra) return undefined;
+        try {
+            return JSON.parse(dadosExtra);
+        } catch (error) {
+            throw new HttpException('dados_extra não é um JSON válido', 400);
+        }
     }
 
     async findAll(filters: FilterVinculoDto): Promise<VinculoDto[]> {
@@ -101,6 +152,7 @@ export class VinculoService {
                 iniciativa_id: filters.iniciativa_id,
                 atividade_id: filters.atividade_id,
                 projeto_id: filters.projeto_id,
+                demanda_id: filters.demanda_id,
                 campo_vinculo: filters.campo_vinculo,
                 distribuicao: {
                     id: filters.distribuicao_id,
@@ -346,6 +398,27 @@ export class VinculoService {
                         },
                     },
                 },
+
+                demanda: {
+                    select: {
+                        id: true,
+                        nome_projeto: true,
+                        valor: true,
+                        orgao: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                        area_tematica: {
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -455,6 +528,22 @@ export class VinculoService {
                           rotulo_macro_tema: pdm.rotulo_macro_tema ?? null,
                       }
                     : null,
+                demanda: v.demanda
+                    ? {
+                          id: v.demanda.id,
+                          orgao: {
+                              id: v.demanda.orgao.id,
+                              sigla: v.demanda.orgao.sigla,
+                              descricao: v.demanda.orgao.descricao,
+                          },
+                          valor: v.demanda.valor,
+                          nome_projeto: v.demanda.nome_projeto,
+                          area_tematica: {
+                              id: v.demanda.area_tematica.id,
+                              nome: v.demanda.area_tematica.nome,
+                          },
+                      }
+                    : null,
             };
         });
     }
@@ -482,7 +571,15 @@ export class VinculoService {
             meta_id,
             atividade_id,
             iniciativa_id,
-        }: { id?: number; projeto_id?: number; meta_id?: number; atividade_id?: number; iniciativa_id?: number },
+            demanda_id,
+        }: {
+            id?: number;
+            projeto_id?: number;
+            meta_id?: number;
+            atividade_id?: number;
+            iniciativa_id?: number;
+            demanda_id?: number;
+        },
         motivo_invalido: string,
         prismaTx?: Prisma.TransactionClient
     ): Promise<void> {
@@ -502,6 +599,7 @@ export class VinculoService {
                     meta_id,
                     atividade_id,
                     iniciativa_id,
+                    demanda_id,
                     removido_em: null,
                     invalidado_em: null,
                 },
@@ -560,6 +658,7 @@ export class VinculoService {
                     meta_id,
                     atividade_id,
                     iniciativa_id,
+                    demanda_id,
                 },
                 data: {
                     invalidado_em: new Date(Date.now()),
@@ -659,5 +758,104 @@ export class VinculoService {
         const recipientes = [...new Set([...gestoresCasaCivil].map((item) => item.email))];
 
         return recipientes;
+    }
+
+    /*
+     * Processa as regras de negócio relacionadas a um vínculo em uma demanda, como mudança de status da demanda e envio de email para o gestor municipal.
+     * TODO?: Envio de e-mail para parlamentares relevantes.
+     */
+    private async processaVinculoPorDemanda(
+        prismaTx: Prisma.TransactionClient,
+        demandaId: number,
+        user: PessoaFromJwt,
+        vinculoId: number
+    ): Promise<void> {
+        const demanda = await this.demandaService.findOne(demandaId, user);
+
+        // Só altera o status para Encerrado se ainda estiver Publicado (primeiro vínculo)
+        if (demanda.status === DemandaStatus.Publicado) {
+            await this.demandaService.changeStatus(
+                demandaId,
+                user,
+                demanda.status,
+                DemandaStatus.Encerrado,
+                'Demanda vinculada a uma distribuição de recurso',
+                DemandaSituacao.Concluido,
+                prismaTx
+            );
+        }
+
+        // Buscar o vínculo recém-criado para obter dados da transferência
+        const vinculo = await prismaTx.distribuicaoRecursoVinculo.findFirst({
+            where: {
+                id: vinculoId,
+                demanda_id: demandaId,
+                removido_em: null,
+            },
+            select: {
+                distribuicao: {
+                    select: {
+                        transferencia: {
+                            select: {
+                                identificador: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+        });
+
+        if (!vinculo) {
+            throw new InternalServerErrorException('Erro ao buscar vínculo da demanda para envio de e-mail');
+        }
+
+        // Buscar configuração do órgão para o rodapé do e-mail
+        const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+        const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+        if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+
+        const orgao = await prismaTx.orgao.findUnique({
+            where: { id: orgaoId },
+            select: { descricao: true },
+        });
+
+        if (!orgao) {
+            throw new InternalServerErrorException('Erro ao buscar dados do órgão para envio de e-mail');
+        }
+
+        // Obter URL base do SMAE
+        const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+        // Envio de e-mail para o gestor municipal indicando que a Demanda registrada foi recebida através da emenda (estadual ou federal)
+        const email = demanda.email_responsavel;
+
+        // Formatar o valor em reais com separadores de milhar (.) e decimais (,)
+        const valorNumerico = parseFloat(demanda.valor);
+        const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+        await prismaTx.emaildbQueue.create({
+            data: {
+                id: uuidv7(),
+                config_id: 1,
+                subject: 'Demanda associada à Transferência Voluntária',
+                template: 'demanda-vinculada.html',
+                to: email,
+                variables: {
+                    nome_responsavel: demanda.nome_responsavel,
+                    transferencia_identificador: vinculo.distribuicao.transferencia.identificador,
+                    nome_projeto: demanda.nome_projeto,
+                    valor: valorFormatado,
+                    area_tematica: demanda.area_tematica.nome,
+                    orgao_nome: orgao.descricao,
+                    smae_url: smaeUrl,
+                },
+            },
+        });
     }
 }

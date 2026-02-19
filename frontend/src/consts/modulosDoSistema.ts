@@ -83,6 +83,9 @@ const modulos: ModulosDoSistema = {
       {
         name: 'PanoramaTransferenciasListar',
       },
+      {
+        name: 'demandas',
+      },
     ],
   },
   MDO: {

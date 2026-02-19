@@ -1,11 +1,12 @@
 import { task_type } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto';
+import { CreateApiLogDayDto } from '../sysadmin/dto/api-log/create-api-log-day.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
 import { CreateEchoDto } from './echo/dto/create-echo.dto';
 import { CreateImportacaoParlamentarDto } from './importacao_parlamentar/dto/create-parlamentar.dto';
+import { CreateRefreshDemandaDto } from '../sysadmin/dto/demanda/create-refresh-demanda.dto';
 import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
 import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
@@ -13,6 +14,7 @@ import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/creat
 import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
 import { CreateRunReportDto } from './run_report/dto/create-run-report.dto';
 import { CreateRunUpdateDto } from './run_update/dto/create-run-update.dto';
+import { GerarThumbnailDto } from '../upload/dto/gerar-thumbnail.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -60,6 +62,12 @@ export function ParseParams(taskType: task_type, value: any): any {
             break;
         case 'gerar_preview_documento':
             // No params class for this task yet.
+            break;
+        case 'gerar_thumbnail_imagem':
+            theClass = GerarThumbnailDto;
+            break;
+        case 'refresh_demanda':
+            theClass = CreateRefreshDemandaDto;
             break;
         default:
             taskType satisfies never;

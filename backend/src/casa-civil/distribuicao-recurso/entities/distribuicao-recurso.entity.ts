@@ -57,6 +57,7 @@ export class DistribuicaoRecursoDto {
     distribuicao_agencia: string | null;
     distribuicao_conta: string | null;
     distribuicao_banco: string | null;
+    pode_editar: boolean;
 }
 
 export class DistribuicaoRecursoTransferenciaDto {

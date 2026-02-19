@@ -1,5 +1,8 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+
+import { useAuthStore } from '@/stores/auth.store';
 
 import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
 
@@ -47,6 +50,9 @@ type Props = VaralDeItemProps & {
 };
 
 const props = defineProps<Props>();
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const edicaoModal = ref<EdicaoTarefaComCronogramaModalExposed | undefined>();
 
@@ -144,6 +150,7 @@ function handleEditar() {
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button
+            v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])"
             class="varal-de-fase-item__botao"
             type="button"
             @click="handleEditar"

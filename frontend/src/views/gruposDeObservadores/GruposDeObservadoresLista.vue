@@ -56,13 +56,15 @@ if (!Array.isArray(organs) || !organs.length) {
   />
 
   <table class="tablemain">
-    <col>
-    <col>
-    <col class="col--number">
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col class="col--number">
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>Nome</th>

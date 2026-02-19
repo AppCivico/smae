@@ -1,9 +1,11 @@
+import statusObras from '@/consts/statusObras';
 import type {
   DotacaoBuscaResponseDto,
   PdmPsResumoDto,
   ProjetoObraResumoDto,
 } from '@back/dotacao-busca/dto/dotacao-busca.dto';
 import type {
+  DemandaSearchResultDto,
   EtapaSearchResultDto,
   MetaIniAtvLookupInfoDto,
   PdmRotuloInfo,
@@ -11,7 +13,6 @@ import type {
   SearchEntitiesNearbyResponseDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
-import statusObras from '@/consts/statusObras';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -47,9 +48,9 @@ type LocalizacaoProximidade = {
   geo_camada_codigo: string;
 };
 
-type ItemConsultaGeralFormatado = {
+export type ItemConsultaGeralFormatado = {
   id: number;
-  orcamento_realizado_id?: number;
+  orcamento_realizado_id?: number | null;
   distancia_metros: number;
   geo_localizacao_referencia_id?: number;
   modulo: string;
@@ -57,7 +58,7 @@ type ItemConsultaGeralFormatado = {
   nro_vinculos: number;
   localizacoes: LocalizacaoGeoJSON[];
   cor: string;
-  portfolio_programa?: string;
+  portfolio_programa_area?: string;
   orgao?: string;
   status?: {
     valor: string;
@@ -76,6 +77,7 @@ export const LegendasStatus = {
   projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
   programaDeMetas: { item: 'Programa de Metas', color: '#4074BF' },
   planoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
+  demandas: { item: 'Demandas', color: '#964df6' },
 };
 
 export const useEntidadesProximasStore = defineStore('entidadesProximas', {
@@ -196,7 +198,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 id: obra.id || 0,
                 nome: obra.nome || '',
                 cor: LegendasStatus.obras.color,
-                portfolio_programa: obra.portfolio_titulo || '',
+                portfolio_programa_area: obra.portfolio_titulo || '',
                 orgao: obra.orgao_responsavel_sigla || '',
                 status: obra.status ? {
                   valor: obra.status,
@@ -220,7 +222,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 id: projeto.id || 0,
                 nome: projeto.nome || '',
                 cor: LegendasStatus.projetos.color,
-                portfolio_programa: projeto.portfolio_titulo || '',
+                portfolio_programa_area: projeto.portfolio_titulo || '',
                 orgao: projeto.orgao_responsavel_sigla || '',
                 status: projeto.status ? {
                   valor: projeto.status,
@@ -238,8 +240,8 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 ...dadosParciais,
                 id: pdmPs.meta_id || 0,
                 nome: pdmPs.meta_titulo || '',
+                portfolio_programa_area: pdmPs.pdm_nome || '',
                 orgao: pdmPs.orgaos_sigla?.join(', ') || '',
-                cor: LegendasStatus.programaDeMetas.color,
                 meta_info: {
                   id: pdmPs.meta_id || 0,
                   codigo: pdmPs.meta_codigo || '',
@@ -249,6 +251,19 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                   nro_vinculos: pdmPs.nro_vinculos,
                 } as MetaIniAtvLookupInfoDto,
               };
+
+              switch (pdmPs.pdm_tipo) {
+                case 'PDM':
+                  dadosParciais.cor = LegendasStatus.programaDeMetas.color;
+                  break;
+
+                case 'PS':
+                  dadosParciais.cor = LegendasStatus.planoSetorial.color;
+                  break;
+
+                default:
+                  break;
+              }
 
               const detalhes: Record<string, string | null | undefined> = {};
 
@@ -300,6 +315,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
       return dadosOrganizados;
     },
+
     entidadesPorProximidade({ dadosPorGeo }) {
       if (!dadosPorGeo || Object.keys(dadosPorGeo).length === 0) {
         return [];
@@ -309,10 +325,13 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         'obras',
         'projetos',
         'etapas',
+        'demandas',
       ] as const;
 
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
-        type Grupo = (EtapaSearchResultDto | ProjetoSearchResultDto)[] | undefined;
+        type Grupo = (EtapaSearchResultDto
+        | ProjetoSearchResultDto
+        | DemandaSearchResultDto)[] | undefined;
         // eslint-disable-next-line max-len
         const grupo: Grupo = (dadosPorGeo[chave as keyof SearchEntitiesNearbyResponseDto] || undefined);
 
@@ -338,7 +357,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 ...dadosParciais,
                 nome: obra.nome ?? '',
                 cor: LegendasStatus.obras.color,
-                portfolio_programa: obra.portfolio_titulo || '',
+                portfolio_programa_area: obra.portfolio_titulo || '',
                 orgao: obra.orgao_responsavel_sigla || '',
                 nro_vinculos: Number(obra.nro_vinculos ?? 0),
                 status: obra.status ? {
@@ -363,7 +382,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 ...dadosParciais,
                 nome: projeto.nome ?? '',
                 cor: LegendasStatus.projetos.color,
-                portfolio_programa: projeto.portfolio_titulo || '',
+                portfolio_programa_area: projeto.portfolio_titulo || '',
                 orgao: projeto.orgao_responsavel_sigla || '',
                 nro_vinculos: Number(projeto.nro_vinculos ?? 0),
                 status: projeto.status ? {
@@ -392,7 +411,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
                   if (pdmInfo) {
                     dadosParciais.pdm_info = pdmInfo;
-                    dadosParciais.portfolio_programa = pdmInfo.nome || '';
+                    dadosParciais.portfolio_programa_area = pdmInfo.nome || '';
 
                     if (['PDM', 'ProgramaDeMetas'].indexOf(pdmInfo.sistema) > -1) {
                       dadosParciais.cor = LegendasStatus.programaDeMetas.color;
@@ -433,6 +452,30 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                   }
                 }
               }
+
+              break;
+            }
+
+            case 'demandas': {
+              const demanda = registro as DemandaSearchResultDto;
+
+              dadosParciais = {
+                ...dadosParciais,
+                nome: demanda.nome_projeto || '',
+                orgao: demanda.orgao_sigla || '',
+                cor: LegendasStatus.demandas.color,
+                portfolio_programa_area: demanda.area_tematica_nome,
+                nro_vinculos: Number(demanda.nro_vinculos ?? 0),
+                status: demanda.status ? {
+                  valor: demanda.status,
+                  nome: demanda.status,
+                } : undefined,
+                detalhes: {
+                  Descrição: demanda.descricao,
+                  'Unidade Responsável': demanda.unidade_responsavel,
+                  Responsável: demanda.nome_responsavel,
+                },
+              };
 
               break;
             }

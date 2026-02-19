@@ -214,6 +214,32 @@ export const andamentoDaFase = (órgãoRequerido = false, pessoaRequerida = fals
     .required(),
 });
 
+export const areaTematica = object({
+  nome: string()
+    .label('Área')
+    .required('Preencha o nome da área')
+    .max(255, 'O nome da área deve ter no máximo 255 caracteres'),
+  ativo: boolean()
+    .label('Ativo')
+    .required('Selecione se a área está ativa'),
+  acoes: array()
+    .label('Ações')
+    .of(
+      object({
+        id: number()
+          .nullable()
+          .label('ID'),
+        nome: string()
+          .label('Ação')
+          .required('Preencha o nome da ação')
+          .max(255, 'O nome da ação deve ter no máximo 255 caracteres'),
+        ativo: boolean()
+          .label('Ativa')
+          .required('Selecione se a ação está ativa'),
+      }),
+    ),
+});
+
 export const arquivo = (semEnvio) => object()
   .shape({
     arquivo: string()
@@ -388,11 +414,11 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Área gestora'),
     objeto_resumo: string()
       .max(2048)
-      .nullable()
+      .required()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
       .max(2048)
-      .nullable()
+      .required()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
       .nullable()
@@ -433,7 +459,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Valor do contrato'),
     observacoes: string()
       .max(2048)
-      .nullable()
+      .required()
       .label('Observações'),
   });
 
@@ -3420,6 +3446,33 @@ export const relatórioAtividadesPendentes = relatorioValidacaoBase.concat(objec
   }),
 }));
 
+export const relatórioDeDemandas = relatorioValidacaoBase.concat(object({
+  parametros: object({
+    status: array()
+      .label('Status')
+      .of(string())
+      .min(1, 'Selecione pelo menos um status')
+      .required('Status é obrigatório'),
+    data_registro_inicio: date()
+      .nullable()
+      .label('Data de início')
+      .transform((v) => (v === '' ? null : v)),
+    data_registro_fim: date()
+      .nullable()
+      .min(ref('data_registro_inicio'), 'Data final deve ser posterior à data inicial')
+      .label('Data final')
+      .transform((v) => (v === '' ? null : v)),
+    orgao_id: number()
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .label('Gestor Municipal'),
+    area_tematica_id: number()
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .label('Área temática'),
+  }),
+}));
+
 export const relatórioMensal = object({
   fonte: string()
     .required(),
@@ -4640,4 +4693,93 @@ export const campoEtapaPorPortfolio = object({
     .label('Etapa')
     .required('Selecione uma etapa')
     .min(1, 'Selecione uma etapa'),
+});
+
+export const valoresLimites = object({
+  data_inicio_vigencia: date()
+    .label('Início da Vigência')
+    .required('Informe a data de início da vigência')
+    .test(
+      'verificar-data-inicio',
+      'A data de início não pode ser maior que a data de fim',
+      (dataInicio, { resolve }) => {
+        const dataFim = resolve(ref('data_fim_vigencia'));
+        return !dataFim || dataInicio <= dataFim;
+      },
+    ),
+  data_fim_vigencia: date()
+    .label('Fim da Vigência')
+    .nullableOuVazio()
+    .transform((v) => (v === '' || v === null ? null : v))
+    .test(
+      'verificar-data-fim',
+      'A data de fim não pode ser menor que a data de início',
+      (dataFim, { resolve }) => {
+        const dataInicio = resolve(ref('data_inicio_vigencia'));
+        return !dataFim || !dataInicio || dataFim >= dataInicio;
+      },
+    ),
+  valor_minimo: string()
+    .label('Valor Mínimo')
+    .required('Informe o valor mínimo')
+    .test(
+      'verificar-valor-minimo',
+      'O valor mínimo não pode ser maior que o valor máximo',
+      (valorMinimo, { resolve }) => {
+        const valorMaximo = resolve(ref('valor_maximo'));
+        return !valorMinimo || !valorMaximo || parseFloat(valorMinimo) <= parseFloat(valorMaximo);
+      },
+    ),
+  valor_maximo: string()
+    .label('Valor Máximo')
+    .required('Informe o valor máximo')
+    .test(
+      'verificar-valor-maximo',
+      'O valor máximo não pode ser menor que o valor mínimo',
+      (valorMaximo, { resolve }) => {
+        const valorMinimo = resolve(ref('valor_minimo'));
+        return !valorMaximo || !valorMinimo || parseFloat(valorMaximo) >= parseFloat(valorMinimo);
+      },
+    ),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(2048, 'A observação deve ter no máximo 500 caracteres'),
+  anexos: mixed()
+    .label('Documentos/Fotos/Arquivos')
+    .nullable(),
+  upload_tokens: array(),
+});
+
+export const valoresLimitesFiltro = object({
+  data_inicio_vigencia: date()
+    .label('Início da Vigência a partir de')
+    .nullableOuVazio()
+    .test(
+      'verificar-data-inicio',
+      'A data de início não pode ser maior que a data de fim',
+      (dataInicio, { resolve }) => {
+        const dataFim = resolve(ref('data_fim_vigencia'));
+        if (dataFim && !dataInicio) {
+          return true;
+        }
+
+        return !dataFim || dataInicio <= dataFim;
+      },
+    ),
+  data_fim_vigencia: date()
+    .label('Fim da Vigência até')
+    .nullableOuVazio()
+    .test(
+      'verificar-data-fim',
+      'A data de fim não pode ser menor que a data de início',
+      (dataFim, { resolve }) => {
+        const dataInicio = resolve(ref('data_inicio_vigencia'));
+        return !dataFim || !dataInicio || dataFim >= dataInicio;
+      },
+    ),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(500, 'A observação deve ter no máximo 500 caracteres'),
 });

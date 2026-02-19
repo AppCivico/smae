@@ -13,6 +13,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from '../../../common/decorators/IsNumberStringCustom';
 
 import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
 import { DateTransform } from '../../../auth/transforms/date.transform';
@@ -290,29 +291,13 @@ export class VariavelAnaliseQualitativaDto {
     variavel_id: number;
 
     @IsOptional()
-    // maxDecimalPlaces: 30 nao existe isso nesse cara, só tem no IsNumber, mas se usar o transform,
-    // o javascript vai perder a precisao na hora do casting pra float
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
-        }
-    )
+    @IsNumberStringCustom(30, 30)
     @ValidateIf((object, value) => value !== '')
     @Type(() => String)
     valor_realizado?: string;
 
     @IsOptional()
-    // maxDecimalPlaces: 30 nao existe isso nesse cara, só tem no IsNumber, mas se usar o transform,
-    // o javascript vai perder a precisao na hora do casting pra float
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
-        }
-    )
+    @IsNumberStringCustom(30, 30)
     @ValidateIf((object, value) => value !== '')
     @Type(() => String)
     valor_realizado_acumulado?: string;

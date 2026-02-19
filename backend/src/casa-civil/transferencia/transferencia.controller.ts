@@ -104,7 +104,7 @@ export class TransferenciaController {
 
     @Post(':id/anexo')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.inserir'])
+    @Roles(['CadastroTransferenciaAnexo.inserir'])
     async upload(
         @Param() params: FindOneParams,
         @Body() createTransferenciaAnexo: CreateTransferenciaAnexoDto,
@@ -115,7 +115,7 @@ export class TransferenciaController {
 
     @Get(':id/anexo')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroTransferenciaAnexo.listar'])
     async download(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -125,7 +125,7 @@ export class TransferenciaController {
 
     @Patch(':id/anexo/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferenciaAnexo.editar'])
     async updateDocumento(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateTransferenciaAnexoDto,
@@ -136,7 +136,7 @@ export class TransferenciaController {
 
     @Delete(':id/anexo/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.remover'])
+    @Roles(['CadastroTransferenciaAnexo.remover'])
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

@@ -145,6 +145,7 @@ export class ReferenciasValidasBase {
         'atividade_id',
         'meta_id',
         'etapa_id',
+        'demanda_id',
     ];
 
     projeto_id?: number | number[];
@@ -152,6 +153,7 @@ export class ReferenciasValidasBase {
     atividade_id?: number | number[];
     meta_id?: number | number[];
     etapa_id?: number | number[];
+    demanda_id?: number | number[];
 
     validaReferencia(): void {
         const countTruthy = ReferenciasValidasBase.props.filter((prop) => !!this[prop]).length;
@@ -161,7 +163,7 @@ export class ReferenciasValidasBase {
         }
     }
 
-    referencia(): 'projeto_id' | 'iniciativa_id' | 'atividade_id' | 'meta_id' | 'etapa_id' {
+    referencia(): 'projeto_id' | 'iniciativa_id' | 'atividade_id' | 'meta_id' | 'etapa_id' | 'demanda_id' {
         const definedKeys = ReferenciasValidasBase.props.find((key) => this[key] !== undefined);
 
         if (!definedKeys) {

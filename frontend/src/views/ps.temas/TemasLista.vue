@@ -1,3 +1,49 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import { useTemasPsStore } from '@/stores/temasPs.store';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const route = useRoute();
+const titulo = typeof route?.meta?.título === 'function'
+  ? computed(() => route.meta.título())
+  : route?.meta?.título;
+const alertStore = useAlertStore();
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
+
+const temasStore = useTemasPsStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(temasStore);
+
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
+const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
+
+async function excluirTema(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await temasStore.excluirItem(id)) {
+        temasStore.$reset();
+        temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+temasStore.$reset();
+temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+</script>
 <template>
   <header class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -12,9 +58,11 @@
   </header>
 
   <table class="tablemain">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th> {{ titulo }} </th>
@@ -79,49 +127,3 @@
     </tbody>
   </table>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { useTemasPsStore } from '@/stores/temasPs.store';
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-const route = useRoute();
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
-const alertStore = useAlertStore();
-
-const authStore = useAuthStore();
-const { temPermissãoPara } = storeToRefs(authStore);
-
-const temasStore = useTemasPsStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(temasStore);
-
-const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
-const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
-
-async function excluirTema(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await temasStore.excluirItem(id)) {
-        temasStore.$reset();
-        temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-temasStore.$reset();
-temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-</script>

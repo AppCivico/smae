@@ -54,7 +54,7 @@ declare module 'pinia' {
     requestS: RequestS;
     router: Router;
     route: RouteLocationNormalizedLoaded;
-    resetAllStores: (storeIds: string | string[]) => void;
+    resetStores: (storeIds?: string | string[]) => void;
   }
   export interface PiniaCustomStateProperties {
     route: RouteLocationNormalizedLoaded;
@@ -74,7 +74,7 @@ pinia.use(({ store }) => {
   stores.push(store);
 
   return {
-    resetAllStores: (storeIds = 'all') => {
+    resetStores: (storeIds = 'all') => {
       stores.forEach((eachStore) => {
         switch (true) {
           case storeIds === 'all':

@@ -14,6 +14,7 @@ import type { Coluna } from '@/components/SmaeTable/tipagem.ts';
 import SmallModal from '@/components/SmallModal.vue';
 import DetalhamentoDeVinculosPorItem from '@/components/TransferenciasVoluntarias/DetalhamentoDeVinculosPorItem.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
+import { useAuthStore } from '@/stores/auth.store';
 import { LegendasStatus, useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 
@@ -21,9 +22,15 @@ import ConsultaGeralVinculacaoIndex from '../ConsultaGeralVinculacao/ConsultaGer
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 
-const legendas = {
-  status: Object.values(LegendasStatus),
-};
+const legendas = computed(() => {
+  const status = Object.values(LegendasStatus);
+
+  return {
+    status: useAuthStore().temPermissãoPara('Menu.demandas')
+      ? status
+      : status.filter((s) => s.item !== 'Demandas'),
+  };
+});
 
 const tiposPesquisa = {
   endereco: 'Endereço',
@@ -76,18 +83,18 @@ const colunas = computed(() => {
       atributosDaColuna: { class: 'col--minimum' },
       atributosDaCelula: { class: 'tc' },
     },
-    { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
-    { chave: 'nome', label: 'nome/meta' },
+    { chave: 'portfolio_programa_area', label: 'Portfólio/Plano ou programa/Área temática' },
+    { chave: 'nome', label: 'Nome/Meta' },
     { chave: 'orgao', label: 'Órgão' },
     {
       chave: 'status',
-      label: 'status',
+      label: 'Status',
       formatador: (v) => v?.nome || 'N/A',
       atributosDaColuna: { class: 'col--minimum' },
     },
     {
       chave: 'nro_vinculos',
-      label: 'nº vínculos',
+      label: 'Nº vínculos',
       atributosDaCelula: { class: 'cell--number' },
       atributosDaColuna: { class: 'col--minimum' },
       atributosDoCabecalhoDeColuna: { class: 'cell--number' },
@@ -112,7 +119,7 @@ const colunas = computed(() => {
       {
         chave: 'distancia_metros',
         label: 'Distância',
-        atributosDaCelula: { class: 'nowrap cell--number' },
+        atributosDaCelula: { class: 'cell--number' },
         atributosDoCabecalhoDeColuna: { class: 'cell--number' },
         atributosDoRodapeDeColuna: { class: 'cell--number' },
         formatador: (v = 0) => `${(v || 0).toFixed(0)} m`,
@@ -178,11 +185,12 @@ async function handleItemSelecionado(linhaIndex: number) {
       <article
         class="tabela-resultados "
       >
-        <CardEnvelope.Titulo>
-          <span class="tabela-resultados__titulo">
-            Resultado por: &nbsp;
-            <strong>{{ tiposPesquisa[tipo] }}</strong>
-          </span>
+        <CardEnvelope.Titulo
+          cor-bolinha="#F7C234"
+          estilo="com-marcador"
+        >
+          Resultado por: &nbsp;
+          <strong>{{ tiposPesquisa[tipo] }}</strong>
         </CardEnvelope.Titulo>
 
         <ListaLegendas
@@ -258,7 +266,7 @@ async function handleItemSelecionado(linhaIndex: number) {
             <ConsultaGeralVinculacaoIndex
               :exibindo="linhaIndex == vinculacaoAberta"
               :dados="linha"
-              :tipo="tipo"
+              :tipo="linha.modulo === 'demandas' ? 'demanda' : tipo"
               @fechar="fecharModal"
               @vinculado="handleNovaVinculacao"
             />
@@ -278,37 +286,9 @@ async function handleItemSelecionado(linhaIndex: number) {
 </template>
 
 <style lang="less" scoped>
-.tabela-resultados__titulo {
-  position: relative;
-  font-weight: 300;
-  font-size: 2rem;
-  line-height: 1.3;
-
-  display: flex;
-  align-items: center;
-
+.tabela-resultados {
   strong {
     font-weight: 700;
-  }
-
-  &::before {
-    content: '';
-    width: 20px;
-    height: 20px;
-    background-color: #F7C234;
-    border-radius: 100%;
-    border: 5px solid white;
-    outline: 0.46px solid #B8C0CC;
-    margin-right: 14px;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 30px;
-    width: 10px;
-    height: 0.46px;
-    background-color: #B8C0CC;
   }
 }
 

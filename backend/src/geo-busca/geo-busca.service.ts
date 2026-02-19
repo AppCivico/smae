@@ -4,12 +4,14 @@ import { GeoJSON } from 'geojson';
 
 import { PrismaService } from '../prisma/prisma.service';
 import {
+    DemandaSearchResultDto,
     GeoInfoBaseDto,
     MetaIniAtvLookupInfoDto,
     ProjetoSearchResultDto,
     SearchEntitiesNearbyDto,
     SearchEntitiesNearbyResponseDto,
 } from './dto/geo-busca.entity';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 const MAX_RESULTS_GEOLOC = 1000; // Max GeoLocalizacao records to fetch initially
 
@@ -17,7 +19,10 @@ const MAX_RESULTS_GEOLOC = 1000; // Max GeoLocalizacao records to fetch initiall
 export class GeoBuscaService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async searchEntitiesNearby(dto: SearchEntitiesNearbyDto): Promise<SearchEntitiesNearbyResponseDto> {
+    async searchEntitiesNearby(
+        dto: SearchEntitiesNearbyDto,
+        user: PessoaFromJwt
+    ): Promise<SearchEntitiesNearbyResponseDto> {
         const { lat, lon, raio_km = 2, raio, regiao_id, geo_camada_config_id, geo_camada_codigo } = dto;
 
         // TODO: O raio_km provavelmente será dropado.
@@ -124,11 +129,12 @@ export class GeoBuscaService {
                 iniciativas: [],
                 atividades: [],
                 etapas: [],
+                demandas: [],
                 pdm_info: [],
                 metas_info: [],
                 iniciativas_info: [],
                 atividades_info: [],
-            }; // Initialized metas_info, iniciativas_info, atividades_info
+            };
         }
 
         const referencias = await this.prisma.geoLocalizacaoReferencia.findMany({
@@ -149,11 +155,12 @@ export class GeoBuscaService {
                 iniciativas: [],
                 atividades: [],
                 etapas: [],
+                demandas: [],
                 pdm_info: [],
                 metas_info: [],
                 iniciativas_info: [],
                 atividades_info: [],
-            }; // Initialized metas_info, iniciativas_info, atividades_info
+            };
         }
 
         const response: SearchEntitiesNearbyResponseDto = {
@@ -163,6 +170,7 @@ export class GeoBuscaService {
             iniciativas: [],
             atividades: [],
             etapas: [],
+            demandas: [],
             pdm_info: [],
             metas_info: [],
             iniciativas_info: [],
@@ -211,6 +219,7 @@ export class GeoBuscaService {
             if (ref.iniciativa_id) addGeoInfoToMap('iniciativa', ref.iniciativa_id, geoInfo);
             if (ref.atividade_id) addGeoInfoToMap('atividade', ref.atividade_id, geoInfo);
             if (ref.etapa_id) addGeoInfoToMap('etapa', ref.etapa_id, geoInfo);
+            if (ref.demanda_id) addGeoInfoToMap('demanda', ref.demanda_id, geoInfo);
         });
 
         // Fetch entities
@@ -335,8 +344,7 @@ export class GeoBuscaService {
                 seenIniIdsForLookup.add(i.id);
                 response.iniciativas.push({
                     id: i.id,
-                    geo_localizacao_referencia_id:
-                        entityGeoInfoMap.get(`iniciativa-${i.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`iniciativa-${i.id}`)?.[0]?.id || 0,
                     titulo: i.titulo,
                     codigo: i.codigo,
                     meta_id: i.meta.id,
@@ -376,8 +384,7 @@ export class GeoBuscaService {
                 seenAtvIdsForLookup.add(a.id);
                 response.atividades.push({
                     id: a.id,
-                    geo_localizacao_referencia_id:
-                        entityGeoInfoMap.get(`atividade-${a.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`atividade-${a.id}`)?.[0]?.id || 0,
                     titulo: a.titulo,
                     codigo: a.codigo,
                     iniciativa_id: a.iniciativa.id,
@@ -431,7 +438,7 @@ export class GeoBuscaService {
 
                 response.etapas.push({
                     id: e.id,
-                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`etapa-${e.id}`)?.[0]?.geo_localizacao_id || 0,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`etapa-${e.id}`)?.[0]?.id || 0,
                     titulo: e.titulo ?? `Etapa ID ${e.id}`,
                     cronograma_id: e.cronograma_id,
                     meta_id: metaId ?? 0,
@@ -539,6 +546,55 @@ export class GeoBuscaService {
                     macro_tema_id: a.iniciativa.meta.macro_tema_id,
                     macro_tema_nome: a.iniciativa.meta.macro_tema?.descricao ?? null,
                 } satisfies MetaIniAtvLookupInfoDto;
+            });
+        }
+
+        // Demandas
+        const demandaIds = [...new Set(referencias.filter((r) => r.demanda_id).map((r) => r.demanda_id!))];
+        if (demandaIds.length > 0 && user.hasSomeRoles(['Menu.demandas'])) {
+            const demandasData = await this.prisma.demanda.findMany({
+                where: {
+                    id: { in: demandaIds },
+                    removido_em: null,
+                    OR: [{ status: 'Publicado' }, { status: 'Encerrado', situacao_encerramento: 'Concluido' }],
+                },
+                select: {
+                    id: true,
+                    nome_projeto: true,
+                    descricao: true,
+                    status: true,
+                    situacao_encerramento: true,
+                    finalidade: true,
+                    valor: true,
+                    data_status_atual: true,
+                    unidade_responsavel: true,
+                    nome_responsavel: true,
+                    area_tematica: { select: { nome: true } },
+                    orgao: { select: { sigla: true } },
+                    vinculosDistribuicao: { select: { id: true }, where: { removido_em: null } },
+                },
+            });
+            demandasData.forEach((d) => {
+                const geoInfos = entityGeoInfoMap.get(`demanda-${d.id}`) || [];
+
+                response.demandas.push({
+                    id: d.id,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`demanda-${d.id}`)?.[0]?.id || 0,
+                    nome_projeto: d.nome_projeto,
+                    descricao: d.descricao,
+                    status: d.status,
+                    situacao_encerramento: d.situacao_encerramento,
+                    finalidade: d.finalidade,
+                    valor: d.valor.toString(),
+                    area_tematica_nome: d.area_tematica.nome,
+                    orgao_sigla: d.orgao.sigla,
+                    unidade_responsavel: d.unidade_responsavel,
+                    nome_responsavel: d.nome_responsavel,
+                    data_status_atual: d.data_status_atual.toISOString(),
+                    localizacoes: geoInfos,
+                    nro_vinculos: d.vinculosDistribuicao.length,
+                    distancia_metros: getMinDistancia(geoInfos),
+                } satisfies DemandaSearchResultDto);
             });
         }
 

@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNumberString, IsOptional, ValidateIf } from 'class-validator';
+import { IsNumberStringCustom } from '../../../common/decorators/IsNumberStringCustom';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 export class AutoPreencherValorDto {
@@ -7,24 +8,12 @@ export class AutoPreencherValorDto {
     @Transform(NumberTransform)
     meta_id: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
-        }
-    )
+    @IsNumberStringCustom(30, 30)
     @Type(() => String)
     valor_realizado: string;
 
     @IsOptional()
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 30 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String ou vazio para remover',
-        }
-    )
+    @IsNumberStringCustom(30, 30)
     @ValidateIf((object, value) => value !== '')
     @Type(() => String)
     valor_realizado_acumulado?: string;

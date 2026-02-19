@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { Transform, Type } from 'class-transformer';
 import { PositiveNumberTransformOrUndef } from 'src/auth/transforms/number.transform';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
@@ -36,13 +37,7 @@ export class CreateContratoAditivoDto {
     data_termino_atualizada?: Date;
 
     @IsOptional()
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     valor?: number;
 

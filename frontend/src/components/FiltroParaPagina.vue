@@ -126,13 +126,15 @@ watch(formularioSujo, () => {
   emit('update:formularioSujo', formularioSujo.value);
 });
 
-watch(() => route.query, () => {
-  setValues(route.query);
+if (!props.naoEmitirQuery) {
+  watch(() => route.query, () => {
+    setValues(route.query);
 
-  nextTick(() => {
-    resetForm({ values: route.query });
-  });
-}, { deep: true, immediate: true });
+    nextTick(() => {
+      resetForm({ values: route.query });
+    });
+  }, { deep: true, immediate: true });
+}
 
 watch(values, () => {
   emit('update:modelValue', values);

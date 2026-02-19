@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 import { TipoUpload } from '../entities/tipo-upload';
-import { ArquivoPreviewDto } from './arquivo-preview.dto';
+import { ArquivoPreviewDto } from '../../sysadmin/dto/upload/solicitar-preview.dto';
 
 export class CreateUploadDto {
     /**
@@ -35,6 +35,7 @@ export class CreateUploadDto {
         deprecated: true,
         description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08',
     })
+    @ApiProperty({ deprecated: true })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 

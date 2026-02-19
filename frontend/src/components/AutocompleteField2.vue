@@ -6,6 +6,7 @@ import {
   onUpdated,
   ref,
   toRef,
+  useTemplateRef,
   watch,
 } from 'vue';
 
@@ -54,18 +55,32 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  unique: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const control = ref(props.controlador);
 const botoesOpcoes = ref([]);
-const inputRef = ref(null);
+const inputRef = useTemplateRef('inputRef');
 
 const emit = defineEmits(['change']);
 
-const opcoesFiltradas = computed(() => props.grupo.filter(
-  (x) => !control.value.participantes?.includes(x.id)
-    && String(x[props.label])?.toLowerCase().includes(control.value.busca.toLowerCase()),
-));
+function normalizar(texto) {
+  return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+const opcoesFiltradas = computed(() => {
+  const busca = normalizar(control.value.busca);
+  return props.grupo.filter(
+    (x) => !control.value.participantes?.includes(x.id)
+      && normalizar(String(x[props.label])).includes(busca),
+  );
+});
+
+const participantesSelecionados = computed(() => props.grupo
+  .filter((x) => control.value.participantes?.includes(x.id)));
 
 function abrirLista() {
   if (opcoesFiltradas.value.length === 0) return;
@@ -98,11 +113,14 @@ function navegarLista(e, indice) {
 if (props.name) {
   const name = toRef(props, 'name');
   const { handleChange } = useField(name, undefined, {
-    initialValue: props.controlador.participantes,
+    initialValue: props.unique
+      ? (props.controlador.participantes[0] ?? null)
+      : props.controlador.participantes,
   });
 
-  watch(control.value.participantes, (newValue) => {
-    handleChange(newValue);
+  watch(() => control.value.participantes.length, () => {
+    const arr = control.value.participantes;
+    handleChange(props.unique ? (arr[0] ?? null) : arr);
   });
 }
 
@@ -110,11 +128,14 @@ function start() {
   control.value = props.controlador;
 
   if (props.retornarArrayVazio && props.grupo.length === 0) {
-    emit('change', []);
+    emit('change', props.unique ? null : []);
   }
 }
 
 const atingiuLimite = computed(() => {
+  if (props.unique) {
+    return control.value.participantes.length >= 1;
+  }
   if (props.numeroMaximoDeParticipantes) {
     return control.value.participantes.length >= props.numeroMaximoDeParticipantes;
   }
@@ -125,9 +146,15 @@ start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
+function emitChange(participantes) {
+  emit('change', props.unique ? (participantes[0] ?? null) : participantes);
+}
+
 function removeParticipante(item, p) {
-  item.participantes.splice(item.participantes.indexOf(p), 1);
-  emit('change', item.participantes);
+  const index = item.participantes.indexOf(p);
+  if (index === -1) return;
+  item.participantes.splice(index, 1);
+  emitChange(item.participantes);
 }
 
 function pushId(e, id) {
@@ -135,17 +162,17 @@ function pushId(e, id) {
     return;
   }
   e.push(id);
-  emit('change', [...new Set(e)]);
+  emitChange([...new Set(e)]);
 }
 
 function buscar(e, item, g, label) {
   e.preventDefault();
   e.stopPropagation();
-  const texto = item.busca.trim().toLowerCase();
+  const texto = normalizar(item.busca.trim());
 
-  if (texto && e.keyCode === 13) {
+  if (texto) {
     const i = g.find((x) => !item.participantes.includes(x.id)
-      && String(x[label]).toLowerCase().includes(texto));
+      && normalizar(String(x[label])).includes(texto));
     if (i) {
       pushId(item.participantes, i.id);
     }
@@ -184,7 +211,7 @@ function desistir(e) {
             :ref="(el) => { botoesOpcoes[indice] = el }"
             type="button"
             class="like-a__text"
-            :title="r.nome || r.titulo || r.descricao || r.nome_completo || undefined"
+            :title="r.descricao || r.nome || r.titulo || r.nome_completo || undefined"
             @click="pushId(control.participantes, r.id)"
             @keyup.enter.stop.prevent="pushId(control.participantes, r.id)"
             @keydown="navegarLista($event, indice)"
@@ -204,7 +231,7 @@ function desistir(e) {
     </div>
     <template v-if="!readonly">
       <button
-        v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+        v-for="p in participantesSelecionados"
         :key="p.id"
         class="tagsmall"
         :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
@@ -221,7 +248,7 @@ function desistir(e) {
       </button>
     </template>
     <span
-      v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+      v-for="p in participantesSelecionados"
       v-else
       :key="p.id"
       class="tagsmall"

@@ -132,6 +132,7 @@ export class OrgaoService {
 
         return this.prisma.orgao.findMany({
             where: {
+                id: dto.ids ? { in: dto.ids } : undefined,
                 removido_em: null,
                 OR: palavra_chave
                     ? [
@@ -170,9 +171,7 @@ export class OrgaoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
-                            400
-                        );
+                        throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
                 }
 
                 if (dto.sigla) {
@@ -184,9 +183,7 @@ export class OrgaoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo',
-                            400
-                        );
+                        throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
                 }
 
                 const self = await prismaTx.orgao.findFirstOrThrow({
