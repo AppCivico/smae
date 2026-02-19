@@ -469,6 +469,7 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
         :geo-json="marcadoresGeoJson"
         :camadas="camadasParaMapa"
         height="500px"
+        agrupar-marcadores="auto"
       >
         <template #painel-flutuante="dados">
           <p
