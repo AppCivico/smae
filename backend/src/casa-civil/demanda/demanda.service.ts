@@ -25,6 +25,7 @@ import { CreateDemandaAcaoDto } from './dto/acao.dto';
 import { CreateDemandaDto, UpdateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
+import { ListDemandaEmailParlamentarDto } from './entities/demanda-email-parlamentar.entity';
 import { TaskService } from '../../task/task.service';
 import { OrgaoService } from '../../orgao/orgao.service';
 import { FilterOrgaoDto } from '../../orgao/dto/filter-orgao.dto';
@@ -1351,5 +1352,216 @@ export class DemandaService {
                 user
             );
         }
+    }
+
+    /**
+     * Envia e-mail de uma demanda para todos os parlamentares eleitos na eleição vigente
+     * que não são suplentes.
+     */
+    async enviarEmailParaParlamentares(demandaId: number, user: PessoaFromJwt): Promise<{ id: string }[]> {
+        // Verifica se demanda existe e se usuário tem permissão
+        const demanda = await this.findOne(demandaId, user, 'ReadOnly');
+
+        // Apenas demandas publicadas podem ter emails enviados
+        if (demanda.status !== DemandaStatus.Publicado) {
+            throw new HttpException('Apenas demandas publicadas podem ter e-mails enviados aos parlamentares', 400);
+        }
+
+        const results = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            // Busca a eleição vigente
+            const eleicaoVigente = await prismaTxn.eleicao.findFirst({
+                where: { atual_para_mandatos: true },
+            });
+
+            if (!eleicaoVigente) {
+                throw new HttpException('Não há eleição vigente configurada', 400);
+            }
+
+            // Busca parlamentares eleitos que não são suplentes
+            const mandatos = await prismaTxn.parlamentarMandato.findMany({
+                where: {
+                    eleicao_id: eleicaoVigente.id,
+                    eleito: true,
+                    suplencia: null, // Não é suplente
+                    removido_em: null,
+                    email: { not: null }, // Precisa ter email
+                },
+                include: {
+                    parlamentar: {
+                        select: {
+                            id: true,
+                            nome: true,
+                            nome_popular: true,
+                        },
+                    },
+                    partido_atual: {
+                        select: {
+                            sigla: true,
+                        },
+                    },
+                },
+            });
+
+            if (mandatos.length === 0) {
+                throw new HttpException('Não há parlamentares eleitos com e-mail cadastrado na eleição vigente', 400);
+            }
+
+            // Buscar configuração do órgão e URL do SMAE
+            const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+            const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+            if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+
+            const orgao = await prismaTxn.orgao.findUnique({
+                where: { id: orgaoId },
+                select: { descricao: true },
+            });
+
+            if (!orgao) {
+                throw new Error('Erro ao buscar dados do órgão para envio de e-mail');
+            }
+
+            const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+            // TODO: URL do portfólio de demandas públicas (quando estiver implementado)
+            const linkPortfolio = `${smaeUrl}/demandas-publicas`;
+
+            const results: { id: string }[] = [];
+
+            // Para cada parlamentar, envia o e-mail
+            for (const mandato of mandatos) {
+                const cargoTexto = this.formatarCargoParlamentar(mandato.cargo);
+
+                const emailId = uuidv7();
+                const assunto = 'Propostas de Demandas - Emendas Parlamentares';
+
+                // Envia o e-mail com variáveis contendo IDs para rastreamento
+                await prismaTxn.emaildbQueue.create({
+                    data: {
+                        id: emailId,
+                        config_id: 1,
+                        subject: assunto,
+                        template: 'parlamentar-convite-emendas.html',
+                        to: mandato.email!,
+                        variables: {
+                            // Dados para o template
+                            cargo_parlamentar: cargoTexto,
+                            nome_parlamentar: mandato.parlamentar.nome,
+                            link_portfolio: linkPortfolio,
+                            orgao_nome: orgao.descricao,
+                            // Metadados para rastreamento (não aparecem no email)
+                            _metadata: {
+                                demanda_id: demandaId,
+                                parlamentar_id: mandato.parlamentar.id,
+                                mandato_id: mandato.id,
+                                tipo_email: 'parlamentar_convite_emendas',
+                            },
+                        },
+                    },
+                });
+
+                results.push({ id: emailId });
+            }
+
+            return results;
+        });
+
+        return results;
+    }
+
+    /**
+     * Lista os e-mails enviados para parlamentares de uma demanda
+     */
+    async listarEmailsParlamentares(demandaId: number, user: PessoaFromJwt): Promise<ListDemandaEmailParlamentarDto> {
+        // Verifica se demanda existe e se usuário tem permissão
+        await this.findOne(demandaId, user, 'ReadOnly');
+
+        // Busca emails na fila que foram enviad os para parlamentares desta demanda
+        const emails = await this.prisma.$queryRaw<
+            Array<{
+                id: string;
+                to: string;
+                subject: string;
+                created_at: Date;
+                variables: any;
+            }>
+        >`
+            SELECT 
+                id,
+                "to",
+                subject,
+                created_at,
+                variables
+            FROM emaildb_queue
+            WHERE template = 'parlamentar-convite-emendas.html'
+              AND variables->>'_metadata' IS NOT NULL
+              AND (variables->'_metadata'->>'demanda_id')::int = ${demandaId}
+            ORDER BY created_at DESC
+        `;
+
+        // Busca dados dos parlamentares para enriquecer a resposta
+        const mandatoIds = emails.map((e) => e.variables?._metadata?.mandato_id).filter((id) => id !== undefined);
+
+        const parlamentaresMap = new Map();
+        if (mandatoIds.length > 0) {
+            const parlamentares = await this.prisma.parlamentarMandato.findMany({
+                where: {
+                    id: { in: mandatoIds },
+                },
+                select: {
+                    id: true,
+                    cargo: true,
+                    uf: true,
+                    parlamentar: {
+                        select: {
+                            id: true,
+                            nome: true,
+                            nome_popular: true,
+                        },
+                    },
+                    partido_atual: {
+                        select: {
+                            sigla: true,
+                        },
+                    },
+                },
+            });
+
+            parlamentares.forEach((p) => {
+                parlamentaresMap.set(p.id, p);
+            });
+        }
+
+        return {
+            linhas: emails.map((e) => {
+                const mandato = parlamentaresMap.get(e.variables?._metadata?.mandato_id);
+
+                return {
+                    id: e.id,
+                    parlamentar: mandato
+                        ? {
+                              id: mandato.parlamentar.id,
+                              nome: mandato.parlamentar.nome,
+                              nome_popular: mandato.parlamentar.nome_popular,
+                              cargo: this.formatarCargoParlamentar(mandato.cargo),
+                              partido: mandato.partido_atual.sigla,
+                              uf: mandato.uf,
+                          }
+                        : null,
+                    email_enviado: e.to,
+                    assunto: e.subject,
+                    criado_em: Date2YMD.toString(e.created_at),
+                };
+            }),
+        };
+    }
+
+    private formatarCargoParlamentar(cargo: string): string {
+        const cargos: Record<string, string> = {
+            Senador: 'Senador(a)',
+            DeputadoFederal: 'Deputado(a) Federal',
+            DeputadoEstadual: 'Deputado(a) Estadual',
+            Vereador: 'Vereador(a)',
+        };
+        return cargos[cargo] || cargo;
     }
 }

@@ -10,6 +10,7 @@ import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { UpdateDemandaDto } from './dto/create-demanda.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
+import { ListDemandaEmailParlamentarDto } from './entities/demanda-email-parlamentar.entity';
 import { CreateDemandaAcaoDto } from './dto/acao.dto';
 import { OrgaoReduzidoDto } from 'src/orgao/entities/orgao.entity';
 
@@ -75,6 +76,27 @@ export class DemandaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DemandaHistoricoDto[]> {
         return await this.demandaService.getHistorico(+params.id, user);
+    }
+
+    @Post(':id/enviar-email-parlamentares')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.validar']) // Apenas SERI pode enviar emails
+    @ApiResponse({ description: 'E-mails enviados com sucesso', status: 200 })
+    async enviarEmailParlamentares(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<{ id: string }[]> {
+        return await this.demandaService.enviarEmailParaParlamentares(+params.id, user);
+    }
+
+    @Get(':id/emails-parlamentares')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.listar'])
+    async listarEmailsParlamentares(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListDemandaEmailParlamentarDto> {
+        return await this.demandaService.listarEmailsParlamentares(+params.id, user);
     }
 }
 

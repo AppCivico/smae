@@ -1,0 +1,36 @@
+<mjml>
+  <mj-include path="../components/head.mjml" />
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+          <p>À Sua Excelência,</p>
+          
+          <p>Senhor(a) [% cargo_parlamentar %]</p>
+          
+          <p>[% nome_parlamentar %]</p>
+          
+          <br/>
+          
+          <p>Reafirmo o interesse da Prefeitura de São Paulo em fortalecer a parceria entre V.Exa e o nosso município através da execução de Emendas Parlamentares.</p>
+          
+          <p>Aproveito para encaminhar propostas de demandas do nosso município, que poderão ensejar a formulação de Emendas Parlamentares à LOA. As propostas de demandas estão disponíveis através do site <a href="[% link_portfolio %]">[% link_portfolio %]</a></p>
+          
+          <p>Ressalto a possibilidade da destinação de outras Emendas de acordo com o vosso trabalho no interesse do nosso município.</p>
+          
+          <p>Destaco também que o quanto antes for apresentado interesse em indicar emendas para o município de São Paulo, maior a exequibilidade das demandas.</p>
+          
+          <p>Nosso apreço e gratidão pela atenção sempre dispensada a esta municipalidade.</p>
+          
+          <p>Atenciosamente,<br/>
+          SERI – [% orgao_nome %]</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+</mjml>
