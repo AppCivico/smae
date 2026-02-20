@@ -55,7 +55,9 @@ const {
 
 const schema = computed(() => (
   CadastroDemandaSchema({
-    valorMinimo: valoresLimitesAtivo.value?.valor_minimo,
+    valorMinimo: valoresLimitesAtivo.value?.valor_minimo != null
+      ? Number(valoresLimitesAtivo.value.valor_minimo)
+      : undefined,
   })
 ));
 
