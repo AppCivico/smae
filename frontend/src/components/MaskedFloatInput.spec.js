@@ -491,5 +491,146 @@ describe('MaskedFloatInput', () => {
 
       expect(wrapper.props('max')).toBe(0);
     });
+
+    it('aceita permitirNegativo como boolean', () => {
+      const wrapper = montarComponente({ permitirNegativo: true });
+
+      expect(wrapper.props('permitirNegativo')).toBe(true);
+    });
+
+    it('usa permitirNegativo padrão de false', () => {
+      const wrapper = montarComponente();
+
+      expect(wrapper.props('permitirNegativo')).toBe(false);
+    });
+  });
+
+  describe('permitirNegativo', () => {
+    describe('valor inicial negativo', () => {
+      it('exibe valor negativo formatado com 2 casas decimais', () => {
+        const wrapper = montarComponente({
+          value: -1234.56,
+          permitirNegativo: true,
+        });
+
+        const input = wrapper.find('input');
+        expect(input.element.value).toBe('-1.234,56');
+      });
+
+      it('exibe valor negativo pequeno', () => {
+        const wrapper = montarComponente({
+          value: -0.01,
+          permitirNegativo: true,
+        });
+
+        const input = wrapper.find('input');
+        expect(input.element.value).toBe('-0,01');
+      });
+    });
+
+    describe('digitação de valor negativo', () => {
+      it('não emite evento ao digitar apenas "-"', async () => {
+        const wrapper = montarComponente({ permitirNegativo: true });
+
+        const input = wrapper.find('input');
+        await input.setValue('-');
+
+        expect(wrapper.emitted('update:modelValue')).toBeFalsy();
+      });
+
+      it('emite valor negativo ao digitar "-" seguido de dígitos', async () => {
+        const wrapper = montarComponente({ permitirNegativo: true });
+
+        const input = wrapper.find('input');
+        await input.setValue('-123456');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(-1234.56);
+      });
+
+      it('emite valor negativo a partir de string formatada', async () => {
+        const wrapper = montarComponente({ permitirNegativo: true });
+
+        const input = wrapper.find('input');
+        await input.setValue('-1.234,56');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(-1234.56);
+      });
+
+      it('emite valor negativo como string quando converterPara é "string"', async () => {
+        const wrapper = montarComponente({
+          permitirNegativo: true,
+          converterPara: 'string',
+        });
+
+        const input = wrapper.find('input');
+        await input.setValue('-123456');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe('-1234.56');
+      });
+
+      it('valor negativo com fractionDigits personalizado', async () => {
+        const wrapper = montarComponente({
+          permitirNegativo: true,
+          fractionDigits: 3,
+        });
+
+        const input = wrapper.find('input');
+        await input.setValue('-1234567');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(-1234.567);
+      });
+    });
+
+    describe('aplicarMascara com valor negativo', () => {
+      it('chama maskFloat quando valor negativo tem dígitos', async () => {
+        const maskFloat = (await import('@/helpers/maskFloat')).default;
+        vi.clearAllMocks();
+        const wrapper = montarComponente({ permitirNegativo: true });
+
+        const input = wrapper.find('input');
+        input.element.value = '-123';
+        await input.trigger('keyup');
+
+        expect(maskFloat).toHaveBeenCalled();
+      });
+
+      it('não chama maskFloat quando input é apenas "-"', async () => {
+        const maskFloat = (await import('@/helpers/maskFloat')).default;
+        vi.clearAllMocks();
+        const wrapper = montarComponente({ permitirNegativo: true });
+
+        const input = wrapper.find('input');
+        input.element.value = '-';
+        await input.trigger('keyup');
+
+        expect(maskFloat).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('sem permitirNegativo (padrão)', () => {
+      it('descarta o sinal e emite valor positivo ao digitar "-" seguido de dígitos', async () => {
+        const wrapper = montarComponente({ permitirNegativo: false });
+
+        const input = wrapper.find('input');
+        await input.setValue('-123456');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(1234.56);
+      });
+
+      it('emite null ao digitar apenas "-"', async () => {
+        const wrapper = montarComponente({ permitirNegativo: false });
+
+        const input = wrapper.find('input');
+        await input.setValue('-');
+
+        expect(wrapper.emitted('update:modelValue')).toBeTruthy();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(null);
+      });
+    });
   });
 });

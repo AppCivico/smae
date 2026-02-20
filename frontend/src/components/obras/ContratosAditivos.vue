@@ -25,6 +25,8 @@ import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
+import CabecalhoDePagina from '../CabecalhoDePagina.vue';
+
 const emit = defineEmits(['salvo', 'excluido']);
 
 const route = useRoute();
@@ -262,15 +264,19 @@ function limparCamposRelacionados(tipo_aditivo_id) {
   </p>
 
   <SmallModal v-if="exibirDialogo">
-    <div class="flex spacebetween center mb2">
-      <h2>Aditivo</h2>
-      <hr class="ml2 f1">
-      <CheckClose
-        :formulario-sujo="formularioSujo"
-        :apenas-emitir="true"
-        @close="exibirDialogo = false"
-      />
-    </div>
+    <CabecalhoDePagina>
+      <template #titulo>
+        Aditivo/Ajuste
+      </template>
+
+      <template #acoes>
+        <CheckClose
+          :formulario-sujo="formularioSujo"
+          :apenas-emitir="true"
+          @close="exibirDialogo = false"
+        />
+      </template>
+    </CabecalhoDePagina>
 
     <pre v-ScrollLockDebug>carga:{{ carga }}</pre>
 
@@ -412,6 +418,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
             }"
             class="inputtext light mb1"
             converter-para="string"
+            permitir-negativo
           />
           <ErrorMessage
             name="valor"
