@@ -85,6 +85,7 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
     itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
+        tipo: emFoco?.tipo || 'Aditivo',
         habilita_valor: emFoco?.habilita_valor || false,
         habilita_valor_data_termino: emFoco?.habilita_valor_data_termino || false,
       };

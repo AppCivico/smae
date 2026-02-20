@@ -33,6 +33,32 @@
           name="nome"
         />
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="tipo"
+          :schema="schema"
+          class="mb0"
+        />
+        <Field
+          name="tipo"
+          as="select"
+          class="inputtext light mb1"
+        >
+          <option value="">
+            Selecione
+          </option>
+          <option value="Aditivo">
+            Aditivo
+          </option>
+          <option value="Reajuste">
+            Reajuste
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="tipo"
+        />
+      </div>
     </div>
     <div class="f1 flex center f1 mb1">
       <Field

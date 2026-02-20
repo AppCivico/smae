@@ -2161,6 +2161,10 @@ export const tipoDeAditivo = object({
     .max(250)
     .min(3)
     .required(),
+  tipo: string()
+    .label('Tipo')
+    .oneOf(['Aditivo', 'Reajuste'], 'Selecione um tipo válido')
+    .required(),
   habilita_valor: boolean()
     .label('Habilita valor')
     .nullable(),

@@ -43,12 +43,14 @@ aditivosStore.buscarTudo();
   <table class="tablemain">
     <colgroup>
       <col>
+      <col>
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
     </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
+        <th> Tipo </th>
         <th />
         <th />
       </tr>
@@ -59,6 +61,7 @@ aditivosStore.buscarTudo();
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
+        <td>{{ item.tipo }}</td>
         <td>
           <router-link
             :to="{ name: 'tipoDeAditivos.editar', params: { aditivoId: item.id } }"
@@ -85,17 +88,17 @@ aditivosStore.buscarTudo();
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="3">
+        <td colspan="4">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erros.lista">
-        <td colspan="3">
+        <td colspan="4">
           Erro: {{ erros.lista }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="3">
+        <td colspan="4">
           Nenhum resultado encontrado.
         </td>
       </tr>
