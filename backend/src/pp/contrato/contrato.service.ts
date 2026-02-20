@@ -1,5 +1,6 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -107,6 +108,9 @@ export class ContratoService {
                         data: true,
                         data_termino_atualizada: true,
                         valor: true,
+                        tipo_aditivo: {
+                            select: { tipo: true },
+                        },
                     },
                 },
                 processosSei: {
@@ -118,19 +122,33 @@ export class ContratoService {
         });
 
         return linhasContrato.map((contrato) => {
-            const valorMaisAtual = contrato.aditivos.find((aditivo) => aditivo.valor != null)?.valor || contrato.valor;
-
             const linhaComDatas = contrato.aditivos.find((aditivo) => aditivo.data_termino_atualizada != null);
             const dataMaisAtual = linhaComDatas?.data_termino_atualizada ?? contrato.data_termino;
+
+            const totalAditivos = contrato.aditivos
+                .filter((a) => a.tipo_aditivo.tipo === 'Aditivo' && a.valor != null)
+                .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+            const totalReajustes = contrato.aditivos
+                .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
+                .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+            const valorReajustado = contrato.valor != null
+                ? new Decimal(contrato.valor).plus(totalAditivos).plus(totalReajustes)
+                : null;
 
             return {
                 id: contrato.id,
                 objeto_resumo: contrato.objeto_resumo,
                 numero: contrato.numero,
                 status: contrato.status,
-                valor: valorMaisAtual,
+                valor: contrato.valor,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
-                quantidade_aditivos: contrato.aditivos.length,
+                quantidade_aditivos: contrato.aditivos.filter((a) => a.tipo_aditivo.tipo === 'Aditivo').length,
+                quantidade_reajustes: contrato.aditivos.filter((a) => a.tipo_aditivo.tipo === 'Reajuste').length,
+                total_aditivos: totalAditivos,
+                total_reajustes: totalReajustes,
+                valor_reajustado: valorReajustado,
                 data_termino_atual: dataMaisAtual,
                 data_termino_inicial: contrato.data_termino,
             };
@@ -201,6 +219,7 @@ export class ContratoService {
                             select: {
                                 id: true,
                                 nome: true,
+                                tipo: true,
                                 habilita_valor: true,
                                 habilita_valor_data_termino: true,
                             },
@@ -210,6 +229,18 @@ export class ContratoService {
             },
         });
         if (!contrato) throw new NotFoundException('Contrato não encontrado');
+
+        const totalAditivos = contrato.aditivos
+            .filter((a) => a.tipo_aditivo.tipo === 'Aditivo' && a.valor != null)
+            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+        const totalReajustes = contrato.aditivos
+            .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
+            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+        const valorReajustado = contrato.valor != null
+            ? new Decimal(contrato.valor).plus(totalAditivos).plus(totalReajustes)
+            : null;
 
         return {
             id: contrato.id,
@@ -231,6 +262,9 @@ export class ContratoService {
             data_base_mes: contrato.data_base_mes,
             data_base_ano: contrato.data_base_ano,
             valor: contrato.valor,
+            total_aditivos: totalAditivos,
+            total_reajustes: totalReajustes,
+            valor_reajustado: valorReajustado,
             modalidade_contratacao: contrato.modalidade_contratacao
                 ? { id: contrato.modalidade_contratacao.id, nome: contrato.modalidade_contratacao.nome }
                 : null,
@@ -252,6 +286,7 @@ export class ContratoService {
                     tipo: {
                         id: aditivo.tipo_aditivo.id,
                         nome: aditivo.tipo_aditivo.nome,
+                        tipo: aditivo.tipo_aditivo.tipo,
                         habilita_valor: aditivo.tipo_aditivo.habilita_valor,
                         habilita_valor_data_termino: aditivo.tipo_aditivo.habilita_valor_data_termino,
                     },

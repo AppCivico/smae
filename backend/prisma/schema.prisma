@@ -7419,6 +7419,7 @@ model ContratoAditivo {
     data_termino_atualizada DateTime? @db.Date()
     valor                   Decimal?  @db.Decimal(15, 2)
     percentual_medido       Decimal?  @db.Decimal(7, 4)
+    valor_absoluto_bkp      Decimal?  @ignore
 
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
