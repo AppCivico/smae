@@ -663,6 +663,16 @@ export class ProjetoService {
             if (tags.length !== dto.tags.length) throw new HttpException('Uma ou mais tag não foi encontrada', 400);
         }
 
+        if (Array.isArray(dto.tags_portfolio)) {
+            const tagsPort = await this.prisma.portfolioTag.findMany({
+                where: { id: { in: dto.tags_portfolio }, removido_em: null, portfolio: { tipo_projeto: tipo } },
+                select: { id: true },
+            });
+
+            if (tagsPort.length !== dto.tags_portfolio.length)
+                throw new HttpException('Uma ou mais tag de portfólio não foi encontrada', 400);
+        }
+
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.projeto.create({
@@ -754,6 +764,19 @@ export class ProjetoService {
                         orgao_colaborador_id: dto.orgao_colaborador_id,
                         secretario_colaborador: dto.secretario_colaborador,
                         tags: dto.tags ?? [],
+                        tags_portfolio: {
+                            createMany: {
+                                data: dto.tags_portfolio
+                                    ? dto.tags_portfolio.map((tp) => {
+                                          return {
+                                              portfolio_tag_id: tp,
+                                              criado_em: now,
+                                              criado_por: user.id,
+                                          };
+                                      })
+                                    : [],
+                            },
+                        },
                     },
                     select: { id: true },
                 });

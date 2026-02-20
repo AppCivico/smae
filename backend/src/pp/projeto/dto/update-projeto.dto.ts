@@ -162,11 +162,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsInt({ message: 'Precisa ser uma lista de inteiros', each: true })
     @ArrayMaxSize(100, { message: 'Tamanho máximo da lista são $constraint1 itens' })
     equipe?: number[];
-
-    @IsOptional()
-    @IsArray()
-    @IsInt({ message: 'Precisa ser uma lista de inteiros', each: true })
-    tags_portfolio?: number[];
 }
 
 export class UpdateProjetoDocumentDto {
