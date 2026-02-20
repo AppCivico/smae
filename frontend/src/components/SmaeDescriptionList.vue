@@ -6,14 +6,19 @@ import buscarDadosDoYup from './camposDeFormulario/helpers/buscarDadosDoYup';
 
 type ObjetoGenerico = Record<string, string | number | null | undefined>;
 
-type ItemDeLista = {
+type ConfigDeItem = {
   chave: string;
   titulo?: string;
-  valor: string | number | null | undefined;
   larguraBase?: string;
   atributosDoItem?: Record<string, unknown>;
+};
+
+type ItemDeLista = ConfigDeItem & {
+  valor: string | number | null | undefined;
   metadados?: Record<string, unknown>;
 };
+
+type ConfigOuChave = string | ConfigDeItem;
 
 type Props = {
   objeto?: ObjetoGenerico;
@@ -37,10 +42,10 @@ const props = defineProps({
       return (value !== undefined && Array.isArray(value)) || allProps.objeto !== undefined;
     },
   },
-  mapaDeTitulos: {
-    type: Object as () => Record<string, string>,
+  itensSelecionados: {
+    type: Array as () => Array<ConfigOuChave>,
     required: false,
-    default: () => ({}),
+    default: () => undefined,
   },
   schema: {
     type: Object as () => AnyObjectSchema,
@@ -55,53 +60,114 @@ function tituloDoSchema(chave: string): string | undefined {
     : buscarDadosDoYup(props.schema, chave)?.spec?.label || undefined;
 }
 
+function normalizarItem(campo: ConfigOuChave): ConfigDeItem {
+  return typeof campo === 'string'
+    ? { chave: campo }
+    : campo;
+}
+
+const mapaDeItens = computed<Map<string, ConfigDeItem>>(() => {
+  if (!props.itensSelecionados) {
+    return new Map();
+  }
+
+  return new Map(
+    props.itensSelecionados.map((campo) => {
+      const config = normalizarItem(campo);
+      return [config.chave, config];
+    }),
+  );
+});
+
+function aplicarLarguraBase(
+  atributos: Record<string, unknown>,
+  larguraBase?: string,
+): Record<string, unknown> {
+  if (!larguraBase) {
+    return atributos;
+  }
+
+  const resultado = { ...atributos };
+  const styleExistente = resultado.style;
+
+  if (typeof styleExistente === 'string') {
+    const trimmed = styleExistente.trim();
+
+    if (!trimmed) {
+      resultado.style = `flex-basis: ${larguraBase};`;
+    } else {
+      const separator = trimmed.endsWith(';')
+        ? ' '
+        : '; ';
+      resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+    }
+  } else if (Array.isArray(styleExistente)) {
+    resultado.style = [...styleExistente, { flexBasis: larguraBase }];
+  } else if (typeof styleExistente === 'object' && styleExistente !== null) {
+    resultado.style = {
+      ...styleExistente as Record<string, unknown>,
+      flexBasis: larguraBase,
+    };
+  } else {
+    resultado.style = { flexBasis: larguraBase };
+  }
+
+  return resultado;
+}
+
+function resolverTitulo(chave: string, tituloExplicito?: string): string | undefined {
+  return tituloExplicito
+    || mapaDeItens.value.get(chave)?.titulo
+    || tituloDoSchema(chave)
+    || undefined;
+}
+
+function montarItem(config: ConfigDeItem, item: ItemDeLista): ItemDeLista {
+  const larguraBase = item.larguraBase || config.larguraBase;
+  const atributosMesclados = { ...config.atributosDoItem, ...item.atributosDoItem };
+
+  return {
+    ...item,
+    titulo: resolverTitulo(item.chave, item.titulo),
+    atributosDoItem: aplicarLarguraBase(atributosMesclados, larguraBase),
+  };
+}
+
 const listaConvertida = computed(() => {
+  const mapa = mapaDeItens.value;
+
   if (Array.isArray(props.lista)) {
     return props.lista.map((item) => {
-      const atributos = { ...item.atributosDoItem };
-
-      if (item.larguraBase) {
-        const styleExistente = atributos.style;
-
-        if (typeof styleExistente === 'string') {
-          const separator = styleExistente.trim().endsWith(';') ? ' ' : '; ';
-          atributos.style = `${styleExistente}${separator}flex-basis: ${item.larguraBase};`;
-        } else if (typeof styleExistente === 'object' && styleExistente !== null) {
-          atributos.style = {
-            ...styleExistente,
-            flexBasis: item.larguraBase,
-          };
-        } else {
-          atributos.style = {
-            flexBasis: item.larguraBase,
-          };
-        }
-      }
-
-      return {
-        ...item,
-        titulo: item.titulo
-          || props.mapaDeTitulos[item.chave]
-          || tituloDoSchema(item.chave)
-          || undefined,
-        atributosDoItem: atributos,
-      };
+      const config = mapa.get(item.chave);
+      return montarItem(config || { chave: item.chave }, item);
     });
   }
 
-  if (props.objeto !== null) {
-    return Object.entries(props.objeto).map(([chave, valor]) => ({
-      chave,
-      valor,
-      titulo: props.mapaDeTitulos[chave]
-        || tituloDoSchema(chave)
-        || undefined,
-      atributosDoItem: undefined,
-      metadados: undefined,
-    }));
+  if (!props.objeto) {
+    return [];
   }
 
-  return [];
+  const { objeto } = props;
+
+  if (mapa.size) {
+    return [...mapa.entries()].reduce<ItemDeLista[]>((acc, [chave, config]) => {
+      if (chave in objeto) {
+        acc.push(montarItem(config, {
+          chave,
+          valor: objeto[chave],
+        }));
+      }
+      return acc;
+    }, []);
+  }
+
+  return Object.entries(objeto).map(([chave, valor]) => ({
+    chave,
+    valor,
+    titulo: resolverTitulo(chave),
+    atributosDoItem: undefined,
+    metadados: undefined,
+  }));
 });
 
 </script>

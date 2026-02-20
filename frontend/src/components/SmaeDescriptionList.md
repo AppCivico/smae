@@ -12,14 +12,26 @@ Componente para exibição de listas de descrição (`<dl>`) de forma padronizad
 />
 ```
 
-### Com mapa de títulos
+### Filtrando e ordenando com `itensSelecionados` (opcional)
+
+A prop opcional `itensSelecionados` define quais propriedades do `objeto` exibir e em que ordem. Cada item pode ser uma string (só a chave) ou um objeto com configurações extras:
 
 ```vue
 <SmaeDescriptionList
-  :objeto="{ nome: 'João', idade: 30 }"
-  :mapa-de-titulos="{ nome: 'Nome completo', idade: 'Idade (anos)' }"
+  :objeto="{ nome: 'João', idade: 30, cidade: 'SP', email: 'j@j.com' }"
+  :itens-selecionados="[
+    { chave: 'nome', titulo: 'Nome completo' },
+    { chave: 'idade', titulo: 'Idade (anos)', larguraBase: '10em' },
+    'cidade',
+  ]"
 />
 ```
+
+Nesse exemplo, apenas `nome`, `idade` e `cidade` seriam exibidos (nessa ordem). A propriedade `email` seria omitida.
+
+Sem a prop `itensSelecionados`, todas as propriedades do objeto são exibidas na ordem original.
+
+**Importante:** quando usada com a prop `lista`, `itensSelecionados` **não** altera a ordem nem filtra os itens da lista. Nesse caso, ela serve apenas como fonte de configurações extras (títulos, `larguraBase`, `atributosDoItem`) para os itens correspondentes. A ordem e a seleção dos itens é sempre a da própria `lista`.
 
 ### Com lista estruturada
 
@@ -57,7 +69,7 @@ const schema = object({
 A ordem de prioridade para resolução de títulos é:
 
 1. `titulo` do item (quando usando `lista`)
-2. `mapaDeTitulos`
+2. `titulo` definido em `itensSelecionados`
 3. `label` do schema Yup
 4. `chave` (fallback)
 
@@ -67,20 +79,27 @@ A ordem de prioridade para resolução de títulos é:
 |------|------|-------------|-----------|
 | `objeto` | `Record<string, string \| number \| null \| undefined>` | Não* | Objeto simples para conversão automática em lista |
 | `lista` | `Array<ItemDeLista>` | Não* | Lista estruturada de itens |
-| `mapaDeTitulos` | `Record<string, string>` | Não | Mapa de chaves para títulos legíveis |
+| `itensSelecionados` | `Array<string \| ConfigDeItem>` | Não | Define quais campos exibir, sua ordem, títulos e configurações |
 | `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
 
 \* Pelo menos uma das props `objeto` ou `lista` deve ser fornecida.
 
+### Tipo `ConfigDeItem`
+
+```typescript
+type ConfigDeItem = {
+  chave: string;                           // Identificador do item
+  titulo?: string;                         // Título exibido (opcional)
+  larguraBase?: string;                    // Largura base (ex: '20em', '100%')
+  atributosDoItem?: Record<string, unknown>; // Atributos HTML extras para o item
+};
+```
+
 ### Tipo `ItemDeLista`
 
 ```typescript
-type ItemDeLista = {
-  chave: string;                           // Identificador único do item
-  titulo?: string;                         // Título exibido (opcional)
+type ItemDeLista = ConfigDeItem & {
   valor: string | number | null | undefined; // Valor a ser exibido
-  larguraBase?: string;                    // Largura base do item (ex: '20em', '100%')
-  atributosDoItem?: Record<string, unknown>; // Atributos HTML extras para o item
   metadados?: Record<string, unknown>;       // Dados extras para uso em slots
 };
 ```
@@ -141,29 +160,15 @@ Slot específico para a descrição de uma chave. Tem prioridade sobre o slot `d
 
 ### Usando a propriedade `larguraBase` (recomendado)
 
-A largura dos itens pode ser controlada através da propriedade `larguraBase`, que aceita qualquer valor CSS válido para `flex-basis`:
+A largura dos itens pode ser controlada através da propriedade `larguraBase` (em `itensSelecionados` ou em itens de `lista`), que aceita qualquer valor CSS válido para `flex-basis`:
 
 ```vue
 <SmaeDescriptionList
-  :lista="[
-    {
-      chave: 'id',
-      titulo: 'ID',
-      valor: '12345',
-      larguraBase: '5em'
-    },
-    {
-      chave: 'nome',
-      titulo: 'Nome completo',
-      valor: 'João da Silva',
-      larguraBase: '20em'
-    },
-    {
-      chave: 'descricao',
-      titulo: 'Descrição',
-      valor: 'Uma descrição mais longa que precisa de mais espaço',
-      larguraBase: '100%'  // Ocupa largura total
-    },
+  :objeto="{ id: '12345', nome: 'João da Silva', descricao: 'Texto longo' }"
+  :itens-selecionados="[
+    { chave: 'id', titulo: 'ID', larguraBase: '5em' },
+    { chave: 'nome', titulo: 'Nome completo', larguraBase: '20em' },
+    { chave: 'descricao', titulo: 'Descrição', larguraBase: '100%' },
   ]"
 />
 ```
@@ -190,19 +195,10 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 
 ```vue
 <SmaeDescriptionList
-  :lista="[
-    {
-      chave: 'id',
-      titulo: 'ID',
-      valor: '12345',
-      atributosDoItem: { class: 'fb5em' }
-    },
-    {
-      chave: 'descricao',
-      titulo: 'Descrição',
-      valor: 'Texto longo',
-      atributosDoItem: { class: 'f1 fb100' }  // f1 = flex: 1, fb100 = flex-basis: 100%
-    },
+  :objeto="{ id: '12345', descricao: 'Texto longo' }"
+  :itens-selecionados="[
+    { chave: 'id', titulo: 'ID', atributosDoItem: { class: 'fb5em' } },
+    { chave: 'descricao', titulo: 'Descrição', atributosDoItem: { class: 'f1 fb100' } },
   ]"
 />
 ```
