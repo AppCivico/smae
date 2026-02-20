@@ -1135,19 +1135,8 @@ export class TransferenciaService {
             ipp = decodedPageToken.ipp;
         }
 
-        // Detectar se é busca por identificador (padrão: "número/ano", ex: "1/2025", "27/2024")
-        // Identificador é único, então se detectado, busca apenas por ele (ignora palavras-chave)
-        const isIdentificador = filters.palavra_chave && /^\d+\/\d{4}$/.test(filters.palavra_chave.trim());
-
-        let buscaIds: number[] | undefined = undefined;
-
-        if (isIdentificador) {
-            // Busca direta por identificador (único, sempre uma linha)
-            buscaIds = undefined; // usaremos o filtro direto no WHERE
-        } else {
-            // Busca por palavras-chave usando tsvector
-            buscaIds = await this.buscaIdsPalavraChave(filters.palavra_chave);
-        }
+        // Construir condições de busca combinada (identificador + palavras-chave)
+        const searchConditions = await this.buildSearchConditions(filters.palavra_chave);
 
         const rows = await this.prisma.transferencia.findMany({
             where: {
@@ -1157,12 +1146,8 @@ export class TransferenciaService {
                 pendente_preenchimento_valores:
                     filters.preenchimento_completo != undefined ? !filters.preenchimento_completo : undefined,
                 ano: filters.ano,
-                // Se for identificador, busca direta; senão usa IDs dos vetores
-                ...(isIdentificador
-                    ? { identificador: filters.palavra_chave!.trim() }
-                    : buscaIds !== undefined
-                      ? { id: { in: buscaIds } }
-                      : {}),
+                // Combina busca por identificador E palavras-chave com OR (união)
+                ...(searchConditions ? { OR: searchConditions } : {}),
             },
             orderBy: [{ ano: 'desc' }, { identificador_nro: 'desc' }],
             skip: offset,
@@ -1348,6 +1333,55 @@ export class TransferenciaService {
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
         return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'transferencia', input);
+    }
+
+    /**
+     * Constrói condições de busca combinada para transferências.
+     * Busca tanto no identificador quanto nos vetores de palavras-chave (tsvector).
+     * Retorna condições prontas para usar em queries Prisma com OR.
+     *
+     * @param palavraChave - Termo de busca do usuário
+     * @returns Array de condições para usar com OR, ou undefined se não há busca
+     *
+     * @example
+     * // Usar em uma query Prisma:
+     * const searchConditions = await this.buildSearchConditions(filter.palavra_chave);
+     * await this.prisma.transferencia.findMany({
+     *   where: {
+     *     removido_em: null,
+     *     ...(searchConditions ? { OR: searchConditions } : {}),
+     *   }
+     * });
+     */
+    async buildSearchConditions(
+        palavraChave: string | undefined
+    ): Promise<Prisma.TransferenciaWhereInput[] | undefined> {
+        if (!palavraChave) return undefined;
+
+        // Detectar se a busca contém padrão de identificador (ex: "10/2025", "27/2024")
+        // Como pode ser ambíguo (10/2025 = outubro?), buscamos tanto no identificador quanto nos vetores
+        const temPadraoIdentificador = /\b\d+\/\d{4}\b/.test(palavraChave);
+
+        // Buscar sempre nos vetores (palavras-chave)
+        const idsPalavrasChave = await this.buscaIdsPalavraChave(palavraChave);
+
+        // Construir condições de busca usando OR (união dos resultados)
+        const searchConditions: Prisma.TransferenciaWhereInput[] = [];
+
+        // Se detectou padrão de identificador, adiciona busca por identificador
+        if (temPadraoIdentificador) {
+            const identificadorExtraido = palavraChave.match(/\b(\d+\/\d{4})\b/)?.[1];
+            if (identificadorExtraido) {
+                searchConditions.push({ identificador: identificadorExtraido });
+            }
+        }
+
+        // Adiciona busca por palavras-chave (vetores)
+        if (idsPalavrasChave !== undefined && idsPalavrasChave.length > 0) {
+            searchConditions.push({ id: { in: idsPalavrasChave } });
+        }
+
+        return searchConditions.length > 0 ? searchConditions : undefined;
     }
 
     async findOneTransferencia(id: number, user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
