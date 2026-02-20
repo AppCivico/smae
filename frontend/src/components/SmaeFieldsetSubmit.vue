@@ -25,6 +25,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  rotulo: {
+    type: String,
+    default: 'Salvar',
+  },
 });
 </script>
 
@@ -49,7 +53,7 @@ defineProps({
         :aria-busy="$props.estaCarregando"
         :disabled="$props.disabled"
       >
-        Salvar
+        {{ $props.rotulo }}
       </button>
     </slot>
   </component>
