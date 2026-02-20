@@ -415,17 +415,25 @@ describe('SmaeDescriptionList', () => {
   });
 
   describe('classes CSS', () => {
-    it('aplica classes corretas no container', () => {
+    it('aplica classes corretas no container com layout flex (padrão)', () => {
       const wrapper = montarComponente({
         objeto: { nome: 'João' },
       });
 
       const dl = wrapper.find('dl');
       expect(dl.classes()).toContain('description-list');
-      expect(dl.classes()).toContain('flex');
-      expect(dl.classes()).toContain('g2');
-      expect(dl.classes()).toContain('mb1');
-      expect(dl.classes()).toContain('flexwrap');
+      expect(dl.classes()).toContain('description-list--flex');
+    });
+
+    it('aplica classes corretas no container com layout grid', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list');
+      expect(dl.classes()).toContain('description-list--grid');
     });
 
     it('aplica classes corretas no item', () => {
@@ -434,8 +442,7 @@ describe('SmaeDescriptionList', () => {
       });
 
       const item = wrapper.find('.description-list__item');
-      expect(item.classes()).toContain('f1');
-      expect(item.classes()).toContain('mb1');
+      expect(item.classes()).toContain('description-list__item');
     });
 
     it('aplica classes corretas no termo', () => {
@@ -654,6 +661,101 @@ describe('SmaeDescriptionList', () => {
       expect(style).toContain('color: red');
       expect(style).toContain('font-size: 14px');
       expect(style).toContain('flex-basis: 20em');
+    });
+  });
+
+  describe('propriedade layout', () => {
+    it('usa layout flex por padrão', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--flex');
+      expect(dl.classes()).not.toContain('description-list--grid');
+    });
+
+    it('aplica layout grid quando especificado', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--grid');
+      expect(dl.classes()).not.toContain('description-list--flex');
+    });
+
+    it('aplica classe --full no item com larguraBase 100% no modo grid', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'descricao', valor: 'Texto longo', larguraBase: '100%' },
+        ],
+        layout: 'grid',
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).toContain('description-list__item--full');
+    });
+
+    it('não aplica classe --full no modo flex mesmo com larguraBase 100%', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'descricao', valor: 'Texto longo', larguraBase: '100%' },
+        ],
+        layout: 'flex',
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).not.toContain('description-list__item--full');
+      expect(item.attributes('style')).toContain('flex-basis: 100%');
+    });
+
+    it('ignora larguraBase diferente de 100% no modo grid', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'nome', valor: 'João', larguraBase: '20em' },
+        ],
+        layout: 'grid',
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).not.toContain('description-list__item--full');
+      expect(item.attributes('style') || '').not.toContain('flex-basis');
+    });
+  });
+
+  describe('propriedade larguraMinima', () => {
+    it('aplica CSS var quando larguraMinima é fornecida no modo grid', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        larguraMinima: '250px',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style')).toContain('--dl-item-min-width: 250px');
+    });
+
+    it('não aplica CSS var no modo flex mesmo com larguraMinima', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'flex',
+        larguraMinima: '250px',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style') || '').not.toContain('--dl-item-min-width');
+    });
+
+    it('não aplica CSS var quando larguraMinima não é fornecida', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style') || '').not.toContain('--dl-item-min-width');
     });
   });
 });
