@@ -858,16 +858,12 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </fieldset>
 
-    <SmaeFieldsetSubmit remover-linhas-decoracao>
-      <button
-        class="btn big"
-        type="submit"
-        :disabled="bloquearCampos"
-        :aria-disabled="bloquearCampos"
-      >
-        {{ labelDoBotaoSubmit }}
-      </button>
-    </SmaeFieldsetSubmit>
+    <SmaeFieldsetSubmit
+      remover-linhas-decoracao
+      :disabled="bloquearCampos"
+      :rotulo="labelDoBotaoSubmit"
+      :erros="errors"
+    />
   </form>
 
   <div
