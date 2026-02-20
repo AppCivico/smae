@@ -49,7 +49,7 @@ defineProps({
       <button
         class="btn big"
         type="submit"
-        :aria-disabled="$props.disabled || ($props.erros && !!Object.keys($props.erros)?.length)"
+        :aria-disabled="$props.disabled || ($props.erros && !!Object.keys($props.erros).length)"
         :aria-busy="$props.estaCarregando"
         :disabled="$props.disabled"
       >
