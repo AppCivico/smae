@@ -91,8 +91,16 @@ function aplicarLarguraBase(
   const styleExistente = resultado.style;
 
   if (typeof styleExistente === 'string') {
-    const separator = styleExistente.trim().endsWith(';') ? ' ' : '; ';
-    resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+    const trimmed = styleExistente.trim();
+
+    if (!trimmed) {
+      resultado.style = `flex-basis: ${larguraBase};`;
+    } else {
+      const separator = trimmed.endsWith(';')
+        ? ' '
+        : '; ';
+      resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+    }
   } else if (Array.isArray(styleExistente)) {
     resultado.style = [...styleExistente, { flexBasis: larguraBase }];
   } else if (typeof styleExistente === 'object' && styleExistente !== null) {
