@@ -70,6 +70,10 @@ defineProps({
     height: 1.5px;
     background-color: @c100;
   }
+
+  fieldset + & {
+    border-top: 0;
+  }
 }
 
 .smae-fieldset-submit--remover-linhas-decoracao {
