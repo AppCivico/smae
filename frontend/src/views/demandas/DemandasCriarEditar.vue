@@ -861,7 +861,6 @@ watch(itemParaEdicao, (novosValores) => {
     </fieldset>
 
     <SmaeFieldsetSubmit
-      remover-linhas-decoracao
       :disabled="bloquearCampos"
       :rotulo="labelDoBotaoSubmit"
       :erros="errors"
