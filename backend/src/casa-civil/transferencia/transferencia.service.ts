@@ -1135,7 +1135,19 @@ export class TransferenciaService {
             ipp = decodedPageToken.ipp;
         }
 
-        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+        // Detectar se é busca por identificador (padrão: "número/ano", ex: "1/2025", "27/2024")
+        // Identificador é único, então se detectado, busca apenas por ele (ignora palavras-chave)
+        const isIdentificador = filters.palavra_chave && /^\d+\/\d{4}$/.test(filters.palavra_chave.trim());
+
+        let buscaIds: number[] | undefined = undefined;
+
+        if (isIdentificador) {
+            // Busca direta por identificador (único, sempre uma linha)
+            buscaIds = undefined; // usaremos o filtro direto no WHERE
+        } else {
+            // Busca por palavras-chave usando tsvector
+            buscaIds = await this.buscaIdsPalavraChave(filters.palavra_chave);
+        }
 
         const rows = await this.prisma.transferencia.findMany({
             where: {
@@ -1145,11 +1157,12 @@ export class TransferenciaService {
                 pendente_preenchimento_valores:
                     filters.preenchimento_completo != undefined ? !filters.preenchimento_completo : undefined,
                 ano: filters.ano,
-
-                // Filtro por palavras-chave com tsvector
-                id: {
-                    in: palavrasChave != undefined ? palavrasChave : undefined,
-                },
+                // Se for identificador, busca direta; senão usa IDs dos vetores
+                ...(isIdentificador
+                    ? { identificador: filters.palavra_chave!.trim() }
+                    : buscaIds !== undefined
+                      ? { id: { in: buscaIds } }
+                      : {}),
             },
             orderBy: [{ ano: 'desc' }, { identificador_nro: 'desc' }],
             skip: offset,
