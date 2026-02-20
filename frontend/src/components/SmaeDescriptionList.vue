@@ -104,7 +104,7 @@ function aplicarLarguraBase(
   if (isGrid.value) {
     if (larguraBase === '100%') {
       const classeExistente = resultado.class;
-      resultado.class = [classeExistente, 'description-list__item--full'].filter(Boolean).join(' ');
+      resultado.class = [classeExistente, 'description-list__item--full'].filter(Boolean);
     }
   } else {
     const styleExistente = resultado.style;
