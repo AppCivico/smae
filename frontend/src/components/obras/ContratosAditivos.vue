@@ -14,6 +14,7 @@ import {
 import { useRoute } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { aditivoDeContrato as schema } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -137,6 +138,55 @@ watch(exibirDialogo, (novoValor) => {
   }
 }, { once: true });
 
+const colunas = [
+  {
+    chave: 'numero',
+    label: 'Número',
+    ehCabecalho: true,
+    atributosDaColuna: { class: 'col--minimum' },
+  },
+  {
+    chave: 'tipo',
+    label: 'Tipo',
+  },
+  {
+    chave: 'data',
+    label: 'Data',
+    formatador: (v) => (v ? dateToShortDate(v) : ''),
+    atributosDaColuna: { class: 'col--data' },
+    atributosDaCelula: { class: 'cell--data' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--data' },
+  },
+  {
+    chave: 'valor',
+    label: 'Valor reajustado',
+    formatador: (v) => (v ? `R$ ${dinheiro(v)}` : ''),
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'percentual_medido',
+    label: 'Percentual medido',
+    formatador: (v) => (v ? `${v}%` : '-'),
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'data_termino_atualizada',
+    label: 'Término atualizado',
+    formatador: (v) => (v ? dateToShortDate(v) : '-'),
+    atributosDaColuna: { class: 'col--data' },
+    atributosDaCelula: { class: 'cell--data' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--data' },
+  },
+];
+
+const dadosDaTabela = computed(() => (Array.isArray(contratoEmFoco.value?.aditivos)
+  ? contratoEmFoco.value.aditivos
+  : []));
+
 function limparCamposRelacionados(tipo_aditivo_id) {
   const tipoDeAditivo = listaDeTiposDeAditivos.value.find(
     (item) => item.id === tipo_aditivo_id,
@@ -157,96 +207,45 @@ function limparCamposRelacionados(tipo_aditivo_id) {
     Carregando aditivos
   </LoadingComponent>
 
-  <table class="tablemain mb2">
-    <colgroup>
-      <col class="col--minimum">
-      <col>
-      <col class="col--data">
-      <col class="col--minimum">
-      <col class="col--minimum">
-      <col class="col--data">
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-    </colgroup>
+  <SmaeTable
+    :colunas="colunas"
+    :dados="dadosDaTabela"
+    :atributos-da-tabela="{ class: 'mb2' }"
+  >
+    <template #celula:tipo="{ linha }">
+      {{ linha.tipo?.nome || linha.tipo }}
+    </template>
 
-    <thead>
-      <tr>
-        <th>Número</th>
-        <th>Tipo</th>
-        <th class="cell--data">
-          Data
-        </th>
-        <th class="cell--number">
-          Valor reajustado
-        </th>
-        <th class="cell--number">
-          Percentual medido
-        </th>
-        <th class="cell--data">
-          Término atualizado
-        </th>
-        <th />
-        <th />
-      </tr>
-    </thead>
-
-    <tbody v-if="Array.isArray(contratoEmFoco?.aditivos)">
-      <tr
-        v-for="aditivo in contratoEmFoco.aditivos"
-        :key="aditivo.id"
+    <template #acoes="{ linha }">
+      <button
+        v-if="!permissoesDoItemEmFoco.apenas_leitura
+          || permissoesDoItemEmFoco.sou_responsavel"
+        class="block like-a__text tipinfo"
+        type="button"
+        @click="abrirDialogo(linha.id)"
       >
-        <th>
-          {{ aditivo.numero }}
-        </th>
-        <td>
-          {{ aditivo.tipo?.nome || aditivo?.tipo }}
-        </td>
-        <td class="cell--data">
-          {{ aditivo.data ? dateToShortDate(aditivo.data) : '' }}
-        </td>
-        <td class="cell--number">
-          {{ aditivo.valor ? `R$ ${dinheiro(aditivo.valor)}` : '' }}
-        </td>
-        <td class="cell--number">
-          {{ aditivo.percentual_medido ? `${aditivo.percentual_medido}%` : '-' }}
-        </td>
-        <td class="cell--data">
-          {{ aditivo.data_termino_atualizada
-            ? dateToShortDate(aditivo.data_termino_atualizada)
-            : '-' }}
-        </td>
-        <td>
-          <button
-            v-if="!permissoesDoItemEmFoco.apenas_leitura
-              || permissoesDoItemEmFoco.sou_responsavel"
-            class="block like-a__text tipinfo"
-            type="button"
-            @click="abrirDialogo(aditivo.id);"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg><div>Editar aditivo</div>
-          </button>
-        </td>
-        <td>
-          <button
-            v-if="!permissoesDoItemEmFoco.apenas_leitura
-              || permissoesDoItemEmFoco.sou_responsavel"
-            class="like-a__text"
-            aria-label="excluir"
-            title="excluir"
-            @click="excluirAditivo(aditivo.id, aditivo.numero)"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_waste" /></svg>
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_edit" /></svg>
+        <div>Editar aditivo</div>
+      </button>
+
+      <button
+        v-if="!permissoesDoItemEmFoco.apenas_leitura
+          || permissoesDoItemEmFoco.sou_responsavel"
+        class="like-a__text"
+        aria-label="excluir"
+        title="excluir"
+        @click="excluirAditivo(linha.id, linha.numero)"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_waste" /></svg>
+      </button>
+    </template>
+  </SmaeTable>
 
   <p>
     <button
