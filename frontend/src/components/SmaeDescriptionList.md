@@ -278,7 +278,7 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 ### Layout Grid
 
 ```html
-<dl class="description-list description-list--grid" style="--dl-item-min-width: 180px;">
+<dl class="description-list description-list--grid">
   <div class="description-list__item">
     <!-- ... -->
   </div>
@@ -288,9 +288,19 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 </dl>
 ```
 
+Com `larguraMinima` fornecida, o inline style é adicionado:
+
+```html
+<dl class="description-list description-list--grid" style="--dl-item-min-width: 250px;">
+  <!-- items -->
+</dl>
+```
+
 ## Comportamento
 
 - Quando `valor` é `null`, `undefined` ou vazio, exibe "—" (travessão)
 - Listas consecutivas recebem borda superior e espaçamento automático
 - **Layout flex:** os itens usam `flex: 1` por padrão, expandindo para preencher o espaço disponível
 - **Layout grid:** os itens são distribuídos em colunas responsivas usando `auto-fit` e `minmax()`
+  - A largura mínima padrão é `180px` (definida no CSS)
+  - Use a prop `larguraMinima` para customizar esse valor, o que adiciona um inline style `--dl-item-min-width` ao container
