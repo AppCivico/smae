@@ -26,8 +26,6 @@ import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
-import CabecalhoDePagina from '../CabecalhoDePagina.vue';
-
 const emit = defineEmits(['salvo', 'excluido']);
 
 const route = useRoute();
