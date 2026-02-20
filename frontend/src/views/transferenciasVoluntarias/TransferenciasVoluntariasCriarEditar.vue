@@ -779,21 +779,10 @@ watch(itemParaEdicao, (novosValores) => {
       />
     </div>
 
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
-      >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
-    </div>
+    <SmaeFieldsetSubmit
+      :esta-carregando="isSubmitting"
+      :erros="errors"
+    />
   </form>
 
   <span
