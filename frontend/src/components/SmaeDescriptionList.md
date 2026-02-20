@@ -1,6 +1,6 @@
 # SmaeDescriptionList
 
-Componente para exibição de listas de descrição (`<dl>`) de forma padronizada, utilizando layout flexbox.
+Componente para exibição de listas de descrição (`<dl>`) de forma padronizada, com suporte a layouts flexbox e grid.
 
 ## Uso Básico
 
@@ -81,6 +81,8 @@ A ordem de prioridade para resolução de títulos é:
 | `lista` | `Array<ItemDeLista>` | Não* | Lista estruturada de itens |
 | `itensSelecionados` | `Array<string \| ConfigDeItem>` | Não | Define quais campos exibir, sua ordem, títulos e configurações |
 | `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
+| `layout` | `'flex' \| 'grid'` | Não | Layout do container. Padrão: `'flex'` |
+| `larguraMinima` | `string` | Não | Largura mínima dos itens no modo grid (ex: `'200px'`). Padrão: `'180px'` |
 
 \* Pelo menos uma das props `objeto` ou `lista` deve ser fornecida.
 
@@ -156,6 +158,57 @@ Slot específico para a descrição de uma chave. Tem prioridade sobre o slot `d
 </SmaeDescriptionList>
 ```
 
+## Layouts
+
+O componente suporta dois layouts: `flex` (padrão) e `grid`.
+
+### Layout Flex (padrão)
+
+No modo flex, os itens expandem para preencher o espaço disponível. Use `larguraBase` para definir larguras específicas via `flex-basis`.
+
+```vue
+<SmaeDescriptionList
+  :objeto="{ nome: 'João', idade: 30 }"
+/>
+```
+
+### Layout Grid
+
+No modo grid, os itens são distribuídos em colunas responsivas com largura mínima configurável. Ideal para listas com muitos campos.
+
+```vue
+<SmaeDescriptionList
+  :objeto="dados"
+  layout="grid"
+/>
+```
+
+#### Configurando a largura mínima dos itens
+
+Use a prop `larguraMinima` para definir a largura mínima das colunas no grid:
+
+```vue
+<SmaeDescriptionList
+  :objeto="dados"
+  layout="grid"
+  largura-minima="250px"
+/>
+```
+
+#### Itens ocupando largura total no grid
+
+No modo grid, use `larguraBase: '100%'` para que um item ocupe toda a largura disponível:
+
+```vue
+<SmaeDescriptionList
+  :lista="[
+    { chave: 'nome', valor: 'João' },
+    { chave: 'descricao', valor: 'Texto longo...', larguraBase: '100%' },
+  ]"
+  layout="grid"
+/>
+```
+
 ## Controlando largura dos itens
 
 ### Usando a propriedade `larguraBase` (recomendado)
@@ -207,9 +260,11 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 
 ## Estrutura HTML gerada
 
+### Layout Flex
+
 ```html
-<dl class="description-list flex g2 mb1 flexwrap">
-  <div class="description-list__item f1 mb1">
+<dl class="description-list description-list--flex">
+  <div class="description-list__item">
     <dt class="description-list__term t12 uc w700 mb05 tamarelo">
       <!-- título ou chave -->
     </dt>
@@ -220,8 +275,22 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 </dl>
 ```
 
+### Layout Grid
+
+```html
+<dl class="description-list description-list--grid" style="--dl-item-min-width: 180px;">
+  <div class="description-list__item">
+    <!-- ... -->
+  </div>
+  <div class="description-list__item description-list__item--full">
+    <!-- item com larguraBase: '100%' -->
+  </div>
+</dl>
+```
+
 ## Comportamento
 
 - Quando `valor` é `null`, `undefined` ou vazio, exibe "—" (travessão)
 - Listas consecutivas recebem borda superior e espaçamento automático
-- Os itens usam `flex: 1` por padrão, expandindo para preencher o espaço disponível
+- **Layout flex:** os itens usam `flex: 1` por padrão, expandindo para preencher o espaço disponível
+- **Layout grid:** os itens são distribuídos em colunas responsivas usando `auto-fit` e `minmax()`

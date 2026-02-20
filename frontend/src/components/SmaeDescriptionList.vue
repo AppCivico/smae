@@ -52,6 +52,16 @@ const props = defineProps({
     required: false,
     default: () => null,
   },
+  larguraMinima: {
+    type: String,
+    required: false,
+    default: '',
+  },
+  layout: {
+    type: String as () => 'flex' | 'grid',
+    required: false,
+    default: 'flex',
+  },
 });
 
 function tituloDoSchema(chave: string): string | undefined {
@@ -65,6 +75,8 @@ function normalizarItem(campo: ConfigOuChave): ConfigDeItem {
     ? { chave: campo }
     : campo;
 }
+
+const isGrid = computed(() => props.layout === 'grid');
 
 const mapaDeItens = computed<Map<string, ConfigDeItem>>(() => {
   if (!props.itensSelecionados) {
@@ -88,28 +100,36 @@ function aplicarLarguraBase(
   }
 
   const resultado = { ...atributos };
-  const styleExistente = resultado.style;
 
-  if (typeof styleExistente === 'string') {
-    const trimmed = styleExistente.trim();
-
-    if (!trimmed) {
-      resultado.style = `flex-basis: ${larguraBase};`;
-    } else {
-      const separator = trimmed.endsWith(';')
-        ? ' '
-        : '; ';
-      resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+  if (isGrid.value) {
+    if (larguraBase === '100%') {
+      const classeExistente = resultado.class;
+      resultado.class = [classeExistente, 'description-list__item--full'].filter(Boolean).join(' ');
     }
-  } else if (Array.isArray(styleExistente)) {
-    resultado.style = [...styleExistente, { flexBasis: larguraBase }];
-  } else if (typeof styleExistente === 'object' && styleExistente !== null) {
-    resultado.style = {
-      ...styleExistente as Record<string, unknown>,
-      flexBasis: larguraBase,
-    };
   } else {
-    resultado.style = { flexBasis: larguraBase };
+    const styleExistente = resultado.style;
+
+    if (typeof styleExistente === 'string') {
+      const trimmed = styleExistente.trim();
+
+      if (!trimmed) {
+        resultado.style = `flex-basis: ${larguraBase};`;
+      } else {
+        const separator = trimmed.endsWith(';')
+          ? ' '
+          : '; ';
+        resultado.style = `${styleExistente}${separator}flex-basis: ${larguraBase};`;
+      }
+    } else if (Array.isArray(styleExistente)) {
+      resultado.style = [...styleExistente, { flexBasis: larguraBase }];
+    } else if (typeof styleExistente === 'object' && styleExistente !== null) {
+      resultado.style = {
+        ...styleExistente as Record<string, unknown>,
+        flexBasis: larguraBase,
+      };
+    } else {
+      resultado.style = { flexBasis: larguraBase };
+    }
   }
 
   return resultado;
@@ -170,17 +190,29 @@ const listaConvertida = computed(() => {
   }));
 });
 
+const estiloContainer = computed(() => {
+  if (isGrid.value && props.larguraMinima) {
+    return { '--dl-item-min-width': props.larguraMinima };
+  }
+  return undefined;
+});
+
+const classeContainer = computed(() => [
+  'description-list',
+  isGrid.value ? 'description-list--grid' : 'description-list--flex',
+]);
 </script>
 
 <template>
   <dl
     v-if="listaConvertida.length"
-    class="description-list flex g2 mb1 flexwrap"
+    :class="classeContainer"
+    :style="estiloContainer"
   >
     <div
       v-for="(item, index) in listaConvertida"
       :key="index"
-      class="description-list__item f1 mb1"
+      class="description-list__item"
       v-bind="item.atributosDoItem"
     >
       <dt
@@ -219,15 +251,35 @@ const listaConvertida = computed(() => {
 
 <style lang="less">
 .description-list {
+  margin-bottom: 1rem;
+
   + .description-list {
-      border-top: 1px solid @c100;
-      padding-top: 1rem;
-      margin-top: 1rem;
-    }
+    border-top: 1px solid @c100;
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
 }
 
-.description-list__item {
+.description-list--flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
 
+  .description-list__item {
+    flex: 1 1 auto;
+  }
+}
+
+.description-list--grid {
+  --dl-item-min-width: 180px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--dl-item-min-width), 1fr));
+  gap: 2rem;
+}
+
+.description-list__item--full {
+  grid-column: 1 / -1;
 }
 
 .description-list__term {
