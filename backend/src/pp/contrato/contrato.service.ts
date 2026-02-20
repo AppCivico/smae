@@ -125,17 +125,7 @@ export class ContratoService {
             const linhaComDatas = contrato.aditivos.find((aditivo) => aditivo.data_termino_atualizada != null);
             const dataMaisAtual = linhaComDatas?.data_termino_atualizada ?? contrato.data_termino;
 
-            const totalAditivos = contrato.aditivos
-                .filter((a) => a.tipo_aditivo.tipo === 'Aditivo' && a.valor != null)
-                .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
-
-            const totalReajustes = contrato.aditivos
-                .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
-                .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
-
-            const valorReajustado = contrato.valor != null
-                ? new Decimal(contrato.valor).plus(totalAditivos).plus(totalReajustes)
-                : null;
+            const totais = this.calcularTotaisAditivos(contrato.aditivos, contrato.valor);
 
             return {
                 id: contrato.id,
@@ -144,11 +134,7 @@ export class ContratoService {
                 status: contrato.status,
                 valor: contrato.valor,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
-                quantidade_aditivos: contrato.aditivos.filter((a) => a.tipo_aditivo.tipo === 'Aditivo').length,
-                quantidade_reajustes: contrato.aditivos.filter((a) => a.tipo_aditivo.tipo === 'Reajuste').length,
-                total_aditivos: totalAditivos,
-                total_reajustes: totalReajustes,
-                valor_reajustado: valorReajustado,
+                ...totais,
                 data_termino_atual: dataMaisAtual,
                 data_termino_inicial: contrato.data_termino,
             };
@@ -230,17 +216,7 @@ export class ContratoService {
         });
         if (!contrato) throw new NotFoundException('Contrato não encontrado');
 
-        const totalAditivos = contrato.aditivos
-            .filter((a) => a.tipo_aditivo.tipo === 'Aditivo' && a.valor != null)
-            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
-
-        const totalReajustes = contrato.aditivos
-            .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
-            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
-
-        const valorReajustado = contrato.valor != null
-            ? new Decimal(contrato.valor).plus(totalAditivos).plus(totalReajustes)
-            : null;
+        const totais = this.calcularTotaisAditivos(contrato.aditivos, contrato.valor);
 
         return {
             id: contrato.id,
@@ -262,9 +238,7 @@ export class ContratoService {
             data_base_mes: contrato.data_base_mes,
             data_base_ano: contrato.data_base_ano,
             valor: contrato.valor,
-            total_aditivos: totalAditivos,
-            total_reajustes: totalReajustes,
-            valor_reajustado: valorReajustado,
+            ...totais,
             modalidade_contratacao: contrato.modalidade_contratacao
                 ? { id: contrato.modalidade_contratacao.id, nome: contrato.modalidade_contratacao.nome }
                 : null,
@@ -404,5 +378,30 @@ export class ContratoService {
                 removido_por: user.id,
             },
         });
+    }
+
+    private calcularTotaisAditivos(
+        aditivos: { valor: Decimal | null; tipo_aditivo: { tipo: string } }[],
+        contratoValor: Decimal | null
+    ) {
+        const total_aditivos = aditivos
+            .filter((a) => a.tipo_aditivo.tipo === 'Aditivo' && a.valor != null)
+            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+        const total_reajustes = aditivos
+            .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
+            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+        const valor_reajustado = contratoValor != null
+            ? new Decimal(contratoValor).plus(total_aditivos).plus(total_reajustes)
+            : null;
+
+        return {
+            quantidade_aditivos: aditivos.filter((a) => a.tipo_aditivo.tipo === 'Aditivo').length,
+            quantidade_reajustes: aditivos.filter((a) => a.tipo_aditivo.tipo === 'Reajuste').length,
+            total_aditivos,
+            total_reajustes,
+            valor_reajustado,
+        };
     }
 }
