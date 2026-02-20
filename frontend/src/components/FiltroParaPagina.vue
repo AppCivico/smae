@@ -8,13 +8,14 @@ import {
 import {
   computed,
   nextTick,
+  toRaw,
   watch,
 } from 'vue';
+import type { LocationQuery, LocationQueryRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
+import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-
-import AutocompleteField2 from './AutocompleteField2.vue';
 
 type OpcaoPadronizada = {
   id: number | string
@@ -51,6 +52,7 @@ type Props = {
   carregando?: boolean
   bloqueado?: boolean
   naoEmitirQuery?: boolean
+  prefixoDaPaginacao?: string
 };
 type Emits = {
   (e: 'update:formularioSujo', value: boolean): void
@@ -61,6 +63,7 @@ type Emits = {
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
   valoresIniciais: undefined,
+  prefixoDaPaginacao: '',
 });
 const emit = defineEmits<Emits>();
 
@@ -68,7 +71,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values, setErrors,
+  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
@@ -79,27 +82,28 @@ const formularioSujo = useIsFormDirty();
 const idsDasMensagensDeErro = computed(() => Object.keys(errors.value).reduce((acc, key) => `${acc}err__${key} `, ''));
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const query = {
-    ...route.query,
-    ...valoresControlados,
-  };
+  const query = Object.assign(
+    structuredClone(route.query),
+    structuredClone(valoresControlados),
+  );
 
-  if (query.pagina) {
-    delete query.pagina;
-    delete query.token_paginacao;
+  const chavePagina = `${props.prefixoDaPaginacao}pagina`;
+
+  if (query[chavePagina]) {
+    const chaveTokenPaginacao = `${props.prefixoDaPaginacao}token_paginacao`;
+
+    delete query[chavePagina];
+    delete query[chaveTokenPaginacao];
   }
 
-  const queryFiltrada = Object.keys(query).reduce((amount, item) => {
+  const queryFiltrada = Object.keys(query).reduce<LocationQueryRaw>((amount, item) => {
     const value = query[item];
 
-    if (value === undefined || value === '') {
-      return amount;
+    if (value !== undefined && value !== '') {
+      amount[item] = value;
     }
 
-    return {
-      ...amount,
-      [item]: value,
-    };
+    return amount;
   }, {});
 
   if (!props.naoEmitirQuery) {
@@ -137,13 +141,13 @@ if (!props.naoEmitirQuery) {
 }
 
 watch(values, () => {
-  emit('update:modelValue', values);
+  emit('update:modelValue', structuredClone(toRaw(values)));
 });
 
 watch(() => props.modelValue, async (val) => {
   if (!val) return;
 
-  const valoresLocais = { ...val } as any;
+  const valoresLocais = structuredClone(toRaw(val)) as LocationQuery;
 
   setValues(valoresLocais);
   await nextTick();
@@ -170,6 +174,7 @@ if (props.autoSubmit) {
         pendente,
       }"
       :valores-iniciais="valoresIniciais"
+      :nao-normalizar-url="naoEmitirQuery"
     >
       <form
         :aria-busy="pendente"
@@ -217,7 +222,7 @@ if (props.autoSubmit) {
                   <input
                     type="checkbox"
                     class="interruptor"
-                    :checked="value"
+                    :checked="!!value"
                     :disabled="$props.bloqueado"
                     :aria-busy="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
