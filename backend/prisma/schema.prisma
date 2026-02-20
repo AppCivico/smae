@@ -7224,6 +7224,7 @@ model TipoAditivo {
     id Int @id @default(autoincrement())
 
     nome String
+    tipo String @default("Aditivo")
 
     habilita_valor              Boolean @default(false)
     habilita_valor_data_termino Boolean @default(false)

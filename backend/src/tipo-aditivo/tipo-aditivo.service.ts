@@ -23,6 +23,7 @@ export class ProjetoTipoAditivoService {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 nome: dto.nome,
+                tipo: dto.tipo,
                 habilita_valor: dto.habilita_valor,
                 habilita_valor_data_termino: dto.habilita_valor_data_termino,
             },
@@ -41,6 +42,7 @@ export class ProjetoTipoAditivoService {
             select: {
                 id: true,
                 nome: true,
+                tipo: true,
                 habilita_valor: true,
                 habilita_valor_data_termino: true,
             },
@@ -53,7 +55,7 @@ export class ProjetoTipoAditivoService {
     async update(id: number, dto: UpdateTipoAditivoDto, user: PessoaFromJwt) {
         const self = await this.prisma.tipoAditivo.findFirstOrThrow({
             where: { id: id },
-            select: { id: true, habilita_valor: true, habilita_valor_data_termino: true },
+            select: { id: true, tipo: true, habilita_valor: true, habilita_valor_data_termino: true },
         });
 
         if (dto.nome !== undefined) {
@@ -80,10 +82,11 @@ export class ProjetoTipoAditivoService {
             if (
                 (dto.habilita_valor !== undefined && dto.habilita_valor !== self.habilita_valor) ||
                 (dto.habilita_valor_data_termino !== undefined &&
-                    dto.habilita_valor_data_termino !== self.habilita_valor_data_termino)
+                    dto.habilita_valor_data_termino !== self.habilita_valor_data_termino) ||
+                (dto.tipo !== undefined && dto.tipo !== self.tipo)
             ) {
                 throw new HttpException(
-                    'Existem contratos com aditivos desse tipo. Não é possível alterar os checkboxes.',
+                    'Existem contratos com aditivos desse tipo. Não é possível alterar os checkboxes ou o tipo.',
                     400
                 );
             }
@@ -107,6 +110,7 @@ export class ProjetoTipoAditivoService {
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
+                tipo: dto.tipo,
                 habilita_valor: dto.habilita_valor,
                 habilita_valor_data_termino: dto.habilita_valor_data_termino,
                 nome: dto.nome,
