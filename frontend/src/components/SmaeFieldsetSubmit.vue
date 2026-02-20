@@ -25,6 +25,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  rotulo: {
+    type: String,
+    default: 'Salvar',
+  },
 });
 </script>
 
@@ -45,11 +49,11 @@ defineProps({
       <button
         class="btn big"
         type="submit"
-        :aria-disabled="$props.erros && !!Object.keys($props.erros)?.length"
+        :aria-disabled="$props.disabled || ($props.erros && !!Object.keys($props.erros).length)"
         :aria-busy="$props.estaCarregando"
         :disabled="$props.disabled"
       >
-        Salvar
+        {{ $props.rotulo }}
       </button>
     </slot>
   </component>
@@ -65,6 +69,10 @@ defineProps({
     content: '';
     height: 1.5px;
     background-color: @c100;
+  }
+
+  fieldset + & {
+    border-top: 0;
   }
 }
 
