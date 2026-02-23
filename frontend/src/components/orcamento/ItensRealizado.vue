@@ -86,8 +86,10 @@ const mesesDisponíveis = computed(() => {
 });
 
 const totais = computed(() => ({
-  empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.value.empenho,
-  liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.value.liquidação,
+  empenho: (líquidoDosItens.value.empenho ?? 0)
+    + (maisRecentesDosItens.value.empenho ?? 0),
+  liquidação: (líquidoDosItens.value.liquidação ?? 0)
+    + (maisRecentesDosItens.value.liquidação ?? 0),
 }));
 
 const totaisQueSuperamSOF = computed(() => ({
@@ -143,6 +145,12 @@ async function addItem() {
 <template>
   <pre v-scrollLockDebug>respostasof:{{ respostasof }}</pre>
   <pre v-scrollLockDebug>orçamentoEmFoco:{{ orçamentoEmFoco }}</pre>
+  <pre v-scrollLockDebug>
+líquidoDosItens.empenho: {{ líquidoDosItens.empenho }}
+líquidoDosItens.liquidação: {{ líquidoDosItens.liquidação }}
+maisRecentesDosItens.empenho: {{ maisRecentesDosItens.empenho }}
+maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
+</pre>
 
   <table class="tablemain no-zebra mb1">
     <colgroup>
