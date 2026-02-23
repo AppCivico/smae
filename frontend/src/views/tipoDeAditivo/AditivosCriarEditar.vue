@@ -1,140 +1,9 @@
-<template>
-  <MigalhasDePão class="mb1" />
-  <div class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose />
-  </div>
-
-  <Form
-    v-slot="{ errors, isSubmitting }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdicao"
-    @submit="onSubmit"
-  >
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="nome"
-          :schema="schema"
-          class="mb0"
-        />
-        <Field
-          name="nome"
-          type="text"
-          min="3"
-          max="250"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="nome"
-        />
-      </div>
-      <div class="f1">
-        <LabelFromYup
-          name="tipo"
-          :schema="schema"
-          class="mb0"
-        />
-        <Field
-          name="tipo"
-          as="select"
-          class="inputtext light mb1"
-        >
-          <option value="">
-            Selecione
-          </option>
-          <option value="Aditivo">
-            Aditivo
-          </option>
-          <option value="Reajuste">
-            Reajuste
-          </option>
-        </Field>
-        <ErrorMessage
-          class="error-msg mb1"
-          name="tipo"
-        />
-      </div>
-    </div>
-    <div class="f1 flex center f1 mb1">
-      <Field
-        name="habilita_valor"
-        type="checkbox"
-        :value="true"
-        :unchecked-value="false"
-        class="inputcheckbox mr1"
-      />
-      <LabelFromYup
-        name="habilita_valor"
-        :schema="schema"
-        class="mb0"
-      />
-      <ErrorMessage
-        class="error-msg mb1"
-        name="habilita_valor"
-      />
-    </div>
-    <div class="f1 flex center">
-      <Field
-        name="habilita_valor_data_termino"
-        type="checkbox"
-        :value="true"
-        :unchecked-value="false"
-        class="inputcheckbox mr1"
-      />
-      <LabelFromYup
-        name="habilita_valor_data_termino"
-        :schema="schema"
-      />
-      <ErrorMessage
-        class="error-msg mb1"
-        name="habilita_valor_data_termino"
-      />
-    </div>
-    <div>
-      <FormErrorsList :errors="errors" />
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
-        <button
-          class="btn big"
-          :disabled="isSubmitting || Object.keys(errors)?.length"
-          :title="
-            Object.keys(errors)?.length
-              ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-              : null
-          "
-        >
-          Salvar
-        </button>
-        <hr class="ml2 f1">
-      </div>
-    </div>
-  </Form>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
-
-  <div
-    v-if="erros.emFoco"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erros.emFoco }}
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
+import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { tipoDeAditivo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -184,5 +53,119 @@ if (route.params?.aditivoId) {
   aditivosStore.buscarItem(route.params?.aditivoId);
 }
 </script>
+
+<template>
+  <MigalhasDePão class="mb1" />
+  <div class="flex spacebetween center mb2">
+    <TituloDaPagina />
+
+    <hr class="ml2 f1">
+
+    <CheckClose />
+  </div>
+
+  <Form
+    v-slot="{ errors }"
+    :validation-schema="schema"
+    :initial-values="itemParaEdicao"
+    @submit="onSubmit"
+  >
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="nome"
+          :schema="schema"
+          class="mb0"
+        />
+        <Field
+          name="nome"
+          type="text"
+          min="3"
+          max="250"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="nome"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="tipo"
+          :schema="schema"
+          class="mb0"
+        />
+        <Field
+          name="tipo"
+          as="select"
+          class="inputtext light mb1"
+        >
+          <option value="">
+            Selecione
+          </option>
+          <option
+            v-for="tipoAditivo in ['Aditivo', 'Reajuste']"
+            :key="`tipo-aditivo--${tipoAditivo}`"
+            :value="tipoAditivo"
+          >
+            {{ tipoAditivo }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="tipo"
+        />
+      </div>
+    </div>
+    <div class="flex center mb1">
+      <Field
+        name="habilita_valor"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+        class="inputcheckbox mr1"
+      />
+
+      <LabelFromYup
+        name="habilita_valor"
+        :schema="schema"
+        class="mb0"
+      />
+    </div>
+
+    <div class="f1 flex center mb1">
+      <Field
+        name="habilita_valor_data_termino"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+        class="inputcheckbox mr1"
+      />
+      <LabelFromYup
+        name="habilita_valor_data_termino"
+        :schema="schema"
+        class="mb0"
+      />
+    </div>
+
+    <SmaeFieldsetSubmit
+      :erros="errors"
+    />
+  </Form>
+
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >Carregando</span>
+
+  <div
+    v-if="erros.emFoco"
+    class="error p1"
+  >
+    <div class="error-msg">
+      {{ erros.emFoco }}
+    </div>
+  </div>
+</template>
 
 <style></style>
