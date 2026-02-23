@@ -1,7 +1,13 @@
 <script setup>
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import schema from '@/consts/formSchemas/buscaLivre';
+import filtrarObjetos from '@/helpers/filtrarObjetos';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
@@ -9,99 +15,56 @@ const route = useRoute();
 
 const alertStore = useAlertStore();
 const aditivosStore = useTipoDeAditivosStore();
-const { lista, chamadasPendentes, erros } = storeToRefs(aditivosStore);
+const { listaComValorReajuste } = storeToRefs(aditivosStore);
 
-async function excluirAditivo(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await aditivosStore.excluirItem(id)) {
-        aditivosStore.$reset();
-        aditivosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
+async function excluirAditivo(item) {
+  if (await aditivosStore.excluirItem(item.id)) {
+    aditivosStore.$reset();
+    aditivosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+    alertStore.success(`"${item.nome}" removido.`);
+  }
 }
 
 aditivosStore.$reset();
 aditivosStore.buscarTudo();
+
+const tiposFiltrados = computed(() => (
+  filtrarObjetos(listaComValorReajuste.value, route.query.palavra_chave)
+));
+
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'tipoDeAditivos.criar' }"
-      class="btn big ml1"
-    >
-      Novo aditivo
-    </router-link>
-  </div>
-
-  <table class="tablemain">
-    <colgroup>
-      <col>
-      <col>
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-    </colgroup>
-    <thead>
-      <tr>
-        <th> Nome </th>
-        <th> Tipo </th>
-        <th />
-        <th />
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="item in lista"
-        :key="item.id"
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: 'tipoDeAditivos.criar' }"
+        class="btn big ml1"
       >
-        <td>{{ item.nome }}</td>
-        <td>{{ item.tipo }}</td>
-        <td>
-          <router-link
-            :to="{ name: 'tipoDeAditivos.editar', params: { aditivoId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
-        <td>
-          <button
-            class="like-a__text"
-            aria-label="excluir"
-            title="excluir"
-            @click="excluirAditivo(item.id, item.nome)"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_waste" /></svg>
-          </button>
-        </td>
-      </tr>
-      <tr v-if="chamadasPendentes.lista">
-        <td colspan="4">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erros.lista">
-        <td colspan="4">
-          Erro: {{ erros.lista }}
-        </td>
-      </tr>
-      <tr v-else-if="!lista.length">
-        <td colspan="4">
-          Nenhum resultado encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        Novo aditivo
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
+
+  <FiltroParaPagina
+    :schema="schema"
+    :formulario="[{
+      campos: {
+        palavra_chave: {
+          lavel: 'Palavra chave',
+          tipo: 'search',
+        },
+      }
+    }]"
+  />
+
+  <SmaeTable
+    :dados="tiposFiltrados"
+    :colunas="[
+      { chave: 'nome', label: 'nome' },
+      { chave: 'reajuste', label: 'reajuste' },
+    ]"
+    :rota-editar="({ id }) => ({ name: 'tipoDeAditivos.editar', params: { aditivoId: id } })"
+    parametro-no-objeto-para-excluir="nome"
+    @deletar="excluirAditivo"
+  />
 </template>
