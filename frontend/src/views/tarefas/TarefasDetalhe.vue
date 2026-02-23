@@ -1,216 +1,10 @@
-<template>
-  <div>
-    <TítuloDePágina id="titulo-da-pagina">
-      Resumo da Tarefa
-    </TítuloDePágina>
-    <div class="flex maxw mb2">
-      <dl class="f1">
-        <dt class="tc500 w700 t16 mb025">
-          Tarefa
-        </dt>
-        <dd> {{ emFoco?.tarefa || ' - ' }}</dd>
-      </dl>
-      <dl class="f2">
-        <dt class="tc500 w700 t16 mb025">
-          Marco do projeto?
-        </dt>
-        <dd> {{ emFoco?.eh_marco ? 'Sim' : 'Não' }}</dd>
-      </dl>
-    </div>
-    <div class="flex maxw mb2">
-      <dl class="f1">
-        <dt class="tc500 w700 t16 mb025">
-          Tarefa-mãe
-        </dt>
-        <dd>{{ tarefasPorId[emFoco?.tarefa_pai_id]?.tarefa || ' - ' }}</dd>
-      </dl>
-      <dl class="f1">
-        <dt class="tc500 w700 t16 mb025">
-          Ordem
-        </dt>
-        <dd> {{ emFoco?.numero || ' - ' }}</dd>
-      </dl>
-      <dl class="f1">
-        <dt class="tc500 w700 t16 mb025">
-          Orgão responsável
-        </dt>
-        <dd> {{ emFoco?.orgao?.descricao || ' - ' }}</dd>
-      </dl>
-    </div>
-    <dl class="mb2">
-      <dt class="tc500 w700 t16 mb025">
-        Responsável pela atividade
-      </dt>
-      <dd> {{ emFoco?.projeto?.responsavel?.nome_exibicao || ' - ' }}</dd>
-    </dl>
-    <dl class="mb2 f1">
-      <dt class="tc500 w700 t16 mb025 ">
-        Descrição
-      </dt>
-      <dd> {{ emFoco?.descricao || ' - ' }}</dd>
-    </dl>
-    <dl v-if="emFoco?.dependencias.length">
-      <div class="flex spacebetween center mt2 mb2">
-        <dt class="tc300 t16">
-          Dependências
-        </dt>
-        <hr class="ml2 f1">
-      </div>
-      <dd>
-        <table class="tablemain maxw">
-          <colgroup>
-            <col>
-            <col>
-            <col>
-          </colgroup>
-          <thead>
-            <tr>
-              <td class="tc300 w700 t12">
-                TAREFA RELACIONADA
-              </td>
-              <td class="tc300 w700 t12">
-                TIPO DE RELAÇÃO
-              </td>
-              <td class="tc300 w700 t12">
-                DIAS DE LATÊNCIA
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="dependencia, key in emFoco?.dependencias"
-              :key="key"
-            >
-              <td class="pt2 pb2">
-                {{ tarefasPorId[dependencia.dependencia_tarefa_id]?.tarefa || ' - ' }}
-              </td>
-              <td>
-                {{ dependencyTypes[dependencia.tipo] }}
-              </td>
-              <td>
-                {{ dependencia.latencia }}
-              </td>
-            </tr>
-            <tr v-if="emFoco?.dependencias.length===0">
-              <td>
-                Nenhum há dependência.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </dd>
-      <hr class="mt3 mb3">
-    </dl>
-    <div class="maxw">
-      <div class="flex maxw mb2">
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Previsão de início
-          </dt>
-          <dd> {{ dateToDate(emFoco?.inicio_planejado) || ' - ' }}</dd>
-        </dl>
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Duração prevista
-          </dt>
-          <dd>{{ emFoco?.duracao_planejado ? `${emFoco.duracao_planejado} dias` : ' - ' }}</dd>
-        </dl>
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Previsão de término
-          </dt>
-          <dd> {{ dateToDate(emFoco?.termino_planejado) || ' - ' }}</dd>
-        </dl>
-      </div>
-      <div class="flex maxw">
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Atraso
-          </dt>
-          <dd>{{ emFoco?.atraso ? `${emFoco.atraso} dias` : ' - ' }}</dd>
-        </dl>
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Previsão de custo
-          </dt>
-          <dd>{{ emFoco?.custo_estimado ? `R$${dinheiro(emFoco.custo_estimado)}` : ' - ' }}</dd>
-        </dl>
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Termino projetado
-          </dt>
-          <dd>
-            {{
-              emFoco?.termino_projetado
-                ? dateToDate(emFoco.termino_projetado)
-                : ' - '
-            }}
-          </dd>
-        </dl>
-      </div>
-    </div>
-
-    <dl class="mt2 mb2">
-      <div class="flex spacebetween center mt2 mb2">
-        <dt class="tc300 t16">
-          Execução da tarefa
-        </dt>
-        <hr class="ml2 f1">
-      </div>
-      <div class="flex maxw mb1">
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Data de início real
-          </dt>
-          <dd>{{ dateToDate(emFoco?.inicio_real) || ' - ' }}</dd>
-        </dl>
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Duração real
-          </dt>
-          <dd>{{ emFoco?.duracao_real ? `${emFoco.duracao_real} dias` : ' - ' }}</dd>
-        </dl>
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Data de término real
-          </dt>
-          <dd>{{ dateToDate(emFoco?.termino_real) || ' - ' }}</dd>
-        </dl>
-      </div>
-      <div class="flex maxw">
-        <dl class="f1">
-          <dt class="tc500 w700 t16">
-            Custo real
-          </dt>
-          <dd>{{ emFoco?.custo_real ? `R$${dinheiro(emFoco.custo_real)}` : ' - ' }}</dd>
-        </dl>
-        <dl class="f2">
-          <dt class="tc500 w700 t16">
-            Percentual concluído
-          </dt>
-          <dd>{{ emFoco?.percentual_concluido ? `${emFoco.percentual_concluido}%` : ' - ' }}</dd>
-        </dl>
-      </div>
-    </dl>
-    <span
-      v-if="chamadasPendentes?.emFoco"
-      class="spinner"
-    >Carregando</span>
-
-    <div
-      v-if="erro"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erro }}
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
 import dateToDate from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -227,10 +21,138 @@ const {
 
 tarefasStore.buscarTudo();
 
+const dadosBasicos = computed(() => [
+  { chave: 'tarefa', titulo: 'Tarefa', valor: emFoco.value?.tarefa },
+  { chave: 'eh_marco', titulo: 'Marco do projeto?', valor: emFoco.value?.eh_marco ? 'Sim' : 'Não' },
+  { chave: 'tarefa_pai', titulo: 'Tarefa-mãe', valor: tarefasPorId.value[emFoco.value?.tarefa_pai_id]?.tarefa },
+  { chave: 'numero', titulo: 'Ordem', valor: emFoco.value?.numero },
+  { chave: 'orgao', titulo: 'Órgão responsável', valor: emFoco.value?.orgao?.descricao },
+  { chave: 'responsavel', titulo: 'Responsável pela atividade', valor: emFoco.value?.projeto?.responsavel?.nome_exibicao },
+  {
+    chave: 'descricao', titulo: 'Descrição', valor: emFoco.value?.descricao, larguraBase: '100%',
+  },
+]);
+
+const dadosPlanejamento = computed(() => [
+  { chave: 'inicio_planejado', titulo: 'Previsão de início', valor: dateToDate(emFoco.value?.inicio_planejado) },
+  { chave: 'duracao_planejado', titulo: 'Duração prevista', valor: emFoco.value?.duracao_planejado ? `${emFoco.value.duracao_planejado} dias` : null },
+  { chave: 'termino_planejado', titulo: 'Previsão de término', valor: dateToDate(emFoco.value?.termino_planejado) },
+  { chave: 'atraso', titulo: 'Atraso', valor: emFoco.value?.atraso ? `${emFoco.value.atraso} dias` : null },
+  { chave: 'custo_estimado', titulo: 'Previsão de custo', valor: emFoco.value?.custo_estimado ? `R$${dinheiro(emFoco.value.custo_estimado)}` : null },
+  {
+    chave: 'custo_estimado_anualizado',
+    titulo: 'Custo previsto por ano',
+    valor: emFoco.value?.custo_estimado_anualizado?.length ? ' ' : null,
+    metadados: { custos: emFoco.value?.custo_estimado_anualizado },
+  },
+  { chave: 'termino_projetado', titulo: 'Término projetado', valor: dateToDate(emFoco.value?.termino_projetado) },
+].filter((item) => item.chave !== 'custo_estimado_anualizado' || item.metadados?.custos?.length));
+
+const dadosExecucao = computed(() => [
+  {
+    chave: 'inicio_real',
+    titulo: 'Data de início real',
+    valor: dateToDate(emFoco.value?.inicio_real),
+  },
+  { chave: 'duracao_real', titulo: 'Duração real', valor: emFoco.value?.duracao_real ? `${emFoco.value.duracao_real} dias` : null },
+  { chave: 'termino_real', titulo: 'Data de término real', valor: dateToDate(emFoco.value?.termino_real) },
+  { chave: 'custo_real', titulo: 'Custo real', valor: emFoco.value?.custo_real ? `R$${dinheiro(emFoco.value.custo_real)}` : null },
+  {
+    chave: 'custo_real_anualizado',
+    titulo: 'Custo real por ano',
+    valor: emFoco.value?.custo_real_anualizado?.length ? ' ' : null,
+    metadados: { custos: emFoco.value?.custo_real_anualizado },
+  },
+  { chave: 'percentual_concluido', titulo: 'Percentual concluído', valor: emFoco.value?.percentual_concluido != null ? `${emFoco.value.percentual_concluido}%` : null },
+].filter((item) => item.chave !== 'custo_real_anualizado' || item.metadados?.custos?.length));
+
+const dadosDependencias = computed(() => (emFoco.value?.dependencias || []).map((dep) => ({
+  tarefa_relacionada: tarefasPorId.value[dep.dependencia_tarefa_id]?.tarefa || '—',
+  tipo_relacao: dependencyTypes[dep.tipo] || dep.tipo,
+  latencia: dep.latencia,
+})));
+
+const colunasDependencias = [
+  { chave: 'tarefa_relacionada', label: 'Tarefa relacionada' },
+  { chave: 'tipo_relacao', label: 'Tipo de relação' },
+  { chave: 'latencia', label: 'Dias de latência' },
+];
 </script>
 
-<style>
-.maxw{
-  max-width: 900px;
-}
-</style>
+<template>
+  <div class="flex column g2">
+    <TítuloDePágina id="titulo-da-pagina">
+      Resumo da Tarefa
+    </TítuloDePágina>
+
+    <LoadingComponent v-if="chamadasPendentes?.emFoco" />
+
+    <p v-else-if="!emFoco">
+      Dados da tarefa não encontrados
+    </p>
+
+    <template v-else>
+      <SmaeDescriptionList
+        :lista="dadosBasicos"
+        layout="grid"
+      />
+
+      <SmaeTable
+        v-if="dadosDependencias.length"
+        :dados="dadosDependencias"
+        :colunas="colunasDependencias"
+        rolagem-horizontal
+        titulo="Dependências"
+      />
+
+      <h2 class="mb0">
+        Planejamento
+      </h2>
+
+      <SmaeDescriptionList
+        :lista="dadosPlanejamento"
+        layout="grid"
+      >
+        <template #descricao--custo_estimado_anualizado="{ item }">
+          <ul>
+            <li
+              v-for="custo in item.metadados.custos"
+              :key="custo.ano"
+            >
+              {{ custo.ano }}: R${{ dinheiro(custo.valor) }}
+            </li>
+          </ul>
+        </template>
+      </SmaeDescriptionList>
+
+      <h2 class="mb0">
+        Execução da tarefa
+      </h2>
+
+      <SmaeDescriptionList
+        :lista="dadosExecucao"
+        layout="grid"
+      >
+        <template #descricao--custo_real_anualizado="{ item }">
+          <ul>
+            <li
+              v-for="custo in item.metadados.custos"
+              :key="custo.ano"
+            >
+              {{ custo.ano }}: R${{ dinheiro(custo.valor) }}
+            </li>
+          </ul>
+        </template>
+      </SmaeDescriptionList>
+    </template>
+
+    <div
+      v-if="erro"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erro }}
+      </div>
+    </div>
+  </div>
+</template>
