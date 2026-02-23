@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import ContratosAditivos from '@/components/obras/ContratosAditivos.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -32,7 +33,80 @@ const permissoesDoItemEmFoco = computed(() => (route.meta.entidadeMãe === 'obra
   : permissõesDoProjetoEmFoco.value));
 
 const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
+
+const dadosPrincipais = computed(() => [
+  { chave: 'numero', valor: emFoco.value?.numero, larguraBase: '10em' },
+  { chave: 'contrato_exclusivo', valor: emFoco.value?.contrato_exclusivo ? 'Sim' : 'Não', larguraBase: '10em' },
+  { chave: 'status', valor: emFoco.value?.status, larguraBase: '10em' },
+  {
+    chave: 'processos_sei',
+    valor: emFoco.value?.processos_sei?.length ? ' ' : null,
+    larguraBase: '20em',
+    metadados: { lista: emFoco.value?.processos_sei },
+  },
+  {
+    chave: 'orgao_id',
+    valor: emFoco.value?.orgao?.sigla,
+    larguraBase: '10em',
+    metadados: { descricao: emFoco.value?.orgao?.descricao },
+  },
+  { chave: 'modalidade_contratacao_id', valor: emFoco.value?.modalidade_contratacao?.nome, larguraBase: '25em' },
+  { chave: 'data_termino', valor: emFoco.value?.data_termino ? dateToShortDate(emFoco.value.data_termino) : null, larguraBase: '25em' },
+  {
+    chave: 'fontes_recurso',
+    valor: emFoco.value?.fontes_recurso?.length ? ' ' : null,
+    larguraBase: '25em',
+    metadados: { lista: emFoco.value?.fontes_recurso },
+  },
+  { chave: 'objeto_resumo', valor: emFoco.value?.objeto_resumo, larguraBase: '100%' },
+  {
+    chave: 'objeto_detalhado',
+    valor: emFoco.value?.objeto_detalhado ? ' ' : null,
+    larguraBase: '100%',
+    metadados: { html: emFoco.value?.objeto_detalhado },
+  },
+  { chave: 'contratante', valor: emFoco.value?.contratante, larguraBase: '25em' },
+  { chave: 'empresa_contratada', valor: emFoco.value?.empresa_contratada, larguraBase: '25em' },
+  { chave: 'cnpj_contratada', valor: emFoco.value?.cnpj_contratada, larguraBase: '25em' },
+  { chave: 'data_assinatura', valor: emFoco.value?.data_assinatura ? dateToShortDate(emFoco.value.data_assinatura) : null, larguraBase: '25em' },
+  {
+    chave: 'prazo_numero',
+    valor: emFoco.value?.prazo_numero ? `${emFoco.value.prazo_numero} ${emFoco.value.prazo_unidade || ''}` : null,
+    larguraBase: '25em',
+  },
+  {
+    chave: 'data_base',
+    titulo: schema.value?.fields?.data_base_mes?.spec?.label,
+    valor: emFoco.value?.data_base_mes ? `${emFoco.value.data_base_mes}/${emFoco.value.data_base_ano}` : null,
+    larguraBase: '25em',
+  },
+  { chave: 'data_inicio', valor: emFoco.value?.data_inicio ? dateToShortDate(emFoco.value.data_inicio) : null, larguraBase: '25em' },
+  { chave: 'valor', valor: emFoco.value?.valor ? `R$ ${dinheiro(emFoco.value.valor)}` : null, larguraBase: '25em' },
+  {
+    chave: 'total_aditivos',
+    titulo: 'Valor total dos aditivos',
+    valor: emFoco.value?.total_aditivos ? `R$ ${dinheiro(emFoco.value.total_aditivos)}` : 'R$ 0,00',
+    larguraBase: '25em',
+  },
+  {
+    chave: 'total_reajustes',
+    titulo: 'Valor total dos reajustes',
+    valor: emFoco.value?.total_reajustes ? `R$ ${dinheiro(emFoco.value.total_reajustes)}` : 'R$ 0,00',
+    larguraBase: '25em',
+  },
+  {
+    chave: 'valor_reajustado',
+    titulo: 'Valor reajustado do contrato',
+    valor: emFoco.value?.valor_reajustado ? `R$ ${dinheiro(emFoco.value.valor_reajustado)}` : 'R$ 0,00',
+    larguraBase: '25em',
+  },
+]);
+
+const dadosFinais = computed(() => [
+  { chave: 'observacoes', valor: emFoco.value?.observacoes, larguraBase: '100%' },
+]);
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina>
@@ -58,224 +132,65 @@ const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
 
   <div
     v-if="emFoco"
-    class="boards"
+    class="flex column g2"
   >
-    <dl class="flex g2 flexwrap">
-      <div class="f1 fb10em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.numero.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.numero || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb10em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.contrato_exclusivo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.contrato_exclusivo ? 'Sim' : 'Não' }}
-        </dd>
-      </div>
-      <div class="f1 fb10em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.status.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.status || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb20em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.processos_sei.spec.label }}
-        </dt>
-        <dd class="t13 contentStyle">
-          <ul v-if="emFoco?.processos_sei?.length">
-            <li
-              v-for="processoSei, i in emFoco?.processos_sei"
-              :key="i"
-            >
-              {{ formatProcesso(processoSei) }}
-            </li>
-          </ul>
-        </dd>
-      </div>
-      <div class="f1 fb10em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.orgao_id.spec.label }}
-        </dt>
-        <dd class="t13">
-          <abbr
-            v-if="emFoco?.orgao?.sigla"
-            :title="emFoco?.orgao?.descricao"
+    <SmaeDescriptionList
+      :lista="dadosPrincipais"
+      :schema="schema"
+    >
+      <template #descricao--processos_sei="{ item }">
+        <ul v-if="item.metadados?.lista?.length">
+          <li
+            v-for="(processo, i) in item.metadados.lista"
+            :key="i"
           >
-            {{ emFoco.orgao.sigla }}
-          </abbr>
-          <template v-else>
-            {{ emFoco?.orgao }}
-          </template>
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.modalidade_contratacao_id.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.modalidade_contratacao?.nome || emFoco?.modalidade_contratacao || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mbi">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.data_termino.spec.label }}
-        </dt>
-        <dd>
-          {{ emFoco?.data_termino ? dateToShortDate(emFoco.data_termino) : '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.fontes_recurso.spec.label }}
-        </dt>
-        <dd class="t13 contentStyle">
-          <ul v-if="emFoco?.fontes_recurso?.length">
-            <li
-              v-for="fonte, i in emFoco?.fontes_recurso"
-              :key="i"
-            >
-              {{ fonte.fonte_recurso_cod_sof }}
-              ({{ fonte.fonte_recurso_ano }})
-            </li>
-          </ul>
-        </dd>
-      </div>
-      <div class="f1 fb100 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.objeto_resumo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.objeto_resumo || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb100 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.objeto_detalhado.spec.label }}
-        </dt>
-        <dd
-          class="t13 contentStyle"
-          v-html="emFoco?.objeto_detalhado"
-        />
-      </div>
+            {{ formatProcesso(processo) }}
+          </li>
+        </ul>
+      </template>
 
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.contratante.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.contratante || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.empresa_contratada.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.empresa_contratada || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.cnpj_contratada.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.cnpj_contratada || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.data_assinatura.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.data_assinatura
-            ? dateToShortDate(emFoco.data_assinatura)
-            : '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.prazo_numero.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.prazo_numero }} {{ emFoco?.prazo_unidade }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.data_base_mes.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.data_base_mes || '-' }}/{{ emFoco?.data_base_ano || '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.data_inicio.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.data_inicio ? dateToShortDate(emFoco.data_inicio) : '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.valor.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.valor ? `R$ ${dinheiro(emFoco?.valor)}` : '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Valor total dos aditivos
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.total_aditivos ? `R$ ${dinheiro(emFoco.total_aditivos)}` : 'R$ 0,00' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Valor total dos reajustes
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.total_reajustes ? `R$ ${dinheiro(emFoco.total_reajustes)}` : 'R$ 0,00' }}
-        </dd>
-      </div>
-      <div class="f1 fb25em mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Valor reajustado do contrato
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.valor_reajustado ? `R$ ${dinheiro(emFoco.valor_reajustado)}` : '-' }}
-        </dd>
-      </div>
-      <div class="f1 fb100 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Aditivos e Reajustes
-        </dt>
-        <dd>
-          <ContratosAditivos
-            @salvo="contratosStore.buscarItem(emFoco.id)"
-            @excluido="contratosStore.buscarItem(emFoco.id)"
-          />
-        </dd>
-      </div>
-      <div class="f1 fb100 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.observacoes.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.observacoes || '-' }}
-        </dd>
-      </div>
-    </dl>
+      <template #descricao--orgao_id="{ item }">
+        <abbr
+          v-if="item.valor"
+          :title="item.metadados?.descricao"
+        >
+          {{ item.valor }}
+        </abbr>
+        <template v-else>
+          —
+        </template>
+      </template>
+
+      <template #descricao--fontes_recurso="{ item }">
+        <ul v-if="item.metadados?.lista?.length">
+          <li
+            v-for="(fonte, i) in item.metadados.lista"
+            :key="i"
+          >
+            {{ fonte.fonte_recurso_cod_sof }} ({{ fonte.fonte_recurso_ano }})
+          </li>
+        </ul>
+      </template>
+
+      <template #descricao--objeto_detalhado="{ item }">
+        <div
+          class="contentStyle"
+          v-html="item.metadados?.html"
+        />
+      </template>
+    </SmaeDescriptionList>
+
+    <div>
+      <ContratosAditivos
+        @salvo="contratosStore.buscarItem(emFoco.id)"
+        @excluido="contratosStore.buscarItem(emFoco.id)"
+      />
+    </div>
+
+    <SmaeDescriptionList
+      :lista="dadosFinais"
+      :schema="schema"
+    />
 
     <LoadingComponent v-if="chamadasPendentes?.emFoco" />
 

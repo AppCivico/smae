@@ -214,6 +214,8 @@ function limparCamposRelacionados(tipo_aditivo_id) {
     :colunas="colunas"
     :dados="dadosDaTabela"
     :atributos-da-tabela="{ class: 'mb2' }"
+    titulo="Aditivos e Reajustes"
+    rolagem-horizontal
   >
     <template #celula:tipo="{ linha }">
       {{ linha.tipo?.nome || linha.tipo }}
