@@ -87,6 +87,10 @@ const colunasDependencias = [
 
     <LoadingComponent v-if="chamadasPendentes?.emFoco" />
 
+    <p v-else-if="!emFoco">
+      Dados da tarefa não encontrados
+    </p>
+
     <template v-else>
       <SmaeDescriptionList
         :lista="dadosBasicos"
