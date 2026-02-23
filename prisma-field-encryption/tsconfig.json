@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    // Type checking
+    "strict": true,
+
+    // Modules
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "rootDir": "./src",
+
+    // Language & Environment
+    "target": "esnext",
+
+    // Emit
+    "outDir": "./dist",
+    "declaration": true,
+    "noEmit": true,
+
+    // Interop
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Misc
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "./dist",
+    "./prisma",
+    "./src/tests/migrate.ts",
+    "./src/tests/migrations/*.ts"
+  ]
+}

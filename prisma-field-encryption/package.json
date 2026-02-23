@@ -1,0 +1,121 @@
+{
+  "name": "prisma-field-encryption",
+  "version": "0.0.0-semantically-released",
+  "description": "Transparent field-level encryption at rest for Prisma",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "bin": {
+    "prisma-field-encryption": "dist/generator/main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": {
+    "name": "François Best",
+    "email": "contact@francoisbest.com",
+    "url": "https://francoisbest.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/47ng/prisma-field-encryption.git"
+  },
+  "keywords": [
+    "prisma",
+    "middleware",
+    "encryption",
+    "aes-256-gcm"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist ./coverage",
+    "prebuild": "pnpm run generate:prisma",
+    "build": "tsdown",
+    "postbuild": "chmod +x ./dist/generator/main.js && cd node_modules/.bin && ln -sf ../../dist/generator/main.js ./prisma-field-encryption",
+    "generate:prisma": "prisma generate",
+    "test": "pnpm run --stream '/^test:/'",
+    "test:types": "tsc --noEmit",
+    "test:runtime": "vitest run",
+    "ci": "pnpm run build && pnpm run test",
+    "prepare": "husky",
+    "migrate": "node ./src/tests/migrate.ts"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "dependencies": {
+    "@47ng/cloak": "^1.2.0",
+    "@47ng/codec": "^1.1.0",
+    "@mrleebo/prisma-ast": "^0.14.0",
+    "@prisma/generator-helper": "6.13.0",
+    "debug": "^4.4.0",
+    "immer": "^10.1.1",
+    "object-path": "^0.11.8",
+    "zod": "^3.24.0"
+  },
+  "peerDependencies": {
+    "@prisma/client": ">= 4.7"
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^19.8.1",
+    "@prisma/client": "6.13.0",
+    "@prisma/internals": "6.13.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^22.15.33",
+    "@types/object-path": "^0.11.4",
+    "@vitest/coverage-v8": "^4.0.18",
+    "better-sqlite3": "^12.6.2",
+    "commitlint": "^19.8.1",
+    "husky": "^9.1.7",
+    "prisma": "6.13.0",
+    "semantic-release": "^25.0.2",
+    "tsdown": "^0.20.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "none",
+    "useTabs": false
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        [
+          "build",
+          "chore",
+          "ci",
+          "clean",
+          "doc",
+          "feat",
+          "fix",
+          "perf",
+          "ref",
+          "revert",
+          "style",
+          "test"
+        ]
+      ],
+      "subject-case": [
+        0,
+        "always",
+        "sentence-case"
+      ],
+      "body-leading-blank": [
+        2,
+        "always",
+        true
+      ]
+    }
+  }
+}
