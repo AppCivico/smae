@@ -1540,75 +1540,65 @@ export class OrcamentoRealizadoService {
             return;
         }
 
-        let saveLog = true;
+        // Lock de sessão (não amarrado a uma transação) para evitar timeout acumulado
+        // quando múltiplos PDMs são processados sequencialmente
+        logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
+        const locked: { locked: boolean }[] =
+            await this.prisma.$queryRaw`SELECT pg_try_advisory_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked`;
+        if (!locked[0].locked) {
+            logger.debug(`Já está em processamento...`);
+            return;
+        }
+
         try {
-            await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
-                    const locked: {
-                        locked: boolean;
-                    }[] = await prismaTx.$queryRaw`SELECT
-                    pg_try_advisory_xact_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked
-                `;
-                    if (!locked[0].locked) {
-                        saveLog = false;
-                        logger.debug(`Já está em processamento...`);
-                        return;
-                    }
+            // Processa cada PDM individualmente, cada um em sua própria transação
+            for (const pdm of pdms) {
+                const pdmLogger = LoggerWithLog(`Orçamento Realizado: Automação PDM ${pdm.id}`);
 
-                    // Processa cada PDM individualmente, para isolar falhas
-                    for (const pdm of pdms) {
-                        const pdmLogger = LoggerWithLog(`Orçamento Realizado: Automação PDM ${pdm.id}`);
+                try {
+                    await this.prisma.$transaction(
+                        async (pdmTx: Prisma.TransactionClient) => {
+                            pdmLogger.log(`Iniciando processamento do PDM ${pdm.id}`);
+                            await this.verificaOrcamentoAberturaFechamento(pdmLogger, pdm.id);
 
-                        try {
-                            await this.prisma.$transaction(
-                                async (pdmTx: Prisma.TransactionClient) => {
-                                    pdmLogger.log(`Iniciando processamento do PDM ${pdm.id}`);
-                                    await this.verificaOrcamentoAberturaFechamento(pdmLogger, pdm.id);
-
-                                    await pdmLogger.saveLogs(pdmTx, {
-                                        pessoa_id: -1,
-                                        ip: '0.0.0.0',
-                                    });
-                                    pdmLogger.log(`PDM ${pdm.id} processado com sucesso`);
-                                },
-                                {
-                                    maxWait: 30000,
-                                    timeout: 60 * 1000 * 10,
-                                    isolationLevel: 'Serializable',
-                                }
-                            );
-                        } catch (error) {
-                            logger.error(`Erro ao processar PDM ${pdm.id}: ${error}`);
-                            pdmLogger.error(`Erro no processamento: ${error}`);
-                            // Save PDM logger even on error (without transaction)
-                            try {
-                                await pdmLogger.saveLogs(this.prisma, {
-                                    pessoa_id: -1,
-                                    ip: '0.0.0.0',
-                                });
-                            } catch (saveError) {
-                                logger.error(`Erro ao salvar logs do PDM ${pdm.id}: ${saveError}`);
-                            }
+                            await pdmLogger.saveLogs(pdmTx, {
+                                pessoa_id: -1,
+                                ip: '0.0.0.0',
+                            });
+                            pdmLogger.log(`PDM ${pdm.id} processado com sucesso`);
+                        },
+                        {
+                            maxWait: 30000,
+                            timeout: 60 * 1000 * 10,
+                            isolationLevel: 'Serializable',
                         }
+                    );
+                } catch (error) {
+                    logger.error(`Erro ao processar PDM ${pdm.id}: ${error}`);
+                    pdmLogger.error(`Erro no processamento: ${error}`);
+                    // Save PDM logger even on error (without transaction)
+                    try {
+                        await pdmLogger.saveLogs(this.prisma, {
+                            pessoa_id: -1,
+                            ip: '0.0.0.0',
+                        });
+                    } catch (saveError) {
+                        logger.error(`Erro ao salvar logs do PDM ${pdm.id}: ${saveError}`);
                     }
-
-                    logger.log(`Verificação concluída com sucesso`);
-                },
-                {
-                    maxWait: 30000,
-                    timeout: 60 * 1000 * 15,
-                    isolationLevel: 'Serializable',
                 }
-            );
+            }
+
+            logger.log(`Verificação concluída com sucesso`);
         } finally {
-            // Save main logger outside transaction, even if it fails
+            // Libera o lock de sessão
+            await this.prisma.$queryRaw`SELECT pg_advisory_unlock(${JOB_PDM_ORCAMENTO_CONCLUIDO})`;
+
+            // Save main logger outside transaction
             try {
-                if (saveLog)
-                    await logger.saveLogs(this.prisma, {
-                        pessoa_id: -1,
-                        ip: '0.0.0.0',
-                    });
+                await logger.saveLogs(this.prisma, {
+                    pessoa_id: -1,
+                    ip: '0.0.0.0',
+                });
             } catch (error) {
                 this.logger.error(`Erro ao salvar logs principais: ${error}`);
             }

@@ -246,6 +246,16 @@ export class PdmService {
         if (dto.possui_atividade && !dto.possui_iniciativa)
             throw new HttpException('possui_iniciativa precisa ser True para ativar Atividades', 400);
 
+        if (
+            dto.orcamento_dia_abertura != undefined &&
+            dto.orcamento_dia_fechamento != undefined &&
+            dto.orcamento_dia_abertura > dto.orcamento_dia_fechamento
+        )
+            throw new HttpException(
+                'orcamento_dia_abertura não pode ser maior que orcamento_dia_fechamento',
+                400
+            );
+
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pdm = await prismaTx.pdm.create({
@@ -803,6 +813,16 @@ export class PdmService {
             });
             if (similarExists > 0)
                 throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
+
+        {
+            const diaAbertura = dto.orcamento_dia_abertura ?? pdm.orcamento_dia_abertura;
+            const diaFechamento = dto.orcamento_dia_fechamento ?? pdm.orcamento_dia_fechamento;
+            if (diaAbertura > diaFechamento)
+                throw new HttpException(
+                    'orcamento_dia_abertura não pode ser maior que orcamento_dia_fechamento',
+                    400
+                );
         }
 
         let arquivo_logo_id: number | undefined | null;
