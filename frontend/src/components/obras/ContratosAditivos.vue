@@ -148,6 +148,11 @@ const colunas = [
     label: 'Tipo',
   },
   {
+    chave: 'tipo.tipo',
+    label: 'Aditivo/Reajuste',
+    atributosDaColuna: { class: 'col--minimum' },
+  },
+  {
     chave: 'data',
     label: 'Data',
     formatador: (v) => (v ? dateToShortDate(v) : ''),
@@ -157,7 +162,7 @@ const colunas = [
   },
   {
     chave: 'valor',
-    label: 'Valor reajustado',
+    label: 'Valor',
     formatador: (v) => (v ? `R$ ${dinheiro(v)}` : ''),
     atributosDaColuna: { class: 'col--minimum' },
     atributosDaCelula: { class: 'cell--number' },
@@ -256,7 +261,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
       <svg
         width="20"
         height="20"
-      ><use xlink:href="#i_+" /></svg>Adicionar aditivo
+      ><use xlink:href="#i_+" /></svg>Adicionar aditivo/reajuste
     </button>
   </p>
 

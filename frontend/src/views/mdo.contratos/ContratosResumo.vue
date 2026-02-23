@@ -232,9 +232,33 @@ const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
           {{ emFoco?.valor ? `R$ ${dinheiro(emFoco?.valor)}` : '-' }}
         </dd>
       </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Valor total dos aditivos
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.total_aditivos ? `R$ ${dinheiro(emFoco.total_aditivos)}` : 'R$ 0,00' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Valor total dos reajustes
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.total_reajustes ? `R$ ${dinheiro(emFoco.total_reajustes)}` : 'R$ 0,00' }}
+        </dd>
+      </div>
+      <div class="f1 fb25em mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Valor reajustado do contrato
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.valor_reajustado ? `R$ ${dinheiro(emFoco.valor_reajustado)}` : '-' }}
+        </dd>
+      </div>
       <div class="f1 fb100 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Aditivos
+          Aditivos e Reajustes
         </dt>
         <dd>
           <ContratosAditivos
