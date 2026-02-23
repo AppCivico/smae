@@ -1649,7 +1649,8 @@ export class OrcamentoRealizadoService {
         }
         logger.log(`Configurações carregadas: ${configs.map((c) => c.ano_referencia).join(', ')}`);
 
-        // Carregar metas com registros de controle para ambos os anos
+        // Carregar metas com registros de controle para os anos relevantes
+        // Inclui spYear+1 porque budgetMonth=12 com budgetYear=spYear gera actionYear=spYear+1
         const metas = await this.prisma.meta.findMany({
             where: {
                 pdm_id: pdm.id,
@@ -1659,7 +1660,7 @@ export class OrcamentoRealizadoService {
                 id: true,
                 PdmOrcamentoRealizadoControleConcluido: {
                     orderBy: { criado_em: 'desc' },
-                    where: { ano_referencia: { in: [spYear - 1, spYear] } },
+                    where: { ano_referencia: { in: [spYear - 1, spYear, spYear + 1] } },
                 },
             },
         });
