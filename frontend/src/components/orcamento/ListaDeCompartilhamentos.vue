@@ -98,7 +98,7 @@ const lista = computed(() => compartilhamentos.value
         código = x.meta.codigo;
         título = x.meta.titulo;
         rota = {
-          name: 'meta',
+          name: 'pdm.meta',
           params: {
             meta_id: x.meta.id,
           },
