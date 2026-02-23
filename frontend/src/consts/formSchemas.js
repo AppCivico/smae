@@ -2167,7 +2167,11 @@ export const tipoDeAditivo = object({
     .required(),
   habilita_valor: boolean()
     .label('Habilita valor')
-    .nullable(),
+    .nullable()
+    .when('tipo', {
+      is: 'Reajuste',
+      then: (schema) => schema.required().oneOf([true], 'Quando o tipo de aditivo for reajuste, é necessário habilitar valor'),
+    }),
   habilita_valor_data_termino: boolean()
     .label('Habilita data de término')
     .nullable(),
