@@ -82,7 +82,7 @@ A ordem de prioridade para resolução de títulos é:
 | `itensSelecionados` | `Array<string \| ConfigDeItem>` | Não | Define quais campos exibir, sua ordem, títulos e configurações |
 | `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
 | `layout` | `'flex' \| 'grid'` | Não | Layout do container. Padrão: `'flex'` |
-| `larguraMinima` | `string` | Não | Largura mínima dos itens no modo grid (ex: `'200px'`). Padrão: `''` (o CSS define `180px` como fallback) |
+| `larguraMinima` | `string` | Não | Largura mínima dos itens no modo grid (ex: `'15rem'`). Padrão: `''` (o CSS define `13rem` como fallback) |
 
 \* Pelo menos uma das props `objeto` ou `lista` deve ser fornecida.
 
@@ -191,7 +191,7 @@ Use a prop `larguraMinima` para definir a largura mínima das colunas no grid:
 <SmaeDescriptionList
   :objeto="dados"
   layout="grid"
-  largura-minima="250px"
+  largura-minima="15rem"
 />
 ```
 
@@ -291,7 +291,7 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 Com `larguraMinima` fornecida, o inline style é adicionado:
 
 ```html
-<dl class="description-list description-list--grid" style="--dl-item-min-width: 250px;">
+<dl class="description-list description-list--grid" style="--dl-item-min-width: 15rem;">
   <!-- items -->
 </dl>
 ```
@@ -302,5 +302,5 @@ Com `larguraMinima` fornecida, o inline style é adicionado:
 - Listas consecutivas recebem borda superior e espaçamento automático
 - **Layout flex:** os itens usam `flex: 1` por padrão, expandindo para preencher o espaço disponível
 - **Layout grid:** os itens são distribuídos em colunas responsivas usando `auto-fit` e `minmax()`
-  - A largura mínima padrão é `180px` (definida no CSS)
+  - A largura mínima padrão é `13rem` (~180px, definida no CSS)
   - Use a prop `larguraMinima` para customizar esse valor, o que adiciona um inline style `--dl-item-min-width` ao container
