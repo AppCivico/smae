@@ -30,7 +30,8 @@ type CampoFiltro = {
   opcoes?: Opcoes
   autocomplete?: {
     label?: string
-    apenasUm?: boolean
+    numeroMaximoDeParticipantes?: number
+    unique?: boolean
   },
   atributos?: Record<string, unknown>
 };
@@ -198,7 +199,8 @@ if (props.autoSubmit) {
             <div
               v-for="(campo, campoNome) in linha.campos"
               :key="campoNome"
-              :class="['f1 align-end', campo.class]"
+              class="f1"
+              :class="campo.class"
             >
               <LabelFromYup
                 :name="campoNome"
@@ -264,10 +266,16 @@ if (props.autoSubmit) {
               >
                 <AutocompleteField2
                   class="f1 mb1"
-                  :controlador="{ participantes: value, busca: '' }"
+                  :controlador="{
+                    participantes: Array.isArray(value)
+                      ? value
+                      : (value != null && value !== '' ? [value] : []),
+                    busca: ''
+                  }"
                   :grupo="campo.opcoes"
                   :label="campo.autocomplete?.label || 'label'"
-                  :apenas-um="campo.autocomplete?.apenasUm"
+                  :numero-maximo-de-participantes="campo.autocomplete?.numeroMaximoDeParticipantes"
+                  :unique="campo.autocomplete?.unique"
                   :readonly="$props.carregando"
                   @change="ev => handleChange(ev)"
                 />
