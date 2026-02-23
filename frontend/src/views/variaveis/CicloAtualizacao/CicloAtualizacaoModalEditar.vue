@@ -56,7 +56,9 @@ const {
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   variavel_id: item.variavel.id,
   valor_realizado: item.valor_realizado || '',
-  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa ? item.valor_realizado_acumulado : '0',
+  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
+    ? item.valor_realizado_acumulado
+    : '0',
 }));
 
 function obterVariavelInicial() {
@@ -334,7 +336,6 @@ function restaurarFormulario() {
               anular-vazio
               rows="3"
             />
-
             <ErrorMessage
               name="analise_qualitativa_aprovador"
             />
@@ -517,7 +518,10 @@ function restaurarFormulario() {
               </th>
 
               <td
-                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
+                class="
+                  valores-variaveis-tabela__item
+                  valores-variaveis-tabela__item--valor_realizado
+                "
               >
                 <Field
                   v-if="!temCategorica"
@@ -566,7 +570,10 @@ function restaurarFormulario() {
 
               <td
                 v-if="emFoco?.variavel.acumulativa"
-                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
+                class="
+                  valores-variaveis-tabela__item
+                  valores-variaveis-tabela__item--valor_realizado_acumulado
+                "
               >
                 <Field
                   v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado_acumulado"
