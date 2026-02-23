@@ -28,7 +28,7 @@ const SmaeTextProps = {
   },
   modelValue: {
     type: String,
-    default: '',
+    default: undefined,
   },
   modelModifiers: {
     type: Object as PropType<Record<string, boolean>>,
