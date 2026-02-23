@@ -56,8 +56,9 @@ type CampoFiltro = {
   tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete' | 'numeric'
   opcoes?: { id: string | number; label: string }[] | string[] | number[]
   autocomplete?: {
-    label?: string    // prop do objeto usada como label (padrão: 'label')
-    apenasUm?: boolean
+    label?: string                    // prop do objeto usada como label (padrão: 'label')
+    numeroMaximoDeParticipantes?: number
+    unique?: boolean
   }
   class?: string                    // classe CSS do wrapper do campo
   atributos?: Record<string, unknown> // atributos extras (só para tipo 'numeric')
@@ -76,7 +77,7 @@ Os rótulos de cada campo são lidos automaticamente do schema Yup via `LabelFro
 | `numeric`      | `<input type="text" inputmode="numeric">` | Aceita `atributos` extras |
 | `checkbox`     | `<input type="checkbox" class="interruptor">` | |
 | `select`       | `<select>` com `<option>` normalizadas | `opcoes` aceita `string[]`, `number[]` ou `{ id, label }[]` |
-| `autocomplete` | `AutocompleteField2` | Para seleção com busca. Usar `autocomplete.label` e `autocomplete.apenasUm` |
+| `autocomplete` | `AutocompleteField2` | Para seleção com busca. Usar `autocomplete.label`, `autocomplete.numeroMaximoDeParticipantes` e `autocomplete.unique` |
 
 ## Comportamentos automáticos
 
