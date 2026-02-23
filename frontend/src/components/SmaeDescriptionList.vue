@@ -61,6 +61,9 @@ const props = defineProps({
     type: String as () => 'flex' | 'grid',
     required: false,
     default: 'flex',
+    validator(value: string) {
+      return ['flex', 'grid'].includes(value);
+    },
   },
 });
 
@@ -271,7 +274,7 @@ const classeContainer = computed(() => [
 }
 
 .description-list--grid {
-  --dl-item-min-width: 180px;
+  --dl-item-min-width: 13rem;
 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--dl-item-min-width), 1fr));
