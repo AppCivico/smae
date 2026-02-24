@@ -1,9 +1,13 @@
 <script lang="ts" setup>
+import {
+  nextTick, onBeforeUnmount, onMounted, ref,
+} from 'vue';
+
 import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 
 defineOptions({ inheritAttrs: false });
 
-defineProps({
+const props = defineProps({
   as: {
     type: String,
     default: 'fieldset',
@@ -30,6 +34,44 @@ defineProps({
     default: 'Salvar',
   },
 });
+
+const raizEl = ref<HTMLElement | null>(null);
+let form: HTMLFormElement | null = null;
+
+function rolarParaPrimeiroCampoComErro() {
+  if (!props.erros || !form) return;
+
+  const nomesComErro = new Set(Object.keys(props.erros));
+  const elemento = Array.from(form.elements)
+    .find((el): el is HTMLElement => nomesComErro.has((el as HTMLInputElement).name)) ?? null;
+
+  if (elemento) {
+    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    elemento.focus();
+    elemento.classList.add('focus-visible');
+    setTimeout(() => elemento.classList.remove('focus-visible'), 2000);
+  }
+}
+
+async function aoSubmeter() {
+  await nextTick();
+  if (props.erros && Object.keys(props.erros).length) {
+    rolarParaPrimeiroCampoComErro();
+  }
+}
+
+onMounted(() => {
+  form = raizEl.value?.closest('form') ?? null;
+  if (form) {
+    form.addEventListener('submit', aoSubmeter);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (form) {
+    form.removeEventListener('submit', aoSubmeter);
+  }
+});
 </script>
 
 <template>
@@ -40,8 +82,9 @@ defineProps({
   />
 
   <component
-    v-bind="$attrs"
     :is="as"
+    ref="raizEl"
+    v-bind="$attrs"
     class="smae-fieldset-submit flex center g2"
     :class="{ 'smae-fieldset-submit--remover-linhas-decoracao': $props.removerLinhasDecoracao }"
   >
