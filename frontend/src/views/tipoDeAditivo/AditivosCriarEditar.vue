@@ -1,10 +1,13 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { tipoDeAditivo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
@@ -22,7 +25,14 @@ const alertStore = useAlertStore();
 const aditivosStore = useTipoDeAditivosStore();
 const { chamadasPendentes, erros, itemParaEdicao } = storeToRefs(aditivosStore);
 
-async function onSubmit(values) {
+const { errors, resetForm, handleSubmit } = useForm({
+  validationSchema: schema,
+  initialValues: itemParaEdicao,
+});
+
+const formularioSujo = useIsFormDirty();
+
+const onSubmit = handleSubmit.withControlled(async (values) => {
   try {
     let response;
     const msg = props.aditivoId
@@ -45,31 +55,27 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 aditivosStore.$reset();
 // não foi usada a prop.aditivoId pois estava vazando do edit na hora de criar uma nova
 if (route.params?.aditivoId) {
   aditivosStore.buscarItem(route.params?.aditivoId);
 }
+
+watch(itemParaEdicao, (val) => {
+  if (val) {
+    resetForm({ values: val });
+  }
+}, { immediate: true });
 </script>
 
 <template>
   <MigalhasDePão class="mb1" />
-  <div class="flex spacebetween center mb2">
-    <TituloDaPagina />
 
-    <hr class="ml2 f1">
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-    <CheckClose />
-  </div>
-
-  <Form
-    v-slot="{ errors }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdicao"
-    @submit="onSubmit"
-  >
+  <form @submit="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -151,7 +157,7 @@ if (route.params?.aditivoId) {
     <SmaeFieldsetSubmit
       :erros="errors"
     />
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
@@ -159,7 +165,7 @@ if (route.params?.aditivoId) {
   >Carregando</span>
 
   <div
-    v-if="erros.emFoco"
+    v-if="erros?.emFoco"
     class="error p1"
   >
     <div class="error-msg">
