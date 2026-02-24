@@ -103,12 +103,12 @@ if (route.params?.aditivoId) {
           <option value="">
             Selecione
           </option>
-          <option
-            v-for="tipoAditivo in ['Aditivo', 'Reajuste']"
-            :key="`tipo-aditivo--${tipoAditivo}`"
-            :value="tipoAditivo"
-          >
-            {{ tipoAditivo }}
+          <option value="Aditivo">
+            Aditivo
+          </option>
+
+          <option value="Reajuste">
+            Reajuste
           </option>
         </Field>
         <ErrorMessage

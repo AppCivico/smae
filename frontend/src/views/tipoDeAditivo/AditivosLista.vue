@@ -50,7 +50,6 @@ const tiposFiltrados = computed(() => (
     :formulario="[{
       campos: {
         palavra_chave: {
-          lavel: 'Palavra chave',
           tipo: 'search',
         },
       }
