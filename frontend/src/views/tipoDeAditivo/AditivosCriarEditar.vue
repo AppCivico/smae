@@ -106,9 +106,6 @@ watch(itemParaEdicao, (val) => {
           as="select"
           class="inputtext light mb1"
         >
-          <option value="">
-            Selecione
-          </option>
           <option value="Aditivo">
             Aditivo
           </option>

@@ -94,9 +94,5 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
       acc[cur.id] = cur;
       return acc;
     }, {}),
-    listaComValorReajuste: ({ lista }) => lista.map((item) => ({
-      ...item,
-      reajuste: item.tipo === 'Reajuste' ? 'Sim' : 'Não',
-    })),
   },
 });

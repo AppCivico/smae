@@ -15,7 +15,7 @@ const route = useRoute();
 
 const alertStore = useAlertStore();
 const aditivosStore = useTipoDeAditivosStore();
-const { listaComValorReajuste } = storeToRefs(aditivosStore);
+const { lista } = storeToRefs(aditivosStore);
 
 async function excluirAditivo(item) {
   if (await aditivosStore.excluirItem(item.id)) {
@@ -29,7 +29,7 @@ aditivosStore.$reset();
 aditivosStore.buscarTudo();
 
 const tiposFiltrados = computed(() => (
-  filtrarObjetos(listaComValorReajuste.value, route.query.palavra_chave)
+  filtrarObjetos(lista.value, route.query.palavra_chave)
 ));
 
 </script>
@@ -60,7 +60,7 @@ const tiposFiltrados = computed(() => (
     :dados="tiposFiltrados"
     :colunas="[
       { chave: 'nome', label: 'nome' },
-      { chave: 'reajuste', label: 'reajuste' },
+      { chave: 'tipo', label: 'tipo' },
     ]"
     :rota-editar="({ id }) => ({ name: 'tipoDeAditivos.editar', params: { aditivoId: id } })"
     parametro-no-objeto-para-excluir="nome"
