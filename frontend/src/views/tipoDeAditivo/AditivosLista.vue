@@ -20,7 +20,7 @@ const { listaComValorReajuste } = storeToRefs(aditivosStore);
 async function excluirAditivo(item) {
   if (await aditivosStore.excluirItem(item.id)) {
     aditivosStore.$reset();
-    aditivosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+    aditivosStore.buscarTudo();
     alertStore.success(`"${item.nome}" removido.`);
   }
 }
