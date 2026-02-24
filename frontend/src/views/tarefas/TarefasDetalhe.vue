@@ -37,7 +37,6 @@ const dadosPlanejamento = computed(() => [
   { chave: 'inicio_planejado', titulo: 'Previsão de início', valor: dateToDate(emFoco.value?.inicio_planejado) },
   { chave: 'duracao_planejado', titulo: 'Duração prevista', valor: emFoco.value?.duracao_planejado ? `${emFoco.value.duracao_planejado} dias` : null },
   { chave: 'termino_planejado', titulo: 'Previsão de término', valor: dateToDate(emFoco.value?.termino_planejado) },
-  { chave: 'atraso', titulo: 'Atraso', valor: emFoco.value?.atraso ? `${emFoco.value.atraso} dias` : null },
   { chave: 'custo_estimado', titulo: 'Previsão de custo', valor: emFoco.value?.custo_estimado ? `R$${dinheiro(emFoco.value.custo_estimado)}` : null },
   {
     chave: 'custo_estimado_anualizado',
@@ -46,6 +45,7 @@ const dadosPlanejamento = computed(() => [
     metadados: { custos: emFoco.value?.custo_estimado_anualizado },
   },
   { chave: 'termino_projetado', titulo: 'Término projetado', valor: dateToDate(emFoco.value?.termino_projetado) },
+  { chave: 'atraso', titulo: 'Atraso', valor: emFoco.value?.atraso ? `${emFoco.value.atraso} dias` : null },
 ].filter((item) => item.chave !== 'custo_estimado_anualizado' || item.metadados?.custos?.length));
 
 const dadosExecucao = computed(() => [
@@ -111,6 +111,7 @@ const colunasDependencias = [
 
       <SmaeDescriptionList
         :lista="dadosPlanejamento"
+        largura-minima="16rem"
         layout="grid"
       >
         <template #descricao--custo_estimado_anualizado="{ item }">
