@@ -2085,7 +2085,8 @@ input[type='radio'] {
   padding: .75em 1.2em;
   background: none;
   border: 1.5px solid;
-  outline: 0;
+  outline: 0px solid transparent;
+  outline-offset: 0px;
 
   &[type='search'],
   .search & {
@@ -2130,6 +2131,19 @@ input[type='radio'] {
   &:focus {
     border-color: @c600;
   }
+
+  &.focus-visible,
+  &:focus-visible {
+    .focado();
+  }
+
+  &.erro {
+    border-color: @vermelho;
+  }
+
+  transition: outline-color 0.2s ease,
+    outline-width 0.2s ease,
+    outline-offset 0.2s ease;
 }
 
 .label {
