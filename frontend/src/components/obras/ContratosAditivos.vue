@@ -309,7 +309,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
             class="inputtext light"
           />
           <ErrorMessage
-            name="valor"
+            name="numero"
             class="error-msg"
           />
         </div>
@@ -326,7 +326,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
             @update:model-value="($v) => { setFieldValue('data', $v || null); }"
           />
           <ErrorMessage
-            name="valor"
+            name="data"
             class="error-msg"
           />
         </div>
@@ -354,7 +354,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
             </option>
           </Field>
           <ErrorMessage
-            name="valor"
+            name="tipo_aditivo_id"
             class="error-msg"
           />
           <ErrorComponent
@@ -379,7 +379,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
             }"
           />
           <ErrorMessage
-            name="valor"
+            name="data_termino_atualizada"
             class="error-msg"
           />
         </div>
