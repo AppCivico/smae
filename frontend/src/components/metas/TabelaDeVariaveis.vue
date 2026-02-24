@@ -216,7 +216,7 @@ function permitirEdição(indicadorVariavel) {
               height="24"
             ><use xlink:href="#i_clock" /></svg>
             <div>
-              Vínculada à
+              Vinculada à
               <strong>{{ v.etapa?.titulo || v.etapa }}</strong>
               do cronograma
             </div>
