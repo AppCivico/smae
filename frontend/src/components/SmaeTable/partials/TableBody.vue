@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import type { Coluna, Linha, Linhas } from '../tipagem';
 import { type DeleteButtonEvents, type DeleteButtonProps } from './DeleteButton.vue';
@@ -30,6 +30,8 @@ type Props =
       alvo: unknown,
       classe: string
     }
+    subLinhaAbertaPorPadrao?: boolean
+    subLinhaSempreVisivel?: boolean
   };
 
 type Emits = DeleteButtonEvents;
@@ -38,15 +40,36 @@ const props = withDefaults(defineProps<Props>(), {
   parametroDaRotaEditar: 'id',
   parametroNoObjetoParaEditar: 'id',
   parametroNoObjetoParaExcluir: 'descricao',
+  subLinhaAbertaPorPadrao: false,
+  subLinhaSempreVisivel: false,
 });
 const emit = defineEmits<Emits>();
 
-// Estado para controlar quais linhas estão expandidas
 const linhasExpandidas = ref<Record<number, boolean>>({});
+
+watch(
+  () => [props.subLinhaAbertaPorPadrao, props.dados.length] as const,
+  ([abertaPorPadrao, tamanho]) => {
+    if (!abertaPorPadrao || tamanho === 0) return;
+
+    const indicesNovos = Array.from({ length: tamanho }, (_, i) => i)
+      .filter((i) => linhasExpandidas.value[i] === undefined);
+
+    if (indicesNovos.length) {
+      linhasExpandidas.value = {
+        ...linhasExpandidas.value,
+        ...Object.fromEntries(indicesNovos.map((i) => [i, true])),
+      };
+    }
+  },
+  { immediate: true },
+);
 
 function toggleLinha(index: number): void {
   linhasExpandidas.value[index] = !linhasExpandidas.value[index];
 }
+
+const exibirToggle = computed(() => !props.subLinhaSempreVisivel);
 
 function obterDestaqueDaLinha(linha: Linha): string | null {
   if (!props.personalizarLinhas) {
@@ -74,7 +97,10 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
           obterDestaqueDaLinha(linha)
         ]"
       >
-        <td class="smae-table__toggle-cell">
+        <td
+          v-if="exibirToggle"
+          class="smae-table__toggle-cell"
+        >
           <button
             type="button"
             class="smae-table__toggle-button"
@@ -133,10 +159,13 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
       </tr>
 
       <tr
-        v-show="linhasExpandidas[linhaIndex]"
+        v-show="subLinhaSempreVisivel || linhasExpandidas[linhaIndex]"
         class="smae-table__sub-linha"
       >
-        <td class="smae-table__toggle-cell" />
+        <td
+          v-if="exibirToggle"
+          class="smae-table__toggle-cell"
+        />
         <slot
           name="sub-linha"
           :linha="linha"
@@ -147,7 +176,10 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
 
     <tbody v-if="dados.length === 0">
       <tr>
-        <td :colspan="colunasFiltradas.length + 1">
+        <td :colspan="colunasFiltradas.length
+          + (exibirToggle ? 1 : 0)
+          + (temColunaDeAcoes ? 1 : 0)"
+        >
           Sem dados para exibir
         </td>
       </tr>
