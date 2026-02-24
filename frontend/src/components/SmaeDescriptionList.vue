@@ -266,7 +266,7 @@ const classeContainer = computed(() => [
 .description-list--flex {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 2.5rem 2rem;
 
   .description-list__item {
     flex: 1 1 auto;
@@ -278,7 +278,7 @@ const classeContainer = computed(() => [
 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--dl-item-min-width), 1fr));
-  gap: 2rem;
+  gap: 2.5rem 2rem;
 }
 
 .description-list__item--full {
