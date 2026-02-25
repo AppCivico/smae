@@ -340,6 +340,7 @@ watch(currentEdit, (novosValores) => {
           :dotação="values.dotacao"
           :processo="values.processo"
           :nota-empenho="`${values.nota_empenho}/${values.nota_ano}`"
+          :id-do-item="$route.params.meta_id"
           class="mb1"
         />
 
