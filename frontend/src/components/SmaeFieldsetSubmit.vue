@@ -25,6 +25,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  ariaDisabled: {
+    type: Boolean,
+    default: false,
+  },
   removerLinhasDecoracao: {
     type: Boolean,
     default: false,
@@ -92,7 +96,9 @@ onBeforeUnmount(() => {
       <button
         class="btn big"
         type="submit"
-        :aria-disabled="$props.disabled || ($props.erros && !!Object.keys($props.erros).length)"
+        :aria-disabled="$props.disabled
+          || ($props.erros && !!Object.keys($props.erros).length)
+          || $props.ariaDisabled"
         :aria-busy="$props.estaCarregando"
         :disabled="$props.disabled"
       >
