@@ -96,7 +96,7 @@ const dadosPrincipais = computed(() => [
   },
   {
     chave: 'valor_reajustado',
-    titulo: 'Valor reajustado do contrato',
+    titulo: 'Valor do Contrato Atualizado',
     valor: emFoco.value?.valor_reajustado ? `R$ ${dinheiro(emFoco.value.valor_reajustado)}` : 'R$ 0,00',
     larguraBase: '25em',
   },
