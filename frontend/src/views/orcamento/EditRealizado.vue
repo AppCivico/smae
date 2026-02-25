@@ -465,7 +465,7 @@ export default {
       </template>
 
       <ListaDeCompartilhamentos
-        v-if="$route.meta.entidadeMãe === 'pdm'"
+        v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)"
         :ano="ano"
         :id-do-item="id"
         :pdm="activePdm.id"
