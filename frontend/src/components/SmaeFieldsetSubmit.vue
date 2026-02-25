@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {
-  nextTick, onBeforeUnmount, onMounted, ref,
+  nextTick, onBeforeUnmount, onMounted, useTemplateRef,
 } from 'vue';
 
 import isValidHtmlTag from '@/helpers/isValidHtmlTag';
@@ -35,7 +35,7 @@ const props = defineProps({
   },
 });
 
-const raizEl = ref<HTMLElement | null>(null);
+const raizEl = useTemplateRef<HTMLElement>('raizEl');
 let form: HTMLFormElement | null = null;
 
 function rolarParaPrimeiroCampoComErro() {

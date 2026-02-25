@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
 
 const props = defineProps({
   errors: {
@@ -8,17 +8,26 @@ const props = defineProps({
   },
 });
 
+let focusVisibleTimeout: ReturnType<typeof setTimeout> | null = null;
+
 function rolarParaCampo(elemento: HTMLElement) {
   if (elemento) {
     elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
     elemento.focus();
     // Simular :focus-visible
-    if (typeof elemento.classList !== 'undefined') {
-      elemento.classList.add('focus-visible');
-      setTimeout(() => elemento.classList.remove('focus-visible'), 2000);
+    if (focusVisibleTimeout) {
+      clearTimeout(focusVisibleTimeout);
     }
+    elemento.classList.add('focus-visible');
+    focusVisibleTimeout = setTimeout(() => elemento.classList.remove('focus-visible'), 2000);
   }
 }
+
+onBeforeUnmount(() => {
+  if (focusVisibleTimeout) {
+    clearTimeout(focusVisibleTimeout);
+  }
+});
 
 const listaComCampos = computed(() => Object.keys(props.errors || {})
   .map((nomeDoCampo) => {
