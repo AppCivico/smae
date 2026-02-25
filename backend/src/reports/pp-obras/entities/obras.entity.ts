@@ -11,7 +11,7 @@ import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class RelObrasDto {
-    id: number;
+    obra_id: number;
     pdm_id: number | null;
     pdm_nome: string | null;
     meta_id: number | null;
@@ -131,7 +131,7 @@ export class RelObrasFontesRecursoDto {
 }
 
 export class RelObrasContratosDto {
-    id: number;
+    contrato_id: number;
     obra_id: number;
     numero: string;
     exclusivo: boolean;
@@ -156,11 +156,16 @@ export class RelObrasContratosDto {
     valor_reajustado: number | null;
     percentual_medido: number | null;
     observacoes: string | null;
+    cnpj_contratada: string | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
+    valor_contrato_reajustado: number | null;
 }
 
 export class RelObrasAditivosDto {
-    id: number;
+    aditivo_id: number;
     contrato_id: number;
+    tipo_categoria: string;
     tipo: IdNomeDto;
     data: Date | null;
     valor_com_reajuste: number | null;
@@ -168,8 +173,29 @@ export class RelObrasAditivosDto {
     data_termino_atual: Date | null;
 }
 
+export class RelObrasTermoEncerramentoDto {
+    obra_id: number;
+    obra_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: string | null;
+    previsao_termino: string | null;
+    data_inicio_real: string | null;
+    data_termino_real: string | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: string;
+}
+
 export class RelObrasOrigemDto {
-    projeto_id: number;
+    obra_id: number;
     pdm_id: number | null;
     pdm_titulo: string | null;
     meta_id: number | null;
@@ -201,6 +227,7 @@ export class PPObrasRelatorioDto {
     origens: RelObrasOrigemDto[];
     processos_sei: RelObrasSeiDto[];
     enderecos: RelObrasGeolocDto[];
+    termos_encerramento: RelObrasTermoEncerramentoDto[];
 }
 
 export class RelObrasGeolocDto {

@@ -29,6 +29,7 @@ import {
     RelObrasOrigemDto,
     RelObrasRegioesDto,
     RelObrasSeiDto,
+    RelObrasTermoEncerramentoDto,
 } from './entities/obras.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
@@ -166,6 +167,7 @@ class RetornoDbAditivos {
     numero: number;
     tipo_aditivo_id: number;
     tipo_aditivo_nome: string;
+    tipo_categoria: string;
     data: Date | null;
     data_termino_atual: Date | null;
     valor_com_reajuste: number | null;
@@ -200,6 +202,10 @@ class RetornoDbContratos {
     percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
+    cnpj_contratada: string | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
+    valor_contrato_reajustado: number | null;
 }
 
 class RetornoDbOrigens {
@@ -254,6 +260,27 @@ class RetornoDbLoc {
     zona: string | null;
 }
 
+class RetornoDbTermoEncerramento {
+    obra_id: number;
+    obra_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: Date | null;
+    previsao_termino: Date | null;
+    data_inicio_real: Date | null;
+    data_termino_real: Date | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: Date;
+}
+
 @Injectable()
 export class PPObrasService implements ReportableService {
     private tipo: TipoProjeto = 'MDO';
@@ -276,6 +303,7 @@ export class PPObrasService implements ReportableService {
         const out_origens: RelObrasOrigemDto[] = [];
         const out_processos_sei: RelObrasSeiDto[] = [];
         const out_enderecos: RelObrasGeolocDto[] = [];
+        const out_termos_encerramento: RelObrasTermoEncerramentoDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
@@ -289,6 +317,7 @@ export class PPObrasService implements ReportableService {
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
         await this.queryDataObrasGeoloc(whereCond, out_enderecos);
+        await this.queryDataTermoEncerramento(whereCond, out_termos_encerramento);
 
         return {
             linhas: out_obras,
@@ -301,6 +330,7 @@ export class PPObrasService implements ReportableService {
             origens: out_origens,
             processos_sei: out_processos_sei,
             enderecos: out_enderecos,
+            termos_encerramento: out_termos_encerramento,
         };
     }
 
@@ -326,9 +356,9 @@ export class PPObrasService implements ReportableService {
         );
 
         const cronogramaFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'id',
+            'obra_id',
+            'obra_codigo',
+            'tarefa_id',
             'hierarquia',
             'numero',
             'nivel',
@@ -365,8 +395,8 @@ export class PPObrasService implements ReportableService {
         );
 
         const acompanhamentosFields = [
-            'projeto_id',
-            'projeto_codigo',
+            'obra_id',
+            'obra_codigo',
             'data_registro',
             'participantes',
             'cronograma_paralizado',
@@ -441,6 +471,14 @@ export class PPObrasService implements ReportableService {
                 `${this._queryDataObrasGeoLoc()} ${whereCond.whereString} ${this._queryDataObrasGeoLocFilter()}`,
                 whereCond.queryParams,
                 'enderecos.csv'
+            )
+        );
+
+        out.push(
+            await this.streamQueryToCSV(
+                `${this._queryDataTermoEncerramento()} ${whereCond.whereString}`,
+                whereCond.queryParams,
+                'termos_encerramento.csv'
             )
         );
 
@@ -704,7 +742,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsObrasInto(input: RetornoDbProjeto[], out: RelObrasDto[]) {
         for (const db of input) {
             out.push({
-                id: db.id,
+                obra_id: db.id,
                 portfolio_id: db.portfolio_id,
                 portfolio_titulo: db.portfolio_titulo,
                 pdm_id: db.pdm_id ? db.pdm_id : null,
@@ -1051,6 +1089,7 @@ export class PPObrasService implements ReportableService {
             contrato.objeto_detalhado AS descricao_detalhada,
             contrato.contratante AS contratante,
             contrato.empresa_contratada AS empresa_contratada,
+            contrato.cnpj_contratada AS cnpj_contratada,
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
             contrato.data_inicio AS data_inicio,
@@ -1087,12 +1126,27 @@ export class PPObrasService implements ReportableService {
                 SELECT string_agg(cod_sof::text, '|')
                 FROM contrato_fonte_recurso
                 WHERE contrato_id = contrato.id
-            ) AS fontes_recurso
+            ) AS fontes_recurso,
+            aditivo_totals.total_aditivos,
+            aditivo_totals.total_reajustes,
+            CASE
+                WHEN contrato.valor IS NOT NULL
+                THEN contrato.valor + aditivo_totals.total_aditivos + aditivo_totals.total_reajustes
+                ELSE NULL
+            END AS valor_contrato_reajustado
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
+          LEFT JOIN LATERAL (
+              SELECT
+                  COALESCE(SUM(CASE WHEN ta.tipo = 'Aditivo' THEN ca.valor ELSE 0 END), 0) AS total_aditivos,
+                  COALESCE(SUM(CASE WHEN ta.tipo = 'Reajuste' THEN ca.valor ELSE 0 END), 0) AS total_reajustes
+              FROM contrato_aditivo ca
+              JOIN tipo_aditivo ta ON ta.id = ca.tipo_aditivo_id AND ta.removido_em IS NULL
+              WHERE ca.contrato_id = contrato.id AND ca.removido_em IS NULL
+          ) aditivo_totals ON true
         `;
     }
 
@@ -1107,7 +1161,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsContratos(input: RetornoDbContratos[]): RelObrasContratosDto[] {
         return input.map((db) => {
             return {
-                id: db.id,
+                contrato_id: db.id,
                 obra_id: db.obra_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
@@ -1134,6 +1188,10 @@ export class PPObrasService implements ReportableService {
                 valor_reajustado: db.valor_reajustado,
                 percentual_medido: db.percentual_medido,
                 observacoes: db.observacoes,
+                cnpj_contratada: db.cnpj_contratada ?? null,
+                total_aditivos: db.total_aditivos ?? null,
+                total_reajustes: db.total_reajustes ?? null,
+                valor_contrato_reajustado: db.valor_contrato_reajustado ?? null,
             };
         });
     }
@@ -1145,6 +1203,7 @@ export class PPObrasService implements ReportableService {
             contrato_aditivo.numero AS numero,
             tipo_aditivo.id AS tipo_aditivo_id,
             tipo_aditivo.nome AS tipo_aditivo_nome,
+            tipo_aditivo.tipo AS tipo_categoria,
             contrato_aditivo.data,
             contrato_aditivo.data_termino_atualizada AS data_termino_atual,
             contrato_aditivo.valor AS valor_com_reajuste,
@@ -1168,8 +1227,9 @@ export class PPObrasService implements ReportableService {
     private convertRowsAditivos(input: RetornoDbAditivos[]): RelObrasAditivosDto[] {
         return input.map((db) => {
             return {
-                id: db.aditivo_id,
+                aditivo_id: db.aditivo_id,
                 contrato_id: db.contrato_id,
+                tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
                 data: db.data ?? null,
                 valor_com_reajuste: db.valor_com_reajuste ?? null,
@@ -1279,7 +1339,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsOrigens(input: RetornoDbOrigens[]): RelObrasOrigemDto[] {
         return input.map((db) => {
             return {
-                projeto_id: db.projeto_id,
+                obra_id: db.projeto_id,
                 pdm_id: db.pdm_id ?? null,
                 pdm_titulo: db.pdm_titulo ?? null,
                 meta_id: db.meta_id ?? null,
@@ -1420,6 +1480,70 @@ export class PPObrasService implements ReportableService {
                 zona: db.zona ?? null,
                 distrito: db.distrito ?? null,
                 subprefeitura: db.subprefeitura ?? null,
+            };
+        });
+    }
+
+    private _queryDataTermoEncerramento() {
+        return `SELECT
+            projeto.id AS obra_id,
+            projeto.codigo AS obra_codigo,
+            pte.nome_projeto,
+            pte.orgao_responsavel_nome,
+            pte.portfolios_nomes,
+            pte.objeto,
+            pte.previsao_inicio,
+            pte.previsao_termino,
+            pte.data_inicio_real,
+            pte.data_termino_real,
+            pte.previsao_custo,
+            pte.valor_executado_total,
+            pte.status_final,
+            pte.etapa_nome,
+            pte_justif.descricao AS justificativa,
+            pte.justificativa_complemento,
+            pte.responsavel_encerramento_nome,
+            pte.data_encerramento
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_termo_encerramento pte
+              ON pte.projeto_id = projeto.id
+              AND pte.removido_em IS NULL
+              AND pte.ultima_versao = true
+          LEFT JOIN projeto_tipo_encerramento pte_justif
+              ON pte_justif.id = pte.justificativa_id
+        `;
+    }
+
+    private async queryDataTermoEncerramento(whereCond: WhereCond, out: RelObrasTermoEncerramentoDto[]) {
+        const sql = `${this._queryDataTermoEncerramento()} ${whereCond.whereString}`;
+
+        const data: RetornoDbTermoEncerramento[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsTermoEncerramento(data));
+    }
+
+    private convertRowsTermoEncerramento(input: RetornoDbTermoEncerramento[]): RelObrasTermoEncerramentoDto[] {
+        return input.map((db) => {
+            return {
+                obra_id: db.obra_id,
+                obra_codigo: db.obra_codigo ?? null,
+                nome_projeto: db.nome_projeto,
+                orgao_responsavel_nome: db.orgao_responsavel_nome,
+                portfolios_nomes: db.portfolios_nomes,
+                objeto: db.objeto,
+                previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
+                previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
+                data_inicio_real: db.data_inicio_real ? Date2YMD.toString(db.data_inicio_real) : null,
+                data_termino_real: db.data_termino_real ? Date2YMD.toString(db.data_termino_real) : null,
+                previsao_custo: db.previsao_custo ?? null,
+                valor_executado_total: db.valor_executado_total ?? null,
+                status_final: db.status_final,
+                etapa_nome: db.etapa_nome,
+                justificativa: db.justificativa ?? null,
+                justificativa_complemento: db.justificativa_complemento ?? null,
+                responsavel_encerramento_nome: db.responsavel_encerramento_nome,
+                data_encerramento: Date2YMD.toString(db.data_encerramento),
             };
         });
     }
