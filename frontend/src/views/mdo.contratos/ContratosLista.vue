@@ -70,14 +70,14 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 function somarCamposDeContratos(itens) {
   return itens.reduce(
     (acc, cur) => ({
-      quantidade_aditivos: new Big(Number(cur.quantidade_aditivos) || 0)
+      quantidade_aditivos: new Big(cur.quantidade_aditivos || 0)
         .plus(acc.quantidade_aditivos),
-      quantidade_reajustes: new Big(Number(cur.quantidade_reajustes) || 0)
+      quantidade_reajustes: new Big(cur.quantidade_reajustes || 0)
         .plus(acc.quantidade_reajustes),
-      valor: new Big(Number(cur.valor) || 0).plus(acc.valor),
-      total_aditivos: new Big(Number(cur.total_aditivos) || 0).plus(acc.total_aditivos),
-      total_reajustes: new Big(Number(cur.total_reajustes) || 0).plus(acc.total_reajustes),
-      valor_reajustado: new Big(Number(cur.valor_reajustado) || 0).plus(acc.valor_reajustado),
+      valor: new Big(cur.valor || 0).plus(acc.valor),
+      total_aditivos: new Big(cur.total_aditivos || 0).plus(acc.total_aditivos),
+      total_reajustes: new Big(cur.total_reajustes || 0).plus(acc.total_reajustes),
+      valor_reajustado: new Big(cur.valor_reajustado || 0).plus(acc.valor_reajustado),
     }),
     {
       quantidade_aditivos: 0,
