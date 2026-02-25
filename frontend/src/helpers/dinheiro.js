@@ -2,7 +2,7 @@ import toFloat from './toFloat';
 
 /**
  * Formata um valor monetário para uma string com separadores de milhar e decimal.
- * @param {number|string} valor - O valor a ser formatado.
+ * @param {number|string|Big} valor - O valor a ser formatado.
  * @param {Object} [opcoes] - Opções legadas de formatação, acrescidas de
  *   todas as opções do construtor Intl.NumberFormat:
  *   @param {boolean} [opcoes.semDecimais=false] - Se verdadeiro, remove os decimais.
@@ -39,6 +39,7 @@ export default (valor, {
   maximumFractionDigits: 2,
   style: 'decimal',
 }) => {
+  // parseFloat() e toFloat() aceitam Big.js porque invocam .toString() implicitamente
   const numeroConvertido = parseFloat(valor);
   if (Number.isNaN(numeroConvertido)) {
     return '';
