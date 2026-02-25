@@ -39,6 +39,7 @@ const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore())
 
 const model = defineModel({
   required: true,
+  type: Array,
 });
 
 const maisRecenteDosMeses = computed(() => model.value
@@ -134,10 +135,6 @@ function atualizarDePercentagem(i, coluna) {
 }
 
 async function addItem() {
-  if (!Array.isArray(model.value)) {
-    model.value = [];
-    await nextTick();
-  }
 
   model.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
 }

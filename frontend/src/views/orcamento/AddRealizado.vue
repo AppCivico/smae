@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  defineProps, ref, toRaw, watch,
+  ref, toRaw, watch
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -42,6 +42,7 @@ const currentEdit = ref({
   location: '',
   dotacao: '',
   dotacao_complemento: '',
+  dotacao_cheia: '',
   ano_referencia: ano,
 });
 
@@ -148,8 +149,6 @@ export default {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <Field
@@ -263,12 +262,23 @@ export default {
         </div>
       </div>
 
-      <ItensRealizado
-        v-if="Object.keys(respostasof).length && !respostasof.error && !respostasof.loading"
-        v-model="values.itens"
-        :respostasof="respostasof"
+      <Field
+        v-slot="{ field, meta: fieldMeta }"
         name="itens"
-      />
+      >
+        <ItensRealizado
+          v-if="Object.keys(respostasof).length && !respostasof.error && !respostasof.loading"
+          v-model="field.value"
+          :respostasof="respostasof"
+          name="itens"
+        />
+        <div
+          v-if="fieldMeta.touched && errors.itens"
+          class="error-msg"
+        >
+          {{ errors.itens }}
+        </div>
+      </Field>
 
       <SmaeFieldsetSubmit
         :erros="errors"
