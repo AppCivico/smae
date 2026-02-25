@@ -423,17 +423,11 @@ watch(currentEdit, (novosValores) => {
           Validação pendente
         </div>
 
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting
-              || respostasof.nota_empenho !== `${values.nota_empenho}/${dotaAno}`"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
+        <SmaeFieldsetSubmit
+          :esta-carregando="isSubmitting"
+          :erros="errors"
+          :disabled="respostasof.nota_empenho !== `${values.nota_empenho}/${dotaAno}`"
+        />
       </template>
     </form>
   </template>
