@@ -182,7 +182,7 @@ export default {
           && !respostasof.loading"
         :ano="ano"
         :pdm="activePdm.id"
-        :dotação="dotaçãoComComplemento"
+        :dotação="dotação"
         class="mb1"
       />
 
