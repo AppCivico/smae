@@ -184,6 +184,7 @@ export default {
         :pdm="activePdm.id"
         :dotação="dotação"
         class="mb1"
+        :id-do-item="$route.params.meta_id"
       />
 
       <div

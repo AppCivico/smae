@@ -272,6 +272,7 @@ watch(currentEdit, (novosValores) => {
         :pdm="activePdm.id"
         :dotação="values.dotacao"
         :processo="values.processo"
+        :id-do-item="$route.params.meta_id"
         class="mb1"
       />
 
