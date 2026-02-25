@@ -16,7 +16,7 @@ import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 
-defineProps({
+const props = defineProps({
   obraId: {
     type: Number,
     default: 0,
@@ -67,8 +67,8 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
       && (!statusVisível.value || x.status_processo === statusVisível.value))
 ));
 
-const totalDeContratos = computed(() => lista.value
-  .reduce(
+function somarCamposDeContratos(itens) {
+  return itens.reduce(
     (acc, cur) => ({
       quantidade_aditivos: new Big(Number(cur.quantidade_aditivos) || 0)
         .plus(acc.quantidade_aditivos),
@@ -87,29 +87,11 @@ const totalDeContratos = computed(() => lista.value
       total_reajustes: 0,
       valor_reajustado: 0,
     },
-  ));
+  );
+}
 
-const totalDeContratosFiltrados = computed(() => listaFiltrada.value
-  .reduce(
-    (acc, cur) => ({
-      quantidade_aditivos: new Big(Number(cur.quantidade_aditivos) || 0)
-        .plus(acc.quantidade_aditivos),
-      quantidade_reajustes: new Big(Number(cur.quantidade_reajustes) || 0)
-        .plus(acc.quantidade_reajustes),
-      valor: new Big(Number(cur.valor) || 0).plus(acc.valor),
-      total_aditivos: new Big(Number(cur.total_aditivos) || 0).plus(acc.total_aditivos),
-      total_reajustes: new Big(Number(cur.total_reajustes) || 0).plus(acc.total_reajustes),
-      valor_reajustado: new Big(Number(cur.valor_reajustado) || 0).plus(acc.valor_reajustado),
-    }),
-    {
-      quantidade_aditivos: 0,
-      quantidade_reajustes: 0,
-      valor: 0,
-      total_aditivos: 0,
-      total_reajustes: 0,
-      valor_reajustado: 0,
-    },
-  ));
+const totalDeContratos = computed(() => somarCamposDeContratos(lista.value));
+const totalDeContratosFiltrados = computed(() => somarCamposDeContratos(listaFiltrada.value));
 
 const exibirColunasDeAção = computed(() => !permissoesDoItemEmFoco.value.apenas_leitura
   || permissoesDoItemEmFoco.value.sou_responsavel);
@@ -204,15 +186,15 @@ const colunas = computed(() => [
   },
 ]);
 
-const rotaResumo = computed(() => (route.params.obraId
+const rotaResumo = computed(() => (props.obraId
   ? 'contratosDaObraResumo'
   : 'contratosDoProjetoResumo'));
 
-const rotaEditar = computed(() => (route.params.obraId
+const rotaEditar = computed(() => (props.obraId
   ? 'contratosDaObraEditar'
   : 'contratosDoProjetoEditar'));
 
-const rotaCriar = computed(() => (route.params.obraId
+const rotaCriar = computed(() => (props.obraId
   ? 'contratosDaObraCriar'
   : 'contratosDoProjetoCriar'));
 
@@ -246,6 +228,7 @@ iniciar();
   </div>
 
   <SmaeTable
+    v-if="!chamadasPendentes.lista && !erro && lista.length"
     :colunas="colunas"
     :dados="listaFiltrada"
     :rota-editar="exibirColunasDeAção ? rotaEditar : undefined"
@@ -284,7 +267,7 @@ iniciar();
     </template>
 
     <template #sub-linha="{ linha }">
-      <td :colspan="colunas.length + 1">
+      <td :colspan="colunas.length + (exibirColunasDeAção ? 1 : 0)">
         <dl class="flex g1">
           <dt class="t12 uc w700 tc300">
             Resumo:
