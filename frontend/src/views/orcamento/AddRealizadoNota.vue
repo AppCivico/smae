@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
+  computed,
   defineOptions, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -71,18 +72,17 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
-  const nota_empenho_e_ano = `${values.nota_empenho}/${dotaAno.value}`;
+const notaEmpenhoEAno = computed(() => `${values.nota_empenho}/${dotaAno.value}`);
 
-  if (respostasof.value.nota_empenho !== nota_empenho_e_ano) {
+const desabilitarEnvio = computed(() => respostasof.value.nota_empenho !== notaEmpenhoEAno.value);
+
+const onSubmit = handleSubmit.withControlled(async () => {
+  if (desabilitarEnvio.value) {
     validarDota();
     return;
   }
 
   try {
-    let msg;
-    let r;
-
     values.ano_referencia = Number(ano);
 
     if (values.location) {
@@ -100,8 +100,10 @@ const onSubmit = handleSubmit.withControlled(async () => {
     }
 
     // sobrescrever propriedade `nota_empenho`
-    r = await OrcamentosStore.insertOrcamentoRealizado({ ...values, nota_empenho: nota_empenho_e_ano });
-    msg = 'Dados salvos com sucesso!';
+    const r = await OrcamentosStore.insertOrcamentoRealizado({
+      ...values, nota_empenho: notaEmpenhoEAno.value
+    });
+    const msg = 'Dados salvos com sucesso!';
 
     if (r == true) {
       alertStore.success(msg);
@@ -419,7 +421,7 @@ watch(currentEdit, (novosValores) => {
         />
 
         <div
-          v-show="respostasof.nota_empenho !== `${values.nota_empenho}/${dotaAno}`"
+          v-show="desabilitarEnvio"
           class="error-msg"
         >
           Validação pendente
@@ -428,7 +430,7 @@ watch(currentEdit, (novosValores) => {
         <SmaeFieldsetSubmit
           :esta-carregando="isSubmitting"
           :erros="errors"
-          :disabled="respostasof.nota_empenho !== `${values.nota_empenho}/${dotaAno}`"
+          :aria-disabled="desabilitarEnvio"
         />
       </template>
     </form>
