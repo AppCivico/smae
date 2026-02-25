@@ -334,7 +334,8 @@ watch(currentEdit, (novosValores) => {
 
       <template v-if="respostasof.dotacao">
         <ListaDeCompartilhamentos
-          v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe) && respostasof.dotacao"
+          v-if="['pdm', 'planoSetorial', 'programaDeMetas']
+            .includes($route.meta.entidadeMãe) && respostasof.dotacao"
           :ano="ano"
           :pdm="activePdm.id"
           :dotação="values.dotacao"

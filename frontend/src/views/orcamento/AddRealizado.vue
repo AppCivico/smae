@@ -177,7 +177,8 @@ export default {
       />
 
       <ListaDeCompartilhamentos
-        v-if="$route.meta.entidadeMãe === 'pdm' && Object.keys(respostasof).length
+        v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
+          && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
         :ano="ano"
