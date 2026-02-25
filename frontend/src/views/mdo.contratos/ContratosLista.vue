@@ -5,6 +5,7 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -69,19 +70,45 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 const totalDeContratos = computed(() => lista.value
   .reduce(
     (acc, cur) => ({
-      aditivos: new Big(Number(cur.quantidade_aditivos) || 0).plus(acc.aditivos),
+      quantidade_aditivos: new Big(Number(cur.quantidade_aditivos) || 0)
+        .plus(acc.quantidade_aditivos),
+      quantidade_reajustes: new Big(Number(cur.quantidade_reajustes) || 0)
+        .plus(acc.quantidade_reajustes),
       valor: new Big(Number(cur.valor) || 0).plus(acc.valor),
+      total_aditivos: new Big(Number(cur.total_aditivos) || 0).plus(acc.total_aditivos),
+      total_reajustes: new Big(Number(cur.total_reajustes) || 0).plus(acc.total_reajustes),
+      valor_reajustado: new Big(Number(cur.valor_reajustado) || 0).plus(acc.valor_reajustado),
     }),
-    { aditivos: 0, valor: 0 },
+    {
+      quantidade_aditivos: 0,
+      quantidade_reajustes: 0,
+      valor: 0,
+      total_aditivos: 0,
+      total_reajustes: 0,
+      valor_reajustado: 0,
+    },
   ));
 
 const totalDeContratosFiltrados = computed(() => listaFiltrada.value
   .reduce(
     (acc, cur) => ({
-      aditivos: new Big(Number(cur.quantidade_aditivos) || 0).plus(acc.aditivos),
+      quantidade_aditivos: new Big(Number(cur.quantidade_aditivos) || 0)
+        .plus(acc.quantidade_aditivos),
+      quantidade_reajustes: new Big(Number(cur.quantidade_reajustes) || 0)
+        .plus(acc.quantidade_reajustes),
       valor: new Big(Number(cur.valor) || 0).plus(acc.valor),
+      total_aditivos: new Big(Number(cur.total_aditivos) || 0).plus(acc.total_aditivos),
+      total_reajustes: new Big(Number(cur.total_reajustes) || 0).plus(acc.total_reajustes),
+      valor_reajustado: new Big(Number(cur.valor_reajustado) || 0).plus(acc.valor_reajustado),
     }),
-    { aditivos: 0, valor: 0 },
+    {
+      quantidade_aditivos: 0,
+      quantidade_reajustes: 0,
+      valor: 0,
+      total_aditivos: 0,
+      total_reajustes: 0,
+      valor_reajustado: 0,
+    },
   ));
 
 const exibirColunasDeAção = computed(() => !permissoesDoItemEmFoco.value.apenas_leitura
@@ -97,6 +124,98 @@ function excluirProcesso(id, nome) {
   }, 'Remover');
 }
 
+const colunas = computed(() => [
+  {
+    chave: 'numero',
+    label: schema.value.fields.numero.spec.label,
+    ehCabecalho: true,
+  },
+  {
+    chave: 'status',
+    label: schema.value.fields.status.spec.label,
+    atributosDaColuna: { class: 'col--minimum' },
+  },
+  {
+    chave: 'data_termino_inicial',
+    label: 'Término planejado',
+    formatador: (v) => (v ? dateToShortDate(v) : ''),
+    atributosDaColuna: { class: 'col--data' },
+    atributosDaCelula: { class: 'cell--data' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--data' },
+  },
+  {
+    chave: 'data_termino_atual',
+    label: 'Término atual',
+    formatador: (v) => (v ? dateToShortDate(v) : ''),
+    atributosDaColuna: { class: 'col--data' },
+    atributosDaCelula: { class: 'cell--data' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--data' },
+  },
+  {
+    chave: 'valor',
+    label: schema.value.fields.valor.spec.label,
+    formatador: (v) => (v ? `R$ ${dinheiro(v)}` : 'R$ 0,00'),
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'total_aditivos',
+    label: 'Valor total aditivos',
+    formatador: (v) => (v ? `R$ ${dinheiro(v)}` : 'R$ 0,00'),
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'total_reajustes',
+    label: 'Valor total reajustes',
+    formatador: (v) => (v ? `R$ ${dinheiro(v)}` : 'R$ 0,00'),
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'valor_reajustado',
+    label: 'Valor reajustado',
+    formatador: (v) => (v ? `R$ ${dinheiro(v)}` : 'R$ 0,00'),
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'processos_sei',
+    label: schema.value.fields.processos_sei.spec.label,
+    formatador: () => '',
+  },
+  {
+    chave: 'quantidade_aditivos',
+    label: 'Qtd. Aditivos',
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'quantidade_reajustes',
+    label: 'Qtd. Reajustes',
+    atributosDaColuna: { class: 'col--minimum' },
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+]);
+
+const rotaResumo = computed(() => (route.params.obraId
+  ? 'contratosDaObraResumo'
+  : 'contratosDoProjetoResumo'));
+
+const rotaEditar = computed(() => (route.params.obraId
+  ? 'contratosDaObraEditar'
+  : 'contratosDoProjetoEditar'));
+
+const rotaCriar = computed(() => (route.params.obraId
+  ? 'contratosDaObraCriar'
+  : 'contratosDoProjetoCriar'));
+
 iniciar();
 </script>
 <template>
@@ -110,7 +229,7 @@ iniciar();
     <div class="ml2">
       <router-link
         v-if="exibirColunasDeAção"
-        :to="{name: $route.params.obraId ? 'contratosDaObraCriar' : 'contratosDoProjetoCriar' }"
+        :to="{ name: rotaCriar }"
         class="btn"
       >
         Novo contrato
@@ -126,207 +245,131 @@ iniciar();
     />
   </div>
 
-  <div
-    role="region"
-    aria-labelledby="titulo-da-pagina"
-    tabindex="0"
+  <SmaeTable
+    :colunas="colunas"
+    :dados="listaFiltrada"
+    :rota-editar="exibirColunasDeAção ? rotaEditar : undefined"
+    :esconder-deletar="!exibirColunasDeAção"
+    :aria-busy="chamadasPendentes.lista"
+    titulo="Contratos"
+    rolagem-horizontal
+    sub-linha-sempre-visivel
+    @deletar="(linha) => excluirProcesso(linha.id, linha.numero)"
   >
-    <table
-      class="tablemain tbody-zebra"
-    >
-      <colgroup>
-        <col>
-        <col class="col--minimum">
-        <col class="col--data">
-        <col class="col--data">
-        <col class="col--minimum">
-        <col>
-        <col class="col--minimum">
-        <col
-          v-if="exibirColunasDeAção"
-          class="col--botão-de-ação"
-        >
-      </colgroup><colgroup
-        v-if="exibirColunasDeAção"
-        class="col--botão-de-ação"
-      />
-
-      <thead>
-        <tr class="pl3 center mb05 tc300 w700 t12 uc">
-          <th>
-            {{ schema.fields.numero.spec.label }}
-          </th>
-          <th>
-            {{ schema.fields.status.spec.label }}
-          </th>
-          <th class="cell--data">
-            Término planejado
-          </th>
-          <th class="cell--data">
-            Término atual
-          </th>
-          <th class="cell--number">
-            {{ schema.fields.valor.spec.label }}
-          </th>
-          <th>
-            {{ schema.fields.processos_sei.spec.label }}
-          </th>
-          <th class="cell--number">
-            Quantidade de Aditivos
-          </th>
-          <th
-            v-if="exibirColunasDeAção"
-          />
-          <th
-            v-if="exibirColunasDeAção"
-          />
-        </tr>
-      </thead>
-
-      <tbody
-        v-for="linha in listaFiltrada"
-        :key="linha.id"
+    <template #celula:numero="{ linha }">
+      <router-link
+        :to="{
+          name: rotaResumo,
+          params: {
+            obraId,
+            contratoId: linha.id,
+            projetoId,
+          },
+        }"
       >
-        <tr>
-          <th class="">
-            <router-link
-              :to="{
-                name: $route.params.obraId ? 'contratosDaObraResumo' : 'contratosDoProjetoResumo',
-                params: {
-                  obraId: obraId,
-                  contratoId: linha.id,
-                  projetoId: projetoId
-                }
-              }"
-            >
-              {{ linha.numero }}
-            </router-link>
-          </th>
-          <td>{{ linha.status }}</td>
+        {{ linha.numero }}
+      </router-link>
+    </template>
 
-          <td class="cell--data">
-            {{ dateToShortDate(linha.data_termino_inicial) }}
-          </td>
-          <td class="cell--data">
-            {{ dateToShortDate(linha.data_termino_atual) }}
-          </td>
+    <template #celula:processos_sei="{ linha }">
+      <ul v-if="linha.processos_sei?.length">
+        <li
+          v-for="processoSei in linha.processos_sei"
+          :key="processoSei"
+          class="nowrap"
+        >
+          {{ formatProcesso(processoSei) }}
+        </li>
+      </ul>
+    </template>
 
-          <td class="cell--number">
-            R$ {{ dinheiro(linha.valor) }}
-          </td>
-          <td class="contentStyle">
-            <ul v-if="linha.processos_sei.length">
-              <li
-                v-for="processoSei in linha.processos_sei"
-                :key="processoSei"
-                class="nowrap"
-              >
-                {{ formatProcesso(processoSei) }} <br>
-              </li>
-            </ul>
-          </td>
-          <td class="cell--number">
-            {{ linha.quantidade_aditivos }}
-          </td>
-          <td
-            v-if="exibirColunasDeAção"
-            class="center"
-          >
-            <router-link
-              :to="{
-                name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
-                params: {
-                  obraId: obraId,
-                  contratoId: linha.id,
-                  projetoId: projetoId,
-                }
-              }"
-              title="Editar contrato"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
-            </router-link>
-          </td>
-          <td
-            v-if="exibirColunasDeAção"
-            class="center"
-          >
-            <button
-              class="like-a__text"
-              aria-label="excluir"
-              title="excluir"
-              @click="excluirProcesso(linha.id, linha.numero)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_waste" /></svg>
-            </button>
-          </td>
-        </tr>
-        <tr>
-          <td :colspan="exibirColunasDeAção ? 10 : 8">
+    <template #sub-linha="{ linha }">
+      <td :colspan="colunas.length + 1">
+        <dl class="flex g1">
+          <dt class="t12 uc w700 tc300">
+            Resumo:
+          </dt>
+          <dd>
             {{ linha.objeto_resumo ? truncate(linha.objeto_resumo, 100) : '-' }}
-          </td>
-        </tr>
-      </tbody>
-      <tr v-if="chamadasPendentes.lista">
-        <td :colspan="exibirColunasDeAção ? 10 : 8">
-          Carregando
+          </dd>
+        </dl>
+      </td>
+    </template>
+
+    <template #rodape>
+      <tr v-if="lista.length && lista.length > listaFiltrada.length">
+        <th>Total dos contratos visíveis</th>
+        <td />
+        <td />
+        <td />
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratosFiltrados.valor)}` }}
         </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td :colspan="exibirColunasDeAção ? 10 : 8">
-          Erro: {{ erro }}
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratosFiltrados.total_aditivos)}` }}
         </td>
-      </tr>
-      <tr v-else-if="!lista.length">
-        <td :colspan="exibirColunasDeAção ? 10 : 8">
-          Nenhum resultado encontrado.
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratosFiltrados.total_reajustes)}` }}
         </td>
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratosFiltrados.valor_reajustado)}` }}
+        </td>
+        <td />
+        <td class="cell--number">
+          {{ totalDeContratosFiltrados.quantidade_aditivos }}
+        </td>
+        <td class="cell--number">
+          {{ totalDeContratosFiltrados.quantidade_reajustes }}
+        </td>
+        <td v-if="exibirColunasDeAção" />
       </tr>
-      <tfoot>
-        <tr v-if="lista.length && lista.length > listaFiltrada.length">
-          <th>Total dos contratos visiveis</th>
-          <td />
-          <td />
-          <td />
-          <td class="cell--number">
-            {{ `R$ ${dinheiro(totalDeContratosFiltrados.valor)}` }}
-          </td>
-          <td />
-          <td class="cell--number">
-            {{ totalDeContratosFiltrados.aditivos }}
-          </td>
-          <th
-            v-if="exibirColunasDeAção"
-          />
-          <th
-            v-if="exibirColunasDeAção"
-          />
-        </tr>
-        <tr>
-          <th>Total dos contratos</th>
-          <td />
-          <td />
-          <td />
-          <td class="cell--number">
-            {{ `R$ ${dinheiro(totalDeContratos.valor)}` }}
-          </td>
-          <td />
-          <td class="cell--number">
-            {{ totalDeContratos.aditivos }}
-          </td>
-          <th
-            v-if="exibirColunasDeAção"
-          />
-          <th
-            v-if="exibirColunasDeAção"
-          />
-        </tr>
-      </tfoot>
-    </table>
+      <tr>
+        <th>Total dos contratos</th>
+        <td />
+        <td />
+        <td />
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratos.valor)}` }}
+        </td>
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratos.total_aditivos)}` }}
+        </td>
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratos.total_reajustes)}` }}
+        </td>
+        <td class="cell--number">
+          {{ `R$ ${dinheiro(totalDeContratos.valor_reajustado)}` }}
+        </td>
+        <td />
+        <td class="cell--number">
+          {{ totalDeContratos.quantidade_aditivos }}
+        </td>
+        <td class="cell--number">
+          {{ totalDeContratos.quantidade_reajustes }}
+        </td>
+        <td v-if="exibirColunasDeAção" />
+      </tr>
+    </template>
+  </SmaeTable>
+
+  <div
+    v-if="chamadasPendentes.lista"
+    class="p1"
+  >
+    Carregando...
+  </div>
+
+  <div
+    v-else-if="erro"
+    class="error p1"
+  >
+    Erro: {{ erro }}
+  </div>
+
+  <div
+    v-else-if="!lista.length"
+    class="p1"
+  >
+    Nenhum resultado encontrado.
   </div>
 </template>
