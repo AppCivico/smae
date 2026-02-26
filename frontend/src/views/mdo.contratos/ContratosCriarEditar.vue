@@ -153,7 +153,7 @@ onMounted(async () => {
           class="error-msg"
         />
       </div>
-      <div class="f1 mt1 mb1">
+      <div class="f1 mt1 mb1 flex align-center">
         <LabelFromYup
           name="contrato_exclusivo"
           :schema="schema"
