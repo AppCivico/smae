@@ -231,7 +231,13 @@ iniciar();
     v-if="!chamadasPendentes.lista && !erro && lista.length"
     :colunas="colunas"
     :dados="listaFiltrada"
-    :rota-editar="exibirColunasDeAção ? rotas.editar : undefined"
+    :rota-editar="exibirColunasDeAção
+      ? {
+        name: rotas.editar,
+      }
+      : undefined"
+    parametro-da-rota-editar="contratoId"
+    parametro-no-objeto-para-editar="id"
     :esconder-deletar="!exibirColunasDeAção"
     :aria-busy="chamadasPendentes.lista"
     titulo="Contratos"
