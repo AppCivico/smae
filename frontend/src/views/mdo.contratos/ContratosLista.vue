@@ -209,13 +209,13 @@ iniciar();
     <hr class="ml2 f1">
 
     <div class="ml2">
-      <router-link
+      <SmaeLink
         v-if="exibirColunasDeAção"
         :to="{ name: rotaCriar }"
         class="btn"
       >
         Novo contrato
-      </router-link>
+      </SmaeLink>
     </div>
   </div>
 
@@ -240,7 +240,7 @@ iniciar();
     @deletar="(linha) => excluirProcesso(linha.id, linha.numero)"
   >
     <template #celula:numero="{ linha }">
-      <router-link
+      <SmaeLink
         :to="{
           name: rotaResumo,
           params: {
@@ -251,7 +251,7 @@ iniciar();
         }"
       >
         {{ linha.numero }}
-      </router-link>
+      </SmaeLink>
     </template>
 
     <template #celula:processos_sei="{ linha }">
