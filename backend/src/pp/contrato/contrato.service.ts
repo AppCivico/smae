@@ -5,6 +5,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { ContratoDetailDto, ContratoItemDto } from './entities/contrato.entity';
@@ -18,6 +19,7 @@ export class ContratoService {
 
     async create(projeto_id: number, dto: CreateContratoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
+        dto.objeto_detalhado = HtmlSanitizer(dto.objeto_detalhado);
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExiste = await prismaTx.contrato.count({
@@ -271,6 +273,7 @@ export class ContratoService {
 
     async update(projeto_id: number, id: number, dto: UpdateContratoDto, user: PessoaFromJwt) {
         const now = new Date(Date.now());
+        if (dto.objeto_detalhado) dto.objeto_detalhado = HtmlSanitizer(dto.objeto_detalhado);
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await this.findOne(projeto_id, id, user);
@@ -392,9 +395,8 @@ export class ContratoService {
             .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
             .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
 
-        const valor_reajustado = contratoValor != null
-            ? new Decimal(contratoValor).plus(total_aditivos).plus(total_reajustes)
-            : null;
+        const valor_reajustado =
+            contratoValor != null ? new Decimal(contratoValor).plus(total_aditivos).plus(total_reajustes) : null;
 
         return {
             quantidade_aditivos: aditivos.filter((a) => a.tipo_aditivo.tipo === 'Aditivo').length,
