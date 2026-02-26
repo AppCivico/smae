@@ -1,15 +1,21 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { ContratoPrazoUnidade, StatusContrato } from '@prisma/client';
 import { DateTime } from 'luxon';
+import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
 import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { RiscoService } from 'src/pp/risco/risco.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Stream2Buffer } from '../../common/helpers/Streaming';
 import { Html2Text } from '../../common/Html2Text';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RelProjetosAditivosDto, RelProjetosContratosDto, RelProjetosTermoEncerramentoDto } from '../pp-projetos/entities/projetos.entity';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
     DefaultTransforms,
@@ -29,13 +35,6 @@ import {
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
-import { Stream2Buffer } from '../../common/helpers/Streaming';
-import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
-import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 class RetornoDbAditivos {
     aditivo_id: number;
@@ -103,6 +102,27 @@ class RetornoDbLoc {
     distrito: string | null;
     subprefeitura: string | null;
     zona: string | null;
+}
+
+class RetornoDbTermoEncerramento {
+    projeto_id: number;
+    projeto_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: Date | null;
+    previsao_termino: Date | null;
+    data_inicio_real: Date | null;
+    data_termino_real: Date | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: Date;
 }
 
 @Injectable()
@@ -345,10 +365,12 @@ export class PPProjetoService implements ReportableService {
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetoOrigemDto[] = [];
         const out_enderecos: RelProjetoGeolocDto[] = [];
+        const out_termos_encerramento: RelProjetosTermoEncerramentoDto[] = [];
         await this.queryDataContratos(projetoRow.id, out_contratos);
         await this.queryDataAditivos(projetoRow.id, out_aditivos);
         await this.queryDataOrigens(projetoRow.id, out_origens);
         await this.queryDataProjetosGeoloc(projetoRow.id, out_enderecos);
+        await this.queryDataTermoEncerramento(projetoRow.id, out_termos_encerramento);
 
         return {
             detail: detail,
@@ -361,6 +383,7 @@ export class PPProjetoService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             enderecos: out_enderecos,
+            termos_encerramento: out_termos_encerramento,
         };
     }
 
@@ -688,6 +711,7 @@ export class PPProjetoService implements ReportableService {
         toCsvOut('contratos.csv', dados.contratos);
         toCsvOut('aditivos.csv', dados.aditivos);
         toCsvOut('origens.csv', dados.origens);
+        toCsvOut('termos-encerramento.csv', dados.termos_encerramento);
         toCsvOut('enderecos.csv', dados.enderecos, [
             { value: 'projeto_id', label: 'ID Projeto' },
             { value: 'endereco', label: 'Endereço' },
@@ -713,6 +737,67 @@ export class PPProjetoService implements ReportableService {
             },
             ...out,
         ];
+    }
+
+    private async queryDataTermoEncerramento(projetoId: number, out: RelProjetosTermoEncerramentoDto[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            projeto.codigo AS projeto_codigo,
+            pte.nome_projeto,
+            pte.orgao_responsavel_nome,
+            pte.portfolios_nomes,
+            pte.objeto,
+            pte.previsao_inicio,
+            pte.previsao_termino,
+            pte.data_inicio_real,
+            pte.data_termino_real,
+            pte.previsao_custo,
+            pte.valor_executado_total,
+            pte.status_final,
+            pte.etapa_nome,
+            pte_justif.descricao AS justificativa,
+            pte.justificativa_complemento,
+            pte.responsavel_encerramento_nome,
+            pte.data_encerramento
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_termo_encerramento pte
+              ON pte.projeto_id = projeto.id
+              AND pte.removido_em IS NULL
+              AND pte.ultima_versao = true
+          LEFT JOIN projeto_tipo_encerramento pte_justif
+              ON pte_justif.id = pte.justificativa_id
+        WHERE projeto.id = $1
+        `;
+
+        const data: RetornoDbTermoEncerramento[] = await this.prisma.$queryRawUnsafe(sql, projetoId);
+
+        out.push(...this.convertRowsTermoEncerramento(data));
+    }
+
+    private convertRowsTermoEncerramento(input: RetornoDbTermoEncerramento[]): RelProjetosTermoEncerramentoDto[] {
+        return input.map((db) => {
+            return {
+                projeto_id: db.projeto_id,
+                projeto_codigo: db.projeto_codigo ?? null,
+                nome_projeto: db.nome_projeto,
+                orgao_responsavel_nome: db.orgao_responsavel_nome,
+                portfolios_nomes: db.portfolios_nomes,
+                objeto: db.objeto,
+                previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
+                previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
+                data_inicio_real: db.data_inicio_real ? Date2YMD.toString(db.data_inicio_real) : null,
+                data_termino_real: db.data_termino_real ? Date2YMD.toString(db.data_termino_real) : null,
+                previsao_custo: db.previsao_custo ?? null,
+                valor_executado_total: db.valor_executado_total ?? null,
+                status_final: db.status_final,
+                etapa_nome: db.etapa_nome,
+                justificativa: db.justificativa ?? null,
+                justificativa_complemento: db.justificativa_complemento ?? null,
+                responsavel_encerramento_nome: db.responsavel_encerramento_nome,
+                data_encerramento: Date2YMD.toString(db.data_encerramento),
+            };
+        });
     }
 
     private async queryDataProjetosGeoloc(projetoId: number, out: RelProjetoGeolocDto[]) {

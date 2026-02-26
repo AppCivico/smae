@@ -1,6 +1,6 @@
 import { PartialType, OmitType } from '@nestjs/mapped-types';
 import { ProjetoDetailDto } from '../../../pp/projeto/entities/projeto.entity';
-import { RelProjetosAditivosDto, RelProjetosContratosDto } from 'src/reports/pp-projetos/entities/projetos.entity';
+import { RelProjetosAditivosDto, RelProjetosContratosDto, RelProjetosTermoEncerramentoDto } from 'src/reports/pp-projetos/entities/projetos.entity';
 
 export class RelProjetoRelatorioDto extends PartialType(
     OmitType(ProjetoDetailDto, [
@@ -147,4 +147,5 @@ export class PPProjetoRelatorioDto {
     aditivos: RelProjetosAditivosDto[];
     origens: RelProjetoOrigemDto[];
     enderecos: RelProjetoGeolocDto[];
+    termos_encerramento: RelProjetosTermoEncerramentoDto[];
 }
