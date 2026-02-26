@@ -244,7 +244,7 @@ BEGIN
                 WHERE a.id = OLD.atividade_id;
             END IF;
             
-            IF v_old_meta_id IS NOT NULL AND v_old_meta_id != v_meta_id THEN
+            IF v_old_meta_id IS NOT NULL AND v_old_meta_id IS DISTINCT FROM v_meta_id THEN
                 PERFORM f_refresh_meta_orcamento_consolidado(v_old_meta_id);
             END IF;
         END IF;
@@ -313,7 +313,7 @@ BEGIN
                 WHERE a.id = OLD.atividade_id;
             END IF;
             
-            IF v_old_meta_id IS NOT NULL AND v_old_meta_id != v_meta_id THEN
+            IF v_old_meta_id IS NOT NULL AND v_old_meta_id IS DISTINCT FROM v_meta_id THEN
                 PERFORM f_refresh_meta_orcamento_consolidado(v_old_meta_id);
             END IF;
         END IF;
