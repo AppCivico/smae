@@ -292,7 +292,7 @@ defineExpose({
       v-if="erro"
       class="upload-erro"
     >
-      Erro ao enviar arquivo. Tente novamente.
+      {{ (erro as Error)?.message || 'Erro ao enviar arquivo. Tente novamente.' }}
     </p>
   </div>
 </template>
