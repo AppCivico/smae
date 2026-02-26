@@ -238,6 +238,7 @@ iniciar();
       : undefined"
     parametro-da-rota-editar="contratoId"
     parametro-no-objeto-para-editar="id"
+    parametro-no-objeto-para-excluir="numero"
     :esconder-deletar="!exibirColunasDeAção"
     :aria-busy="chamadasPendentes.lista"
     titulo="Contratos"
