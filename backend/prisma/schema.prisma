@@ -1440,9 +1440,40 @@ model Meta {
     view_ps_dashboard_meta_stats           view_ps_dashboard_meta_stats[]
     ViewPsDashboardConsolidado             view_ps_dashboard_consolidado[]
     vinculosDistribuicaoRecursos           DistribuicaoRecursoVinculo[]
+    MetaOrcamentoConsolidado               MetaOrcamentoConsolidado?
 
     @@index([pdm_id])
     @@map("meta")
+}
+
+model MetaOrcamentoConsolidado {
+    meta_id Int  @id
+    meta    Meta @relation(fields: [meta_id], references: [id], onDelete: Cascade)
+
+    // Totais gerais
+    total_previsao  Decimal @default(0) @db.Decimal(19, 2)
+    total_empenhado Decimal @default(0) @db.Decimal(19, 2)
+    total_liquidado Decimal @default(0) @db.Decimal(19, 2)
+
+    // Totais de Projetos (primeiro dígito ímpar)
+    total_previsao_projeto  Decimal @default(0) @db.Decimal(19, 2)
+    total_empenhado_projeto Decimal @default(0) @db.Decimal(19, 2)
+    total_liquidado_projeto Decimal @default(0) @db.Decimal(19, 2)
+
+    // Totais de Atividades (primeiro dígito par e != 0)
+    total_previsao_atividade  Decimal @default(0) @db.Decimal(19, 2)
+    total_empenhado_atividade Decimal @default(0) @db.Decimal(19, 2)
+    total_liquidado_atividade Decimal @default(0) @db.Decimal(19, 2)
+
+    // Totais de Operações Especiais (primeiro dígito = 0)
+    total_previsao_operacao_especial  Decimal @default(0) @db.Decimal(19, 2)
+    total_empenhado_operacao_especial Decimal @default(0) @db.Decimal(19, 2)
+    total_liquidado_operacao_especial Decimal @default(0) @db.Decimal(19, 2)
+
+    atualizado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    @@index([atualizado_em])
+    @@map("meta_orcamento_consolidado")
 }
 
 model MetaTag {
