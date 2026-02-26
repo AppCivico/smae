@@ -41,6 +41,8 @@ type Props =
       alvo: unknown,
       classe: string
     },
+    subLinhaAbertaPorPadrao?: boolean
+    subLinhaSempreVisivel?: boolean
   };
 
 type Emits = DeleteButtonEvents;
@@ -55,6 +57,8 @@ const props = withDefaults(defineProps<Props>(), {
   parametroNoObjetoParaExcluir: 'descricao',
   rolagemHorizontal: false,
   personalizarLinhas: undefined,
+  subLinhaAbertaPorPadrao: false,
+  subLinhaSempreVisivel: false,
 });
 const emit = defineEmits<Emits>();
 defineSlots<Slots>();
@@ -152,8 +156,8 @@ const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, it
       >
         <colgroup>
           <col
-            v-if="$slots['sub-linha']"
-            class="smae-table__coluna smae-table__coluna--toggle col--botão-de-ação"
+            v-if="$slots['sub-linha'] && !subLinhaSempreVisivel"
+            class="smae-table__coluna smae-table__coluna--toggle col--botão-de-ação cell--minimum"
           >
           <col
             v-for="coluna in colunasFiltradas"
@@ -176,7 +180,7 @@ const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, it
         >
           <tr>
             <th
-              v-if="$slots['sub-linha']"
+              v-if="$slots['sub-linha'] && !subLinhaSempreVisivel"
               class="smae-table__toggle-header"
               aria-label="Expandir/Recolher"
             />
@@ -221,6 +225,8 @@ const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, it
           :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
           :mensagem-exclusao="mensagemExclusao"
           :personalizar-linhas="personalizarLinhas"
+          :sub-linha-aberta-por-padrao="subLinhaAbertaPorPadrao"
+          :sub-linha-sempre-visivel="subLinhaSempreVisivel"
           @deletar="(ev: Linha) => emit('deletar', ev)"
         >
           <template #corpo="slotProps">
@@ -273,7 +279,7 @@ const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, it
 
         <tr v-else>
           <th
-            v-if="$slots['sub-linha']"
+            v-if="$slots['sub-linha'] && !subLinhaSempreVisivel"
             class="smae-table__toggle-header"
           />
 
