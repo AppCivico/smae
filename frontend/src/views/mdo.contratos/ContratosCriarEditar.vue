@@ -153,19 +153,22 @@ onMounted(async () => {
           class="error-msg"
         />
       </div>
-      <div class="f1 mb1">
+      <div class="f1 mt1 mb1">
         <LabelFromYup
           name="contrato_exclusivo"
           :schema="schema"
-        />
-        <Field
-          id="contrato_exclusivo"
-          name="contrato_exclusivo"
-          type="checkbox"
-          :value="true"
-          :unchecked-value="false"
-          class="inputcheckbox"
-        />
+        >
+          <template #prepend>
+            <Field
+              id="contrato_exclusivo"
+              name="contrato_exclusivo"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+              class="inputcheckbox"
+            />
+          </template>
+        </LabelFromYup>
         <ErrorMessage
           name="contrato_exclusivo"
           class="error-msg"
