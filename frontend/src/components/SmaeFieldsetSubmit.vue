@@ -24,6 +24,13 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+    validator: (val: boolean) => {
+      if (import.meta.env.DEV && val) {
+        // eslint-disable-next-line no-console
+        console.warn('[SmaeFieldsetSubmit] Prefira `aria-disabled` a `disabled`: o atributo `disabled` impede o foco no botão.');
+      }
+      return true;
+    },
   },
   ariaDisabled: {
     type: Boolean,
