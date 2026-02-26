@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import {
   describe,
   expect,
@@ -110,5 +111,18 @@ describe('dinheiro', () => {
   it('deve permitir maximumFractionDigits menor que minimumFractionDigits (Intl ajusta para minimum)', () => {
     expect(dinheiro(1234.567, { minimumFractionDigits: 3, maximumFractionDigits: 1 })).toBe('1.234,567');
     expect(dinheiro(1234.5, { minimumFractionDigits: 3, maximumFractionDigits: 1 })).toBe('1.234,500');
+  });
+
+  it('deve formatar instâncias de Big.js corretamente', () => {
+    expect(dinheiro(new Big(1234.56))).toBe('1.234,56');
+    expect(dinheiro(new Big('1234.56'))).toBe('1.234,56');
+    expect(dinheiro(new Big(0))).toBe('0,00');
+    expect(dinheiro(new Big('-999.99'))).toBe('-999,99');
+    expect(dinheiro(new Big('9999999.99'))).toBe('9.999.999,99');
+  });
+
+  it('deve formatar Big.js com opções customizadas', () => {
+    expect(dinheiro(new Big(1234.56), { semDecimais: true })).toBe('1.235');
+    expect(dinheiro(new Big(1234.56), { style: 'currency' })).toBe('R$ 1.234,56');
   });
 });
