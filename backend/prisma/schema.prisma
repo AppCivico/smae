@@ -5188,6 +5188,7 @@ enum task_type {
     gerar_preview_documento
     gerar_thumbnail_imagem
     refresh_demanda
+    refresh_meta_orcamento_consolidado
 }
 
 enum task_status {

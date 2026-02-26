@@ -8,6 +8,7 @@ import { AeNotaModule } from './aviso_email_nota/ae_nota.module';
 import { EchoModule } from './echo/echo.module';
 import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
 import { RefreshDemandaModule } from './refresh_demanda/refresh-demanda.module';
+import { RefreshMetaOrcamentoConsolidadoModule } from './refresh_meta_orcamento_consolidado/refresh-meta-orcamento-consolidado.module';
 import { RefreshIndicadorModule } from './refresh_indicador/refresh-indicador.module';
 import { RefreshMetaModule } from './refresh_meta/refresh-meta.module';
 import { RefreshMvModule } from './refresh_mv/refresh-mv.module';
@@ -35,6 +36,7 @@ import { TaskService } from './task.service';
         forwardRef(() => RunReportModule),
         forwardRef(() => RefreshVariavelModule),
         forwardRef(() => RefreshDemandaModule),
+        forwardRef(() => RefreshMetaOrcamentoConsolidadoModule),
         forwardRef(() => RunUpdateModule),
     ],
     controllers: [TaskController],

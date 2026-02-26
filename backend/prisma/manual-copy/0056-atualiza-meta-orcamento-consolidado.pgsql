@@ -8,9 +8,7 @@ BEGIN
     -- Split da dotação por ponto
     partes := string_to_array(dotacao, '.');
     
-    -- Verifica se tem pelo menos 7 campos (índices 0-6)
     IF array_length(partes, 1) >= 7 THEN
-        -- Junta os campos 6 e 7 (índices 5 e 6 em array 1-based do PostgreSQL)
         codigo := partes[6] || partes[7];
         RETURN codigo;
     ELSE
@@ -190,6 +188,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Procedure para enfileirar recálculo assíncrono (com deduplicação por txid)
+CREATE OR REPLACE PROCEDURE add_refresh_meta_orcamento_consolidado_task(p_meta_id INTEGER)
+AS $$
+DECLARE
+    current_txid bigint;
+BEGIN
+    current_txid := txid_current();
+    IF NOT EXISTS (
+        SELECT 1 FROM task_queue
+        WHERE "type" = 'refresh_meta_orcamento_consolidado'
+          AND status = 'pending'
+          AND (params->>'meta_id')::INTEGER = p_meta_id
+          AND (params->>'current_txid')::bigint = current_txid
+          AND criado_em = now()
+    ) THEN
+        INSERT INTO task_queue ("type", params)
+        VALUES (
+            'refresh_meta_orcamento_consolidado',
+            json_build_object('meta_id', p_meta_id, 'current_txid', current_txid)
+        );
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Wrapper function para uso nos triggers (triggers usam PERFORM em funções, não CALL em procedures)
+CREATE OR REPLACE FUNCTION f_add_refresh_meta_orcamento_consolidado_task(p_meta_id INTEGER)
+RETURNS VOID AS $$
+BEGIN
+    CALL add_refresh_meta_orcamento_consolidado_task(p_meta_id);
+END;
+$$ LANGUAGE plpgsql;
+
 -- Trigger para OrcamentoPlanejado
 CREATE OR REPLACE FUNCTION tg_orcamento_planejado_refresh_consolidado()  
 RETURNS TRIGGER AS $$
@@ -211,7 +241,7 @@ BEGIN
         END IF;
         
         IF v_meta_id IS NOT NULL THEN
-            PERFORM f_refresh_meta_orcamento_consolidado(v_meta_id);
+            PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
         END IF;
         RETURN OLD;
     ELSE
@@ -228,7 +258,7 @@ BEGIN
         END IF;
         
         IF v_meta_id IS NOT NULL THEN
-            PERFORM f_refresh_meta_orcamento_consolidado(v_meta_id);
+            PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
         END IF;
         
         -- Se o meta_id/iniciativa_id/atividade_id mudou, atualiza o antigo também
@@ -245,7 +275,7 @@ BEGIN
             END IF;
             
             IF v_old_meta_id IS NOT NULL AND v_old_meta_id IS DISTINCT FROM v_meta_id THEN
-                PERFORM f_refresh_meta_orcamento_consolidado(v_old_meta_id);
+                PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_old_meta_id);
             END IF;
         END IF;
         RETURN NEW;
@@ -280,7 +310,7 @@ BEGIN
         END IF;
         
         IF v_meta_id IS NOT NULL THEN
-            PERFORM f_refresh_meta_orcamento_consolidado(v_meta_id);
+            PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
         END IF;
         RETURN OLD;
     ELSE
@@ -297,7 +327,7 @@ BEGIN
         END IF;
         
         IF v_meta_id IS NOT NULL THEN
-            PERFORM f_refresh_meta_orcamento_consolidado(v_meta_id);
+            PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
         END IF;
         
         -- Se o meta_id/iniciativa_id/atividade_id mudou, atualiza o antigo também
@@ -314,7 +344,7 @@ BEGIN
             END IF;
             
             IF v_old_meta_id IS NOT NULL AND v_old_meta_id IS DISTINCT FROM v_meta_id THEN
-                PERFORM f_refresh_meta_orcamento_consolidado(v_old_meta_id);
+                PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_old_meta_id);
             END IF;
         END IF;
         RETURN NEW;

@@ -22,6 +22,7 @@ import { EchoService } from './echo/echo.service';
 import { TaskSingleDto, TaskableService } from './entities/task.entity';
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
 import { RefreshDemandaService } from './refresh_demanda/refresh-demanda.service';
+import { RefreshMetaOrcamentoConsolidadoService } from './refresh_meta_orcamento_consolidado/refresh-meta-orcamento-consolidado.service';
 import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.service';
 import { RefreshMetaService } from './refresh_meta/refresh-meta.service';
 import { RefreshMvService } from './refresh_mv/refresh-mv.service';
@@ -210,7 +211,10 @@ export class TaskService {
         private readonly thumbnailService: ThumbnailService,
         //
         @Inject(forwardRef(() => RefreshDemandaService))
-        private readonly refreshDemandaService: RefreshDemandaService
+        private readonly refreshDemandaService: RefreshDemandaService,
+        //
+        @Inject(forwardRef(() => RefreshMetaOrcamentoConsolidadoService))
+        private readonly refreshMetaOrcamentoConsolidadoService: RefreshMetaOrcamentoConsolidadoService
     ) {
         this.enabled = IsCrontabEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -698,6 +702,7 @@ export class TaskService {
             refresh_transferencia: true, // tbm só chama função no banco
             refresh_variavel: true, // tbm só chama função no banco
             refresh_demanda: true, // tbm só chama função no banco
+            refresh_meta_orcamento_consolidado: true, // tbm só chama função no banco
             aviso_email: true, // tbm só chama função no banco
             aviso_email_cronograma_tp: true, // tbm só chama função no banco
             aviso_email_nota: true, // tbm só chama função no banco
@@ -784,6 +789,9 @@ export class TaskService {
                 break;
             case 'refresh_demanda':
                 service = this.refreshDemandaService;
+                break;
+            case 'refresh_meta_orcamento_consolidado':
+                service = this.refreshMetaOrcamentoConsolidadoService;
                 break;
             default:
                 task_type satisfies never;
