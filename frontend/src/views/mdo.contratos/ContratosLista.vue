@@ -186,17 +186,17 @@ const colunas = computed(() => [
   },
 ]);
 
-const rotaResumo = computed(() => (props.obraId
-  ? 'contratosDaObraResumo'
-  : 'contratosDoProjetoResumo'));
-
-const rotaEditar = computed(() => (props.obraId
-  ? 'contratosDaObraEditar'
-  : 'contratosDoProjetoEditar'));
-
-const rotaCriar = computed(() => (props.obraId
-  ? 'contratosDaObraCriar'
-  : 'contratosDoProjetoCriar'));
+const rotas = computed(() => (props.obraId
+  ? {
+    resumo: 'contratosDaObraResumo',
+    editar: 'contratosDaObraEditar',
+    criar: 'contratosDaObraCriar',
+  }
+  : {
+    resumo: 'contratosDoProjetoResumo',
+    editar: 'contratosDoProjetoEditar',
+    criar: 'contratosDoProjetoCriar',
+  }));
 
 iniciar();
 </script>
@@ -211,7 +211,7 @@ iniciar();
     <div class="ml2">
       <SmaeLink
         v-if="exibirColunasDeAção"
-        :to="{ name: rotaCriar }"
+        :to="{ name: rotas.criar }"
         class="btn"
       >
         Novo contrato
@@ -231,7 +231,7 @@ iniciar();
     v-if="!chamadasPendentes.lista && !erro && lista.length"
     :colunas="colunas"
     :dados="listaFiltrada"
-    :rota-editar="exibirColunasDeAção ? rotaEditar : undefined"
+    :rota-editar="exibirColunasDeAção ? rotas.editar : undefined"
     :esconder-deletar="!exibirColunasDeAção"
     :aria-busy="chamadasPendentes.lista"
     titulo="Contratos"
@@ -242,7 +242,7 @@ iniciar();
     <template #celula:numero="{ linha }">
       <SmaeLink
         :to="{
-          name: rotaResumo,
+          name: rotas.resumo,
           params: {
             obraId,
             contratoId: linha.id,
