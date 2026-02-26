@@ -1736,6 +1736,15 @@ export const planoSetorial = object({
     .when('monitoramento_orcamento', (monitoramentoOrcamento, field) => (monitoramentoOrcamento
       ? field.required()
       : field.nullable())),
+  orcamento_dia_fechamento: number()
+    .label('Fechamento automático')
+    .integer()
+    .min(1)
+    .max(28)
+    .transform((v) => (!v ? null : v))
+    .when('monitoramento_orcamento', (monitoramentoOrcamento, field) => (monitoramentoOrcamento
+      ? field.required()
+      : field.nullable())),
   nome: string()
     .label('Nome')
     .min(1)
