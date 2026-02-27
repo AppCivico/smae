@@ -54,6 +54,7 @@ const tiposFiltrados = computed(() => (
         },
       }
     }]"
+    auto-submit
   />
 
   <SmaeTable
