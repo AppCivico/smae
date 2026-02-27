@@ -66,7 +66,7 @@ const listaArquivos = computed(() => {
     return [{
       nome_original: '-',
       descricao: '-',
-      download_token: '-',
+      download_token: '',
     }];
   }
 
@@ -99,7 +99,9 @@ const submit = handleSubmit(async (values) => {
 });
 
 async function receberArquivo(ev: Event): Promise<void> {
-  setFieldValue('arquivo', ev);
+  const input = ev.target as HTMLInputElement;
+  if (!input.files?.[0]) return;
+  setFieldValue('arquivo', input.files[0]);
 
   const { valid } = await validate();
 
