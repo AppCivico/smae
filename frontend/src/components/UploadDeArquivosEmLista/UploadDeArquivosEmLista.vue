@@ -5,7 +5,7 @@ import {
 } from 'vue';
 
 import SmaeLink from '@/components/SmaeLink.vue';
-import useUpload from '@/composables/useUpload';
+import { useUpload } from '@/composables/useUpload';
 
 interface ArquivoBase {
   id: number;

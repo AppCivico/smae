@@ -9,7 +9,7 @@ interface UploadResponse {
   upload_token: string;
 }
 
-export default function useUpload() {
+export function useUpload() {
   const carregando = ref(false);
   const erro = ref<unknown>(null);
 
