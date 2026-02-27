@@ -482,6 +482,14 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        out.push(
+            await this.streamQueryToCSV(
+                `${this._queryDataArquivos()} ${whereCond.whereString}`,
+                whereCond.queryParams,
+                'arquivos.csv'
+            )
+        );
+
         return out;
     }
 
@@ -1350,6 +1358,25 @@ export class PPObrasService implements ReportableService {
                 atividade_titulo: db.atividade_titulo ?? null,
             };
         });
+    }
+
+    private _queryDataArquivos() {
+        return `SELECT
+            projeto.id AS obra_id,
+            projeto.codigo AS obra_codigo,
+            arquivo.nome_original,
+            projeto_documento.criado_em,
+            criador.id AS criador_id,
+            criador.nome_exibicao AS criador_nome_exibicao,
+            arquivo.caminho,
+            projeto_documento.descricao,
+            arquivo.id AS arquivo_id
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_documento ON projeto_documento.projeto_id = projeto.id AND projeto_documento.removido_em IS NULL
+          JOIN arquivo ON arquivo.id = projeto_documento.arquivo_id
+          LEFT JOIN pessoa criador ON criador.id = projeto_documento.criado_por
+        `;
     }
 
     private _queryDataObrasSei() {
