@@ -1,7 +1,7 @@
-<script setup>
+<script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { computed, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import rotasDosNiveisDeMetas from '@/consts/rotasDosNiveisDeMetas';
 import {
@@ -11,6 +11,7 @@ import {
 } from '@/stores';
 
 const route = useRoute();
+const router = useRouter();
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
@@ -33,6 +34,26 @@ const iniciativaId = computed(() => {
 const atividadeId = computed(() => {
   const id = Number(route.params.atividade_id);
   return Number.isNaN(id) ? undefined : id;
+});
+
+const rotasComplementares = computed(() => {
+  if (!Array.isArray(route.meta.migalhasDeMetas) || route.meta.migalhasDeMetas?.length === 0) {
+    return [];
+  }
+
+  return route.meta.migalhasDeMetas.map((x) => {
+    let rotaParaResolver = x;
+
+    if (typeof x === 'string') {
+      if (x.indexOf('/') > -1) {
+        rotaParaResolver = { path: x };
+      } else {
+        rotaParaResolver = { name: x };
+      }
+    }
+
+    return router.resolve({ ...rotaParaResolver, params: route.params });
+  });
 });
 
 watchEffect(() => {
@@ -59,6 +80,7 @@ watchEffect(() => {
     AtividadesStore.getByIdReal(atividadeId.value);
   }
 });
+
 </script>
 <template>
   <nav class="migalhas-de-pão migalhas-de-pão--metas">
@@ -137,6 +159,23 @@ watchEffect(() => {
           {{ singleAtividade?.codigo }}
           {{ singleAtividade?.titulo }}
         </SmaeLink>
+      </li>
+
+      <li
+        v-for="(rotaComplementar, rotaComplementarIndex) in rotasComplementares"
+        :key="`rota-complementar--${rotaComplementarIndex}`"
+        class="migalhas-de-pão__item migalhas-de-pão__link"
+      >
+        <RouterLink :to="rotaComplementar.href">
+          {{ rotaComplementar.meta.tituloMigalhaDeMeta }}
+        </RouterLink>
+      </li>
+
+      <li
+        v-if="$route.meta.tituloMigalhaDeMeta"
+        class="migalhas-de-pão__item"
+      >
+        {{ $route.meta.tituloMigalhaDeMeta }}
       </li>
     </ul>
   </nav>

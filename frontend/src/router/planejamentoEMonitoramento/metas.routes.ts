@@ -1,5 +1,5 @@
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 import {
   AddEditAtividade,
@@ -709,6 +709,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: MetaOrcamento,
           props: { area: 'Custo', title: 'Previsão de Custo' },
           meta: {
+            tituloMigalhaDeMeta: 'Previsão de custo',
             títuloParaMenu: 'Previsão de custo',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
@@ -718,6 +719,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: 'custo/:ano',
+          name: `${entidadeMãe}.MetaOrcamentoCustoPorAno`,
           component: AddEditCusteio,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoCusto`,
@@ -725,10 +727,15 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Previsão de custo',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoCusto`,
+            ],
           },
         },
         {
           path: 'custo/:ano/:id',
+          name: `${entidadeMãe}.MetaOrcamentoCustoPorAnoPorId`,
           component: AddEditCusteio,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoCusto`,
@@ -736,6 +743,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Previsão de custo',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoCusto`,
+            ],
           },
         },
         {
@@ -745,6 +756,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           props: { area: 'Planejado', title: 'Orçamento Planejado' },
           meta: {
             títuloParaMenu: 'Orçamento planejado',
+            tituloMigalhaDeMeta: 'Orçamento planejado',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
@@ -752,6 +764,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           },
         },
         {
+          name: `${entidadeMãe}.MetaOrcamentoPlanejadoPorAno`,
           path: 'planejado/:ano',
           component: AddEditPlanejado,
           meta: {
@@ -760,9 +773,14 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Adicionar dotação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoPlanejado`,
+            ],
           },
         },
         {
+          name: `${entidadeMãe}.MetaOrcamentoPlanejadoPorAnoPorId`,
           path: 'planejado/:ano/:id',
           component: AddEditPlanejado,
           meta: {
@@ -771,6 +789,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Editar dotação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoPlanejado`,
+            ],
           },
         },
 
@@ -780,6 +802,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: MetaOrcamento,
           props: { area: 'Realizado', title: 'Execução orçamentária' },
           meta: {
+            tituloMigalhaDeMeta: 'Execução orçamentária',
             títuloParaMenu: 'Execução orçamentária',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
               'meta',
@@ -789,6 +812,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: 'realizado/:ano/dotacao',
+          name: `${entidadeMãe}.MetaOrcamentoRealizadoPorAnoDotacao`,
           component: AddRealizado,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
@@ -796,10 +820,15 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoRealizado`,
+            ],
           },
         },
         {
           path: 'realizado/:ano/processo',
+          name: `${entidadeMãe}.MetaOrcamentoRealizadoPorAnoProcesso`,
           component: AddRealizadoProcesso,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
@@ -807,10 +836,15 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoRealizado`,
+            ],
           },
         },
         {
           path: 'realizado/:ano/nota',
+          name: `${entidadeMãe}.MetaOrcamentoRealizadoPorAnoNota`,
           component: AddRealizadoNota,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
@@ -818,10 +852,15 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoRealizado`,
+            ],
           },
         },
         {
           path: 'realizado/:ano/:id',
+          name: `${entidadeMãe}.MetaOrcamentoRealizadoPorAnoPorId`,
           component: EditRealizado,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
@@ -829,10 +868,15 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoRealizado`,
+            ],
           },
         },
         {
           path: 'realizado/:ano/dotacao/:id',
+          name: `${entidadeMãe}.MetaOrcamentoRealizadoPorAnoDotacaoPorId`,
           component: EditRealizado,
           meta: {
             rotaDeEscape: `${entidadeMãe}.MetaOrcamentoRealizado`,
@@ -840,6 +884,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
+            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            migalhasDeMetas: [
+              `${entidadeMãe}.MetaOrcamentoRealizado`,
+            ],
           },
         },
       ],
