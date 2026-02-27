@@ -135,16 +135,13 @@ export class RelObrasContratosDto {
     obra_id: number;
     numero: string;
     exclusivo: boolean;
-    processos_SEI: string | null;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
-    modalidade_licitacao: IdNomeDto | null;
-    fontes_recurso: string | null;
-    area_gestora: IdSiglaDescricao | null;
     objeto: string | null;
     descricao_detalhada: string | null;
     contratante: string | null;
     empresa_contratada: string | null;
+    cnpj_contratada: string | null;
     prazo: number | null;
     @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
     unidade_prazo: ContratoPrazoUnidade | null;
@@ -153,13 +150,15 @@ export class RelObrasContratosDto {
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
     valor: number | null;
-    valor_reajustado: number | null;
-    percentual_medido: number | null;
     observacoes: string | null;
-    cnpj_contratada: string | null;
+    valor_contrato_atualizado: number | null;
     total_aditivos: number | null;
     total_reajustes: number | null;
-    valor_contrato_reajustado: number | null;
+    modalidade_licitacao: IdNomeDto | null;
+    area_gestora: IdSiglaDescricao | null;
+    maximo_percentual_medido: number | null;
+    processos_sei: string | null;
+    fontes_recurso: string | null;
 }
 
 export class RelObrasAditivosDto {
