@@ -114,6 +114,8 @@ module.exports = {
         '*.store.ts',
         '*.composable.js',
         '*.composable.ts',
+        'src/composables/**/*.js',
+        'src/composables/**/*.ts',
       ],
       rules: {
         'import/prefer-default-export': 'off',
