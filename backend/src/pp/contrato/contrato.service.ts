@@ -395,8 +395,7 @@ export class ContratoService {
             .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
             .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
 
-        const valor_reajustado =
-            contratoValor != null ? new Decimal(contratoValor).plus(total_aditivos).plus(total_reajustes) : null;
+        const valor_reajustado = new Decimal(contratoValor ?? 0).plus(total_aditivos).plus(total_reajustes);
 
         return {
             quantidade_aditivos: aditivos.filter((a) => a.tipo_aditivo.tipo === 'Aditivo').length,

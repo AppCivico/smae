@@ -232,28 +232,26 @@ class RetornoDbContratos {
     descricao_detalhada: string | null;
     contratante: string | null;
     empresa_contratada: string | null;
+    cnpj_contratada: string | null;
     prazo: number | null;
     unidade_prazo: ContratoPrazoUnidade | null;
+    data_base: string | null;
     data_inicio: Date | null;
     data_termino: Date | null;
+    data_termino_atualizada: Date | null;
     valor: number | null;
-    valor_reajustado: number | null;
     observacoes: string | null;
-    data_base: string | null;
+    valor_contrato_atualizado: number | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
     modalidade_contratacao_id: number | null;
     modalidade_contratacao_nome: string | null;
     orgao_id: number | null;
     orgao_sigla: string | null;
     orgao_descricao: string | null;
-    valor_com_reajuste: number | null;
-    data_termino_atualizada: Date | null;
-    percentual_medido: number | null;
+    maximo_percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
-    cnpj_contratada: string | null;
-    total_aditivos: number | null;
-    total_reajustes: number | null;
-    valor_contrato_reajustado: number | null;
 }
 
 class RetornoDbOrigens {
@@ -912,18 +910,12 @@ export class PPProjetosService implements ReportableService {
             'projeto_id',
             'numero',
             'exclusivo',
-            'processos_SEI',
             'status',
-            'modalidade_licitacao.id',
-            'modalidade_licitacao.nome',
-            'fontes_recurso',
-            'area_gestora.id',
-            'area_gestora.sigla',
-            'area_gestora.descricao',
             'objeto',
             'descricao_detalhada',
             'contratante',
             'empresa_contratada',
+            'cnpj_contratada',
             'prazo',
             'unidade_prazo',
             'data_base',
@@ -931,13 +923,18 @@ export class PPProjetosService implements ReportableService {
             'data_termino',
             'data_termino_atualizada',
             'valor',
-            'valor_reajustado',
-            'percentual_medido',
             'observacoes',
-            'cnpj_contratada',
+            'valor_contrato_atualizado',
             'total_aditivos',
             'total_reajustes',
-            'valor_contrato_reajustado',
+            'modalidade_licitacao.id',
+            'modalidade_licitacao.nome',
+            'area_gestora.id',
+            'area_gestora.sigla',
+            'area_gestora.descricao',
+            'maximo_percentual_medido',
+            'processos_sei',
+            'fontes_recurso',
         ];
 
         const contratosFieldNames = [
@@ -945,18 +942,12 @@ export class PPProjetosService implements ReportableService {
             'ID Projeto',
             'Número',
             'Exclusivo',
-            'Processos SEI',
             'Status',
-            'Modalidade de Licitação - ID',
-            'Modalidade de Licitação - Nome',
-            'Fontes de Recurso',
-            'Área Gestora - ID',
-            'Área Gestora - Sigla',
-            'Área Gestora - Descrição',
             'Objeto',
             'Descrição Detalhada',
             'Contratante',
             'Empresa Contratada',
+            'CNPJ Contratada',
             'Prazo',
             'Unidade Prazo',
             'Data-base',
@@ -964,13 +955,18 @@ export class PPProjetosService implements ReportableService {
             'Data Término',
             'Data Término Atualizada',
             'Valor',
-            'Valor Reajustado',
-            '% Execução',
             'Observações',
-            'CNPJ Contratada',
+            'Valor Contrato Atualizado',
             'Total Aditivos',
             'Total Reajustes',
-            'Valor Contrato Reajustado',
+            'Modalidade de Licitação - ID',
+            'Modalidade de Licitação - Nome',
+            'Área Gestora - ID',
+            'Área Gestora - Sigla',
+            'Área Gestora - Descrição',
+            'Máximo % Execução',
+            'Processos SEI',
+            'Fontes de Recurso',
         ];
         await this.gerarCsv('contratos', contratosFields, contratosFieldNames, projetosIds, out, ctx, 75);
 
@@ -1767,33 +1763,28 @@ export class PPProjetosService implements ReportableService {
             contrato.contratante AS contratante,
             contrato.empresa_contratada AS empresa_contratada,
             contrato.cnpj_contratada AS cnpj_contratada,
+            contrato.cnpj_contratada AS cnpj_contratada,
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
+            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
+            (
+                SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+            ) AS data_termino_atualizada,
+            contrato.valor AS valor,
             contrato.observacoes AS observacoes,
-            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            COALESCE(contrato.valor, 0) + aditivo_totals.total_aditivos + aditivo_totals.total_reajustes AS valor_contrato_atualizado,
+            aditivo_totals.total_aditivos,
+            aditivo_totals.total_reajustes,
             modalidade_contratacao.id AS modalidade_contratacao_id,
             modalidade_contratacao.nome AS modalidade_contratacao_nome,
             orgao.id AS orgao_id,
             orgao.sigla AS orgao_sigla,
             orgao.descricao AS orgao_descricao,
-            contrato.valor AS valor,
-            (
-                SELECT max(valor)
-                FROM contrato_aditivo
-                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
-                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
-            ) AS valor_reajustado,
-            (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
-            ) AS valor_com_reajuste,
-            (
-                SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-            ) AS data_termino_atualizada,
             (
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-            ) AS percentual_medido,
+            ) AS maximo_percentual_medido,
             (
                 SELECT string_agg(format_proc_sei_sinproc(contrato_sei.numero_sei::text), '|')
                 FROM contrato_sei
@@ -1803,14 +1794,7 @@ export class PPProjetosService implements ReportableService {
                 SELECT string_agg(cod_sof::text, '|')
                 FROM contrato_fonte_recurso
                 WHERE contrato_id = contrato.id
-            ) AS fontes_recurso,
-            aditivo_totals.total_aditivos,
-            aditivo_totals.total_reajustes,
-            CASE
-                WHEN contrato.valor IS NOT NULL
-                THEN contrato.valor + aditivo_totals.total_aditivos + aditivo_totals.total_reajustes
-                ELSE NULL
-            END AS valor_contrato_reajustado
+            ) AS fontes_recurso
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
@@ -1839,19 +1823,12 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
-                processos_SEI: db.processos_sei,
                 status: db.status,
-                modalidade_licitacao: db.modalidade_contratacao_id
-                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
-                    : null,
-                fontes_recurso: db.fontes_recurso,
-                area_gestora: db.orgao_id
-                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
-                    : null,
                 objeto: db.objeto,
                 descricao_detalhada: db.descricao_detalhada,
                 contratante: db.contratante,
                 empresa_contratada: db.empresa_contratada,
+                cnpj_contratada: db.cnpj_contratada ?? null,
                 prazo: db.prazo,
                 unidade_prazo: db.unidade_prazo,
                 data_base: db.data_base,
@@ -1859,14 +1836,20 @@ export class PPProjetosService implements ReportableService {
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
                 valor: db.valor,
-                valor_reajustado: db.valor_reajustado,
-                percentual_medido: db.percentual_medido,
                 observacoes: db.observacoes,
-                cnpj_contratada: db.cnpj_contratada ?? null,
+                valor_contrato_atualizado: db.valor_contrato_atualizado ?? null,
                 total_aditivos: db.total_aditivos ?? null,
                 total_reajustes: db.total_reajustes ?? null,
-                valor_contrato_reajustado: db.valor_contrato_reajustado ?? null,
-            };
+                modalidade_licitacao: db.modalidade_contratacao_id
+                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
+                    : null,
+                area_gestora: db.orgao_id
+                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
+                    : null,
+                maximo_percentual_medido: db.maximo_percentual_medido ?? null,
+                processos_sei: db.processos_sei,
+                fontes_recurso: db.fontes_recurso,
+            } satisfies RelProjetosContratosDto;
         });
     }
 

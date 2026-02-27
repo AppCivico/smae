@@ -833,7 +833,7 @@ export class PPObrasService implements ReportableService {
                       }
                     : null,
                 portfolios_compartilhados: db.portfolios_compartilhados_titulos,
-            });
+            } satisfies RelObrasDto);
         }
     }
 
@@ -1047,7 +1047,7 @@ export class PPObrasService implements ReportableService {
                               sigla: db.sigla,
                           }
                         : null,
-            };
+            } satisfies RelObrasRegioesDto;
         });
     }
 
@@ -1080,7 +1080,7 @@ export class PPObrasService implements ReportableService {
                 fonte_recurso_cod_sof: db.fonte_recurso_cod_sof,
                 valor_percentual: db.valor_percentual ? db.valor_percentual : null,
                 valor_nominal: db.valor_nominal ? db.valor_nominal : null,
-            };
+            } satisfies RelObrasFontesRecursoDto;
         });
     }
 
@@ -1227,7 +1227,7 @@ export class PPObrasService implements ReportableService {
                 valor_com_reajuste: db.valor_com_reajuste ?? null,
                 percentual_medido: db.percentual_medido ?? null,
                 data_termino_atual: db.data_termino_atual ?? null,
-            };
+            } satisfies RelObrasAditivosDto;
         });
     }
 
@@ -1295,7 +1295,7 @@ export class PPObrasService implements ReportableService {
                 pauta_texto: Html2Text(db.pauta),
                 detalhamento_texto: Html2Text(db.detalhamento),
                 pontos_atencao_texto: Html2Text(db.pontos_atencao),
-            };
+            } satisfies RelObrasAcompanhamentosDto;
         });
     }
 
@@ -1340,7 +1340,7 @@ export class PPObrasService implements ReportableService {
                 iniciativa_titulo: db.iniciativa_titulo ?? null,
                 atividade_id: db.atividade_id ?? null,
                 atividade_titulo: db.atividade_titulo ?? null,
-            };
+            } satisfies RelObrasOrigemDto;
         });
     }
 
@@ -1396,7 +1396,7 @@ export class PPObrasService implements ReportableService {
                 link: db.link ?? null,
                 comentarios: db.comentarios ?? null,
                 observacoes: db.observacoes ?? null,
-            };
+            } satisfies RelObrasSeiDto;
         });
     }
 
@@ -1491,7 +1491,7 @@ export class PPObrasService implements ReportableService {
                 zona: db.zona ?? null,
                 distrito: db.distrito ?? null,
                 subprefeitura: db.subprefeitura ?? null,
-            };
+            } satisfies RelObrasGeolocDto;
         });
     }
 
@@ -1555,7 +1555,7 @@ export class PPObrasService implements ReportableService {
                 justificativa_complemento: db.justificativa_complemento ?? null,
                 responsavel_encerramento_nome: db.responsavel_encerramento_nome,
                 data_encerramento: Date2YMD.toString(db.data_encerramento),
-            };
+            } satisfies RelObrasTermoEncerramentoDto;
         });
     }
 
