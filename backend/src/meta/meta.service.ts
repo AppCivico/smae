@@ -627,6 +627,26 @@ export class MetaService {
                               },
                           }
                         : undefined,
+                MetaOrcamentoConsolidado:
+                    filters?.id !== undefined
+                        ? {
+                              select: {
+                                  total_previsao: true,
+                                  total_empenhado: true,
+                                  total_liquidado: true,
+                                  total_previsao_projeto: true,
+                                  total_empenhado_projeto: true,
+                                  total_liquidado_projeto: true,
+                                  total_previsao_atividade: true,
+                                  total_empenhado_atividade: true,
+                                  total_liquidado_atividade: true,
+                                  total_previsao_operacao_especial: true,
+                                  total_empenhado_operacao_especial: true,
+                                  total_liquidado_operacao_especial: true,
+                                  atualizado_em: true,
+                              },
+                          }
+                        : undefined,
                 origem_cache: true,
             },
         });
@@ -773,6 +793,27 @@ export class MetaService {
                 resumoOrigem = await CompromissoOrigemHelper.buscaOrigensComDetalhes('meta', dbMeta.id, this.prisma);
             }
 
+            const orcamento = dbMeta.MetaOrcamentoConsolidado
+                ? {
+                      total_previsao: dbMeta.MetaOrcamentoConsolidado.total_previsao.toString(),
+                      total_empenhado: dbMeta.MetaOrcamentoConsolidado.total_empenhado.toString(),
+                      total_liquidado: dbMeta.MetaOrcamentoConsolidado.total_liquidado.toString(),
+                      total_previsao_projeto: dbMeta.MetaOrcamentoConsolidado.total_previsao_projeto.toString(),
+                      total_empenhado_projeto: dbMeta.MetaOrcamentoConsolidado.total_empenhado_projeto.toString(),
+                      total_liquidado_projeto: dbMeta.MetaOrcamentoConsolidado.total_liquidado_projeto.toString(),
+                      total_previsao_atividade: dbMeta.MetaOrcamentoConsolidado.total_previsao_atividade.toString(),
+                      total_empenhado_atividade: dbMeta.MetaOrcamentoConsolidado.total_empenhado_atividade.toString(),
+                      total_liquidado_atividade: dbMeta.MetaOrcamentoConsolidado.total_liquidado_atividade.toString(),
+                      total_previsao_operacao_especial:
+                          dbMeta.MetaOrcamentoConsolidado.total_previsao_operacao_especial.toString(),
+                      total_empenhado_operacao_especial:
+                          dbMeta.MetaOrcamentoConsolidado.total_empenhado_operacao_especial.toString(),
+                      total_liquidado_operacao_especial:
+                          dbMeta.MetaOrcamentoConsolidado.total_liquidado_operacao_especial.toString(),
+                      atualizado_em: dbMeta.MetaOrcamentoConsolidado.atualizado_em,
+                  }
+                : null;
+
             ret.push({
                 origens_extra: resumoOrigem,
                 id: dbMeta.id,
@@ -791,6 +832,7 @@ export class MetaService {
                 tags: tags,
                 cronograma: metaCronograma,
                 geolocalizacao: 'get' in geolocalizacao ? geolocalizacao.get(dbMeta.id) || [] : [],
+                orcamento: orcamento,
                 pode_editar: podeEditar, // TODO (lembrar,
                 ps_tecnico_cp: {
                     equipes: dbMeta.PdmPerfil.filter((r) => r.tipo == 'CP').map((r) => r.equipe_id),
