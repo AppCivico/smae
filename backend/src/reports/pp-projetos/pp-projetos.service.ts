@@ -1020,9 +1020,34 @@ export class PPProjetosService implements ReportableService {
             'ID Atividade',
             'Título da Atividade',
         ];
-        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 90);
+        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 88);
 
-        // 11. Processar Geolocalização
+        // 11. Processar Arquivos
+        const arquivosFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'nome_original',
+            'criado_em',
+            'criador_id',
+            'criador_nome_exibicao',
+            'caminho',
+            'descricao',
+            'arquivo_id',
+        ];
+        const arquivosFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Nome Original',
+            'Criado em',
+            'Criador (ID)',
+            'Criador (Nome de Exibição)',
+            'Caminho no Object Storage',
+            'Descrição do Documento',
+            'ID do Arquivo',
+        ];
+        await this.gerarCsv('arquivos', arquivosFields, arquivosFieldNames, projetosIds, out, ctx, 94);
+
+        // 12. Processar Geolocalização
         const geolocFields = ['projeto_id', 'endereco', 'cep', 'zona', 'distrito', 'subprefeitura'];
         const geolocFieldNames = ['ID Projeto', 'Endereço', 'CEP', 'Zona', 'Distrito', 'Subprefeitura'];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 95);
@@ -1911,6 +1936,30 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsOrigens(data));
     }
 
+    private async queryDataArquivos(whereCond: WhereCond, out: any[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            projeto.codigo AS projeto_codigo,
+            arquivo.nome_original,
+            projeto_documento.criado_em,
+            criador.id AS criador_id,
+            criador.nome_exibicao AS criador_nome_exibicao,
+            arquivo.caminho,
+            projeto_documento.descricao,
+            arquivo.id AS arquivo_id
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_documento ON projeto_documento.projeto_id = projeto.id AND projeto_documento.removido_em IS NULL
+          JOIN arquivo ON arquivo.id = projeto_documento.arquivo_id
+          LEFT JOIN pessoa criador ON criador.id = projeto_documento.criado_por
+        ${whereCond.whereString}
+        ORDER BY projeto.id, projeto_documento.criado_em
+        `;
+
+        const data = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+        out.push(...(data as any[]));
+    }
+
     private convertRowsOrigens(input: RetornoDbOrigens[]): RelProjetosOrigemDto[] {
         return input.map((db) => {
             return {
@@ -2114,6 +2163,9 @@ export class PPProjetosService implements ReportableService {
                 break;
             case 'origens':
                 await this.queryDataOrigens(whereCondForBatch, result);
+                break;
+            case 'arquivos':
+                await this.queryDataArquivos(whereCondForBatch, result);
                 break;
             case 'geoloc':
                 await this.queryDataProjetosGeoloc(whereCondForBatch, result);
