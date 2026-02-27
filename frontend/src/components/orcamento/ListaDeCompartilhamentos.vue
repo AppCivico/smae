@@ -1,4 +1,5 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -8,12 +9,17 @@ import patterns from '@/consts/patterns';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 import retornarQuaisOsRecentesDosItens from './helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const rotaCorrente = useRoute();
+
+const planosSetoriaisStore = usePlanosSetoriaisStore(rotaCorrente.meta.entidadeMãe);
+
+const { emFoco: programaOuPlanoEmFoco } = storeToRefs(planosSetoriaisStore);
 
 const props = defineProps({
   pdm: {
@@ -69,7 +75,7 @@ const lista = computed(() => compartilhamentos.value
 
     switch (true) {
       case !!x.atividade:
-        prefixo = 'atividade';
+        prefixo = programaOuPlanoEmFoco.value?.rotulo_atividade || 'atividade';
         código = x.atividade.codigo;
         título = x.atividade.titulo;
         rota = {
@@ -82,7 +88,7 @@ const lista = computed(() => compartilhamentos.value
         };
         break;
       case !!x.iniciativa:
-        prefixo = 'iniciativa';
+        prefixo = programaOuPlanoEmFoco.value?.rotulo_iniciativa || 'iniciativa';
         código = x.iniciativa.codigo;
         título = x.iniciativa.titulo;
         rota = {
