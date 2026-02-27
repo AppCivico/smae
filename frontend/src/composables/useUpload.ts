@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { TipoUpload } from '@back/upload/entities/tipo-upload';
 import requestS from '@/helpers/requestS';
+import { useAuthStore } from '@/stores/auth.store';
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
@@ -8,11 +9,21 @@ interface UploadResponse {
   upload_token: string;
 }
 
-export default function useUpload() {
+export function useUpload() {
   const carregando = ref(false);
   const erro = ref<unknown>(null);
 
   async function uploadArquivo(file: File, tipo: TipoUpload): Promise<string> {
+    const authStore = useAuthStore();
+    const tamanhoMaximo = authStore.user?.max_upload_size;
+
+    if (tamanhoMaximo !== null && tamanhoMaximo !== undefined && file.size > tamanhoMaximo) {
+      const limite = `${(tamanhoMaximo / 1024 / 1024).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} MB`;
+      const erroTamanho = new Error(`O arquivo excede o tamanho máximo permitido de ${limite}.`);
+      erro.value = erroTamanho;
+      throw erroTamanho;
+    }
+
     try {
       carregando.value = true;
       erro.value = null;

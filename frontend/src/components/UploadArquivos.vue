@@ -1,3 +1,121 @@
+<script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
+
+import SmaeLink from '@/components/SmaeLink.vue';
+import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
+import { useDocumentTypesStore } from '@/stores';
+import { useFileStore } from '@/stores/file.store';
+
+export type ArquivoAdicionado = {
+  nome_original: string,
+  download_token: string
+  descricao: string | null
+};
+
+type ArquivoRequisitos = {
+  descricao: string,
+  tipo_documento_id: string,
+};
+
+type Props = {
+  label: string,
+  arquivos: ArquivoAdicionado[]
+};
+
+type Emits = {
+  (event: 'novo-arquivo', novoArquivo: ArquivoAdicionado): void
+  (event: 'remover-arquivo', itemIndex: number): void
+};
+
+const DOWNLOAD_URL = `${import.meta.env.VITE_API_URL}/download`;
+
+const $emit = defineEmits<Emits>();
+const props = defineProps<Props>();
+
+const {
+  errors, validate, handleSubmit, setFieldValue,
+} = useForm({
+  validationSchema: uploadSchema,
+});
+
+const fileStore = useFileStore();
+const documentTypesStore = useDocumentTypesStore();
+
+const { tempDocumentTypes } = storeToRefs(documentTypesStore);
+const { carregando } = storeToRefs(fileStore);
+
+documentTypesStore.clear();
+documentTypesStore.filterDocumentTypes();
+
+const adicionandoArquivo = ref<boolean>(false);
+const arquivoRequisitos = ref<ArquivoRequisitos>({
+  descricao: '',
+  tipo_documento_id: '',
+});
+
+const podeAdicionar = computed<boolean>(() => (
+  !!(
+    arquivoRequisitos.value.descricao && arquivoRequisitos.value.tipo_documento_id
+  ) && !carregando.value
+));
+
+const listaArquivos = computed(() => {
+  if (props.arquivos.length === 0) {
+    return [{
+      nome_original: '-',
+      descricao: '-',
+      download_token: '',
+    }];
+  }
+
+  return props.arquivos;
+});
+
+function iniciarAdicionarAquivo(): void {
+  adicionandoArquivo.value = true;
+}
+
+const submit = handleSubmit(async (values) => {
+  const { token, nomeOriginal, descricao } = await fileStore.upload({
+    tipo_id: values.tipo_documento_id,
+    descricao: values.descricao,
+  }, values.arquivo);
+
+  const arquivo = {
+    nome_original: nomeOriginal,
+    download_token: token,
+    descricao,
+  };
+
+  $emit('novo-arquivo', arquivo);
+  adicionandoArquivo.value = false;
+
+  arquivoRequisitos.value = {
+    descricao: '',
+    tipo_documento_id: '',
+  };
+});
+
+async function receberArquivo(ev: Event): Promise<void> {
+  const input = ev.target as HTMLInputElement;
+  if (!input.files?.[0]) return;
+  setFieldValue('arquivo', input.files[0]);
+
+  const { valid } = await validate();
+
+  if (valid) {
+    submit();
+  }
+}
+
+function removerItem(itemIndex: number): void {
+  $emit('remover-arquivo', itemIndex);
+}
+
+</script>
+
 <template>
   <article>
     <table class="arquivos-tabela tablemain mb1">
@@ -162,122 +280,6 @@
     </form>
   </article>
 </template>
-
-<script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
-
-import SmaeLink from '@/components/SmaeLink.vue';
-import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
-import { useDocumentTypesStore } from '@/stores';
-import { useFileStore } from '@/stores/file.store';
-
-export type ArquivoAdicionado = {
-  nome_original: string,
-  download_token: string
-  descricao: string | null
-};
-
-type ArquivoRequisitos = {
-  descricao: string,
-  tipo_documento_id: string,
-};
-
-type Props = {
-  label: string,
-  arquivos: ArquivoAdicionado[]
-};
-
-type Emits = {
-  (event: 'novo-arquivo', novoArquivo: ArquivoAdicionado): void
-  (event: 'remover-arquivo', itemIndex: number): void
-};
-
-const DOWNLOAD_URL = `${import.meta.env.VITE_API_URL}/download`;
-
-const $emit = defineEmits<Emits>();
-const props = defineProps<Props>();
-
-const {
-  errors, validate, handleSubmit, setFieldValue,
-} = useForm({
-  validationSchema: uploadSchema,
-});
-
-const fileStore = useFileStore();
-const documentTypesStore = useDocumentTypesStore();
-
-const { tempDocumentTypes } = storeToRefs(documentTypesStore);
-const { carregando } = storeToRefs(fileStore);
-
-documentTypesStore.clear();
-documentTypesStore.filterDocumentTypes();
-
-const adicionandoArquivo = ref<boolean>(false);
-const arquivoRequisitos = ref<ArquivoRequisitos>({
-  descricao: '',
-  tipo_documento_id: '',
-});
-
-const podeAdicionar = computed<boolean>(() => (
-  !!(
-    arquivoRequisitos.value.descricao && arquivoRequisitos.value.tipo_documento_id
-  ) && !carregando.value
-));
-
-const listaArquivos = computed(() => {
-  if (props.arquivos.length === 0) {
-    return [{
-      nome_original: '-',
-      descricao: '-',
-      download_token: '-',
-    }];
-  }
-
-  return props.arquivos;
-});
-
-function iniciarAdicionarAquivo(): void {
-  adicionandoArquivo.value = true;
-}
-
-const submit = handleSubmit(async (values) => {
-  const { token, nomeOriginal, descricao } = await fileStore.upload({
-    tipo_id: values.tipo_documento_id,
-    descricao: values.descricao,
-  }, values.arquivo);
-
-  const arquivo = {
-    nome_original: nomeOriginal,
-    download_token: token,
-    descricao,
-  };
-
-  $emit('novo-arquivo', arquivo);
-  adicionandoArquivo.value = false;
-
-  arquivoRequisitos.value = {
-    descricao: '',
-    tipo_documento_id: '',
-  };
-});
-
-async function receberArquivo(ev: Event): Promise<void> {
-  setFieldValue('arquivo', ev);
-
-  const { valid } = await validate();
-
-  if (valid) {
-    submit();
-  }
-}
-
-function removerItem(itemIndex: number): void {
-  $emit('remover-arquivo', itemIndex);
-}
-
-</script>
 
 <style lang="less" scoped>
 .arquivos-tabela {

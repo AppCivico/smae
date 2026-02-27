@@ -5,7 +5,7 @@ import {
 } from 'vue';
 
 import SmaeLink from '@/components/SmaeLink.vue';
-import useUpload from '@/composables/useUpload';
+import { useUpload } from '@/composables/useUpload';
 
 interface ArquivoBase {
   id: number;
@@ -292,7 +292,7 @@ defineExpose({
       v-if="erro"
       class="upload-erro"
     >
-      Erro ao enviar arquivo. Tente novamente.
+      {{ (erro as Error)?.message || 'Erro ao enviar arquivo. Tente novamente.' }}
     </p>
   </div>
 </template>
