@@ -9,7 +9,7 @@ import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import DeleteButton from '@/components/SmaeTable/partials/DeleteButton.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmallModal from '@/components/SmallModal.vue';
-import useUpload from '@/composables/useUpload';
+import { useUpload } from '@/composables/useUpload';
 import dateToDate from '@/helpers/dateToDate';
 
 import schema from './formularioArquivo';
