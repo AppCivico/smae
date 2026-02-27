@@ -32,6 +32,7 @@ type Props =
     }
     subLinhaAbertaPorPadrao?: boolean
     subLinhaSempreVisivel?: boolean
+    campoId?: string
   };
 
 type Emits = DeleteButtonEvents;
@@ -42,31 +43,55 @@ const props = withDefaults(defineProps<Props>(), {
   parametroNoObjetoParaExcluir: 'descricao',
   subLinhaAbertaPorPadrao: false,
   subLinhaSempreVisivel: false,
+  campoId: 'id',
 });
 const emit = defineEmits<Emits>();
 
-const linhasExpandidas = ref<Record<number, boolean>>({});
+const linhasExpandidas = ref<Record<string | number, boolean>>({});
+
+function obterIdDaLinha(linha: Linha): string | number {
+  const id = linha[props.campoId!];
+  if (id === undefined || id === null) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[SmaeTable] Sub-linha requer que cada item em `dados`'
+        + ` tenha o campo \`${props.campoId}\`.`,
+      );
+    }
+    throw new Error(
+      `[SmaeTable] Campo \`${props.campoId}\` ausente nos dados.`,
+    );
+  }
+  return id as string | number;
+}
+
+function linhaEstaExpandida(linha: Linha): boolean {
+  return !!linhasExpandidas.value[obterIdDaLinha(linha)];
+}
 
 watch(
-  () => [props.subLinhaAbertaPorPadrao, props.dados.length] as const,
-  ([abertaPorPadrao, tamanho]) => {
-    if (!abertaPorPadrao || tamanho === 0) return;
+  () => [props.subLinhaAbertaPorPadrao, props.dados] as const,
+  ([abertaPorPadrao, dados]) => {
+    if (!abertaPorPadrao || dados.length === 0) return;
 
-    const indicesNovos = Array.from({ length: tamanho }, (_, i) => i)
-      .filter((i) => linhasExpandidas.value[i] === undefined);
+    const idsNovos = dados
+      .map((item) => obterIdDaLinha(item))
+      .filter((id) => linhasExpandidas.value[id] === undefined);
 
-    if (indicesNovos.length) {
+    if (idsNovos.length) {
       linhasExpandidas.value = {
         ...linhasExpandidas.value,
-        ...Object.fromEntries(indicesNovos.map((i) => [i, true])),
+        ...Object.fromEntries(idsNovos.map((id) => [id, true])),
       };
     }
   },
   { immediate: true },
 );
 
-function toggleLinha(index: number): void {
-  linhasExpandidas.value[index] = !linhasExpandidas.value[index];
+function toggleLinha(linha: Linha): void {
+  const id = obterIdDaLinha(linha);
+  linhasExpandidas.value[id] = !linhasExpandidas.value[id];
 }
 
 const exibirToggle = computed(() => !props.subLinhaSempreVisivel);
@@ -88,7 +113,7 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
   <template v-if="$slots['sub-linha']">
     <tbody
       v-for="(linha, linhaIndex) in dados"
-      :key="`tbody--${linhaIndex}`"
+      :key="obterIdDaLinha(linha)"
     >
       <tr
         :class="[
@@ -104,9 +129,11 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
           <button
             type="button"
             class="smae-table__toggle-button"
-            :aria-label="linhasExpandidas[linhaIndex] ? 'Recolher detalhes' : 'Expandir detalhes'"
-            :aria-expanded="linhasExpandidas[linhaIndex]"
-            @click="toggleLinha(linhaIndex)"
+            :aria-label="linhaEstaExpandida(linha)
+              ? 'Recolher detalhes'
+              : 'Expandir detalhes'"
+            :aria-expanded="linhaEstaExpandida(linha)"
+            @click="toggleLinha(linha)"
           >
             <svg
               width="16"
@@ -115,7 +142,7 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               :style="{
-                transform: linhasExpandidas[linhaIndex] ? 'rotate(90deg)' : 'rotate(0deg)',
+                transform: linhaEstaExpandida(linha) ? 'rotate(90deg)' : 'rotate(0deg)',
                 transition: 'transform 0.2s'
               }"
             >
@@ -159,7 +186,7 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
       </tr>
 
       <tr
-        v-show="subLinhaSempreVisivel || linhasExpandidas[linhaIndex]"
+        v-show="subLinhaSempreVisivel || linhaEstaExpandida(linha)"
         class="smae-table__sub-linha"
       >
         <td
