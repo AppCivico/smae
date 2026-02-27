@@ -625,16 +625,19 @@ export class PPObrasService implements ReportableService {
         const selectFields = `
         SELECT
             projeto.id,
-            projeto.portfolio_id,
-            portfolio.titulo as portfolio_titulo,
-            projeto.meta_id,
-            meta.titulo as meta_nome,
-            pdm.id as pdm_id,
-            pdm.nome as pdm_nome,
-            projeto.nome,
             projeto.codigo,
-            projeto.objeto,
-            projeto.objetivo,
+            projeto.portfolio_id,
+            projeto.nome,
+            portfolio.titulo as portfolio_titulo,
+            (
+                SELECT
+                    string_agg(pt.descricao, '|')
+                FROM projeto_tag pt
+                WHERE pt.id = ANY(projeto.tags)
+                AND pt.removido_em IS NULL
+            ) as etiquetas,
+            projeto.status,
+            pe.descricao AS projeto_etapa,
             tc.previsao_inicio AS inicio_planejado,
             tc.previsao_termino AS termino_planejado,
             projeto.previsao_inicio AS previsao_inicio,
@@ -642,15 +645,17 @@ export class PPObrasService implements ReportableService {
             coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
             projeto.previsao_custo AS previsao_custo,
             tc.previsao_custo AS custo_planejado,
+            projeto.objeto,
+            projeto.objetivo,
             projeto.escopo,
             projeto.nao_escopo,
-            projeto.secretario_responsavel,
-            projeto.secretario_executivo,
-            projeto.coordenador_ue,
-            projeto.data_aprovacao,
-            projeto.data_revisao,
-            projeto.versao,
-            projeto.status,
+            grupo_tematico.id AS grupo_tematico_id,
+            grupo_tematico.nome AS grupo_tematico_nome,
+            tipo_intervencao.id AS tipo_intervencao_id,
+            tipo_intervencao.nome AS tipo_intervencao_nome,
+            tipo_intervencao.conceito AS tipo_intervencao_conceito,
+            equipamento.id AS equipamento_id,
+            equipamento.nome AS equipamento_nome,
             orgao_responsavel.id AS orgao_responsavel_id,
             orgao_responsavel.sigla AS orgao_responsavel_sigla,
             orgao_responsavel.descricao AS orgao_responsavel_descricao,
@@ -659,10 +664,6 @@ export class PPObrasService implements ReportableService {
             orgao_gestor.id as orgao_gestor_id,
             orgao_gestor.sigla as orgao_gestor_sigla,
             orgao_gestor.descricao as orgao_gestor_descricao,
-            (SELECT string_agg(nome_exibicao, '|') FROM pessoa WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)) as assessores,
-            (SELECT string_agg(nome_exibicao, '|') FROM pessoa WHERE id = ANY(projeto.colaboradores_no_orgao)) as pontos_focais_colaboradores,
-            r.valor_percentual AS fonte_recurso_valor_pct,
-            r.valor_nominal AS fonte_recurso_valor_nominal,
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao,
@@ -675,14 +676,14 @@ export class PPObrasService implements ReportableService {
             orgao_colaborador.id AS orgao_colaborador_id,
             orgao_colaborador.sigla AS orgao_colaborador_sigla,
             orgao_colaborador.descricao AS orgao_colaborador_descricao,
-            pe.descricao AS projeto_etapa,
-            grupo_tematico.id AS grupo_tematico_id,
-            grupo_tematico.nome AS grupo_tematico_nome,
-            tipo_intervencao.id AS tipo_intervencao_id,
-            tipo_intervencao.nome AS tipo_intervencao_nome,
-            tipo_intervencao.conceito AS tipo_intervencao_conceito,
-            equipamento.id AS equipamento_id,
-            equipamento.nome AS equipamento_nome,
+            projeto.meta_id,
+            meta.titulo as meta_nome,
+            pdm.id as pdm_id,
+            pdm.nome as pdm_nome,
+            (SELECT string_agg(nome_exibicao, '|') FROM pessoa WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)) as assessores,
+            (SELECT string_agg(nome_exibicao, '|') FROM pessoa WHERE id = ANY(projeto.colaboradores_no_orgao)) as pontos_focais_colaboradores,
+            r.valor_percentual AS fonte_recurso_valor_pct,
+            r.valor_nominal AS fonte_recurso_valor_nominal,
             mdo_detalhamento AS detalhamento,
             origem_tipo,
             origem_outro as descricao,
@@ -690,20 +691,19 @@ export class PPObrasService implements ReportableService {
             mdo_previsao_inauguracao as data_inauguracao_planejada,
             pr.subprefeituras,
             projeto.mdo_programa_habitacional as programa_habitacional,
-            projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
-            projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
-            projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
             empreendimento.id AS empreendimento_id,
             empreendimento.identificador AS empreendimento_identificador,
             projeto.mdo_observacoes,
             sp.titulos AS portfolios_compartilhados_titulos,
-            (
-                SELECT
-                    string_agg(pt.descricao, '|')
-                FROM projeto_tag pt
-                WHERE pt.id = ANY(projeto.tags)
-                AND pt.removido_em IS NULL
-            ) as etiquetas
+            projeto.secretario_responsavel,
+            projeto.secretario_executivo,
+            projeto.coordenador_ue,
+            projeto.data_aprovacao,
+            projeto.data_revisao,
+            projeto.versao,
+            projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
+            projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
+            projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas
         `;
 
         const fromAndJoins = `
