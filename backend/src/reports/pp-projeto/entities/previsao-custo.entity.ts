@@ -130,10 +130,12 @@ export class RelProjetoOrigemDto {
 export class RelProjetoGeolocDto {
     projeto_id: number;
     endereco: string;
-    cep: string;
     zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    cep: string | null;
 }
 
 export class PPProjetoRelatorioDto {

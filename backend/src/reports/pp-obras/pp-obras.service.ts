@@ -252,10 +252,12 @@ class RetornoDbObrasSEI {
 class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
-    geojson: unknown;
+    zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    zona: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    cep: string | null;
 }
 
 class RetornoDbTermoEncerramento {
@@ -1404,7 +1406,6 @@ export class PPObrasService implements ReportableService {
         return `SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson,
                 COALESCE(
                     zona_agg_geo.zona,
                     zona_agg_regiao.zona
@@ -1416,7 +1417,10 @@ export class PPObrasService implements ReportableService {
                 COALESCE(
                     subprefeitura_agg_geo.subprefeitura,
                     subprefeitura_agg_regiao.subprefeitura
-                ) AS subprefeitura
+                ) AS subprefeitura,
+                (geo.geom_geojson->'geometry'->'coordinates'->0)::float AS longitude,
+                (geo.geom_geojson->'geometry'->'coordinates'->1)::float AS latitude,
+                (geo.geom_geojson->'properties'->>'cep') AS cep
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             LEFT JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -1475,22 +1479,16 @@ export class PPObrasService implements ReportableService {
     }
 
     private convertRowsLoc(input: RetornoDbLoc[]): RelObrasGeolocDto[] {
-        interface JSONGeo {
-            properties: {
-                cep: string;
-            };
-        }
-
         return input.map((db) => {
-            const geojson = db.geojson as JSONGeo | null;
-
             return {
                 obra_id: db.projeto_id,
                 endereco: db.endereco ?? null,
-                cep: geojson?.properties?.cep ?? null,
                 zona: db.zona ?? null,
                 distrito: db.distrito ?? null,
                 subprefeitura: db.subprefeitura ?? null,
+                latitude: db.latitude ?? null,
+                longitude: db.longitude ?? null,
+                cep: db.cep ?? null,
             } satisfies RelObrasGeolocDto;
         });
     }

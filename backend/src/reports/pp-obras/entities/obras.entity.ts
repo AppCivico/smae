@@ -232,8 +232,10 @@ export class PPObrasRelatorioDto {
 export class RelObrasGeolocDto {
     obra_id: number;
     endereco: string | null;
-    cep: string | null;
+    zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    zona: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    cep: string | null;
 }

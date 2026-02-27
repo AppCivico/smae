@@ -269,10 +269,12 @@ class RetornoDbOrigens {
 class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
-    geojson: unknown;
+    zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    zona: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    cep: string | null;
 }
 
 class RetornoDbTermoEncerramento {
@@ -1044,8 +1046,8 @@ export class PPProjetosService implements ReportableService {
         await this.gerarCsv('arquivos', arquivosFields, arquivosFieldNames, projetosIds, out, ctx, 94);
 
         // 12. Processar Geolocalização
-        const geolocFields = ['projeto_id', 'endereco', 'cep', 'zona', 'distrito', 'subprefeitura'];
-        const geolocFieldNames = ['ID Projeto', 'Endereço', 'CEP', 'Zona', 'Distrito', 'Subprefeitura'];
+        const geolocFields = ['projeto_id', 'endereco', 'zona', 'distrito', 'subprefeitura', 'latitude', 'longitude', 'cep'];
+        const geolocFieldNames = ['ID Projeto', 'Endereço', 'Zona', 'Distrito', 'Subprefeitura', 'Latitude', 'Longitude', 'CEP'];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 95);
 
         // 12. Processar Termos de Encerramento
@@ -2025,10 +2027,12 @@ export class PPProjetosService implements ReportableService {
             SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson,
                 zona_agg.zona,
                 distrito_agg.distrito,
-                subprefeitura_agg.subprefeitura
+                subprefeitura_agg.subprefeitura,
+                (geo.geom_geojson->'geometry'->'coordinates'->0)::float AS longitude,
+                (geo.geom_geojson->'geometry'->'coordinates'->1)::float AS latitude,
+                (geo.geom_geojson->'properties'->>'cep') AS cep
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -2057,22 +2061,16 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsLoc(input: RetornoDbLoc[]): RelProjetosGeolocDto[] {
-        interface JSONGeo {
-            properties: {
-                cep: string;
-            };
-        }
-
         return input.map((db) => {
-            const geojson = db.geojson as JSONGeo;
-
             return {
                 projeto_id: db.projeto_id,
                 endereco: db.endereco,
-                cep: geojson.properties.cep,
                 zona: db.zona,
                 distrito: db.distrito,
                 subprefeitura: db.subprefeitura,
+                latitude: db.latitude,
+                longitude: db.longitude,
+                cep: db.cep,
             };
         });
     }
