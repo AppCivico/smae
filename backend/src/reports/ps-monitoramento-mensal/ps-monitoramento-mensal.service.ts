@@ -20,6 +20,40 @@ import {
 
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 
+class PSQualiCsv {
+    id: string;
+    criador_nome_exibicao: string;
+    criado_em: string;
+    informacoes_complementares: string;
+    referencia_data: string;
+    meta_id: string;
+    meta_titulo: string;
+    meta_codigo: string;
+}
+
+class PSRiscoCsv {
+    id: string;
+    criador_nome_exibicao: string;
+    criado_em: string;
+    detalhamento: string;
+    ponto_de_atencao: string;
+    referencia_data: string;
+    meta_id: string;
+    meta_titulo: string;
+    meta_codigo: string;
+}
+
+class PSFechamentoCsv {
+    id: string;
+    criador_nome_exibicao: string;
+    criado_em: string;
+    comentario: string;
+    referencia_data: string;
+    meta_id: string;
+    meta_titulo: string;
+    meta_codigo: string;
+}
+
 @Injectable()
 export class PSMonitoramentoMensal implements ReportableService {
     constructor(
@@ -246,17 +280,32 @@ export class PSMonitoramentoMensal implements ReportableService {
         const sql = `select
                 m.id as meta_id,
                 m.codigo as meta_codigo,
+                m.titulo as meta_titulo,
                 coalesce(mcf.informacoes_complementares,'') as analise_qualitativa,
                 mcf.referencia_data as analise_qualitativa_data,
+                mcf.id as analise_id,
+                mcf.criado_em as analise_criado_em,
+                p_mcf.nome_exibicao as analise_criador,
                 coalesce(mcr.detalhamento,'') as risco_detalhamento,
                 coalesce(mcr.ponto_de_atencao,'') as risco_ponto_atencao,
-                coalesce(mcfec.comentario,'') as fechamento_comentario
+                mcr.id as risco_id,
+                mcr.criado_em as risco_criado_em,
+                p_mcr.nome_exibicao as risco_criador,
+                mcr.referencia_data as risco_referencia_data,
+                coalesce(mcfec.comentario,'') as fechamento_comentario,
+                mcfec.id as fechamento_id,
+                mcfec.criado_em as fechamento_criado_em,
+                p_mcfec.nome_exibicao as fechamento_criador,
+                mcfec.referencia_data as fechamento_referencia_data
             from ciclo_fisico cf
             join pdm p on p.id = cf.pdm_id and p.removido_em is null AND p.tipo = 'PS'
             join meta m on m.pdm_id = p.id and m.removido_em is null
             left join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.meta_id = m.id and mcf.removido_em is null and mcf.ultima_revisao = true and mcf.referencia_data = :mesAno ::date
+            left join pessoa p_mcf on p_mcf.id = mcf.criado_por
             left join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.meta_id = m.id and mcr.removido_em is null and mcr.ultima_revisao = true  and mcr.referencia_data = :mesAno ::date
+            left join pessoa p_mcr on p_mcr.id = mcr.criado_por
             left join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.meta_id = m.id and mcfec.removido_em is null and mcfec.ultima_revisao = true and mcfec.referencia_data = :mesAno ::date
+            left join pessoa p_mcfec on p_mcfec.id = mcfec.criado_por
             where m.id in (:metas)
             and cf.pdm_id = :pdm_id
             and cf.ativo = true
@@ -344,6 +393,111 @@ export class PSMonitoramentoMensal implements ReportableService {
                     name: 'monitoramento-mensal-metas-ciclo-ps.csv',
                     localFile: reportTmpMetas.path,
                 });
+            }
+
+            const qualiRows: PSQualiCsv[] = [];
+            const riscoRows: PSRiscoCsv[] = [];
+            const fechamentoRows: PSFechamentoCsv[] = [];
+
+            for (const row of cicloMetasRows) {
+                if (row.analise_id) {
+                    qualiRows.push({
+                        id: row.analise_id.toString(),
+                        criador_nome_exibicao: row.analise_criador ?? '',
+                        criado_em: row.analise_criado_em ?? '',
+                        informacoes_complementares: row.analise_qualitativa ?? '',
+                        referencia_data: row.analise_qualitativa_data ?? '',
+                        meta_id: row.meta_id.toString(),
+                        meta_titulo: row.meta_titulo,
+                        meta_codigo: row.meta_codigo,
+                    });
+                }
+                if (row.risco_id) {
+                    riscoRows.push({
+                        id: row.risco_id.toString(),
+                        criador_nome_exibicao: row.risco_criador ?? '',
+                        criado_em: row.risco_criado_em ?? '',
+                        detalhamento: row.risco_detalhamento ?? '',
+                        ponto_de_atencao: row.risco_ponto_atencao ?? '',
+                        referencia_data: row.risco_referencia_data ?? '',
+                        meta_id: row.meta_id.toString(),
+                        meta_titulo: row.meta_titulo,
+                        meta_codigo: row.meta_codigo,
+                    });
+                }
+                if (row.fechamento_id) {
+                    fechamentoRows.push({
+                        id: row.fechamento_id.toString(),
+                        criador_nome_exibicao: row.fechamento_criador ?? '',
+                        criado_em: row.fechamento_criado_em ?? '',
+                        comentario: row.fechamento_comentario ?? '',
+                        referencia_data: row.fechamento_referencia_data ?? '',
+                        meta_id: row.meta_id.toString(),
+                        meta_titulo: row.meta_titulo,
+                        meta_codigo: row.meta_codigo,
+                    });
+                }
+            }
+
+            if (qualiRows.length) {
+                const tmp = ctx.getTmpFile('analises-qualitativas-ps.csv');
+                const opts: CsvWriterOptions<PSQualiCsv> = {
+                    csvOptions: DefaultCsvOptions,
+                    transforms: DefaultTransforms,
+                    fields: [
+                        { value: 'id', label: 'ID' },
+                        { value: 'criador_nome_exibicao', label: 'Criador' },
+                        { value: 'criado_em', label: 'Criado Em' },
+                        { value: 'informacoes_complementares', label: 'Informações Complementares' },
+                        { value: 'referencia_data', label: 'Data de Referência' },
+                        { value: 'meta_id', label: 'ID da Meta' },
+                        { value: 'meta_titulo', label: 'Título da Meta' },
+                        { value: 'meta_codigo', label: 'Código da Meta' },
+                    ],
+                };
+                await WriteCsvToFile(qualiRows, tmp.stream, opts);
+                out.push({ name: 'analises-qualitativas-ps.csv', localFile: tmp.path });
+            }
+
+            if (riscoRows.length) {
+                const tmp = ctx.getTmpFile('analises-de-risco-ps.csv');
+                const opts: CsvWriterOptions<PSRiscoCsv> = {
+                    csvOptions: DefaultCsvOptions,
+                    transforms: DefaultTransforms,
+                    fields: [
+                        { value: 'id', label: 'ID' },
+                        { value: 'criador_nome_exibicao', label: 'Criador' },
+                        { value: 'criado_em', label: 'Criado Em' },
+                        { value: 'detalhamento', label: 'Detalhamento' },
+                        { value: 'ponto_de_atencao', label: 'Ponto de Atenção' },
+                        { value: 'referencia_data', label: 'Data de Referência' },
+                        { value: 'meta_id', label: 'ID da Meta' },
+                        { value: 'meta_titulo', label: 'Título da Meta' },
+                        { value: 'meta_codigo', label: 'Código da Meta' },
+                    ],
+                };
+                await WriteCsvToFile(riscoRows, tmp.stream, opts);
+                out.push({ name: 'analises-de-risco-ps.csv', localFile: tmp.path });
+            }
+
+            if (fechamentoRows.length) {
+                const tmp = ctx.getTmpFile('fechamentos-ps.csv');
+                const opts: CsvWriterOptions<PSFechamentoCsv> = {
+                    csvOptions: DefaultCsvOptions,
+                    transforms: DefaultTransforms,
+                    fields: [
+                        { value: 'id', label: 'ID' },
+                        { value: 'criador_nome_exibicao', label: 'Criador' },
+                        { value: 'criado_em', label: 'Criado Em' },
+                        { value: 'comentario', label: 'Comentário' },
+                        { value: 'referencia_data', label: 'Data de Referência' },
+                        { value: 'meta_id', label: 'ID da Meta' },
+                        { value: 'meta_titulo', label: 'Título da Meta' },
+                        { value: 'meta_codigo', label: 'Código da Meta' },
+                    ],
+                };
+                await WriteCsvToFile(fechamentoRows, tmp.stream, opts);
+                out.push({ name: 'fechamentos-ps.csv', localFile: tmp.path });
             }
         } else {
             // TODO: redirect pro resto do relatórios do relatório mensal do PDM antigo
