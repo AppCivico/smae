@@ -17,7 +17,7 @@ export function useUpload() {
     const authStore = useAuthStore();
     const tamanhoMaximo = authStore.user?.max_upload_size;
 
-    if (tamanhoMaximo && file.size > tamanhoMaximo) {
+    if (tamanhoMaximo !== null && tamanhoMaximo !== undefined && file.size > tamanhoMaximo) {
       const limite = `${(tamanhoMaximo / 1024 / 1024).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} MB`;
       const erroTamanho = new Error(`O arquivo excede o tamanho máximo permitido de ${limite}.`);
       erro.value = erroTamanho;
