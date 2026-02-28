@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { task_type } from '@prisma/client';
+import { Prisma, task_type } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -55,9 +55,7 @@ export class BackupSchedulerService {
         }
     }
 
-    private async scheduleApiLogBackupTasks(
-        tx: Omit<PrismaService, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
-    ) {
+    private async scheduleApiLogBackupTasks(tx: Prisma.TransactionClient) {
         await tx.apiRequestLogControl.updateMany({
             where: {
                 status: 'BACKING_UP',

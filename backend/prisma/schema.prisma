@@ -4134,7 +4134,7 @@ model CompromissoOrigem {
 }
 
 view ViewProjetoMDO {
-    id               Int       @id
+    id               Int
     nome             String
     codigo           String?
     portfolio_id     Int
@@ -4169,7 +4169,7 @@ view ViewProjetoMDO {
 }
 
 view ViewProjetoV2 {
-    id               Int       @id
+    id               Int
     nome             String
     codigo           String?
     portfolio_id     Int
@@ -4214,7 +4214,7 @@ view ViewProjetoV2 {
 }
 
 view ViewVariavelGlobal {
-    id                      Int           @id
+    id                      Int
     variavel                Variavel      @relation(fields: [id], references: [id])
     titulo                  String
     codigo                  String
@@ -4994,7 +4994,7 @@ view view_api_request_log {
 
 // view que já faz o join dos registros da meta_orgao onde responsavel=true
 view view_meta_pessoa_responsavel {
-    id Int @id @default(autoincrement())
+    id Int
 
     meta_id   Int
     pessoa_id Int
@@ -5004,7 +5004,7 @@ view view_meta_pessoa_responsavel {
 }
 
 view view_atividade_pessoa_responsavel {
-    id Int @id @default(autoincrement())
+    id Int
 
     atividade_id  Int
     iniciativa_id Int
@@ -5015,7 +5015,7 @@ view view_atividade_pessoa_responsavel {
 }
 
 view view_iniciativa_pessoa_responsavel {
-    id Int @id @default(autoincrement())
+    id Int
 
     iniciativa_id Int
     meta_id       Int
@@ -5026,7 +5026,7 @@ view view_iniciativa_pessoa_responsavel {
 
 // view que já faz o join o filtro onde PDM.coordenador_responsavel_cp=true
 view view_meta_pessoa_responsavel_na_cp {
-    id Int @id @default(autoincrement())
+    id Int
 
     meta_id   Int
     pessoa_id Int
@@ -5321,7 +5321,7 @@ model MetaStatusAtrasoVariavel {
 }
 
 view view_pdm_meta_iniciativa_atividade {
-    meta_id       Int  @id
+    meta_id       Int
     pdm_id        Int
     iniciativa_id Int?
     atividade_id  Int?
@@ -5336,13 +5336,13 @@ view view_pdm_meta_iniciativa_atividade {
 
 // helper para subir atividade/iniciativa -> meta_id
 view view_meta_cronograma {
-    cronograma_id Int @id
+    cronograma_id Int
     meta_id       Int
 }
 
 // helper para subir etapa com atividade/iniciativa -> meta_id
 view view_etapa_rel_meta {
-    etapa_id      Int  @id
+    etapa_id      Int
     meta_id       Int
     atividade_id  Int?
     iniciativa_id Int?
@@ -5351,7 +5351,7 @@ view view_etapa_rel_meta {
 }
 
 view view_etapa_rel_meta_indicador {
-    etapa_id Int @id @default(autoincrement())
+    etapa_id Int
 
     tipo          String
     meta_id       Int?
@@ -6830,7 +6830,7 @@ model Nota {
 }
 
 view ViewNotas {
-    id Int @id @default(autoincrement())
+    id Int
 
     bloco_nota_id         Int
     tipo_nota_id          Int
@@ -6865,7 +6865,7 @@ view ViewNotas {
 }
 
 view ViewNotasTransferencias {
-    id Int @id @default(autoincrement())
+    id Int
 
     bloco_nota_id Int
     data_nota     DateTime   @db.Date
@@ -6962,7 +6962,7 @@ model TransferenciaStatusConsolidado {
 }
 
 view ViewTransferenciaAnalise {
-    transferencia_id Int           @id
+    transferencia_id Int
     transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
 
     workflow_finalizado     Boolean
@@ -6983,7 +6983,7 @@ view ViewTransferenciaAnalise {
 }
 
 view ViewRankingTransferenciaParlamentar {
-    parlamentar_id Int         @id
+    parlamentar_id Int
     parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
 
     nome_popular        String
@@ -7775,7 +7775,7 @@ model SerieVariavelHistorico {
 }
 
 view ViewPainelEstrategicoProjetos {
-    projeto_id           Int           @id
+    projeto_id           Int
     projeto              Projeto       @relation(fields: [projeto_id], references: [id])
     orgao_responsavel_id Int?
     orgao_responsavel    Orgao?        @relation(fields: [orgao_responsavel_id], references: [id])
@@ -7851,7 +7851,7 @@ model PsDashboardConsolidado {
 }
 
 view view_ps_dashboard_consolidado {
-    id                                 Int                        @id
+    id                                 Int
     item_id                            Int
     tipo                               PsDashboardConsolidadoTipo
     pdm_id                             Int
