@@ -156,7 +156,7 @@ export class RelObrasContratosDto {
     total_reajustes: number | null;
     modalidade_licitacao: IdNomeDto | null;
     area_gestora: IdSiglaDescricao | null;
-    maximo_percentual_medido: number | null;
+    percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
 }

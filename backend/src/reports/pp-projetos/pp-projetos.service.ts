@@ -249,7 +249,7 @@ class RetornoDbContratos {
     orgao_id: number | null;
     orgao_sigla: string | null;
     orgao_descricao: string | null;
-    maximo_percentual_medido: number | null;
+    percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
 }
@@ -929,7 +929,6 @@ export class PPProjetosService implements ReportableService {
             'descricao_detalhada',
             'contratante',
             'empresa_contratada',
-            'cnpj_contratada',
             'prazo',
             'unidade_prazo',
             'data_base',
@@ -946,9 +945,10 @@ export class PPProjetosService implements ReportableService {
             'area_gestora.id',
             'area_gestora.sigla',
             'area_gestora.descricao',
-            'maximo_percentual_medido',
+            'percentual_medido',
             'processos_sei',
             'fontes_recurso',
+            'cnpj_contratada',
         ];
 
         const contratosFieldNames = [
@@ -1788,8 +1788,6 @@ export class PPProjetosService implements ReportableService {
             contrato.objeto_detalhado AS descricao_detalhada,
             contrato.contratante AS contratante,
             contrato.empresa_contratada AS empresa_contratada,
-            contrato.cnpj_contratada AS cnpj_contratada,
-            contrato.cnpj_contratada AS cnpj_contratada,
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
             contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
@@ -1805,12 +1803,13 @@ export class PPProjetosService implements ReportableService {
             aditivo_totals.total_reajustes,
             modalidade_contratacao.id AS modalidade_contratacao_id,
             modalidade_contratacao.nome AS modalidade_contratacao_nome,
+            contrato.cnpj_contratada AS cnpj_contratada,
             orgao.id AS orgao_id,
             orgao.sigla AS orgao_sigla,
             orgao.descricao AS orgao_descricao,
             (
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-            ) AS maximo_percentual_medido,
+            ) AS percentual_medido,
             (
                 SELECT string_agg(format_proc_sei_sinproc(contrato_sei.numero_sei::text), '|')
                 FROM contrato_sei
@@ -1872,7 +1871,7 @@ export class PPProjetosService implements ReportableService {
                 area_gestora: db.orgao_id
                     ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
                     : null,
-                maximo_percentual_medido: db.maximo_percentual_medido ?? null,
+                percentual_medido: db.percentual_medido ?? null,
                 processos_sei: db.processos_sei,
                 fontes_recurso: db.fontes_recurso,
             } satisfies RelProjetosContratosDto;
