@@ -4,6 +4,7 @@ import { computed, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import rotasDosNiveisDeMetas from '@/consts/rotasDosNiveisDeMetas';
+import truncate from '@/helpers/texto/truncate';
 import {
   useAtividadesStore,
   useIniciativasStore,
@@ -129,7 +130,7 @@ watchEffect(() => {
           :to="`/metas/${metaId}`"
           class="migalhas-de-pão__link"
         >
-          Meta {{ singleMeta?.codigo }} {{ singleMeta?.titulo }}
+          {{ singleMeta?.codigo }} {{ singleMeta?.titulo }}
         </SmaeLink>
       </li>
 
@@ -162,12 +163,27 @@ watchEffect(() => {
       </li>
 
       <li
-        v-for="(rotaComplementar, rotaComplementarIndex) in rotasComplementares"
-        :key="`rota-complementar--${rotaComplementarIndex}`"
+        v-for="(item, itemIndex) in rotasComplementares"
+        :key="`rota-complementar--${itemIndex}`"
         class="migalhas-de-pão__item migalhas-de-pão__link"
       >
-        <RouterLink :to="rotaComplementar.href">
-          {{ rotaComplementar.meta.tituloMigalhaDeMeta }}
+        <RouterLink :to="item.href">
+          {{
+            truncate(
+              item.meta?.tituloMigalhaDeMeta && (
+                typeof item.meta.tituloMigalhaDeMeta === 'function' ?
+                  item.meta.tituloMigalhaDeMeta($route)
+                  : item.meta.tituloMigalhaDeMeta
+              )
+                || item.meta?.títuloParaMenu
+                || item.meta.título && (
+                  typeof item.meta.título === 'function' ?
+                    item.meta.título()
+                    : item.meta.título
+                )
+                || item.name
+              , 50)
+          }}
         </RouterLink>
       </li>
 
@@ -175,7 +191,22 @@ watchEffect(() => {
         v-if="$route.meta.tituloMigalhaDeMeta"
         class="migalhas-de-pão__item"
       >
-        {{ $route.meta.tituloMigalhaDeMeta }}
+        {{
+          truncate(
+            $route.meta.tituloMigalhaDeMeta && (
+              typeof $route.meta.tituloMigalhaDeMeta === 'function' ?
+                $route.meta.tituloMigalhaDeMeta($route)
+                : $route.meta.tituloMigalhaDeMeta
+            )
+              || $route.meta?.títuloParaMenu
+              || $route.meta.título && (
+                typeof $route.meta.título === 'function' ?
+                  $route.meta.título()
+                  : $route.meta.título
+              )
+              || $route.name
+            , 150)
+        }}
       </li>
     </ul>
   </nav>

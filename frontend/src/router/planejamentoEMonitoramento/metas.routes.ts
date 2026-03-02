@@ -40,6 +40,7 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 import type { TiposDeOrcamentosDisponiveis } from '@/stores/planosSetoriais.store';
 import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
 import type {
   EntidadesPossiveis,
@@ -727,7 +728,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Previsão de custo',
+            tituloMigalhaDeMeta: 'Nova previsão de custo',
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoCusto`,
             ],
@@ -743,7 +744,14 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Previsão de custo',
+            tituloMigalhaDeMeta: () => {
+              const { emFoco } = useOrcamentosStore();
+              if (!emFoco.parte_dotacao) {
+                return 'previsão de custo';
+              }
+
+              return `Previsão de custo ${emFoco.parte_dotacao}`;
+            },
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoCusto`,
             ],
@@ -773,7 +781,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Adicionar dotação',
+            tituloMigalhaDeMeta: 'Nova dotação',
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoPlanejado`,
             ],
@@ -789,7 +797,15 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Editar dotação',
+            tituloMigalhaDeMeta: () => {
+              const { emFoco } = useOrcamentosStore();
+
+              if (!emFoco.dotacao) {
+                return 'Dotação';
+              }
+
+              return `Dotação ${emFoco.dotacao}`;
+            },
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoPlanejado`,
             ],
@@ -820,7 +836,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            tituloMigalhaDeMeta: 'Nova dotação',
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoRealizado`,
             ],
@@ -836,7 +852,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            tituloMigalhaDeMeta: 'Novo processo',
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoRealizado`,
             ],
@@ -852,7 +868,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            tituloMigalhaDeMeta: 'Nova nota de empenho',
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoRealizado`,
             ],
@@ -868,7 +884,18 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            tituloMigalhaDeMeta: () => {
+              const { emFoco } = useOrcamentosStore();
+
+              if (!emFoco) {
+                return 'Empenho/Liquidação';
+              }
+
+              if (emFoco.processo) return 'Processo';
+              if (emFoco.nota_empenho) return 'Empenho';
+
+              return 'Dotação';
+            },
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoRealizado`,
             ],
@@ -884,7 +911,18 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               'meta',
               usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
             ),
-            tituloMigalhaDeMeta: 'Empenho/Liquidação',
+            tituloMigalhaDeMeta: () => {
+              const { emFoco } = useOrcamentosStore();
+
+              if (!emFoco) {
+                return 'Empenho/Liquidação';
+              }
+
+              if (emFoco.processo) return 'Processo';
+              if (emFoco.nota_empenho) return 'Empenho';
+
+              return 'Dotação';
+            },
             migalhasDeMetas: [
               `${entidadeMãe}.MetaOrcamentoRealizado`,
             ],
