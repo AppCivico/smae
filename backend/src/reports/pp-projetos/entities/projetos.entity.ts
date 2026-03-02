@@ -182,7 +182,7 @@ export class RelProjetosContratosDto {
 }
 
 export class RelProjetosAditivosDto {
-    id: number;
+    aditivo_id: number;
     contrato_id: number;
     tipo_categoria: string;
     tipo: IdNomeDto;

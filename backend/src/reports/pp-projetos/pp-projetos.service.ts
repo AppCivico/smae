@@ -961,7 +961,6 @@ export class PPProjetosService implements ReportableService {
             'Descrição Detalhada',
             'Contratante',
             'Empresa Contratada',
-            'CNPJ Contratada',
             'Prazo',
             'Unidade Prazo',
             'Data-base',
@@ -981,12 +980,13 @@ export class PPProjetosService implements ReportableService {
             'Máximo % Execução',
             'Processos SEI',
             'Fontes de Recurso',
+            'CNPJ Contratada',
         ];
         await this.gerarCsv('contratos', contratosFields, contratosFieldNames, projetosIds, out, ctx, 75);
 
         // 9. Processar Aditivos
         const aditivosFields = [
-            'id',
+            'aditivo_id',
             'contrato_id',
             'tipo_categoria',
             'tipo.nome',
@@ -1906,7 +1906,7 @@ export class PPProjetosService implements ReportableService {
     private convertRowsAditivos(input: RetornoDbAditivos[]): RelProjetosAditivosDto[] {
         return input.map((db) => {
             return {
-                id: db.aditivo_id,
+                aditivo_id: db.aditivo_id,
                 contrato_id: db.contrato_id,
                 tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },

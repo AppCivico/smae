@@ -527,7 +527,7 @@ export class PPProjetoService implements ReportableService {
     private convertRowsAditivos(input: RetornoDbAditivos[]): RelProjetosAditivosDto[] {
         return input.map((db) => {
             return {
-                id: db.aditivo_id,
+                aditivo_id: db.aditivo_id,
                 contrato_id: db.contrato_id,
                 tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
