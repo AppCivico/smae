@@ -255,9 +255,21 @@ class RetornoDbLoc {
     zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    latitude: number | null;
-    longitude: number | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
     cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
 }
 
 class RetornoDbTermoEncerramento {
@@ -470,7 +482,29 @@ export class PPObrasService implements ReportableService {
             await this.streamQueryToCSV(
                 `${this._queryDataObrasGeoLoc()} ${whereCond.whereString} ${this._queryDataObrasGeoLocFilter()}`,
                 whereCond.queryParams,
-                'enderecos.csv'
+                'enderecos.csv',
+                [
+                    { value: 'projeto_id', label: 'projeto_id' },
+                    { value: 'endereco', label: 'endereco' },
+                    { value: 'zona', label: 'zona' },
+                    { value: 'distrito', label: 'distrito' },
+                    { value: 'subprefeitura', label: 'subprefeitura' },
+                    { value: 'coordinates', label: 'geojson.geometry.coordinates' },
+                    { value: 'geojson_type', label: 'geojson.type' },
+                    { value: 'geometry_type', label: 'geojson.geometry.type' },
+                    { value: 'cep', label: 'geojson.properties.cep' },
+                    { value: 'rua', label: 'geojson.properties.rua' },
+                    { value: 'pais', label: 'geojson.properties.pais' },
+                    { value: 'bairro', label: 'geojson.properties.bairro' },
+                    { value: 'cidade', label: 'geojson.properties.cidade' },
+                    { value: 'estado', label: 'geojson.properties.estado' },
+                    { value: 'rotulo', label: 'geojson.properties.rotulo' },
+                    { value: 'osm_type', label: 'geojson.properties.osm_type' },
+                    { value: 'codigo_pais', label: 'geojson.properties.codigo_pais' },
+                    { value: 'string_endereco', label: 'geojson.properties.string_endereco' },
+                    { value: 'geometry_name', label: 'geojson.geometry_name' },
+                    { value: 'bbox', label: 'geojson.bbox' },
+                ]
             )
         );
 
@@ -497,7 +531,7 @@ export class PPObrasService implements ReportableService {
         query: string,
         params: any[],
         filename: string,
-        fields?: string[]
+        fields?: (string | { value: string; label: string })[]
     ): Promise<FileOutput> {
         const parserOptions = {
             ...DefaultCsvOptions,
@@ -1418,9 +1452,25 @@ export class PPObrasService implements ReportableService {
                     subprefeitura_agg_geo.subprefeitura,
                     subprefeitura_agg_regiao.subprefeitura
                 ) AS subprefeitura,
-                (geo.geom_geojson->'geometry'->'coordinates'->0)::float AS longitude,
-                (geo.geom_geojson->'geometry'->'coordinates'->1)::float AS latitude,
-                (geo.geom_geojson->'properties'->>'cep') AS cep
+                CONCAT(
+                    (geo.geom_geojson->'geometry'->'coordinates'->1)::float,
+                    ',',
+                    (geo.geom_geojson->'geometry'->'coordinates'->0)::float
+                ) AS coordinates,
+                (geo.geom_geojson->>'type') AS geojson_type,
+                (geo.geom_geojson->'geometry'->>'type') AS geometry_type,
+                (geo.geom_geojson->'properties'->>'cep') AS cep,
+                (geo.geom_geojson->'properties'->>'rua') AS rua,
+                (geo.geom_geojson->'properties'->>'pais') AS pais,
+                (geo.geom_geojson->'properties'->>'bairro') AS bairro,
+                (geo.geom_geojson->'properties'->>'cidade') AS cidade,
+                (geo.geom_geojson->'properties'->>'estado') AS estado,
+                (geo.geom_geojson->'properties'->>'rotulo') AS rotulo,
+                (geo.geom_geojson->'properties'->>'osm_type') AS osm_type,
+                (geo.geom_geojson->'properties'->>'codigo_pais') AS codigo_pais,
+                (geo.geom_geojson->'properties'->>'string_endereco') AS string_endereco,
+                (geo.geom_geojson->>'geometry_name') AS geometry_name,
+                (geo.geom_geojson->'bbox')::text AS bbox
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             LEFT JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -1486,9 +1536,21 @@ export class PPObrasService implements ReportableService {
                 zona: db.zona ?? null,
                 distrito: db.distrito ?? null,
                 subprefeitura: db.subprefeitura ?? null,
-                latitude: db.latitude ?? null,
-                longitude: db.longitude ?? null,
+                coordinates: db.coordinates ?? null,
+                geojson_type: db.geojson_type ?? null,
+                geometry_type: db.geometry_type ?? null,
                 cep: db.cep ?? null,
+                rua: db.rua ?? null,
+                pais: db.pais ?? null,
+                bairro: db.bairro ?? null,
+                cidade: db.cidade ?? null,
+                estado: db.estado ?? null,
+                rotulo: db.rotulo ?? null,
+                osm_type: db.osm_type ?? null,
+                codigo_pais: db.codigo_pais ?? null,
+                string_endereco: db.string_endereco ?? null,
+                geometry_name: db.geometry_name ?? null,
+                bbox: db.bbox ?? null,
             } satisfies RelObrasGeolocDto;
         });
     }

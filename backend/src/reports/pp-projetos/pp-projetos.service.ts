@@ -272,9 +272,21 @@ class RetornoDbLoc {
     zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    latitude: number | null;
-    longitude: number | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
     cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
 }
 
 class RetornoDbTermoEncerramento {
@@ -1046,8 +1058,20 @@ export class PPProjetosService implements ReportableService {
         await this.gerarCsv('arquivos', arquivosFields, arquivosFieldNames, projetosIds, out, ctx, 94);
 
         // 12. Processar Geolocalização
-        const geolocFields = ['projeto_id', 'endereco', 'zona', 'distrito', 'subprefeitura', 'latitude', 'longitude', 'cep'];
-        const geolocFieldNames = ['ID Projeto', 'Endereço', 'Zona', 'Distrito', 'Subprefeitura', 'Latitude', 'Longitude', 'CEP'];
+        const geolocFields = [
+            'projeto_id', 'endereco', 'zona', 'distrito', 'subprefeitura',
+            'coordinates', 'geojson_type', 'geometry_type', 'cep', 'rua', 'pais',
+            'bairro', 'cidade', 'estado', 'rotulo', 'osm_type', 'codigo_pais',
+            'string_endereco', 'geometry_name', 'bbox',
+        ];
+        const geolocFieldNames = [
+            'ID Projeto', 'Endereço', 'Zona', 'Distrito', 'Subprefeitura',
+            'geojson.geometry.coordinates', 'geojson.type', 'geojson.geometry.type',
+            'geojson.properties.cep', 'geojson.properties.rua', 'geojson.properties.pais',
+            'geojson.properties.bairro', 'geojson.properties.cidade', 'geojson.properties.estado',
+            'geojson.properties.rotulo', 'geojson.properties.osm_type', 'geojson.properties.codigo_pais',
+            'geojson.properties.string_endereco', 'geojson.geometry_name', 'geojson.bbox',
+        ];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 95);
 
         // 12. Processar Termos de Encerramento
@@ -2030,9 +2054,25 @@ export class PPProjetosService implements ReportableService {
                 zona_agg.zona,
                 distrito_agg.distrito,
                 subprefeitura_agg.subprefeitura,
-                (geo.geom_geojson->'geometry'->'coordinates'->0)::float AS longitude,
-                (geo.geom_geojson->'geometry'->'coordinates'->1)::float AS latitude,
-                (geo.geom_geojson->'properties'->>'cep') AS cep
+                CONCAT(
+                    (geo.geom_geojson->'geometry'->'coordinates'->1)::float,
+                    ',',
+                    (geo.geom_geojson->'geometry'->'coordinates'->0)::float
+                ) AS coordinates,
+                (geo.geom_geojson->>'type') AS geojson_type,
+                (geo.geom_geojson->'geometry'->>'type') AS geometry_type,
+                (geo.geom_geojson->'properties'->>'cep') AS cep,
+                (geo.geom_geojson->'properties'->>'rua') AS rua,
+                (geo.geom_geojson->'properties'->>'pais') AS pais,
+                (geo.geom_geojson->'properties'->>'bairro') AS bairro,
+                (geo.geom_geojson->'properties'->>'cidade') AS cidade,
+                (geo.geom_geojson->'properties'->>'estado') AS estado,
+                (geo.geom_geojson->'properties'->>'rotulo') AS rotulo,
+                (geo.geom_geojson->'properties'->>'osm_type') AS osm_type,
+                (geo.geom_geojson->'properties'->>'codigo_pais') AS codigo_pais,
+                (geo.geom_geojson->'properties'->>'string_endereco') AS string_endereco,
+                (geo.geom_geojson->>'geometry_name') AS geometry_name,
+                (geo.geom_geojson->'bbox')::text AS bbox
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -2068,9 +2108,21 @@ export class PPProjetosService implements ReportableService {
                 zona: db.zona,
                 distrito: db.distrito,
                 subprefeitura: db.subprefeitura,
-                latitude: db.latitude,
-                longitude: db.longitude,
+                coordinates: db.coordinates,
+                geojson_type: db.geojson_type,
+                geometry_type: db.geometry_type,
                 cep: db.cep,
+                rua: db.rua,
+                pais: db.pais,
+                bairro: db.bairro,
+                cidade: db.cidade,
+                estado: db.estado,
+                rotulo: db.rotulo,
+                osm_type: db.osm_type,
+                codigo_pais: db.codigo_pais,
+                string_endereco: db.string_endereco,
+                geometry_name: db.geometry_name,
+                bbox: db.bbox,
             };
         });
     }

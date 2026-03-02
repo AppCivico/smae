@@ -133,9 +133,21 @@ export class RelProjetoGeolocDto {
     zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    latitude: number | null;
-    longitude: number | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
     cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
 }
 
 export class PPProjetoRelatorioDto {
