@@ -43,6 +43,7 @@ type Props =
     },
     subLinhaAbertaPorPadrao?: boolean
     subLinhaSempreVisivel?: boolean
+    campoId?: string
   };
 
 type Emits = DeleteButtonEvents;
@@ -59,6 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
   personalizarLinhas: undefined,
   subLinhaAbertaPorPadrao: false,
   subLinhaSempreVisivel: false,
+  campoId: 'id',
 });
 const emit = defineEmits<Emits>();
 defineSlots<Slots>();
@@ -227,6 +229,7 @@ const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, it
           :personalizar-linhas="personalizarLinhas"
           :sub-linha-aberta-por-padrao="subLinhaAbertaPorPadrao"
           :sub-linha-sempre-visivel="subLinhaSempreVisivel"
+          :campo-id="campoId"
           @deletar="(ev: Linha) => emit('deletar', ev)"
         >
           <template #corpo="slotProps">
