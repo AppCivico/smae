@@ -440,7 +440,7 @@ export class PPProjetoService implements ReportableService {
                 FROM contrato_fonte_recurso
                 WHERE contrato_id = contrato.id
                 ) AS fontes_recurso,
-            contrato.cnpj_contratada AS cnpj_contratada
+            f_formata_cnpj(contrato.cnpj_contratada) AS cnpj_contratada
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
@@ -474,7 +474,6 @@ export class PPProjetoService implements ReportableService {
                 descricao_detalhada: db.descricao_detalhada,
                 contratante: db.contratante,
                 empresa_contratada: db.empresa_contratada,
-                cnpj_contratada: db.cnpj_contratada ?? null,
                 prazo: db.prazo,
                 unidade_prazo: db.unidade_prazo,
                 data_base: db.data_base,
@@ -495,6 +494,7 @@ export class PPProjetoService implements ReportableService {
                 percentual_medido: db.percentual_medido ?? null,
                 processos_sei: db.processos_sei,
                 fontes_recurso: db.fontes_recurso,
+                cnpj_contratada: db.cnpj_contratada ?? null,
             } satisfies RelProjetosContratosDto;
         });
     }

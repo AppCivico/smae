@@ -161,7 +161,6 @@ export class RelProjetosContratosDto {
     descricao_detalhada: string | null;
     contratante: string | null;
     empresa_contratada: string | null;
-    cnpj_contratada: string | null;
     prazo: number | null;
     @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
     unidade_prazo: ContratoPrazoUnidade | null;
@@ -179,6 +178,7 @@ export class RelProjetosContratosDto {
     percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
+    cnpj_contratada: string | null;
 }
 
 export class RelProjetosAditivosDto {
