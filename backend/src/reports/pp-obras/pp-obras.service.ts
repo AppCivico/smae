@@ -1162,7 +1162,7 @@ export class PPObrasService implements ReportableService {
                 FROM contrato_fonte_recurso
                 WHERE contrato_id = contrato.id
                 ) AS fontes_recurso,
-            contrato.cnpj_contratada AS cnpj_contratada
+            f_formata_cnpj(contrato.cnpj_contratada) AS cnpj_contratada
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
