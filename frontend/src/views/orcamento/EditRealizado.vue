@@ -4,7 +4,7 @@ import { Field, useForm } from 'vee-validate';
 import {
   defineOptions, computed, ref, toRaw, watch,
 } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
@@ -32,14 +32,11 @@ const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
 const {
+  emFoco,
   OrcamentoRealizado,
 } = storeToRefs(OrcamentosStore);
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 
-const currentEdit = ref({
-  location: '',
-  itens: [],
-});
 const dota = ref('');
 const respostasof = ref({});
 
@@ -53,8 +50,8 @@ const d_contadespesa = ref('');
 const d_fonte = ref('');
 
 const complemento = computed(() => {
-  if (currentEdit.value.dotacao_complemento) {
-    const partes = currentEdit.value.dotacao_complemento.split('.');
+  if (emFoco.value.dotacao_complemento) {
+    const partes = emFoco.value.dotacao_complemento.split('.');
 
     return {
       exercicio: partes[0],
@@ -88,9 +85,9 @@ const complemento = computed(() => {
         throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
 
-    currentEdit.value = OrcamentoRealizado.value[ano]?.find((x) => x.id == id);
+    emFoco.value = OrcamentoRealizado.value[ano]?.find((x) => x.id == id);
 
-    currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x, i) => {
+    emFoco.value.dotacao = await emFoco.value.dotacao.split('.').map((x, i) => {
       if (x.indexOf('*') != -1) {
         if (i == 4) {
           return '****';
@@ -100,35 +97,35 @@ const complemento = computed(() => {
       }
       return x;
     }).join('.');
-    dota.value = currentEdit.value.dotacao;
-    validaPartes(currentEdit.value.dotacao);
+    dota.value = emFoco.value.dotacao;
+    validaPartes(emFoco.value.dotacao);
     // mantendo comportamento legado
     // eslint-disable-next-line no-nested-ternary
-    currentEdit.value.location = currentEdit.value.atividade?.id
-      ? `a${currentEdit.value.atividade.id}`
+    emFoco.value.location = emFoco.value.atividade?.id
+      ? `a${emFoco.value.atividade.id}`
     // eslint-disable-next-line no-nested-ternary
-      : currentEdit.value.iniciativa?.id
-        ? `i${currentEdit.value.iniciativa.id}`
-        : currentEdit.value.meta?.id
-          ? `m${currentEdit.value.meta.id}`
+      : emFoco.value.iniciativa?.id
+        ? `i${emFoco.value.iniciativa.id}`
+        : emFoco.value.meta?.id
+          ? `m${emFoco.value.meta.id}`
           : `m${meta_id}`;
 
-    respostasof.value.projeto_atividade = currentEdit.value.projeto_atividade;
+    respostasof.value.projeto_atividade = emFoco.value.projeto_atividade;
 
-    respostasof.value.empenho_liquido = toFloat(currentEdit.value.empenho_liquido);
-    respostasof.value.valor_liquidado = toFloat(currentEdit.value.valor_liquidado);
+    respostasof.value.empenho_liquido = toFloat(emFoco.value.empenho_liquido);
+    respostasof.value.valor_liquidado = toFloat(emFoco.value.valor_liquidado);
 
-    respostasof.value.smae_soma_valor_empenho = toFloat(currentEdit.value.smae_soma_valor_empenho)
-      - toFloat(currentEdit.value.soma_valor_empenho);
-    respostasof.value.smae_soma_valor_liquidado = toFloat(currentEdit.value.smae_soma_valor_liquidado)
-      - toFloat(currentEdit.value.soma_valor_liquidado);
+    respostasof.value.smae_soma_valor_empenho = toFloat(emFoco.value.smae_soma_valor_empenho)
+      - toFloat(emFoco.value.soma_valor_empenho);
+    respostasof.value.smae_soma_valor_liquidado = toFloat(emFoco.value.smae_soma_valor_liquidado)
+      - toFloat(emFoco.value.soma_valor_liquidado);
   }
 })();
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
-  initialValues: currentEdit.value,
+  initialValues: emFoco.value,
   validationSchema: schema,
 });
 
@@ -213,9 +210,13 @@ function validaPartes(a) {
 }
 
 // com `{ deep: true; }` por causa da carga atrasada da location
-watch(currentEdit, (novosValores) => {
+watch(emFoco, (novosValores) => {
   resetForm({ values: toRaw(novosValores) });
 }, { deep: true });
+
+onBeforeRouteLeave(() => {
+  OrcamentosStore.$reset();
+});
 </script>
 <script>
 // use normal <script> to declare options
@@ -224,6 +225,7 @@ export default {
 };
 </script>
 <template>
+  <h1>123</h1>
   <div class="flex spacebetween center">
     <h1>Empenho/Liquidação</h1>
     <hr class="ml2 f1">
@@ -238,19 +240,19 @@ export default {
     <form
       @submit.prevent="onSubmit"
     >
-      <div v-if="currentEdit.processo">
+      <div v-if="emFoco.processo">
         <label class="label">Processo</label>
         <input
-          :value="currentEdit.processo"
+          :value="emFoco.processo"
           type="text"
           disabled
           class="inputtext light mb1 disabled"
         >
       </div>
-      <div v-if="currentEdit.nota_empenho">
+      <div v-if="emFoco.nota_empenho">
         <label class="label">Nota de empenho</label>
         <input
-          :value="currentEdit.nota_empenho"
+          :value="emFoco.nota_empenho"
           type="text"
           disabled
           class="inputtext light mb1 disabled"
@@ -469,9 +471,9 @@ export default {
         :ano="ano"
         :id-do-item="id"
         :pdm="activePdm.id"
-        :dotação="currentEdit.dotacao"
-        :processo="currentEdit.processo"
-        :nota-empenho="currentEdit.nota_empenho"
+        :dotação="emFoco.dotacao"
+        :processo="emFoco.processo"
+        :nota-empenho="emFoco.nota_empenho"
         class="mb1"
       />
 
@@ -591,10 +593,10 @@ export default {
       />
     </form>
   </template>
-  <template v-if="currentEdit && currentEdit?.id">
+  <template v-if="emFoco && emFoco?.id">
     <button
       class="btn amarelo big"
-      @click="checkDelete(currentEdit.id)"
+      @click="checkDelete(emFoco.id)"
     >
       Remover item
     </button>

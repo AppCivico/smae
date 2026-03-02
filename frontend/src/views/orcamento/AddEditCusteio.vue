@@ -39,9 +39,8 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/ini
 const parent_item = ref(atividade_id ? singleAtividade : iniciativa_id ? singleIniciativa : meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoCusteio } = storeToRefs(OrcamentosStore);
+const { OrcamentoCusteio, emFoco } = storeToRefs(OrcamentosStore);
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
-const currentEdit = ref({});
 
 const dota = ref('');
 const d_orgao = ref('');
@@ -75,9 +74,9 @@ const caret = ref(0);
   }
 
   if (id) {
-    currentEdit.value = OrcamentoCusteio.value[ano].find((x) => x.id == id);
+    emFoco.value = OrcamentoCusteio.value[ano].find((x) => x.id == id);
 
-    currentEdit.value.parte_dotacao = await currentEdit.value.parte_dotacao.split('.').map((x, i) => {
+    emFoco.value.parte_dotacao = await emFoco.value.parte_dotacao.split('.').map((x, i) => {
       if (x.indexOf('*') != -1) {
         if (i == 4) {
           return '****';
@@ -87,12 +86,12 @@ const caret = ref(0);
       }
       return x;
     }).join('.');
-    dota.value = currentEdit.value.parte_dotacao;
-    validaPartes(currentEdit.value.parte_dotacao);
+    dota.value = emFoco.value.parte_dotacao;
+    validaPartes(emFoco.value.parte_dotacao);
 
-    currentEdit.value.location = currentEdit.value.atividade?.id ? `a${currentEdit.value.atividade.id}`
-      : currentEdit.value.iniciativa?.id ? `i${currentEdit.value.iniciativa.id}`
-        : currentEdit.value.meta?.id ? `m${currentEdit.value.meta.id}` : `m${meta_id}`;
+    emFoco.value.location = emFoco.value.atividade?.id ? `a${emFoco.value.atividade.id}`
+      : emFoco.value.iniciativa?.id ? `i${emFoco.value.iniciativa.id}`
+        : emFoco.value.meta?.id ? `m${emFoco.value.meta.id}` : `m${meta_id}`;
   }
 })();
 
@@ -222,7 +221,7 @@ function montaDotacao(a) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="currentEdit"
+      :initial-values="emFoco"
       @submit="onSubmit"
     >
       <div class="flex center g2 mb2">
@@ -564,10 +563,10 @@ function montaDotacao(a) {
       </div>
     </Form>
   </template>
-  <template v-if="currentEdit.id">
+  <template v-if="emFoco.id">
     <button
       class="btn amarelo big"
-      @click="checkDelete(currentEdit.id)"
+      @click="checkDelete(emFoco.id)"
     >
       Remover item
     </button>
