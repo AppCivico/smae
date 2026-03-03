@@ -308,7 +308,6 @@ export class PSMonitoramentoMensal implements ReportableService {
             left join pessoa p_mcfec on p_mcfec.id = mcfec.criado_por
             where m.id in (:metas)
             and cf.pdm_id = :pdm_id
-            and cf.ativo = true
             `;
 
         // Fazendo replace de :metas, :mesAno e :pdm_id
