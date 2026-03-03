@@ -253,15 +253,7 @@ const classeContainer = computed(() => [
 </template>
 
 <style lang="less">
-.description-list {
-  margin-bottom: 1rem;
-
-  + .description-list {
-    border-top: 1px solid @c100;
-    padding-top: 1rem;
-    margin-top: 1rem;
-  }
-}
+.description-list {}
 
 .description-list--flex {
   display: flex;
