@@ -512,7 +512,7 @@ watch(valoresIniciais, (novoValor) => {
       </fieldset>
 
       <fieldset>
-        <div v-if="singleCronograma.regionalizavel && regions">
+        <div v-if="singleCronograma?.regionalizavel && regions">
           <label class="label">Região</label>
 
           <template v-if="singleCronograma.nivel_regionalizacao >= 2">

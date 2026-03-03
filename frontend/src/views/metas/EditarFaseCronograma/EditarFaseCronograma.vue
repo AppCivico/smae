@@ -530,7 +530,7 @@ watch(valoresIniciais, (novoValor) => {
 
         <fieldset>
           <div
-            v-if="permissaoLiberada && singleCronograma.regionalizavel && tempRegions.length"
+            v-if="permissaoLiberada && singleCronograma?.regionalizavel && tempRegions.length"
             class="mb1"
           >
             <label class="label">Região</label>
