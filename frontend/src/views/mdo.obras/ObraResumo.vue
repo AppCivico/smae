@@ -44,27 +44,30 @@ const mapasAgrupados = computed(() => {
       acc.endereços = [];
     }
 
-    const enderecoEnriquecido = cur.endereco
-      ? JSON.parse(JSON.stringify(cur.endereco))
-      : cur.endereco;
+    if (cur.endereco) {
+      const enderecoEnriquecido = JSON.parse(JSON.stringify(cur.endereco));
 
-    if (enderecoEnriquecido?.properties) {
-      enderecoEnriquecido.properties = {
-        ...enderecoEnriquecido.properties,
-        obra_nome: emFoco.value?.nome,
-        orgao_resp_sigla: emFoco.value?.orgao_responsavel?.sigla,
-        obra_status: emFoco.value?.status,
-        obra_etapa: emFoco.value?.projeto_etapa?.descricao,
-        subPrefeitura: cur.regioes?.nivel_3?.[0]?.descricao,
-      };
+      if (enderecoEnriquecido.properties) {
+        enderecoEnriquecido.properties = {
+          ...enderecoEnriquecido.properties,
+          obra_nome: emFoco.value?.nome,
+          orgao_resp_sigla: emFoco.value?.orgao_responsavel?.sigla,
+          obra_status: emFoco.value?.status,
+          obra_etapa: emFoco.value?.projeto_etapa?.descricao,
+          subPrefeitura: cur.regioes?.nivel_3?.[0]?.descricao,
+        };
+      }
+
+      acc.endereços.push(enderecoEnriquecido);
     }
-
-    acc.endereços.push(enderecoEnriquecido);
 
     if (!acc?.camadas) {
       acc.camadas = [];
     }
-    acc.camadas = acc.camadas.concat(cur.camadas);
+
+    if (Array.isArray(cur.camadas)) {
+      acc.camadas = acc.camadas.concat(cur.camadas.filter((c) => c?.id));
+    }
 
     return acc;
   }, {});
@@ -571,7 +574,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ item.valor ? dateToField(item.valor) : '—' }}
         </template>
         <template #descricao--previsao_custo="{ item }">
-          {{ item.valor ? `R$ ${dinheiro(item.valor)}` : '—' }}
+          {{ item.valor != null ? `R$ ${dinheiro(item.valor)}` : '—' }}
         </template>
       </SmaeDescriptionList>
     </section>
@@ -594,7 +597,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ item.valor ? dateToField(item.valor) : '—' }}
         </template>
         <template #descricao--custo_total_planejado="{ item }">
-          {{ item.valor ? `R$ ${dinheiro(item.valor)}` : '—' }}
+          {{ item.valor != null ? `R$ ${dinheiro(item.valor)}` : '—' }}
         </template>
       </SmaeDescriptionList>
     </section>
