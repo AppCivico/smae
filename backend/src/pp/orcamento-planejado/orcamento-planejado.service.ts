@@ -11,7 +11,7 @@ import {
 } from './dto/create-orcamento-planejado.dto';
 import { PPOrcamentoPlanejadoDto } from './entities/orcamento-planejado.entity';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 
 @Injectable()
 export class OrcamentoPlanejadoService {

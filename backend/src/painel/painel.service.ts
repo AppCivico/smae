@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, Periodicidade, Periodo, Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { DateTime } from 'luxon';
 import * as moment from 'moment';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';

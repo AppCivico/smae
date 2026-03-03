@@ -21,7 +21,7 @@ import {
     LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF,
     verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 

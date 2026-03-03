@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';

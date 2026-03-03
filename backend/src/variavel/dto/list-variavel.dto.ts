@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie, TipoPdm } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';

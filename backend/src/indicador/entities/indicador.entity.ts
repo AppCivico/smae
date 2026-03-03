@@ -1,5 +1,5 @@
 import { IndicadorPreviaOpcao, IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
