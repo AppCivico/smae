@@ -198,7 +198,13 @@ watchEffect(() => {
           ])"
         >
           <SmaeLink
-            :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
+            :to="{
+              name: $route.meta['rotaDeAdicao.etapa'],
+              params: {
+                ...$route.params,
+                cronograma_id: singleCronograma.id,
+              },
+            }"
           >
             Etapa da {{ parentLabel }}
           </SmaeLink>
@@ -500,7 +506,14 @@ watchEffect(() => {
                   <SmaeLink
                     v-if="!r.cronograma_origem_etapa
                       || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
+                    :to="{
+                      name: $route.meta['rotaDeEdicao.etapa'],
+                      params: {
+                        ...$route.params,
+                        cronograma_id: singleCronograma.id,
+                        etapa_id: r.etapa.id,
+                      },
+                    }"
                   >
                     Editar Etapa
                   </SmaeLink>
@@ -752,27 +765,22 @@ watchEffect(() => {
               <SmaeLink
                 v-if="!r.cronograma_origem_etapa
                   || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                :title="'Editar ' + rr.titulo"
+                class="tipinfo left"
                 :to="{
-                  name: '.faseCronograma.editar',
+                  name: $route.meta['rotaDeEdicao.fase'],
                   params: {
+                    ...$route.params,
                     cronograma_id: singleCronograma.id,
                     etapa_id: r.etapa.id,
                     fase_id: rr.id,
                   },
-                  query: {
-                    escape: {
-                      name: $route.name,
-                      params: $route.params,
-                      query: $route.query,
-                    }
-                  }
                 }"
               >
                 <svg
                   width="20"
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
+                <div>{{ 'Editar fase ' + rr.titulo }}</div>
               </SmaeLink>
             </div>
           </div>
@@ -967,27 +975,23 @@ watchEffect(() => {
                       !r.cronograma_origem_etapa
                         || r.cronograma_origem_etapa.id == singleCronograma?.id
                     "
+                    class="tipinfo left"
                     :to="{
-                      name: '.subfaseCronograma.editar',
+                      name: $route.meta['rotaDeEdicao.subfase'],
                       params: {
+                        ...$route.params,
                         cronograma_id: singleCronograma.id,
                         etapa_id: r.etapa.id,
                         fase_id: rr.id,
-                        subfase_id: rrr.id
+                        subfase_id: rrr.id,
                       },
-                      query: {
-                        escape: {
-                          name: $route.name,
-                          params: $route.params,
-                          query: $route.query,
-                        }
-                      }
                     }"
                   >
                     <svg
                       width="20"
                       height="20"
                     ><use xlink:href="#i_edit" /></svg>
+                    <div>{{ 'Editar subfase ' + rrr.titulo }}</div>
                   </SmaeLink>
                 </div>
               </div>
@@ -1008,14 +1012,14 @@ watchEffect(() => {
               v-if="!r.cronograma_origem_etapa
                 || r.cronograma_origem_etapa.id == singleCronograma?.id"
               :to="{
-                name: '.subfaseCronograma.novo',
+                name: $route.meta['rotaDeAdicao.subfase'],
                 params: {
+                  ...$route.params,
                   cronograma_id: singleCronograma.id,
                   etapa_id: r.etapa.id,
                   fase_id: rr.id,
-                }
+                },
               }"
-
               class="addlink mt05 mb05"
             >
               <svg
@@ -1040,11 +1044,12 @@ watchEffect(() => {
             v-if="!r.cronograma_origem_etapa
               || r.cronograma_origem_etapa.id == singleCronograma?.id"
             :to="{
-              name: '.faseCronograma.novo',
+              name: $route.meta['rotaDeAdicao.fase'],
               params: {
+                ...$route.params,
                 cronograma_id: singleCronograma.id,
                 etapa_id: r.etapa.id,
-              }
+              },
             }"
             class="addlink"
           >
@@ -1077,7 +1082,13 @@ watchEffect(() => {
     >
       <div class="tc">
         <SmaeLink
-          :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
+          :to="{
+            name: $route.meta['rotaDeAdicao.etapa'],
+            params: {
+              ...$route.params,
+              cronograma_id: singleCronograma.id,
+            },
+          }"
           class="btn mt1 mb1"
         >
           <span>Adicionar Etapa</span>
@@ -1106,7 +1117,10 @@ watchEffect(() => {
   >
     <div class="tc">
       <SmaeLink
-        :to="`${parentLink}/cronograma/novo`"
+        :to="{
+          name: $route.meta.rotaDeAdicao,
+          params: $route.params,
+        }"
         class="btn mt1 mb1"
       >
         <span>Adicionar Cronograma</span>
