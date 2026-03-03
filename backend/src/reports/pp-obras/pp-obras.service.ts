@@ -33,17 +33,15 @@ import {
 } from './entities/obras.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
-const {
-    AsyncParser,
-    transforms: { flatten },
-} = require('json2csv');
+import { Parser } from '@json2csv/plainjs';
+import { flatten, Transform } from '@json2csv/transforms';
 
 type WhereCond = {
     whereString: string;
     queryParams: any[];
 };
 
-const defaultTransform = [flatten({ paths: [] })];
+const defaultTransform = [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]];
 
 class RetornoDbProjeto {
     id: number;
@@ -533,38 +531,17 @@ export class PPObrasService implements ReportableService {
         filename: string,
         fields?: (string | { value: string; label: string })[]
     ): Promise<FileOutput> {
-        const parserOptions = {
+        const parser = new Parser({
             ...DefaultCsvOptions,
             transforms: defaultTransform,
             withBOM: true,
             ...(fields ? { fields } : {}),
-        };
+        });
 
-        const parser = new AsyncParser(parserOptions);
+        const results = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
+        const csv = parser.parse(results);
 
-        const chunks: Buffer[] = [];
-
-        // Add TypeScript types to event handlers
-        parser.processor
-            .on('data', (chunk: Buffer) => chunks.push(chunk))
-            .on('end', () => {})
-            .on('error', (err: Error) => {
-                throw err;
-            });
-
-        // Type assertion for Prisma cursor
-        const cursor = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
-
-        // Properly typed row iteration
-        for await (const row of cursor) {
-            parser.input.push(JSON.stringify(row));
-        }
-
-        parser.input.push(null);
-
-        await new Promise((resolve) => parser.processor.on('finish', resolve));
-
-        return { name: filename, buffer: Buffer.concat(chunks) };
+        return { name: filename, buffer: Buffer.from(csv, 'utf8') };
     }
 
     private async buildFilteredWhereStr(
