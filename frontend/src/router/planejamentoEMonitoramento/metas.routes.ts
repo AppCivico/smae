@@ -158,11 +158,13 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: 'macrotemas/:id',
+      name: `${entidadeMãe}.macrotemas`,
       component: ListMetasGroup,
       props: { type: 'list', group: 'macro_tema', parentPage: 'metas' },
     },
     {
       path: 'macrotemas/:macro_tema_id/novo',
+      name: `${entidadeMãe}.macrotemas.novo`,
       component: AddEditMetas,
       props: { type: 'novo', group: 'macro_tema', parentPage: 'metas' },
       meta: {
@@ -171,11 +173,13 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: 'subtemas/:id',
+      name: `${entidadeMãe}.subtemas`,
       component: ListMetasGroup,
       props: { type: 'list', group: 'sub_tema', parentPage: 'metas' },
     },
     {
       path: 'subtemas/:sub_tema_id/novo',
+      name: `${entidadeMãe}.subtemas.novo`,
       component: AddEditMetas,
       props: { type: 'novo', group: 'sub_tema', parentPage: 'metas' },
       meta: {
@@ -184,11 +188,13 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: 'temas/:id',
+      name: `${entidadeMãe}.temas`,
       component: ListMetasGroup,
       props: { type: 'list', group: 'tema', parentPage: 'metas' },
     },
     {
       path: 'temas/:tema_id/novo',
+      name: `${entidadeMãe}.temas.novo`,
       component: AddEditMetas,
       props: { type: 'novo', group: 'tema', parentPage: 'metas' },
       meta: {
@@ -197,6 +203,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: 'tags/:id',
+      name: `${entidadeMãe}.tags`,
       component: ListMetasGroup,
       props: { type: 'list', group: 'tags', parentPage: 'metas' },
     },
@@ -217,6 +224,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: 'monitoramento',
+          name: `${entidadeMãe}.monitoramentoDaMeta`,
           meta: {
             título: 'Histórico de Monitoramento',
             títuloParaMenu: undefined,
@@ -278,6 +286,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/novo',
+      name: `${entidadeMãe}.indicadorDaMeta.novo`,
       component: AddEditIndicador,
       meta: {
         rotaDeEscape: `${entidadeMãe}.meta`,
@@ -302,6 +311,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/novo',
+      name: `${entidadeMãe}.indicadorDaMeta.variavel.novo`,
       component: AddEditIndicador,
       props: { group: 'variaveis' },
       meta: {
@@ -315,6 +325,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
+      name: `${entidadeMãe}.indicadorDaMeta.variavel.gerar`,
       component: AddEditIndicador,
       props: { group: 'variaveis' },
       meta: {
@@ -329,6 +340,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+      name: `${entidadeMãe}.indicadorDaMeta.variavel.copiar`,
       component: AddEditIndicador,
       props: { group: 'variaveis' },
       meta: {
@@ -341,6 +353,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id',
+      name: `${entidadeMãe}.indicadorDaMeta.variavel`,
       component: AddEditIndicador,
       props: { group: 'variaveis' },
       meta: {
@@ -353,6 +366,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+      name: `${entidadeMãe}.indicadorDaMeta.variavel.valores`,
       component: AddEditIndicador,
       props: { group: 'valores' },
       meta: {
@@ -365,6 +379,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+      name: `${entidadeMãe}.indicadorDaMeta.variavel.retroativos`,
       component: AddEditIndicador,
       props: { group: 'retroativos' },
       meta: {
@@ -381,6 +396,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     // /////////////////////////////////////////////////////////////////////////
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/novo',
+      name: `${entidadeMãe}.indicadorDaMeta.variavelComposta.novo`,
       component: AddEditIndicador,
       props: { group: 'criar-ou-editar-variaveis-compostas' },
       meta: {
@@ -395,6 +411,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/gerar',
+      name: `${entidadeMãe}.indicadorDaMeta.variavelComposta.gerar`,
       component: AddEditIndicador,
       props: { group: 'gerar-compostas' },
       meta: {
@@ -410,6 +427,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
+      name: `${entidadeMãe}.indicadorDaMeta.variavelComposta`,
       component: AddEditIndicador,
       props: { group: 'criar-ou-editar-variaveis-compostas' },
       meta: {
@@ -425,6 +443,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
+      name: `${entidadeMãe}.indicadorDaMeta.variavelComposta.valores`,
       component: AddEditIndicador,
       props: { group: 'compostas-valores' },
       meta: {
@@ -440,6 +459,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
+      name: `${entidadeMãe}.indicadorDaMeta.variavelComposta.retroativos`,
       component: AddEditIndicador,
       props: { group: 'compostas-retroativos' },
       meta: {
@@ -481,6 +501,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':indicador_id/variaveis/novo',
+          name: `${entidadeMãe}.evoluçãoDaMeta.variavel.novo`,
           meta: {
             group: 'variaveis',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
@@ -491,6 +512,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':indicador_id/variaveis/novo/:copy_id',
+          name: `${entidadeMãe}.evoluçãoDaMeta.variavel.copiar`,
           meta: {
             group: 'variaveis',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
@@ -501,6 +523,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':indicador_id/variaveis/:var_id',
+          name: `${entidadeMãe}.evoluçãoDaMeta.variavel`,
           meta: {
             group: 'variaveis',
             rotasParaMenuSecundário: () => rotasParaMenuSecundário(
@@ -511,6 +534,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':indicador_id/variaveis/:var_id/valores',
+          name: `${entidadeMãe}.evoluçãoDaMeta.variavel.valores`,
           meta: {
             group: 'valores',
             rotaDeEscape: `${entidadeMãe}.evolucaoDoIndicador`,
@@ -522,6 +546,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':indicador_id/variaveis/:var_id/retroativos',
+          name: `${entidadeMãe}.evoluçãoDaMeta.variavel.retroativos`,
           meta: {
             group: 'retroativos',
             rotaDeEscape: `${entidadeMãe}.evolucaoDoIndicador`,
@@ -547,6 +572,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/novo',
+      name: `${entidadeMãe}.cronogramaDaMeta.novo`,
       component: AddEditCronograma,
       meta: {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
@@ -558,6 +584,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id',
+      name: `${entidadeMãe}.cronogramaDaMeta.editar`,
       component: AddEditCronograma,
       meta: {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
@@ -569,6 +596,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/etapas/novo',
+      name: `${entidadeMãe}.etapaCronograma.novo`,
       component: AddEditEtapa,
       props: { group: 'etapas' },
       meta: {
@@ -656,6 +684,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa',
+      name: `${entidadeMãe}.cronogramaDaMeta.monitorar.iniciativa`,
       component: SingleCronograma,
       props: { group: 'monitorar', recorte: 'iniciativa' },
       meta: {
@@ -668,6 +697,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade',
+      name: `${entidadeMãe}.cronogramaDaMeta.monitorar.atividade`,
       component: SingleCronograma,
       props: { group: 'monitorar', recorte: 'atividade' },
       meta: {
@@ -680,6 +710,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id',
+      name: `${entidadeMãe}.cronogramaDaMeta.monitorar.etapa`,
       component: SingleCronograma,
       props: { group: 'monitorar' },
       meta: {
@@ -933,6 +964,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/iniciativas',
+      name: `${entidadeMãe}.metaIniciativas`,
       children: [
         {
           path: '',
@@ -947,6 +979,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: 'novo',
+          name: `${entidadeMãe}.novaIniciativa`,
           component: AddEditIniciativa,
           meta: {
             rotaDeEscape: `${entidadeMãe}.listaDeIniciativas`,
@@ -958,6 +991,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: 'editar/:iniciativa_id',
+          name: `${entidadeMãe}.editarIniciativa`,
           component: AddEditIniciativa,
           meta: {
             rotaDeEscape: `${entidadeMãe}.resumoDeIniciativa`,
@@ -986,6 +1020,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/novo',
+          name: `${entidadeMãe}.indicadorDaIniciativa.novo`,
           component: AddEditIndicador,
           meta: {
             rotaDeEscape: `${entidadeMãe}.resumoDeIniciativa`,
@@ -1003,6 +1038,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavel.novo`,
           component: AddEditIndicador,
           props: { group: 'variaveis' },
           meta: {
@@ -1012,6 +1048,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavel.copiar`,
           component: AddEditIndicador,
           props: { group: 'variaveis' },
           meta: {
@@ -1022,6 +1059,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis/gerar',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavel.gerar`,
           component: AddEditIndicador,
           props: { group: 'variaveis' },
           meta: {
@@ -1033,6 +1071,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavel`,
           component: AddEditIndicador,
           props: { group: 'variaveis' },
           meta: {
@@ -1042,6 +1081,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavel.valores`,
           component: AddEditIndicador,
           props: { group: 'valores' },
           meta: {
@@ -1051,6 +1091,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavel.retroativos`,
           component: AddEditIndicador,
           props: { group: 'retroativos' },
           meta: {
@@ -1064,6 +1105,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         // /////////////////////////////////////////////////////////////////////////
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/novo',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavelComposta.novo`,
           component: AddEditIndicador,
           props: { group: 'criar-ou-editar-variaveis-compostas' },
           meta: {
@@ -1075,6 +1117,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/gerar',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavelComposta.gerar`,
           component: AddEditIndicador,
           props: { group: 'gerar-compostas' },
           meta: {
@@ -1087,6 +1130,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavelComposta`,
           component: AddEditIndicador,
           props: { group: 'criar-ou-editar-variaveis-compostas' },
           meta: {
@@ -1099,6 +1143,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavelComposta.valores`,
           component: AddEditIndicador,
           props: { group: 'compostas-valores' },
           meta: {
@@ -1111,6 +1156,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
+          name: `${entidadeMãe}.indicadorDaIniciativa.variavelComposta.retroativos`,
           component: AddEditIndicador,
           props: { group: 'compostas-retroativos' },
           meta: {
@@ -1143,6 +1189,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':indicador_id/variaveis/novo',
+              name: `${entidadeMãe}.evoluçãoDaIniciativa.variavel.novo`,
               meta: {
                 group: 'variaveis',
                 rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1150,6 +1197,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':indicador_id/variaveis/novo/:copy_id',
+              name: `${entidadeMãe}.evoluçãoDaIniciativa.variavel.copiar`,
               meta: {
                 group: 'variaveis',
                 rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1157,6 +1205,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':indicador_id/variaveis/:var_id',
+              name: `${entidadeMãe}.evoluçãoDaIniciativa.variavel`,
               meta: {
                 group: 'variaveis',
                 rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1164,6 +1213,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':indicador_id/variaveis/:var_id/valores',
+              name: `${entidadeMãe}.evoluçãoDaIniciativa.variavel.valores`,
               meta: {
                 group: 'valores',
                 rotaDeEscape: `${entidadeMãe}.evoluçãoDoIndicadorDaIniciativa`,
@@ -1172,6 +1222,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':indicador_id/variaveis/:var_id/retroativos',
+              name: `${entidadeMãe}.evoluçãoDaIniciativa.variavel.retroativos`,
               meta: {
                 group: 'retroativos',
                 rotaDeEscape: `${entidadeMãe}.evoluçãoDoIndicadorDaIniciativa`,
@@ -1191,6 +1242,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/novo',
+          name: `${entidadeMãe}.cronogramaDaIniciativa.novo`,
           component: AddEditCronograma,
           meta: {
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1199,6 +1251,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id',
+          name: `${entidadeMãe}.cronogramaDaIniciativa.editar`,
           component: AddEditCronograma,
           meta: {
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1207,6 +1260,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/novo',
+          name: `${entidadeMãe}.etapaCronogramaDeIniciativa.novo`,
           component: SingleCronograma,
           props: { group: 'etapas' },
           meta: {
@@ -1216,6 +1270,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id',
+          name: `${entidadeMãe}.etapaCronogramaDeIniciativa`,
           component: SingleCronograma,
           props: { group: 'etapas' },
           meta: {
@@ -1225,6 +1280,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
+          name: `${entidadeMãe}.faseCronogramaDeIniciativa.novo`,
           component: SingleCronograma,
           props: { group: 'fase' },
           meta: {
@@ -1234,6 +1290,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
+          name: `${entidadeMãe}.faseCronogramaDeIniciativa`,
           component: SingleCronograma,
           props: { group: 'fase' },
           meta: {
@@ -1243,6 +1300,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
+          name: `${entidadeMãe}.subfaseCronogramaDeIniciativa.novo`,
           component: SingleCronograma,
           props: { group: 'subfase' },
           meta: {
@@ -1252,6 +1310,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
+          name: `${entidadeMãe}.subfaseCronogramaDeIniciativa`,
           component: SingleCronograma,
           props: { group: 'subfase' },
           meta: {
@@ -1261,6 +1320,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/atividade',
+          name: `${entidadeMãe}.cronogramaDaIniciativa.monitorar.atividade`,
           component: SingleCronograma,
           props: { group: 'monitorar', recorte: 'atividade' },
           meta: {
@@ -1270,6 +1330,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/:etapa_id',
+          name: `${entidadeMãe}.cronogramaDaIniciativa.monitorar.etapa`,
           component: SingleCronograma,
           props: { group: 'monitorar' },
           meta: {
@@ -1279,9 +1340,11 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/atividades',
+          name: `${entidadeMãe}.iniciativaAtividades`,
           children: [
             {
               path: '',
+              name: `${entidadeMãe}.listaDeAtividades`,
               component: SingleIniciativa,
               meta: {
                 rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1289,6 +1352,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: 'novo',
+              name: `${entidadeMãe}.novaAtividade`,
               component: AddEditAtividade,
               meta: {
                 rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
@@ -1297,6 +1361,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: 'editar/:atividade_id',
+              name: `${entidadeMãe}.editarAtividade`,
               component: AddEditAtividade,
               meta: {
                 rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
@@ -1325,6 +1390,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/novo',
+              name: `${entidadeMãe}.indicadorDaAtividade.novo`,
               component: AddEditIndicador,
               meta: {
                 rotaDeEscape: `${entidadeMãe}.resumoDeAtividade`,
@@ -1342,6 +1408,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/novo',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavel.novo`,
               component: AddEditIndicador,
               props: { group: 'variaveis' },
               meta: {
@@ -1351,6 +1418,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/gerar',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavel.gerar`,
               component: AddEditIndicador,
               props: { group: 'variaveis' },
               meta: {
@@ -1362,6 +1430,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavel.copiar`,
               component: AddEditIndicador,
               props: { group: 'variaveis' },
               meta: {
@@ -1370,6 +1439,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavel`,
               component: AddEditIndicador,
               props: { group: 'variaveis' },
               meta: {
@@ -1378,6 +1448,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavel.valores`,
               component: AddEditIndicador,
               props: { group: 'valores' },
               meta: {
@@ -1386,6 +1457,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavel.retroativos`,
               component: AddEditIndicador,
               props: { group: 'retroativos' },
               meta: {
@@ -1399,6 +1471,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             // PRA-FAZER: organizar essas rotas para remover esse código duplicado
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/novo',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavelComposta.novo`,
               component: AddEditIndicador,
               props: { group: 'criar-ou-editar-variaveis-compostas' },
               meta: {
@@ -1410,6 +1483,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/gerar',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavelComposta.gerar`,
               component: AddEditIndicador,
               props: { group: 'gerar-compostas' },
               meta: {
@@ -1422,6 +1496,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavelComposta`,
               component: AddEditIndicador,
               props: { group: 'criar-ou-editar-variaveis-compostas' },
               meta: {
@@ -1434,6 +1509,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavelComposta.valores`,
               component: AddEditIndicador,
               props: { group: 'compostas-valores' },
               meta: {
@@ -1446,6 +1522,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
+              name: `${entidadeMãe}.indicadorDaAtividade.variavelComposta.retroativos`,
               component: AddEditIndicador,
               props: { group: 'compostas-retroativos' },
               meta: {
@@ -1479,6 +1556,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
                 },
                 {
                   path: ':indicador_id/variaveis/novo',
+                  name: `${entidadeMãe}.evoluçãoDaAtividade.variavel.novo`,
                   meta: {
                     group: 'variaveis',
                     rotasParaMenuSecundário:
@@ -1487,6 +1565,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
                 },
                 {
                   path: ':indicador_id/variaveis/novo/:copy_id',
+                  name: `${entidadeMãe}.evoluçãoDaAtividade.variavel.copiar`,
                   meta: {
                     group: 'variaveis',
                     rotasParaMenuSecundário:
@@ -1495,6 +1574,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
                 },
                 {
                   path: ':indicador_id/variaveis/:var_id',
+                  name: `${entidadeMãe}.evoluçãoDaAtividade.variavel`,
                   meta: {
                     group: 'variaveis',
                     rotasParaMenuSecundário:
@@ -1503,6 +1583,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
                 },
                 {
                   path: ':indicador_id/variaveis/:var_id/valores',
+                  name: `${entidadeMãe}.evoluçãoDaAtividade.variavel.valores`,
                   meta: {
                     group: 'valores',
                     rotaDeEscape: `${entidadeMãe}.evoluçãoDoIndicadorDaAtividade`,
@@ -1512,6 +1593,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
                 },
                 {
                   path: ':indicador_id/variaveis/:var_id/retroativos',
+                  name: `${entidadeMãe}.evoluçãoDaAtividade.variavel.retroativos`,
                   meta: {
                     group: 'retroativos',
                     rotaDeEscape: `${entidadeMãe}.evoluçãoDoIndicadorDaAtividade`,
@@ -1532,6 +1614,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/novo',
+              name: `${entidadeMãe}.cronogramaDaAtividade.novo`,
               component: AddEditCronograma,
               meta: {
                 rotaDeEscape: `${entidadeMãe}.cronogramaDaAtividade`,
@@ -1540,6 +1623,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id',
+              name: `${entidadeMãe}.cronogramaDaAtividade.editar`,
               component: AddEditCronograma,
               meta: {
                 rotaDeEscape: `${entidadeMãe}.cronogramaDaAtividade`,
@@ -1548,6 +1632,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id/etapas/novo',
+              name: `${entidadeMãe}.etapaCronogramaDeAtividade.novo`,
               component: SingleCronograma,
               props: { group: 'etapas' },
               meta: {
@@ -1557,6 +1642,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id',
+              name: `${entidadeMãe}.etapaCronogramaDeAtividade`,
               component: SingleCronograma,
               props: { group: 'etapas' },
               meta: {
@@ -1566,6 +1652,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
+              name: `${entidadeMãe}.faseCronogramaDeAtividade.novo`,
               component: SingleCronograma,
               props: { group: 'fase' },
               meta: {
@@ -1575,6 +1662,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
+              name: `${entidadeMãe}.faseCronogramaDeAtividade`,
               component: SingleCronograma,
               props: { group: 'fase' },
               meta: {
@@ -1584,6 +1672,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
+              name: `${entidadeMãe}.subfaseCronogramaDeAtividade.novo`,
               component: SingleCronograma,
               props: { group: 'subfase' },
               meta: {
@@ -1593,6 +1682,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
+              name: `${entidadeMãe}.subfaseCronogramaDeAtividade`,
               component: SingleCronograma,
               props: { group: 'subfase' },
               meta: {
