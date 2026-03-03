@@ -80,7 +80,7 @@ function mudarStatus(id, { nome, ação }) {
     v-if="açõesPermitidas.length"
     class="dropbtn"
   >
-    <span class="btn">Mudar status</span>
+    <span class="btn big">Mudar status</span>
     <ul>
       <li
         v-for="item, k in açõesPermitidas"

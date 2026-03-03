@@ -4,6 +4,8 @@ import { computed } from 'vue';
 
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
@@ -26,35 +28,421 @@ const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
 
-const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizacao)
-  ? emFoco.value.geolocalizacao.reduce((acc, cur) => {
+const statusesComPlanejamento = ['Validado', 'EmAcompanhamento', 'Fechado', 'Suspenso'];
+
+const informacoesDoProjeto = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
+    {
+      chave: 'codigo',
+      titulo: schema.fields.codigo.spec.label,
+      valor: foco.codigo,
+    },
+    {
+      chave: 'status',
+      titulo: schema.fields.status.spec.label,
+      valor: foco.status,
+    },
+    {
+      chave: 'tags_portfolio',
+      titulo: schema.fields.tags_portfolio.spec.label,
+      valor: combinadorDeListas(foco.tags_portfolio, ', ', 'descricao'),
+    },
+    {
+      chave: 'resumo',
+      titulo: schema.fields.resumo.spec.label,
+      valor: foco.resumo,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'objeto',
+      titulo: schema.fields.objeto.spec.label,
+      valor: foco.objeto,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'objetivo',
+      titulo: schema.fields.objetivo.spec.label,
+      valor: foco.objetivo,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'publico_alvo',
+      titulo: schema.fields.publico_alvo.spec.label,
+      valor: foco.publico_alvo,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'premissas',
+      titulo: schema.fields.premissas.spec.label,
+      valor: foco.premissas,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'restricoes',
+      titulo: schema.fields.restricoes.spec.label,
+      valor: foco.restricoes,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'principais_etapas',
+      titulo: schema.fields.principais_etapas.spec.label,
+      valor: foco.principais_etapas,
+      larguraBase: '100%',
+    },
+    {
+      chave: 'nao_escopo',
+      titulo: schema.fields.nao_escopo.spec.label,
+      valor: foco.nao_escopo,
+      larguraBase: '100%',
+    },
+  ];
+});
+
+const colunasDeEnderecos = [
+  { chave: 'rotulo', label: 'Rótulo' },
+  { chave: 'endereco', label: 'Endereço' },
+  { chave: 'bairro', label: 'Bairro' },
+  { chave: 'subprefeitura', label: 'Subprefeitura' },
+  { chave: 'distrito', label: 'Distrito' },
+  { chave: 'cep', label: 'CEP' },
+];
+
+const dadosDeEnderecos = computed(() => {
+  if (!Array.isArray(emFoco.value?.geolocalizacao)) return [];
+
+  return emFoco.value.geolocalizacao.map((item) => ({
+    rotulo: item.rotulo || item.endereco_exibicao || '-',
+    endereco: item.endereco_exibicao
+      || item.endereco?.properties?.string_endereco
+      || '-',
+    bairro: item.endereco?.properties?.bairro || '-',
+    subprefeitura: item.regioes?.nivel_3?.[0]?.descricao || '-',
+    distrito: item.regioes?.nivel_4?.[0]?.descricao || '-',
+    cep: item.endereco?.properties?.cep || '-',
+  }));
+});
+
+const mapasAgrupados = computed(() => {
+  if (!Array.isArray(emFoco.value?.geolocalizacao)) {
+    return {};
+  }
+
+  return emFoco.value.geolocalizacao.reduce((acc, cur) => {
     if (!acc?.endereços) {
       acc.endereços = [];
     }
-    acc.endereços.push(cur.endereco);
+
+    if (cur.endereco) {
+      const enderecoEnriquecido = JSON.parse(JSON.stringify(cur.endereco));
+
+      if (enderecoEnriquecido.properties) {
+        enderecoEnriquecido.properties = {
+          ...enderecoEnriquecido.properties,
+          projeto_nome: emFoco.value?.nome,
+          orgao_resp_sigla: emFoco.value?.orgao_responsavel?.sigla,
+          projeto_status: emFoco.value?.status,
+          projeto_etapa: emFoco.value?.projeto_etapa?.descricao,
+          subPrefeitura: cur.regioes?.nivel_3?.[0]?.descricao,
+        };
+      }
+
+      acc.endereços.push(enderecoEnriquecido);
+    }
 
     if (!acc?.camadas) {
       acc.camadas = [];
     }
-    acc.camadas = acc.camadas.concat(cur.camadas);
+
+    if (Array.isArray(cur.camadas)) {
+      acc.camadas = acc.camadas.concat(cur.camadas.filter((c) => c?.id));
+    }
+
+    return acc;
+  }, {});
+});
+
+const colunasDeFontesDeRecursos = [
+  { chave: 'fonte_recurso_cod_sof', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label },
+  { chave: 'fonte_recurso_detalhamento', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_detalhamento_cod.spec.label },
+  { chave: 'fonte_recurso_ano', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label },
+  { chave: 'valor_nominal', label: schema.fields.fonte_recursos.innerType.fields.valor_nominal.spec.label },
+  { chave: 'valor_percentual', label: schema.fields.fonte_recursos.innerType.fields.valor_percentual.spec.label },
+];
+
+const dadosDeFontesDeRecursos = computed(() => {
+  if (!Array.isArray(emFoco.value?.fonte_recursos)) return [];
+
+  return emFoco.value.fonte_recursos.map((item) => ({
+    id: item.id,
+    fonte_recurso_cod_sof: item.fonte_recurso_cod_sof,
+    fonte_recurso_cod_sof_descricao: FontesDeRecursosPorAnoPorCódigo.value
+      ?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao || '',
+    fonte_recurso_detalhamento: item.fonte_recurso_detalhamento_cod
+      && item.fonte_recurso_detalhamento_descricao
+      ? `${item.fonte_recurso_detalhamento_cod} - ${item.fonte_recurso_detalhamento_descricao}`
+      : '-',
+    fonte_recurso_ano: item.fonte_recurso_ano,
+    valor_nominal: item.valor_nominal != null ? `R$ ${dinheiro(item.valor_nominal)}` : '-',
+    valor_percentual: item.valor_percentual != null ? `${dinheiro(item.valor_percentual)}%` : '-',
+  }));
+});
+
+function formatarCodTitulo(obj, fallback = '-') {
+  if (!obj) return fallback;
+  if (obj.codigo && obj.titulo) return `${obj.codigo} - ${obj.titulo}`;
+  return obj.nome || obj.titulo || String(obj);
+}
+
+const origemTipoLista = computed(() => {
+  const foco = emFoco.value;
+  if (!foco || foco.origem_tipo === 'PdmSistema') return [];
+
+  const titulo = foco.meta_codigo
+    ? `Meta ${foco.meta_codigo} do PdM Antigo`
+    : 'Fora do PdM';
+
+  return [{
+    chave: 'origem_tipo',
+    titulo,
+    valor: foco.origem_outro,
+  }];
+});
+
+const vinculacaoEstrategica = computed(() => {
+  const foco = emFoco.value;
+  if (!foco || foco.origem_tipo !== 'PdmSistema') return [];
+
+  const itens = [];
+
+  if (foco.meta_id) {
+    itens.push({
+      chave: 'meta_vinculada',
+      titulo: 'Meta vinculada',
+      valor: foco.meta?.codigo && foco.meta?.titulo
+        ? `${foco.meta.codigo} - ${foco.meta.titulo}`
+        : String(foco.meta_id),
+    });
+  }
+
+  if (foco.iniciativa_id) {
+    itens.push({
+      chave: 'iniciativa_vinculada',
+      titulo: 'Iniciativa vinculada',
+      valor: foco.iniciativa?.codigo && foco.iniciativa?.titulo
+        ? `${foco.iniciativa.codigo} - ${foco.iniciativa.titulo}`
+        : String(foco.iniciativa_id),
+    });
+  }
+
+  if (foco.atividade_id) {
+    itens.push({
+      chave: 'atividade_vinculada',
+      titulo: 'Atividade vinculada',
+      valor: foco.atividade?.codigo && foco.atividade?.titulo
+        ? `${foco.atividade.codigo} - ${foco.atividade.titulo}`
+        : String(foco.atividade_id),
+    });
+  }
+
+  return itens;
+});
+
+const origensExtraLista = computed(() => {
+  const foco = emFoco.value;
+  if (!Array.isArray(foco?.origens_extra) || !foco.origens_extra.length) return [];
+
+  return foco.origens_extra.map((origem, idx) => [
+    origem.pdm ? {
+      chave: `origem_extra_pdm_${idx}`,
+      titulo: 'PdM/Plano Setorial',
+      valor: origem.pdm?.nome || origem.pdm || '-',
+    } : null,
+    origem.meta ? {
+      chave: `origem_extra_meta_${idx}`,
+      titulo: schema.fields.origens_extra.innerType?.fields.meta_id.spec.label,
+      valor: formatarCodTitulo(origem.meta),
+    } : null,
+    origem.iniciativa ? {
+      chave: `origem_extra_iniciativa_${idx}`,
+      titulo: schema.fields.origens_extra.innerType?.fields.iniciativa_id.spec.label,
+      valor: formatarCodTitulo(origem.iniciativa),
+    } : null,
+    origem.atividade ? {
+      chave: `origem_extra_atividade_${idx}`,
+      titulo: schema.fields.origens_extra.innerType?.fields.atividade_id.spec.label,
+      valor: formatarCodTitulo(origem.atividade),
+    } : null,
+  ].filter(Boolean));
+});
+
+const estimativasIniciais = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
+    { chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio },
+    { chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino },
+    { chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo },
+    { chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso },
+  ];
+});
+
+const planejamentoFisicoFinanceiro = computed(() => {
+  const foco = emFoco.value;
+  if (!foco || !statusesComPlanejamento.includes(foco.status)) return [];
+
+  const crono = foco.tarefa_cronograma;
+  if (!crono) return [];
+
+  return [
+    { chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio },
+    { chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino },
+    { chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo },
+  ];
+});
+
+const orgaosPartesInteressadas = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
+    {
+      chave: 'orgao_gestor_id',
+      titulo: schema.fields.orgao_gestor_id.spec.label,
+      valor: foco.orgao_gestor ? `${foco.orgao_gestor.sigla} - ${foco.orgao_gestor.descricao}` : null,
+    },
+    {
+      chave: 'secretario_executivo',
+      titulo: schema.fields.secretario_executivo.spec.label,
+      valor: foco.secretario_executivo,
+    },
+    {
+      chave: 'responsaveis_no_orgao_gestor',
+      titulo: schema.fields.responsaveis_no_orgao_gestor.spec.label,
+      valor: foco.responsaveis_no_orgao_gestor && Array.isArray(foco.responsaveis_no_orgao_gestor)
+        ? foco.responsaveis_no_orgao_gestor.map((x) => x.nome_exibicao || x).join(', ')
+        : null,
+    },
+    {
+      chave: 'orgao_responsavel_id',
+      titulo: schema.fields.orgao_responsavel_id.spec.label,
+      valor: foco.orgao_responsavel ? `${foco.orgao_responsavel.sigla} - ${foco.orgao_responsavel.descricao}` : null,
+    },
+    {
+      chave: 'secretario_responsavel',
+      titulo: schema.fields.secretario_responsavel.spec.label,
+      valor: foco.secretario_responsavel,
+    },
+    {
+      chave: 'responsavel_id',
+      titulo: schema.fields.responsavel_id.spec.label,
+      valor: foco.responsavel?.nome_exibicao || foco.responsavel?.id,
+    },
+  ];
+});
+
+const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value?.equipe)
+  ? emFoco.value.equipe.reduce((acc, cur) => {
+    if (!acc[`_${cur.orgao_id}`]) {
+      acc[`_${cur.orgao_id}`] = { id: cur.orgao_id, pessoas: [] };
+    }
+    acc[`_${cur.orgao_id}`].pessoas.push(cur.pessoa);
 
     return acc;
   }, {})
   : {}));
 
-const equipesAgrupadas = computed(() => emFoco.value?.equipe.reduce((agrupado, item) => {
-  if (!agrupado[item.orgao_id]) {
-    agrupado[item.orgao_id] = {
-      orgao_id: item.orgao_id,
-      orgao_nome: órgãosPorId.value[item.orgao_id]?.descricao || `Órgão1 ${item.orgao_id}`,
-      pessoas: [],
-    };
+const equipeLista = computed(() => {
+  if (!Array.isArray(emFoco.value?.equipe) || !emFoco.value.equipe.length) {
+    return [];
   }
 
-  agrupado[item.orgao_id].pessoas.push(item.pessoa);
+  return Object.values(equipeAgrupadaPorÓrgão.value).map((órgão) => ({
+    chave: `equipe_${órgão.id}`,
+    titulo: órgãosPorId.value[órgão.id]
+      ? `${órgãosPorId.value[órgão.id].sigla} - ${órgãosPorId.value[órgão.id].descricao}`
+      : String(órgão.id),
+    valor: órgão.pessoas?.length
+      ? órgão.pessoas.map((p) => p.nome_exibicao).join(', ')
+      : '-',
+  }));
+});
 
-  return agrupado;
-}, {}));
+const orgaosParticipantesLista = computed(() => {
+  const foco = emFoco.value;
+  if (!foco?.orgaos_participantes?.length) return [];
+
+  return [{
+    chave: 'orgaos_participantes',
+    titulo: schema.fields.orgaos_participantes.spec.label,
+    valor: foco.orgaos_participantes
+      .map((item) => `${item.sigla} - ${item.descricao}`)
+      .join(', '),
+  }];
+});
+
+const controleDeVersoes = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
+    { chave: 'versao', titulo: schema.fields.versao.spec.label, valor: foco.versao },
+    { chave: 'data_aprovacao', titulo: schema.fields.data_aprovacao.spec.label, valor: foco.data_aprovacao },
+    { chave: 'data_revisao', titulo: schema.fields.data_revisao.spec.label, valor: foco.data_revisao },
+  ];
+});
+
+const colunasDeEncerramento = [
+  { chave: 'indicador', label: '' },
+  { chave: 'planejado', label: 'Planejado' },
+  { chave: 'realizado', label: 'Realizado' },
+  { chave: 'desvio', label: 'Desvio' },
+];
+
+const dadosDeEncerramento = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  function desvioData(realizado, planejado) {
+    return realizado && planejado
+      ? `${subtractDates(realizado, planejado)} dias`
+      : '-';
+  }
+
+  return [
+    {
+      indicador: 'Data de início',
+      planejado: foco.previsao_inicio ? dateToField(foco.previsao_inicio) : '-',
+      realizado: foco.realizado_inicio ? dateToField(foco.realizado_inicio) : '-',
+      desvio: desvioData(foco.realizado_inicio, foco.previsao_inicio),
+    },
+    {
+      indicador: 'Data de término',
+      planejado: foco.previsao_termino ? dateToField(foco.previsao_termino) : '-',
+      realizado: foco.realizado_termino ? dateToField(foco.realizado_termino) : '-',
+      desvio: desvioData(foco.realizado_termino, foco.previsao_termino),
+    },
+    {
+      indicador: 'Duração',
+      planejado: foco.previsao_duracao ? `${foco.previsao_duracao} dias` : '-',
+      realizado: foco.realizado_duracao ? `${foco.realizado_duracao} dias` : '-',
+      desvio: foco.realizado_duracao && foco.previsao_duracao
+        ? `${foco.realizado_duracao - foco.previsao_duracao} dias`
+        : '-',
+    },
+    {
+      indicador: 'Custo',
+      planejado: foco.previsao_custo != null ? `R$ ${dinheiro(foco.previsao_custo)}` : '-',
+      realizado: foco.realizado_custo != null ? `R$ ${dinheiro(foco.realizado_custo)}` : '-',
+      desvio: foco.realizado_custo != null && foco.previsao_custo != null
+        ? `R$ ${dinheiro(foco.realizado_custo - foco.previsao_custo)}`
+        : '-',
+    },
+  ];
+});
 
 defineProps({
   projetoId: {
@@ -68,188 +456,104 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 }
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ emFoco?.nome }}</h1>
-    <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeProjeto class="ml2" />
-
-    <SmaeLink
-      v-if="
-        emFoco?.id
-          && (
-            !emFoco?.arquivado
-            || emFoco?.permissoes?.pode_editar_apenas_responsaveis_pos_planejamento
-          )
-      "
-      :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
-      class="btn big ml2"
-    >
-      Editar
-    </SmaeLink>
-  </div>
+  <CabecalhoDePagina>
+    <template #titulo>
+      {{ emFoco?.nome }}
+    </template>
+    <template #acoes>
+      <MenuDeMudançaDeStatusDeProjeto />
+      <SmaeLink
+        v-if="
+          emFoco?.id
+            && (
+              !emFoco?.arquivado
+              || emFoco?.permissoes?.pode_editar_apenas_responsaveis_pos_planejamento
+            )
+        "
+        :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
+        class="btn big"
+      >
+        Editar
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <div
     v-if="emFoco"
-    class="boards"
+    class="flex column g2"
   >
-    <div class="flex g2 mb1 flexwrap">
-      <dl
-        v-if="emFoco?.codigo"
-        class="f1 mb1"
+    <section>
+      <h2>Informações do Projeto</h2>
+
+      <SmaeDescriptionList
+        :lista="informacoesDoProjeto"
+        layout="grid"
+        largura-minima="13rem"
       >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.codigo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.codigo }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.status.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ statuses[emFoco?.status]?.nome || emFoco?.status }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.tags_portfolio.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ combinadorDeListas(emFoco?.tags_portfolio, ', ', 'descricao') || '-' }}
-        </dd>
-      </dl>
-    </div>
+        <template #descricao--status="{ item }">
+          {{ statuses[item.valor]?.nome || item.valor || '—' }}
+        </template>
 
-    <hr class="mb1 f1">
+        <template #descricao--objeto="{ item }">
+          <span v-html="item.valor || '—'" />
+        </template>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.resumo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.resumo || '-' }}
-        </dd>
-      </dl>
-    </div>
+        <template #descricao--objetivo="{ item }">
+          <span v-html="item.valor || '—'" />
+        </template>
 
-    <hr class="mb1 f1">
+        <template #descricao--publico_alvo="{ item }">
+          <span v-html="item.valor || '—'" />
+        </template>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.objeto.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.objeto || '-'"
-        />
-      </dl>
-    </div>
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.objetivo.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.objetivo || '-'"
-        />
-      </dl>
-    </div>
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.publico_alvo.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.publico_alvo || '-'"
-        />
-      </dl>
-    </div>
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.premissas.spec.label }}
-        </dt>
-        <dd class="t13">
+        <template #descricao--premissas="{ item }">
           <ul>
-            <li v-if="!emFoco?.premissas?.length">
-              {{ '-' }}
-            </li>
-            <li
-              v-for="item in emFoco?.premissas"
-              :key="item.id"
-            >
-              {{ item.premissa }}
-            </li>
-          </ul>
-        </dd>
-      </dl>
-    </div>
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.restricoes.spec.label }}
-        </dt>
-        <dd class="t13">
-          <ul>
-            <li v-if="!emFoco?.restricoes?.length">
+            <li v-if="!item.valor?.length">
               -
             </li>
             <li
-              v-for="item in emFoco?.restricoes"
+              v-for="premissa in item.valor"
               v-else
-              :key="item.id"
+              :key="premissa.id"
             >
-              {{ item.restricao }}
+              {{ premissa.premissa }}
             </li>
           </ul>
-        </dd>
-      </dl>
-    </div>
+        </template>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.principais_etapas.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.principais_etapas || '-'"
-        />
-      </dl>
-    </div>
+        <template #descricao--restricoes="{ item }">
+          <ul>
+            <li v-if="!item.valor?.length">
+              -
+            </li>
+            <li
+              v-for="restricao in item.valor"
+              v-else
+              :key="restricao.id"
+            >
+              {{ restricao.restricao }}
+            </li>
+          </ul>
+        </template>
 
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.nao_escopo.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.nao_escopo || '-'"
-        />
-      </dl>
-    </div>
+        <template #descricao--principais_etapas="{ item }">
+          <span v-html="item.valor || '—'" />
+        </template>
 
-    <hr
-      v-if="emFoco?.geolocalizacao?.length"
-      class="mb1 f1"
-    >
+        <template #descricao--nao_escopo="{ item }">
+          <span v-html="item.valor || '—'" />
+        </template>
+      </SmaeDescriptionList>
+    </section>
 
-    <div
-      v-if="emFoco?.geolocalizacao?.length"
-      class="mb1"
-    >
-      <h3 class="label mt2 mb1legend">
-        Localização
-      </h3>
+    <section v-if="emFoco?.geolocalizacao?.length">
+      <SmaeTable
+        titulo="Localização"
+        :colunas="colunasDeEnderecos"
+        :dados="dadosDeEnderecos"
+        :rolagem-horizontal="true"
+        class="mb2"
+      />
 
       <MapaExibir
         :geo-json="mapasAgrupados.endereços"
@@ -260,611 +564,227 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           opacity: 0.5,
         }"
         zoom="16"
-      />
-    </div>
-
-    <hr class="mb1 f1">
-
-    <h2>
-      {{ schema.fields.fonte_recursos.spec.label }}
-    </h2>
-
-    <div class="flex g2 mb2">
-      <table class="tablemain">
-        <colgroup>
-          <col class="col--minimum">
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-        </colgroup>
-        <thead>
-          <tr>
-            <th
-              class="cell--minimum"
-              colspan="2"
-            >
-              {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label }}
-            </th>
-            <th>
-              {{
-                schema.fields.fonte_recursos.innerType.fields
-                  .fonte_recurso_detalhamento_cod.spec.label
-              }}
-            </th>
-            <th class="cell--number cell--minimum">
-              {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label }}
-            </th>
-            <th class="cell--number cell--minimum">
-              {{ schema.fields.fonte_recursos.innerType.fields.valor_nominal.spec.label }}
-            </th>
-            <th class="cell--number cell--minimum">
-              {{ schema.fields.fonte_recursos.innerType.fields.valor_percentual.spec.label }}
-            </th>
-          </tr>
-        </thead>
-
-        <tr
-          v-for="item in emFoco?.fonte_recursos"
-          :key="item.id"
-        >
-          <td>
-            {{ item.fonte_recurso_cod_sof }}
-          </td>
-          <td
-            :title="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]
-              ?.[item.fonte_recurso_cod_sof]?.descricao"
-          >
-            <template
-              v-if="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]
-                ?.[item.fonte_recurso_cod_sof]?.descricao"
-            >
-              {{
-                truncate(
-                  FontesDeRecursosPorAnoPorCódigo[item.fonte_recurso_ano]
-                    [item.fonte_recurso_cod_sof].descricao,
-                  36
-                )
-              }}
-            </template>
-          </td>
-          <td
-            v-if="item.fonte_recurso_detalhamento_cod
-              && item.fonte_recurso_detalhamento_descricao"
-          >
-            {{
-              item.fonte_recurso_detalhamento_cod
-            }} - {{ item.fonte_recurso_detalhamento_descricao }}
-          </td>
-          <td v-else>
-            -
-          </td>
-          <td class="cell--number">
-            {{ item.fonte_recurso_ano }}
-          </td>
-          <td class="cell--number">
-            {{ item.valor_nominal ? `R$ ${dinheiro(item.valor_nominal)}` : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ item.valor_percentual ? `${dinheiro(item.valor_percentual)}%` : '-' }}
-          </td>
-        </tr>
-        <tr v-if="!emFoco?.fonte_recursos?.length">
-          <td
-            colspan="6"
-            class="center"
-          >
-            -
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <div>
-      <h2>{{ schema.fields.origem_tipo.spec.label }}</h2>
-
-      <dl
-        v-if="emFoco?.origem_tipo !== 'PdmSistema'"
-        class="mb1"
       >
-        <dt
-          v-if="emFoco?.meta_codigo"
-          class="t12 uc w700 mb05 tamarelo"
-        >
-          Meta {{ emFoco.meta_codigo }} do PdM Antigo
-        </dt>
+        <template #painel-flutuante="dados">
+          <p
+            v-if="dados.projeto_nome"
+            class="painel-flutuante__titulo"
+          >
+            {{ dados.projeto_nome }}
+          </p>
 
-        <dt
-          v-else
-          class="t12 uc w700 mb05 tamarelo"
-        >
-          Fora do PdM
-        </dt>
+          <dl
+            v-if="dados.orgao_resp_sigla
+              || dados.subPrefeitura
+              || dados.projeto_status
+              || dados.projeto_etapa"
+          >
+            <div v-if="dados.orgao_resp_sigla">
+              <dt>Órgão responsável</dt>
+              <dd>{{ dados.orgao_resp_sigla }}</dd>
+            </div>
+            <div v-if="dados.subPrefeitura">
+              <dt>Subprefeitura</dt>
+              <dd>{{ dados.subPrefeitura }}</dd>
+            </div>
+            <div v-if="dados.projeto_status">
+              <dt>Status</dt>
+              <dd>{{ statuses[dados.projeto_status]?.nome || dados.projeto_status }}</dd>
+            </div>
+            <div v-if="dados.projeto_etapa">
+              <dt>Etapa</dt>
+              <dd>{{ dados.projeto_etapa }}</dd>
+            </div>
+          </dl>
+        </template>
+      </MapaExibir>
+    </section>
 
-        <dd class="t13">
-          {{ emFoco?.origem_outro || '-' }}
-        </dd>
-      </dl>
-
-      <div
-        v-else
-        class="flex g2"
+    <section>
+      <SmaeTable
+        :titulo="schema.fields.fonte_recursos.spec.label"
+        :colunas="colunasDeFontesDeRecursos"
+        :dados="dadosDeFontesDeRecursos"
+        :rolagem-horizontal="true"
       >
-        <dl
-          v-if="emFoco?.meta_id"
-          class="f1 mb1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            Meta Vinculada
-          </dt>
-          <dd
-            v-if="emFoco?.meta?.codigo && emFoco?.meta?.titulo"
-            class="t13"
-          >
-            {{ emFoco.meta?.codigo }} - {{ emFoco?.meta?.titulo }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ emFoco.meta_id }}
-          </dd>
-        </dl>
-
-        <dl
-          v-if="emFoco?.iniciativa_id"
-          class="f1 mb1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            Iniciativa vinculada
-          </dt>
-          <dd
-            v-if="emFoco?.iniciativa?.codigo && emFoco?.iniciativa?.titulo"
-            class="t13"
-          >
-            {{ emFoco.iniciativa?.codigo }} - {{ emFoco?.iniciativa?.titulo }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ emFoco.iniciativa_id }}
-          </dd>
-        </dl>
-        <dl
-          v-if="emFoco?.atividade_id"
-          class="f1 mb1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            Atividade vinculada
-          </dt>
-          <dd
-            v-if="emFoco?.atividade?.codigo && emFoco?.atividade?.titulo"
-            class="t13"
-          >
-            {{ emFoco.atividade?.codigo }} - {{ emFoco?.atividade?.titulo }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ emFoco.atividade_id }}
-          </dd>
-        </dl>
-      </div>
-    </div>
-
-    <div class="mb2">
-      <h2>{{ schema.fields.origens_extra.spec.label }}</h2>
-
-      <dl
-        v-for="origem in emFoco?.origens_extra"
-        :key="origem.id"
-        class="mb2"
-      >
-        <div class="mb1">
-          <dt
-            v-if="origem.pdm"
-            class="t12 uc w700 mb05 tamarelo"
-          >
-            Pdm/Plano Setorial
-          </dt>
-
-          <dd
-            v-if="origem?.pdm?.nome"
-            class="t13"
-          >
-            {{ origem.pdm?.nome }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ origem.pdm }}
-          </dd>
-        </div>
-
-        <div class="mb1">
-          <dt
-            v-if="origem.meta"
-            class="t12 uc w700 mb05 tamarelo"
-          >
-            {{ schema.fields.origens_extra.innerType?.fields.meta_id.spec.label }}
-          </dt>
-
-          <dd
-            v-if="origem?.meta?.codigo && origem?.meta?.titulo"
-            class="t13"
-          >
-            {{ origem.meta?.codigo }} - {{ origem?.meta?.titulo }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ origem.meta }}
-          </dd>
-        </div>
-
-        <div
-          v-if="origem?.iniciativa"
-          class="f1 mb1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.origens_extra.innerType?.fields.iniciativa_id.spec.label }}
-          </dt>
-          <dd
-            v-if="origem?.iniciativa?.codigo && origem?.iniciativa?.titulo"
-            class="t13"
-          >
-            {{ origem.iniciativa?.codigo }} - {{ origem?.iniciativa?.titulo }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ origem.iniciativa }}
-          </dd>
-        </div>
-
-        <div
-          v-if="origem?.atividade"
-          class="f1 mb1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.origens_extra.innerType?.fields.atividade_id.spec.label }}
-          </dt>
-          <dd
-            v-if="origem?.atividade?.codigo && origem?.atividade?.titulo"
-            class="t13"
-          >
-            {{ origem.atividade?.codigo }} - {{ origem?.atividade?.titulo }}
-          </dd>
-          <dd
-            v-else
-            class="t13"
-          >
-            {{ origem.atividade }}
-          </dd>
-        </div>
-      </dl>
-    </div>
-
-    <hr class="mt2 mb2 f1">
-
-    <div class="flex g2 mb1 flexwrap">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.previsao_inicio.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.previsao_inicio ? dateToField(emFoco.previsao_inicio) : '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.previsao_termino.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.previsao_termino ? dateToField(emFoco.previsao_termino) : '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.tolerancia_atraso.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.tolerancia_atraso || '-' }}
-        </dd>
-      </dl>
-      <dl class="f2 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.previsao_custo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
-        </dd>
-      </dl>
-      <dl class="f2 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Custo total planejado
-        </dt>
-        <dd class="t13">
-          {{
-            emFoco?.tarefa_cronograma?.previsao_custo ?
-              `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}`
-              : '-'
-          }}
-        </dd>
-      </dl>
-    </div>
-
-    <hr class="mb1 f1">
-
-    <div>
-      <h2>
-        Órgãos/partes interessadas
-      </h2>
-      <dl class="flex g2 flexwrap">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_gestor_id.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.orgao_gestor_id.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
-          </dd>
-        </div>
-
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_executivo.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.secretario_executivo.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_executivo || '-' }}
-          </dd>
-        </div>
-
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
-
-            <SmaeTooltip
-              :texto="schema.fields.responsaveis_no_orgao_gestor.spec.meta.balaoInformativo"
-            />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsaveis_no_orgao_gestor
-              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
-              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
-              : '-' }}
-          </dd>
-        </div>
-      </dl>
-
-      <dl class="flex g2 flexwrap">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_responsavel_id.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.orgao_responsavel_id.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_responsavel.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.secretario_responsavel.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_responsavel || '-' }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsavel_id.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.responsavel_id.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
-          </dd>
-        </div>
-      </dl>
-
-      <dl
-        v-if="Object.keys(equipesAgrupadas).length"
-        class="mb1"
-      >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.equipe.spec.label }}
-
-          <SmaeTooltip :texto="schema.fields.equipe.spec.meta.balaoInformativo" />
-        </dt>
-
-        <dd class="contentStyle">
-          <ul
-            class="mb05"
-          >
-            <li
-              v-for="equipe in equipesAgrupadas"
-              :key="`equipes--${equipe.orgao_id}`"
-            >
-              {{ equipe.orgao_nome }}:
-
-              <ol>
-                <li
-                  v-for="pessoa in equipe.pessoas"
-                  :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
-                >
-                  {{ pessoa.nome_exibicao }}
-                </li>
-              </ol>
-            </li>
-          </ul>
-        </dd>
-      </dl>
-
-      <dl
-        v-if="emFoco?.orgaos_participantes?.length"
-        class="f1 mb1 fb100"
-      >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.orgaos_participantes.spec.label }}
-
-          <SmaeTooltip :texto="schema.fields.orgaos_participantes.spec.meta.balaoInformativo" />
-        </dt>
-        <dd class="t13">
-          <template
-            v-for="item in emFoco?.orgaos_participantes"
-            :key="item.id"
-          >
-            {{ item.sigla }} - {{ item.descricao }},
+        <template #celula:fonte_recurso_cod_sof="{ linha }">
+          {{ linha.fonte_recurso_cod_sof }}
+          <template v-if="linha.fonte_recurso_cod_sof_descricao">
+            - {{ truncate(linha.fonte_recurso_cod_sof_descricao, 36) }}
           </template>
-        </dd>
-      </dl>
-    </div>
+        </template>
+      </SmaeTable>
+    </section>
 
-    <hr class="mb1 f1">
+    <section>
+      <h2>Vinculação Estratégica (Programa de Metas e outros)</h2>
 
-    <h2>Controle de versões</h2>
+      <SmaeDescriptionList
+        v-if="origemTipoLista.length"
+        :lista="origemTipoLista"
+        layout="grid"
+        largura-minima="100%"
+      />
 
-    <div class="flex g2 mb1 flexwrap">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.versao.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.versao || '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.data_aprovacao.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.data_aprovacao ? dateToField(emFoco.data_aprovacao) : '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.data_revisao.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.data_revisao ? dateToField(emFoco.data_revisao) : '-' }}
-        </dd>
-      </dl>
-    </div>
+      <SmaeDescriptionList
+        v-if="vinculacaoEstrategica.length"
+        :lista="vinculacaoEstrategica"
+        layout="grid"
+        largura-minima="13rem"
+      />
+
+      <template v-if="origensExtraLista.length">
+        <h3 class="t12 uc w700 mt2 mb1">
+          {{ schema.fields.origens_extra.spec.label }}
+        </h3>
+
+        <SmaeDescriptionList
+          v-for="(origem, idx) in origensExtraLista"
+          :key="idx"
+          :lista="origem"
+          layout="grid"
+          largura-minima="13rem"
+          class="mb2"
+        />
+      </template>
+    </section>
+
+    <section>
+      <h2>Estimativas iniciais pré-planejamento</h2>
+
+      <SmaeDescriptionList
+        :lista="estimativasIniciais"
+        layout="grid"
+        largura-minima="13rem"
+      >
+        <template #descricao--previsao_inicio="{ item }">
+          {{ item.valor ? dateToField(item.valor) : '—' }}
+        </template>
+        <template #descricao--previsao_termino="{ item }">
+          {{ item.valor ? dateToField(item.valor) : '—' }}
+        </template>
+        <template #descricao--previsao_custo="{ item }">
+          {{ item.valor != null ? `R$ ${dinheiro(item.valor)}` : '—' }}
+        </template>
+      </SmaeDescriptionList>
+    </section>
+
+    <section
+      v-if="planejamentoFisicoFinanceiro.length"
+      class="destaque"
+    >
+      <h2>Planejamento Físico-financeiro</h2>
+
+      <SmaeDescriptionList
+        :lista="planejamentoFisicoFinanceiro"
+        layout="grid"
+        largura-minima="13rem"
+      >
+        <template #descricao--inicio_planejado="{ item }">
+          {{ item.valor ? dateToField(item.valor) : '—' }}
+        </template>
+        <template #descricao--termino_planejado="{ item }">
+          {{ item.valor ? dateToField(item.valor) : '—' }}
+        </template>
+        <template #descricao--custo_total_planejado="{ item }">
+          {{ item.valor != null ? `R$ ${dinheiro(item.valor)}` : '—' }}
+        </template>
+      </SmaeDescriptionList>
+    </section>
+
+    <section>
+      <h2>Órgãos/Partes interessadas</h2>
+
+      <SmaeDescriptionList
+        :lista="orgaosPartesInteressadas"
+        layout="grid"
+        largura-minima="13rem"
+      >
+        <template #termo--orgao_gestor_id="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip :texto="schema.fields.orgao_gestor_id.spec.meta.balaoInformativo" />
+        </template>
+
+        <template #termo--secretario_executivo="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip :texto="schema.fields.secretario_executivo.spec.meta.balaoInformativo" />
+        </template>
+
+        <template #termo--responsaveis_no_orgao_gestor="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip
+            :texto="schema.fields.responsaveis_no_orgao_gestor.spec.meta.balaoInformativo"
+          />
+        </template>
+
+        <template #termo--orgao_responsavel_id="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip :texto="schema.fields.orgao_responsavel_id.spec.meta.balaoInformativo" />
+        </template>
+
+        <template #termo--secretario_responsavel="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip :texto="schema.fields.secretario_responsavel.spec.meta.balaoInformativo" />
+        </template>
+
+        <template #termo--responsavel_id="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip :texto="schema.fields.responsavel_id.spec.meta.balaoInformativo" />
+        </template>
+      </SmaeDescriptionList>
+
+      <template v-if="equipeLista.length">
+        <h3 class="t12 uc w700 mt2 mb1">
+          {{ schema.fields.equipe.spec.label }}
+          <SmaeTooltip :texto="schema.fields.equipe.spec.meta.balaoInformativo" />
+        </h3>
+
+        <SmaeDescriptionList
+          :lista="equipeLista"
+          layout="grid"
+          largura-minima="13rem"
+        />
+      </template>
+
+      <SmaeDescriptionList
+        v-if="orgaosParticipantesLista.length"
+        :lista="orgaosParticipantesLista"
+        layout="grid"
+        largura-minima="100%"
+        class="mt2"
+      >
+        <template #termo--orgaos_participantes="{ item }">
+          {{ item.titulo }}
+          <SmaeTooltip :texto="schema.fields.orgaos_participantes.spec.meta.balaoInformativo" />
+        </template>
+      </SmaeDescriptionList>
+    </section>
+
+    <section>
+      <h2>Controle de versões</h2>
+
+      <SmaeDescriptionList
+        :lista="controleDeVersoes"
+        layout="grid"
+        largura-minima="13rem"
+      >
+        <template #descricao--data_aprovacao="{ item }">
+          {{ item.valor ? dateToField(item.valor) : '—' }}
+        </template>
+        <template #descricao--data_revisao="{ item }">
+          {{ item.valor ? dateToField(item.valor) : '—' }}
+        </template>
+      </SmaeDescriptionList>
+    </section>
+
+    <section v-if="emFoco?.status === 'Fechado'">
+      <SmaeTable
+        titulo="Encerramento do projeto"
+        :colunas="colunasDeEncerramento"
+        :dados="dadosDeEncerramento"
+      />
+    </section>
   </div>
-
-  <template v-if="emFoco?.status === 'Fechado'">
-    <hr class="mb1 f1">
-
-    <h2>
-      Encerramento do projeto
-    </h2>
-
-    <table class="tablemain">
-      <colgroup>
-        <col>
-        <col>
-        <col>
-        <col>
-      </colgroup>
-
-      <thead>
-        <tr class="pl3 center mb05 tc300 w700 t12 uc">
-          <th />
-          <th class="tr">
-            Planejado
-          </th>
-          <th class="tr">
-            Realizado
-          </th>
-          <th class="tr">
-            Desvio
-          </th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr>
-          <th>
-            Data de início
-          </th>
-          <td class="tr">
-            {{ emFoco?.previsao_inicio ? dateToField(emFoco.previsao_inicio) : '-' }}
-          </td>
-          <td class="tr">
-            {{ emFoco?.realizado_inicio ? dateToField(emFoco.realizado_inicio) : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ emFoco?.realizado_inicio && emFoco?.previsao_inicio
-              ? `${subtractDates(emFoco.realizado_inicio, emFoco.previsao_inicio)} dias`
-              : '-' }}
-          </td>
-        </tr>
-
-        <tr>
-          <th>
-            Data de término
-          </th>
-          <td class="tr">
-            {{ emFoco?.previsao_termino ? dateToField(emFoco.previsao_termino) : '-' }}
-          </td>
-          <td class="tr">
-            {{ emFoco?.realizado_termino ? dateToField(emFoco.realizado_termino) : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ emFoco?.realizado_termino && emFoco?.previsao_termino
-              ? `${subtractDates(emFoco.realizado_termino, emFoco.previsao_termino)} dias`
-              : '-' }}
-          </td>
-        </tr>
-
-        <tr>
-          <th>
-            Duração
-          </th>
-          <td class="cell--number">
-            {{ emFoco?.previsao_duracao ? `${emFoco.previsao_duracao} dias` : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ emFoco?.realizado_duracao ? `${emFoco.realizado_duracao} dias` : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ emFoco?.realizado_duracao && emFoco?.previsao_duracao
-              ? `${emFoco.realizado_duracao - emFoco.previsao_duracao} dias`
-              : '-' }}
-          </td>
-        </tr>
-
-        <tr>
-          <th>
-            Custo
-          </th>
-          <td class="cell--number">
-            {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ emFoco?.realizado_custo ? `R$ ${dinheiro(emFoco.realizado_custo)}` : '-' }}
-          </td>
-          <td class="cell--number">
-            {{ emFoco?.realizado_custo && emFoco?.previsao_custo
-              ? `R$ ${dinheiro(emFoco.realizado_custo - emFoco.previsao_custo)}`
-              : '-' }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </template>
 
   <span
     v-if="chamadasPendentes?.emFoco"
@@ -880,3 +800,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </div>
   </div>
 </template>
+<style scoped>
+.destaque {
+  padding: 1.5rem 1rem;
+  border-block: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+</style>
