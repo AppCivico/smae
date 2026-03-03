@@ -106,7 +106,7 @@ async function receberArquivo(ev: Event): Promise<void> {
   const { valid } = await validate();
 
   if (valid) {
-    submit();
+    await submit();
   }
 }
 
