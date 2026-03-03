@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IdSigla } from 'src/common/dto/IdSigla.dto';

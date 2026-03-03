@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { UnwrapTuple } from '@prisma/client/runtime/library';
+import { UnwrapTuple } from '@prisma/client/runtime/client';
 import { fieldEncryptionExtension } from 'prisma-field-encryption';
 import { RetryPromise } from '../common/retryPromise';
 
@@ -29,7 +30,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     async onModuleInit() {}
 
     constructor() {
-        super({ log: logConfig });
+        const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+        super({ adapter, log: logConfig });
         // Apply field encryption extension immediately
         const extended = this.$extends(fieldEncryptionExtension());
 

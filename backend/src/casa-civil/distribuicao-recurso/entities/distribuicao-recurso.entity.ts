@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DistribuicaoStatusTipo, ParlamentarCargo } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { SeiIntegracaoDto } from '../../../sei-integracao/entities/sei-entidade.entity';

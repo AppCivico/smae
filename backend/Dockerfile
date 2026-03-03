@@ -20,6 +20,8 @@ RUN npm --loglevel=error install -g npm@11.4.2
 
 COPY package.json ./
 COPY package-lock.json ./
+COPY scripts/patch-prisma-exports.js ./scripts/
+COPY vendor/ ./vendor/
 
 RUN npm ci
 
@@ -28,6 +30,7 @@ COPY tools/install-duckdb-extensions.js ./tools/
 RUN node tools/install-duckdb-extensions.js
 
 COPY prisma/schema.prisma ./prisma/
+COPY prisma.config.ts ./
 
 RUN npx prisma generate
 

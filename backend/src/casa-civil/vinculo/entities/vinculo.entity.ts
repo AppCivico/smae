@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CampoVinculo, TipoPdm } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 

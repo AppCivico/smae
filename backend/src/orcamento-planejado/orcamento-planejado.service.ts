@@ -1,6 +1,6 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';

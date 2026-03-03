@@ -1,6 +1,6 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from '@prisma/client/runtime/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
