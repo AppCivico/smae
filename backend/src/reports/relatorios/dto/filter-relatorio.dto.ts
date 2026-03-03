@@ -5,6 +5,15 @@ import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-
 
 export class FilterRelatorioDto {
     /**
+     * Filtrar por ID do relatório
+     * @example ""
+     */
+    @IsOptional()
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    id?: number;
+
+    /**
      * Filtrar pdm_id ?
      * @example ""
      */

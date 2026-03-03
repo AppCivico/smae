@@ -438,6 +438,7 @@ export class ReportsService {
 
         const rows = await this.prisma.relatorio.findMany({
             where: {
+                id: filters.id,
                 fonte: filters.fonte,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
@@ -790,6 +791,7 @@ export class ReportsService {
             id: number;
             criador: { email: string } | null;
             fonte: FonteRelatorio;
+            sistema: ModuloSistema;
             parametros_processados: any;
             criado_em: Date;
         },
@@ -799,9 +801,10 @@ export class ReportsService {
 
         if (!relatorio.criador) return;
 
-        // A fonte precisa ser em slug para construir a URL.
-        const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
-        const url = new URL([baseUrl, 'relatorios', fonteSlug].join('/')).toString();
+        const frontendPath = this.getReportFrontendPath(relatorio.sistema, relatorio.fonte);
+        const url = frontendPath
+            ? new URL(frontendPath + `?id=${relatorio.id}`, baseUrl).toString()
+            : new URL(baseUrl).toString();
 
         await prismaTx.emaildbQueue.create({
             data: {
@@ -830,6 +833,53 @@ export class ReportsService {
                 },
             },
         });
+    }
+
+    private getReportFrontendPath(sistema: ModuloSistema, fonte: FonteRelatorio): string | null {
+        if (sistema === 'SMAE') return null;
+
+        const map: Partial<Record<ModuloSistema, Partial<Record<FonteRelatorio, string>>>> = {
+            PDM: {
+                MonitoramentoMensal: '/relatorios/mensal',
+                Indicadores: '/relatorios/semestral-ou-anual',
+                Orcamento: '/relatorios/orcamentarios-pdm',
+                PrevisaoCusto: '/relatorios/previsao-de-custo-pdm',
+            },
+            PlanoSetorial: {
+                PSMonitoramentoMensal: '/plano-setorial/relatorios/mensal',
+                PSIndicadores: '/plano-setorial/relatorios/semestral-ou-anual',
+                PSPrevisaoCusto: '/plano-setorial/relatorios/previsao-de-custo',
+                PSOrcamento: '/plano-setorial/relatorios/orcamentarios',
+            },
+            ProgramaDeMetas: {
+                PSMonitoramentoMensal: '/programa-de-meta/relatorios/mensal',
+                PSIndicadores: '/programa-de-meta/relatorios/semestral-ou-anual',
+                PSPrevisaoCusto: '/programa-de-meta/relatorios/previsao-de-custo',
+                PSOrcamento: '/programa-de-meta/relatorios/orcamentarios',
+            },
+            Projetos: {
+                Projeto: '/relatorios/projeto',
+                Projetos: '/relatorios/portfolio',
+                ProjetoStatus: '/relatorios/projeto-e-status',
+                ProjetoOrcamento: '/relatorios/orcamentarios-portfolio',
+                ProjetoPrevisaoCusto: '/relatorios/previsao-de-custo-portfolio',
+            },
+            MDO: {
+                Obras: '/relatorios/portfolio-obras',
+                ObraStatus: '/relatorios/obra-e-status',
+                ObrasOrcamento: '/relatorios/orcamentarios-portfolio-obras',
+                ObrasPrevisaoCusto: '/relatorios/previsao-de-custo-portfolio-obras',
+            },
+            CasaCivil: {
+                Parlamentares: '/relatorios/parlamentares',
+                TribunalDeContas: '/relatorios/tribunal-de-contas',
+                Transferencias: '/relatorios/transferencias-voluntarias',
+                AtvPendentes: '/relatorios/atividades-pendentes',
+                Demandas: '/relatorios/demandas',
+            },
+        };
+
+        return map[sistema]?.[fonte] ?? null;
     }
 
     private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
