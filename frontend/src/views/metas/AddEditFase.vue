@@ -487,12 +487,12 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         </div>
 
         <hr
-          v-if="singleCronograma.regionalizavel && tempRegions.length"
+          v-if="singleCronograma?.regionalizavel && tempRegions.length"
           class="mt2 mb2"
         >
 
         <div
-          v-if="singleCronograma.regionalizavel && tempRegions.length"
+          v-if="singleCronograma?.regionalizavel && tempRegions.length"
           class="mb1"
         >
           <label class="label">Região</label>
