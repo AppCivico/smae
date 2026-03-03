@@ -218,7 +218,7 @@ class RetornoDbAditivos {
     tipo_categoria: string;
     data: Date | null;
     data_termino_atual: Date | null;
-    valor_com_reajuste: number | null;
+    valor: number | null;
     percentual_medido: number | null;
 }
 
@@ -991,7 +991,7 @@ export class PPProjetosService implements ReportableService {
             'tipo_categoria',
             'tipo.nome',
             'data',
-            'valor_com_reajuste',
+            'valor',
             'percentual_medido',
             'data_termino_atual',
         ];
@@ -1888,7 +1888,7 @@ export class PPProjetosService implements ReportableService {
             tipo_aditivo.tipo AS tipo_categoria,
             contrato_aditivo.data,
             contrato_aditivo.data_termino_atualizada AS data_termino_atual,
-            contrato_aditivo.valor AS valor_com_reajuste,
+            contrato_aditivo.valor,
             contrato_aditivo.percentual_medido
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
@@ -1911,7 +1911,7 @@ export class PPProjetosService implements ReportableService {
                 tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
                 data: db.data ?? null,
-                valor_com_reajuste: db.valor_com_reajuste ?? null,
+                valor: db.valor ?? null,
                 percentual_medido: db.percentual_medido ?? null,
                 data_termino_atual: db.data_termino_atual ?? null,
             };

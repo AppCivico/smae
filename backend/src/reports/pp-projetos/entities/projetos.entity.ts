@@ -187,7 +187,7 @@ export class RelProjetosAditivosDto {
     tipo_categoria: string;
     tipo: IdNomeDto;
     data: Date | null;
-    valor_com_reajuste: number | null;
+    valor: number | null;
     percentual_medido: number | null;
     data_termino_atual: Date | null;
 }
