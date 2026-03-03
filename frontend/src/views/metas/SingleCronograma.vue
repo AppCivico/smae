@@ -562,7 +562,11 @@ watchEffect(() => {
               viewBox="0 0 12 14"
               xmlns="http://www.w3.org/2000/svg"
             ><use xlink:href="#i_atividade" /></svg>
-            <span>Etapa via atividade {{ r.cronograma_origem_etapa.atividade.codigo }} {{ r.cronograma_origem_etapa.atividade.titulo }}</span>
+            <span>Etapa via atividade {{
+              r.cronograma_origem_etapa.atividade.codigo
+            }} {{
+              r.cronograma_origem_etapa.atividade.titulo
+            }}</span>
           </SmaeLink>
           <SmaeLink
             v-else-if="r.cronograma_origem_etapa.iniciativa"
@@ -852,7 +856,13 @@ watchEffect(() => {
                     :class="classeParaFarolDeAtraso(rrr.atraso_grau)"
                     :title="textoParaFarolDeAtraso(rrr.atraso_grau)"
                   >
-                    <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
+                    <small class="niveis-pais">{{
+                      index + 1
+                    }}.{{
+                      rrindex + 1
+                    }}.</small>{{
+                      rrrindex + 1
+                    }}
                   </span>
                   <span>{{ rrr.titulo }}</span>
                 </div>
