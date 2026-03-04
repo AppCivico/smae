@@ -449,7 +449,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
   ÓrgãosStore.getAll();
 }
 
-if (!planosSimplificadosStore.planosSimplificados.length) {
+if (!planosSimplificadosStore.planosSimplificados.length
+  && !planosSimplificadosStore.chamadasPendentes.planosSimplificados) {
   planosSimplificadosStore.buscarPlanos();
 }
 </script>
