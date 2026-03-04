@@ -32,7 +32,7 @@ const {
   fase,
   fasePosicao,
   botoesLabel,
-  forumlariosAExibir,
+  formulariosAExibir,
   dataReferencia,
   valorAnalise,
   temConteudo,
@@ -208,7 +208,7 @@ function removerArquivo(arquivoIndex: number) {
     <form class="mt1 flex column">
       <section :class="`formularios formularios--${fase}`">
         <article
-          v-if="forumlariosAExibir.liberacao.exibir"
+          v-if="formulariosAExibir.liberacao.exibir"
           class="mt2 formulario formulario--liberacao"
         >
           <div class="formulario__item">
@@ -222,7 +222,7 @@ function removerArquivo(arquivoIndex: number) {
               :model-value="values.analise_qualitativa_liberador"
               as="textarea"
               name="analise_qualitativa_liberador"
-              :disabled="!forumlariosAExibir.liberacao.liberado"
+              :disabled="!formulariosAExibir.liberacao.liberado"
               :schema="schema"
               anular-vazio
               rows="3"
@@ -235,7 +235,7 @@ function removerArquivo(arquivoIndex: number) {
         </article>
 
         <article
-          v-if="forumlariosAExibir.aprovacao.exibir"
+          v-if="formulariosAExibir.aprovacao.exibir"
           class="mt2 formulario formulario--aprovacao"
         >
           <div class="formulario__item">
@@ -250,7 +250,7 @@ function removerArquivo(arquivoIndex: number) {
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="
-                !forumlariosAExibir.aprovacao.liberado|| (
+                !formulariosAExibir.aprovacao.liberado || (
                   fase === 'liberacao'
                   && temConteudo(valorAnalise.analise_qualitativa_aprovador)
                 )"
@@ -309,7 +309,7 @@ function removerArquivo(arquivoIndex: number) {
         </article>
 
         <article
-          v-if="forumlariosAExibir.cadastro.exibir"
+          v-if="formulariosAExibir.cadastro.exibir"
           class="mt2 formulario formulario--cadastro mt1"
         >
           <div class="flex g4">
@@ -324,7 +324,7 @@ function removerArquivo(arquivoIndex: number) {
                 class="inputtext light "
                 type="text"
                 name="valor_realizado"
-                :disabled="!forumlariosAExibir.cadastro.liberado"
+                :disabled="!formulariosAExibir.cadastro.liberado"
                 @update:model-value="(v) => {
                   setFieldValue('valor_realizado', v.replace(',', '.'))
 
@@ -336,7 +336,7 @@ function removerArquivo(arquivoIndex: number) {
                 class="inputtext light "
                 as="select"
                 name="valor_realizado"
-                :disabled="!forumlariosAExibir.cadastro.liberado"
+                :disabled="!formulariosAExibir.cadastro.liberado"
               >
                 <option value="">
                   -
@@ -391,7 +391,7 @@ function removerArquivo(arquivoIndex: number) {
               :model-value="values.analise_qualitativa"
               as="textarea"
               name="analise_qualitativa"
-              :disabled="!forumlariosAExibir.cadastro.liberado
+              :disabled="!formulariosAExibir.cadastro.liberado
                 || fase === 'aprovacao'
                 || fase === 'liberacao'"
               :schema="schema"

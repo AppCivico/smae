@@ -4,7 +4,11 @@ import { useRoute } from 'vue-router';
 
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 
-import type { FaseOpcoes, FormulariosTiposPosicao, FormulariosTiposSituacao } from '../interfaces/CicloAtualizacaoTypes';
+import type {
+  FaseOpcoes,
+  FormulariosTiposPosicao,
+  FormulariosTiposSituacao,
+} from '../interfaces/CicloAtualizacaoTypes';
 
 export default function useCicloAtualizacao() {
   type BotoesLabel = {
@@ -14,24 +18,24 @@ export default function useCicloAtualizacao() {
 
   const route = useRoute();
 
-  const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
+  const cicloAtualizacaoStore = useCicloAtualizacaoStore(
+    route.meta.entidadeMãe,
+  );
 
   const { emFoco } = storeToRefs(cicloAtualizacaoStore);
-  const fase = computed<FaseOpcoes>(
-    () => {
-      const faseAtual = emFoco.value?.fase;
+  const fase = computed<FaseOpcoes>(() => {
+    const faseAtual = emFoco.value?.fase;
 
-      if (!faseAtual || faseAtual === 'Preenchimento') {
-        return 'cadastro';
-      }
+    if (!faseAtual || faseAtual === 'Preenchimento') {
+      return 'cadastro';
+    }
 
-      if (faseAtual === 'Validacao') {
-        return 'aprovacao';
-      }
+    if (faseAtual === 'Validacao') {
+      return 'aprovacao';
+    }
 
-      return 'liberacao';
-    },
-  );
+    return 'liberacao';
+  });
 
   const fasePosicao = computed<number>(() => {
     const fasePosicaoOpcoes: FormulariosTiposPosicao = {
@@ -65,7 +69,7 @@ export default function useCicloAtualizacao() {
     };
   });
 
-  const forumlariosAExibir = computed<FormulariosTiposSituacao>(() => {
+  const formulariosAExibir = computed<FormulariosTiposSituacao>(() => {
     const posicaoAtual = fasePosicao.value;
 
     return {
@@ -113,7 +117,7 @@ export default function useCicloAtualizacao() {
     botoesLabel,
     fase,
     fasePosicao,
-    forumlariosAExibir,
+    formulariosAExibir,
     dataReferencia: route.params.dataReferencia as string,
     temConteudo,
   };

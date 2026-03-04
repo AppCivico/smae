@@ -45,7 +45,7 @@ const {
 
 const {
   fase,
-  forumlariosAExibir,
+  formulariosAExibir,
   botoesLabel,
   fasePosicao,
   dataReferencia,
@@ -288,7 +288,7 @@ function restaurarFormulario() {
 
       <section :class="`formularios formularios--${fase}`">
         <article
-          v-if="forumlariosAExibir.liberacao.exibir"
+          v-if="formulariosAExibir.liberacao.exibir"
           class="mt2 formulario formulario--liberacao"
         >
           <div class="formulario__item">
@@ -301,7 +301,7 @@ function restaurarFormulario() {
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_liberador"
-              :disabled="!forumlariosAExibir.liberacao.liberado"
+              :disabled="!formulariosAExibir.liberacao.liberado"
               :schema="schema"
               anular-vazio
               rows="3"
@@ -314,7 +314,7 @@ function restaurarFormulario() {
         </article>
 
         <article
-          v-if="forumlariosAExibir.aprovacao.exibir"
+          v-if="formulariosAExibir.aprovacao.exibir"
           class="mt2 formulario formulario--aprovacao"
         >
           <div class="formulario__item">
@@ -328,7 +328,7 @@ function restaurarFormulario() {
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="
-                !forumlariosAExibir.aprovacao.liberado || (
+                !formulariosAExibir.aprovacao.liberado || (
                   fase === 'liberacao'
                   && temConteudo(valorAnalise.analise_qualitativa_aprovador)
                 )"
@@ -385,7 +385,7 @@ function restaurarFormulario() {
         </article>
 
         <article
-          v-if="forumlariosAExibir.cadastro.exibir"
+          v-if="formulariosAExibir.cadastro.exibir"
           class="mt2 formulario formulario--cadastro mt1"
         >
           <div class="mt2 formulario__item">
@@ -398,7 +398,7 @@ function restaurarFormulario() {
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
-              :disabled="!forumlariosAExibir.cadastro.liberado
+              :disabled="!formulariosAExibir.cadastro.liberado
                 || fase === 'aprovacao'
                 || fase === 'liberacao'"
               :schema="schema"
@@ -532,7 +532,7 @@ function restaurarFormulario() {
                   ]"
                   type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
-                  :disabled="!forumlariosAExibir.cadastro.liberado"
+                  :disabled="!formulariosAExibir.cadastro.liberado"
                   @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
                 />
 
