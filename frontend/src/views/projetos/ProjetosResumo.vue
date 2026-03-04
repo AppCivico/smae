@@ -16,14 +16,17 @@ import subtractDates from '@/helpers/subtractDates';
 import truncate from '@/helpers/texto/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const DotaçãoStore = useDotaçãoStore();
 const ÓrgãosStore = useOrgansStore();
+const planosSimplificadosStore = usePlanosSimplificadosStore();
 const projetosStore = useProjetosStore();
 
 const { FontesDeRecursosPorAnoPorCódigo } = storeToRefs(DotaçãoStore);
 const { organs, órgãosPorId } = storeToRefs(ÓrgãosStore);
+const { planosPorId } = storeToRefs(planosSimplificadosStore);
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
@@ -211,71 +214,62 @@ const origemTipoLista = computed(() => {
   }];
 });
 
-const vinculacaoEstrategica = computed(() => {
+const colunasDeVinculacao = [
+  { chave: 'pdm', label: 'PdM/Plano Setorial' },
+  { chave: 'meta', label: 'Meta' },
+  { chave: 'iniciativa', label: '' },
+  { chave: 'atividade', label: '' },
+];
+
+function rotulosDoPlano(pdmId) {
+  const plano = pdmId ? planosPorId.value[pdmId] : null;
+  return {
+    iniciativa: plano?.rotulo_iniciativa || 'Iniciativa',
+    atividade: plano?.rotulo_atividade || 'Atividade',
+  };
+}
+
+const dadosDeVinculacao = computed(() => {
   const foco = emFoco.value;
-  if (!foco || foco.origem_tipo !== 'PdmSistema') return [];
+  if (!foco) return [];
 
-  const itens = [];
+  const linhas = [];
 
-  if (foco.meta_id) {
-    itens.push({
-      chave: 'meta_vinculada',
-      titulo: 'Meta vinculada',
-      valor: foco.meta?.codigo && foco.meta?.titulo
+  if (Array.isArray(foco.origens_extra)) {
+    foco.origens_extra.forEach((origem) => {
+      const rotulos = rotulosDoPlano(origem.pdm?.id);
+
+      linhas.push({
+        pdm: origem.pdm?.nome || origem.pdm || '-',
+        meta: formatarCodTitulo(origem.meta),
+        iniciativa: origem.iniciativa ? formatarCodTitulo(origem.iniciativa) : null,
+        iniciativa_rotulo: rotulos.iniciativa,
+        atividade: origem.atividade ? formatarCodTitulo(origem.atividade) : null,
+        atividade_rotulo: rotulos.atividade,
+      });
+    });
+  }
+
+  if (foco.origem_tipo === 'PdmSistema' && foco.meta_id) {
+    const rotulos = rotulosDoPlano(foco.meta?.pdm_id);
+
+    linhas.push({
+      pdm: '-',
+      meta: foco.meta?.codigo && foco.meta?.titulo
         ? `${foco.meta.codigo} - ${foco.meta.titulo}`
         : String(foco.meta_id),
+      iniciativa: foco.iniciativa
+        ? formatarCodTitulo(foco.iniciativa)
+        : (foco.iniciativa_id || null),
+      iniciativa_rotulo: rotulos.iniciativa,
+      atividade: foco.atividade
+        ? formatarCodTitulo(foco.atividade)
+        : (foco.atividade_id || null),
+      atividade_rotulo: rotulos.atividade,
     });
   }
 
-  if (foco.iniciativa_id) {
-    itens.push({
-      chave: 'iniciativa_vinculada',
-      titulo: 'Iniciativa vinculada',
-      valor: foco.iniciativa?.codigo && foco.iniciativa?.titulo
-        ? `${foco.iniciativa.codigo} - ${foco.iniciativa.titulo}`
-        : String(foco.iniciativa_id),
-    });
-  }
-
-  if (foco.atividade_id) {
-    itens.push({
-      chave: 'atividade_vinculada',
-      titulo: 'Atividade vinculada',
-      valor: foco.atividade?.codigo && foco.atividade?.titulo
-        ? `${foco.atividade.codigo} - ${foco.atividade.titulo}`
-        : String(foco.atividade_id),
-    });
-  }
-
-  return itens;
-});
-
-const origensExtraLista = computed(() => {
-  const foco = emFoco.value;
-  if (!Array.isArray(foco?.origens_extra) || !foco.origens_extra.length) return [];
-
-  return foco.origens_extra.map((origem, idx) => [
-    origem.pdm ? {
-      chave: `origem_extra_pdm_${idx}`,
-      titulo: 'PdM/Plano Setorial',
-      valor: origem.pdm?.nome || origem.pdm || '-',
-    } : null,
-    origem.meta ? {
-      chave: `origem_extra_meta_${idx}`,
-      titulo: schema.fields.origens_extra.innerType?.fields.meta_id.spec.label,
-      valor: formatarCodTitulo(origem.meta),
-    } : null,
-    origem.iniciativa ? {
-      chave: `origem_extra_iniciativa_${idx}`,
-      titulo: schema.fields.origens_extra.innerType?.fields.iniciativa_id.spec.label,
-      valor: formatarCodTitulo(origem.iniciativa),
-    } : null,
-    origem.atividade ? {
-      chave: `origem_extra_atividade_${idx}`,
-      titulo: schema.fields.origens_extra.innerType?.fields.atividade_id.spec.label,
-      valor: formatarCodTitulo(origem.atividade),
-    } : null,
-  ].filter(Boolean));
+  return linhas;
 });
 
 const estimativasIniciais = computed(() => {
@@ -454,6 +448,11 @@ defineProps({
 if (!Array.isArray(organs.value) || !organs.value.length) {
   ÓrgãosStore.getAll();
 }
+
+if (!planosSimplificadosStore.planosSimplificados.length
+  && !planosSimplificadosStore.chamadasPendentes.planosSimplificados) {
+  planosSimplificadosStore.buscarPlanos();
+}
 </script>
 <template>
   <CabecalhoDePagina>
@@ -619,34 +618,39 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <section>
       <h2>Vinculação Estratégica (Programa de Metas e outros)</h2>
 
+      <SmaeTable
+        v-if="dadosDeVinculacao.length"
+        :colunas="colunasDeVinculacao"
+        :dados="dadosDeVinculacao"
+        class="mb2"
+      >
+        <template #celula:iniciativa="{ linha }">
+          <template v-if="linha.iniciativa">
+            <strong>{{ linha.iniciativa_rotulo }}:</strong>
+            {{ linha.iniciativa }}
+          </template>
+          <template v-else>
+            -
+          </template>
+        </template>
+
+        <template #celula:atividade="{ linha }">
+          <template v-if="linha.atividade">
+            <strong>{{ linha.atividade_rotulo }}:</strong>
+            {{ linha.atividade }}
+          </template>
+          <template v-else>
+            -
+          </template>
+        </template>
+      </SmaeTable>
+
       <SmaeDescriptionList
         v-if="origemTipoLista.length"
         :lista="origemTipoLista"
         layout="grid"
         largura-minima="100%"
       />
-
-      <SmaeDescriptionList
-        v-if="vinculacaoEstrategica.length"
-        :lista="vinculacaoEstrategica"
-        layout="grid"
-        largura-minima="13rem"
-      />
-
-      <template v-if="origensExtraLista.length">
-        <h3 class="t12 uc w700 mt2 mb1">
-          {{ schema.fields.origens_extra.spec.label }}
-        </h3>
-
-        <SmaeDescriptionList
-          v-for="(origem, idx) in origensExtraLista"
-          :key="idx"
-          :lista="origem"
-          layout="grid"
-          largura-minima="13rem"
-          class="mb2"
-        />
-      </template>
     </section>
 
     <section>
