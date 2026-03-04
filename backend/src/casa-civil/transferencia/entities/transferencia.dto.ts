@@ -104,6 +104,8 @@ export class TransferenciaDetailDto {
     classificacao_id: number | null;
 
     modulos_vinculados: ModuloSistema[];
+
+    pode_editar: boolean;
 }
 
 export class ParlamentarTransferenciaDto {

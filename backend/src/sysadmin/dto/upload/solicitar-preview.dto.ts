@@ -1,4 +1,4 @@
-// upload/dto/arquivo-preview.dto.ts
+// sysadmin/dto/upload/solicitar-preview.dto.ts
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { arquivo_preview_status, arquivo_preview_tipo } from '@prisma/client';

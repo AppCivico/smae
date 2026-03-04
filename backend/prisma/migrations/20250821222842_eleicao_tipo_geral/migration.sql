@@ -1,5 +1,5 @@
 -- AlterEnum
-/*BEGIN;
+BEGIN;
 ALTER TYPE "EleicaoTipo" ADD VALUE 'Geral';
 COMMIT;
 

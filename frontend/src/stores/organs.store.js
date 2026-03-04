@@ -188,5 +188,11 @@ export const useOrgansStore = defineStore('organs', {
       return Number(Object.keys(this.órgãosPorNível)[Object.keys(this.órgãosPorNível).length - 1])
         || 0;
     },
+    orgaosComNome: ({ organs }) => (Array.isArray(organs)
+      ? organs.map((item) => ({
+        ...item,
+        nome_completo: `${item.sigla} - ${item.descricao}`,
+      }))
+      : []),
   },
 });

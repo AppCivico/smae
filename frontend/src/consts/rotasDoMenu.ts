@@ -45,6 +45,12 @@ export default [
     name: 'consultaGeral',
   },
   {
+    name: 'demandas',
+  },
+  {
+    name: 'PortfolioDemandas Publico',
+  },
+  {
     name: 'configuracoesRaiz',
   },
 

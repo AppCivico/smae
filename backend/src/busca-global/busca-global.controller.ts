@@ -4,6 +4,8 @@ import { SearchEntitiesNearbyDto } from '../geo-busca/dto/geo-busca.entity';
 import { BuscaGlobalService } from './busca-global.service';
 import { UnifiedTableResponseDto } from './dto/busca-global.entity';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 @Controller('busca-global')
 @ApiTags('Busca Global')
@@ -18,7 +20,10 @@ export class BuscaGlobalController {
     })
     @ApiBearerAuth('access-token')
     @Roles(['Menu.cc_consulta_geral'])
-    async getBuscaGlobal(@Body() dto: SearchEntitiesNearbyDto): Promise<UnifiedTableResponseDto> {
-        return await this.buscaGlobalService.getUnifiedTableData(dto);
+    async getBuscaGlobal(
+        @Body() dto: SearchEntitiesNearbyDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<UnifiedTableResponseDto> {
+        return await this.buscaGlobalService.getUnifiedTableData(dto, user);
     }
 }

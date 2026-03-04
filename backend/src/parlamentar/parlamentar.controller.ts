@@ -42,7 +42,7 @@ export class ParlamentarController {
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroParlamentar.inserir'])
+    @Roles(['CadastroParlamentar.listar'])
     @ApiPaginatedResponse(ParlamentarDto)
     @Get()
     async findAll(
@@ -54,7 +54,7 @@ export class ParlamentarController {
 
     @Get('/eleicao-comparecimento')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroParlamentar.inserir'])
+    @Roles(['CadastroParlamentar.listar'])
     async getEleicaoComparecimento(
         @Query() query: GetEleicaoComparecimentoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -64,7 +64,7 @@ export class ParlamentarController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroParlamentar.inserir'])
+    @Roles(['CadastroParlamentar.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ParlamentarDetailDto> {
         return await this.parlamentarService.findOne(params.id, user);
     }

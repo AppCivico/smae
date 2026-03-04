@@ -1,7 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
@@ -15,8 +16,6 @@ import {
 } from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto, RelPrevisaoCustoDto } from './entities/previsao-custo.entity';
-import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 @Injectable()
 export class PrevisaoCustoService implements ReportableService {

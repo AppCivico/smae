@@ -1,21 +1,22 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { ApiLogModule } from 'src/api-logs/api-log.module';
+import { UploadModule } from 'src/upload/upload.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AvisoEmailTaskModule } from './aviso_email/aviso_email.module';
 import { AeCronogramaTpModule } from './aviso_email_cronograma_tp/ae_cronograma_tp.module';
 import { AeNotaModule } from './aviso_email_nota/ae_nota.module';
 import { EchoModule } from './echo/echo.module';
+import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
+import { RefreshDemandaModule } from './refresh_demanda/refresh-demanda.module';
 import { RefreshIndicadorModule } from './refresh_indicador/refresh-indicador.module';
 import { RefreshMetaModule } from './refresh_meta/refresh-meta.module';
 import { RefreshMvModule } from './refresh_mv/refresh-mv.module';
 import { RefreshTransferenciaModule } from './refresh_transferencia/refresh-transferencia.module';
-import { TaskController } from './task.controller';
-import { TaskService } from './task.service';
-import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
 import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.module';
 import { RunReportModule } from './run_report/run-report.module';
 import { RunUpdateModule } from './run_update/run-update.module';
-import { ApiLogModule } from 'src/api-logs/api-log.module';
-import { UploadModule } from 'src/upload/upload.module';
+import { TaskController } from './task.controller';
+import { TaskService } from './task.service';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { UploadModule } from 'src/upload/upload.module';
         forwardRef(() => ImportacaoParlamentarModule),
         forwardRef(() => RunReportModule),
         forwardRef(() => RefreshVariavelModule),
+        forwardRef(() => RefreshDemandaModule),
         forwardRef(() => RunUpdateModule),
     ],
     controllers: [TaskController],

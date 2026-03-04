@@ -1,4 +1,4 @@
-import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class CreateApiLogDayDto {
     @IsDateYMD()

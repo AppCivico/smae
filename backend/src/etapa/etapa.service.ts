@@ -11,6 +11,7 @@ import { GeoLocService, UpsertEnderecoDto } from '../geo-loc/geo-loc.service';
 import { MetaItemDto } from '../meta/entities/meta.entity';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { MfPessoaAcessoPdm } from '../mf/mf.service';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { CreatePSEquipePontoFocalDto } from '../pdm/dto/create-pdm.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
@@ -679,6 +680,10 @@ export class EtapaService {
                 },
             });
         }
+
+        // Recalcula perfis das pessoas afetadas pelas equipes adicionadas/removidas
+        const allAffectedEquipes = [...equipesToAdd, ...equipesToRemove];
+        await recalcPessoasAfetadasPorEquipes(allAffectedEquipes, prismaTx);
     }
 
     private async upsertVariavel(

@@ -12,15 +12,15 @@ import {
     CONST_COD_NOTA_DIST_RECURSO,
     CONST_COD_NOTA_TRANSF_GOV,
     CONST_CRONO_VAR_CATEGORICA_ID,
+    CONST_PERFIL_CASA_CIVIL,
+    CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
+    CONST_PERFIL_COORDENADOR_EQUIPE,
+    CONST_PERFIL_GESTOR_OBRA,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE,
+    CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
     CONST_TIPO_NOTA_DIST_RECURSO,
     CONST_TIPO_NOTA_TRANSF_GOV,
     CONST_VAR_SEM_UN_MEDIDA,
-    CONST_PERFIL_PARTICIPANTE_EQUIPE,
-    CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
-    CONST_PERFIL_CASA_CIVIL,
-    CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
-    CONST_PERFIL_GESTOR_OBRA,
-    CONST_PERFIL_COORDENADOR_EQUIPE,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -136,6 +136,12 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
     SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
+    CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
+    CadastroDemanda: ['Cadastro de Demandas', 'CasaCivil'],
+    CadastroAreaTematica: ['Área Temática', 'CasaCivil'],
+    CadastroNota: ['Notas', 'SMAE'],
+    CadastroTransferenciaAnexo: ['Anexos de Transferências', 'CasaCivil'],
+
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
     CadastroCargo: ['', null],
@@ -199,6 +205,35 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['TipoAditivo.inserir', 'Inserir Tipo de Aditivo'],
         ['TipoAditivo.editar', 'Editar Tipo de Aditivo'],
         ['TipoAditivo.remover', 'Remover Tipo de Aditivo'],
+    ],
+
+    CadastroDemandaConfig: [
+        ['CadastroDemandaConfig.inserir', 'Inserir Configuração de Demanda'],
+        ['CadastroDemandaConfig.editar', 'Editar Configuração de Demanda'],
+        ['CadastroDemandaConfig.listar', 'Listar Configurações de Demanda'],
+        ['CadastroDemandaConfig.remover', 'Remover Configuração de Demanda'],
+    ],
+
+    CadastroDemanda: [
+        ['CadastroDemanda.inserir', 'Inserir Demanda'],
+        ['CadastroDemanda.editar', 'Editar Demanda'],
+        ['CadastroDemanda.listar', 'Listar Demandas'],
+        ['CadastroDemanda.remover', 'Remover Demanda'],
+        ['CadastroDemanda.validar', 'Validar/Publicar Demanda (SERI)'],
+    ],
+
+    CadastroAreaTematica: [
+        ['CadastroAreaTematica.inserir', 'Inserir Área Temática'],
+        ['CadastroAreaTematica.editar', 'Editar Área Temática'],
+        ['CadastroAreaTematica.listar', 'Listar Áreas Temáticas'],
+        ['CadastroAreaTematica.remover', 'Remover Área Temática'],
+    ],
+
+    CadastroNota: [
+        ['CadastroNota.inserir', 'Inserir Nota'],
+        ['CadastroNota.editar', 'Editar Nota'],
+        ['CadastroNota.listar', 'Listar Notas'],
+        ['CadastroNota.remover', 'Remover Nota'],
     ],
 
     AssuntoVariavel: [
@@ -494,6 +529,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroParlamentar: [
         ['CadastroParlamentar.editar', 'Editar Parlamentar'],
         ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
+        ['CadastroParlamentar.listar', 'Listar Parlamentar'],
         ['CadastroParlamentar.remover', 'Remover Parlamentar'],
         ['SMAE.acesso_telefone', 'Ver todos os telefones do parlamentar'],
     ],
@@ -507,6 +543,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['TransfereGov.listar', 'Listar oportunidades e comunicados do TransfereGov'],
         ['TransfereGov.atualizar', 'Atualizar oportunidades do TransfereGov'],
         ['TransfereGov.sincronizar', 'Sincronizar oportunidades e comunicados do TransfereGov'],
+    ],
+    CadastroTransferenciaAnexo: [
+        ['CadastroTransferenciaAnexo.inserir', 'Inserir Anexo de Transferência'],
+        ['CadastroTransferenciaAnexo.editar', 'Editar Anexo de Transferência'],
+        ['CadastroTransferenciaAnexo.listar', 'Listar Anexos de Transferência'],
+        ['CadastroTransferenciaAnexo.remover', 'Remover Anexo de Transferência'],
     ],
     CadastroWorkflow: [
         ['CadastroWorkflows.editar', 'Editar Workflows'],
@@ -1190,6 +1232,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             ...TVCadastroBasico,
             'CadastroParlamentar.editar',
             'CadastroParlamentar.inserir',
+            'CadastroParlamentar.listar',
             'CadastroParlamentar.remover',
             'Reports.remover.CasaCivil',
             'Reports.executar.CasaCivil',
@@ -1210,6 +1253,27 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'TransfereGov.listar',
             'TransfereGov.sincronizar',
             'CadastroTransferencia.dashboard',
+
+            'CadastroTransferenciaAnexo.inserir',
+            'CadastroTransferenciaAnexo.editar',
+            'CadastroTransferenciaAnexo.listar',
+            'CadastroTransferenciaAnexo.remover',
+
+            'CadastroDemandaConfig.editar',
+            'CadastroDemandaConfig.inserir',
+            'CadastroDemandaConfig.remover',
+            'CadastroDemandaConfig.listar',
+
+            'CadastroDemanda.editar',
+            'CadastroDemanda.inserir',
+            'CadastroDemanda.remover',
+            'CadastroDemanda.listar',
+            'CadastroDemanda.validar',
+
+            'CadastroNota.inserir',
+            'CadastroNota.editar',
+            'CadastroNota.remover',
+            'CadastroNota.listar',
         ],
     },
     {
@@ -1219,12 +1283,14 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
             'SMAE.gestor_distribuicao_recurso',
 
-            'CadastroTransferencia.listar',
-            'CadastroClassificacao.listar',
-            'AndamentoWorkflow.listar',
-            // TODO? Maybe precisa ter permissões para editar e remover, e ai precisaria melhorar
-            // o "pode_editar" do crono
-            'CadastroCronogramaTransferencia.listar',
+            'CadastroAreaTematica.listar',
+            'CadastroDemandaConfig.listar',
+
+            'CadastroVinculo.listar',
+            'CadastroDemanda.listar',
+            'CadastroDemanda.inserir',
+            'CadastroDemanda.editar',
+            'CadastroParlamentar.listar',
         ],
     },
     {

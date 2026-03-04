@@ -22,6 +22,7 @@ import {
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from '../../common/decorators/IsNumberStringCustom';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
@@ -80,13 +81,7 @@ export class CreateVariavelBaseDto {
      * Para não perder precisão no JSON, usar em formato string, mesmo sendo um número
      * @example "0.0"
      */
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @Type(() => String)
     @IsOptional()
     valor_base?: number;
@@ -318,13 +313,7 @@ export class ValorBaseFilhaDto {
      * Para não perder precisão no JSON, usar em formato string, mesmo sendo um número
      * @example "0.0"
      */
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @Type(() => String)
     valor_base: number;
 }

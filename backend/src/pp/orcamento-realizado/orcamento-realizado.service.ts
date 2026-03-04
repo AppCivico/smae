@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
@@ -41,6 +41,7 @@ export class OrcamentoRealizadoService {
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
         private readonly smaeConfigService: SmaeConfigService,
+        @Inject(forwardRef(() => VinculoService))
         private readonly vinculoService: VinculoService
     ) {
         // deixar ligado a verificação

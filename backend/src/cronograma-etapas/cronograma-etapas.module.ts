@@ -6,7 +6,7 @@ import { CronogramaEtapaController, CronogramaEtapaPSController } from './cronog
 import { CronogramaEtapaService } from './cronograma-etapas.service';
 
 @Module({
-    imports: [PrismaModule, GeoLocModule, forwardRef(() => MetaModule)],
+    imports: [PrismaModule, forwardRef(() => GeoLocModule), forwardRef(() => MetaModule)],
     controllers: [CronogramaEtapaController, CronogramaEtapaPSController],
     providers: [CronogramaEtapaService],
     exports: [CronogramaEtapaService],

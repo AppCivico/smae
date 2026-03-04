@@ -1,19 +1,3 @@
-<template>
-  <component
-    :is="elementoEnvelope"
-    :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]"
-    v-bind="$attrs"
-  >
-    <slot
-      :caminho="caminho"
-      :linha="linha"
-      :linha-index="linhaIndex"
-    >
-      {{ conteudoColuna || '-' }}
-    </slot>
-  </component>
-</template>
-
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -48,3 +32,20 @@ const conteudoColuna = computed((): unknown => {
 
 const elementoEnvelope = computed<'td' | 'th'>(() => (props.ehCabecalho ? 'th' : 'td'));
 </script>
+
+<template>
+  <component
+    :is="elementoEnvelope"
+    :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]"
+    v-bind="$attrs"
+  >
+    <slot
+      :caminho="caminho"
+      :linha="linha"
+      :celula="conteudoColuna"
+      :linha-index="linhaIndex"
+    >
+      {{ conteudoColuna || '-' }}
+    </slot>
+  </component>
+</template>

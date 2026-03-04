@@ -1,5 +1,5 @@
 import { arquivo_preview_status, arquivo_preview_tipo, Prisma } from '@prisma/client';
-import { ArquivoPreviewDto, ArquivoBaseDto } from './dto/arquivo-preview.dto';
+import { ArquivoPreviewDto, ArquivoBaseDto } from '../sysadmin/dto/upload/solicitar-preview.dto';
 import { PrismaMerge } from '../prisma/prisma.helpers';
 
 /**

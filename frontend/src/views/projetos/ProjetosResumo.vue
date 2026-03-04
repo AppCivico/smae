@@ -255,7 +255,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
         class="mb1"
-        :opções-do-polígono="{
+        :opcoes-do-poligono="{
           fill: true,
           opacity: 0.5,
         }"
@@ -271,12 +271,14 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div class="flex g2 mb2">
       <table class="tablemain">
-        <col class="col--minimum">
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
+        <colgroup>
+          <col class="col--minimum">
+          <col>
+          <col>
+          <col>
+          <col>
+          <col>
+        </colgroup>
         <thead>
           <tr>
             <th

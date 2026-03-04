@@ -393,6 +393,9 @@ export class PdmService {
                 possui_atividade: true,
                 possui_iniciativa: true,
                 arquivo_logo_id: true,
+                ArquivoLogo: {
+                    select: { thumbnail_arquivo_id: true },
+                },
                 nivel_orcamento: true,
                 tipo: true,
                 ps_admin_cps: true,
@@ -406,8 +409,15 @@ export class PdmService {
         const listActiveTmp = await Promise.all(
             listActive.map(async (pdm) => {
                 let logo = null;
+                let logo_thumbnail: string | null = null;
                 if (pdm.arquivo_logo_id) {
                     logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
+                    if (pdm.ArquivoLogo?.thumbnail_arquivo_id) {
+                        logo_thumbnail = this.uploadService.getDownloadToken(
+                            pdm.ArquivoLogo.thumbnail_arquivo_id,
+                            '30d'
+                        ).download_token;
+                    }
                 }
 
                 const perm_level = await this.calcPermissionLevel({ ...pdm, tipo: pdmTypeMode }, user);
@@ -440,6 +450,7 @@ export class PdmService {
                     perm_level: perm_level,
 
                     logo: logo,
+                    logo_thumbnail: logo_thumbnail,
                     data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
                     data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
                     data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
@@ -548,8 +559,19 @@ export class PdmService {
     ): Promise<PdmDto | PlanoSetorialDto> {
         const pdm = await this.loadPdm(tipo, id, user);
 
+        let logo_thumbnail: string | null = null;
         if (pdm.arquivo_logo_id) {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
+            const arquivoLogo = await this.prisma.arquivo.findUnique({
+                where: { id: pdm.arquivo_logo_id },
+                select: { thumbnail_arquivo_id: true },
+            });
+            if (arquivoLogo?.thumbnail_arquivo_id) {
+                logo_thumbnail = this.uploadService.getDownloadToken(
+                    arquivoLogo.thumbnail_arquivo_id,
+                    '30d'
+                ).download_token;
+            }
         }
 
         const pdmConfig = await this.prisma.pdmCicloConfig.findFirst({
@@ -578,6 +600,7 @@ export class PdmService {
             possui_contexto_meta: pdm.possui_contexto_meta,
             possui_complementacao_meta: pdm.possui_complementacao_meta,
             logo: pdm.logo,
+            logo_thumbnail: logo_thumbnail,
             ativo: pdm.ativo,
             rotulo_iniciativa: pdm.rotulo_iniciativa,
             rotulo_atividade: pdm.rotulo_atividade,

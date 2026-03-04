@@ -4,6 +4,7 @@ import {
   provide,
   ref,
 } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
@@ -27,9 +28,19 @@ provide('gblLimiteDeSeleçãoSimultânea', gblLimiteDeSeleçãoSimultânea);
 
 const alertStore = useAlertStore();
 
+const router = useRouter();
 const authStore = useAuthStore();
+
 if (authStore.estouAutenticada) {
   authStore.getDados();
+
+  router.isReady().then(async () => {
+    if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+      console.warn('Sincronizando módulo com a rota atual...');
+    }
+
+    await authStore.sincronizarModuloComRota();
+  });
 }
 
 const erro = ref(null);

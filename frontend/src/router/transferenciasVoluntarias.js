@@ -75,11 +75,75 @@ export default {
       },
     },
     {
+      component: () => import('@/views/demandas/DemandasRaiz.vue'),
+      name: 'demandas',
+      path: 'demandas',
+      meta: {
+        título: 'Demandas',
+        tituloSingular: 'Demanda',
+        tituloPlural: 'Demandas Geral',
+        limitarÀsPermissões: 'CadastroDemanda.listar',
+        íconeParaMenu: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19.9948 2.0063H3.99971C3.73457 2.0063 3.48029 2.11164 3.29281 2.29912C3.10533 2.4866 3 2.74087 3 3.00601V21.0003C3.02252 21.2579 3.13508 21.4993 3.31791 21.6821C3.50074 21.8649 3.74214 21.9775 3.99971 22H19.9948C20.26 22 20.5143 21.8947 20.7018 21.7072C20.8892 21.5197 20.9946 21.2654 20.9946 21.0003V3.00601C21.0106 2.87085 20.9958 2.73382 20.9513 2.60521C20.9067 2.47661 20.8336 2.35979 20.7373 2.26355C20.6411 2.1673 20.5243 2.09414 20.3957 2.04959C20.267 2.00503 20.13 1.99022 19.9948 2.0063ZM4.99943 4.00572H6.99886V20.0006H4.99943V4.00572ZM18.9951 20.0006H8.99828V4.00572H11.9971V10.9974L14.4964 8.998L16.9957 10.9974V4.00572H18.9951V20.0006Z" fill="#F7C234"/>
+          </svg>`,
+      },
+      children: [
+        {
+          name: 'demandas.listar',
+          path: '',
+          component: () => import('@/views/demandas/DemandasLista.vue'),
+          meta: {
+            título: 'Demandas',
+            tituloParaMigalhaDePao: 'Demandas',
+          },
+        },
+        {
+          name: 'demandas.criar',
+          path: 'novo',
+          component: () => import('@/views/demandas/DemandasCriarEditar.vue'),
+          meta: {
+            título: 'Nova Demanda',
+            rotaDeEscape: 'demandas.listar',
+            rotasParaMigalhasDePão: ['demandas.listar'],
+          },
+        },
+        {
+          name: 'demandas.editar',
+          path: ':demandaId',
+          component: () => import('@/views/demandas/DemandasCriarEditar.vue'),
+          props: tiparPropsDeRota,
+          meta: {
+            título: 'Editar Demanda',
+            rotaDeEscape: 'demandas.listar',
+            rotasParaMigalhasDePão: ['demandas.listar'],
+          },
+        },
+      ],
+    },
+    {
       name: 'TransferenciasVoluntariasListar',
       path: '',
       component: TransferenciasVoluntariasLista,
       meta: {
         título: 'Transferências Voluntárias',
+      },
+    },
+    {
+      name: 'PortfolioDemandas Publico',
+      path: '/portfolio-demandas-publico',
+      component: {
+        beforeRouteEnter(to, from, next) {
+          window.open('/publico/demandas', '_blank', 'noopener,noreferrer');
+          next(false);
+        },
+      },
+      meta: {
+        título: 'Portfólio de Demandas',
+        íconeParaMenu: '<svg width="20" height="20"><use xlink:href="#i_document" /></svg>',
+        entidadeMãe: 'TransferenciasVoluntarias',
+        limitarÀsPermissões: [
+          'CadastroDemanda.listar',
+        ],
       },
     },
     {
@@ -211,6 +275,7 @@ export default {
         título: 'Notas',
         rotaPrescindeDeChave: true,
         rotasParaMenuSecundário,
+        limitarÀsPermissões: 'CadastroNota.listar',
       },
       children: [
         /* LISTAR NOTAS */
@@ -290,14 +355,12 @@ export default {
     /* FIM DE NOTAS */
     {
       path: ':transferenciaId',
-      component: () => import(
-        '@/views/transferenciasVoluntarias/TransferenciasVoluntariasItem.vue'
-      ),
+      component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntariasItem.vue'),
       props: tiparPropsDeRota,
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: 'CadastroTransferencia.listar',
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
@@ -310,13 +373,12 @@ export default {
           component: TransferenciasVoluntariasCriarEditar,
           path: '',
           props: tiparPropsDeRota,
+          limitarÀsPermissões: 'CadastroTransferencia.editar',
         },
         {
           name: 'TransferenciasVoluntariasDetalhes',
           path: 'resumo',
-          component: () => import(
-            '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue'
-          ),
+          component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue'),
           props: tiparPropsDeRota,
           meta: {
             títuloParaMenu: 'Resumo',
@@ -347,9 +409,7 @@ export default {
         },
         {
           name: 'TransferenciasVoluntarias.Monitoramento',
-          component: () => import(
-            '@/views/transferenciasVoluntarias/TransferenciasVoluntarias.Monitoramento.vue'
-          ),
+          component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntarias.Monitoramento.vue'),
           path: 'monitoramento',
           props: tiparPropsDeRota,
           meta: {
@@ -381,6 +441,7 @@ export default {
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
         ],
+        limitarÀsPermissões: 'CadastroTransferenciaAnexo.listar',
       },
       children: [
         /* INCLUSÃO DE DOCUMENTO */
@@ -497,6 +558,7 @@ export default {
             título: 'Cronograma',
             títuloParaMenu: 'Cronograma',
             rotasParaMenuSecundário,
+            limitarÀsPermissões: 'CadastroCronogramaTransferencia.listar',
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
               'TransferenciasVoluntariasDetalhes',

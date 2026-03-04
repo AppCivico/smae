@@ -45,13 +45,13 @@ export class DashTransferenciaService {
         filter: FilterDashTransferenciasDto,
         user: PessoaFromJwt
     ): Promise<ListMfDashTransferenciasDto> {
-        const ids = await this.transferenciaService.buscaIdsPalavraChave(filter.palavra_chave);
+        // Construir condições de busca combinada (identificador + palavras-chave)
+        const searchConditions = await this.transferenciaService.buildSearchConditions(filter.palavra_chave);
 
         // eh marco, ter data de termino (ter data planejado), não ter data de termino real
         //
         const rows = await this.prisma.transferenciaStatusConsolidado.findMany({
             where: {
-                transferencia_id: ids ? { in: ids } : undefined,
                 orgaos_envolvidos: filter.orgaos_ids ? { hasSome: filter.orgaos_ids } : undefined,
                 situacao: filter.atividade ? { in: filter.atividade } : undefined,
                 // Filtro "prazo" é em dias, então caso seja passado 60. Buscamos transferencias que a data seja menor ou igual a hoje + 60 dias
@@ -59,11 +59,15 @@ export class DashTransferenciaService {
                 transferencia: {
                     AND: this.transferenciaService.permissionSet(user),
                     esfera: filter.esfera ? { in: filter.esfera } : undefined,
-                    parlamentar: {
-                        some: {
-                            partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
-                        },
-                    },
+                    // Busca combinada por identificador e palavras-chave
+                    ...(searchConditions ? { OR: searchConditions } : {}),
+                    parlamentar: filter.partido_ids
+                        ? {
+                              some: {
+                                  partido_id: { in: filter.partido_ids },
+                              },
+                          }
+                        : undefined,
                 },
             },
             include: {
@@ -106,7 +110,8 @@ export class DashTransferenciaService {
     }
 
     async notas(filters: FilterDashNotasDto, user: PessoaFromJwt): Promise<PaginatedDto<MfDashNotasDto>> {
-        const transferenciasIds = await this.transferenciaService.buscaIdsPalavraChave(filters.palavra_chave);
+        // Construir condições de busca combinada (identificador + palavras-chave)
+        const searchConditions = await this.transferenciaService.buildSearchConditions(filters.palavra_chave);
 
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
@@ -136,8 +141,9 @@ export class DashTransferenciaService {
                 transferencia: {
                     AND: this.transferenciaService.permissionSet(user),
                     removido_em: null,
-                    id: transferenciasIds ? { in: transferenciasIds } : undefined,
                     esfera: filters.esfera ? { in: filters.esfera } : undefined,
+                    // Busca combinada por identificador e palavras-chave
+                    ...(searchConditions ? { OR: searchConditions } : {}),
 
                     parlamentar: filters.partido_ids
                         ? { some: { partido_id: { in: filters.partido_ids } } }

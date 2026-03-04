@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -24,6 +24,7 @@ export class MetaOrcamentoUpdatedRet {
 export class MetaOrcamentoService {
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => OrcamentoPlanejadoService))
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
         private readonly dotacaoService: DotacaoService
     ) {}

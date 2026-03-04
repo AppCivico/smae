@@ -1,9 +1,17 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CampoVinculo, GeoCamadaConfig, Prisma } from '@prisma/client';
+import { GeoCamadaConfig, Prisma } from '@prisma/client';
 import * as turf from '@turf/simplify';
 import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { VinculoService } from '../casa-civil/vinculo/vinculo.service';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { GeoApiService } from '../geo-api/geo-api.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,16 +21,15 @@ import {
     FilterCamadasDto,
     FilterGeoJsonDto,
     FindGeoEnderecoReferenciaDto,
+    GeolocalizacaoDto,
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
     GeoLocDtoByLatLong,
-    GeolocalizacaoDto,
     RegioesPorNivel,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
-import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 class GeoTokenJwtBody {
     id: number;
@@ -66,6 +73,7 @@ export class GeoLocService {
         private readonly prisma: PrismaService,
         private readonly geoApi: GeoApiService,
         private readonly smaeConfigService: SmaeConfigService,
+        @Inject(forwardRef(() => VinculoService))
         private readonly vinculoService: VinculoService
     ) {}
 

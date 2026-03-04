@@ -1,173 +1,3 @@
-<template>
-  <component
-    :is="tabelaEnvelope"
-    :aria-label="tituloParaRolagemHorizontal"
-  >
-    <table
-      class="smae-table tablemain"
-      :class="{ 'tbody-zebra': $slots['sub-linha'] }"
-      v-bind="atributosDaTabela"
-    >
-      <slot name="titulo">
-        <caption
-          v-if="titulo"
-          class="tl uc w700 tamarelo"
-        >
-          {{ titulo }}
-        </caption>
-      </slot>
-
-      <slot
-        name="colunas"
-        :colunas="colunasFiltradas"
-      >
-        <colgroup>
-          <col
-            v-if="$slots['sub-linha']"
-            class="smae-table__coluna smae-table__coluna--toggle col--botão-de-ação"
-          >
-          <col
-            v-for="coluna in colunasFiltradas"
-            :key="`colunas--${coluna.chave}`"
-            class="smae-table__coluna"
-            :class="`smae-table__coluna--${coluna.chave}`"
-            v-bind="coluna.atributosDaColuna"
-          >
-          <col
-            v-if="temColunaDeAcoes"
-            class="col--botão-de-ação"
-          >
-        </colgroup>
-      </slot>
-
-      <thead>
-        <slot
-          name="cabecalho"
-          :colunas="colunasFiltradas"
-        >
-          <tr>
-            <th
-              v-if="$slots['sub-linha']"
-              class="smae-table__toggle-header"
-              aria-label="Expandir/Recolher"
-            />
-
-            <TableHeaderCell
-              v-for="coluna in colunasFiltradas"
-              :key="`header--${coluna.chave}`"
-              v-bind="coluna"
-              :schema="props.schema"
-              :atributos="coluna.atributosDoCabecalhoDeColuna"
-            >
-              <slot
-                v-if="listaSlotsUsados.cabecalho[coluna.slots?.coluna]"
-                :name="coluna.slots.coluna"
-                v-bind="coluna"
-              >
-                {{ coluna.label }}
-              </slot>
-            </TableHeaderCell>
-
-            <td v-if="temColunaDeAcoes">
-              <slot name="cabecalho:acao" />
-            </td>
-          </tr>
-        </slot>
-      </thead>
-
-      <slot
-        name="conteudo"
-        :dados="dados"
-      >
-        <TableBody
-          :dados="dados"
-          :colunas-filtradas="colunasFiltradas"
-          :has-action-button="hasActionButton"
-          :tem-coluna-de-acoes="temColunaDeAcoes"
-          :lista-slots-usados="listaSlotsUsados"
-          :rota-editar="rotaEditar"
-          :parametro-da-rota-editar="parametroDaRotaEditar"
-          :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
-          :esconder-deletar="esconderDeletar"
-          :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
-          :personalizar-linhas="personalizarLinhas"
-          @deletar="(ev: Linha) => emit('deletar', ev)"
-        >
-          <template #corpo="slotProps">
-            <slot
-              name="corpo"
-              v-bind="slotProps"
-            />
-          </template>
-
-          <template
-            v-if="$slots['sub-linha']"
-            #sub-linha="slotProps"
-          >
-            <slot
-              name="sub-linha"
-              v-bind="slotProps"
-            />
-          </template>
-
-          <template
-            v-if="$slots['acoes']"
-            #acoes="slotProps"
-          >
-            <slot
-              name="acoes"
-              v-bind="slotProps"
-            />
-          </template>
-
-          <template
-            v-for="coluna in colunasFiltradas"
-            :key="`slot-${coluna.chave}`"
-            #[coluna.slots?.celula]="slotProps"
-          >
-            <slot
-              v-if="coluna.slots?.celula"
-              :name="coluna.slots?.celula"
-              v-bind="slotProps"
-            />
-          </template>
-        </TableBody>
-      </slot>
-
-      <tfoot v-if="$slots.rodape || exibirRodape">
-        <slot
-          v-if="slots.rodape"
-          name="rodape"
-          :colunas="colunasFiltradas"
-        />
-
-        <tr v-else>
-          <th
-            v-if="$slots['sub-linha']"
-            class="smae-table__toggle-header"
-          />
-
-          <TableHeaderCell
-            v-for="coluna in colunasFiltradas"
-            :key="`footer--${coluna.chave}`"
-            v-bind="coluna"
-            :schema="props.schema"
-            :atributos="coluna.atributosDoRodapeDeColuna"
-          >
-            <slot
-              v-if="listaSlotsUsados.cabecalho[coluna.slots?.coluna]"
-              :name="coluna.slots.coluna"
-              v-bind="coluna"
-            >
-              {{ coluna.label }}
-            </slot>
-          </TableHeaderCell>
-        </tr>
-      </tfoot>
-    </table>
-  </component>
-</template>
-
 <script lang="ts" setup>
 import type { Component } from 'vue';
 import { computed, useAttrs, useSlots } from 'vue';
@@ -296,3 +126,174 @@ const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, it
 }));
 
 </script>
+
+<template>
+  <component
+    :is="tabelaEnvelope"
+    :aria-label="tituloParaRolagemHorizontal"
+  >
+    <table
+      class="smae-table tablemain"
+      :class="{ 'tbody-zebra': $slots['sub-linha'] }"
+      v-bind="atributosDaTabela"
+    >
+      <slot name="titulo">
+        <caption
+          v-if="titulo"
+          class="tl uc w700 tamarelo"
+        >
+          {{ titulo }}
+        </caption>
+      </slot>
+
+      <slot
+        name="colunas"
+        :colunas="colunasFiltradas"
+      >
+        <colgroup>
+          <col
+            v-if="$slots['sub-linha']"
+            class="smae-table__coluna smae-table__coluna--toggle col--botão-de-ação"
+          >
+          <col
+            v-for="coluna in colunasFiltradas"
+            :key="`colunas--${coluna.chave}`"
+            class="smae-table__coluna"
+            :class="`smae-table__coluna--${coluna.chave}`"
+            v-bind="coluna.atributosDaColuna"
+          >
+          <col
+            v-if="temColunaDeAcoes"
+            class="col--botão-de-ação"
+          >
+        </colgroup>
+      </slot>
+
+      <thead>
+        <slot
+          name="cabecalho"
+          :colunas="colunasFiltradas"
+        >
+          <tr>
+            <th
+              v-if="$slots['sub-linha']"
+              class="smae-table__toggle-header"
+              aria-label="Expandir/Recolher"
+            />
+
+            <TableHeaderCell
+              v-for="coluna in colunasFiltradas"
+              :key="`header--${coluna.chave}`"
+              v-bind="coluna"
+              :schema="props.schema"
+              :atributos="coluna.atributosDoCabecalhoDeColuna"
+            >
+              <slot
+                v-if="listaSlotsUsados.cabecalho[coluna.slots?.coluna]"
+                :name="coluna.slots.coluna"
+                v-bind="coluna"
+              >
+                {{ coluna.label }}
+              </slot>
+            </TableHeaderCell>
+
+            <td v-if="temColunaDeAcoes">
+              <slot name="cabecalho:acao" />
+            </td>
+          </tr>
+        </slot>
+      </thead>
+
+      <slot
+        name="conteudo"
+        :dados="dados"
+      >
+        <TableBody
+          :dados="dados"
+          :colunas-filtradas="colunasFiltradas"
+          :has-action-button="hasActionButton"
+          :tem-coluna-de-acoes="temColunaDeAcoes"
+          :lista-slots-usados="listaSlotsUsados"
+          :rota-editar="rotaEditar"
+          :parametro-da-rota-editar="parametroDaRotaEditar"
+          :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
+          :esconder-deletar="esconderDeletar"
+          :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+          :mensagem-exclusao="mensagemExclusao"
+          :personalizar-linhas="personalizarLinhas"
+          @deletar="(ev: Linha) => emit('deletar', ev)"
+        >
+          <template #corpo="slotProps">
+            <slot
+              name="corpo"
+              v-bind="slotProps"
+            />
+          </template>
+
+          <template
+            v-if="$slots['sub-linha']"
+            #sub-linha="slotProps"
+          >
+            <slot
+              name="sub-linha"
+              v-bind="slotProps"
+            />
+          </template>
+
+          <template
+            v-if="$slots['acoes']"
+            #acoes="slotProps"
+          >
+            <slot
+              name="acoes"
+              v-bind="slotProps"
+            />
+          </template>
+
+          <template
+            v-for="coluna in colunasFiltradas"
+            :key="`slot-${coluna.chave}`"
+            #[coluna.slots?.celula]="slotProps"
+          >
+            <slot
+              v-if="coluna.slots?.celula"
+              :name="coluna.slots?.celula"
+              v-bind="slotProps"
+            />
+          </template>
+        </TableBody>
+      </slot>
+
+      <tfoot v-if="$slots.rodape || exibirRodape">
+        <slot
+          v-if="slots.rodape"
+          name="rodape"
+          :colunas="colunasFiltradas"
+        />
+
+        <tr v-else>
+          <th
+            v-if="$slots['sub-linha']"
+            class="smae-table__toggle-header"
+          />
+
+          <TableHeaderCell
+            v-for="coluna in colunasFiltradas"
+            :key="`footer--${coluna.chave}`"
+            v-bind="coluna"
+            :schema="props.schema"
+            :atributos="coluna.atributosDoRodapeDeColuna"
+          >
+            <slot
+              v-if="listaSlotsUsados.cabecalho[coluna.slots?.coluna]"
+              :name="coluna.slots.coluna"
+              v-bind="coluna"
+            >
+              {{ coluna.label }}
+            </slot>
+          </TableHeaderCell>
+        </tr>
+      </tfoot>
+    </table>
+  </component>
+</template>

@@ -31,7 +31,7 @@ export const useMetasStore = (() => {
     }),
     getters: {
       activePdm() {
-        switch (this.route.meta.entidadeMãe) {
+        switch (this.route.meta?.entidadeMãe) {
           case 'pdm':
             return usePdMStore().activePdm;
           case 'planoSetorial':

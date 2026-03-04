@@ -176,6 +176,8 @@ const classeDeCondicao = computed(() => {
 }
 
 .smae-text__campo--textarea {
+  resize: vertical;
+
   .smae-text--com-contador > & {
     padding-bottom: 1.5em;
   }

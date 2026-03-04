@@ -6,6 +6,7 @@ import {
     GeoInfoBaseDto,
     PdmRotuloInfo,
     MetaIniAtvLookupInfoDto,
+    DemandaSearchResultDto,
 } from '../geo-busca/dto/geo-busca.entity';
 
 import {
@@ -14,6 +15,7 @@ import {
     UnifiedTableResponseDto,
     UnifiedTableHeadersDto,
 } from './dto/busca-global.entity';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 enum UnifiedEntityType {
     PROJETO = 'projeto',
@@ -22,6 +24,7 @@ enum UnifiedEntityType {
     INICIATIVA = 'iniciativa',
     ATIVIDADE = 'atividade',
     ETAPA = 'etapa',
+    DEMANDA = 'demanda',
 }
 
 @Injectable()
@@ -73,7 +76,7 @@ export class BuscaGlobalService {
         }
     }
 
-    async getUnifiedTableData(dto: UnifiedSearchInputDto): Promise<UnifiedTableResponseDto> {
+    async getUnifiedTableData(dto: UnifiedSearchInputDto, user: PessoaFromJwt): Promise<UnifiedTableResponseDto> {
         const headers: UnifiedTableHeadersDto = {
             mainColumn: 'Endereço',
             col1: 'Portfólio/Macro Tema',
@@ -84,7 +87,10 @@ export class BuscaGlobalService {
             dynamic_metadados: 'Detalhes', // Header for the column containing the array of metadata
         };
 
-        const searchResults: SearchEntitiesNearbyResponseDto = await this.geoBuscaService.searchEntitiesNearby(dto);
+        const searchResults: SearchEntitiesNearbyResponseDto = await this.geoBuscaService.searchEntitiesNearby(
+            dto,
+            user
+        );
 
         const allRows: UnifiedTableRowDto[] = [];
         let processingOrder = 0;
@@ -278,6 +284,35 @@ export class BuscaGlobalService {
                 col2: etapa.titulo || `Etapa ID ${etapa.id}`,
                 col3: metaInfo?.orgaos_sigla || null,
                 col4: 'N/A',
+                col5: 'Metadados',
+                dynamic_metadados,
+                distancia_metros_sort: sortDistance,
+                original_processing_order: processingOrder++,
+            });
+        }
+
+        // DEMANDAS
+        for (const demanda of searchResults.demandas) {
+            const { mainColumnText, sortDistance } = this.getMainColumnAndSortDistance(demanda.localizacoes);
+            const dynamic_metadados: UnifiedTableMetadadoDto[] = [];
+            this.addMetadado(dynamic_metadados, 'Finalidade', demanda.finalidade);
+            this.addMetadado(dynamic_metadados, 'Valor', demanda.valor);
+            this.addMetadado(dynamic_metadados, 'Área Temática', demanda.area_tematica_nome);
+            this.addMetadado(dynamic_metadados, 'Responsável', demanda.nome_responsavel);
+            this.addMetadado(dynamic_metadados, 'Unidade', demanda.unidade_responsavel);
+            if (demanda.nro_vinculos) {
+                this.addMetadado(dynamic_metadados, 'Vínculos', demanda.nro_vinculos);
+            }
+
+            allRows.push({
+                row_id: `${UnifiedEntityType.DEMANDA}-${demanda.id}`,
+                modulo_sistema: 'CasaCivil',
+                entity_id: demanda.id,
+                mainColumn: mainColumnText,
+                col1: demanda.orgao_sigla,
+                col2: demanda.nome_projeto,
+                col3: [demanda.orgao_sigla],
+                col4: demanda.status,
                 col5: 'Metadados',
                 dynamic_metadados,
                 distancia_metros_sort: sortDistance,

@@ -10,7 +10,7 @@ export default {
   meta: {
     título: 'Parlamentares',
     rotaPrescindeDeChave: true,
-    limitarÀsPermissões: 'CadastroParlamentar.',
+    limitarÀsPermissões: 'CadastroParlamentar.inserir',
   },
   children: [
     {

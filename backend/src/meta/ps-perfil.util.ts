@@ -1,6 +1,7 @@
 import { HttpException } from '@nestjs/common';
 import { PdmPerfilRelacionamento, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 
 // Existe a upsertPSPerfisEtapa que é muito semelhante a essa função, também trabalha na tabela pdm_perfil
@@ -64,6 +65,10 @@ export async function upsertPSPerfisMetaIniAtv(
             },
         });
     }
+
+    // Recalcula perfis das pessoas afetadas pelas equipes adicionadas/removidas
+    const allAffectedEquipes = [...equipesToAdd, ...equipesToRemove];
+    await recalcPessoasAfetadasPorEquipes(allAffectedEquipes, prismaTx);
 }
 
 export function validatePSEquipes(

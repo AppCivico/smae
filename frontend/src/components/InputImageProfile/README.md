@@ -1,8 +1,8 @@
 # InputImageProfile
 
-Componente reutilizável para seleção e upload de imagens/ícones.
+Componente reutilizavel para selecao e upload de imagens/icones.
 
-## Características
+## Caracteristicas
 
 - Aceita arquivos `.jpg`, `.png`, `.jpeg`
 - Suporta drag-and-drop
@@ -10,27 +10,62 @@ Componente reutilizável para seleção e upload de imagens/ícones.
 
 ## Props
 
-| Prop | Tipo | Default | Descrição |
+| Prop | Tipo | Default | Descricao |
 |------|------|---------|-----------|
-| `modelValue` | `String` | `''` | URL da imagem atual para exibição |
-| `labelBotao` | `String` | `'carregar foto'` | Texto do botão de upload |
+| `modelValue` | `String` | `''` | URL da imagem atual para exibicao |
+| `labelBotao` | `String` | `'carregar foto'` | Texto do botao de upload |
+| `exibirBotaoExcluir` | `Boolean` | `false` | Exibe botao para excluir imagem |
 
 ## Eventos
 
-| Evento | Payload | Descrição |
+| Evento | Payload | Descricao |
 |--------|---------|-----------|
-| `update:modelValue` | `File` | Emitido quando um arquivo é selecionado |
+| `update:modelValue` | `File \| null` | Emitido quando um arquivo e selecionado ou excluido |
+| `excluir` | - | Emitido quando o botao de excluir e clicado |
 
-## Padrão de Uso com Upload
+## Composable useUpload
 
-### 1. Template
+O composable `useUpload` encapsula a logica de upload de arquivos para a API.
+
+### API
+
+```typescript
+import { useUpload } from '@/composables/useUpload';
+
+const { carregando, erro, uploadArquivo, obterUrlDownload } = useUpload();
+
+// Upload de arquivo
+const token = await uploadArquivo(file, 'ICONE_PORTFOLIO');
+
+// Obter URL para exibir imagem existente
+const url = obterUrlDownload(downloadToken);
+```
+
+### Retorno
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `carregando` | `Ref<boolean>` | Estado de loading durante upload |
+| `erro` | `Ref<unknown>` | Erro ocorrido durante upload |
+| `uploadArquivo` | `(file: File, tipo?: TipoUpload) => Promise<string>` | Faz upload e retorna token |
+| `obterUrlDownload` | `(token: string) => string` | Gera URL de download |
+
+### Tipos de Upload
+
+- `ICONE_PORTFOLIO` - Para icones/imagens de perfil (default)
+- `DOCUMENTO` - Para documentos
+
+## Padrao de Uso
+
+### Template
 
 ```vue
 <template>
   <Field v-slot="{ handleChange, value }" name="icone">
     <InputImageProfile
       :model-value="iconeAtualizado ? undefined : value"
-      label-botao="carregar ícone"
+      label-botao="carregar icone"
+      exibir-botao-excluir
       @update:model-value="async (file) => {
         const token = await handleIconeChange(file);
         handleChange(token);
@@ -40,90 +75,73 @@ Componente reutilizável para seleção e upload de imagens/ícones.
 </template>
 ```
 
-### 2. Script
+### Script
 
 ```vue
 <script setup lang="ts">
+import { ref } from 'vue';
 import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
+import { useUpload } from '@/composables/useUpload';
 
-const iconeAtualizado = ref<boolean>(false);
+const { uploadArquivo, obterUrlDownload } = useUpload();
+const iconeAtualizado = ref(false);
 
 async function handleIconeChange(file: unknown) {
-  if (!file || typeof file !== 'object' || file.constructor.name !== 'File') {
+  if (file === null) {
+    iconeAtualizado.value = true;
+    return null;
+  }
+
+  if (!file || typeof file !== 'object' || !(file instanceof File)) {
     return file;
   }
 
   iconeAtualizado.value = true;
-  const uploadToken = await store.uploadIcone(file as File);
-  return uploadToken;
+  return await uploadArquivo(file, 'ICONE_PORTFOLIO');
 }
 
 const onSubmit = handleSubmit.withControlled(async (formValues) => {
-  if (!iconeAtualizado.value) {
-    delete formValues.icone;
+  const params = { ...formValues };
+
+  if (iconeAtualizado.value) {
+    params.sobrescrever_icone = true;
+    params.icone_upload_token = params.icone || null;
   }
-  await store.salvarItem(formValues, props.escopoId);
+  delete params.icone;
+
+  await store.salvarItem(params, id);
 });
 </script>
 ```
 
-### 3. Store Pinia - Método de Upload
+### Getter para Valores Iniciais
+
+Para exibir uma imagem existente, use `obterUrlDownload`:
 
 ```typescript
-async uploadIcone(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append('tipo', 'ICONE_PORTFOLIO'); // ajuste o tipo conforme necessário
-  formData.append('arquivo', file);
+import { useUpload } from '@/composables/useUpload';
 
-  const resposta = await this.requestS.upload(
-    `${import.meta.env.VITE_API_URL}/upload`,
-    formData,
-  ) as { upload_token: string };
+const { obterUrlDownload } = useUpload();
 
-  return resposta.upload_token;
-}
-```
-
-### 4. Store Pinia - Método de Salvamento
-
-```typescript
-async salvarItem(params: any = {}, id = 0) {
-  const requestParams = { ...params };
-
-  if (requestParams.icone) {
-    requestParams.sobrescrever_icone = true;
-    requestParams.icone_upload_token = requestParams.icone || undefined;
-    delete requestParams.icone;
-  }
-
-  await this.requestS.patch(`${rota}/${id}`, requestParams);
-}
-```
-
-### 5. Getter para Exibir Imagem Existente
-
-```typescript
-getters: {
-  itemParaEdicao({ emFoco }) {
-    return {
-      ...emFoco,
-      icone: emFoco?.icone && `${import.meta.env.VITE_API_URL}/download/${emFoco.icone.download_token}`,
-    };
-  },
-}
+const valoresIniciais = computed(() => ({
+  ...emFoco.value,
+  icone: emFoco.value?.icone
+    ? obterUrlDownload(emFoco.value.icone.download_token)
+    : undefined,
+}));
 ```
 
 ## Fluxo Completo
 
-1. Usuário seleciona arquivo no `InputImageProfile`
+1. Usuario seleciona arquivo no `InputImageProfile`
 2. Componente emite o `File` via `@update:model-value`
-3. `handleIconeChange` faz upload via store e recebe `upload_token`
-4. Token é armazenado no campo do formulário via vee-validate
+3. `handleIconeChange` faz upload via `useUpload` e recebe `upload_token`
+4. Token e armazenado no campo do formulario via vee-validate
 5. Flag `iconeAtualizado` controla se deve enviar no submit
 6. No submit, se atualizado, envia `sobrescrever_icone: true` e `icone_upload_token`
-7. Para exibir imagem existente, usa URL: `${VITE_API_URL}/download/${download_token}`
+7. Para exibir imagem existente, usa `obterUrlDownload(download_token)`
 
-## Exemplo de Uso
+## Exemplo de Implementacao
 
-Veja implementação completa em:
+Veja implementacao completa em:
 - `frontend/src/views/projetos/TermoEncerramentoProjetoCriarEditar.vue`

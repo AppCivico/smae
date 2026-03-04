@@ -11,7 +11,7 @@ import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } fr
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { FormatCurrency } from 'src/common/format-currency';
-import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
+import { ProjetoReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -368,6 +368,7 @@ export class ProjetoService {
         @Inject(forwardRef(() => PortfolioService))
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService,
+        @Inject(forwardRef(() => GeoLocService))
         private readonly geolocService: GeoLocService,
         private readonly blocoNotaService: BlocoNotaService,
         @Inject(forwardRef(() => TarefaService))
@@ -662,6 +663,16 @@ export class ProjetoService {
             if (tags.length !== dto.tags.length) throw new HttpException('Uma ou mais tag não foi encontrada', 400);
         }
 
+        if (Array.isArray(dto.tags_portfolio)) {
+            const tagsPort = await this.prisma.portfolioTag.findMany({
+                where: { id: { in: dto.tags_portfolio }, removido_em: null, portfolio: { tipo_projeto: tipo } },
+                select: { id: true },
+            });
+
+            if (tagsPort.length !== dto.tags_portfolio.length)
+                throw new HttpException('Uma ou mais tag de portfólio não foi encontrada', 400);
+        }
+
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.projeto.create({
@@ -753,6 +764,19 @@ export class ProjetoService {
                         orgao_colaborador_id: dto.orgao_colaborador_id,
                         secretario_colaborador: dto.secretario_colaborador,
                         tags: dto.tags ?? [],
+                        tags_portfolio: {
+                            createMany: {
+                                data: dto.tags_portfolio
+                                    ? dto.tags_portfolio.map((tp) => {
+                                          return {
+                                              portfolio_tag_id: tp,
+                                              criado_em: now,
+                                              criado_por: user.id,
+                                          };
+                                      })
+                                    : [],
+                            },
+                        },
                     },
                     select: { id: true },
                 });
@@ -1562,7 +1586,7 @@ export class ProjetoService {
         tipo: TipoProjeto | 'AUTO',
         id: number,
         user: PessoaFromJwt | undefined,
-        readonly: ReadOnlyBooleanType
+        readonly: ProjetoReadOnlyBooleanType
     ): Promise<ProjetoDetailDto | ProjetoDetailMdoDto> {
         if (tipo == 'AUTO') {
             const projeto = await this.prisma.projeto.findFirstOrThrow({
@@ -2132,7 +2156,7 @@ export class ProjetoService {
     private async calcPermissions(
         projeto: ProjetoResumoPermisao,
         user: PessoaFromJwt | undefined,
-        readonly: ReadOnlyBooleanType
+        readonly: ProjetoReadOnlyBooleanType
     ): Promise<ProjetoPermissoesDto> {
         const camposLiberadosPorPadrao = projeto.tipo == 'MDO'; // Para MDO o estado padrão dos campos é habilitado
 

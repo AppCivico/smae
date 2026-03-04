@@ -1,0 +1,41 @@
+import { Type } from 'class-transformer';
+import {
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+    ValidateNested,
+} from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from '../../../common/consts';
+
+export class CreateAreaTematicaAcaoDto {
+    @IsOptional()
+    @IsInt({ message: 'id precisa ser um número' })
+    id?: number;
+
+    @IsString({ message: 'nome precisa ser uma string' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `nome deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    nome: string;
+
+    @IsBoolean({ message: 'ativo precisa ser um booleano' })
+    ativo: boolean;
+}
+
+export class CreateAreaTematicaDto {
+    @IsString({ message: 'nome precisa ser uma string' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `nome deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    nome: string;
+
+    @IsOptional()
+    @IsBoolean({ message: 'ativo precisa ser um booleano' })
+    ativo?: boolean;
+
+    @IsOptional()
+    @IsArray({ message: 'acoes precisa ser um array' })
+    @ValidateNested({ each: true })
+    @Type(() => CreateAreaTematicaAcaoDto)
+    acoes?: CreateAreaTematicaAcaoDto[];
+}

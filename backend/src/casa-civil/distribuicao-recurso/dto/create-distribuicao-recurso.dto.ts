@@ -12,6 +12,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
@@ -51,64 +52,28 @@ export class CreateDistribuicaoRecursoDto {
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     nome?: string;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
-        }
-    )
+    @IsNumberStringCustom(35, 2)
     @ValidateIf((object, value) => value !== null)
     valor: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
-        }
-    )
+    @IsNumberStringCustom(35, 2)
     @ValidateIf((object, value) => value !== null)
     valor_total: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
-        }
-    )
+    @IsNumberStringCustom(35, 2)
     @ValidateIf((object, value) => value !== null)
     valor_contrapartida: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     custeio: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
-        }
-    )
+    @IsNumberStringCustom(35, 2)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
     valor_empenho?: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
-        }
-    )
+    @IsNumberStringCustom(35, 2)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
     valor_liquidado?: number;
@@ -143,13 +108,7 @@ export class CreateDistribuicaoRecursoDto {
     @ValidateIf((object, value) => value !== null)
     pct_investimento?: number;
 
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
-        }
-    )
+    @IsNumberStringCustom(35, 30)
     @ValidateIf((object, value) => value !== null)
     investimento: number;
 
@@ -319,13 +278,7 @@ export class CreateDistribuicaoParlamentarDto {
     objeto?: string;
 
     @IsOptional()
-    @IsNumberString(
-        {},
-        {
-            message:
-                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
-        }
-    )
+    @IsNumberStringCustom(35, 2)
     @ValidateIf((object, value) => value !== null)
     valor?: number;
 }

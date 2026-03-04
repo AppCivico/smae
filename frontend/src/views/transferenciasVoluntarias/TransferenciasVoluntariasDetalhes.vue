@@ -130,6 +130,7 @@ nextTick(() => {
     </h3>
     <hr class="f1">
     <SmaeLink
+      v-if="transferenciaEmFoco?.pode_editar"
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
       class="btn with-icon bgnone tcprimary p0"
@@ -448,6 +449,7 @@ nextTick(() => {
       <hr class="f1">
 
       <SmaeLink
+        v-if="transferenciaEmFoco?.pode_editar"
         :to="{ name: 'RegistroDeTransferenciaEditar' }"
         title="Editar recursos financeiros"
         class="btn with-icon bgnone tcprimary p0"

@@ -1,6 +1,8 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -10,6 +12,10 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
+import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
+import AreasTematicasCriarEditar from '@/views/areasTematicas/AreasTematicasCriarEditar.vue';
+import AreasTematicasLista from '@/views/areasTematicas/AreasTematicasLista.vue';
+import AreasTematicasRaiz from '@/views/areasTematicas/AreasTematicasRaiz.vue';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
@@ -102,6 +108,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternos.listar',
   'equipesListar',
   'Workflow',
+  'configuracaoDemandas',
   'programaDeMetas.planosSetoriaisListar',
 ];
 
@@ -112,6 +119,8 @@ export default [
     name: 'configuracoesRaiz',
     meta: {
       limitarÀsPermissões: [
+        'CadastroAreaTematica.editar',
+        'CadastroAreaTematica.inserir',
         'CadastroEmpreendimentoMDO.',
         'CadastroGrupoVariavel.',
         'CadastroOds.',
@@ -1048,6 +1057,131 @@ export default [
 
                 meta: {
                   título: 'Editar Status de Distribuição',
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      {
+        path: '/configuracao-demandas',
+        name: 'configuracaoDemandas',
+        component: () => import('@/views/demandas/DemandasRaiz.vue'),
+        meta: {
+          título: 'Demandas',
+          entidadeMãe: 'TransferenciasVoluntarias',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: [
+            'CadastroAreaTematica.inserir',
+            'CadastroDemandaConfig.inserir',
+          ],
+          rotasParaMenuSecundário: [
+            'areasTematicas.listar',
+            'valoresLimites.listar',
+          ],
+        },
+        children: [
+          {
+            path: 'areas-tematicas',
+            component: AreasTematicasRaiz,
+            meta: {
+              título: 'Áreas Temáticas',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroAreaTematica.listar',
+            },
+            children: [
+              {
+                name: 'areasTematicas.listar',
+                path: '',
+                component: AreasTematicasLista,
+                meta: {
+                  título: 'Áreas Temáticas',
+                },
+              },
+              {
+                name: 'areasTematicas.criar',
+                path: 'novo',
+                component: AreasTematicasCriarEditar,
+                meta: {
+                  título: 'Nova Área Temática',
+                  limitarÀsPermissões: 'CadastroAreaTematica.inserir',
+                  rotaDeEscape: 'areasTematicas.listar',
+                  rotasParaMigalhasDePão: ['demandas', 'areasTematicas.listar'],
+                },
+              },
+              {
+                name: 'areasTematicas.editar',
+                path: ':areaTematicaId',
+                component: AreasTematicasCriarEditar,
+                props: tiparPropsDeRota,
+                meta: {
+                  título: () => {
+                    const { emFoco } = useAreasTematicasStore();
+
+                    if (!emFoco) {
+                      return 'Editar Área Temática';
+                    }
+
+                    return emFoco.nome;
+                  },
+                  tituloParaMigalhaDePao: () => {
+                    const { emFoco } = useAreasTematicasStore();
+
+                    if (!emFoco) {
+                      return 'Editar Área Temática';
+                    }
+
+                    return emFoco.nome;
+                  },
+                  limitarÀsPermissões: 'CadastroAreaTematica.editar',
+                  rotaDeEscape: 'areasTematicas.listar',
+                  rotasParaMigalhasDePão: ['areasTematicas.listar'],
+                },
+              },
+            ],
+          },
+          {
+            path: 'valores-limites',
+            component: () => import('@/views/valoresLimites/ValoresLimitesRaiz.vue'),
+            meta: {
+              título: 'Valores Limites',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroDemandaConfig.listar',
+            },
+            children: [
+              {
+                name: 'valoresLimites.listar',
+                path: '',
+                component: () => import('@/views/valoresLimites/ValoresLimitesLista.vue'),
+                meta: {
+                  título: 'Valores Limites',
+                },
+              },
+              {
+                name: 'valoresLimites.criar',
+                path: 'novo',
+                component: () => import('@/views/valoresLimites/ValoresLimitesCriarEditar.vue'),
+                meta: {
+                  título: 'Novo Valor Limite',
+                  limitarÀsPermissões: 'CadastroDemandaConfig.inserir',
+                  rotaDeEscape: 'valoresLimites.listar',
+                  rotasParaMigalhasDePão: ['valoresLimites.listar'],
+                },
+              },
+              {
+                name: 'valoresLimites.editar',
+                path: ':valorLimiteId',
+                component: () => import('@/views/valoresLimites/ValoresLimitesCriarEditar.vue'),
+                props: tiparPropsDeRota,
+                meta: {
+                  título: () => {
+                    const { emFoco } = useValoresLimitesStore();
+                    return !emFoco ? 'Editar Valor Limite' : `Vigência a partir de ${dateToShortDate(emFoco.data_inicio_vigencia)}`;
+                  },
+                  limitarÀsPermissões: 'CadastroDemandaConfig.editar',
+                  rotaDeEscape: 'valoresLimites.listar',
+                  rotasParaMigalhasDePão: ['valoresLimites.listar'],
                 },
               },
             ],

@@ -1,3 +1,41 @@
+<script lang="ts" setup>
+import type { Coluna, Linha } from '../tipagem';
+import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './DeleteButton.vue';
+import EditButton, { type EditButtonProps } from './EditButton.vue';
+import TableCell from './TableCell.vue';
+
+type ColunaComSlots = Coluna & {
+  slots?: {
+    coluna?: string
+    celula?: string
+  }
+};
+
+type Props =
+  EditButtonProps
+  & DeleteButtonProps
+  & {
+    linha: Linha
+    linhaIndex: number
+    colunasFiltradas: ColunaComSlots[]
+    hasActionButton: boolean
+    temColunaDeAcoes: boolean
+    listaSlotsUsados: {
+      cabecalho: Record<string, true>
+      celula: Record<string, true>
+    }
+  };
+
+type Emits = DeleteButtonEvents;
+
+withDefaults(defineProps<Props>(), {
+  parametroDaRotaEditar: 'id',
+  parametroNoObjetoParaEditar: 'id',
+  parametroNoObjetoParaExcluir: 'descricao',
+});
+const emit = defineEmits<Emits>();
+</script>
+
 <template>
   <TableCell
     v-for="coluna in colunasFiltradas"
@@ -39,6 +77,7 @@
             :linha="linha"
             :esconder-deletar="esconderDeletar"
             :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+            :mensagem-exclusao="mensagemExclusao"
             @deletar="ev => emit('deletar', ev)"
           />
         </template>
@@ -46,41 +85,3 @@
     </div>
   </td>
 </template>
-
-<script lang="ts" setup>
-import type { Coluna, Linha } from '../tipagem';
-import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './DeleteButton.vue';
-import EditButton, { type EditButtonProps } from './EditButton.vue';
-import TableCell from './TableCell.vue';
-
-type ColunaComSlots = Coluna & {
-  slots?: {
-    coluna?: string
-    celula?: string
-  }
-};
-
-type Props =
-  EditButtonProps
-  & DeleteButtonProps
-  & {
-    linha: Linha
-    linhaIndex: number
-    colunasFiltradas: ColunaComSlots[]
-    hasActionButton: boolean
-    temColunaDeAcoes: boolean
-    listaSlotsUsados: {
-      cabecalho: Record<string, true>
-      celula: Record<string, true>
-    }
-  };
-
-type Emits = DeleteButtonEvents;
-
-withDefaults(defineProps<Props>(), {
-  parametroDaRotaEditar: 'id',
-  parametroNoObjetoParaEditar: 'id',
-  parametroNoObjetoParaExcluir: 'descricao',
-});
-const emit = defineEmits<Emits>();
-</script>

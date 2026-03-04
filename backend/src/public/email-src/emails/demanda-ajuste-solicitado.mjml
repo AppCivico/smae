@@ -1,0 +1,30 @@
+<mjml>
+  <mj-include path="../components/head.mjml" />
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+          <p>Prezado(a) [% nome_responsavel %],</p>
+          
+          <p>Favor verificar informações da demanda:</p>
+          
+          <p><strong>Nome do projeto:</strong> [% nome_projeto %]</p>
+          <p><strong>Valor:</strong> R$ [% valor %]</p>
+          <p><strong>Área temática:</strong> [% area_tematica %]</p>
+          
+          <p>Para acompanhar a Demanda utilize o menu "Demanda" do módulo "Transferência Voluntária" no SMAE.</p>
+          
+          <p>Atenciosamente,<br/>
+          SERI – [% orgao_nome %]</p>
+          
+          <p>Acesse o SMAE através do link: <a href="[% smae_url %]">[% smae_url %]</a></p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+</mjml>

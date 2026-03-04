@@ -20,7 +20,7 @@ export class VinculoController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroVinculo.inserir'])
     async create(@Body() dto: CreateVinculoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.vinculoService.upsert(dto, user);
+        return await this.vinculoService.create(dto, user);
     }
 
     @Patch(':id')
@@ -31,7 +31,7 @@ export class VinculoController {
         @Body() dto: UpdateVinculoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.vinculoService.upsert(dto, user, +params.id);
+        return await this.vinculoService.update(+params.id, dto, user);
     }
 
     @ApiBearerAuth('access-token')

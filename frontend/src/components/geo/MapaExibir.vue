@@ -1,30 +1,4 @@
-<template>
-  <KeepAlive>
-    <div
-      v-once
-      v-bind="$attrs"
-      ref="elementoMapa"
-      class="mapa br8"
-      :style="{
-        height: alturaCorrente || $props.height,
-        minHeight: $props.height
-      }"
-      @ready="mapReady"
-    />
-  </KeepAlive>
-  <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
-  <div
-    ref="elementoPainelFlutuante"
-    class="painel-flutuante__conteudo"
-    hidden
-  >
-    <component :is="() => conteudoPainelFlutuante" />
-  </div>
-</template>
 <script setup>
-import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
-import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
-
 import { useResizeObserver } from '@vueuse/core';
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster';
@@ -32,8 +6,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
 import { debounce, merge } from 'lodash';
-import { storeToRefs } from 'pinia';
 import {
+  computed,
   defineEmits,
   defineOptions,
   defineProps,
@@ -44,6 +18,8 @@ import {
   watch,
 } from 'vue';
 
+import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
+import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
 import { useRegionsStore } from '@/stores/regions.store';
 
 /**
@@ -62,15 +38,13 @@ defineOptions({ inheritAttrs: false });
 
 const RegionsStore = useRegionsStore();
 
-const { camadas } = storeToRefs(RegionsStore);
-
 let marcadorNoMapa = null;
-const polígonosNoMapa = [];
+const poligonosNoMapa = [];
 const geoJsonsNoMapa = [];
 
 const grupoDeElementosNoMapa = () => L.featureGroup(
   []
-    .concat(polígonosNoMapa)
+    .concat(poligonosNoMapa)
     .concat(geoJsonsNoMapa),
 );
 
@@ -102,7 +76,13 @@ const props = defineProps({
     }),
   },
   agruparMarcadores: {
-    type: Boolean,
+    type: [
+      Boolean,
+      String,
+    ],
+    default: false,
+    validator: (value) => typeof value === 'boolean'
+      || (value === 'string' && value === 'auto'),
   },
   // aceitar tanto um par de coordenadas em forma de array,
   // quanto um objeto já com:
@@ -116,7 +96,7 @@ const props = defineProps({
     default: null,
   },
   // opções para o marcador, se for mais fácil mandar separado
-  opçõesDoMarcador: {
+  opcoesDoMarcador: {
     type: Object,
     default: null,
   },
@@ -126,22 +106,25 @@ const props = defineProps({
     default: () => ({
     }),
   },
-  // disparam busca na API
+  // dispara busca na API apenas para as camadas que não tem as propriedades
+  // `geom_geojson` e `config` preenchidas, para evitar buscas desnecessárias,
+  // caso a camada já tenha sido buscada antes ou as propriedades tenham sido
+  //  preenchidas manualmente
   camadas: {
     type: Array,
     default: () => [],
   },
   // puros! Não disparam busca na API
-  polígonos: {
+  poligonos: {
     type: Array,
     default: () => [],
   },
   // opções para os polígonos, se for mais fácil mandar separado
-  opçõesDoPolígono: {
+  opcoesDoPoligono: {
     type: Object,
     default: null,
   },
-  permitirAdição: {
+  permitirAdicao: {
     type: Boolean,
     default: false,
   },
@@ -160,7 +143,7 @@ const props = defineProps({
     default: 13,
   },
   // opções para o mapa
-  opçõesDoMapa: {
+  opcoesDoMapa: {
     type: Object,
     default: null,
   },
@@ -176,6 +159,48 @@ const emits = defineEmits([
 ]);
 
 const slots = useSlots();
+
+// Conjunto de chaves de coordenadas que aparecem mais de uma vez no geoJson,
+// usado no modo 'auto' para agrupar apenas os pontos sobrepostos.
+const coordenadasDuplicadas = computed(() => {
+  if (props.agruparMarcadores !== 'auto') return new Set();
+
+  const lista = Array.isArray(props.geoJson) ? props.geoJson : [props.geoJson];
+  const vistas = new Set();
+  const duplicadas = new Set();
+
+  lista.forEach((item) => {
+    if (item?.geometry?.type !== 'Point') return;
+    const chave = item.geometry.coordinates?.join(',');
+    if (!chave) return;
+    if (vistas.has(chave)) {
+      duplicadas.add(chave);
+    } else {
+      vistas.add(chave);
+    }
+  });
+
+  return duplicadas;
+});
+
+const deveSeAgruparMarcadores = computed(() => {
+  switch (props.agruparMarcadores) {
+    case true:
+      return true;
+    case 'auto':
+      return coordenadasDuplicadas.value.size > 0;
+    default:
+      return false;
+  }
+});
+
+const camadasPorId = computed(() => props.camadas.reduce((acc, cur) => {
+  acc[cur.id] = cur.config && cur.geom_geojson
+    ? cur
+    : RegionsStore.camadas?.[cur.id];
+
+  return acc;
+}, {}));
 
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
@@ -262,11 +287,11 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
 function criarMarcadores(marcadores = []) {
   marcadores.forEach((marcador, i) => {
     if (marcador.coordenadas || Array.isArray(marcador)) {
-      const opções = { ...props.opçõesDoMarcador, ...marcador.opções };
+      const opções = { ...props.opcoesDoMarcador, ...marcador.opções };
 
       marcadorNoMapa = marcador.coordenadas
         ? L.marker(marcador?.coordenadas, opções)
-        : L.marker(marcador, props.opçõesDoMarcador);
+        : L.marker(marcador, props.opcoesDoMarcador);
 
       atribuirPainelFlutuante(marcadorNoMapa, marcador);
 
@@ -278,7 +303,7 @@ function criarMarcadores(marcadores = []) {
       // Poderia ser um nome melhor, né?
       marcadorNoMapa.índice = i;
 
-      if (props.agruparMarcadores) {
+      if (deveSeAgruparMarcadores.value) {
         grupoDeMarcadores.addLayer(marcadorNoMapa);
       } else {
         marcadorNoMapa.addTo(mapa);
@@ -286,7 +311,7 @@ function criarMarcadores(marcadores = []) {
     }
   });
 
-  if (props.agruparMarcadores) {
+  if (deveSeAgruparMarcadores.value) {
     mapa.addLayer(grupoDeMarcadores);
   }
 }
@@ -329,7 +354,11 @@ function criarGeoJson(dados) {
 
     atribuirPainelFlutuante(geoJson, dados?.properties);
 
-    if (props.agruparMarcadores) {
+    const chave = dados.geometry.coordinates?.join(',');
+    const deveAgrupar = props.agruparMarcadores === true
+      || (props.agruparMarcadores === 'auto' && coordenadasDuplicadas.value.has(chave));
+
+    if (deveAgrupar && grupoDeMarcadores) {
       grupoDeMarcadores.addLayer(geoJson);
     } else {
       geoJson.addTo(mapa);
@@ -365,7 +394,7 @@ function prepararGeoJsonS(items) {
 
     // ativar o agrupamento aqui, porque ele deve ser do array completo, mas a
     // inserção de geoJSONs tem que ser um por um, porque podem ser de vários tipos
-    if (props.agruparMarcadores) {
+    if (deveSeAgruparMarcadores.value && mapa && grupoDeMarcadores) {
       mapa.addLayer(grupoDeMarcadores);
     }
 
@@ -384,7 +413,7 @@ function criarPolígono(dadosDoPolígono) {
   config = {
     config,
     // mapear propriedade para manter compatibilidade com o backend
-    ...props.opçõesDoPolígono,
+    ...props.opcoesDoPoligono,
     ...dadosDoPolígono.config,
   };
 
@@ -395,24 +424,24 @@ function criarPolígono(dadosDoPolígono) {
 
   atribuirPainelFlutuante(polígono, dadosDoPolígono);
 
-  polígonosNoMapa.push(polígono);
+  poligonosNoMapa.push(polígono);
 }
 
-function chamarDesenhoDePolígonosNovos(polígonos) {
-  const idsNovos = polígonos
+function chamarDesenhoDePolígonosNovos(poligonos) {
+  const idsNovos = poligonos
     .reduce((acc, cur) => { if (cur.id) { acc[cur.id] = true; } return acc; }, {});
 
-  for (let i = polígonosNoMapa.length - 1; i >= 0; i -= 1) {
-    if (polígonosNoMapa[i].id && !idsNovos[polígonosNoMapa[i].id]) {
-      polígonosNoMapa[i].remove();
-      polígonosNoMapa.splice(i, 1);
+  for (let i = poligonosNoMapa.length - 1; i >= 0; i -= 1) {
+    if (poligonosNoMapa[i].id && !idsNovos[poligonosNoMapa[i].id]) {
+      poligonosNoMapa[i].remove();
+      poligonosNoMapa.splice(i, 1);
     } else {
-      idsNovos[polígonosNoMapa[i].id] = undefined;
+      idsNovos[poligonosNoMapa[i].id] = undefined;
     }
   }
 
-  for (let i = 0; i < polígonos.length; i += 1) {
-    const polígono = polígonos[i];
+  for (let i = 0; i < poligonos.length; i += 1) {
+    const polígono = poligonos[i];
     if (!polígono.id || idsNovos[polígono.id]) {
       criarPolígono(polígono);
     }
@@ -420,21 +449,21 @@ function chamarDesenhoDePolígonosNovos(polígonos) {
 }
 
 async function prepararCamadas(camadasFornecidas = props.camadas) {
-  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!camadas?.value?.[cur.id]
+  const camadasABuscar = camadasFornecidas.reduce((acc, cur) => (!camadasPorId.value?.[cur.id]
     ? acc.concat([cur.id])
     : acc), []);
 
   if (camadasABuscar.length) {
     await RegionsStore.buscarCamadas({
-      camada_ids: camadasFornecidas.map((x) => x.id),
+      camada_ids: camadasABuscar,
     });
   }
 
   const camadasSelecionadas = camadasFornecidas
-    .reduce((acc, cur) => (camadas?.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
+    .reduce((acc, cur) => (camadasPorId.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
       ? acc.concat({
-        ...camadas?.value?.[cur.id],
-        config: merge({}, camadas?.value?.[cur.id].config, cur.config),
+        ...camadasPorId.value?.[cur.id],
+        config: merge({}, camadasPorId.value?.[cur.id].config, cur.config),
       })
       : acc), []);
   chamarDesenhoDePolígonosNovos(camadasSelecionadas);
@@ -447,14 +476,14 @@ async function iniciarMapa(element) {
     return;
   }
 
-  if (props.agruparMarcadores) {
+  if (props.agruparMarcadores === true || props.agruparMarcadores === 'auto') {
     grupoDeMarcadores = L.markerClusterGroup(props.opcoesDeAgrupamento);
   }
 
   mapa = L
     .map(element, {
       scrollWheelZoom: false,
-      ...props.opçõesDoMapa,
+      ...props.opcoesDoMapa,
     })
     .setView([Number(props.latitude), Number(props.longitude)], Number(props.zoom));
 
@@ -472,7 +501,7 @@ async function iniciarMapa(element) {
     shadowSize: [48, 48],
   });
 
-  if (!props.opçõesDoMapa?.scrollWheelZoom) {
+  if (!props.opcoesDoMapa?.scrollWheelZoom) {
     mapa.on('focus', () => { mapa.scrollWheelZoom.enable(); });
     mapa.on('blur', () => { mapa.scrollWheelZoom.disable(); });
   }
@@ -497,8 +526,8 @@ async function iniciarMapa(element) {
     }
   }
 
-  for (let i = 0; i < props.polígonos.length; i += 1) {
-    criarPolígono(props.polígonos[i]);
+  for (let i = 0; i < props.poligonos.length; i += 1) {
+    criarPolígono(props.poligonos[i]);
   }
 
   if (props.camadas.length) {
@@ -572,12 +601,35 @@ watch(() => props.marcador, (valorNovo) => {
   }
 });
 
-watch(() => props.polígonos, (valorNovo) => {
+watch(() => props.poligonos, (valorNovo) => {
   if (mapa) {
     chamarDesenhoDePolígonosNovos(valorNovo);
   }
 });
 </script>
+<template>
+  <KeepAlive>
+    <div
+      v-once
+      v-bind="$attrs"
+      ref="elementoMapa"
+      class="mapa br8"
+      :style="{
+        height: alturaCorrente || $props.height,
+        minHeight: $props.height
+      }"
+      @ready="mapReady"
+    />
+  </KeepAlive>
+  <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component :is="() => conteudoPainelFlutuante" />
+  </div>
+</template>
 <style lang="less">
 .mapa {
   flex-grow: 1;

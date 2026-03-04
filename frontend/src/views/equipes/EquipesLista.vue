@@ -1,3 +1,38 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
+import tipoDePerfil from '@/consts/tipoDePerfil';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+
+const listaFiltradaPorTermoDeBusca = ref([]);
+
+const alertStore = useAlertStore();
+const equipesStore = useEquipesStore();
+
+const { lista, chamadasPendentes, erro } = storeToRefs(equipesStore);
+
+async function excluirGrupo(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await equipesStore.excluirItem(id)) {
+        equipesStore.$reset();
+        equipesStore.buscarTudo({});
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+equipesStore.$reset();
+equipesStore.buscarTudo({ });
+</script>
+
 <template>
   <header class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -21,11 +56,13 @@
     <hr class="ml2 f1">
   </div>
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
@@ -100,40 +137,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-
-import LocalFilter from '@/components/LocalFilter.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
-import tipoDePerfil from '@/consts/tipoDePerfil';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-
-const listaFiltradaPorTermoDeBusca = ref([]);
-
-const alertStore = useAlertStore();
-const equipesStore = useEquipesStore();
-
-const { lista, chamadasPendentes, erro } = storeToRefs(equipesStore);
-
-async function excluirGrupo(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await equipesStore.excluirItem(id)) {
-        equipesStore.$reset();
-        equipesStore.buscarTudo({});
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-equipesStore.$reset();
-equipesStore.buscarTudo({ });
-</script>
 
 <style></style>

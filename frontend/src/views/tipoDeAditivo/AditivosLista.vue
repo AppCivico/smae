@@ -1,3 +1,33 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
+
+const route = useRoute();
+
+const alertStore = useAlertStore();
+const aditivosStore = useTipoDeAditivosStore();
+const { lista, chamadasPendentes, erros } = storeToRefs(aditivosStore);
+
+async function excluirAditivo(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await aditivosStore.excluirItem(id)) {
+        aditivosStore.$reset();
+        aditivosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+aditivosStore.$reset();
+aditivosStore.buscarTudo();
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -11,9 +41,11 @@
   </div>
 
   <table class="tablemain">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
@@ -70,33 +102,3 @@
     </tbody>
   </table>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
-
-const route = useRoute();
-
-const alertStore = useAlertStore();
-const aditivosStore = useTipoDeAditivosStore();
-const { lista, chamadasPendentes, erros } = storeToRefs(aditivosStore);
-
-async function excluirAditivo(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await aditivosStore.excluirItem(id)) {
-        aditivosStore.$reset();
-        aditivosStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-aditivosStore.$reset();
-aditivosStore.buscarTudo();
-</script>
