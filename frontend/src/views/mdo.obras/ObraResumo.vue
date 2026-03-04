@@ -498,7 +498,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <SmaeDescriptionList
         :lista="informacoesDaObra"
         layout="grid"
-        largura-minima="13rem"
+        maximo-de-colunas="5"
       >
         <template #descricao--status="{ item }">
           {{ statusesObras[item.valor]?.nome || item.valor || '—' }}
