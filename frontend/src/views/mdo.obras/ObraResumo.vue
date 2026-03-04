@@ -14,9 +14,18 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
+const planosSimplificadosStore = usePlanosSimplificadosStore();
+
+const { planosPorId } = storeToRefs(planosSimplificadosStore);
+
+if (!planosSimplificadosStore.planosSimplificados.length
+  && !planosSimplificadosStore.chamadasPendentes.planosSimplificados) {
+  planosSimplificadosStore.buscarPlanos();
+}
 
 const { organs, órgãosPorId } = storeToRefs(ÓrgãosStore);
 const {
@@ -206,7 +215,7 @@ const dadosDeVinculacao = computed(() => {
   if (foco.origem_tipo === 'PdmSistema') {
     if (foco.meta_id) {
       linhas.push({
-        pdm: '-',
+        pdm: planosPorId.value[foco.meta?.pdm_id]?.nome || '-',
         meta: foco.meta?.codigo && foco.meta?.titulo
           ? `${foco.meta.codigo} - ${foco.meta.titulo}`
           : String(foco.meta_id),
@@ -502,6 +511,9 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </template>
       </SmaeDescriptionList>
 
+    </section>
+
+    <section>
       <SmaeDescriptionList
         v-if="informacoesHabitacional.length"
         :lista="informacoesHabitacional"
@@ -512,6 +524,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <section
       v-if="emFoco?.geolocalizacao?.length"
+      class="borda-inferior"
     >
       <SmaeTable
         titulo="Localização"
@@ -566,14 +579,13 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </MapaExibir>
     </section>
 
-    <section>
+    <section class="borda-inferior">
       <h2>Vinculação Estratégica (Programa de Metas e outros)</h2>
 
       <SmaeTable
         v-if="dadosDeVinculacao.length"
         :colunas="colunasDeVinculacao"
         :dados="dadosDeVinculacao"
-        class="mb2"
       />
 
       <SmaeDescriptionList
