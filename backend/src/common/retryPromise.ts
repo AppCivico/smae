@@ -6,6 +6,10 @@ export async function RetryPromise<T>(
     delay = 25,
     jitter = 0.2
 ): Promise<T> {
+    if (jitter < 0 || jitter > 1) {
+        throw new Error(`RetryPromise: jitter must be between 0 and 1, got ${jitter}`);
+    }
+
     if (maxRetries <= 1) {
         return await promiseFn();
     }
