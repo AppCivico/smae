@@ -543,7 +543,53 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private buildIndicadorCsvFields(pdm: any, params: any): { value: string; label: string }[] {
+    private createCsvParser(fields: { value: string; label: string }[]): Parser<any, any> {
+        return new Parser({
+            fields: fields.map((f) => f.value),
+            header: false,
+            ...DefaultCsvOptions,
+            transforms: [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]],
+        });
+    }
+
+    private writeCsvHeader(fileStream: ReturnType<typeof createWriteStream>, fields: { value: string; label: string }[]) {
+        const header = fields.map((f) => '"' + f.label + '"').join(',');
+        fileStream.write(header + '\r\n');
+    }
+
+    private formatMetaTags(meta_tags: { id: number; descricao: string }[] | null | undefined) {
+        const arr = meta_tags && Array.isArray(meta_tags) ? meta_tags : [];
+        return {
+            descricao: arr.map((t) => t.descricao).join(';'),
+            ids: arr.map((t) => t.id).join(';'),
+        };
+    }
+
+    private buildBaseRow(row: RetornoDb) {
+        const { descricao: metaTagsDescricao, ids: metaTagsIds } = this.formatMetaTags(row.meta_tags);
+
+        return {
+            pdm_nome: row.pdm_nome,
+            indicador: {
+                codigo: row.indicador_codigo,
+                titulo: row.indicador_titulo,
+                contexto: row.indicador_contexto,
+                complemento: row.indicador_complemento,
+                id: +row.indicador_id,
+            },
+            meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
+            meta_tags_descricao: metaTagsDescricao,
+            meta_tags_ids: metaTagsIds,
+            iniciativa: row.iniciativa_id
+                ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
+                : null,
+            atividade: row.atividade_id
+                ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
+                : null,
+        };
+    }
+
+    private buildBaseCsvFields(pdm: any, params: any): { value: string; label: string }[] {
         const fields: { value: string; label: string }[] = [];
 
         if (params.tipo_pdm == 'PS') fields.push({ value: 'pdm_nome', label: 'Plano Setorial' });
@@ -564,40 +610,27 @@ export class IndicadoresService implements ReportableService {
             { value: 'indicador.titulo', label: 'Título do Indicador' },
             { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
             { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
-            { value: 'indicador.id', label: 'ID do Indicador' },
-            { value: 'data_referencia', label: 'Data de Referência' },
-            { value: 'serie', label: 'Serie' },
-            { value: 'data', label: 'Data' },
-            { value: 'valor', label: 'Valor' },
-            { value: 'eh_previa', label: 'É Prévia' },
-            { value: 'valores_categorica', label: 'Valores Categórica' }
+            { value: 'indicador.id', label: 'ID do Indicador' }
         );
 
         return fields;
     }
 
+    private buildIndicadorCsvFields(pdm: any, params: any): { value: string; label: string }[] {
+        return [
+            ...this.buildBaseCsvFields(pdm, params),
+            { value: 'data_referencia', label: 'Data de Referência' },
+            { value: 'serie', label: 'Serie' },
+            { value: 'data', label: 'Data' },
+            { value: 'valor', label: 'Valor' },
+            { value: 'eh_previa', label: 'É Prévia' },
+            { value: 'valores_categorica', label: 'Valores Categórica' },
+        ];
+    }
+
     private buildRegiaoCsvFields(pdm: any, params: any): { value: string; label: string }[] {
-        const fields: { value: string; label: string }[] = [];
-
-        if (params.tipo_pdm == 'PS') fields.push({ value: 'pdm_nome', label: 'Plano Setorial' });
-
-        fields.push(
-            { value: 'meta.codigo', label: 'Código da Meta' },
-            { value: 'meta.titulo', label: 'Título da Meta' },
-            { value: 'meta.id', label: 'ID da Meta' },
-            { value: 'meta_tags_descricao', label: 'Meta Tags' },
-            { value: 'meta_tags_ids', label: 'Tags IDs' },
-            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-            { value: 'indicador.codigo', label: 'Código do Indicador' },
-            { value: 'indicador.titulo', label: 'Título do Indicador' },
-            { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
-            { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
-            { value: 'indicador.id', label: 'ID do Indicador' },
+        return [
+            ...this.buildBaseCsvFields(pdm, params),
             { value: 'variavel.orgao.id', label: 'ID do órgão' },
             { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
             { value: 'variavel.codigo', label: 'Código da Variável' },
@@ -617,10 +650,8 @@ export class IndicadoresService implements ReportableService {
             { value: 'serie', label: 'Serie' },
             { value: 'data', label: 'Data' },
             { value: 'valor', label: 'Valor' },
-            { value: 'valores_categorica', label: 'Valor Categórica' }
-        );
-
-        return fields;
+            { value: 'valores_categorica', label: 'Valor Categórica' },
+        ];
     }
 
     async toFileOutput(
@@ -648,12 +679,7 @@ export class IndicadoresService implements ReportableService {
         try {
             // Build field definitions and parsers for indicadores
             const indicadorFields = this.buildIndicadorCsvFields(pdm, params);
-            const indicadorParser = new Parser({
-                fields: indicadorFields.map((f) => f.value),
-                header: false,
-                ...DefaultCsvOptions,
-                transforms: [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]],
-            });
+            const indicadorParser = this.createCsvParser(indicadorFields);
 
             const indicadoresCount = await this.processDadosIndicadores(
                 indicadores,
@@ -676,12 +702,7 @@ export class IndicadoresService implements ReportableService {
 
             // Build field definitions and parsers for regioes
             const regiaoFields = this.buildRegiaoCsvFields(pdm, params);
-            const regiaoParser = new Parser({
-                fields: regiaoFields.map((f) => f.value),
-                header: false,
-                ...DefaultCsvOptions,
-                transforms: [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]],
-            });
+            const regiaoParser = this.createCsvParser(regiaoFields);
 
             const regioesCount = await this.processDadosRegioes(
                 indicadores,
@@ -722,8 +743,7 @@ export class IndicadoresService implements ReportableService {
         const fileStream = createWriteStream(filePath);
 
         // Write header
-        const header = csvFields.map((f) => '"' + f.label + '"').join(',');
-        fileStream.write(header + '\r\n');
+        this.writeCsvHeader(fileStream, csvFields);
 
         // Base query structure - updated to use JSON function
         const queryBase = `
@@ -892,8 +912,7 @@ export class IndicadoresService implements ReportableService {
         const fileStream = createWriteStream(filePath);
 
         // Write header
-        const header = csvFields.map((f) => '"' + f.label + '"').join(',');
-        fileStream.write(header + '\r\n');
+        this.writeCsvHeader(fileStream, csvFields);
 
         try {
             // Get regioes first - needed for processing results
@@ -1104,19 +1123,24 @@ export class IndicadoresService implements ReportableService {
     }
 
     /**
-     * Execute SQL and write results to file for indicators (with JSON response)
+     * Generic paginated SQL execution that writes CSV rows to a file stream.
+     * The `parseJson` callback extracts fields from valor_json into the row,
+     * and `processRow` converts each row into a flat object for the CSV parser.
      */
-    private async executeSqlAndWriteToFileIndicador(
+    private async executeSqlAndWriteToFile<T extends RetornoDb & { valor_json: any }>(
+        label: string,
         query: string,
         fileStream: any,
         parser: Parser<any, any>,
-        params: any[]
+        params: any[],
+        parseJson: (row: T) => void,
+        processRow: (row: T) => Record<string, any>
     ): Promise<number> {
         let rowCount = 0;
         let batchCount = 0;
 
         try {
-            this.logger.debug(`Executing Indicador SQL with params: ${params.join(', ')}`);
+            this.logger.debug(`Executing ${label} SQL with params: ${params.join(', ')}`);
 
             let offset = 0;
             let hasMore = true;
@@ -1129,10 +1153,7 @@ export class IndicadoresService implements ReportableService {
                         this.logger.debug(`First batch SQL query params: ${JSON.stringify(params)}`);
                     }
 
-                    const results: RetornoDbIndicadorJson[] = await this.prisma.$queryRawUnsafe(
-                        paginatedQuery,
-                        ...params
-                    );
+                    const results: T[] = await this.prisma.$queryRawUnsafe(paginatedQuery, ...params);
 
                     if (!results || results.length === 0) {
                         if (offset === 0) {
@@ -1155,32 +1176,8 @@ export class IndicadoresService implements ReportableService {
                     const processedBatch: Record<string, any>[] = [];
                     for (const row of results) {
                         try {
-                            // Process JSON values
-                            if (row.valor_json) {
-                                if (typeof row.valor_json === 'string') {
-                                    try {
-                                        const parsed = JSON.parse(row.valor_json) as JsonRetornoDbIndicador;
-                                        row.valor = parsed.valor_nominal;
-                                        row.eh_previa = parsed.eh_previa || false;
-                                        row.valores_categorica = parsed.valores_categorica;
-                                    } catch (parseErr) {
-                                        this.logger.warn(`Error parsing valor_json: ${parseErr}`);
-                                        row.valor = null;
-                                        row.eh_previa = false;
-                                        row.valores_categorica = null;
-                                    }
-                                } else {
-                                    row.valor = row.valor_json.valor_nominal;
-                                    row.eh_previa = row.valor_json.eh_previa || false;
-                                    row.valores_categorica = row.valor_json.valores_categorica;
-                                }
-                            } else {
-                                row.valor = null;
-                                row.eh_previa = false;
-                                row.valores_categorica = null;
-                            }
-
-                            processedBatch.push(this.processRowForCsvIndicador(row));
+                            parseJson(row);
+                            processedBatch.push(processRow(row));
                             rowCount++;
                         } catch (rowErr) {
                             this.logger.error(`Error processing row: ${rowErr}`);
@@ -1213,112 +1210,83 @@ export class IndicadoresService implements ReportableService {
         return rowCount;
     }
 
-    /**
-     * Execute SQL and write results to file for regions
-     */
-    private async executeSqlAndWriteToFileRegiao(
+    private parseIndicadorJson(row: RetornoDbIndicadorJson): void {
+        if (row.valor_json) {
+            if (typeof row.valor_json === 'string') {
+                try {
+                    const parsed = JSON.parse(row.valor_json) as JsonRetornoDbIndicador;
+                    row.valor = parsed.valor_nominal;
+                    row.eh_previa = parsed.eh_previa || false;
+                    row.valores_categorica = parsed.valores_categorica;
+                } catch (parseErr) {
+                    this.logger.warn(`Error parsing valor_json: ${parseErr}`);
+                    row.valor = null;
+                    row.eh_previa = false;
+                    row.valores_categorica = null;
+                }
+            } else {
+                row.valor = row.valor_json.valor_nominal;
+                row.eh_previa = row.valor_json.eh_previa || false;
+                row.valores_categorica = row.valor_json.valores_categorica;
+            }
+        } else {
+            row.valor = null;
+            row.eh_previa = false;
+            row.valores_categorica = null;
+        }
+    }
+
+    private parseRegiaoJson(row: RetornoDbRegiao): void {
+        if (row.valor_json) {
+            if (typeof row.valor_json === 'string') {
+                try {
+                    const parsed = JSON.parse(row.valor_json) as JsonRetornoDbVariavel;
+                    row.valor = parsed.valor_nominal;
+                    row.valor_categorica = parsed.valor_categorica;
+                    row.valores_categorica = parsed.valores_categorica;
+                } catch (parseErr) {
+                    this.logger.warn(`Error parsing valor_json: ${parseErr}`);
+                    row.valor = null;
+                    row.valor_categorica = null;
+                    row.valores_categorica = null;
+                }
+            } else {
+                row.valor = row.valor_json.valor_nominal;
+                row.valor_categorica = row.valor_json.valor_categorica;
+                row.valores_categorica = row.valor_json.valores_categorica;
+            }
+        } else {
+            row.valor = null;
+            row.valor_categorica = null;
+            row.valores_categorica = null;
+        }
+    }
+
+    private executeSqlAndWriteToFileIndicador(
+        query: string,
+        fileStream: any,
+        parser: Parser<any, any>,
+        params: any[]
+    ): Promise<number> {
+        return this.executeSqlAndWriteToFile<RetornoDbIndicadorJson>(
+            'Indicador', query, fileStream, parser, params,
+            (row) => this.parseIndicadorJson(row),
+            (row) => this.processRowForCsvIndicador(row)
+        );
+    }
+
+    private executeSqlAndWriteToFileRegiao(
         query: string,
         fileStream: any,
         regioesDb: Regiao[],
         parser: Parser<any, any>,
         params: any[]
     ): Promise<number> {
-        let rowCount = 0;
-        let batchCount = 0;
-
-        try {
-            this.logger.debug(`Executing Regiao SQL with params: ${params.join(', ')}`);
-
-            let offset = 0;
-            let hasMore = true;
-
-            while (hasMore) {
-                const paginatedQuery = `${query} LIMIT ${BATCH_SIZE} OFFSET ${offset}`;
-
-                try {
-                    if (offset === 0) {
-                        this.logger.debug(`First batch SQL query params: ${JSON.stringify(params)}`);
-                    }
-
-                    const results: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(paginatedQuery, ...params);
-
-                    if (!results || results.length === 0) {
-                        if (offset === 0) {
-                            this.logger.warn(`Query returned no results`);
-                        } else {
-                            this.logger.debug(`No more results at offset ${offset}`);
-                        }
-                        hasMore = false;
-                        continue;
-                    }
-
-                    batchCount++;
-                    offset += results.length;
-
-                    if (batchCount === 1) {
-                        this.logger.debug(`First result sample: ${JSON.stringify(results[0]).substring(0, 300)}...`);
-                        this.logger.debug(`Result contains ${results.length} rows`);
-                    }
-
-                    const processedBatch: Record<string, any>[] = [];
-                    for (const row of results) {
-                        try {
-                            // Process JSON values
-                            if (row.valor_json) {
-                                if (typeof row.valor_json === 'string') {
-                                    try {
-                                        const parsed = JSON.parse(row.valor_json) as JsonRetornoDbVariavel;
-                                        row.valor = parsed.valor_nominal;
-                                        row.valor_categorica = parsed.valor_categorica;
-                                        row.valores_categorica = parsed.valores_categorica;
-                                    } catch (parseErr) {
-                                        this.logger.warn(`Error parsing valor_json: ${parseErr}`);
-                                        row.valor = null;
-                                        row.valor_categorica = null;
-                                        row.valores_categorica = null;
-                                    }
-                                } else {
-                                    row.valor = row.valor_json.valor_nominal;
-                                    row.valor_categorica = row.valor_json.valor_categorica;
-                                    row.valores_categorica = row.valor_json.valores_categorica;
-                                }
-                            } else {
-                                row.valor = null;
-                                row.valor_categorica = null;
-                                row.valores_categorica = null;
-                            }
-
-                            processedBatch.push(this.processRowForCsvRegiao(row, regioesDb));
-                            rowCount++;
-                        } catch (rowErr) {
-                            this.logger.error(`Error processing row: ${rowErr}`);
-                        }
-                    }
-
-                    if (processedBatch.length > 0) {
-                        fileStream.write(parser.parse(processedBatch) + '\r\n');
-                    }
-
-                    if (batchCount % 10 === 0) {
-                        this.logger.debug(`Processed ${rowCount} rows in ${batchCount} batches`);
-                    }
-                } catch (batchErr) {
-                    this.logger.error(`Error processing batch at offset ${offset}: ${batchErr}`);
-                    if (offset === 0) {
-                        throw batchErr;
-                    } else {
-                        offset += BATCH_SIZE;
-                    }
-                }
-            }
-
-            this.logger.debug(`Completed processing with ${rowCount} total rows in ${batchCount} batches`);
-        } catch (error) {
-            this.logger.error(`Error executing SQL: ${error}`);
-            throw error;
-        }
-
-        return rowCount;
+        return this.executeSqlAndWriteToFile<RetornoDbRegiao>(
+            'Regiao', query, fileStream, parser, params,
+            (row) => this.parseRegiaoJson(row),
+            (row) => this.processRowForCsvRegiao(row, regioesDb)
+        );
     }
 
     /**
@@ -1326,12 +1294,6 @@ export class IndicadoresService implements ReportableService {
      * The Parser with flatten() transform handles dot-notation field paths.
      */
     private processRowForCsvIndicador(row: RetornoDbIndicadorJson): Record<string, any> {
-        // Pre-format meta_tags into strings
-        const metaTagsDescricao =
-            row.meta_tags && Array.isArray(row.meta_tags) ? row.meta_tags.map((t) => t.descricao).join(';') : '';
-        const metaTagsIds =
-            row.meta_tags && Array.isArray(row.meta_tags) ? row.meta_tags.map((t) => t.id).join(';') : '';
-
         // Pre-format categorical values
         let valoresCategoricaStr = '';
         if (row.valores_categorica && Array.isArray(row.valores_categorica)) {
@@ -1341,23 +1303,7 @@ export class IndicadoresService implements ReportableService {
         }
 
         return {
-            pdm_nome: row.pdm_nome,
-            indicador: {
-                codigo: row.indicador_codigo,
-                titulo: row.indicador_titulo,
-                contexto: row.indicador_contexto,
-                complemento: row.indicador_complemento,
-                id: +row.indicador_id,
-            },
-            meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
-            meta_tags_descricao: metaTagsDescricao,
-            meta_tags_ids: metaTagsIds,
-            iniciativa: row.iniciativa_id
-                ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
-                : null,
-            atividade: row.atividade_id
-                ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
-                : null,
+            ...this.buildBaseRow(row),
             data_referencia: row.data_referencia,
             serie: row.serie,
             data: row.data,
@@ -1372,12 +1318,6 @@ export class IndicadoresService implements ReportableService {
      * The Parser with flatten() transform handles dot-notation field paths.
      */
     private processRowForCsvRegiao(row: RetornoDbRegiao, regioesDb: Regiao[]): Record<string, any> {
-        // Pre-format meta_tags into strings
-        const metaTagsDescricao =
-            row.meta_tags && Array.isArray(row.meta_tags) ? row.meta_tags.map((t) => t.descricao).join(';') : '';
-        const metaTagsIds =
-            row.meta_tags && Array.isArray(row.meta_tags) ? row.meta_tags.map((t) => t.id).join(';') : '';
-
         // Pre-format categorical values
         let valoresCategoricaStr = '';
         if (row.valores_categorica && Array.isArray(row.valores_categorica)) {
@@ -1396,23 +1336,7 @@ export class IndicadoresService implements ReportableService {
         }
 
         return {
-            pdm_nome: row.pdm_nome,
-            indicador: {
-                codigo: row.indicador_codigo,
-                titulo: row.indicador_titulo,
-                contexto: row.indicador_contexto,
-                complemento: row.indicador_complemento,
-                id: +row.indicador_id,
-            },
-            meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
-            meta_tags_descricao: metaTagsDescricao,
-            meta_tags_ids: metaTagsIds,
-            iniciativa: row.iniciativa_id
-                ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
-                : null,
-            atividade: row.atividade_id
-                ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
-                : null,
+            ...this.buildBaseRow(row),
             variavel: row.variavel_id
                 ? {
                       codigo: row.variavel_codigo,
