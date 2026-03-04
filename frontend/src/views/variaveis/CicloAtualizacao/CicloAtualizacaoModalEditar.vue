@@ -308,6 +308,7 @@ function restaurarFormulario() {
             />
 
             <ErrorMessage
+              class="error-msg"
               name="analise_qualitativa_liberador"
             />
           </div>
@@ -337,6 +338,7 @@ function restaurarFormulario() {
               rows="3"
             />
             <ErrorMessage
+              class="error-msg"
               name="analise_qualitativa_aprovador"
             />
           </div>
@@ -379,6 +381,7 @@ function restaurarFormulario() {
             />
 
             <ErrorMessage
+              class="error-msg"
               name="pedido_complementacao"
             />
           </div>
@@ -563,6 +566,7 @@ function restaurarFormulario() {
                 </Field>
 
                 <ErrorMessage
+                  class="error-msg"
                   v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                 />
