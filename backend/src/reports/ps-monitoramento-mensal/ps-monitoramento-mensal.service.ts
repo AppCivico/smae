@@ -19,12 +19,14 @@ import {
 } from './entities/ps-monitoramento-mensal.entity';
 
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { Html2Text } from '../../common/Html2Text';
 
 class PSQualiCsv {
     id: string;
     criador_nome_exibicao: string;
     criado_em: string;
     informacoes_complementares: string;
+    informacoes_complementares_texto: string;
     referencia_data: string;
     meta_id: string;
     meta_titulo: string;
@@ -36,7 +38,9 @@ class PSRiscoCsv {
     criador_nome_exibicao: string;
     criado_em: string;
     detalhamento: string;
+    detalhamento_texto: string;
     ponto_de_atencao: string;
+    ponto_de_atencao_texto: string;
     referencia_data: string;
     meta_id: string;
     meta_titulo: string;
@@ -374,7 +378,13 @@ export class PSMonitoramentoMensal implements ReportableService {
 
         if (cicloMetasRows.length) {
             const reportTmpMetas = ctx.getTmpFile('monitoramento-mensal-metas-ciclo-ps.csv');
-            const metasCsvOptions: CsvWriterOptions<RelPSMonitoramentoMensalCicloMetasDto> = {
+            const mainCsvRows = cicloMetasRows.map((row) => ({
+                ...row,
+                analise_qualitativa: Html2Text(row.analise_qualitativa),
+                risco_detalhamento: Html2Text(row.risco_detalhamento),
+                risco_ponto_atencao: Html2Text(row.risco_ponto_atencao),
+            }));
+            const metasCsvOptions: CsvWriterOptions<(typeof mainCsvRows)[0]> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: [
@@ -387,7 +397,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                     { value: 'fechamento_comentario', label: 'Comentário de Fechamento' },
                 ],
             };
-            await WriteCsvToFile(cicloMetasRows, reportTmpMetas.stream, metasCsvOptions);
+            await WriteCsvToFile(mainCsvRows, reportTmpMetas.stream, metasCsvOptions);
             out.push({
                 name: 'monitoramento-mensal-metas-ciclo-ps.csv',
                 localFile: reportTmpMetas.path,
@@ -405,6 +415,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                     criador_nome_exibicao: row.analise_criador ?? '',
                     criado_em: row.analise_criado_em ?? '',
                     informacoes_complementares: row.analise_qualitativa ?? '',
+                    informacoes_complementares_texto: Html2Text(row.analise_qualitativa) ?? '',
                     referencia_data: row.analise_qualitativa_data ?? '',
                     meta_id: row.meta_id.toString(),
                     meta_titulo: row.meta_titulo,
@@ -417,7 +428,9 @@ export class PSMonitoramentoMensal implements ReportableService {
                     criador_nome_exibicao: row.risco_criador ?? '',
                     criado_em: row.risco_criado_em ?? '',
                     detalhamento: row.risco_detalhamento ?? '',
+                    detalhamento_texto: Html2Text(row.risco_detalhamento) ?? '',
                     ponto_de_atencao: row.risco_ponto_atencao ?? '',
+                    ponto_de_atencao_texto: Html2Text(row.risco_ponto_atencao) ?? '',
                     referencia_data: row.risco_referencia_data ?? '',
                     meta_id: row.meta_id.toString(),
                     meta_titulo: row.meta_titulo,
@@ -448,6 +461,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                     { value: 'criador_nome_exibicao', label: 'Criador' },
                     { value: 'criado_em', label: 'Criado Em' },
                     { value: 'informacoes_complementares', label: 'Informações Complementares' },
+                    { value: 'informacoes_complementares_texto', label: 'Informações Complementares (Texto)' },
                     { value: 'referencia_data', label: 'Data de Referência' },
                     { value: 'meta_id', label: 'ID da Meta' },
                     { value: 'meta_titulo', label: 'Título da Meta' },
@@ -468,7 +482,9 @@ export class PSMonitoramentoMensal implements ReportableService {
                     { value: 'criador_nome_exibicao', label: 'Criador' },
                     { value: 'criado_em', label: 'Criado Em' },
                     { value: 'detalhamento', label: 'Detalhamento' },
+                    { value: 'detalhamento_texto', label: 'Detalhamento (Texto)' },
                     { value: 'ponto_de_atencao', label: 'Ponto de Atenção' },
+                    { value: 'ponto_de_atencao_texto', label: 'Ponto de Atenção (Texto)' },
                     { value: 'referencia_data', label: 'Data de Referência' },
                     { value: 'meta_id', label: 'ID da Meta' },
                     { value: 'meta_titulo', label: 'Título da Meta' },
