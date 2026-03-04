@@ -549,6 +549,11 @@ export class CreateProjetoDto {
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     modalidade_contratacao_id?: number | null;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: 'Precisa ser uma lista de inteiros', each: true })
+    tags_portfolio?: number[];
 }
 
 export class CreateProjetoDocumentDto {
