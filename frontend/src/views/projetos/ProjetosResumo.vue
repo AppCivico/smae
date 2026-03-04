@@ -571,7 +571,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </SmaeDescriptionList>
     </section>
 
-    <section v-if="emFoco?.geolocalizacao?.length">
+    <section v-if="emFoco?.geolocalizacao?.length" class="borda-inferior">
       <SmaeTable
         titulo="Localização"
         :colunas="colunasDeEnderecos"
@@ -583,7 +583,6 @@ if (!planosSimplificadosStore.planosSimplificados.length
       <MapaExibir
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
-        class="mb1"
         :opcoes-do-poligono="{
           fill: true,
           opacity: 0.5,
@@ -625,7 +624,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </MapaExibir>
     </section>
 
-    <section>
+    <section class="borda-inferior">
       <SmaeTable
         :titulo="schema.fields.fonte_recursos.spec.label"
         :colunas="colunasDeFontesDeRecursos"
@@ -641,7 +640,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </SmaeTable>
     </section>
 
-    <section>
+    <section class="borda-inferior">
       <h2>Vinculação Estratégica (Programa de Metas e outros)</h2>
 
       <SmaeTable
