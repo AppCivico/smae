@@ -42,8 +42,7 @@ const model = defineModel({
   type: Array,
 });
 
-const maisRecenteDosMeses = computed(() => model.value
-  .reduce((acc, cur) => Math.max(acc, cur.mes), 0));
+const maisRecenteDosMeses = computed(() => model.value?.reduce((acc, cur) => Math.max(acc, cur.mes), 0));
 const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(model.value));
 const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
@@ -135,7 +134,6 @@ function atualizarDePercentagem(i, coluna) {
 }
 
 async function addItem() {
-
   model.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
 }
 </script>

@@ -225,7 +225,6 @@ export default {
 };
 </script>
 <template>
-  <h1>123</h1>
   <div class="flex spacebetween center">
     <h1>Empenho/Liquidação</h1>
     <hr class="ml2 f1">
