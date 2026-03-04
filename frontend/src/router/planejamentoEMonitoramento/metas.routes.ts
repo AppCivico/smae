@@ -574,6 +574,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       path: ':meta_id/cronograma',
       name: `${entidadeMãe}.cronogramaDaMeta`,
       component: SingleCronograma,
+      props: tiparPropsDeRota,
       meta: {
         títuloParaMenu: 'Cronograma',
         rotaDeAdicao: `${entidadeMãe}.cronogramaDaMeta.novo`,
@@ -593,6 +594,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       path: ':meta_id/cronograma/novo',
       name: `${entidadeMãe}.cronogramaDaMeta.novo`,
       component: AddEditCronograma,
+      props: tiparPropsDeRota,
       meta: {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
@@ -605,6 +607,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       path: ':meta_id/cronograma/:cronograma_id',
       name: `${entidadeMãe}.cronogramaDaMeta.editar`,
       component: AddEditCronograma,
+      props: tiparPropsDeRota,
       meta: {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
