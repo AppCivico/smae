@@ -14,32 +14,32 @@ const listaOrcamento = computed(() => [
   {
     chave: 'total_previsao',
     titulo: 'Total da previsão de custo',
-    valor: dinheiro(singleMeta.value?.orcamento.total_previsao),
+    valor: dinheiro(singleMeta.value?.orcamento?.total_previsao),
   },
   {
     chave: 'total_empenhado',
     titulo: 'Total empenho',
-    valor: dinheiro(singleMeta.value?.orcamento.total_empenhado),
+    valor: dinheiro(singleMeta.value?.orcamento?.total_empenhado),
   },
   {
     chave: 'total_liquidado',
     titulo: 'Total liquidado',
-    valor: dinheiro(singleMeta.value?.orcamento.total_liquidado),
+    valor: dinheiro(singleMeta.value?.orcamento?.total_liquidado),
   },
 ]);
 
 const dadosTabela = computed(() => [
   {
     id: 'Atividades',
-    total_previsao_custo: singleMeta.value?.orcamento.total_previsao_atividade,
-    total_empenho: singleMeta.value?.orcamento.total_empenhado_atividade,
-    total_liquidado: singleMeta.value?.orcamento.total_liquidado_atividade,
+    total_previsao_custo: singleMeta.value?.orcamento?.total_previsao_atividade,
+    total_empenho: singleMeta.value?.orcamento?.total_empenhado_atividade,
+    total_liquidado: singleMeta.value?.orcamento?.total_liquidado_atividade,
   },
   {
     id: 'Projetos',
-    total_previsao_custo: singleMeta.value?.orcamento.total_previsao_projeto,
-    total_empenho: singleMeta.value?.orcamento.total_empenhado_projeto,
-    total_liquidado: singleMeta.value?.orcamento.total_liquidado_projeto,
+    total_previsao_custo: singleMeta.value?.orcamento?.total_previsao_projeto,
+    total_empenho: singleMeta.value?.orcamento?.total_empenhado_projeto,
+    total_liquidado: singleMeta.value?.orcamento?.total_liquidado_projeto,
   },
 ]);
 </script>
