@@ -31,10 +31,16 @@ export class ContentInterceptor implements NestInterceptor {
             map(async (data) => {
                 if (typeof data !== 'object') return data;
 
+                const isEmptyData = Array.isArray(data) && data.length === 0;
+
                 switch (content) {
                     case csvType:
                     case xslx:
                         res.header(contType, csvType);
+                        if (isEmptyData) {
+                            data = '';
+                            break;
+                        }
                         const json2csvParser = new Parser({ transforms: linhasTransforms });
                         data = json2csvParser.parse(data);
 
@@ -58,6 +64,10 @@ export class ContentInterceptor implements NestInterceptor {
                         break;
                     case csvUnwindAll:
                         res.header(contType, csvType);
+                        if (isEmptyData) {
+                            data = '';
+                            break;
+                        }
                         const json2csvParserAll = new Parser({ transforms: allTransforms });
                         data = json2csvParserAll.parse(data);
                         break;

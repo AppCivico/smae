@@ -539,8 +539,18 @@ export class PPObrasService implements ReportableService {
         });
 
         const results = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
-        const csv = parser.parse(results);
 
+        if (!results || results.length === 0) {
+            // When fields are provided the parser can emit a header-only CSV;
+            // without fields it would throw, so return an empty buffer instead.
+            if (fields) {
+                const csv = parser.parse([]);
+                return { name: filename, buffer: Buffer.from(csv, 'utf8') };
+            }
+            return { name: filename, buffer: Buffer.from('') };
+        }
+
+        const csv = parser.parse(results);
         return { name: filename, buffer: Buffer.from(csv, 'utf8') };
     }
 
