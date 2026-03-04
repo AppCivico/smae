@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PerfilResponsavelEquipe, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE, CONST_PERFIL_COORDENADOR_EQUIPE } from 'src/common/consts';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { OrgaoService } from '../orgao/orgao.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
+import { recalculaPessoaPdmTipos } from './recalc-perfis-equipe.util';
 
 @Injectable()
 export class EquipeRespService {
@@ -226,57 +227,7 @@ export class EquipeRespService {
     }
 
     async recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma.TransactionClient) {
-        const equipes = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
-            where: {
-                pessoa_id: pessoaId,
-                removido_em: null,
-            },
-            select: { grupo_responsavel_equipe: { select: { id: true } } },
-        });
-
-        const perfisPdm = new Set<PerfilResponsavelEquipe>();
-        const perfisPs = new Set<PerfilResponsavelEquipe>();
-
-        // Obtém tipos de PDM e seus perfis associados
-        const pdmTiposEPerfis = await prismaTx.pdm.findMany({
-            where: {
-                removido_em: null,
-                PdmPerfil: {
-                    some: {
-                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
-                        removido_em: null,
-                    },
-                },
-            },
-            select: {
-                tipo: true,
-                PdmPerfil: {
-                    select: { equipe: { select: { perfil: true } } },
-                    where: {
-                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
-                        removido_em: null,
-                    },
-                },
-            },
-        });
-
-        for (const item of pdmTiposEPerfis) {
-            item.PdmPerfil.forEach((perfil) => {
-                if (item.tipo === 'PDM') {
-                    perfisPdm.add(perfil.equipe.perfil);
-                } else if (item.tipo === 'PS') {
-                    perfisPs.add(perfil.equipe.perfil);
-                }
-            });
-        }
-
-        await prismaTx.pessoa.update({
-            where: { id: pessoaId },
-            data: {
-                perfis_equipe_pdm: Array.from(perfisPdm),
-                perfis_equipe_ps: Array.from(perfisPs),
-            },
-        });
+        await recalculaPessoaPdmTipos(pessoaId, prismaTx);
     }
 
     async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {
@@ -610,6 +561,20 @@ export class EquipeRespService {
                 }
             }
 
+            // Recalcula perfis de todas as pessoas afetadas (participantes e colaboradores atuais da equipe)
+            if (dto.participantes || dto.colaboradores) {
+                const currentMembers = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+                    where: { grupo_responsavel_equipe_id: gp.id, removido_em: null },
+                    select: { pessoa_id: true },
+                    distinct: ['pessoa_id'],
+                });
+                const affectedIds = new Set(currentMembers.map((m) => m.pessoa_id));
+
+                for (const pessoaId of affectedIds) {
+                    await recalculaPessoaPdmTipos(pessoaId, prismaTx);
+                }
+            }
+
             await prismaTx.grupoResponsavelEquipe.update({
                 where: {
                     id: gp.id,
@@ -650,6 +615,13 @@ export class EquipeRespService {
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            // Coleta pessoas afetadas ANTES de soft-delete
+            const affectedMembers = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+                where: { grupo_responsavel_equipe_id: id, removido_em: null },
+                select: { pessoa_id: true },
+                distinct: ['pessoa_id'],
+            });
+
             await prismaTx.grupoResponsavelEquipe.updateMany({
                 where: {
                     id,
@@ -679,6 +651,11 @@ export class EquipeRespService {
                     removido_em: now,
                 },
             });
+
+            // Recalcula perfis das pessoas que eram membros da equipe removida
+            for (const member of affectedMembers) {
+                await recalculaPessoaPdmTipos(member.pessoa_id, prismaTx);
+            }
 
             await logger.saveLogs(prismaTx, user.getLogData());
         });
@@ -835,5 +812,46 @@ export class EquipeRespService {
 
         // Recalcula os perfis de PDM da pessoa (igual ao participante)
         await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+    }
+
+    /**
+     * Recalcula perfis_equipe_pdm e perfis_equipe_ps de TODAS as pessoas ativas
+     * usando uma única query SQL com CTE.
+     */
+    async recalcFullDb(): Promise<{ updated: number; total: number }> {
+        const result = await this.prisma.$queryRaw<{ updated: number; total: number }[]>`
+            WITH computed AS (
+                SELECT
+                    p.id AS pessoa_id,
+                    COALESCE(array_agg(DISTINCT gre.perfil) FILTER (WHERE pdm.tipo = 'PDM'), '{}') AS perfis_pdm,
+                    COALESCE(array_agg(DISTINCT gre.perfil) FILTER (WHERE pdm.tipo = 'PS'), '{}') AS perfis_ps
+                FROM pessoa p
+                LEFT JOIN grupo_responsavel_equipe_pessoa grep
+                    ON grep.pessoa_id = p.id AND grep.removido_em IS NULL
+                LEFT JOIN grupo_responsavel_equipe gre
+                    ON gre.id = grep.grupo_responsavel_equipe_id AND gre.removido_em IS NULL
+                LEFT JOIN pdm_perfil pp
+                    ON pp.equipe_id = gre.id AND pp.removido_em IS NULL
+                LEFT JOIN pdm
+                    ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
+                WHERE p.desativado = false
+                GROUP BY p.id
+            ),
+            do_update AS (
+                UPDATE pessoa SET
+                    perfis_equipe_pdm = computed.perfis_pdm::"PerfilResponsavelEquipe"[],
+                    perfis_equipe_ps = computed.perfis_ps::"PerfilResponsavelEquipe"[]
+                FROM computed
+                WHERE pessoa.id = computed.pessoa_id
+                AND (pessoa.perfis_equipe_pdm IS DISTINCT FROM computed.perfis_pdm::"PerfilResponsavelEquipe"[]
+                     OR pessoa.perfis_equipe_ps IS DISTINCT FROM computed.perfis_ps::"PerfilResponsavelEquipe"[])
+                RETURNING 1
+            )
+            SELECT
+                (SELECT count(*)::int FROM do_update) AS updated,
+                (SELECT count(*)::int FROM computed) AS total
+        `;
+
+        return result[0];
     }
 }
