@@ -184,10 +184,18 @@ const informacoesHabitacional = computed(() => {
 
 const colunasDeVinculacao = [
   { chave: 'pdm', label: 'PdM/Plano Setorial' },
-  { chave: 'meta', label: 'Meta vinculada' },
-  { chave: 'iniciativa', label: 'Ação estratégica' },
-  { chave: 'atividade', label: 'Ação programada' },
+  { chave: 'meta', label: 'Meta' },
+  { chave: 'iniciativa', label: '' },
+  { chave: 'atividade', label: '' },
 ];
+
+function rotulosDoPlano(pdmId) {
+  const plano = pdmId ? planosPorId.value[pdmId] : null;
+  return {
+    iniciativa: plano?.rotulo_iniciativa || 'Iniciativa',
+    atividade: plano?.rotulo_atividade || 'Atividade',
+  };
+}
 
 function formatarCodTitulo(obj, fallback = '-') {
   if (!obj) return fallback;
@@ -203,17 +211,23 @@ const dadosDeVinculacao = computed(() => {
 
   if (Array.isArray(foco.origens_extra)) {
     foco.origens_extra.forEach((origem) => {
+      const rotulos = rotulosDoPlano(origem.pdm?.id);
+
       linhas.push({
         pdm: origem.pdm?.nome || origem.pdm || '-',
         meta: formatarCodTitulo(origem.meta),
-        iniciativa: formatarCodTitulo(origem.iniciativa),
-        atividade: formatarCodTitulo(origem.atividade),
+        iniciativa: origem.iniciativa ? formatarCodTitulo(origem.iniciativa) : null,
+        iniciativa_rotulo: rotulos.iniciativa,
+        atividade: origem.atividade ? formatarCodTitulo(origem.atividade) : null,
+        atividade_rotulo: rotulos.atividade,
       });
     });
   }
 
   if (foco.origem_tipo === 'PdmSistema') {
     if (foco.meta_id) {
+      const rotulos = rotulosDoPlano(foco.meta?.pdm_id);
+
       linhas.push({
         pdm: planosPorId.value[foco.meta?.pdm_id]?.nome || '-',
         meta: foco.meta?.codigo && foco.meta?.titulo
@@ -221,10 +235,12 @@ const dadosDeVinculacao = computed(() => {
           : String(foco.meta_id),
         iniciativa: foco.iniciativa
           ? formatarCodTitulo(foco.iniciativa)
-          : (foco.iniciativa_id || '-'),
+          : null,
+        iniciativa_rotulo: rotulos.iniciativa,
         atividade: foco.atividade
           ? formatarCodTitulo(foco.atividade)
-          : (foco.atividade_id || '-'),
+          : null,
+        atividade_rotulo: rotulos.atividade,
       });
     }
   }
@@ -586,7 +602,27 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         v-if="dadosDeVinculacao.length"
         :colunas="colunasDeVinculacao"
         :dados="dadosDeVinculacao"
-      />
+      >
+        <template #celula:iniciativa="{ linha }">
+          <template v-if="linha.iniciativa">
+            <strong>{{ linha.iniciativa_rotulo }}:</strong>
+            {{ linha.iniciativa }}
+          </template>
+          <template v-else>
+            -
+          </template>
+        </template>
+
+        <template #celula:atividade="{ linha }">
+          <template v-if="linha.atividade">
+            <strong>{{ linha.atividade_rotulo }}:</strong>
+            {{ linha.atividade }}
+          </template>
+          <template v-else>
+            -
+          </template>
+        </template>
+      </SmaeTable>
 
       <SmaeDescriptionList
         v-if="origemTipoLista.length"
