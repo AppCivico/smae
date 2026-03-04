@@ -625,6 +625,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
     </section>
 
     <section class="borda-inferior">
+      <h2>{{ schema.fields.fonte_recursos.spec.label }}</h2>
       <SmaeTable
         :titulo-para-rolagem-horizontal="schema.fields.fonte_recursos.spec.label"
         :colunas="colunasDeFontesDeRecursos"
