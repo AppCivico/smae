@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
@@ -61,17 +61,11 @@ const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
     : '0',
 }));
 
-function obterVariavelInicial() {
-  const valorInicial = {
-    solicitar_complementacao: false,
-    variaveis_dados: valorInicialVariaveis,
-  };
-
-  return {
-    ...valorInicial,
-    ...valorAnalise.value,
-  };
-}
+const valorInicial = computed(() => ({
+  solicitar_complementacao: false,
+  variaveis_dados: valorInicialVariaveis,
+  ...valorAnalise.value,
+}));
 
 const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
@@ -83,10 +77,16 @@ const schema = computed(() => cicloAtualizacaoModalEditarSchema(
 ));
 
 const {
-  handleSubmit, errors, setFieldValue, values, validateField,
+  handleSubmit, errors, resetForm, setFieldValue, values, validateField,
 } = useForm({
   validationSchema: schema,
-  initialValues: obterVariavelInicial(),
+  initialValues: valorInicial.value,
+});
+
+watch(valorInicial, (novoValor) => {
+  resetForm({
+    values: novoValor,
+  });
 });
 
 const aprovar = ref(false);
