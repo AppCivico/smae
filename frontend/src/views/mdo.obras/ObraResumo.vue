@@ -227,12 +227,24 @@ const estimativasIniciais = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
+  const estiloDeColuna = { style: { flex: '0 0 calc(20% - 1.6rem)' } };
+
   return [
-    { chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio },
-    { chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino },
-    { chave: 'mdo_previsao_inauguracao', titulo: schema.fields.mdo_previsao_inauguracao.spec.label, valor: foco.mdo_previsao_inauguracao },
-    { chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso },
-    { chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo },
+    {
+      chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'mdo_previsao_inauguracao', titulo: schema.fields.mdo_previsao_inauguracao.spec.label, valor: foco.mdo_previsao_inauguracao, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
   ];
 });
 
@@ -243,14 +255,22 @@ const planejamentoFisicoFinanceiro = computed(() => {
   const crono = foco.tarefa_cronograma;
   if (!crono) return [];
 
+  const estiloDeColuna = { style: { flex: '0 0 calc(20% - 1.6rem)' } };
+
   return [
-    { chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio },
-    { chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino },
-    { chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo },
+    {
+      chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
   ];
 });
 
-const orgaosPartesInteressadas = computed(() => {
+const orgaoGestorLista = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
@@ -264,6 +284,14 @@ const orgaosPartesInteressadas = computed(() => {
         ? foco.responsaveis_no_orgao_gestor.map((x) => x.nome_exibicao || x).join(', ')
         : null,
     },
+  ];
+});
+
+const orgaoResponsavelLista = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     { chave: 'orgao_responsavel', titulo: schema.fields.orgao_responsavel_id.spec.label, valor: foco.orgao_responsavel ? `${foco.orgao_responsavel.sigla} - ${foco.orgao_responsavel.descricao}` : null },
     { chave: 'secretario_responsavel', titulo: schema.fields.secretario_responsavel.spec.label, valor: foco.secretario_responsavel },
     { chave: 'responsavel', titulo: schema.fields.responsavel_id.spec.label, valor: foco.responsavel?.nome_exibicao || foco.responsavel?.id },
@@ -556,13 +584,12 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       />
     </section>
 
-    <section>
+    <section class="pl1 pr1">
       <h2>Estimativas iniciais pré-planejamento</h2>
 
       <SmaeDescriptionList
         :lista="estimativasIniciais"
-        layout="grid"
-        largura-minima="13rem"
+        layout="flex"
       >
         <template #descricao--previsao_inicio="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
@@ -587,8 +614,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
       <SmaeDescriptionList
         :lista="planejamentoFisicoFinanceiro"
-        layout="grid"
-        largura-minima="13rem"
+        layout="flex"
       >
         <template #descricao--inicio_planejado="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
@@ -606,7 +632,15 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <h2>Órgãos/Partes interessadas</h2>
 
       <SmaeDescriptionList
-        :lista="orgaosPartesInteressadas"
+        :lista="orgaoGestorLista"
+        layout="grid"
+        largura-minima="13rem"
+      />
+    </section>
+
+    <section>
+      <SmaeDescriptionList
+        :lista="orgaoResponsavelLista"
         layout="grid"
         largura-minima="13rem"
       />
