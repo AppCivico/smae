@@ -316,7 +316,7 @@ const planejamentoFisicoFinanceiro = computed(() => {
   ];
 });
 
-const orgaosPartesInteressadas = computed(() => {
+const orgaoGestorLista = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
@@ -338,6 +338,14 @@ const orgaosPartesInteressadas = computed(() => {
         ? foco.responsaveis_no_orgao_gestor.map((x) => x.nome_exibicao || x).join(', ')
         : null,
     },
+  ];
+});
+
+const orgaoResponsavelLista = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     {
       chave: 'orgao_responsavel_id',
       titulo: schema.fields.orgao_responsavel_id.spec.label,
@@ -716,7 +724,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       <h2>Órgãos/Partes interessadas</h2>
 
       <SmaeDescriptionList
-        :lista="orgaosPartesInteressadas"
+        :lista="orgaoGestorLista"
         layout="grid"
         largura-minima="13rem"
       >
@@ -736,7 +744,15 @@ if (!planosSimplificadosStore.planosSimplificados.length
             :texto="schema.fields.responsaveis_no_orgao_gestor.spec.meta.balaoInformativo"
           />
         </template>
+      </SmaeDescriptionList>
+    </section>
 
+    <section>
+      <SmaeDescriptionList
+        :lista="orgaoResponsavelLista"
+        layout="grid"
+        largura-minima="13rem"
+      >
         <template #termo--orgao_responsavel_id="{ item }">
           {{ item.titulo }}
           <SmaeTooltip :texto="schema.fields.orgao_responsavel_id.spec.meta.balaoInformativo" />
