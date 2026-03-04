@@ -372,64 +372,64 @@ watchEffect(() => {
             :title="textoParaFarolDeAtraso(r.etapa.atraso_grau)"
           >{{ index + 1 }}</span>
         </div>
-        <div class="title mb1">
+        <div class="title etapa__title mb1">
           <h3>{{ r.etapa.titulo }}</h3>
         </div>
-        <div class="pl3 flex center mb05 tc300 w700 t12 uc">
-          <div class="f1">
+        <div class="etapa__cabecalho pl3 flex center mb05 tc300 w700 t12 uc">
+          <div class="f1 tr">
             Início Prev.
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             Término Prev.
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             Duração
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             Início Real
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             Término Real
           </div>
-          <div class="ml1 f1 tr">
+          <div class="f1 tr">
             Execução
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             Atraso
           </div>
-          <div class="ml1 f0" />
+          <div class="f0" />
           <div
-            class="ml1 f0"
+            class="f0"
             style="flex-basis:20px;"
           />
         </div>
         <hr>
 
-        <div class="pl3 flex center t13">
-          <div class="f1">
+        <div class="etapa__corpo pl3 flex center t13">
+          <div class="f1 tr">
             {{ r.etapa.inicio_previsto }}
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             {{ r.etapa.termino_previsto }}
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             {{ r.etapa.duracao ?? '-' }}
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             {{ r.etapa.inicio_real }}
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             {{ r.etapa.termino_real }}
           </div>
-          <div class="ml1 f1 tr">
+          <div class="f1 tr">
             {{ typeof r.etapa.percentual_execucao === 'number'
               ? `${r.etapa.percentual_execucao}%`
               : '-' }}
           </div>
-          <div class="ml1 f1">
+          <div class="f1 tr">
             {{ r.etapa.atraso ? r.etapa.atraso + ' dias' : '-' }}
           </div>
-          <div class="ml1 f0">
+          <div class="f0">
             <pre v-scrollLockDebug>
                 endereco obrigatório: {{ !!r?.etapa?.endereco_obrigatorio }}
                 geolocalizações: {{ r?.etapa?.geolocalizacao?.length || 0 }}
@@ -484,7 +484,7 @@ watchEffect(() => {
             </span>
           </div>
           <div
-            class="ml1 f0"
+            class="f0"
             style="flex-basis:20px; height: calc(20px + 1rem);"
           >
             <div
@@ -590,7 +590,7 @@ watchEffect(() => {
         <div
           v-for="(rr, rrindex) in r.etapa.etapa_filha"
           :key="rr.id"
-          class="etapa sub"
+          class="etapa sub fase"
         >
           <div class="status">
             <span
@@ -600,32 +600,32 @@ watchEffect(() => {
               <small class="niveis-pais">{{ index + 1 }}.</small>{{ rrindex + 1 }}
             </span>
           </div>
-          <div class="title">
+          <div class="fase__title title">
             <h4>{{ rr.titulo }}</h4>
           </div>
-          <div class="pl3 flex center mb05 tc300 w700 t12 uc">
-            <div class="f1">
+          <div class="fase__cabecalho pl3 flex center mb05 tc300 w700 t12 uc">
+            <div class="f1 tr">
               Início Prev.
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               Término Prev.
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               Duração
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               Início Real
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               Término Real
             </div>
-            <div class="ml1 f1 tr">
+            <div class="f1 tr">
               Execução
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               Atraso
             </div>
-            <div class="ml1 f0" />
+            <div class="f0" />
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
@@ -634,7 +634,7 @@ watchEffect(() => {
                 'SMAE.GrupoVariavel.participante',
               ])
                 && singleMeta?.pode_editar"
-              class="ml1 f0"
+              class="f0"
               style="flex-basis:20px;"
             />
             <div
@@ -645,36 +645,36 @@ watchEffect(() => {
                 'SMAE.GrupoVariavel.participante',
               ])
                 && singleMeta?.pode_editar"
-              class="ml1 f0"
+              class="f0"
               style="flex-basis:20px;"
             />
           </div>
           <hr>
-          <div class="pl3 flex center t13">
-            <div class="f1">
+          <div class="fase__corpo pl3 flex center t13">
+            <div class="f1 tr">
               {{ rr.inicio_previsto }}
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               {{ rr.termino_previsto }}
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               {{ rr.duracao ?? '-' }}
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               {{ rr.inicio_real }}
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               {{ rr.termino_real }}
             </div>
-            <div class="ml1 f1 tr">
+            <div class="f1 tr">
               {{ typeof rr.percentual_execucao === 'number'
                 ? `${rr.percentual_execucao}%`
                 : '-' }}
             </div>
-            <div class="ml1 f1">
+            <div class="f1 tr">
               {{ rr.atraso ? rr.atraso + ' dias' : '-' }}
             </div>
-            <div class="ml1 f0">
+            <div class="f0">
               <pre v-scrollLockDebug>
                   endereco obrigatório: {{ !!rr?.endereco_obrigatorio }}
                   geolocalizações: {{ rr?.geolocalizacao?.length || 0 }}
@@ -736,14 +736,14 @@ watchEffect(() => {
                 'SMAE.GrupoVariavel.participante',
               ])
                 && singleMeta?.pode_editar || rr.pode_editar_realizado"
-              class="ml1 f0 flex center mr05"
+              class="f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
               <button
                 v-if="!rr.cronograma_origem_etapa
                   || rr.cronograma_origem_etapa.id == singleCronograma?.id"
                 type="button"
-                class="like-a__text"
+                class="tipinfo left like-a__text"
                 title="Excluir Fase"
                 :disabled="rr.etapa_filha?.length"
                 @click="excluirEtapa(rr.etapa_id)"
@@ -752,6 +752,7 @@ watchEffect(() => {
                   width="20"
                   height="20"
                 ><use xlink:href="#i_remove" /></svg>
+                <div>{{ 'Excluir fase ' + rr.titulo }}</div>
               </button>
             </div>
 
@@ -763,7 +764,7 @@ watchEffect(() => {
                 'SMAE.GrupoVariavel.participante',
               ])
                 && singleMeta?.pode_editar || rr.pode_editar_realizado"
-              class="ml1 f0 flex center mr05"
+              class="f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
               <SmaeLink
@@ -789,38 +790,38 @@ watchEffect(() => {
             </div>
           </div>
 
-          <hr class="mb3">
+          <hr>
 
           <div
             v-if="rr?.etapa_filha?.length"
             class="list mt2"
           >
-            <div class="pl3 flex center mb05 tc300 w700 t12 uc ">
+            <div class="subfase__cabecalho pl3 flex center mb05 tc300 w700 t12 uc">
               <div class="f2">
-                SUBFASE
+                Subfase
               </div>
-              <div class="ml1 f1">
-                início prev.
+              <div class="f1 tr">
+                Início prev.
               </div>
-              <div class="ml1 f1">
+              <div class="f1 tr">
                 Término Prev.
               </div>
-              <div class="ml1 f1">
+              <div class="f1 tr">
                 Duração
               </div>
-              <div class="ml1 f1">
+              <div class="f1 tr">
                 Início Real
               </div>
-              <div class="ml1 f1">
+              <div class="f1 tr">
                 Término Real
               </div>
-              <div class="ml1 f1 tr">
+              <div class="f1 tr">
                 Execução
               </div>
-              <div class="ml1 f1">
+              <div class="f1 tr">
                 Atraso
               </div>
-              <div class="ml1 f0" />
+              <div class="f0" />
               <div
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
@@ -829,7 +830,7 @@ watchEffect(() => {
                   'SMAE.GrupoVariavel.participante',
                 ])
                   && singleMeta?.pode_editar"
-                class="ml1 f0"
+                class="f0"
                 style="flex-basis:20px;"
               />
               <div
@@ -840,7 +841,7 @@ watchEffect(() => {
                   'SMAE.GrupoVariavel.participante',
                 ])
                   && singleMeta?.pode_editar"
-                class="ml1 f0"
+                class="f0"
                 style="flex-basis:20px;"
               />
             </div>
@@ -849,7 +850,7 @@ watchEffect(() => {
               v-for="(rrr, rrrindex) in rr.etapa_filha"
               :key="rrr.id"
             >
-              <div class="pl3 flex center t13">
+              <div class="subfase__corpo pl3 flex center t13">
                 <div class="f2 flex center">
                   <span
                     class="farol f0"
@@ -866,30 +867,30 @@ watchEffect(() => {
                   </span>
                   <span>{{ rrr.titulo }}</span>
                 </div>
-                <div class="ml1 f1">
+                <div class="tr f1">
                   {{ rrr.inicio_previsto }}
                 </div>
-                <div class="ml1 f1">
+                <div class="tr f1">
                   {{ rrr.termino_previsto }}
                 </div>
-                <div class="ml1 f1">
+                <div class="tr f1">
                   {{ rrr.duracao ?? '-' }}
                 </div>
-                <div class="ml1 f1">
+                <div class="tr f1">
                   {{ rrr.inicio_real }}
                 </div>
-                <div class="ml1 f1">
+                <div class="tr f1">
                   {{ rrr.termino_real }}
                 </div>
-                <div class="ml1 f1 tr">
+                <div class="tr f1">
                   {{ typeof rrr.percentual_execucao === 'number'
                     ? `${rrr.percentual_execucao}%`
                     : '-' }}
                 </div>
-                <div class="ml1 f1">
+                <div class="tr f1">
                   {{ rrr.atraso ? rrr.atraso + ' dias' : '-' }}
                 </div>
-                <div class="ml1 f0">
+                <div class="f0">
                   <pre v-scrollLockDebug>
                       endereco obrigatório: {{ !!rrr?.endereco_obrigatorio }}
                       geolocalizações: {{ rrr?.geolocalizacao?.length || 0 }}
@@ -951,13 +952,13 @@ watchEffect(() => {
                     'SMAE.GrupoVariavel.participante',
                   ])
                     && singleMeta?.pode_editar || rrr.pode_editar_realizado"
-                  class="ml1 f0 flex center mr05"
+                  class="f0 flex center mr05"
                 >
                   <button
                     v-if="!rrr.cronograma_origem_etapa
                       || rrr.cronograma_origem_etapa.id == singleCronograma?.id"
                     type="button"
-                    class="like-a__text"
+                    class="tipinfo left like-a__text"
                     title="Excluir Subfase"
                     :disabled="rrr.etapa_filha?.length"
                     @click="excluirEtapa(rrr.etapa_id)"
@@ -966,6 +967,7 @@ watchEffect(() => {
                       width="20"
                       height="20"
                     ><use xlink:href="#i_remove" /></svg>
+                    <div>{{ 'Excluir subfase ' + rrr.titulo }}</div>
                   </button>
                 </div>
 
@@ -977,7 +979,7 @@ watchEffect(() => {
                     'SMAE.GrupoVariavel.participante',
                   ])
                     && singleMeta?.pode_editar || rrr.pode_editar_realizado"
-                  class="ml1 f0 flex center mr05"
+                  class="f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
                 >
                   <SmaeLink
@@ -1016,7 +1018,7 @@ watchEffect(() => {
               'SMAE.GrupoVariavel.participante',
             ])
               && singleMeta?.pode_editar"
-            class="pl3"
+            class="subfase__rodape pl3"
           >
             <SmaeLink
               v-if="!r.cronograma_origem_etapa
@@ -1048,7 +1050,7 @@ watchEffect(() => {
             'SMAE.GrupoVariavel.participante',
           ])
             && singleMeta?.pode_editar"
-          class="pl1"
+          class="fase__rodape pl1"
         >
           <SmaeLink
             v-if="!r.cronograma_origem_etapa
@@ -1074,7 +1076,7 @@ watchEffect(() => {
     <template v-else-if="singleCronogramaEtapas?.loading">
       <div class="p1">
         <span>Carregando</span> <svg
-          class="ml1 ib"
+          class="ib"
           width="20"
           height="20"
         ><use xlink:href="#i_spin" /></svg>
@@ -1088,7 +1090,7 @@ watchEffect(() => {
         'SMAE.GrupoVariavel.participante',
       ])
         && singleMeta?.pode_editar"
-      class="p1 bgc50"
+      class="etapa__rodape p1 bgc50"
     >
       <div class="tc">
         <SmaeLink
@@ -1109,7 +1111,7 @@ watchEffect(() => {
   <template v-else-if="singleCronograma?.loading">
     <div class="p1">
       <span>Carregando</span> <svg
-        class="ml1 ib"
+        class="ib"
         width="20"
         height="20"
       ><use xlink:href="#i_spin" /></svg>
@@ -1138,3 +1140,111 @@ watchEffect(() => {
     </div>
   </div>
 </template>
+<style lang="less" scoped>
+.etapas {
+  display: grid;
+  grid-template-columns:
+    [titulo-start] auto
+    [inicio-prev-start] max-content
+    [termino-prev-start] max-content
+    [duracao-start] max-content
+    [inicio-real-start] max-content
+    [termino-real-start] max-content
+    [execucao-start] max-content
+    [atraso-start] max-content
+    [endereco-start] max-content
+    [apagar-start] max-content
+    [editar-start] max-content
+    [end];
+
+  gap: 0 1rem;
+
+  hr {
+    grid-column: 1 / -1;
+  }
+}
+
+.lista-legenda {
+  grid-column: 1 / -1;
+}
+
+.etapa,
+.fase,
+.subfase {
+  display: grid !important;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.etapa {}
+
+.fase {}
+
+.subfase {}
+
+.status {}
+
+.etapa__title,
+.fase__title {
+  display: grid;
+  grid-column: 1 / -1;
+  padding-left: 2rem;
+
+  > h4 {
+    margin: 0;
+  }
+}
+
+.list {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.etapa__cabecalho,
+.fase__cabecalho,
+.subfase__cabecalho {
+  display: grid !important;
+  grid-template-columns: subgrid;
+}
+
+.etapa__cabecalho,
+.fase__cabecalho {
+  grid-column: 2 / -1;
+}
+
+.subfase__cabecalho {
+  grid-column: 1 / -1;
+}
+
+.etapa__corpo,
+.fase__corpo,
+.subfase__corpo {
+  display: grid !important;
+  grid-template-columns: subgrid;
+}
+
+.etapa__corpo {
+  grid-column: 2 / -1;
+}
+
+.fase__corpo {
+  grid-column: 2 / -1;
+}
+
+.subfase__corpo {
+  grid-column: 1 / -1;
+}
+
+.etapa__rodape {
+  grid-column: 1 / -1;
+}
+
+.fase__rodape {
+  grid-column: 1 / -1;
+}
+
+.subfase__rodape {
+  grid-column: 1 / -1;
+}
+</style>
