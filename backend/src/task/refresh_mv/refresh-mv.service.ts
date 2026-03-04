@@ -18,8 +18,8 @@ export class RefreshMvService implements TaskableService {
             await RetryPromise(
                 () => this.prisma.$queryRawUnsafe(`REFRESH MATERIALIZED VIEW "${inputParams.mv_name}";`),
                 100,
-                1000,
-                20
+                1_000,
+                0.2
             );
         } catch (error) {
             if (error?.code == 'P2010' && error?.meta?.code == '42P01') {

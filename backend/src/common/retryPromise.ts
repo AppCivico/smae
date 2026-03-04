@@ -20,7 +20,7 @@ export async function RetryPromise<T>(
         ) {
             const jitterDelay = Math.floor(MathRandom() * delay * jitter * 2 - delay * jitter + delay);
             await new Promise((resolve) => setTimeout(resolve, jitterDelay));
-            return RetryPromise(promiseFn, maxRetries - 1, delay);
+            return RetryPromise(promiseFn, maxRetries - 1, delay, jitter);
         } else {
             throw error;
         }

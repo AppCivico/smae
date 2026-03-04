@@ -1219,7 +1219,7 @@ export class ImportacaoOrcamentoService {
                 }
             };
 
-            await RetryPromise(upsertFunction, 5, 2000, 100);
+            await RetryPromise(upsertFunction, 5, 2_000, 0.2);
         } catch (error) {
             if (error instanceof HttpException) return `Linha inválida: ${error}`;
 

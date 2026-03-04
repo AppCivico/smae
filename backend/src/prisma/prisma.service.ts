@@ -47,7 +47,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
                             const transactionPromiseFn = async () => {
                                 return target.$transaction(arg, options);
                             };
-                            return RetryPromise(transactionPromiseFn, 10, 10000, 2000);
+                            return RetryPromise(transactionPromiseFn, 10, 10_000, 0.2);
                         } else if (typeof arg === 'function') {
                             if (!options) options = {};
                             if (options.timeout === undefined) options.timeout = 60 * 1000;
@@ -56,7 +56,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
                             const transactionPromiseFn = async () => {
                                 return target.$transaction(arg, options);
                             };
-                            return RetryPromise(transactionPromiseFn, 10, 10000, 2000);
+                            return RetryPromise(transactionPromiseFn, 10, 10_000, 0.2);
                         }
                         throw new Error('Invalid arguments passed to $transaction');
                     };
