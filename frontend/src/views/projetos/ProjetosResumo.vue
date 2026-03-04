@@ -276,11 +276,21 @@ const estimativasIniciais = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
+  const estiloDeColuna = { style: { flex: '0 0 calc(25% - 1.5rem)' } };
+
   return [
-    { chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio },
-    { chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino },
-    { chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo },
-    { chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso },
+    {
+      chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso, atributosDoItem: estiloDeColuna,
+    },
   ];
 });
 
@@ -291,14 +301,22 @@ const planejamentoFisicoFinanceiro = computed(() => {
   const crono = foco.tarefa_cronograma;
   if (!crono) return [];
 
+  const estiloDeColuna = { style: { flex: '0 0 calc(25% - 1.5rem)' } };
+
   return [
-    { chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio },
-    { chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino },
-    { chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo },
+    {
+      chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
   ];
 });
 
-const orgaosPartesInteressadas = computed(() => {
+const orgaoGestorLista = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
@@ -320,6 +338,14 @@ const orgaosPartesInteressadas = computed(() => {
         ? foco.responsaveis_no_orgao_gestor.map((x) => x.nome_exibicao || x).join(', ')
         : null,
     },
+  ];
+});
+
+const orgaoResponsavelLista = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     {
       chave: 'orgao_responsavel_id',
       titulo: schema.fields.orgao_responsavel_id.spec.label,
@@ -545,7 +571,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </SmaeDescriptionList>
     </section>
 
-    <section v-if="emFoco?.geolocalizacao?.length">
+    <section v-if="emFoco?.geolocalizacao?.length" class="borda-inferior">
       <SmaeTable
         titulo="Localização"
         :colunas="colunasDeEnderecos"
@@ -557,7 +583,6 @@ if (!planosSimplificadosStore.planosSimplificados.length
       <MapaExibir
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
-        class="mb1"
         :opcoes-do-poligono="{
           fill: true,
           opacity: 0.5,
@@ -599,9 +624,10 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </MapaExibir>
     </section>
 
-    <section>
+    <section class="borda-inferior">
+      <h2>{{ schema.fields.fonte_recursos.spec.label }}</h2>
       <SmaeTable
-        :titulo="schema.fields.fonte_recursos.spec.label"
+        :titulo-para-rolagem-horizontal="schema.fields.fonte_recursos.spec.label"
         :colunas="colunasDeFontesDeRecursos"
         :dados="dadosDeFontesDeRecursos"
         :rolagem-horizontal="true"
@@ -615,7 +641,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </SmaeTable>
     </section>
 
-    <section>
+    <section class="borda-inferior">
       <h2>Vinculação Estratégica (Programa de Metas e outros)</h2>
 
       <SmaeTable
@@ -653,13 +679,12 @@ if (!planosSimplificadosStore.planosSimplificados.length
       />
     </section>
 
-    <section>
+    <section class="pl1 pr1">
       <h2>Estimativas iniciais pré-planejamento</h2>
 
       <SmaeDescriptionList
         :lista="estimativasIniciais"
-        layout="grid"
-        largura-minima="13rem"
+        layout="flex"
       >
         <template #descricao--previsao_inicio="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
@@ -681,8 +706,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
 
       <SmaeDescriptionList
         :lista="planejamentoFisicoFinanceiro"
-        layout="grid"
-        largura-minima="13rem"
+        layout="flex"
       >
         <template #descricao--inicio_planejado="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
@@ -700,7 +724,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       <h2>Órgãos/Partes interessadas</h2>
 
       <SmaeDescriptionList
-        :lista="orgaosPartesInteressadas"
+        :lista="orgaoGestorLista"
         layout="grid"
         largura-minima="13rem"
       >
@@ -720,7 +744,15 @@ if (!planosSimplificadosStore.planosSimplificados.length
             :texto="schema.fields.responsaveis_no_orgao_gestor.spec.meta.balaoInformativo"
           />
         </template>
+      </SmaeDescriptionList>
+    </section>
 
+    <section>
+      <SmaeDescriptionList
+        :lista="orgaoResponsavelLista"
+        layout="grid"
+        largura-minima="13rem"
+      >
         <template #termo--orgao_responsavel_id="{ item }">
           {{ item.titulo }}
           <SmaeTooltip :texto="schema.fields.orgao_responsavel_id.spec.meta.balaoInformativo" />
@@ -810,4 +842,5 @@ if (!planosSimplificadosStore.planosSimplificados.length
   border-block: 1px solid #ccc;
   background-color: #f9f9f9;
 }
+
 </style>
