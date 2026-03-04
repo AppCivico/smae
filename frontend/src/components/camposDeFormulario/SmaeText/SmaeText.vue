@@ -86,11 +86,12 @@ const { handleChange, value: fieldValue } = useField<string>(props.name as strin
 // No modo v-model, o pai controla o valor via `props.modelValue`.
 const valorLocal = ref<string | null>(props.modelValue ?? '');
 
-// Quando o VeeValidate atualiza `fieldValue` externamente (ex.: `setFieldValue`),
-// mantemos `valorLocal` sincronizado.
+// Quando o VeeValidate atualiza `fieldValue` externamente (ex.: `setFieldValue`
+// ou `initialValues` do `useForm`), mantemos `valorLocal` sincronizado.
+// `immediate: true` garante que o valor inicial do form seja capturado na montagem.
 watch(fieldValue, (novoValor) => {
   valorLocal.value = novoValor ?? '';
-});
+}, { immediate: true });
 
 const valorAtual = computed(() => (modoVModel.value ? props.modelValue : valorLocal.value));
 
