@@ -83,6 +83,7 @@ A ordem de prioridade para resolução de títulos é:
 | `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
 | `layout` | `'flex' \| 'grid'` | Não | Layout do container. Padrão: `'flex'` |
 | `larguraMinima` | `string` | Não | Largura mínima dos itens no modo grid (ex: `'15rem'`). Padrão: `''` (o CSS define `13rem` como fallback) |
+| `maximoDeColunas` | `number \| string` | Não | Número máximo de colunas no modo grid. Limita o grid mantendo o comportamento responsivo. |
 
 \* Pelo menos uma das props `objeto` ou `lista` deve ser fornecida.
 
@@ -295,6 +296,21 @@ Com `larguraMinima` fornecida, o inline style é adicionado:
   <!-- items -->
 </dl>
 ```
+
+#### Limitando o número máximo de colunas
+
+Use a prop `maximoDeColunas` para evitar que o grid expanda para muitas colunas em telas grandes:
+
+```vue
+<SmaeDescriptionList
+  :objeto="dados"
+  layout="grid"
+  largura-minima="13rem"
+  :maximo-de-colunas="4"
+/>
+```
+
+O responsivo continua funcionando: em telas estreitas as colunas colapsam normalmente.
 
 ## Comportamento
 

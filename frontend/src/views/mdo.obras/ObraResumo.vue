@@ -14,9 +14,18 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
+const planosSimplificadosStore = usePlanosSimplificadosStore();
+
+const { planosPorId } = storeToRefs(planosSimplificadosStore);
+
+if (!planosSimplificadosStore.planosSimplificados.length
+  && !planosSimplificadosStore.chamadasPendentes.planosSimplificados) {
+  planosSimplificadosStore.buscarPlanos();
+}
 
 const { organs, órgãosPorId } = storeToRefs(ÓrgãosStore);
 const {
@@ -175,10 +184,18 @@ const informacoesHabitacional = computed(() => {
 
 const colunasDeVinculacao = [
   { chave: 'pdm', label: 'PdM/Plano Setorial' },
-  { chave: 'meta', label: 'Meta vinculada' },
-  { chave: 'iniciativa', label: 'Ação estratégica' },
-  { chave: 'atividade', label: 'Ação programada' },
+  { chave: 'meta', label: 'Meta' },
+  { chave: 'iniciativa', label: '' },
+  { chave: 'atividade', label: '' },
 ];
+
+function rotulosDoPlano(pdmId) {
+  const plano = pdmId ? planosPorId.value[pdmId] : null;
+  return {
+    iniciativa: plano?.rotulo_iniciativa || 'Iniciativa',
+    atividade: plano?.rotulo_atividade || 'Atividade',
+  };
+}
 
 function formatarCodTitulo(obj, fallback = '-') {
   if (!obj) return fallback;
@@ -194,28 +211,36 @@ const dadosDeVinculacao = computed(() => {
 
   if (Array.isArray(foco.origens_extra)) {
     foco.origens_extra.forEach((origem) => {
+      const rotulos = rotulosDoPlano(origem.pdm?.id);
+
       linhas.push({
         pdm: origem.pdm?.nome || origem.pdm || '-',
         meta: formatarCodTitulo(origem.meta),
-        iniciativa: formatarCodTitulo(origem.iniciativa),
-        atividade: formatarCodTitulo(origem.atividade),
+        iniciativa: origem.iniciativa ? formatarCodTitulo(origem.iniciativa) : null,
+        iniciativa_rotulo: rotulos.iniciativa,
+        atividade: origem.atividade ? formatarCodTitulo(origem.atividade) : null,
+        atividade_rotulo: rotulos.atividade,
       });
     });
   }
 
   if (foco.origem_tipo === 'PdmSistema') {
     if (foco.meta_id) {
+      const rotulos = rotulosDoPlano(foco.meta?.pdm_id);
+
       linhas.push({
-        pdm: '-',
+        pdm: planosPorId.value[foco.meta?.pdm_id]?.nome || '-',
         meta: foco.meta?.codigo && foco.meta?.titulo
           ? `${foco.meta.codigo} - ${foco.meta.titulo}`
           : String(foco.meta_id),
         iniciativa: foco.iniciativa
           ? formatarCodTitulo(foco.iniciativa)
-          : (foco.iniciativa_id || '-'),
+          : null,
+        iniciativa_rotulo: rotulos.iniciativa,
         atividade: foco.atividade
           ? formatarCodTitulo(foco.atividade)
-          : (foco.atividade_id || '-'),
+          : null,
+        atividade_rotulo: rotulos.atividade,
       });
     }
   }
@@ -227,12 +252,24 @@ const estimativasIniciais = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
+  const estiloDeColuna = { style: { flex: '0 0 calc(20% - 1.6rem)' } };
+
   return [
-    { chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio },
-    { chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino },
-    { chave: 'mdo_previsao_inauguracao', titulo: schema.fields.mdo_previsao_inauguracao.spec.label, valor: foco.mdo_previsao_inauguracao },
-    { chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso },
-    { chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo },
+    {
+      chave: 'previsao_inicio', titulo: schema.fields.previsao_inicio.spec.label, valor: foco.previsao_inicio, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'mdo_previsao_inauguracao', titulo: schema.fields.mdo_previsao_inauguracao.spec.label, valor: foco.mdo_previsao_inauguracao, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
   ];
 });
 
@@ -243,14 +280,22 @@ const planejamentoFisicoFinanceiro = computed(() => {
   const crono = foco.tarefa_cronograma;
   if (!crono) return [];
 
+  const estiloDeColuna = { style: { flex: '0 0 calc(20% - 1.6rem)' } };
+
   return [
-    { chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio },
-    { chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino },
-    { chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo },
+    {
+      chave: 'inicio_planejado', titulo: 'Início planejado', valor: crono.previsao_inicio, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'termino_planejado', titulo: 'Término planejado', valor: crono.previsao_termino, atributosDoItem: estiloDeColuna,
+    },
+    {
+      chave: 'custo_total_planejado', titulo: 'Custo total planejado', valor: crono.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
   ];
 });
 
-const orgaosPartesInteressadas = computed(() => {
+const orgaoGestorLista = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
@@ -264,6 +309,14 @@ const orgaosPartesInteressadas = computed(() => {
         ? foco.responsaveis_no_orgao_gestor.map((x) => x.nome_exibicao || x).join(', ')
         : null,
     },
+  ];
+});
+
+const orgaoResponsavelLista = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     { chave: 'orgao_responsavel', titulo: schema.fields.orgao_responsavel_id.spec.label, valor: foco.orgao_responsavel ? `${foco.orgao_responsavel.sigla} - ${foco.orgao_responsavel.descricao}` : null },
     { chave: 'secretario_responsavel', titulo: schema.fields.secretario_responsavel.spec.label, valor: foco.secretario_responsavel },
     { chave: 'responsavel', titulo: schema.fields.responsavel_id.spec.label, valor: foco.responsavel?.nome_exibicao || foco.responsavel?.id },
@@ -445,7 +498,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <SmaeDescriptionList
         :lista="informacoesDaObra"
         layout="grid"
-        largura-minima="13rem"
+        maximo-de-colunas="5"
       >
         <template #descricao--status="{ item }">
           {{ statusesObras[item.valor]?.nome || item.valor || '—' }}
@@ -474,6 +527,9 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </template>
       </SmaeDescriptionList>
 
+    </section>
+
+    <section>
       <SmaeDescriptionList
         v-if="informacoesHabitacional.length"
         :lista="informacoesHabitacional"
@@ -484,6 +540,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <section
       v-if="emFoco?.geolocalizacao?.length"
+      class="borda-inferior"
     >
       <SmaeTable
         titulo="Localização"
@@ -538,15 +595,34 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </MapaExibir>
     </section>
 
-    <section>
+    <section class="borda-inferior">
       <h2>Vinculação Estratégica (Programa de Metas e outros)</h2>
 
       <SmaeTable
         v-if="dadosDeVinculacao.length"
         :colunas="colunasDeVinculacao"
         :dados="dadosDeVinculacao"
-        class="mb2"
-      />
+      >
+        <template #celula:iniciativa="{ linha }">
+          <template v-if="linha.iniciativa">
+            <strong>{{ linha.iniciativa_rotulo }}:</strong>
+            {{ linha.iniciativa }}
+          </template>
+          <template v-else>
+            -
+          </template>
+        </template>
+
+        <template #celula:atividade="{ linha }">
+          <template v-if="linha.atividade">
+            <strong>{{ linha.atividade_rotulo }}:</strong>
+            {{ linha.atividade }}
+          </template>
+          <template v-else>
+            -
+          </template>
+        </template>
+      </SmaeTable>
 
       <SmaeDescriptionList
         v-if="origemTipoLista.length"
@@ -556,13 +632,12 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       />
     </section>
 
-    <section>
+    <section class="pl1 pr1">
       <h2>Estimativas iniciais pré-planejamento</h2>
 
       <SmaeDescriptionList
         :lista="estimativasIniciais"
-        layout="grid"
-        largura-minima="13rem"
+        layout="flex"
       >
         <template #descricao--previsao_inicio="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
@@ -587,8 +662,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
       <SmaeDescriptionList
         :lista="planejamentoFisicoFinanceiro"
-        layout="grid"
-        largura-minima="13rem"
+        layout="flex"
       >
         <template #descricao--inicio_planejado="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
@@ -606,7 +680,15 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <h2>Órgãos/Partes interessadas</h2>
 
       <SmaeDescriptionList
-        :lista="orgaosPartesInteressadas"
+        :lista="orgaoGestorLista"
+        layout="grid"
+        largura-minima="13rem"
+      />
+    </section>
+
+    <section>
+      <SmaeDescriptionList
+        :lista="orgaoResponsavelLista"
         layout="grid"
         largura-minima="13rem"
       />

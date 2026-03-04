@@ -65,6 +65,11 @@ const props = defineProps({
       return ['flex', 'grid'].includes(value);
     },
   },
+  maximoDeColunas: {
+    type: [Number, String],
+    required: false,
+    default: undefined,
+  },
 });
 
 function tituloDoSchema(chave: string): string | undefined {
@@ -194,15 +199,25 @@ const listaConvertida = computed(() => {
 });
 
 const estiloContainer = computed(() => {
-  if (isGrid.value && props.larguraMinima) {
-    return { '--dl-item-min-width': props.larguraMinima };
+  if (!isGrid.value) return undefined;
+
+  const estilo: Record<string, string> = {};
+
+  if (props.larguraMinima) {
+    estilo['--dl-item-min-width'] = props.larguraMinima;
   }
-  return undefined;
+
+  if (props.maximoDeColunas) {
+    estilo['--dl-max-col-count'] = String(props.maximoDeColunas);
+  }
+
+  return Object.keys(estilo).length ? estilo : undefined;
 });
 
 const classeContainer = computed(() => [
   'description-list',
   isGrid.value ? 'description-list--grid' : 'description-list--flex',
+  isGrid.value && props.maximoDeColunas ? 'description-list--grid-limitado' : '',
 ]);
 </script>
 
@@ -252,7 +267,7 @@ const classeContainer = computed(() => [
   </dl>
 </template>
 
-<style lang="less">
+<style>
 .description-list {}
 
 .description-list--flex {
@@ -267,10 +282,39 @@ const classeContainer = computed(() => [
 
 .description-list--grid {
   --dl-item-min-width: 13rem;
+  --dl-gap: 2rem;
 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--dl-item-min-width), 1fr));
-  gap: 2.5rem 2rem;
+  gap: 2.5rem var(--dl-gap);
+}
+
+/*
+ * Limita o número máximo de colunas mantendo o auto-fit responsivo.
+ * @link https://codepen.io/kevinpowell/pen/GgRwqxJ
+ *
+ * 1. --dl-col-size-calc: calcula o tamanho que cada coluna teria se
+ *    houvesse exatamente N colunas (descontando os gaps).
+ * 2. --dl-col-min-size-calc: usa min(100%, max(mínimo, cálculo)) para
+ *    garantir que o valor nunca exceda 100% (evita overflow em telas
+ *    estreitas) e nunca fique abaixo do mínimo responsivo.
+ * 3. Esse valor calculado é usado como o mínimo do minmax(), e o
+ *    auto-fit cuida do resto.
+ */
+.description-list--grid-limitado {
+  --dl-col-size-calc: calc(
+    (100% - var(--dl-gap) * var(--dl-max-col-count)) /
+      var(--dl-max-col-count)
+  );
+  --dl-col-min-size-calc: min(
+    100%,
+    max(var(--dl-item-min-width), var(--dl-col-size-calc))
+  );
+
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(var(--dl-col-min-size-calc), 1fr)
+  );
 }
 
 .description-list__item--full {

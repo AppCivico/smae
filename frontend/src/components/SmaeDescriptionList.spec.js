@@ -758,4 +758,66 @@ describe('SmaeDescriptionList', () => {
       expect(dl.attributes('style') || '').not.toContain('--dl-item-min-width');
     });
   });
+
+  describe('propriedade maximoDeColunas', () => {
+    it('aplica classe e CSS var quando maximoDeColunas é fornecida no modo grid', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        maximoDeColunas: 4,
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--grid-limitado');
+      expect(dl.attributes('style')).toContain('--dl-max-col-count: 4');
+    });
+
+    it('aceita maximoDeColunas como string', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        maximoDeColunas: '3',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--grid-limitado');
+      expect(dl.attributes('style')).toContain('--dl-max-col-count: 3');
+    });
+
+    it('não aplica classe limitado no modo flex', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'flex',
+        maximoDeColunas: 4,
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).not.toContain('description-list--grid-limitado');
+      expect(dl.attributes('style') || '').not.toContain('--dl-max-col-count');
+    });
+
+    it('não aplica classe limitado quando maximoDeColunas não é fornecida', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).not.toContain('description-list--grid-limitado');
+    });
+
+    it('combina com larguraMinima', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        larguraMinima: '15rem',
+        maximoDeColunas: 4,
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style')).toContain('--dl-item-min-width: 15rem');
+      expect(dl.attributes('style')).toContain('--dl-max-col-count: 4');
+      expect(dl.classes()).toContain('description-list--grid-limitado');
+    });
+  });
 });
