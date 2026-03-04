@@ -115,6 +115,7 @@ const dadosTabela = computed(() => [
       font-size: 1rem;
       color: #3B5881;
       text-transform: uppercase;
+      padding-right: 20px;
     }
 
     tbody td {
