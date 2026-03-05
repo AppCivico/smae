@@ -240,7 +240,7 @@ const dadosDeVinculacao = computed(() => {
       const rotulos = rotulosDoPlano(origem.pdm?.id);
 
       linhas.push({
-        pdm: origem.pdm?.nome || origem.pdm || '-',
+        pdm: origem.pdm?.nome || origem.meta?.pdm_nome || origem.pdm || '-',
         meta: formatarCodTitulo(origem.meta),
         iniciativa: origem.iniciativa ? formatarCodTitulo(origem.iniciativa) : null,
         iniciativa_rotulo: rotulos.iniciativa,
@@ -254,7 +254,7 @@ const dadosDeVinculacao = computed(() => {
     const rotulos = rotulosDoPlano(foco.meta?.pdm_id);
 
     linhas.push({
-      pdm: '-',
+      pdm: planosPorId.value[foco.meta?.pdm_id]?.nome || foco.meta?.pdm_nome || '-',
       meta: foco.meta?.codigo && foco.meta?.titulo
         ? `${foco.meta.codigo} - ${foco.meta.titulo}`
         : String(foco.meta_id),
