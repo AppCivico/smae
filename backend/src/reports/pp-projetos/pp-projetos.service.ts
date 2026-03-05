@@ -1844,7 +1844,7 @@ export class PPProjetosService implements ReportableService {
     private convertRowsContratos(input: RetornoDbContratos[]): RelProjetosContratosDto[] {
         return input.map((db) => {
             return {
-                id: db.id,
+                contrato_id: db.id,
                 projeto_id: db.projeto_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,

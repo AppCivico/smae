@@ -151,7 +151,7 @@ export class RelProjetosAcompanhamentosDto {
 }
 
 export class RelProjetosContratosDto {
-    id: number;
+    contrato_id: number;
     projeto_id: number;
     numero: string;
     exclusivo: boolean;

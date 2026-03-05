@@ -158,7 +158,7 @@ export class PPProjetoService implements ReportableService {
 
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
         const detail: RelProjetoRelatorioDto = {
-            id: projetoRow.id,
+            projeto_id: projetoRow.id,
             codigo: projetoRow.codigo,
             portfolio_id: projetoRow.portfolio_id,
             nome: projetoRow.nome,
@@ -294,6 +294,8 @@ export class PPProjetoService implements ReportableService {
             }
 
             return {
+                projeto_id: projetoRow.id,
+                tarefa_id: e.id,
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
                 inicio_planejado: e.inicio_planejado ? Date2YMD.toString(e.inicio_planejado) : '',
@@ -311,6 +313,7 @@ export class PPProjetoService implements ReportableService {
         const riscoRows = await this.riscoService.findAll(dto.projeto_id, undefined);
         const riscosOut: RelProjetoRiscoDto[] = riscoRows.map((e) => {
             return {
+                risco_id: e.id,
                 codigo: e.codigo,
                 titulo: e.titulo,
                 descricao: e.descricao,
@@ -327,6 +330,7 @@ export class PPProjetoService implements ReportableService {
         const planoAcaoRows = await this.planoAcaoService.findAll(dto.projeto_id, { risco_id: undefined }, undefined);
         const planoAcaoOut: RelProjetoPlanoAcaoDto[] = planoAcaoRows.map((e) => {
             return {
+                risco_id: e.projeto_risco.id,
                 codigo_risco: e.projeto_risco.codigo,
                 contramedida: e.contramedida,
                 prazo_contramedida: e.prazo_contramedida,
@@ -340,7 +344,8 @@ export class PPProjetoService implements ReportableService {
         const acompanhamentoRows = await this.acompanhamentoService.findAll('PP', dto.projeto_id, undefined);
         const acompanhamentoOut: RelProjetoAcompanhamentoDto[] = acompanhamentoRows.map((a) => {
             return {
-                id: a.id,
+                acompanhamento_id: a.id,
+                projeto_id: dto.projeto_id,
                 acompanhamento_tipo: a.acompanhamento_tipo ? a.acompanhamento_tipo.nome : null,
                 numero: a.ordem,
                 data_registro: a.data_registro,
@@ -465,7 +470,7 @@ export class PPProjetoService implements ReportableService {
     private convertRowsContratos(input: RetornoDbContratos[]): RelProjetosContratosDto[] {
         return input.map((db) => {
             return {
-                id: db.id,
+                contrato_id: db.id,
                 projeto_id: db.projeto_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
@@ -654,7 +659,7 @@ export class PPProjetoService implements ReportableService {
         const uploads = await this.prisma.projetoDocumento.findMany({
             where: {
                 removido_em: null,
-                projeto_id: dados.detail.id,
+                projeto_id: dados.detail.projeto_id,
             },
             include: {
                 arquivo: {
@@ -685,17 +690,17 @@ export class PPProjetoService implements ReportableService {
         }
         await ctx.progress(90);
 
-        if (dados.detail && dados.detail.id) {
+        if (dados.detail && dados.detail.projeto_id) {
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {
-                    projeto_id: dados.detail.id,
+                    projeto_id: dados.detail.projeto_id,
                     removido_em: null,
                 },
                 select: { id: true },
             });
 
             if (tarefaCronoId) {
-                const eap = await this.tarefaService.getEap(tarefaCronoId.id, { projeto_id: dados.detail.id }, 'svg');
+                const eap = await this.tarefaService.getEap(tarefaCronoId.id, { projeto_id: dados.detail.projeto_id }, 'svg');
 
                 out.push({
                     name: 'eap.svg',

@@ -4,6 +4,7 @@ import { RelProjetosAditivosDto, RelProjetosContratosDto, RelProjetosTermoEncerr
 
 export class RelProjetoRelatorioDto extends PartialType(
     OmitType(ProjetoDetailDto, [
+        'id',
         'premissas',
         'restricoes',
         'fonte_recursos',
@@ -26,6 +27,7 @@ export class RelProjetoRelatorioDto extends PartialType(
         'data_revisao',
     ])
 ) {
+    projeto_id: number;
     fonte_recursos: string | null;
     premissas: string | null;
     restricoes: string | null;
@@ -52,6 +54,8 @@ export class RelProjetoRelatorioDto extends PartialType(
 }
 
 export class RelProjetoCronogramaDto {
+    projeto_id: number;
+    tarefa_id: number;
     hirearquia: string;
     tarefa: string;
     inicio_planejado: string | null;
@@ -66,6 +70,7 @@ export class RelProjetoCronogramaDto {
 }
 
 export class RelProjetoRiscoDto {
+    risco_id: number;
     codigo: number;
     titulo: string;
     descricao: string | null;
@@ -79,6 +84,7 @@ export class RelProjetoRiscoDto {
 }
 
 export class RelProjetoPlanoAcaoDto {
+    risco_id: number;
     codigo_risco: number;
     contramedida: string;
     medidas_de_contingencia: string;
@@ -89,7 +95,8 @@ export class RelProjetoPlanoAcaoDto {
 }
 
 export class RelProjetoAcompanhamentoDto {
-    id: number;
+    acompanhamento_id: number;
+    projeto_id: number;
     acompanhamento_tipo: string | null;
     numero: number;
     data_registro: string | null;
