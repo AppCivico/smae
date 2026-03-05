@@ -1555,12 +1555,23 @@ async function atualizar_modulos_e_privilegios() {
         privByCodigo[r.codigo] = r;
     }
 
+    const modulesToRemove = Object.keys(PrivConfig).filter((k) => PrivConfig[k] === false);
+    if (modulesToRemove.length > 0) {
+        await prisma.perfilPrivilegio.deleteMany({
+            where: { privilegio: { modulo: { codigo: { in: modulesToRemove } } } },
+        });
+        await prisma.privilegio.deleteMany({
+            where: { modulo: { codigo: { in: modulesToRemove } } },
+        });
+        await prisma.privilegioModulo.deleteMany({
+            where: { codigo: { in: modulesToRemove } },
+        });
+    }
+
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
 
-        if (privilegio === false) {
-            await removeModulo(codModulo);
-        } else {
+        if (privilegio !== false) {
             await upsertModulo(codModulo, privilegio);
         }
     }
@@ -1606,37 +1617,12 @@ async function atualizar_modulos_e_privilegios() {
                 },
             });
         }
-        for (const priv of privilegio) {
-            await upsert_privilegios(moduloObject.id, priv[0], priv[1], privByCodigo);
-        }
+        await Promise.all(
+            privilegio.map((priv) => upsert_privilegios(moduloObject.id, priv[0], priv[1], privByCodigo))
+        );
     }
 }
 
-async function removeModulo(codModulo: string) {
-    await prisma.perfilPrivilegio.deleteMany({
-        where: {
-            privilegio: {
-                modulo: {
-                    codigo: codModulo,
-                },
-            },
-        },
-    });
-
-    await prisma.privilegio.deleteMany({
-        where: {
-            modulo: {
-                codigo: codModulo,
-            },
-        },
-    });
-
-    await prisma.privilegioModulo.deleteMany({
-        where: {
-            codigo: codModulo,
-        },
-    });
-}
 async function criar_texto_config() {
     await prisma.textoConfig.upsert({
         where: { id: 1 },
@@ -1704,8 +1690,8 @@ async function upsert_privilegios(
     return priv;
 }
 
-const removidosNaSession = new Set<number>();
 async function atualizar_perfil_acesso() {
+    const removidosNaSession = new Set<number>();
     const deletePerfilAcesso = async (perfilAcessoId: number) => {
         await prisma.pessoaPerfil.deleteMany({
             where: { perfil_acesso_id: perfilAcessoId },
@@ -1750,11 +1736,30 @@ async function atualizar_perfil_acesso() {
         } else {
             const perfilAcesso = await ensurePerfilAcessoIsEmpty(perfilAcessoConf, perfilAcessoByNome);
 
-            const promises = perfilAcessoConf.privilegios.map((codPriv: ListaDePrivilegios) =>
-                criaPrivComPerfilDeAcesso(codPriv, perfilAcesso, privByCodigo)
-            );
+            const existingPrivs = await prisma.perfilPrivilegio.findMany({
+                where: { perfil_acesso_id: perfilAcesso.id },
+                select: { privilegio_id: true },
+            });
+            const existingSet = new Set(existingPrivs.map((p) => p.privilegio_id));
 
-            await Promise.all(promises);
+            const toCreate = perfilAcessoConf.privilegios
+                .map((codPriv: ListaDePrivilegios) => {
+                    const priv = privByCodigo[codPriv];
+                    if (!priv) throw new Error(`Não encontrado priv ${codPriv}`);
+                    return priv;
+                })
+                .filter((priv) => !existingSet.has(priv.id))
+                .map((priv) => ({
+                    perfil_acesso_id: perfilAcesso.id,
+                    privilegio_id: priv.id,
+                }));
+
+            if (toCreate.length > 0) {
+                await prisma.perfilPrivilegio.createMany({
+                    data: toCreate,
+                    skipDuplicates: true,
+                });
+            }
         }
     };
 
@@ -1777,25 +1782,15 @@ async function ensurePerfilAcessoIsEmpty(
 ) {
     let perfilAcesso = cache[perfilAcessoConf.nome];
 
-    if (!perfilAcesso || perfilAcesso.descricao != perfilAcessoConf.descricao) {
-        if (perfilAcesso) {
-            await prisma.perfilAcesso.update({
-                where: { id: perfilAcesso.id },
-                data: {
-                    nome: perfilAcessoConf.nome,
-                    descricao: perfilAcessoConf.descricao,
-                },
-            });
-        } else {
-            perfilAcesso = await prisma.perfilAcesso.create({
-                data: {
-                    nome: perfilAcessoConf.nome,
-                    descricao: perfilAcessoConf.descricao,
-                    autogerenciavel: true,
-                },
-            });
-        }
-    } else {
+    if (!perfilAcesso) {
+        perfilAcesso = await prisma.perfilAcesso.create({
+            data: {
+                nome: perfilAcessoConf.nome,
+                descricao: perfilAcessoConf.descricao,
+                autogerenciavel: true,
+            },
+        });
+    } else if (perfilAcesso.descricao !== perfilAcessoConf.descricao) {
         await prisma.perfilAcesso.update({
             where: { id: perfilAcesso.id },
             data: {
@@ -1817,74 +1812,6 @@ async function ensurePerfilAcessoIsEmpty(
     });
 
     return perfilAcesso;
-}
-async function criaPrivComPerfilDeAcesso(
-    codPriv: string,
-    perfilAcesso: { id: number },
-    cache: Record<string, Privilegio>,
-    maxRetries = 300,
-    retryDelay = 10
-) {
-    let attempts = 0;
-
-    while (attempts < maxRetries) {
-        try {
-            const priv = cache[codPriv];
-            if (!priv) {
-                throw new Error(`Não encontrado priv ${codPriv}`);
-            }
-            const idPriv = priv.id;
-
-            const match = await prisma.perfilPrivilegio.findMany({
-                where: {
-                    perfil_acesso_id: perfilAcesso.id,
-                    privilegio_id: idPriv,
-                },
-            });
-            if (match.length === 0) {
-                await prisma.perfilPrivilegio.upsert({
-                    where: {
-                        perfil_acesso_id_privilegio_id: {
-                            perfil_acesso_id: perfilAcesso.id,
-                            privilegio_id: idPriv,
-                        },
-                    },
-                    create: {
-                        perfil_acesso_id: perfilAcesso.id,
-                        privilegio_id: idPriv,
-                    },
-                    update: {},
-                });
-            } else if (match.length > 1) {
-                // Keep the first record and delete the extra duplicates
-                const idsToDelete = match.slice(1).map((record) => record.id);
-                await prisma.perfilPrivilegio.deleteMany({
-                    where: {
-                        id: { in: idsToDelete },
-                    },
-                });
-            }
-
-            // If we get here, the operation was successful
-            return;
-        } catch (error) {
-            attempts++;
-
-            // If we've reached max retries, throw the error
-            if (attempts >= maxRetries) {
-                throw error;
-            }
-
-            // Log the error and wait before retrying
-            console.error(
-                `Attempt ${attempts} failed: ${error.message}. Retrying in ${retryDelay}ms... codPriv = ${codPriv} perfilAcesso = ${perfilAcesso.id}`
-            );
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-
-            // Exponential backoff for subsequent retries
-            retryDelay *= 2;
-        }
-    }
 }
 
 async function atualizar_superadmin() {
@@ -1988,26 +1915,28 @@ async function populateEleicao() {
         { ano: 2030, tipo: EleicaoTipo.Geral, atual_para_mandatos: false },
     ];
 
-    for (const eleicao of eleicoes) {
-        await prisma.eleicao.upsert({
-            where: {
-                tipo_ano: {
+    await Promise.all(
+        eleicoes.map((eleicao) =>
+            prisma.eleicao.upsert({
+                where: {
+                    tipo_ano: {
+                        ano: eleicao.ano,
+                        tipo: eleicao.tipo,
+                    },
+                },
+                create: {
                     ano: eleicao.ano,
                     tipo: eleicao.tipo,
+                    atual_para_mandatos: eleicao.atual_para_mandatos,
                 },
-            },
-            create: {
-                ano: eleicao.ano,
-                tipo: eleicao.tipo,
-                atual_para_mandatos: eleicao.atual_para_mandatos,
-            },
-            update: {
-                ano: eleicao.ano,
-                tipo: eleicao.tipo,
-                atual_para_mandatos: eleicao.atual_para_mandatos,
-            },
-        });
-    }
+                update: {
+                    ano: eleicao.ano,
+                    tipo: eleicao.tipo,
+                    atual_para_mandatos: eleicao.atual_para_mandatos,
+                },
+            })
+        )
+    );
 }
 
 async function populateDistribuicaoStatusBase() {
@@ -2056,23 +1985,25 @@ async function populateDistribuicaoStatusBase() {
         },
     ];
 
-    for (const row of rowsStatusesBase) {
-        await prisma.distribuicaoStatusBase.upsert({
-            where: {
-                nome_tipo: {
+    await Promise.all(
+        rowsStatusesBase.map((row) =>
+            prisma.distribuicaoStatusBase.upsert({
+                where: {
+                    nome_tipo: {
+                        nome: row.nome,
+                        tipo: row.tipo,
+                    },
+                },
+                create: {
                     nome: row.nome,
                     tipo: row.tipo,
+                    valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
+                    permite_novos_registros: row.permite_novos_registros,
                 },
-            },
-            create: {
-                nome: row.nome,
-                tipo: row.tipo,
-                valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
-                permite_novos_registros: row.permite_novos_registros,
-            },
-            update: {},
-        });
-    }
+                update: {},
+            })
+        )
+    );
 }
 
 main()
