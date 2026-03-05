@@ -105,7 +105,7 @@ export class ReportsService {
         const now = new Date();
         const unparsedParams = structuredClone(dto.parametros);
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
-        let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
+        const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
         const validations = await validate(parametros, {
             whitelist: true,
             forbidNonWhitelisted: true,
