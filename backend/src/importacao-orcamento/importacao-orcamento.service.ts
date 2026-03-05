@@ -773,7 +773,7 @@ export class ImportacaoOrcamentoService {
             },
             50,
             1000,
-            100
+            0.2
         );
 
         await RetryPromise(() =>

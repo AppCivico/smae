@@ -34,7 +34,7 @@ export class RefreshTransferenciaService implements TaskableService {
                           );`,
                     10,
                     100,
-                    20
+                    0.2
                 );
             },
             async (error) => {
