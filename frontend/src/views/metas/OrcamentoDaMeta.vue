@@ -110,7 +110,7 @@ const dadosTabela = computed(() => [
     }
 
     tbody th {
-      text-align: right !important;
+      text-align: left !important;
       font-weight: 500;
       font-size: 1rem;
       color: #3B5881;
