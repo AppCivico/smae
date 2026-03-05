@@ -10,6 +10,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoPdm, TipoRelatorio } from '@prisma/client';
 import { fork } from 'child_process';
+import { validate } from 'class-validator';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
@@ -23,6 +24,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { FormatValidationErrors } from '../../common/helpers/FormatValidationErrors';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { PessoaService } from '../../pessoa/pessoa.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -48,8 +50,6 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
-import { validate } from 'class-validator';
-import { FormatValidationErrors } from '../../common/helpers/FormatValidationErrors';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -801,10 +801,20 @@ export class ReportsService {
 
         if (!relatorio.criador) return;
 
-        const frontendPath = this.getReportFrontendPath(relatorio.sistema, relatorio.fonte);
-        const url = frontendPath
-            ? new URL(frontendPath + `?id=${relatorio.id}`, baseUrl).toString()
-            : new URL(baseUrl).toString();
+        const useDeepLink = await this.smaeConfigService.getConfigBooleanWithDefault(
+            'RELATORIO_EMAIL_DEEP_LINK',
+            false
+        );
+
+        let url: string;
+        if (useDeepLink) {
+            const frontendPath = this.getReportFrontendPath(relatorio.sistema, relatorio.fonte);
+            url = frontendPath
+                ? new URL(frontendPath + `?id=${relatorio.id}`, baseUrl).toString()
+                : new URL(baseUrl).toString();
+        } else {
+            url = new URL(baseUrl).toString();
+        }
 
         await prismaTx.emaildbQueue.create({
             data: {
