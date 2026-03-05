@@ -1,4 +1,4 @@
--- Função auxiliar para extrair projeto_atividade da dotacao
+-- Função auxiliar para extrair projeto_atividade da dotacao ou parte_dotacao
 CREATE OR REPLACE FUNCTION f_extrair_projeto_atividade(dotacao TEXT)
 RETURNS TEXT AS $$
 DECLARE
@@ -10,6 +10,10 @@ BEGIN
     
     IF array_length(partes, 1) >= 7 THEN
         codigo := partes[6] || partes[7];
+        -- Se tiver wildcard, retorna vazio (não conseguimos classificar)
+        IF codigo LIKE '%*%' THEN
+            RETURN '';
+        END IF;
         RETURN codigo;
     ELSE
         RETURN '';
@@ -72,22 +76,23 @@ DECLARE
     v_total_empenhado_operacao DECIMAL(19,2);
     v_total_liquidado_operacao DECIMAL(19,2);
 BEGIN
-    -- Calcula totais de planejado
+    -- Calcula totais de planejado (previsão de custo vem de meta_orcamento)
     -- Inclui orçamentos diretos da meta, de iniciativas e de atividades
     WITH planejado_com_classificacao AS (
         SELECT
-            op.valor_planejado,
-            f_classificar_projeto_atividade(op.dotacao) as tipo
-        FROM orcamento_planejado op
-        LEFT JOIN iniciativa i ON i.id = op.iniciativa_id
-        LEFT JOIN atividade a ON a.id = op.atividade_id
+            mo.custo_previsto::decimal(19,2) as valor_planejado,
+            f_classificar_projeto_atividade(mo.parte_dotacao) as tipo
+        FROM meta_orcamento mo
+        LEFT JOIN iniciativa i ON i.id = mo.iniciativa_id
+        LEFT JOIN atividade a ON a.id = mo.atividade_id
         LEFT JOIN iniciativa ia ON ia.id = a.iniciativa_id
         WHERE (
-            op.meta_id = p_meta_id OR 
+            mo.meta_id = p_meta_id OR 
             i.meta_id = p_meta_id OR 
             ia.meta_id = p_meta_id
         )
-            AND op.removido_em IS NULL
+            AND mo.removido_em IS NULL
+            AND mo.ultima_revisao = true
     )
     SELECT
         COALESCE(SUM(valor_planejado), 0),
@@ -357,6 +362,75 @@ CREATE TRIGGER tg_orcamento_realizado_refresh_consolidado
     AFTER INSERT OR UPDATE OR DELETE ON orcamento_realizado
     FOR EACH ROW
     EXECUTE FUNCTION tg_orcamento_realizado_refresh_consolidado();
+
+-- Trigger para MetaOrcamento (OrcamentoPrevisto)
+CREATE OR REPLACE FUNCTION tg_meta_orcamento_refresh_consolidado()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INT;
+    v_old_meta_id INT;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        -- Busca a meta_id considerando meta, iniciativa e atividade
+        IF OLD.meta_id IS NOT NULL THEN
+            v_meta_id := OLD.meta_id;
+        ELSIF OLD.iniciativa_id IS NOT NULL THEN
+            SELECT meta_id INTO v_meta_id FROM iniciativa WHERE id = OLD.iniciativa_id;
+        ELSIF OLD.atividade_id IS NOT NULL THEN
+            SELECT i.meta_id INTO v_meta_id 
+            FROM atividade a 
+            JOIN iniciativa i ON i.id = a.iniciativa_id 
+            WHERE a.id = OLD.atividade_id;
+        END IF;
+        
+        IF v_meta_id IS NOT NULL THEN
+            PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
+        END IF;
+        RETURN OLD;
+    ELSE
+        -- Busca a meta_id do registro novo
+        IF NEW.meta_id IS NOT NULL THEN
+            v_meta_id := NEW.meta_id;
+        ELSIF NEW.iniciativa_id IS NOT NULL THEN
+            SELECT meta_id INTO v_meta_id FROM iniciativa WHERE id = NEW.iniciativa_id;
+        ELSIF NEW.atividade_id IS NOT NULL THEN
+            SELECT i.meta_id INTO v_meta_id 
+            FROM atividade a 
+            JOIN iniciativa i ON i.id = a.iniciativa_id 
+            WHERE a.id = NEW.atividade_id;
+        END IF;
+        
+        IF v_meta_id IS NOT NULL THEN
+            PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
+        END IF;
+        
+        -- Se o meta_id/iniciativa_id/atividade_id mudou, atualiza o antigo também
+        IF TG_OP = 'UPDATE' THEN
+            IF OLD.meta_id IS NOT NULL THEN
+                v_old_meta_id := OLD.meta_id;
+            ELSIF OLD.iniciativa_id IS NOT NULL THEN
+                SELECT meta_id INTO v_old_meta_id FROM iniciativa WHERE id = OLD.iniciativa_id;
+            ELSIF OLD.atividade_id IS NOT NULL THEN
+                SELECT i.meta_id INTO v_old_meta_id 
+                FROM atividade a 
+                JOIN iniciativa i ON i.id = a.iniciativa_id 
+                WHERE a.id = OLD.atividade_id;
+            END IF;
+            
+            IF v_old_meta_id IS NOT NULL AND v_old_meta_id IS DISTINCT FROM v_meta_id THEN
+                PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_old_meta_id);
+            END IF;
+        END IF;
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tg_meta_orcamento_refresh_consolidado ON meta_orcamento;
+CREATE TRIGGER tg_meta_orcamento_refresh_consolidado
+    AFTER INSERT OR UPDATE OR DELETE ON meta_orcamento
+    FOR EACH ROW
+    EXECUTE FUNCTION tg_meta_orcamento_refresh_consolidado();
 
 -- Popular dados existentes
 INSERT INTO meta_orcamento_consolidado (meta_id)
