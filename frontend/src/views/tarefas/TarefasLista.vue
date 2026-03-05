@@ -233,6 +233,8 @@ onUnmounted(() => {
     </SmaeLink>
   </div>
 
+  <h2>Cronograma detalhado</h2>
+
   <div class="mb2">
     <div class="">
       <label class="label tc300"> Exibir tarefas até nível </label>

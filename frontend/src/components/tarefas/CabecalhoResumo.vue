@@ -26,7 +26,9 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
 
 </script>
 <template>
-  <div class="boards mb2">
+  <section class="boards mb2">
+    <h2>Resumo do Cronograma</h2>
+
     <dl class="flex flexwrap g2">
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -165,5 +167,5 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
         </dd>
       </div>
     </dl>
-  </div>
+  </section>
 </template>
