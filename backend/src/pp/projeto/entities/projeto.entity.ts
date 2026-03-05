@@ -134,6 +134,11 @@ export class ProjetoMetaDetailDto {
      * @example "0"
      */
     pdm_id: number;
+
+    /**
+     * @example "string"
+     */
+    pdm_nome: string;
 }
 
 export class ProjetoSeiDto {
