@@ -138,21 +138,45 @@ const colaboradoresPorGrupo = computed(() => {
   return grupos;
 });
 
-const informacoesDaObra = computed(() => {
+const identificacaoDaObra = computed(() => {
   const foco = emFoco.value;
   if (!foco) return [];
 
-  const itens = [
+  return [
     { chave: 'codigo', titulo: schema.fields.codigo.spec.label, valor: foco.codigo },
     { chave: 'status', titulo: schema.fields.status.spec.label, valor: foco.status },
     { chave: 'tags', titulo: schema.fields.tags.spec.label, valor: foco.tags },
+  ];
+});
+
+const classificacaoDaObra = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     { chave: 'grupo_tematico', titulo: schema.fields.grupo_tematico.spec.label, valor: foco.grupo_tematico?.nome },
     { chave: 'tipo_intervencao', titulo: schema.fields.tipo_intervencao.spec.label, valor: foco.tipo_intervencao?.nome },
     { chave: 'equipamento', titulo: schema.fields.equipamento.spec.label, valor: foco.equipamento?.nome },
     { chave: 'empreendimento', titulo: schema.fields.empreendimento.spec.label, valor: foco.empreendimento?.identificador },
+  ];
+});
+
+const responsaveisDaObra = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     { chave: 'orgao_origem', titulo: schema.fields.orgao_origem_id.spec.label, valor: foco.orgao_origem ? `${foco.orgao_origem.sigla} - ${foco.orgao_origem.descricao}` : null },
     { chave: 'orgao_executor', titulo: schema.fields.orgao_executor_id.spec.label, valor: foco.orgao_executor ? `${foco.orgao_executor.sigla} - ${foco.orgao_executor.descricao}` : null },
     { chave: 'projeto_etapa', titulo: schema.fields.projeto_etapa.spec.label, valor: foco.projeto_etapa?.descricao },
+  ];
+});
+
+const detalhamentoDaObra = computed(() => {
+  const foco = emFoco.value;
+  if (!foco) return [];
+
+  return [
     {
       chave: 'mdo_detalhamento',
       titulo: schema.fields.mdo_detalhamento.spec.label,
@@ -166,8 +190,6 @@ const informacoesDaObra = computed(() => {
       larguraBase: '100%',
     },
   ];
-
-  return itens;
 });
 
 const informacoesHabitacional = computed(() => {
@@ -262,13 +284,13 @@ const estimativasIniciais = computed(() => {
       chave: 'previsao_termino', titulo: schema.fields.previsao_termino.spec.label, valor: foco.previsao_termino, atributosDoItem: estiloDeColuna,
     },
     {
+      chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo, atributosDoItem: estiloDeColuna,
+    },
+    {
       chave: 'mdo_previsao_inauguracao', titulo: schema.fields.mdo_previsao_inauguracao.spec.label, valor: foco.mdo_previsao_inauguracao, atributosDoItem: estiloDeColuna,
     },
     {
       chave: 'tolerancia_atraso', titulo: schema.fields.tolerancia_atraso.spec.label, valor: foco.tolerancia_atraso, atributosDoItem: estiloDeColuna,
-    },
-    {
-      chave: 'previsao_custo', titulo: schema.fields.previsao_custo.spec.label, valor: foco.previsao_custo, atributosDoItem: estiloDeColuna,
     },
   ];
 });
@@ -496,9 +518,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <h2>Informações da Obra</h2>
 
       <SmaeDescriptionList
-        :lista="informacoesDaObra"
+        :lista="identificacaoDaObra"
         layout="grid"
-        maximo-de-colunas="5"
       >
         <template #descricao--status="{ item }">
           {{ statusesObras[item.valor]?.nome || item.valor || '—' }}
@@ -517,7 +538,28 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             </li>
           </ul>
         </template>
+      </SmaeDescriptionList>
+    </section>
 
+    <section>
+      <SmaeDescriptionList
+        :lista="classificacaoDaObra"
+        layout="grid"
+      />
+    </section>
+
+    <section>
+      <SmaeDescriptionList
+        :lista="responsaveisDaObra"
+        layout="grid"
+      />
+    </section>
+
+    <section>
+      <SmaeDescriptionList
+        :lista="detalhamentoDaObra"
+        layout="grid"
+      >
         <template #descricao--mdo_detalhamento="{ item }">
           <span v-html="item.valor || '—'" />
         </template>
@@ -526,7 +568,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           <span v-html="item.valor || '—'" />
         </template>
       </SmaeDescriptionList>
-
     </section>
 
     <section>
