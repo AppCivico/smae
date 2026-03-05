@@ -5,7 +5,8 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
-import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
+import SmaeRange from '@/components/camposDeFormulario/SmaeRange.vue';
+import ListaLegendas from '@/components/ListaLegendas.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -235,27 +236,32 @@ onUnmounted(() => {
 
   <h2>Cronograma detalhado</h2>
 
-  <div class="mb2">
+  <div class="mb2 flex g2 end justifyright">
+    <ListaLegendas
+      orientacao="horizontal"
+      align="right"
+      :legendas="[
+        { item: 'dado planejado', color: '#634A09' },
+        { item: 'dado real', color: '#3B5881' },
+      ]"
+    />
     <div class="">
       <label class="label tc300"> Exibir tarefas até nível </label>
-      <div class="flex center">
-        <input
+      <div class="flex g1 center">
+        <SmaeRange
           id="nivel"
           v-model="nívelMáximoVisível"
-          type="range"
           name="nivel"
           min="1"
           :max="nivelMáximoDisponível"
-          class="f1"
-        >
-        <output class="f1 ml1">
+          class="f1 fb100"
+        />
+        <output class="f1 fb0">
           {{ nívelMáximoVisível }}
         </output>
       </div>
     </div>
   </div>
-
-  <LegendaEstimadoVsEfetivo />
 
   <div
     role="region"
