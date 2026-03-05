@@ -1107,14 +1107,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
             'Projeto.revisar_projeto',
-
-            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'Projeto.administrador_no_orgao',
-            'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao',
-            'Projeto.orcamento',
-            'Projeto.revisar_projeto',
             ...PPCadastroBasico,
 
             'CadastroPainelExterno.inserir',
@@ -1878,7 +1873,7 @@ async function atualizar_superadmin() {
 
 async function ensure_bot_user() {
     if ((await prisma.pessoa.count({ where: { id: -1 } })) == 0) {
-        prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pf = await prismaTx.pessoaFisica.create({
                 data: {
                     cargo: '',
