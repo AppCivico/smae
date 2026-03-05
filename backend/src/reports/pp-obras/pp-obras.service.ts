@@ -27,9 +27,7 @@ import {
     RelObrasFontesRecursoDto,
     RelObrasGeolocDto,
     RelObrasOrigemDto,
-    RelObrasRegioesDto,
     RelObrasSeiDto,
-    RelObrasTermoEncerramentoDto,
 } from './entities/obras.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
@@ -44,7 +42,7 @@ type WhereCond = {
 const defaultTransform = [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]];
 
 class RetornoDbProjeto {
-    id: number;
+    obra_id: number;
     portfolio_id: number;
     portfolio_titulo: string;
     meta_id?: number;
@@ -116,9 +114,9 @@ class RetornoDbProjeto {
 }
 
 class RetornoDbCronograma {
-    projeto_id: number;
-    projeto_codigo: string;
-    id: number;
+    obra_id: number;
+    obra_codigo: string;
+    tarefa_id: number;
     hierarquia?: string;
     numero: number;
     nivel: number;
@@ -144,15 +142,8 @@ class RetornoDbCronograma {
     custo_real_anualizado?: JSON;
 }
 
-class RetornoDbRegioes {
-    projeto_id: number;
-    nivel: number;
-    descricao: string;
-    sigla: string;
-}
-
 class RetornoDbFontesRecurso {
-    projeto_id: number;
+    obra_id: number;
     fonte_recurso_cod_sof: string;
     fonte_recurso_ano: number;
     valor_percentual?: number;
@@ -205,7 +196,7 @@ class RetornoDbContratos {
 }
 
 class RetornoDbOrigens {
-    projeto_id: number;
+    obra_id: number;
     pdm_id: number | null;
     pdm_titulo: string | null;
     meta_id: number | null;
@@ -217,8 +208,8 @@ class RetornoDbOrigens {
 }
 
 class RetornoDbAcompanhamentos {
-    projeto_id: number;
-    projeto_codigo: string;
+    obra_id: number;
+    obra_codigo: string;
     data_registro: Date;
     participantes: string;
     cronograma_paralizado: boolean;
@@ -248,7 +239,7 @@ class RetornoDbObrasSEI {
 }
 
 class RetornoDbLoc {
-    projeto_id: number;
+    obra_id: number;
     endereco: string;
     zona: string | null;
     distrito: string | null;
@@ -270,27 +261,6 @@ class RetornoDbLoc {
     bbox: string | null;
 }
 
-class RetornoDbTermoEncerramento {
-    obra_id: number;
-    obra_codigo: string | null;
-    nome_projeto: string;
-    orgao_responsavel_nome: string;
-    portfolios_nomes: string;
-    objeto: string;
-    previsao_inicio: Date | null;
-    previsao_termino: Date | null;
-    data_inicio_real: Date | null;
-    data_termino_real: Date | null;
-    previsao_custo: number | null;
-    valor_executado_total: number | null;
-    status_final: string;
-    etapa_nome: string;
-    justificativa: string | null;
-    justificativa_complemento: string | null;
-    responsavel_encerramento_nome: string;
-    data_encerramento: Date;
-}
-
 @Injectable()
 export class PPObrasService implements ReportableService {
     private tipo: TipoProjeto = 'MDO';
@@ -306,41 +276,35 @@ export class PPObrasService implements ReportableService {
         const out_obras: RelObrasDto[] = [];
         const out_cronogramas: RelObrasCronogramaDto[] = [];
         const out_acompanhamentos: RelObrasAcompanhamentosDto[] = [];
-        const out_regioes: RelObrasRegioesDto[] = [];
         const out_fontes_recurso: RelObrasFontesRecursoDto[] = [];
         const out_contratos: RelObrasContratosDto[] = [];
         const out_aditivos: RelObrasAditivosDto[] = [];
         const out_origens: RelObrasOrigemDto[] = [];
         const out_processos_sei: RelObrasSeiDto[] = [];
         const out_enderecos: RelObrasGeolocDto[] = [];
-        const out_termos_encerramento: RelObrasTermoEncerramentoDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataObras(whereCond, out_obras);
         await this.queryDataCronograma(whereCond, out_cronogramas);
         await this.queryDataAcompanhamentos(whereCond, out_acompanhamentos);
-        await this.queryDataRegioes(whereCond, out_regioes);
         await this.queryDataFontesRecurso(whereCond, out_fontes_recurso);
         await this.queryDataContratos(whereCond, out_contratos);
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
         await this.queryDataObrasGeoloc(whereCond, out_enderecos);
-        await this.queryDataTermoEncerramento(whereCond, out_termos_encerramento);
 
         return {
             linhas: out_obras,
             cronograma: out_cronogramas,
             acompanhamentos: out_acompanhamentos,
-            regioes: out_regioes,
             fontes_recurso: out_fontes_recurso,
             contratos: out_contratos,
             aditivos: out_aditivos,
             origens: out_origens,
             processos_sei: out_processos_sei,
             enderecos: out_enderecos,
-            termos_encerramento: out_termos_encerramento,
         };
     }
 
@@ -393,14 +357,6 @@ export class PPObrasService implements ReportableService {
                 whereCond.queryParams,
                 'cronograma.csv',
                 cronogramaFields
-            )
-        );
-
-        out.push(
-            await this.streamQueryToCSV(
-                `${this._queryDataRegioes()} ${whereCond.whereString}`,
-                whereCond.queryParams,
-                'regioes.csv'
             )
         );
 
@@ -482,7 +438,7 @@ export class PPObrasService implements ReportableService {
                 whereCond.queryParams,
                 'enderecos.csv',
                 [
-                    { value: 'projeto_id', label: 'projeto_id' },
+                    { value: 'obra_id', label: 'obra_id' },
                     { value: 'endereco', label: 'endereco' },
                     { value: 'zona', label: 'zona' },
                     { value: 'distrito', label: 'distrito' },
@@ -503,14 +459,6 @@ export class PPObrasService implements ReportableService {
                     { value: 'geometry_name', label: 'geojson.geometry_name' },
                     { value: 'bbox', label: 'geojson.bbox' },
                 ]
-            )
-        );
-
-        out.push(
-            await this.streamQueryToCSV(
-                `${this._queryDataTermoEncerramento()} ${whereCond.whereString}`,
-                whereCond.queryParams,
-                'termos_encerramento.csv'
             )
         );
 
@@ -647,7 +595,7 @@ export class PPObrasService implements ReportableService {
 
         const selectFields = `
         SELECT
-            projeto.id,
+            projeto.id AS obra_id,
             projeto.codigo,
             projeto.portfolio_id,
             projeto.nome,
@@ -771,7 +719,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsObrasInto(input: RetornoDbProjeto[], out: RelObrasDto[]) {
         for (const db of input) {
             out.push({
-                obra_id: db.id,
+                obra_id: db.obra_id,
                 portfolio_id: db.portfolio_id,
                 portfolio_titulo: db.portfolio_titulo,
                 pdm_id: db.pdm_id ? db.pdm_id : null,
@@ -863,12 +811,12 @@ export class PPObrasService implements ReportableService {
     private _queryDataCronograma() {
         return `
             SELECT
-                tc.projeto_id AS projeto_id,
-                projeto.codigo AS projeto_codigo,
+                tc.projeto_id AS obra_id,
+                projeto.codigo AS obra_codigo,
                 tc.atraso,
                 resp.id AS responsavel_id,
                 resp.nome_exibicao AS responsavel_nome_exibicao,
-                t.id,
+                t.id AS tarefa_id,
                 t.numero,
                 t.nivel,
                 '' AS hierarquia,
@@ -931,11 +879,11 @@ export class PPObrasService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
+            await this.projetoService.findOne(this.tipo, db.obra_id, undefined, 'ReadOnly');
 
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {
-                    projeto_id: db.projeto_id,
+                    projeto_id: db.obra_id,
                     removido_em: null,
                 },
                 select: { id: true },
@@ -991,10 +939,10 @@ export class PPObrasService implements ReportableService {
             }
 
             out.push({
-                obra_id: db.projeto_id,
-                obra_codigo: db.projeto_codigo,
-                tarefa_id: db.id,
-                hirearquia: tarefasHierarquia[db.id],
+                obra_id: db.obra_id,
+                obra_codigo: db.obra_codigo,
+                tarefa_id: db.tarefa_id,
+                hirearquia: tarefasHierarquia[db.tarefa_id],
                 numero: db.numero,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
@@ -1031,52 +979,9 @@ export class PPObrasService implements ReportableService {
         }
     }
 
-    private _queryDataRegioes() {
-        return `
-            SELECT
-                projeto.id AS projeto_id,
-                regiao.descricao AS descricao,
-                regiao.pdm_codigo_sufixo AS sigla,
-                regiao.nivel AS nivel
-            FROM projeto
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-            JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
-            JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
-        `;
-    }
-    private async queryDataRegioes(whereCond: WhereCond, out: RelObrasRegioesDto[]) {
-        const sql = `${this._queryDataRegioes()} ${whereCond.whereString}`;
-
-        const data: RetornoDbRegioes[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
-
-        out.push(...this.convertRowsRegioes(data));
-    }
-
-    private convertRowsRegioes(input: RetornoDbRegioes[]): RelObrasRegioesDto[] {
-        return input.map((db) => {
-            return {
-                obra_id: db.projeto_id,
-                distrito:
-                    db.nivel == 4
-                        ? {
-                              descricao: db.descricao,
-                              sigla: db.sigla,
-                          }
-                        : null,
-                subprefeitura:
-                    db.nivel == 3
-                        ? {
-                              descricao: db.descricao,
-                              sigla: db.sigla,
-                          }
-                        : null,
-            } satisfies RelObrasRegioesDto;
-        });
-    }
-
     private _queryDataFontesRecurso() {
         return `SELECT
-                projeto.id AS projeto_id,
+                projeto.id AS obra_id,
                 projeto_fonte_recurso.valor_percentual,
                 projeto_fonte_recurso.valor_nominal,
                 projeto_fonte_recurso.fonte_recurso_ano,
@@ -1098,7 +1003,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsFontesRecurso(input: RetornoDbFontesRecurso[]): RelObrasFontesRecursoDto[] {
         return input.map((db) => {
             return {
-                obra_id: db.projeto_id,
+                obra_id: db.obra_id,
                 fonte_recurso_ano: db.fonte_recurso_ano,
                 fonte_recurso_cod_sof: db.fonte_recurso_cod_sof,
                 valor_percentual: db.valor_percentual ? db.valor_percentual : null,
@@ -1257,8 +1162,8 @@ export class PPObrasService implements ReportableService {
     private _queryDataAcompanhamentos() {
         return `
             SELECT
-                projeto.id AS projeto_id,
-                projeto.codigo AS projeto_codigo,
+                projeto.id AS obra_id,
+                projeto.codigo AS obra_codigo,
                 projeto_acompanhamento.data_registro,
                 projeto_acompanhamento.participantes,
                 projeto_acompanhamento.cronograma_paralisado,
@@ -1300,8 +1205,8 @@ export class PPObrasService implements ReportableService {
     private convertRowsAcompanhamentos(input: RetornoDbAcompanhamentos[]): RelObrasAcompanhamentosDto[] {
         return input.map((db) => {
             return {
-                obra_id: db.projeto_id,
-                obra_codigo: db.projeto_codigo,
+                obra_id: db.obra_id,
+                obra_codigo: db.obra_codigo,
                 data_registro: Date2YMD.toString(db.data_registro),
                 participantes: db.participantes,
                 cronograma_paralizado: db.cronograma_paralizado,
@@ -1324,7 +1229,7 @@ export class PPObrasService implements ReportableService {
 
     private _queryDataOrigens() {
         return `SELECT
-            projeto.id AS projeto_id,
+            projeto.id AS obra_id,
             meta.pdm_id,
             pdm.nome AS pdm_titulo,
             meta.id as meta_id,
@@ -1354,7 +1259,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsOrigens(input: RetornoDbOrigens[]): RelObrasOrigemDto[] {
         return input.map((db) => {
             return {
-                obra_id: db.projeto_id,
+                obra_id: db.obra_id,
                 pdm_id: db.pdm_id ?? null,
                 pdm_titulo: db.pdm_titulo ?? null,
                 meta_id: db.meta_id ?? null,
@@ -1425,7 +1330,7 @@ export class PPObrasService implements ReportableService {
 
     private _queryDataObrasGeoLoc() {
         return `SELECT
-                projeto.id AS projeto_id,
+                projeto.id AS obra_id,
                 geo.endereco_exibicao AS endereco,
                 COALESCE(
                     zona_agg_geo.zona,
@@ -1518,7 +1423,7 @@ export class PPObrasService implements ReportableService {
     private convertRowsLoc(input: RetornoDbLoc[]): RelObrasGeolocDto[] {
         return input.map((db) => {
             return {
-                obra_id: db.projeto_id,
+                obra_id: db.obra_id,
                 endereco: db.endereco ?? null,
                 zona: db.zona ?? null,
                 distrito: db.distrito ?? null,
@@ -1539,70 +1444,6 @@ export class PPObrasService implements ReportableService {
                 geometry_name: db.geometry_name ?? null,
                 bbox: db.bbox ?? null,
             } satisfies RelObrasGeolocDto;
-        });
-    }
-
-    private _queryDataTermoEncerramento() {
-        return `SELECT
-            projeto.id AS obra_id,
-            projeto.codigo AS obra_codigo,
-            pte.nome_projeto,
-            pte.orgao_responsavel_nome,
-            pte.portfolios_nomes,
-            pte.objeto,
-            pte.previsao_inicio,
-            pte.previsao_termino,
-            pte.data_inicio_real,
-            pte.data_termino_real,
-            pte.previsao_custo,
-            pte.valor_executado_total,
-            pte.status_final,
-            pte.etapa_nome,
-            pte_justif.descricao AS justificativa,
-            pte.justificativa_complemento,
-            pte.responsavel_encerramento_nome,
-            pte.data_encerramento
-        FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-          JOIN projeto_termo_encerramento pte
-              ON pte.projeto_id = projeto.id
-              AND pte.removido_em IS NULL
-              AND pte.ultima_versao = true
-          LEFT JOIN projeto_tipo_encerramento pte_justif
-              ON pte_justif.id = pte.justificativa_id
-        `;
-    }
-
-    private async queryDataTermoEncerramento(whereCond: WhereCond, out: RelObrasTermoEncerramentoDto[]) {
-        const sql = `${this._queryDataTermoEncerramento()} ${whereCond.whereString}`;
-
-        const data: RetornoDbTermoEncerramento[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
-
-        out.push(...this.convertRowsTermoEncerramento(data));
-    }
-
-    private convertRowsTermoEncerramento(input: RetornoDbTermoEncerramento[]): RelObrasTermoEncerramentoDto[] {
-        return input.map((db) => {
-            return {
-                obra_id: db.obra_id,
-                obra_codigo: db.obra_codigo ?? null,
-                nome_projeto: db.nome_projeto,
-                orgao_responsavel_nome: db.orgao_responsavel_nome,
-                portfolios_nomes: db.portfolios_nomes,
-                objeto: db.objeto,
-                previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
-                previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
-                data_inicio_real: db.data_inicio_real ? Date2YMD.toString(db.data_inicio_real) : null,
-                data_termino_real: db.data_termino_real ? Date2YMD.toString(db.data_termino_real) : null,
-                previsao_custo: db.previsao_custo ?? null,
-                valor_executado_total: db.valor_executado_total ?? null,
-                status_final: db.status_final,
-                etapa_nome: db.etapa_nome,
-                justificativa: db.justificativa ?? null,
-                justificativa_complemento: db.justificativa_complemento ?? null,
-                responsavel_encerramento_nome: db.responsavel_encerramento_nome,
-                data_encerramento: Date2YMD.toString(db.data_encerramento),
-            } satisfies RelObrasTermoEncerramentoDto;
         });
     }
 

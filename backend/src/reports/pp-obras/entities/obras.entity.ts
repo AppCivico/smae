@@ -219,14 +219,12 @@ export class PPObrasRelatorioDto {
     linhas: RelObrasDto[];
     cronograma: RelObrasCronogramaDto[];
     acompanhamentos: RelObrasAcompanhamentosDto[];
-    regioes: RelObrasRegioesDto[];
     fontes_recurso: RelObrasFontesRecursoDto[];
     contratos: RelObrasContratosDto[];
     aditivos: RelObrasAditivosDto[];
     origens: RelObrasOrigemDto[];
     processos_sei: RelObrasSeiDto[];
     enderecos: RelObrasGeolocDto[];
-    termos_encerramento: RelObrasTermoEncerramentoDto[];
 }
 
 export class RelObrasGeolocDto {
