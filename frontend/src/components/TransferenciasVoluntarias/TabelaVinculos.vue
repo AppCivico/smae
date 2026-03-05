@@ -168,7 +168,6 @@ const colunas = computed(() => {
       :duas-linhas="true"
       align="right"
       :borda="false"
-      titulo=""
     />
 
     <SmaeTable

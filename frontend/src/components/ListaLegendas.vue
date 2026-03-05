@@ -27,7 +27,7 @@ type Props = {
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  titulo: 'Legenda',
+  titulo: '',
   orientacao: 'vertical',
   borda: false,
   duasLinhas: false,

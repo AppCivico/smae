@@ -147,7 +147,6 @@ onUnmounted(() => {
         :borda="false"
         orientacao="horizontal"
         align="left"
-        titulo=""
       />
 
       <LoadingComponent
@@ -194,7 +193,6 @@ onUnmounted(() => {
         :borda="false"
         orientacao="horizontal"
         align="left"
-        titulo=""
       />
 
       <LoadingComponent

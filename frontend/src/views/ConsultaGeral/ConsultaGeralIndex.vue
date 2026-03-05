@@ -194,7 +194,6 @@ async function handleItemSelecionado(linhaIndex: number) {
         </CardEnvelope.Titulo>
 
         <ListaLegendas
-          titulo=""
           :legendas="legendas"
           :borda="false"
           align="left"
@@ -274,7 +273,6 @@ async function handleItemSelecionado(linhaIndex: number) {
         </SmaeTable>
 
         <ListaLegendas
-          titulo=""
           :legendas="legendas"
           :borda="false"
           align="left"

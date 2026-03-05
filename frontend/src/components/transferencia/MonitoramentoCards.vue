@@ -52,6 +52,7 @@ const listaOrdenada = computed(() => orderBy(lista.value, (recurso) => {
       />
 
       <ListaLegendas
+        titulo="Legenda"
         :legendas="legendas"
         :borda="false"
         :duas-linhas="true"

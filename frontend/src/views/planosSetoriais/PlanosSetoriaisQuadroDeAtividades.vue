@@ -232,6 +232,7 @@ watch([
       <CicloVigenteFiltro />
 
       <ListaLegendas
+        titulo="Legenda"
         class="sessao-metas__cabecalho-legenda"
         :legendas="legendas"
         orientacao="horizontal"

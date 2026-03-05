@@ -318,7 +318,6 @@ watchEffect(() => {
 
     <ListaLegendas
       class="mb1"
-      titulo=""
       orientacao="horizontal"
       align="right"
       :legendas="[
@@ -342,7 +341,6 @@ watchEffect(() => {
       class="etapas"
     >
       <ListaLegendas
-        titulo=""
         orientacao="horizontal"
         align="right"
         :legendas="[
