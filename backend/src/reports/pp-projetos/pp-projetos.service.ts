@@ -1001,7 +1001,7 @@ export class PPProjetosService implements ReportableService {
             'Categoria',
             'Tipo Aditivo',
             'Data',
-            'Valor com Reajuste',
+            'Valor',
             '% Execução',
             'Data Término Atual',
         ];
