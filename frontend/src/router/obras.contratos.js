@@ -94,7 +94,6 @@ export default {
               'obrasListar',
               'obrasResumo',
               'contratosDaObraListar',
-              'contratosDaObraResumo',
             ],
           },
         },
