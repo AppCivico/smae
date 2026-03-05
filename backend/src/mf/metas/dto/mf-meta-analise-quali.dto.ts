@@ -47,6 +47,7 @@ export class FilterAnaliseQualitativaDto {
 
 export class MfAnaliseQualitativaDto {
     informacoes_complementares: string;
+    informacoes_complementares_texto: string;
     referencia_data: string;
     ultima_revisao: boolean;
     criado_em: Date;

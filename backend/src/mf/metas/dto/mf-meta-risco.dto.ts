@@ -23,7 +23,9 @@ export class FilterRiscoDto {
 
 export class MfRiscoDto {
     detalhamento: string;
+    detalhamento_texto: string;
     ponto_de_atencao: string;
+    ponto_de_atencao_texto: string;
 
     referencia_data: string;
     ultima_revisao: boolean;
