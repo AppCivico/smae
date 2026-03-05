@@ -14,7 +14,11 @@ import { Html2Text } from '../../common/Html2Text';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RelProjetosAditivosDto, RelProjetosContratosDto, RelProjetosTermoEncerramentoDto } from '../pp-projetos/entities/projetos.entity';
+import {
+    RelProjetosAditivosDto,
+    RelProjetosContratosDto,
+    RelProjetosTermoEncerramentoDto,
+} from '../pp-projetos/entities/projetos.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
@@ -641,15 +645,7 @@ export class PPProjetoService implements ReportableService {
         await ctx.progress(65);
 
         if (dados.planos_acao.length) {
-            toCsvOut('planos-acao.csv', dados.planos_acao, [
-                { value: 'codigo_risco', label: 'Codigo Risco' },
-                { value: 'contramedida', label: 'Contramedida' },
-                { value: 'contramedida_texto', label: 'Contramedida Texto' },
-                { value: 'prazo_contramedida', label: 'Prazo Contramedida' },
-                { value: 'responsavel', label: 'Responsavel' },
-                { value: 'medidas_de_contingencia', label: 'Medidas de Contingencia' },
-                { value: 'medidas_de_contingencia_texto', label: 'Medidas de Contingencia Texto' },
-            ]);
+            toCsvOut('planos-acao.csv', dados.planos_acao);
         }
         await ctx.progress(70);
 
@@ -700,7 +696,11 @@ export class PPProjetoService implements ReportableService {
             });
 
             if (tarefaCronoId) {
-                const eap = await this.tarefaService.getEap(tarefaCronoId.id, { projeto_id: dados.detail.projeto_id }, 'svg');
+                const eap = await this.tarefaService.getEap(
+                    tarefaCronoId.id,
+                    { projeto_id: dados.detail.projeto_id },
+                    'svg'
+                );
 
                 out.push({
                     name: 'eap.svg',
@@ -715,11 +715,11 @@ export class PPProjetoService implements ReportableService {
         toCsvOut('origens.csv', dados.origens);
         toCsvOut('termos-encerramento.csv', dados.termos_encerramento);
         toCsvOut('enderecos.csv', dados.enderecos, [
-            { value: 'projeto_id', label: 'ID Projeto' },
-            { value: 'endereco', label: 'Endereço' },
-            { value: 'zona', label: 'Zona' },
-            { value: 'distrito', label: 'Distrito' },
-            { value: 'subprefeitura', label: 'Subprefeitura' },
+            { value: 'projeto_id', label: 'projeto_id' },
+            { value: 'endereco', label: 'endereco' },
+            { value: 'zona', label: 'zona' },
+            { value: 'distrito', label: 'distrito' },
+            { value: 'subprefeitura', label: 'subprefeitura' },
             { value: 'coordinates', label: 'geojson.geometry.coordinates' },
             { value: 'geojson_type', label: 'geojson.type' },
             { value: 'geometry_type', label: 'geojson.geometry.type' },
