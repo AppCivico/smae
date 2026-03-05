@@ -3,6 +3,7 @@ import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { Html2Text } from '../../common/Html2Text';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
@@ -106,6 +107,7 @@ export class MetasAnaliseQualiService {
             analises: analisesResult.map((r) => {
                 return {
                     informacoes_complementares: r.informacoes_complementares || '',
+                    informacoes_complementares_texto: Html2Text(r.informacoes_complementares) || '',
                     referencia_data: Date2YMD.toString(r.referencia_data),
                     ultima_revisao: r.ultima_revisao,
                     criado_em: r.criado_em,
