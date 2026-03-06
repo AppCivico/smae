@@ -81,7 +81,7 @@ export default {
                 return 'Resumo de contrato';
               }
 
-              return `Contrato ${emFoco.numero}`;
+              return emFoco.numero;
             },
             títuloParaMenu: 'Resumo',
             rotasParaMigalhasDePão: [
