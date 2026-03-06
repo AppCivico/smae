@@ -55,7 +55,7 @@ export default {
           props: true,
 
           meta: {
-            títuloParaMenu: 'Editar processo',
+            títuloParaMenu: 'Editar contrato',
             rotaDeEscape: 'contratosDaObraListar',
             rotasParaMigalhasDePão: [
               'obrasListar',
@@ -80,7 +80,7 @@ export default {
                 return 'Contrato';
               }
 
-              return `Contrato ${emFoco.numero}`;
+              return emFoco.numero;
             },
             título: () => {
               const daApi = useProcessosStore()?.emFoco?.processo_sei;
