@@ -1,11 +1,9 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { Parser } from '@json2csv/plainjs';
+import { flatten, Transform, unwind } from '@json2csv/transforms';
 import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-const {
-    Parser,
-    transforms: { flatten, unwind },
-} = require('json2csv');
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
 
@@ -13,9 +11,9 @@ const linhasTransforms = [
     unwind({
         paths: ['linhas', 'linhas_planejado', 'meta.indicador.series'],
     }),
-    flatten({ paths: [] }),
-];
-const allTransforms = [unwind(), flatten({ paths: [] })];
+    flatten(),
+] satisfies [Transform<any, any>, ...Transform<any, any>[]];
+const allTransforms = [unwind(), flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]];
 
 const contType = 'Content-Type';
 const json = 'application/json';
@@ -33,10 +31,16 @@ export class ContentInterceptor implements NestInterceptor {
             map(async (data) => {
                 if (typeof data !== 'object') return data;
 
+                const isEmptyData = Array.isArray(data) && data.length === 0;
+
                 switch (content) {
                     case csvType:
                     case xslx:
                         res.header(contType, csvType);
+                        if (isEmptyData) {
+                            data = '';
+                            break;
+                        }
                         const json2csvParser = new Parser({ transforms: linhasTransforms });
                         data = json2csvParser.parse(data);
 
@@ -60,6 +64,10 @@ export class ContentInterceptor implements NestInterceptor {
                         break;
                     case csvUnwindAll:
                         res.header(contType, csvType);
+                        if (isEmptyData) {
+                            data = '';
+                            break;
+                        }
                         const json2csvParserAll = new Parser({ transforms: allTransforms });
                         data = json2csvParserAll.parse(data);
                         break;

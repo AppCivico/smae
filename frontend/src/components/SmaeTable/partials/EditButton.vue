@@ -1,17 +1,3 @@
-<template>
-  <SmaeLink
-    v-if="parametrosEditar"
-    :to="parametrosEditar"
-  >
-    <svg
-      width="20"
-      height="20"
-    >
-      <use xlink:href="#i_edit" />
-    </svg>
-  </SmaeLink>
-</template>
-
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
@@ -55,3 +41,17 @@ const parametrosEditar = computed<RouteLocationRaw>(() => {
   };
 });
 </script>
+
+<template>
+  <SmaeLink
+    v-if="parametrosEditar"
+    :to="parametrosEditar"
+  >
+    <svg
+      width="20"
+      height="20"
+    >
+      <use xlink:href="#i_edit" />
+    </svg>
+  </SmaeLink>
+</template>

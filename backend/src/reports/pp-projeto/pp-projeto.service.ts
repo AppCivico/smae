@@ -1,15 +1,25 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { ContratoPrazoUnidade, StatusContrato } from '@prisma/client';
 import { DateTime } from 'luxon';
+import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
 import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { RiscoService } from 'src/pp/risco/risco.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Stream2Buffer } from '../../common/helpers/Streaming';
 import { Html2Text } from '../../common/Html2Text';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+    RelProjetosAditivosDto,
+    RelProjetosContratosDto,
+    RelProjetosTermoEncerramentoDto,
+} from '../pp-projetos/entities/projetos.entity';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
     DefaultTransforms,
@@ -29,13 +39,6 @@ import {
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
-import { Stream2Buffer } from '../../common/helpers/Streaming';
-import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
-import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 class RetornoDbAditivos {
     aditivo_id: number;
@@ -43,9 +46,10 @@ class RetornoDbAditivos {
     numero: number;
     tipo_aditivo_id: number;
     tipo_aditivo_nome: string;
+    tipo_categoria: string;
     data: Date | null;
     data_termino_atual: Date | null;
-    valor_com_reajuste: number | null;
+    valor: number | null;
     percentual_medido: number | null;
 }
 
@@ -59,21 +63,23 @@ class RetornoDbContratos {
     descricao_detalhada: string | null;
     contratante: string | null;
     empresa_contratada: string | null;
+    cnpj_contratada: string | null;
     prazo: number | null;
     unidade_prazo: ContratoPrazoUnidade | null;
+    data_base: string | null;
     data_inicio: Date | null;
     data_termino: Date | null;
+    data_termino_atualizada: Date | null;
     valor: number | null;
-    valor_reajustado: number | null;
     observacoes: string | null;
-    data_base: string | null;
+    valor_contrato_atualizado: number | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
     modalidade_contratacao_id: number | null;
     modalidade_contratacao_nome: string | null;
     orgao_id: number | null;
     orgao_sigla: string | null;
     orgao_descricao: string | null;
-    valor_com_reajuste: number | null;
-    data_termino_atualizada: Date | null;
     percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
@@ -94,10 +100,45 @@ class RetornoDbOrigens {
 class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
-    geojson: unknown;
+    zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    zona: string | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
+    cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
+}
+
+class RetornoDbTermoEncerramento {
+    projeto_id: number;
+    projeto_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: Date | null;
+    previsao_termino: Date | null;
+    data_inicio_real: Date | null;
+    data_termino_real: Date | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: Date;
 }
 
 @Injectable()
@@ -121,59 +162,60 @@ export class PPProjetoService implements ReportableService {
 
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
         const detail: RelProjetoRelatorioDto = {
-            id: projetoRow.id,
-            arquivado: projetoRow.arquivado,
-            origem_tipo: projetoRow.origem_tipo,
-            meta_id: projetoRow.meta_id,
-            iniciativa_id: projetoRow.iniciativa_id,
-            atividade_id: projetoRow.atividade_id,
-            origem_outro: projetoRow.origem_outro,
-            portfolio_id: projetoRow.portfolio_id,
-            meta_codigo: projetoRow.meta_codigo,
-            nome: projetoRow.nome,
-            status: projetoRow.status,
-            resumo: projetoRow.resumo,
+            projeto_id: projetoRow.id,
             codigo: projetoRow.codigo,
+            portfolio_id: projetoRow.portfolio_id,
+            nome: projetoRow.nome,
+            portfolio_titulo: projetoRow.portfolio.titulo,
+            etiquetas: projetoRow.tags_portfolio ? projetoRow.tags_portfolio.map((e) => e.descricao).join('|') : null,
+            status: projetoRow.status,
+            projeto_etapa: projetoRow.projeto_etapa,
+            previsao_inicio: projetoRow.previsao_inicio,
+            previsao_termino: projetoRow.previsao_termino,
+            previsao_duracao: projetoRow.previsao_duracao,
+            previsao_custo: projetoRow.previsao_custo,
             objeto: projetoRow.objeto,
             objetivo: projetoRow.objetivo,
+            nao_escopo: projetoRow.nao_escopo,
+            orgao_responsavel_id: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.id : null,
+            orgao_responsavel_sigla: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.sigla : null,
+            orgao_responsavel_descricao: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.descricao : null,
+            responsavel_id: projetoRow.responsavel ? projetoRow.responsavel.id : null,
+            responsavel_nome_exibicao: projetoRow.responsavel ? projetoRow.responsavel.nome_exibicao : null,
+            orgao_gestor_id: projetoRow.orgao_gestor.id,
+            orgao_gestor_sigla: projetoRow.orgao_gestor.sigla,
+            orgao_gestor_descricao: projetoRow.orgao_gestor.descricao,
+            meta_id: projetoRow.meta_id,
+            responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length
+                ? projetoRow.responsaveis_no_orgao_gestor.map((e) => e.nome_exibicao).join('|')
+                : null,
+            origem_tipo: projetoRow.origem_tipo,
+            origem_outro: projetoRow.origem_outro,
+            secretario_responsavel: projetoRow.secretario_responsavel,
+            secretario_executivo: projetoRow.secretario_executivo,
+            coordenador_ue: projetoRow.coordenador_ue,
             data_aprovacao: projetoRow.data_aprovacao,
             data_revisao: projetoRow.data_revisao,
             versao: projetoRow.versao,
+            arquivado: projetoRow.arquivado,
+            iniciativa_id: projetoRow.iniciativa_id,
+            atividade_id: projetoRow.atividade_id,
+            meta_codigo: projetoRow.meta_codigo,
+            resumo: projetoRow.resumo,
             publico_alvo: projetoRow.publico_alvo,
-            previsao_inicio: projetoRow.previsao_inicio,
-            previsao_custo: projetoRow.previsao_custo,
-            previsao_duracao: projetoRow.previsao_duracao,
-            previsao_termino: projetoRow.previsao_termino,
             realizado_inicio: projetoRow.realizado_inicio,
             realizado_termino: projetoRow.realizado_termino,
             realizado_custo: projetoRow.realizado_custo,
-            nao_escopo: projetoRow.nao_escopo,
             principais_etapas: projetoRow.principais_etapas,
-            responsavel_id: projetoRow.responsavel ? projetoRow.responsavel.id : null,
-            responsavel_nome_exibicao: projetoRow.responsavel ? projetoRow.responsavel.nome_exibicao : null,
             eh_prioritario: projetoRow.eh_prioritario,
-            secretario_executivo: projetoRow.secretario_executivo,
-            secretario_responsavel: projetoRow.secretario_responsavel,
-            coordenador_ue: projetoRow.coordenador_ue,
             atraso: projetoRow.atraso,
             em_atraso: projetoRow.em_atraso,
             tolerancia_atraso: projetoRow.tolerancia_atraso,
             projecao_termino: projetoRow.projecao_termino,
             realizado_duracao: projetoRow.realizado_duracao,
             percentual_concluido: projetoRow.percentual_concluido,
-            portfolio_titulo: projetoRow.portfolio.titulo,
             portfolio_nivel_maximo_tarefa: projetoRow.portfolio.nivel_maximo_tarefa,
-            orgao_gestor_id: projetoRow.orgao_gestor.id,
-            orgao_gestor_sigla: projetoRow.orgao_gestor.sigla,
-            orgao_gestor_descricao: projetoRow.orgao_gestor.descricao,
-            orgao_responsavel_id: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.id : null,
-            orgao_responsavel_sigla: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.sigla : null,
-            orgao_responsavel_descricao: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.descricao : null,
             meta: projetoRow.meta,
-            responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length
-                ? projetoRow.responsaveis_no_orgao_gestor.map((e) => e.nome_exibicao).join('|')
-                : null,
-            projeto_etapa: projetoRow.projeto_etapa,
 
             fonte_recursos: projetoRow.fonte_recursos
                 ? (
@@ -208,8 +250,6 @@ export class PPProjetoService implements ReportableService {
             orgaos_participantes: projetoRow.orgaos_participantes
                 ? projetoRow.orgaos_participantes.map((e) => e.sigla).join('|')
                 : null,
-
-            etiquetas: projetoRow.tags_portfolio ? projetoRow.tags_portfolio.map((e) => e.descricao).join('|') : null,
         };
 
         const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
@@ -258,6 +298,8 @@ export class PPProjetoService implements ReportableService {
             }
 
             return {
+                projeto_id: projetoRow.id,
+                tarefa_id: e.id,
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
                 inicio_planejado: e.inicio_planejado ? Date2YMD.toString(e.inicio_planejado) : '',
@@ -275,6 +317,7 @@ export class PPProjetoService implements ReportableService {
         const riscoRows = await this.riscoService.findAll(dto.projeto_id, undefined);
         const riscosOut: RelProjetoRiscoDto[] = riscoRows.map((e) => {
             return {
+                risco_id: e.id,
                 codigo: e.codigo,
                 titulo: e.titulo,
                 descricao: e.descricao,
@@ -291,6 +334,7 @@ export class PPProjetoService implements ReportableService {
         const planoAcaoRows = await this.planoAcaoService.findAll(dto.projeto_id, { risco_id: undefined }, undefined);
         const planoAcaoOut: RelProjetoPlanoAcaoDto[] = planoAcaoRows.map((e) => {
             return {
+                risco_id: e.projeto_risco.id,
                 codigo_risco: e.projeto_risco.codigo,
                 contramedida: e.contramedida,
                 prazo_contramedida: e.prazo_contramedida,
@@ -304,7 +348,8 @@ export class PPProjetoService implements ReportableService {
         const acompanhamentoRows = await this.acompanhamentoService.findAll('PP', dto.projeto_id, undefined);
         const acompanhamentoOut: RelProjetoAcompanhamentoDto[] = acompanhamentoRows.map((a) => {
             return {
-                id: a.id,
+                acompanhamento_id: a.id,
+                projeto_id: dto.projeto_id,
                 acompanhamento_tipo: a.acompanhamento_tipo ? a.acompanhamento_tipo.nome : null,
                 numero: a.ordem,
                 data_registro: a.data_registro,
@@ -340,10 +385,12 @@ export class PPProjetoService implements ReportableService {
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetoOrigemDto[] = [];
         const out_enderecos: RelProjetoGeolocDto[] = [];
+        const out_termos_encerramento: RelProjetosTermoEncerramentoDto[] = [];
         await this.queryDataContratos(projetoRow.id, out_contratos);
         await this.queryDataAditivos(projetoRow.id, out_aditivos);
         await this.queryDataOrigens(projetoRow.id, out_origens);
         await this.queryDataProjetosGeoloc(projetoRow.id, out_enderecos);
+        await this.queryDataTermoEncerramento(projetoRow.id, out_termos_encerramento);
 
         return {
             detail: detail,
@@ -356,13 +403,14 @@ export class PPProjetoService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             enderecos: out_enderecos,
+            termos_encerramento: out_termos_encerramento,
         };
     }
 
     private async queryDataContratos(projetoId: number, out: RelProjetosContratosDto[]) {
         const sql = `SELECT
             contrato.id AS id,
-            projeto.id AS obra_id,
+            projeto.id AS projeto_id,
             contrato.numero AS numero,
             contrato.contrato_exclusivo AS exclusivo,
             contrato.status AS status,
@@ -372,46 +420,49 @@ export class PPProjetoService implements ReportableService {
             contrato.empresa_contratada AS empresa_contratada,
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
+            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
+            (
+                SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
+                ) AS data_termino_atualizada,
+            contrato.valor AS valor,
             contrato.observacoes AS observacoes,
-            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            COALESCE(contrato.valor, 0) + aditivo_totals.total_aditivos + aditivo_totals.total_reajustes AS valor_contrato_atualizado,
+            aditivo_totals.total_aditivos,
+            aditivo_totals.total_reajustes,
             modalidade_contratacao.id AS modalidade_contratacao_id,
             modalidade_contratacao.nome AS modalidade_contratacao_nome,
             orgao.id AS orgao_id,
             orgao.sigla AS orgao_sigla,
             orgao.descricao AS orgao_descricao,
-            contrato.valor AS valor,
-            (
-                SELECT max(valor)
-                FROM contrato_aditivo
-                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
-                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
-            ) AS valor_reajustado,
-            (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
-            ) AS valor_com_reajuste,
-            (
-                SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-            ) AS data_termino_atualizada,
             (
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-            ) AS percentual_medido,
+                ) AS percentual_medido,
             (
                 SELECT string_agg(format_proc_sei_sinproc(contrato_sei.numero_sei::text), '|')
                 FROM contrato_sei
                 WHERE contrato_sei.contrato_id = contrato.id
-            ) AS processos_sei,
+                ) AS processos_sei,
             (
                 SELECT string_agg(cod_sof::text, '|')
                 FROM contrato_fonte_recurso
                 WHERE contrato_id = contrato.id
-            ) AS fontes_recurso
+                ) AS fontes_recurso,
+            f_formata_cnpj(contrato.cnpj_contratada) AS cnpj_contratada
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
+          LEFT JOIN LATERAL (
+              SELECT
+                  COALESCE(SUM(CASE WHEN ta.tipo = 'Aditivo' THEN ca.valor ELSE 0 END), 0) AS total_aditivos,
+                  COALESCE(SUM(CASE WHEN ta.tipo = 'Reajuste' THEN ca.valor ELSE 0 END), 0) AS total_reajustes
+              FROM contrato_aditivo ca
+              JOIN tipo_aditivo ta ON ta.id = ca.tipo_aditivo_id AND ta.removido_em IS NULL
+              WHERE ca.contrato_id = contrato.id AND ca.removido_em IS NULL
+          ) aditivo_totals ON true
         WHERE projeto.id = $1
         `;
 
@@ -423,19 +474,11 @@ export class PPProjetoService implements ReportableService {
     private convertRowsContratos(input: RetornoDbContratos[]): RelProjetosContratosDto[] {
         return input.map((db) => {
             return {
-                id: db.id,
+                contrato_id: db.id,
                 projeto_id: db.projeto_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
-                processos_SEI: db.processos_sei,
                 status: db.status,
-                modalidade_licitacao: db.modalidade_contratacao_id
-                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
-                    : null,
-                fontes_recurso: db.fontes_recurso,
-                area_gestora: db.orgao_id
-                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
-                    : null,
                 objeto: db.objeto,
                 descricao_detalhada: db.descricao_detalhada,
                 contratante: db.contratante,
@@ -447,10 +490,21 @@ export class PPProjetoService implements ReportableService {
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
                 valor: db.valor,
-                valor_reajustado: db.valor_reajustado,
-                percentual_medido: db.percentual_medido,
                 observacoes: db.observacoes,
-            };
+                valor_contrato_atualizado: db.valor_contrato_atualizado ?? null,
+                total_aditivos: db.total_aditivos ?? null,
+                total_reajustes: db.total_reajustes ?? null,
+                modalidade_licitacao: db.modalidade_contratacao_id
+                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
+                    : null,
+                area_gestora: db.orgao_id
+                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
+                    : null,
+                percentual_medido: db.percentual_medido ?? null,
+                processos_sei: db.processos_sei,
+                fontes_recurso: db.fontes_recurso,
+                cnpj_contratada: db.cnpj_contratada ?? null,
+            } satisfies RelProjetosContratosDto;
         });
     }
 
@@ -461,9 +515,10 @@ export class PPProjetoService implements ReportableService {
             contrato_aditivo.numero AS numero,
             tipo_aditivo.id AS tipo_aditivo_id,
             tipo_aditivo.nome AS tipo_aditivo_nome,
+            tipo_aditivo.tipo AS tipo_categoria,
             contrato_aditivo.data,
             contrato_aditivo.data_termino_atualizada AS data_termino_atual,
-            contrato_aditivo.valor AS valor_com_reajuste,
+            contrato_aditivo.valor,
             contrato_aditivo.percentual_medido
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
@@ -481,11 +536,12 @@ export class PPProjetoService implements ReportableService {
     private convertRowsAditivos(input: RetornoDbAditivos[]): RelProjetosAditivosDto[] {
         return input.map((db) => {
             return {
-                id: db.aditivo_id,
+                aditivo_id: db.aditivo_id,
                 contrato_id: db.contrato_id,
+                tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
                 data: db.data ?? null,
-                valor_com_reajuste: db.valor_com_reajuste ?? null,
+                valor: db.valor ?? null,
                 percentual_medido: db.percentual_medido ?? null,
                 data_termino_atual: db.data_termino_atual ?? null,
             };
@@ -589,15 +645,7 @@ export class PPProjetoService implements ReportableService {
         await ctx.progress(65);
 
         if (dados.planos_acao.length) {
-            toCsvOut('planos-acao.csv', dados.planos_acao, [
-                { value: 'codigo_risco', label: 'Codigo Risco' },
-                { value: 'contramedida', label: 'Contramedida' },
-                { value: 'contramedida_texto', label: 'Contramedida Texto' },
-                { value: 'prazo_contramedida', label: 'Prazo Contramedida' },
-                { value: 'responsavel', label: 'Responsavel' },
-                { value: 'medidas_de_contingencia', label: 'Medidas de Contingencia' },
-                { value: 'medidas_de_contingencia_texto', label: 'Medidas de Contingencia Texto' },
-            ]);
+            toCsvOut('planos-acao.csv', dados.planos_acao);
         }
         await ctx.progress(70);
 
@@ -607,7 +655,7 @@ export class PPProjetoService implements ReportableService {
         const uploads = await this.prisma.projetoDocumento.findMany({
             where: {
                 removido_em: null,
-                projeto_id: dados.detail.id,
+                projeto_id: dados.detail.projeto_id,
             },
             include: {
                 arquivo: {
@@ -638,17 +686,21 @@ export class PPProjetoService implements ReportableService {
         }
         await ctx.progress(90);
 
-        if (dados.detail && dados.detail.id) {
+        if (dados.detail && dados.detail.projeto_id) {
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {
-                    projeto_id: dados.detail.id,
+                    projeto_id: dados.detail.projeto_id,
                     removido_em: null,
                 },
                 select: { id: true },
             });
 
             if (tarefaCronoId) {
-                const eap = await this.tarefaService.getEap(tarefaCronoId.id, { projeto_id: dados.detail.id }, 'svg');
+                const eap = await this.tarefaService.getEap(
+                    tarefaCronoId.id,
+                    { projeto_id: dados.detail.projeto_id },
+                    'svg'
+                );
 
                 out.push({
                     name: 'eap.svg',
@@ -661,13 +713,28 @@ export class PPProjetoService implements ReportableService {
         toCsvOut('contratos.csv', dados.contratos);
         toCsvOut('aditivos.csv', dados.aditivos);
         toCsvOut('origens.csv', dados.origens);
+        toCsvOut('termos-encerramento.csv', dados.termos_encerramento);
         toCsvOut('enderecos.csv', dados.enderecos, [
-            { value: 'projeto_id', label: 'ID Projeto' },
-            { value: 'endereco', label: 'Endereço' },
-            { value: 'cep', label: 'CEP' },
-            { value: 'zona', label: 'Zona' },
-            { value: 'distrito', label: 'Distrito' },
-            { value: 'subprefeitura', label: 'Subprefeitura' },
+            { value: 'projeto_id', label: 'projeto_id' },
+            { value: 'endereco', label: 'endereco' },
+            { value: 'zona', label: 'zona' },
+            { value: 'distrito', label: 'distrito' },
+            { value: 'subprefeitura', label: 'subprefeitura' },
+            { value: 'coordinates', label: 'geojson.geometry.coordinates' },
+            { value: 'geojson_type', label: 'geojson.type' },
+            { value: 'geometry_type', label: 'geojson.geometry.type' },
+            { value: 'cep', label: 'geojson.properties.cep' },
+            { value: 'rua', label: 'geojson.properties.rua' },
+            { value: 'pais', label: 'geojson.properties.pais' },
+            { value: 'bairro', label: 'geojson.properties.bairro' },
+            { value: 'cidade', label: 'geojson.properties.cidade' },
+            { value: 'estado', label: 'geojson.properties.estado' },
+            { value: 'rotulo', label: 'geojson.properties.rotulo' },
+            { value: 'osm_type', label: 'geojson.properties.osm_type' },
+            { value: 'codigo_pais', label: 'geojson.properties.codigo_pais' },
+            { value: 'string_endereco', label: 'geojson.properties.string_endereco' },
+            { value: 'geometry_name', label: 'geojson.geometry_name' },
+            { value: 'bbox', label: 'geojson.bbox' },
         ]);
 
         await ctx.progress(99);
@@ -688,15 +755,94 @@ export class PPProjetoService implements ReportableService {
         ];
     }
 
+    private async queryDataTermoEncerramento(projetoId: number, out: RelProjetosTermoEncerramentoDto[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            projeto.codigo AS projeto_codigo,
+            pte.nome_projeto,
+            pte.orgao_responsavel_nome,
+            pte.portfolios_nomes,
+            pte.objeto,
+            pte.previsao_inicio,
+            pte.previsao_termino,
+            pte.data_inicio_real,
+            pte.data_termino_real,
+            pte.previsao_custo,
+            pte.valor_executado_total,
+            pte.status_final,
+            pte.etapa_nome,
+            pte_justif.descricao AS justificativa,
+            pte.justificativa_complemento,
+            pte.responsavel_encerramento_nome,
+            pte.data_encerramento
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_termo_encerramento pte
+              ON pte.projeto_id = projeto.id
+              AND pte.removido_em IS NULL
+              AND pte.ultima_versao = true
+          LEFT JOIN projeto_tipo_encerramento pte_justif
+              ON pte_justif.id = pte.justificativa_id
+        WHERE projeto.id = $1
+        `;
+
+        const data: RetornoDbTermoEncerramento[] = await this.prisma.$queryRawUnsafe(sql, projetoId);
+
+        out.push(...this.convertRowsTermoEncerramento(data));
+    }
+
+    private convertRowsTermoEncerramento(input: RetornoDbTermoEncerramento[]): RelProjetosTermoEncerramentoDto[] {
+        return input.map((db) => {
+            return {
+                projeto_id: db.projeto_id,
+                projeto_codigo: db.projeto_codigo ?? null,
+                nome_projeto: db.nome_projeto,
+                orgao_responsavel_nome: db.orgao_responsavel_nome,
+                portfolios_nomes: db.portfolios_nomes,
+                objeto: db.objeto,
+                previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
+                previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
+                data_inicio_real: db.data_inicio_real ? Date2YMD.toString(db.data_inicio_real) : null,
+                data_termino_real: db.data_termino_real ? Date2YMD.toString(db.data_termino_real) : null,
+                previsao_custo: db.previsao_custo ?? null,
+                valor_executado_total: db.valor_executado_total ?? null,
+                status_final: db.status_final,
+                etapa_nome: db.etapa_nome,
+                justificativa: db.justificativa ?? null,
+                justificativa_complemento: db.justificativa_complemento ?? null,
+                responsavel_encerramento_nome: db.responsavel_encerramento_nome,
+                data_encerramento: Date2YMD.toString(db.data_encerramento),
+            };
+        });
+    }
+
     private async queryDataProjetosGeoloc(projetoId: number, out: RelProjetoGeolocDto[]) {
         const sql = `
             SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson,
                 zona_agg.zona,
                 distrito_agg.distrito,
-                subprefeitura_agg.subprefeitura
+                subprefeitura_agg.subprefeitura,
+                CONCAT(
+                    (geo.geom_geojson->'geometry'->'coordinates'->1)::float,
+                    ',',
+                    (geo.geom_geojson->'geometry'->'coordinates'->0)::float
+                ) AS coordinates,
+                (geo.geom_geojson->>'type') AS geojson_type,
+                (geo.geom_geojson->'geometry'->>'type') AS geometry_type,
+                (geo.geom_geojson->'properties'->>'cep') AS cep,
+                (geo.geom_geojson->'properties'->>'rua') AS rua,
+                (geo.geom_geojson->'properties'->>'pais') AS pais,
+                (geo.geom_geojson->'properties'->>'bairro') AS bairro,
+                (geo.geom_geojson->'properties'->>'cidade') AS cidade,
+                (geo.geom_geojson->'properties'->>'estado') AS estado,
+                (geo.geom_geojson->'properties'->>'rotulo') AS rotulo,
+                (geo.geom_geojson->'properties'->>'osm_type') AS osm_type,
+                (geo.geom_geojson->'properties'->>'codigo_pais') AS codigo_pais,
+                (geo.geom_geojson->'properties'->>'string_endereco') AS string_endereco,
+                (geo.geom_geojson->>'geometry_name') AS geometry_name,
+                (geo.geom_geojson->'bbox')::text AS bbox
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -725,22 +871,28 @@ export class PPProjetoService implements ReportableService {
     }
 
     private convertRowsLoc(input: RetornoDbLoc[]): RelProjetoGeolocDto[] {
-        interface JSONGeo {
-            properties: {
-                cep: string;
-            };
-        }
-
         return input.map((db) => {
-            const geojson = db.geojson as JSONGeo;
-
             return {
                 projeto_id: db.projeto_id,
                 endereco: db.endereco,
-                cep: geojson.properties.cep,
                 zona: db.zona,
                 distrito: db.distrito,
                 subprefeitura: db.subprefeitura,
+                coordinates: db.coordinates,
+                geojson_type: db.geojson_type,
+                geometry_type: db.geometry_type,
+                cep: db.cep,
+                rua: db.rua,
+                pais: db.pais,
+                bairro: db.bairro,
+                cidade: db.cidade,
+                estado: db.estado,
+                rotulo: db.rotulo,
+                osm_type: db.osm_type,
+                codigo_pais: db.codigo_pais,
+                string_endereco: db.string_endereco,
+                geometry_name: db.geometry_name,
+                bbox: db.bbox,
             };
         });
     }

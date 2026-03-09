@@ -27,7 +27,7 @@ type Props = {
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  titulo: 'Legenda',
+  titulo: '',
   orientacao: 'vertical',
   borda: false,
   duasLinhas: false,
@@ -62,7 +62,7 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
       <dl
         v-for="(legenda, legendaIndex) in grupoDeLegendas"
         :key="`legenda-item--${legendaIndex}`"
-        class="flex g1 flexwrap"
+        class="flex g1 flexwrap justifyright"
         :class="{ 'column': mostrarEmColunas }"
       >
         <div

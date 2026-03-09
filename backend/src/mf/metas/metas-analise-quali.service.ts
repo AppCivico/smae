@@ -3,6 +3,7 @@ import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import {
@@ -314,6 +315,8 @@ export class MetasAnaliseQualiService {
                     ultima_revisao: false,
                 },
             });
+
+            dto.informacoes_complementares = HtmlSanitizer(dto.informacoes_complementares);
 
             const cfq = await prismaTx.metaCicloFisicoAnalise.create({
                 data: {

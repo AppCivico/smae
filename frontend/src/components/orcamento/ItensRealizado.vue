@@ -39,10 +39,12 @@ const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore())
 
 const model = defineModel({
   required: true,
+  type: Array,
 });
 
-const maisRecenteDosMeses = computed(() => model.value
-  .reduce((acc, cur) => Math.max(acc, cur.mes), 0));
+const maisRecenteDosMeses = computed(() => (
+  model.value?.reduce((acc, cur) => Math.max(acc, cur.mes), 0)
+));
 const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(model.value));
 const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
@@ -86,8 +88,10 @@ const mesesDisponíveis = computed(() => {
 });
 
 const totais = computed(() => ({
-  empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.value.empenho,
-  liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.value.liquidação,
+  empenho: (líquidoDosItens.value.empenho ?? 0)
+    + (maisRecentesDosItens.value.empenho ?? 0),
+  liquidação: (líquidoDosItens.value.liquidação ?? 0)
+    + (maisRecentesDosItens.value.liquidação ?? 0),
 }));
 
 const totaisQueSuperamSOF = computed(() => ({
@@ -132,17 +136,18 @@ function atualizarDePercentagem(i, coluna) {
 }
 
 async function addItem() {
-  if (!Array.isArray(model.value)) {
-    model.value = [];
-    await nextTick();
-  }
-
   model.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
 }
 </script>
 <template>
   <pre v-scrollLockDebug>respostasof:{{ respostasof }}</pre>
   <pre v-scrollLockDebug>orçamentoEmFoco:{{ orçamentoEmFoco }}</pre>
+  <pre v-scrollLockDebug>
+líquidoDosItens.empenho: {{ líquidoDosItens.empenho }}
+líquidoDosItens.liquidação: {{ líquidoDosItens.liquidação }}
+maisRecentesDosItens.empenho: {{ maisRecentesDosItens.empenho }}
+maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
+</pre>
 
   <table class="tablemain no-zebra mb1">
     <colgroup>

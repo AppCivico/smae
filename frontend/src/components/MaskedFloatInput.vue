@@ -40,6 +40,10 @@ const props = defineProps({
     type: Number,
     default: 2,
   },
+  permitirNegativo: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -53,11 +57,18 @@ const validarValorMaximo = (max, value) => {
 };
 
 const aplicarMascara = (event) => {
+  const ehNegativo = props.permitirNegativo && event.target.value.startsWith('-');
   const valorLimpo = event.target.value.replace(/[\D]/g, '');
+
   if (valorLimpo === '') {
     return;
   }
+
   maskFloat(event, props.fractionDigits);
+
+  if (ehNegativo) {
+    event.target.value = `-${event.target.value}`;
+  }
 };
 const { handleChange } = useField(name, undefined, {
   // eslint-disable-next-line no-nested-ternary
@@ -88,14 +99,26 @@ const typedValue = computed({
         cleanValue = null;
         break;
 
-      default:
+      case '-':
+        if (props.permitirNegativo) return;
+        cleanValue = null;
+        break;
+
+      default: {
+        const ehNegativo = props.permitirNegativo && newValue.startsWith('-');
         cleanValue = Number(newValue.replace(/[\D]/g, '')) / (10 ** props.fractionDigits);
+
+        if (ehNegativo) {
+          cleanValue = -cleanValue;
+        }
+
         cleanValue = validarValorMaximo(Number(props.max), cleanValue);
 
         if (['string', 'text'].indexOf(props.converterPara.toLowerCase()) !== -1) {
           cleanValue = String(cleanValue);
         }
         break;
+      }
     }
 
     handleChange(cleanValue);

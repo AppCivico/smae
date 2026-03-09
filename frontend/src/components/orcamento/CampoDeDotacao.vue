@@ -52,7 +52,7 @@ const name = toRef(props, 'name');
 const {
   errors, handleChange, validate, meta: metaDadosDoFormulario,
 } = useField(name, schema, {
-  initialValue: props.value,
+  initialValue: props.modelValue,
 });
 
 const route = useRoute();

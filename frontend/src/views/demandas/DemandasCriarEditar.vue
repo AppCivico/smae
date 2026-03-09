@@ -55,7 +55,9 @@ const {
 
 const schema = computed(() => (
   CadastroDemandaSchema({
-    valorMinimo: valoresLimitesAtivo.value?.valor_minimo,
+    valorMinimo: valoresLimitesAtivo.value?.valor_minimo != null
+      ? Number(valoresLimitesAtivo.value.valor_minimo)
+      : undefined,
   })
 ));
 
@@ -858,16 +860,11 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </fieldset>
 
-    <SmaeFieldsetSubmit remover-linhas-decoracao>
-      <button
-        class="btn big"
-        type="submit"
-        :disabled="bloquearCampos"
-        :aria-disabled="bloquearCampos"
-      >
-        {{ labelDoBotaoSubmit }}
-      </button>
-    </SmaeFieldsetSubmit>
+    <SmaeFieldsetSubmit
+      :disabled="bloquearCampos"
+      :rotulo="labelDoBotaoSubmit"
+      :erros="errors"
+    />
   </form>
 
   <div

@@ -246,6 +246,16 @@ export class PdmService {
         if (dto.possui_atividade && !dto.possui_iniciativa)
             throw new HttpException('possui_iniciativa precisa ser True para ativar Atividades', 400);
 
+        if (
+            dto.orcamento_dia_abertura != undefined &&
+            dto.orcamento_dia_fechamento != undefined &&
+            dto.orcamento_dia_abertura > dto.orcamento_dia_fechamento
+        )
+            throw new HttpException(
+                'orcamento_dia_abertura não pode ser maior que orcamento_dia_fechamento',
+                400
+            );
+
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pdm = await prismaTx.pdm.create({
@@ -280,6 +290,8 @@ export class PdmService {
                     legislacao_de_instituicao: EnsureString(dto.legislacao_de_instituicao),
                     orgao_admin_id: dto.orgao_admin_id,
                     monitoramento_orcamento: dto.monitoramento_orcamento,
+                    orcamento_dia_abertura: dto.orcamento_dia_abertura,
+                    orcamento_dia_fechamento: dto.orcamento_dia_fechamento,
                     pdm_anteriores: dto.pdm_anteriores,
                     tipo: PdmModoParaTipo(tipo),
                     ativo: false,
@@ -397,6 +409,8 @@ export class PdmService {
                     select: { thumbnail_arquivo_id: true },
                 },
                 nivel_orcamento: true,
+                orcamento_dia_abertura: true,
+                orcamento_dia_fechamento: true,
                 tipo: true,
                 ps_admin_cps: true,
                 orgao_admin_id: true,
@@ -444,6 +458,8 @@ export class PdmService {
                     possui_iniciativa: pdm.possui_iniciativa,
                     possui_atividade: pdm.possui_atividade,
                     nivel_orcamento: pdm.nivel_orcamento,
+                    orcamento_dia_abertura: pdm.orcamento_dia_abertura,
+                    orcamento_dia_fechamento: pdm.orcamento_dia_fechamento,
                     tipo: pdm.tipo,
 
                     pode_editar: pode_editar,
@@ -610,6 +626,8 @@ export class PdmService {
             tipo: pdm.tipo,
             sistema: pdm.sistema,
             meses: pdmConfig?.meses ?? [],
+            orcamento_dia_abertura: pdm.orcamento_dia_abertura,
+            orcamento_dia_fechamento: pdm.orcamento_dia_fechamento,
             perm_level: perm_level,
             pode_editar: perm_level >= PdmPermissionLevel.CONFIG_WRITE,
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
@@ -797,6 +815,16 @@ export class PdmService {
                 throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
+        {
+            const diaAbertura = dto.orcamento_dia_abertura ?? pdm.orcamento_dia_abertura;
+            const diaFechamento = dto.orcamento_dia_fechamento ?? pdm.orcamento_dia_fechamento;
+            if (diaAbertura > diaFechamento)
+                throw new HttpException(
+                    'orcamento_dia_abertura não pode ser maior que orcamento_dia_fechamento',
+                    400
+                );
+        }
+
         let arquivo_logo_id: number | undefined | null;
         // se enviar vazio, transformar em null para limpar o logo
         if (dto.upload_logo == '') dto.upload_logo = null;
@@ -899,6 +927,8 @@ export class PdmService {
                     legislacao_de_instituicao: EnsureString(dto.legislacao_de_instituicao),
                     orgao_admin_id: dto.orgao_admin_id,
                     monitoramento_orcamento: dto.monitoramento_orcamento,
+                    orcamento_dia_abertura: dto.orcamento_dia_abertura,
+                    orcamento_dia_fechamento: dto.orcamento_dia_fechamento,
                     pdm_anteriores: dto.pdm_anteriores,
                     ativo: ativarPdm,
                     arquivo_logo_id: arquivo_logo_id,

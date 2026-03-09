@@ -31,6 +31,7 @@ import {
     RelProjetosPlanoAcaoDto,
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
+    RelProjetosTermoEncerramentoDto,
 } from './entities/projetos.entity';
 import { Logger } from '@nestjs/common';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
@@ -214,9 +215,10 @@ class RetornoDbAditivos {
     numero: number;
     tipo_aditivo_id: number;
     tipo_aditivo_nome: string;
+    tipo_categoria: string;
     data: Date | null;
     data_termino_atual: Date | null;
-    valor_com_reajuste: number | null;
+    valor: number | null;
     percentual_medido: number | null;
 }
 
@@ -230,21 +232,23 @@ class RetornoDbContratos {
     descricao_detalhada: string | null;
     contratante: string | null;
     empresa_contratada: string | null;
+    cnpj_contratada: string | null;
     prazo: number | null;
     unidade_prazo: ContratoPrazoUnidade | null;
+    data_base: string | null;
     data_inicio: Date | null;
     data_termino: Date | null;
+    data_termino_atualizada: Date | null;
     valor: number | null;
-    valor_reajustado: number | null;
     observacoes: string | null;
-    data_base: string | null;
+    valor_contrato_atualizado: number | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
     modalidade_contratacao_id: number | null;
     modalidade_contratacao_nome: string | null;
     orgao_id: number | null;
     orgao_sigla: string | null;
     orgao_descricao: string | null;
-    valor_com_reajuste: number | null;
-    data_termino_atualizada: Date | null;
     percentual_medido: number | null;
     processos_sei: string | null;
     fontes_recurso: string | null;
@@ -265,10 +269,45 @@ class RetornoDbOrigens {
 class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
-    geojson: unknown;
+    zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    zona: string | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
+    cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
+}
+
+class RetornoDbTermoEncerramento {
+    projeto_id: number;
+    projeto_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: Date | null;
+    previsao_termino: Date | null;
+    data_inicio_real: Date | null;
+    data_termino_real: Date | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: Date;
 }
 
 @Injectable()
@@ -297,6 +336,7 @@ export class PPProjetosService implements ReportableService {
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetosOrigemDto[] = [];
         const out_enderecos: RelProjetosGeolocDto[] = [];
+        const out_termos_encerramento: RelProjetosTermoEncerramentoDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
@@ -317,6 +357,7 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataProjetosGeoloc(whereCond, out_enderecos);
+        await this.queryDataTermoEncerramento(whereCond, out_termos_encerramento);
 
         await this.queryDataCronograma(whereCond, out_cronogramas);
 
@@ -332,6 +373,7 @@ export class PPProjetosService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             enderecos: out_enderecos,
+            termos_encerramento: out_termos_encerramento,
         };
     }
 
@@ -418,6 +460,7 @@ export class PPProjetosService implements ReportableService {
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetosOrigemDto[] = [];
         const out_enderecos: RelProjetosGeolocDto[] = [];
+        const out_termos_encerramento: RelProjetosTermoEncerramentoDto[] = [];
 
         // Execute all queries in parallel for better performance
         await Promise.all([
@@ -432,6 +475,7 @@ export class PPProjetosService implements ReportableService {
             this.queryDataAditivos(whereCond, out_aditivos),
             this.queryDataOrigens(whereCond, out_origens),
             this.queryDataProjetosGeoloc(whereCond, out_enderecos),
+            this.queryDataTermoEncerramento(whereCond, out_termos_encerramento),
         ]);
 
         return {
@@ -446,6 +490,7 @@ export class PPProjetosService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             enderecos: out_enderecos,
+            termos_encerramento: out_termos_encerramento,
         };
     }
 
@@ -551,42 +596,47 @@ export class PPProjetosService implements ReportableService {
         // 1. Processar Projetos
         const projetosFields = [
             'id',
-            'nome',
-            'portfolio_id',
-            'portfolio_titulo',
-            'meta_id',
-            'iniciativa_id',
-            'atividade_id',
             'codigo',
-            'objeto',
-            'objetivo',
-            'publico_alvo',
+            'portfolio_id',
+            'nome',
+            'portfolio_titulo',
+            'etiquetas',
+            'status',
+            'projeto_etapa',
             'previsao_inicio',
             'previsao_termino',
             'previsao_duracao',
             'previsao_custo',
+            'objeto',
+            'objetivo',
             'escopo',
             'nao_escopo',
+            'orgao_responsavel.id',
+            'orgao_responsavel.sigla',
+            'orgao_responsavel.descricao',
+            'responsavel.id',
+            'responsavel.nome_exibicao',
+            'orgao_gestor.id',
+            'orgao_gestor.sigla',
+            'orgao_gestor.descricao',
+            'orgao_participante.id',
+            'orgao_participante.sigla',
+            'orgao_participante.descricao',
+            'meta_id',
+            'gestores',
+            'fonte_recurso.valor_percentual',
+            'fonte_recurso.valor_nominal',
+            'portfolios_compartilhados_titulos',
             'secretario_responsavel',
             'secretario_executivo',
             'coordenador_ue',
             'data_aprovacao',
             'data_revisao',
             'versao',
+            'iniciativa_id',
+            'atividade_id',
+            'publico_alvo',
             'status-traduzido',
-            'projeto_etapa',
-            'orgao_participante.id',
-            'orgao_participante.sigla',
-            'orgao_participante.descricao',
-            'orgao_responsavel.id',
-            'orgao_responsavel.sigla',
-            'orgao_responsavel.descricao',
-            'orgao_gestor.id',
-            'orgao_gestor.sigla',
-            'orgao_gestor.descricao',
-            'gestores',
-            'responsavel.id',
-            'responsavel.nome_exibicao',
             'premissa.id',
             'premissa.premissa',
             'restricao.id',
@@ -595,51 +645,51 @@ export class PPProjetosService implements ReportableService {
             'fonte_recurso.nome',
             'fonte_recurso.fonte_recurso_cod_sof',
             'fonte_recurso.fonte_recurso_ano',
-            'fonte_recurso.valor_percentual',
-            'fonte_recurso.valor_nominal',
-            'status',
-            'portfolios_compartilhados_titulos',
-            'etiquetas',
         ];
 
         const projetosFieldNames = [
-            'ID do Projeto',
-            'Nome do Projeto',
-            'ID Portfólio',
-            'Título do Portfólio',
-            'ID Meta',
-            'ID Iniciativa',
-            'ID Atividade',
+            'ID Projeto',
             'Código',
-            'Objeto',
-            'Objetivo',
-            'Público-Alvo',
+            'ID Portfólio',
+            'Nome do Projeto',
+            'Título do Portfólio',
+            'Etiquetas',
+            'Status (Banco)',
+            'Projeto Etapa',
             'Previsão de Início',
             'Previsão de Término',
             'Previsão de Duração',
             'Previsão de Custo',
+            'Objeto',
+            'Objetivo',
             'Escopo',
             'Não Escopo',
+            'ID Órgão Responsável',
+            'Sigla Órgão Responsável',
+            'Descrição Órgão Responsável',
+            'ID Responsável',
+            'Nome do Responsável',
+            'ID Órgão Gestor',
+            'Sigla Órgão Gestor',
+            'Descrição Órgão Gestor',
+            'ID Órgão Participante',
+            'Sigla Órgão Participante',
+            'Descrição Órgão Participante',
+            'ID Meta',
+            'Gestores do Projeto',
+            'Valor Percentual da Fonte',
+            'Valor Nominal da Fonte',
+            'Portfólios Compartilhados',
             'Secretário Responsável',
             'Secretário Executivo',
             'Coordenador UE',
             'Data de Aprovação',
             'Data de Revisão',
             'Versão',
+            'ID Iniciativa',
+            'ID Atividade',
+            'Público-Alvo',
             'Status',
-            'Projeto Etapa',
-            'ID Órgão Participante',
-            'Sigla Órgão Participante',
-            'Descrição Órgão Participante',
-            'ID Órgão Responsável',
-            'Sigla Órgão Responsável',
-            'Descrição Órgão Responsável',
-            'ID Órgão Gestor',
-            'Sigla Órgão Gestor',
-            'Descrição Órgão Gestor',
-            'Gestores do Projeto',
-            'ID Responsável',
-            'Nome do Responsável',
             'ID Premissa',
             'Descrição da Premissa',
             'ID Restrição',
@@ -648,11 +698,6 @@ export class PPProjetosService implements ReportableService {
             'Nome da Fonte de Recurso',
             'Código SOF da Fonte',
             'Ano da Fonte',
-            'Valor Percentual da Fonte',
-            'Valor Nominal da Fonte',
-            'Status (Banco)',
-            'Portfólios Compartilhados',
-            'Etiquetas',
         ];
         await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
         await ctx.resumoSaida('Projetos', projetosIds.length);
@@ -879,14 +924,7 @@ export class PPProjetosService implements ReportableService {
             'projeto_id',
             'numero',
             'exclusivo',
-            'processos_SEI',
             'status',
-            'modalidade_licitacao.id',
-            'modalidade_licitacao.nome',
-            'fontes_recurso',
-            'area_gestora.id',
-            'area_gestora.sigla',
-            'area_gestora.descricao',
             'objeto',
             'descricao_detalhada',
             'contratante',
@@ -898,9 +936,19 @@ export class PPProjetosService implements ReportableService {
             'data_termino',
             'data_termino_atualizada',
             'valor',
-            'valor_reajustado',
-            'percentual_medido',
             'observacoes',
+            'valor_contrato_atualizado',
+            'total_aditivos',
+            'total_reajustes',
+            'modalidade_licitacao.id',
+            'modalidade_licitacao.nome',
+            'area_gestora.id',
+            'area_gestora.sigla',
+            'area_gestora.descricao',
+            'percentual_medido',
+            'processos_sei',
+            'fontes_recurso',
+            'cnpj_contratada',
         ];
 
         const contratosFieldNames = [
@@ -908,14 +956,7 @@ export class PPProjetosService implements ReportableService {
             'ID Projeto',
             'Número',
             'Exclusivo',
-            'Processos SEI',
             'Status',
-            'Modalidade de Licitação - ID',
-            'Modalidade de Licitação - Nome',
-            'Fontes de Recurso',
-            'Área Gestora - ID',
-            'Área Gestora - Sigla',
-            'Área Gestora - Descrição',
             'Objeto',
             'Descrição Detalhada',
             'Contratante',
@@ -927,28 +968,40 @@ export class PPProjetosService implements ReportableService {
             'Data Término',
             'Data Término Atualizada',
             'Valor',
-            'Valor Reajustado',
-            '% Execução',
             'Observações',
+            'Valor Contrato Atualizado',
+            'Total Aditivos',
+            'Total Reajustes',
+            'Modalidade de Licitação - ID',
+            'Modalidade de Licitação - Nome',
+            'Área Gestora - ID',
+            'Área Gestora - Sigla',
+            'Área Gestora - Descrição',
+            'Máximo % Execução',
+            'Processos SEI',
+            'Fontes de Recurso',
+            'CNPJ Contratada',
         ];
         await this.gerarCsv('contratos', contratosFields, contratosFieldNames, projetosIds, out, ctx, 75);
 
         // 9. Processar Aditivos
         const aditivosFields = [
-            'id',
+            'aditivo_id',
             'contrato_id',
+            'tipo_categoria',
             'tipo.nome',
             'data',
-            'valor_com_reajuste',
+            'valor',
             'percentual_medido',
             'data_termino_atual',
         ];
         const aditivosFieldNames = [
             'ID Aditivo',
             'ID Contrato',
+            'Categoria',
             'Tipo Aditivo',
             'Data',
-            'Valor com Reajuste',
+            'Valor',
             '% Execução',
             'Data Término Atual',
         ];
@@ -977,12 +1030,92 @@ export class PPProjetosService implements ReportableService {
             'ID Atividade',
             'Título da Atividade',
         ];
-        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 90);
+        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 88);
 
-        // 11. Processar Geolocalização
-        const geolocFields = ['projeto_id', 'endereco', 'cep', 'zona', 'distrito', 'subprefeitura'];
-        const geolocFieldNames = ['ID Projeto', 'Endereço', 'CEP', 'Zona', 'Distrito', 'Subprefeitura'];
-        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 100);
+        // 11. Processar Arquivos
+        const arquivosFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'nome_original',
+            'criado_em',
+            'criador_id',
+            'criador_nome_exibicao',
+            'caminho',
+            'descricao',
+            'arquivo_id',
+        ];
+        const arquivosFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Nome Original',
+            'Criado em',
+            'Criador (ID)',
+            'Criador (Nome de Exibição)',
+            'Caminho no Object Storage',
+            'Descrição do Documento',
+            'ID do Arquivo',
+        ];
+        await this.gerarCsv('arquivos', arquivosFields, arquivosFieldNames, projetosIds, out, ctx, 94);
+
+        // 12. Processar Geolocalização
+        const geolocFields = [
+            'projeto_id', 'endereco', 'zona', 'distrito', 'subprefeitura',
+            'coordinates', 'geojson_type', 'geometry_type', 'cep', 'rua', 'pais',
+            'bairro', 'cidade', 'estado', 'rotulo', 'osm_type', 'codigo_pais',
+            'string_endereco', 'geometry_name', 'bbox',
+        ];
+        const geolocFieldNames = [
+            'ID Projeto', 'Endereço', 'Zona', 'Distrito', 'Subprefeitura',
+            'geojson.geometry.coordinates', 'geojson.type', 'geojson.geometry.type',
+            'geojson.properties.cep', 'geojson.properties.rua', 'geojson.properties.pais',
+            'geojson.properties.bairro', 'geojson.properties.cidade', 'geojson.properties.estado',
+            'geojson.properties.rotulo', 'geojson.properties.osm_type', 'geojson.properties.codigo_pais',
+            'geojson.properties.string_endereco', 'geojson.geometry_name', 'geojson.bbox',
+        ];
+        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 95);
+
+        // 12. Processar Termos de Encerramento
+        const termoFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'nome_projeto',
+            'orgao_responsavel_nome',
+            'portfolios_nomes',
+            'objeto',
+            'previsao_inicio',
+            'previsao_termino',
+            'data_inicio_real',
+            'data_termino_real',
+            'previsao_custo',
+            'valor_executado_total',
+            'status_final',
+            'etapa_nome',
+            'justificativa',
+            'justificativa_complemento',
+            'responsavel_encerramento_nome',
+            'data_encerramento',
+        ];
+        const termoFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Nome do Projeto',
+            'Órgão Responsável',
+            'Portfólios',
+            'Objeto',
+            'Previsão de Início',
+            'Previsão de Término',
+            'Data de Início Real',
+            'Data de Término Real',
+            'Previsão de Custo',
+            'Valor Executado Total',
+            'Status Final',
+            'Etapa',
+            'Justificativa',
+            'Justificativa Complemento',
+            'Responsável pelo Encerramento',
+            'Data de Encerramento',
+        ];
+        await this.gerarCsv('termos_encerramento', termoFields, termoFieldNames, projetosIds, out, ctx, 100);
 
         return [...out];
     }
@@ -1647,7 +1780,7 @@ export class PPProjetosService implements ReportableService {
     private async queryDataContratos(whereCond: WhereCond, out: RelProjetosContratosDto[]) {
         const sql = `SELECT
             contrato.id AS id,
-            projeto.id AS obra_id,
+            projeto.id AS projeto_id,
             contrato.numero AS numero,
             contrato.contrato_exclusivo AS exclusivo,
             contrato.status AS status,
@@ -1657,28 +1790,23 @@ export class PPProjetosService implements ReportableService {
             contrato.empresa_contratada AS empresa_contratada,
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
+            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
-            contrato.observacoes AS observacoes,
-            contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
-            modalidade_contratacao.id AS modalidade_contratacao_id,
-            modalidade_contratacao.nome AS modalidade_contratacao_nome,
-            orgao.id AS orgao_id,
-            orgao.sigla AS orgao_sigla,
-            orgao.descricao AS orgao_descricao,
-            contrato.valor AS valor,
-            (
-                SELECT max(valor)
-                FROM contrato_aditivo
-                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
-                WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
-            ) AS valor_reajustado,
-            (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
-            ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
             ) AS data_termino_atualizada,
+            contrato.valor AS valor,
+            contrato.observacoes AS observacoes,
+            COALESCE(contrato.valor, 0) + aditivo_totals.total_aditivos + aditivo_totals.total_reajustes AS valor_contrato_atualizado,
+            aditivo_totals.total_aditivos,
+            aditivo_totals.total_reajustes,
+            modalidade_contratacao.id AS modalidade_contratacao_id,
+            modalidade_contratacao.nome AS modalidade_contratacao_nome,
+            f_formata_cnpj(contrato.cnpj_contratada) AS cnpj_contratada,
+            orgao.id AS orgao_id,
+            orgao.sigla AS orgao_sigla,
+            orgao.descricao AS orgao_descricao,
             (
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
             ) AS percentual_medido,
@@ -1697,6 +1825,14 @@ export class PPProjetosService implements ReportableService {
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
+          LEFT JOIN LATERAL (
+              SELECT
+                  COALESCE(SUM(CASE WHEN ta.tipo = 'Aditivo' THEN ca.valor ELSE 0 END), 0) AS total_aditivos,
+                  COALESCE(SUM(CASE WHEN ta.tipo = 'Reajuste' THEN ca.valor ELSE 0 END), 0) AS total_reajustes
+              FROM contrato_aditivo ca
+              JOIN tipo_aditivo ta ON ta.id = ca.tipo_aditivo_id AND ta.removido_em IS NULL
+              WHERE ca.contrato_id = contrato.id AND ca.removido_em IS NULL
+          ) aditivo_totals ON true
         ${whereCond.whereString}
         `;
 
@@ -1708,19 +1844,11 @@ export class PPProjetosService implements ReportableService {
     private convertRowsContratos(input: RetornoDbContratos[]): RelProjetosContratosDto[] {
         return input.map((db) => {
             return {
-                id: db.id,
+                contrato_id: db.id,
                 projeto_id: db.projeto_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
-                processos_SEI: db.processos_sei,
                 status: db.status,
-                modalidade_licitacao: db.modalidade_contratacao_id
-                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
-                    : null,
-                fontes_recurso: db.fontes_recurso,
-                area_gestora: db.orgao_id
-                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
-                    : null,
                 objeto: db.objeto,
                 descricao_detalhada: db.descricao_detalhada,
                 contratante: db.contratante,
@@ -1732,10 +1860,21 @@ export class PPProjetosService implements ReportableService {
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
                 valor: db.valor,
-                valor_reajustado: db.valor_reajustado,
-                percentual_medido: db.percentual_medido,
                 observacoes: db.observacoes,
-            };
+                valor_contrato_atualizado: db.valor_contrato_atualizado ?? null,
+                total_aditivos: db.total_aditivos ?? null,
+                total_reajustes: db.total_reajustes ?? null,
+                modalidade_licitacao: db.modalidade_contratacao_id
+                    ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
+                    : null,
+                area_gestora: db.orgao_id
+                    ? { id: db.orgao_id, sigla: db.orgao_sigla!.toString(), descricao: db.orgao_descricao!.toString() }
+                    : null,
+                percentual_medido: db.percentual_medido ?? null,
+                processos_sei: db.processos_sei,
+                fontes_recurso: db.fontes_recurso,
+                cnpj_contratada: db.cnpj_contratada ?? null,
+            } satisfies RelProjetosContratosDto;
         });
     }
 
@@ -1746,9 +1885,10 @@ export class PPProjetosService implements ReportableService {
             contrato_aditivo.numero AS numero,
             tipo_aditivo.id AS tipo_aditivo_id,
             tipo_aditivo.nome AS tipo_aditivo_nome,
+            tipo_aditivo.tipo AS tipo_categoria,
             contrato_aditivo.data,
             contrato_aditivo.data_termino_atualizada AS data_termino_atual,
-            contrato_aditivo.valor AS valor_com_reajuste,
+            contrato_aditivo.valor,
             contrato_aditivo.percentual_medido
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
@@ -1766,11 +1906,12 @@ export class PPProjetosService implements ReportableService {
     private convertRowsAditivos(input: RetornoDbAditivos[]): RelProjetosAditivosDto[] {
         return input.map((db) => {
             return {
-                id: db.aditivo_id,
+                aditivo_id: db.aditivo_id,
                 contrato_id: db.contrato_id,
+                tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
                 data: db.data ?? null,
-                valor_com_reajuste: db.valor_com_reajuste ?? null,
+                valor: db.valor ?? null,
                 percentual_medido: db.percentual_medido ?? null,
                 data_termino_atual: db.data_termino_atual ?? null,
             };
@@ -1803,6 +1944,30 @@ export class PPProjetosService implements ReportableService {
         out.push(...this.convertRowsOrigens(data));
     }
 
+    private async queryDataArquivos(whereCond: WhereCond, out: any[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            projeto.codigo AS projeto_codigo,
+            arquivo.nome_original,
+            projeto_documento.criado_em,
+            criador.id AS criador_id,
+            criador.nome_exibicao AS criador_nome_exibicao,
+            arquivo.caminho,
+            projeto_documento.descricao,
+            arquivo.id AS arquivo_id
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_documento ON projeto_documento.projeto_id = projeto.id AND projeto_documento.removido_em IS NULL
+          JOIN arquivo ON arquivo.id = projeto_documento.arquivo_id
+          LEFT JOIN pessoa criador ON criador.id = projeto_documento.criado_por
+        ${whereCond.whereString}
+        ORDER BY projeto.id, projeto_documento.criado_em
+        `;
+
+        const data = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+        out.push(...(data as any[]));
+    }
+
     private convertRowsOrigens(input: RetornoDbOrigens[]): RelProjetosOrigemDto[] {
         return input.map((db) => {
             return {
@@ -1819,15 +1984,94 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
+    private async queryDataTermoEncerramento(whereCond: WhereCond, out: RelProjetosTermoEncerramentoDto[]) {
+        const sql = `SELECT
+            projeto.id AS projeto_id,
+            projeto.codigo AS projeto_codigo,
+            pte.nome_projeto,
+            pte.orgao_responsavel_nome,
+            pte.portfolios_nomes,
+            pte.objeto,
+            pte.previsao_inicio,
+            pte.previsao_termino,
+            pte.data_inicio_real,
+            pte.data_termino_real,
+            pte.previsao_custo,
+            pte.valor_executado_total,
+            pte.status_final,
+            pte.etapa_nome,
+            pte_justif.descricao AS justificativa,
+            pte.justificativa_complemento,
+            pte.responsavel_encerramento_nome,
+            pte.data_encerramento
+        FROM projeto
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+          JOIN projeto_termo_encerramento pte
+              ON pte.projeto_id = projeto.id
+              AND pte.removido_em IS NULL
+              AND pte.ultima_versao = true
+          LEFT JOIN projeto_tipo_encerramento pte_justif
+              ON pte_justif.id = pte.justificativa_id
+        ${whereCond.whereString}
+        `;
+
+        const data: RetornoDbTermoEncerramento[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsTermoEncerramento(data));
+    }
+
+    private convertRowsTermoEncerramento(input: RetornoDbTermoEncerramento[]): RelProjetosTermoEncerramentoDto[] {
+        return input.map((db) => {
+            return {
+                projeto_id: db.projeto_id,
+                projeto_codigo: db.projeto_codigo ?? null,
+                nome_projeto: db.nome_projeto,
+                orgao_responsavel_nome: db.orgao_responsavel_nome,
+                portfolios_nomes: db.portfolios_nomes,
+                objeto: db.objeto,
+                previsao_inicio: db.previsao_inicio ? Date2YMD.toString(db.previsao_inicio) : null,
+                previsao_termino: db.previsao_termino ? Date2YMD.toString(db.previsao_termino) : null,
+                data_inicio_real: db.data_inicio_real ? Date2YMD.toString(db.data_inicio_real) : null,
+                data_termino_real: db.data_termino_real ? Date2YMD.toString(db.data_termino_real) : null,
+                previsao_custo: db.previsao_custo ?? null,
+                valor_executado_total: db.valor_executado_total ?? null,
+                status_final: db.status_final,
+                etapa_nome: db.etapa_nome,
+                justificativa: db.justificativa ?? null,
+                justificativa_complemento: db.justificativa_complemento ?? null,
+                responsavel_encerramento_nome: db.responsavel_encerramento_nome,
+                data_encerramento: Date2YMD.toString(db.data_encerramento),
+            };
+        });
+    }
+
     private async queryDataProjetosGeoloc(whereCond: WhereCond, out: RelProjetosGeolocDto[]) {
         const sql = `
             SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson,
                 zona_agg.zona,
                 distrito_agg.distrito,
-                subprefeitura_agg.subprefeitura
+                subprefeitura_agg.subprefeitura,
+                CONCAT(
+                    (geo.geom_geojson->'geometry'->'coordinates'->1)::float,
+                    ',',
+                    (geo.geom_geojson->'geometry'->'coordinates'->0)::float
+                ) AS coordinates,
+                (geo.geom_geojson->>'type') AS geojson_type,
+                (geo.geom_geojson->'geometry'->>'type') AS geometry_type,
+                (geo.geom_geojson->'properties'->>'cep') AS cep,
+                (geo.geom_geojson->'properties'->>'rua') AS rua,
+                (geo.geom_geojson->'properties'->>'pais') AS pais,
+                (geo.geom_geojson->'properties'->>'bairro') AS bairro,
+                (geo.geom_geojson->'properties'->>'cidade') AS cidade,
+                (geo.geom_geojson->'properties'->>'estado') AS estado,
+                (geo.geom_geojson->'properties'->>'rotulo') AS rotulo,
+                (geo.geom_geojson->'properties'->>'osm_type') AS osm_type,
+                (geo.geom_geojson->'properties'->>'codigo_pais') AS codigo_pais,
+                (geo.geom_geojson->'properties'->>'string_endereco') AS string_endereco,
+                (geo.geom_geojson->>'geometry_name') AS geometry_name,
+                (geo.geom_geojson->'bbox')::text AS bbox
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
@@ -1856,22 +2100,28 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsLoc(input: RetornoDbLoc[]): RelProjetosGeolocDto[] {
-        interface JSONGeo {
-            properties: {
-                cep: string;
-            };
-        }
-
         return input.map((db) => {
-            const geojson = db.geojson as JSONGeo;
-
             return {
                 projeto_id: db.projeto_id,
                 endereco: db.endereco,
-                cep: geojson.properties.cep,
                 zona: db.zona,
                 distrito: db.distrito,
                 subprefeitura: db.subprefeitura,
+                coordinates: db.coordinates,
+                geojson_type: db.geojson_type,
+                geometry_type: db.geometry_type,
+                cep: db.cep,
+                rua: db.rua,
+                pais: db.pais,
+                bairro: db.bairro,
+                cidade: db.cidade,
+                estado: db.estado,
+                rotulo: db.rotulo,
+                osm_type: db.osm_type,
+                codigo_pais: db.codigo_pais,
+                string_endereco: db.string_endereco,
+                geometry_name: db.geometry_name,
+                bbox: db.bbox,
             };
         });
     }
@@ -1946,8 +2196,14 @@ export class PPProjetosService implements ReportableService {
             case 'origens':
                 await this.queryDataOrigens(whereCondForBatch, result);
                 break;
+            case 'arquivos':
+                await this.queryDataArquivos(whereCondForBatch, result);
+                break;
             case 'geoloc':
                 await this.queryDataProjetosGeoloc(whereCondForBatch, result);
+                break;
+            case 'termos_encerramento':
+                await this.queryDataTermoEncerramento(whereCondForBatch, result);
                 break;
         }
         return result;

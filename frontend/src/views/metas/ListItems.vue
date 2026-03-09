@@ -1,11 +1,15 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
+  computed,
   defineOptions,
-  onMounted, reactive, ref, watch,
+  onMounted, watch,
 } from 'vue';
+import { useRoute } from 'vue-router';
 
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import FiltroMetasListaSchema from '@/consts/formSchemas/metasLista';
 import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -23,6 +27,7 @@ defineOptions({
 });
 
 const editModalStore = useEditModalStore();
+const route = useRoute();
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -34,17 +39,61 @@ const ÓrgãosStore = useOrgansStore();
 const TagsStore = useTagsStore();
 const { activePdm, groupedMetas } = storeToRefs(MetasStore);
 
-const filters = reactive({
-  groupBy: localStorage.getItem('groupBy') ?? 'macro_tema',
-  filteredId: '',
+const valoresIniciais = {
+  group_by: localStorage.getItem('groupBy') ?? 'macro_tema',
+};
+
+const groupBy = computed(() => route.query.group_by ?? valoresIniciais.group_by);
+
+const opcoesGroupBy = computed(() => {
+  const opcoes = [];
+  if (activePdm.value?.possui_macro_tema) {
+    opcoes.push({ id: 'macro_tema', label: activePdm.value?.rotulo_macro_tema ?? 'Macrotema' });
+  }
+  if (activePdm.value?.possui_tema) {
+    opcoes.push({ id: 'tema', label: activePdm.value?.rotulo_tema ?? 'Tema' });
+  }
+  if (activePdm.value?.possui_sub_tema) {
+    opcoes.push({ id: 'sub_tema', label: activePdm.value?.rotulo_sub_tema ?? 'Subtema' });
+  }
+  opcoes.push({ id: 'todas', label: 'Todas as metas' });
+  return opcoes;
 });
-const itemsFiltered = ref(groupedMetas);
+
+const opcoesOrgaos = computed(() => ÓrgãosStore.órgãosComoLista.map((item) => ({
+  id: item.id,
+  label: `${item.sigla} - ${truncate(item.descricao, 36)}`,
+})));
+
+const opcoesTags = computed(() => (TagsStore.tagsPorPlano?.[activePdm.value?.id] ?? [])
+  .map((item) => ({
+    id: item.id,
+    label: truncate(item.descricao, 36),
+  })));
+
+const camposDeFiltro = computed(() => [
+  {
+    campos: {
+      group_by: { tipo: 'select', opcoes: opcoesGroupBy.value },
+      orgao_id: {
+        tipo: 'autocomplete',
+        opcoes: opcoesOrgaos.value,
+        autocomplete: { label: 'label', unique: true },
+      },
+      tag_id: { tipo: 'select', opcoes: opcoesTags.value },
+    },
+  },
+]);
 
 function filterItems() {
-  MetasStore.filterMetas(filters);
-  localStorage.setItem('groupBy', filters.groupBy);
+  const params = {
+    groupBy: route.query.group_by ?? valoresIniciais.group_by,
+    órgãoId: Number(route.query.orgao_id) || 0,
+    tagId: Number(route.query.tag_id) || 0,
+  };
+  MetasStore.filterMetas(params);
+  localStorage.setItem('groupBy', params.groupBy);
 }
-filterItems();
 function start() {
   ÓrgãosStore.getAll();
   TagsStore.getAll();
@@ -61,7 +110,15 @@ function groupSlug(s) {
   return r;
 }
 
-onMounted(() => { start(); });
+onMounted(() => {
+  start();
+  filterItems();
+});
+
+watch(
+  () => [route.query.group_by, route.query.orgao_id, route.query.tag_id],
+  filterItems,
+);
 
 watch(() => props.group, (novoValor) => {
   if (novoValor === 'macrotemas') editModalStore.modal(AddEditMacrotemas, props);
@@ -165,96 +222,26 @@ watch(() => props.group, (novoValor) => {
     </div>
   </header>
 
-  <div class="flex center mb2">
-    <div class="f1 mr1">
-      <label class="label tc300">Agrupar por</label>
-      <select
-        v-model="filters.groupBy"
-        class="inputtext"
-        @change="filterItems"
-      >
-        <option
-          v-if="activePdm.possui_macro_tema"
-          :selected="filters.groupBy == 'macro_tema'"
-          value="macro_tema"
-        >
-          {{ activePdm.rotulo_macro_tema ?? 'Macrotema' }}
-        </option>
-        <option
-          v-if="activePdm.possui_tema"
-          :selected="filters.groupBy == 'tema'"
-          value="tema"
-        >
-          {{ activePdm.rotulo_tema ?? 'Tema' }}
-        </option>
-        <option
-          v-if="activePdm.possui_sub_tema"
-          :selected="filters.groupBy == 'sub_tema'"
-          value="sub_tema"
-        >
-          {{ activePdm.rotulo_sub_tema ?? 'Subtema' }}
-        </option>
-        <option
-          :selected="filters.groupBy == 'todas'"
-          value="todas"
-        >
-          Todas as metas
-        </option>
-      </select>
-    </div>
-    <div class="f1 mr1">
-      <label class="label tc300">Filtrar por órgão</label>
-      <select
-        v-model.number="filters.órgãoId"
-        class="inputtext"
-        @change="filterItems"
-      >
-        <option :value="0" />
-
-        <option
-          v-for="item in ÓrgãosStore.órgãosComoLista"
-          :key="item.id"
-          :value="item.id"
-          :title="item.descricao?.length > 36 ? item.descricao : null"
-        >
-          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-        </option>
-      </select>
-    </div>
-    <div class="f1 mr1">
-      <label class="label tc300">Filtrar por tag</label>
-      <select
-        v-model.number="filters.tagId"
-        class="inputtext"
-        @change="filterItems"
-      >
-        <option :value="0" />
-        <template v-if="Array.isArray(TagsStore.tagsPorPlano?.[activePdm.id])">
-          <option
-            v-for="item in TagsStore.tagsPorPlano[activePdm.id]"
-            :key="item.id"
-            :value="item.id"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
-          >
-            {{ truncate(item.descricao, 36) }}
-          </option>
-        </template>
-      </select>
-    </div>
-    <hr class="f2 ml1">
-  </div>
+  <FiltroParaPagina
+    class="mb2"
+    :formulario="camposDeFiltro"
+    :schema="FiltroMetasListaSchema"
+    :valores-iniciais="valoresIniciais"
+    auto-submit
+    @filtro="filterItems"
+  />
 
   <div class="boards">
-    <template v-if="itemsFiltered.length">
+    <template v-if="groupedMetas.length">
       <div class="flex flexwrap g2">
         <div
-          v-for="item in itemsFiltered"
+          v-for="item in groupedMetas"
           :key="item.id"
           class="board"
         >
           <SmaeLink
-            v-if="filters.groupBy != 'todas' && item?.id"
-            :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}`"
+            v-if="groupBy != 'todas' && item?.id"
+            :to="`/metas/${groupSlug(groupBy)}/${item.id}`"
           >
             <h2>{{ item.descricao }}</h2>
           </SmaeLink>
@@ -313,8 +300,8 @@ watch(() => props.group, (novoValor) => {
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPs.administrador_no_pdm'
             ])
-              && filters.groupBy != 'todas'"
-            :to="`/metas/${groupSlug(filters.groupBy)}/${item.id}/novo`"
+              && groupBy != 'todas'"
+            :to="`/metas/${groupSlug(groupBy)}/${item.id}/novo`"
             class="addlink"
           >
             <svg
@@ -338,7 +325,7 @@ watch(() => props.group, (novoValor) => {
         </div>
       </div>
     </template>
-    <template v-else-if="itemsFiltered.loading">
+    <template v-else-if="groupedMetas.loading">
       <div class="p1">
         <span>Carregando</span> <svg
           class="ml1 ib"
@@ -347,10 +334,10 @@ watch(() => props.group, (novoValor) => {
         ><use xlink:href="#i_spin" /></svg>
       </div>
     </template>
-    <template v-else-if="itemsFiltered.error">
+    <template v-else-if="groupedMetas.error">
       <div class="error p1">
         <p class="error-msg">
-          Error: {{ itemsFiltered.error }}
+          Error: {{ groupedMetas.error }}
         </p>
       </div>
     </template>

@@ -51,6 +51,8 @@ export class PdmDto {
     tipo: TipoPdm;
     sistema: ModuloSistema;
     meses: number[];
+    orcamento_dia_abertura: number;
+    orcamento_dia_fechamento: number;
 }
 
 export class PdmRotuloInfoDto extends PickType(PdmDto, [

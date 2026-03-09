@@ -26,7 +26,7 @@ export class RefreshIndicadorService implements TaskableService {
                             .$queryRaw`select monta_serie_indicador(${inputParams.indicador_id}::int, null, null, null);`,
                     10,
                     100,
-                    20
+                    0.2
                 );
             },
             async (error) => {

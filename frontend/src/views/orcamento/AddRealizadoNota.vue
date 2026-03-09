@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
+  computed,
   defineOptions, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -71,18 +72,17 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
-  const nota_empenho_e_ano = `${values.nota_empenho}/${dotaAno.value}`;
+const notaEmpenhoEAno = computed(() => `${values.nota_empenho}/${dotaAno.value}`);
 
-  if (respostasof.value.nota_empenho !== nota_empenho_e_ano) {
+const desabilitarEnvio = computed(() => respostasof.value.nota_empenho !== notaEmpenhoEAno.value);
+
+const onSubmit = handleSubmit.withControlled(async () => {
+  if (desabilitarEnvio.value) {
     validarDota();
     return;
   }
 
   try {
-    let msg;
-    let r;
-
     values.ano_referencia = Number(ano);
 
     if (values.location) {
@@ -100,8 +100,10 @@ const onSubmit = handleSubmit.withControlled(async () => {
     }
 
     // sobrescrever propriedade `nota_empenho`
-    r = await OrcamentosStore.insertOrcamentoRealizado({ ...values, nota_empenho: nota_empenho_e_ano });
-    msg = 'Dados salvos com sucesso!';
+    const r = await OrcamentosStore.insertOrcamentoRealizado({
+      ...values, nota_empenho: notaEmpenhoEAno.value
+    });
+    const msg = 'Dados salvos com sucesso!';
 
     if (r == true) {
       alertStore.success(msg);
@@ -334,12 +336,14 @@ watch(currentEdit, (novosValores) => {
 
       <template v-if="respostasof.dotacao">
         <ListaDeCompartilhamentos
-          v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe) && respostasof.dotacao"
+          v-if="['pdm', 'planoSetorial', 'programaDeMetas']
+            .includes($route.meta.entidadeMãe) && respostasof.dotacao"
           :ano="ano"
           :pdm="activePdm.id"
           :dotação="values.dotacao"
           :processo="values.processo"
           :nota-empenho="`${values.nota_empenho}/${values.nota_ano}`"
+          :id-do-item="$route.params.meta_id"
           class="mb1"
         />
 
@@ -417,23 +421,17 @@ watch(currentEdit, (novosValores) => {
         />
 
         <div
-          v-show="respostasof.nota_empenho !== `${values.nota_empenho}/${dotaAno}`"
+          v-show="desabilitarEnvio"
           class="error-msg"
         >
           Validação pendente
         </div>
 
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting
-              || respostasof.nota_empenho !== `${values.nota_empenho}/${dotaAno}`"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
+        <SmaeFieldsetSubmit
+          :esta-carregando="isSubmitting"
+          :erros="errors"
+          :aria-disabled="desabilitarEnvio"
+        />
       </template>
     </form>
   </template>

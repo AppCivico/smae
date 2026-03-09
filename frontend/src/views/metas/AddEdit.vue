@@ -729,18 +729,10 @@ watch(() => activePdm.value.id, async (novoValor) => {
         </template>
       </CampoDePlanosMetasRelacionados>
 
-      <FormErrorsList :errors="errors" />
-
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
-        <button
-          class="btn big"
-          :disabled="isSubmitting"
-        >
-          Salvar
-        </button>
-        <hr class="ml2 f1">
-      </div>
+      <SmaeFieldsetSubmit
+        :erros="errors"
+        :esta-carregando="isSubmitting"
+      />
     </Form>
   </template>
 

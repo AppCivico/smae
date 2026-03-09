@@ -1,6 +1,6 @@
 # SmaeDescriptionList
 
-Componente para exibição de listas de descrição (`<dl>`) de forma padronizada, utilizando layout flexbox.
+Componente para exibição de listas de descrição (`<dl>`) de forma padronizada, com suporte a layouts flexbox e grid.
 
 ## Uso Básico
 
@@ -12,14 +12,26 @@ Componente para exibição de listas de descrição (`<dl>`) de forma padronizad
 />
 ```
 
-### Com mapa de títulos
+### Filtrando e ordenando com `itensSelecionados` (opcional)
+
+A prop opcional `itensSelecionados` define quais propriedades do `objeto` exibir e em que ordem. Cada item pode ser uma string (só a chave) ou um objeto com configurações extras:
 
 ```vue
 <SmaeDescriptionList
-  :objeto="{ nome: 'João', idade: 30 }"
-  :mapa-de-titulos="{ nome: 'Nome completo', idade: 'Idade (anos)' }"
+  :objeto="{ nome: 'João', idade: 30, cidade: 'SP', email: 'j@j.com' }"
+  :itens-selecionados="[
+    { chave: 'nome', titulo: 'Nome completo' },
+    { chave: 'idade', titulo: 'Idade (anos)', larguraBase: '10em' },
+    'cidade',
+  ]"
 />
 ```
+
+Nesse exemplo, apenas `nome`, `idade` e `cidade` seriam exibidos (nessa ordem). A propriedade `email` seria omitida.
+
+Sem a prop `itensSelecionados`, todas as propriedades do objeto são exibidas na ordem original.
+
+**Importante:** quando usada com a prop `lista`, `itensSelecionados` **não** altera a ordem nem filtra os itens da lista. Nesse caso, ela serve apenas como fonte de configurações extras (títulos, `larguraBase`, `atributosDoItem`) para os itens correspondentes. A ordem e a seleção dos itens é sempre a da própria `lista`.
 
 ### Com lista estruturada
 
@@ -57,7 +69,7 @@ const schema = object({
 A ordem de prioridade para resolução de títulos é:
 
 1. `titulo` do item (quando usando `lista`)
-2. `mapaDeTitulos`
+2. `titulo` definido em `itensSelecionados`
 3. `label` do schema Yup
 4. `chave` (fallback)
 
@@ -67,20 +79,30 @@ A ordem de prioridade para resolução de títulos é:
 |------|------|-------------|-----------|
 | `objeto` | `Record<string, string \| number \| null \| undefined>` | Não* | Objeto simples para conversão automática em lista |
 | `lista` | `Array<ItemDeLista>` | Não* | Lista estruturada de itens |
-| `mapaDeTitulos` | `Record<string, string>` | Não | Mapa de chaves para títulos legíveis |
+| `itensSelecionados` | `Array<string \| ConfigDeItem>` | Não | Define quais campos exibir, sua ordem, títulos e configurações |
 | `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
+| `layout` | `'flex' \| 'grid'` | Não | Layout do container. Padrão: `'flex'` |
+| `larguraMinima` | `string` | Não | Largura mínima dos itens no modo grid (ex: `'15rem'`). Padrão: `''` (o CSS define `13rem` como fallback) |
+| `maximoDeColunas` | `number \| string` | Não | Número máximo de colunas no modo grid. Limita o grid mantendo o comportamento responsivo. |
 
 \* Pelo menos uma das props `objeto` ou `lista` deve ser fornecida.
+
+### Tipo `ConfigDeItem`
+
+```typescript
+type ConfigDeItem = {
+  chave: string;                           // Identificador do item
+  titulo?: string;                         // Título exibido (opcional)
+  larguraBase?: string;                    // Largura base (ex: '20em', '100%')
+  atributosDoItem?: Record<string, unknown>; // Atributos HTML extras para o item
+};
+```
 
 ### Tipo `ItemDeLista`
 
 ```typescript
-type ItemDeLista = {
-  chave: string;                           // Identificador único do item
-  titulo?: string;                         // Título exibido (opcional)
+type ItemDeLista = ConfigDeItem & {
   valor: string | number | null | undefined; // Valor a ser exibido
-  larguraBase?: string;                    // Largura base do item (ex: '20em', '100%')
-  atributosDoItem?: Record<string, unknown>; // Atributos HTML extras para o item
   metadados?: Record<string, unknown>;       // Dados extras para uso em slots
 };
 ```
@@ -137,33 +159,70 @@ Slot específico para a descrição de uma chave. Tem prioridade sobre o slot `d
 </SmaeDescriptionList>
 ```
 
-## Controlando largura dos itens
+## Layouts
 
-### Usando a propriedade `larguraBase` (recomendado)
+O componente suporta dois layouts: `flex` (padrão) e `grid`.
 
-A largura dos itens pode ser controlada através da propriedade `larguraBase`, que aceita qualquer valor CSS válido para `flex-basis`:
+### Layout Flex (padrão)
+
+No modo flex, os itens expandem para preencher o espaço disponível. Use `larguraBase` para definir larguras específicas via `flex-basis`.
+
+```vue
+<SmaeDescriptionList
+  :objeto="{ nome: 'João', idade: 30 }"
+/>
+```
+
+### Layout Grid
+
+No modo grid, os itens são distribuídos em colunas responsivas com largura mínima configurável. Ideal para listas com muitos campos.
+
+```vue
+<SmaeDescriptionList
+  :objeto="dados"
+  layout="grid"
+/>
+```
+
+#### Configurando a largura mínima dos itens
+
+Use a prop `larguraMinima` para definir a largura mínima das colunas no grid:
+
+```vue
+<SmaeDescriptionList
+  :objeto="dados"
+  layout="grid"
+  largura-minima="15rem"
+/>
+```
+
+#### Itens ocupando largura total no grid
+
+No modo grid, use `larguraBase: '100%'` para que um item ocupe toda a largura disponível:
 
 ```vue
 <SmaeDescriptionList
   :lista="[
-    {
-      chave: 'id',
-      titulo: 'ID',
-      valor: '12345',
-      larguraBase: '5em'
-    },
-    {
-      chave: 'nome',
-      titulo: 'Nome completo',
-      valor: 'João da Silva',
-      larguraBase: '20em'
-    },
-    {
-      chave: 'descricao',
-      titulo: 'Descrição',
-      valor: 'Uma descrição mais longa que precisa de mais espaço',
-      larguraBase: '100%'  // Ocupa largura total
-    },
+    { chave: 'nome', valor: 'João' },
+    { chave: 'descricao', valor: 'Texto longo...', larguraBase: '100%' },
+  ]"
+  layout="grid"
+/>
+```
+
+## Controlando largura dos itens
+
+### Usando a propriedade `larguraBase` (recomendado)
+
+A largura dos itens pode ser controlada através da propriedade `larguraBase` (em `itensSelecionados` ou em itens de `lista`), que aceita qualquer valor CSS válido para `flex-basis`:
+
+```vue
+<SmaeDescriptionList
+  :objeto="{ id: '12345', nome: 'João da Silva', descricao: 'Texto longo' }"
+  :itens-selecionados="[
+    { chave: 'id', titulo: 'ID', larguraBase: '5em' },
+    { chave: 'nome', titulo: 'Nome completo', larguraBase: '20em' },
+    { chave: 'descricao', titulo: 'Descrição', larguraBase: '100%' },
   ]"
 />
 ```
@@ -190,19 +249,10 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 
 ```vue
 <SmaeDescriptionList
-  :lista="[
-    {
-      chave: 'id',
-      titulo: 'ID',
-      valor: '12345',
-      atributosDoItem: { class: 'fb5em' }
-    },
-    {
-      chave: 'descricao',
-      titulo: 'Descrição',
-      valor: 'Texto longo',
-      atributosDoItem: { class: 'f1 fb100' }  // f1 = flex: 1, fb100 = flex-basis: 100%
-    },
+  :objeto="{ id: '12345', descricao: 'Texto longo' }"
+  :itens-selecionados="[
+    { chave: 'id', titulo: 'ID', atributosDoItem: { class: 'fb5em' } },
+    { chave: 'descricao', titulo: 'Descrição', atributosDoItem: { class: 'f1 fb100' } },
   ]"
 />
 ```
@@ -211,9 +261,11 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 
 ## Estrutura HTML gerada
 
+### Layout Flex
+
 ```html
-<dl class="description-list flex g2 mb1 flexwrap">
-  <div class="description-list__item f1 mb1">
+<dl class="description-list description-list--flex">
+  <div class="description-list__item">
     <dt class="description-list__term t12 uc w700 mb05 tamarelo">
       <!-- título ou chave -->
     </dt>
@@ -224,8 +276,47 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 </dl>
 ```
 
+### Layout Grid
+
+```html
+<dl class="description-list description-list--grid">
+  <div class="description-list__item">
+    <!-- ... -->
+  </div>
+  <div class="description-list__item description-list__item--full">
+    <!-- item com larguraBase: '100%' -->
+  </div>
+</dl>
+```
+
+Com `larguraMinima` fornecida, o inline style é adicionado:
+
+```html
+<dl class="description-list description-list--grid" style="--dl-item-min-width: 15rem;">
+  <!-- items -->
+</dl>
+```
+
+#### Limitando o número máximo de colunas
+
+Use a prop `maximoDeColunas` para evitar que o grid expanda para muitas colunas em telas grandes:
+
+```vue
+<SmaeDescriptionList
+  :objeto="dados"
+  layout="grid"
+  largura-minima="13rem"
+  :maximo-de-colunas="4"
+/>
+```
+
+O responsivo continua funcionando: em telas estreitas as colunas colapsam normalmente.
+
 ## Comportamento
 
 - Quando `valor` é `null`, `undefined` ou vazio, exibe "—" (travessão)
 - Listas consecutivas recebem borda superior e espaçamento automático
-- Os itens usam `flex: 1` por padrão, expandindo para preencher o espaço disponível
+- **Layout flex:** os itens usam `flex: 1` por padrão, expandindo para preencher o espaço disponível
+- **Layout grid:** os itens são distribuídos em colunas responsivas usando `auto-fit` e `minmax()`
+  - A largura mínima padrão é `13rem` (~180px, definida no CSS)
+  - Use a prop `larguraMinima` para customizar esse valor, o que adiciona um inline style `--dl-item-min-width` ao container

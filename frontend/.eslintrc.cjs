@@ -1,4 +1,6 @@
 /* eslint-env node */
+const path = require('path');
+
 module.exports = {
   root: true,
   extends: [
@@ -62,8 +64,8 @@ module.exports = {
     'import/resolver': {
       alias: {
         map: [
-          ['@', './src'],
-          ['@back', '../backend/src'],
+          ['@', path.resolve(__dirname, 'src')],
+          ['@back', path.resolve(__dirname, '../backend/src')],
         ],
         extensions: ['.js', '.ts', '.vue'],
       },
@@ -112,6 +114,8 @@ module.exports = {
         '*.store.ts',
         '*.composable.js',
         '*.composable.ts',
+        'src/composables/**/*.js',
+        'src/composables/**/*.ts',
       ],
       rules: {
         'import/prefer-default-export': 'off',

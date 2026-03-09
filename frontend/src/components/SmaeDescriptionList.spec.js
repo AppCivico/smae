@@ -39,10 +39,10 @@ describe('SmaeDescriptionList', () => {
       expect(wrapper.find('.description-list__description').text()).toBe('João');
     });
 
-    it('usa mapa de títulos quando fornecido', () => {
+    it('usa título de itensSelecionados quando fornecido', () => {
       const wrapper = montarComponente({
         objeto: { nome: 'João' },
-        mapaDeTitulos: { nome: 'Nome completo' },
+        itensSelecionados: [{ chave: 'nome', titulo: 'Nome completo' }],
       });
 
       expect(wrapper.find('.description-list__term').text()).toBe('Nome completo');
@@ -96,23 +96,23 @@ describe('SmaeDescriptionList', () => {
       expect(wrapper.find('.description-list__term').text()).toBe('Nome completo');
     });
 
-    it('usa mapa de títulos como fallback quando item não tem título', () => {
+    it('usa título de itensSelecionados como fallback quando item não tem título', () => {
       const wrapper = montarComponente({
         lista: [
           { chave: 'nome', valor: 'João' },
         ],
-        mapaDeTitulos: { nome: 'Nome do mapa' },
+        itensSelecionados: [{ chave: 'nome', titulo: 'Nome dos campos' }],
       });
 
-      expect(wrapper.find('.description-list__term').text()).toBe('Nome do mapa');
+      expect(wrapper.find('.description-list__term').text()).toBe('Nome dos campos');
     });
 
-    it('título do item tem prioridade sobre mapa de títulos', () => {
+    it('título do item tem prioridade sobre título de itensSelecionados', () => {
       const wrapper = montarComponente({
         lista: [
           { chave: 'nome', titulo: 'Título do item', valor: 'João' },
         ],
-        mapaDeTitulos: { nome: 'Nome do mapa' },
+        itensSelecionados: [{ chave: 'nome', titulo: 'Nome dos campos' }],
       });
 
       expect(wrapper.find('.description-list__term').text()).toBe('Título do item');
@@ -277,14 +277,14 @@ describe('SmaeDescriptionList', () => {
       expect(wrapper.find('.description-list__term').text()).toBe('Título manual');
     });
 
-    it('mapa de títulos tem prioridade sobre schema', () => {
+    it('título de itensSelecionados tem prioridade sobre schema', () => {
       const wrapper = montarComponente({
         objeto: { nome: 'João' },
-        mapaDeTitulos: { nome: 'Nome do mapa' },
+        itensSelecionados: [{ chave: 'nome', titulo: 'Nome dos campos' }],
         schema,
       });
 
-      expect(wrapper.find('.description-list__term').text()).toBe('Nome do mapa');
+      expect(wrapper.find('.description-list__term').text()).toBe('Nome dos campos');
     });
 
     it('exibe chave quando campo não tem label no schema', () => {
@@ -294,6 +294,99 @@ describe('SmaeDescriptionList', () => {
       });
 
       expect(wrapper.find('.description-list__term').text()).toBe('cidade');
+    });
+  });
+
+  describe('prop itensSelecionados', () => {
+    it('filtra e ordena propriedades do objeto conforme itensSelecionados', () => {
+      const wrapper = montarComponente({
+        objeto: {
+          nome: 'João', idade: 30, cidade: 'SP', email: 'j@j.com',
+        },
+        itensSelecionados: ['idade', 'nome'],
+      });
+
+      const itens = wrapper.findAll('.description-list__item');
+      expect(itens).toHaveLength(2);
+
+      const termos = wrapper.findAll('.description-list__term');
+      expect(termos[0].text()).toBe('idade');
+      expect(termos[1].text()).toBe('nome');
+    });
+
+    it('aceita strings simples como atalho para { chave: "..." }', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João', idade: 30 },
+        itensSelecionados: ['nome'],
+      });
+
+      expect(wrapper.findAll('.description-list__item')).toHaveLength(1);
+      expect(wrapper.find('.description-list__term').text()).toBe('nome');
+      expect(wrapper.find('.description-list__description').text()).toBe('João');
+    });
+
+    it('aceita mistura de strings e objetos', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João', idade: 30 },
+        itensSelecionados: [
+          { chave: 'idade', titulo: 'Idade (anos)' },
+          'nome',
+        ],
+      });
+
+      const termos = wrapper.findAll('.description-list__term');
+      expect(termos[0].text()).toBe('Idade (anos)');
+      expect(termos[1].text()).toBe('nome');
+    });
+
+    it('ignora campos que não existem no objeto', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        itensSelecionados: ['nome', 'inexistente'],
+      });
+
+      expect(wrapper.findAll('.description-list__item')).toHaveLength(1);
+    });
+
+    it('aplica larguraBase definida no campo', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        itensSelecionados: [{ chave: 'nome', larguraBase: '20em' }],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.attributes('style')).toContain('flex-basis: 20em');
+    });
+
+    it('aplica atributosDoItem definidos no campo', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        itensSelecionados: [{ chave: 'nome', atributosDoItem: { class: 'fb20em', 'data-test': 'campo-nome' } }],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).toContain('fb20em');
+      expect(item.attributes('data-test')).toBe('campo-nome');
+    });
+
+    it('exibe todas as propriedades do objeto quando itensSelecionados não é fornecido', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João', idade: 30, cidade: 'SP' },
+      });
+
+      expect(wrapper.findAll('.description-list__item')).toHaveLength(3);
+    });
+
+    it('larguraBase do item da lista tem prioridade sobre larguraBase do campo', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'nome', valor: 'João', larguraBase: '30em' },
+        ],
+        itensSelecionados: [{ chave: 'nome', larguraBase: '10em' }],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.attributes('style')).toContain('flex-basis: 30em');
     });
   });
 
@@ -322,17 +415,25 @@ describe('SmaeDescriptionList', () => {
   });
 
   describe('classes CSS', () => {
-    it('aplica classes corretas no container', () => {
+    it('aplica classes corretas no container com layout flex (padrão)', () => {
       const wrapper = montarComponente({
         objeto: { nome: 'João' },
       });
 
       const dl = wrapper.find('dl');
       expect(dl.classes()).toContain('description-list');
-      expect(dl.classes()).toContain('flex');
-      expect(dl.classes()).toContain('g2');
-      expect(dl.classes()).toContain('mb1');
-      expect(dl.classes()).toContain('flexwrap');
+      expect(dl.classes()).toContain('description-list--flex');
+    });
+
+    it('aplica classes corretas no container com layout grid', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list');
+      expect(dl.classes()).toContain('description-list--grid');
     });
 
     it('aplica classes corretas no item', () => {
@@ -341,8 +442,7 @@ describe('SmaeDescriptionList', () => {
       });
 
       const item = wrapper.find('.description-list__item');
-      expect(item.classes()).toContain('f1');
-      expect(item.classes()).toContain('mb1');
+      expect(item.classes()).toContain('description-list__item');
     });
 
     it('aplica classes corretas no termo', () => {
@@ -540,6 +640,184 @@ describe('SmaeDescriptionList', () => {
       expect(style).toContain('color: red');
       expect(style).toContain('font-size: 14px');
       expect(style).toContain('flex-basis: 20em');
+    });
+
+    it('lida com atributosDoItem.style como array (formato Vue)', () => {
+      const wrapper = montarComponente({
+        lista: [
+          {
+            chave: 'nome',
+            valor: 'João',
+            larguraBase: '20em',
+            atributosDoItem: {
+              style: [{ color: 'red' }, { fontSize: '14px' }],
+            },
+          },
+        ],
+      });
+
+      const item = wrapper.find('.description-list__item');
+      const style = item.attributes('style');
+      expect(style).toContain('color: red');
+      expect(style).toContain('font-size: 14px');
+      expect(style).toContain('flex-basis: 20em');
+    });
+  });
+
+  describe('propriedade layout', () => {
+    it('usa layout flex por padrão', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--flex');
+      expect(dl.classes()).not.toContain('description-list--grid');
+    });
+
+    it('aplica layout grid quando especificado', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--grid');
+      expect(dl.classes()).not.toContain('description-list--flex');
+    });
+
+    it('aplica classe --full no item com larguraBase 100% no modo grid', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'descricao', valor: 'Texto longo', larguraBase: '100%' },
+        ],
+        layout: 'grid',
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).toContain('description-list__item--full');
+    });
+
+    it('não aplica classe --full no modo flex mesmo com larguraBase 100%', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'descricao', valor: 'Texto longo', larguraBase: '100%' },
+        ],
+        layout: 'flex',
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).not.toContain('description-list__item--full');
+      expect(item.attributes('style')).toContain('flex-basis: 100%');
+    });
+
+    it('ignora larguraBase diferente de 100% no modo grid', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'nome', valor: 'João', larguraBase: '20em' },
+        ],
+        layout: 'grid',
+      });
+
+      const item = wrapper.find('.description-list__item');
+      expect(item.classes()).not.toContain('description-list__item--full');
+      expect(item.attributes('style') || '').not.toContain('flex-basis');
+    });
+  });
+
+  describe('propriedade larguraMinima', () => {
+    it('aplica CSS var quando larguraMinima é fornecida no modo grid', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        larguraMinima: '250px',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style')).toContain('--dl-item-min-width: 250px');
+    });
+
+    it('não aplica CSS var no modo flex mesmo com larguraMinima', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'flex',
+        larguraMinima: '250px',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style') || '').not.toContain('--dl-item-min-width');
+    });
+
+    it('não aplica CSS var quando larguraMinima não é fornecida', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style') || '').not.toContain('--dl-item-min-width');
+    });
+  });
+
+  describe('propriedade maximoDeColunas', () => {
+    it('aplica classe e CSS var quando maximoDeColunas é fornecida no modo grid', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        maximoDeColunas: 4,
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--grid-limitado');
+      expect(dl.attributes('style')).toContain('--dl-max-col-count: 4');
+    });
+
+    it('aceita maximoDeColunas como string', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        maximoDeColunas: '3',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).toContain('description-list--grid-limitado');
+      expect(dl.attributes('style')).toContain('--dl-max-col-count: 3');
+    });
+
+    it('não aplica classe limitado no modo flex', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'flex',
+        maximoDeColunas: 4,
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).not.toContain('description-list--grid-limitado');
+      expect(dl.attributes('style') || '').not.toContain('--dl-max-col-count');
+    });
+
+    it('não aplica classe limitado quando maximoDeColunas não é fornecida', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.classes()).not.toContain('description-list--grid-limitado');
+    });
+
+    it('combina com larguraMinima', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        layout: 'grid',
+        larguraMinima: '15rem',
+        maximoDeColunas: 4,
+      });
+
+      const dl = wrapper.find('dl');
+      expect(dl.attributes('style')).toContain('--dl-item-min-width: 15rem');
+      expect(dl.attributes('style')).toContain('--dl-max-col-count: 4');
+      expect(dl.classes()).toContain('description-list--grid-limitado');
     });
   });
 });

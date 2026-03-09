@@ -38,7 +38,7 @@ export class RefreshMetaService implements TaskableService {
                     );`,
                         10,
                         100,
-                        20
+                        0.2
                     );
 
                     // Se chegou aqui com sucesso, apaga os jobs antigos que deram sucesso ou estão pendentes

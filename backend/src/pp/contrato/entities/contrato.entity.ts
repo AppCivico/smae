@@ -36,6 +36,9 @@ export class ContratoDetailDto {
     data_base_mes: number | null;
     data_base_ano: number | null;
     valor: Decimal | null;
+    total_aditivos: Decimal;
+    total_reajustes: Decimal;
+    valor_reajustado: Decimal | null;
 }
 
 export class ContratoItemDto {
@@ -49,6 +52,10 @@ export class ContratoItemDto {
     valor: Decimal | null;
     processos_sei: string[] | null;
     quantidade_aditivos: number;
+    quantidade_reajustes: number;
+    total_aditivos: Decimal;
+    total_reajustes: Decimal;
+    valor_reajustado: Decimal | null;
 }
 
 export class ListContratoDto {

@@ -894,7 +894,7 @@ watch(itemParaEdicao, (novoValor) => {
         </FieldArray>
 
         <span v-else>
-          Variavel rastreada pelos filhos
+          Custo Estimado registrado nas Tarefas-Filhas
         </span>
       </div>
     </div>

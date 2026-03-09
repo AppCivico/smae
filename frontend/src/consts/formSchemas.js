@@ -1736,6 +1736,15 @@ export const planoSetorial = object({
     .when('monitoramento_orcamento', (monitoramentoOrcamento, field) => (monitoramentoOrcamento
       ? field.required()
       : field.nullable())),
+  orcamento_dia_fechamento: number()
+    .label('Fechamento automático')
+    .integer()
+    .min(1)
+    .max(28)
+    .transform((v) => (!v ? null : v))
+    .when('monitoramento_orcamento', (monitoramentoOrcamento, field) => (monitoramentoOrcamento
+      ? field.required()
+      : field.nullable())),
   nome: string()
     .label('Nome')
     .min(1)
@@ -2161,9 +2170,17 @@ export const tipoDeAditivo = object({
     .max(250)
     .min(3)
     .required(),
+  tipo: string()
+    .label('Tipo')
+    .oneOf(['Aditivo', 'Reajuste'], 'Selecione um tipo válido')
+    .required(),
   habilita_valor: boolean()
     .label('Habilita valor')
-    .nullable(),
+    .nullable()
+    .when('tipo', {
+      is: 'Reajuste',
+      then: (schema) => schema.required().oneOf([true], 'Quando o tipo de aditivo for reajuste, é necessário habilitar valor'),
+    }),
   habilita_valor_data_termino: boolean()
     .label('Habilita data de término')
     .nullable(),

@@ -39,9 +39,9 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
+const { OrcamentoPlanejado, emFoco } = storeToRefs(OrcamentosStore);
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
-const currentEdit = ref({});
+
 const dota = ref('');
 const respostasof = ref({});
 const validando = ref(false);
@@ -75,10 +75,10 @@ const d_fonte = ref('');
         throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
 
-    currentEdit.value = OrcamentoPlanejado.value[ano].find((x) => x.id == id);
-    currentEdit.value.valor_planejado = dinheiro(currentEdit.value.valor_planejado);
+    emFoco.value = OrcamentoPlanejado.value[ano].find((x) => x.id == id);
+    emFoco.value.valor_planejado = dinheiro(emFoco.value.valor_planejado);
 
-    currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x, i) => {
+    emFoco.value.dotacao = await emFoco.value.dotacao.split('.').map((x, i) => {
       if (x.indexOf('*') != -1) {
         if (i == 4) {
           return '****';
@@ -88,22 +88,22 @@ const d_fonte = ref('');
       }
       return x;
     }).join('.');
-    dota.value = currentEdit.value.dotacao;
-    validaPartes(currentEdit.value.dotacao);
+    dota.value = emFoco.value.dotacao;
+    validaPartes(emFoco.value.dotacao);
 
-    currentEdit.value.location = currentEdit.value.atividade?.id
-      ? `a${currentEdit.value.atividade.id}`
-      : currentEdit.value.iniciativa?.id
-        ? `i${currentEdit.value.iniciativa.id}`
-        : currentEdit.value.meta?.id
-          ? `m${currentEdit.value.meta.id}`
+    emFoco.value.location = emFoco.value.atividade?.id
+      ? `a${emFoco.value.atividade.id}`
+      : emFoco.value.iniciativa?.id
+        ? `i${emFoco.value.iniciativa.id}`
+        : emFoco.value.meta?.id
+          ? `m${emFoco.value.meta.id}`
           : `m${meta_id}`;
 
-    respostasof.value.projeto_atividade = currentEdit.value.projeto_atividade;
-    respostasof.value.saldo_disponivel = currentEdit.value.saldo_disponivel;
-    respostasof.value.smae_soma_valor_planejado = toFloat(currentEdit.value.smae_soma_valor_planejado) - toFloat(currentEdit.value.valor_planejado);
-    respostasof.value.val_orcado_atualizado = currentEdit.value.val_orcado_atualizado;
-    respostasof.value.val_orcado_inicial = currentEdit.value.val_orcado_inicial;
+    respostasof.value.projeto_atividade = emFoco.value.projeto_atividade;
+    respostasof.value.saldo_disponivel = emFoco.value.saldo_disponivel;
+    respostasof.value.smae_soma_valor_planejado = toFloat(emFoco.value.smae_soma_valor_planejado) - toFloat(emFoco.value.valor_planejado);
+    respostasof.value.val_orcado_atualizado = emFoco.value.val_orcado_atualizado;
+    respostasof.value.val_orcado_inicial = emFoco.value.val_orcado_inicial;
   }
 })();
 
@@ -117,11 +117,11 @@ const schema = Yup.object().shape({
 const {
   errors, handleSubmit, isSubmitting, values, validateField, setValues,
 } = useForm({
-  initialValues: currentEdit.value,
+  initialValues: emFoco.value,
   validationSchema: schema,
 });
 
-watch(currentEdit, (newValue) => {
+watch(emFoco, (newValue) => {
   if (newValue.id) {
     setValues({
       valor_planejado: newValue.valor_planejado,
@@ -259,7 +259,7 @@ async function validarDota() {
         .getDotaçãoPlanejado(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
       if (id) {
-        respostasof.value.smae_soma_valor_planejado -= toFloat(currentEdit.value.valor_planejado);
+        respostasof.value.smae_soma_valor_planejado -= toFloat(emFoco.value.valor_planejado);
       }
     } else {
       respostasof.value = {};
@@ -685,10 +685,10 @@ export default {
       </div>
     </form>
   </template>
-  <template v-if="currentEdit && currentEdit?.id">
+  <template v-if="emFoco && emFoco?.id">
     <button
       class="btn amarelo big"
-      @click="checkDelete(currentEdit.id)"
+      @click="checkDelete(emFoco.id)"
     >
       Remover item
     </button>

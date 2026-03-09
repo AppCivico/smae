@@ -84,6 +84,7 @@ export class ContratoAditivoService {
                     select: {
                         id: true,
                         nome: true,
+                        tipo: true,
                         habilita_valor: true,
                         habilita_valor_data_termino: true,
                     },
@@ -102,6 +103,7 @@ export class ContratoAditivoService {
                 tipo: {
                     id: aditivo.tipo_aditivo.id,
                     nome: aditivo.tipo_aditivo.nome,
+                    tipo: aditivo.tipo_aditivo.tipo,
                     habilita_valor: aditivo.tipo_aditivo.habilita_valor,
                     habilita_valor_data_termino: aditivo.tipo_aditivo.habilita_valor_data_termino,
                 },

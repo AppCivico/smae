@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
@@ -45,7 +45,7 @@ const {
 
 const {
   fase,
-  forumlariosAExibir,
+  formulariosAExibir,
   botoesLabel,
   fasePosicao,
   dataReferencia,
@@ -56,20 +56,16 @@ const {
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   variavel_id: item.variavel.id,
   valor_realizado: item.valor_realizado || '',
-  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa ? item.valor_realizado_acumulado : '0',
+  valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
+    ? item.valor_realizado_acumulado
+    : '0',
 }));
 
-function obterVariavelInicial() {
-  const valorInicial = {
-    solicitar_complementacao: false,
-    variaveis_dados: valorInicialVariaveis,
-  };
-
-  return {
-    ...valorInicial,
-    ...valorAnalise.value,
-  };
-}
+const valorInicial = computed(() => ({
+  solicitar_complementacao: false,
+  variaveis_dados: valorInicialVariaveis,
+  ...valorAnalise.value,
+}));
 
 const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
@@ -81,10 +77,16 @@ const schema = computed(() => cicloAtualizacaoModalEditarSchema(
 ));
 
 const {
-  handleSubmit, errors, setFieldValue, values, validateField,
+  handleSubmit, errors, resetForm, setFieldValue, values, validateField,
 } = useForm({
   validationSchema: schema,
-  initialValues: obterVariavelInicial(),
+  initialValues: valorInicial.value,
+});
+
+watch(valorInicial, (novoValor) => {
+  resetForm({
+    values: novoValor,
+  });
 });
 
 const aprovar = ref(false);
@@ -286,7 +288,7 @@ function restaurarFormulario() {
 
       <section :class="`formularios formularios--${fase}`">
         <article
-          v-if="forumlariosAExibir.liberacao.exibir"
+          v-if="formulariosAExibir.liberacao.exibir"
           class="mt2 formulario formulario--liberacao"
         >
           <div class="formulario__item">
@@ -299,20 +301,21 @@ function restaurarFormulario() {
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_liberador"
-              :disabled="!forumlariosAExibir.liberacao.liberado"
+              :disabled="!formulariosAExibir.liberacao.liberado"
               :schema="schema"
               anular-vazio
               rows="3"
             />
 
             <ErrorMessage
+              class="error-msg"
               name="analise_qualitativa_liberador"
             />
           </div>
         </article>
 
         <article
-          v-if="forumlariosAExibir.aprovacao.exibir"
+          v-if="formulariosAExibir.aprovacao.exibir"
           class="mt2 formulario formulario--aprovacao"
         >
           <div class="formulario__item">
@@ -326,7 +329,7 @@ function restaurarFormulario() {
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="
-                !forumlariosAExibir.aprovacao.liberado || (
+                !formulariosAExibir.aprovacao.liberado || (
                   fase === 'liberacao'
                   && temConteudo(valorAnalise.analise_qualitativa_aprovador)
                 )"
@@ -334,8 +337,8 @@ function restaurarFormulario() {
               anular-vazio
               rows="3"
             />
-
             <ErrorMessage
+              class="error-msg"
               name="analise_qualitativa_aprovador"
             />
           </div>
@@ -378,13 +381,14 @@ function restaurarFormulario() {
             />
 
             <ErrorMessage
+              class="error-msg"
               name="pedido_complementacao"
             />
           </div>
         </article>
 
         <article
-          v-if="forumlariosAExibir.cadastro.exibir"
+          v-if="formulariosAExibir.cadastro.exibir"
           class="mt2 formulario formulario--cadastro mt1"
         >
           <div class="mt2 formulario__item">
@@ -397,7 +401,7 @@ function restaurarFormulario() {
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
-              :disabled="!forumlariosAExibir.cadastro.liberado
+              :disabled="!formulariosAExibir.cadastro.liberado
                 || fase === 'aprovacao'
                 || fase === 'liberacao'"
               :schema="schema"
@@ -517,7 +521,10 @@ function restaurarFormulario() {
               </th>
 
               <td
-                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
+                class="
+                  valores-variaveis-tabela__item
+                  valores-variaveis-tabela__item--valor_realizado
+                "
               >
                 <Field
                   v-if="!temCategorica"
@@ -528,7 +535,7 @@ function restaurarFormulario() {
                   ]"
                   type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
-                  :disabled="!forumlariosAExibir.cadastro.liberado"
+                  :disabled="!formulariosAExibir.cadastro.liberado"
                   @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
                 />
 
@@ -559,6 +566,7 @@ function restaurarFormulario() {
                 </Field>
 
                 <ErrorMessage
+                  class="error-msg"
                   v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                 />
@@ -566,7 +574,10 @@ function restaurarFormulario() {
 
               <td
                 v-if="emFoco?.variavel.acumulativa"
-                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
+                class="
+                  valores-variaveis-tabela__item
+                  valores-variaveis-tabela__item--valor_realizado_acumulado
+                "
               >
                 <Field
                   v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado_acumulado"

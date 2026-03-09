@@ -69,6 +69,8 @@ export class ListPdm extends PickType(PdmDto, ['pode_editar', 'perm_level']) {
     logo_thumbnail: string | null;
 
     nivel_orcamento: string | null;
+    orcamento_dia_abertura: number;
+    orcamento_dia_fechamento: number;
 
     id: number;
 

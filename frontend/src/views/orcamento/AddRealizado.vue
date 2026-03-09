@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  defineProps, ref, toRaw, watch,
+  ref, toRaw, watch
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -42,6 +42,7 @@ const currentEdit = ref({
   location: '',
   dotacao: '',
   dotacao_complemento: '',
+  dotacao_cheia: '',
   ano_referencia: ano,
 });
 
@@ -148,8 +149,6 @@ export default {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <Field
@@ -177,13 +176,15 @@ export default {
       />
 
       <ListaDeCompartilhamentos
-        v-if="$route.meta.entidadeMãe === 'pdm' && Object.keys(respostasof).length
+        v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
+          && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
         :ano="ano"
         :pdm="activePdm.id"
-        :dotação="dotaçãoComComplemento"
+        :dotação="dotação"
         class="mb1"
+        :id-do-item="$route.params.meta_id"
       />
 
       <div
@@ -261,28 +262,28 @@ export default {
         </div>
       </div>
 
-      <ItensRealizado
-        v-if="Object.keys(respostasof).length && !respostasof.error && !respostasof.loading"
-        v-model="values.itens"
-        :respostasof="respostasof"
+      <Field
+        v-slot="{ field, meta: fieldMeta }"
         name="itens"
-      />
-
-      <FormErrorsList :errors="errors" />
-
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
-        <button
-          class="btn big"
-          :disabled="isSubmitting || Object.keys(errors)?.length"
-          :title="Object.keys(errors)?.length
-            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-            : null"
+      >
+        <ItensRealizado
+          v-if="Object.keys(respostasof).length && !respostasof.error && !respostasof.loading"
+          v-model="field.value"
+          :respostasof="respostasof"
+          name="itens"
+        />
+        <div
+          v-if="fieldMeta.touched && errors.itens"
+          class="error-msg"
         >
-          Salvar
-        </button>
-        <hr class="ml2 f1">
-      </div>
+          {{ errors.itens }}
+        </div>
+      </Field>
+
+      <SmaeFieldsetSubmit
+        :erros="errors"
+        :esta-carregando="isSubmitting"
+      />
     </form>
   </template>
   <template v-if="currentEdit && currentEdit?.id">

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { UrlParams } from '@vueuse/core';
-import { cloneDeep, isEqualWith, pick } from 'lodash';
+import {
+  cloneDeep, isEqual, isEqualWith, pick,
+} from 'lodash';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -16,6 +18,10 @@ const props = defineProps({
   valoresIniciais: {
     type: Object,
     default: () => ({}),
+  },
+  naoNormalizarUrl: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -129,9 +135,18 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
     console.error('Erro ao aplicar filtros:', erro);
     pendente.value = false;
     throw erro;
-  }).finally(() => {
-    pendente.value = false;
   });
+}
+
+function limpar(campos?: string[]): Promise<void> {
+  const chaves = campos ?? Object.keys(props.valoresIniciais);
+  const queryAtual = cloneDeep(route.query) as UrlParams;
+
+  chaves.forEach((chave) => {
+    queryAtual[chave] = props.valoresIniciais[chave] ?? '';
+  });
+
+  return aplicarFiltros(queryAtual);
 }
 
 onMounted(() => {
@@ -144,16 +159,20 @@ onMounted(() => {
 
   emit('montado', parametrosCombinados);
 
-  router.replace({
-    query: parametrosCombinados,
-  });
+  if (!props.naoNormalizarUrl && !isEqual(route.query, parametrosCombinados)) {
+    router.replace({
+      query: parametrosCombinados,
+    });
+  }
 });
 </script>
 <template>
   <slot
     :aplicar-query-strings="aplicarFiltros"
+    :campos-sujos="camposSujos"
     :detectar-mudancas="detectarMudancas"
     :formulario-sujo="!!camposSujos.length"
+    :limpar="limpar"
     :pendente="pendente"
   />
 </template>

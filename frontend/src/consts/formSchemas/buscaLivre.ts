@@ -1,9 +1,9 @@
-import i18n from '@/consts/formSchemas/config/i18n';
 import {
   object,
   setLocale,
   string,
 } from 'yup';
+import i18n from '@/consts/formSchemas/config/i18n';
 
 setLocale(i18n);
 
@@ -12,7 +12,7 @@ export default object()
     palavra_chave: string()
       .label('Termo de busca')
       .max(100)
-      .min(1)
+      .nullable()
       .trim(),
   })
   .defined()

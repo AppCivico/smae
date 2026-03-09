@@ -8,13 +8,14 @@ import {
 import {
   computed,
   nextTick,
+  toRaw,
   watch,
 } from 'vue';
+import type { LocationQuery, LocationQueryRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
+import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-
-import AutocompleteField2 from './AutocompleteField2.vue';
 
 type OpcaoPadronizada = {
   id: number | string
@@ -29,7 +30,8 @@ type CampoFiltro = {
   opcoes?: Opcoes
   autocomplete?: {
     label?: string
-    apenasUm?: boolean
+    numeroMaximoDeParticipantes?: number
+    unique?: boolean
   },
   atributos?: Record<string, unknown>
 };
@@ -51,6 +53,7 @@ type Props = {
   carregando?: boolean
   bloqueado?: boolean
   naoEmitirQuery?: boolean
+  prefixoDaPaginacao?: string
 };
 type Emits = {
   (e: 'update:formularioSujo', value: boolean): void
@@ -61,6 +64,7 @@ type Emits = {
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => ({}),
   valoresIniciais: undefined,
+  prefixoDaPaginacao: '',
 });
 const emit = defineEmits<Emits>();
 
@@ -68,7 +72,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values, setErrors,
+  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
@@ -79,27 +83,28 @@ const formularioSujo = useIsFormDirty();
 const idsDasMensagensDeErro = computed(() => Object.keys(errors.value).reduce((acc, key) => `${acc}err__${key} `, ''));
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const query = {
-    ...route.query,
-    ...valoresControlados,
-  };
+  const query = Object.assign(
+    structuredClone(route.query),
+    structuredClone(valoresControlados),
+  );
 
-  if (query.pagina) {
-    delete query.pagina;
-    delete query.token_paginacao;
+  const chavePagina = `${props.prefixoDaPaginacao}pagina`;
+
+  if (query[chavePagina]) {
+    const chaveTokenPaginacao = `${props.prefixoDaPaginacao}token_paginacao`;
+
+    delete query[chavePagina];
+    delete query[chaveTokenPaginacao];
   }
 
-  const queryFiltrada = Object.keys(query).reduce((amount, item) => {
+  const queryFiltrada = Object.keys(query).reduce<LocationQueryRaw>((amount, item) => {
     const value = query[item];
 
-    if (value === undefined || value === '') {
-      return amount;
+    if (value !== undefined && value !== '') {
+      amount[item] = value;
     }
 
-    return {
-      ...amount,
-      [item]: value,
-    };
+    return amount;
   }, {});
 
   if (!props.naoEmitirQuery) {
@@ -137,13 +142,13 @@ if (!props.naoEmitirQuery) {
 }
 
 watch(values, () => {
-  emit('update:modelValue', values);
+  emit('update:modelValue', structuredClone(toRaw(values)));
 });
 
 watch(() => props.modelValue, async (val) => {
   if (!val) return;
 
-  const valoresLocais = { ...val } as any;
+  const valoresLocais = structuredClone(toRaw(val)) as LocationQuery;
 
   setValues(valoresLocais);
   await nextTick();
@@ -170,6 +175,7 @@ if (props.autoSubmit) {
         pendente,
       }"
       :valores-iniciais="valoresIniciais"
+      :nao-normalizar-url="naoEmitirQuery"
     >
       <form
         :aria-busy="pendente"
@@ -193,7 +199,8 @@ if (props.autoSubmit) {
             <div
               v-for="(campo, campoNome) in linha.campos"
               :key="campoNome"
-              :class="['f1 align-end', campo.class]"
+              class="f1"
+              :class="campo.class"
             >
               <LabelFromYup
                 :name="campoNome"
@@ -217,7 +224,7 @@ if (props.autoSubmit) {
                   <input
                     type="checkbox"
                     class="interruptor"
-                    :checked="value"
+                    :checked="!!value"
                     :disabled="$props.bloqueado"
                     :aria-busy="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
@@ -259,10 +266,16 @@ if (props.autoSubmit) {
               >
                 <AutocompleteField2
                   class="f1 mb1"
-                  :controlador="{ participantes: value, busca: '' }"
+                  :controlador="{
+                    participantes: Array.isArray(value)
+                      ? value
+                      : (value != null && value !== '' ? [value] : []),
+                    busca: ''
+                  }"
                   :grupo="campo.opcoes"
                   :label="campo.autocomplete?.label || 'label'"
-                  :apenas-um="campo.autocomplete?.apenasUm"
+                  :numero-maximo-de-participantes="campo.autocomplete?.numeroMaximoDeParticipantes"
+                  :unique="campo.autocomplete?.unique"
                   :readonly="$props.carregando"
                   @change="ev => handleChange(ev)"
                 />

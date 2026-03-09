@@ -1072,13 +1072,16 @@ export default [
         meta: {
           título: 'Novo tipo de aditivo',
           rotasParaMigalhasDePão: ['tipoDeAditivos.listar'],
+          rotaDeEscape: 'tipoDeAditivos.listar',
         },
       },
       {
         path: ':aditivoId',
         component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
         name: 'tipoDeAditivos.editar',
+        props: tiparPropsDeRota,
         meta: {
+          rotaDeEscape: 'tipoDeAditivos.listar',
           título: () => {
             const { itemParaEdicao } = useTipoDeAditivosStore();
 

@@ -374,6 +374,24 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
     monitoramento_orcamento?: boolean;
 
     /**
+     * Dia de abertura do orçamento (1-31)
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser um número inteiro' })
+    @Min(1, { message: '$property| precisa ser >= 1' })
+    @Max(31, { message: '$property| precisa ser <= 31' })
+    orcamento_dia_abertura?: number;
+
+    /**
+     * Dia de fechamento do orçamento (1-31)
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser um número inteiro' })
+    @Min(1, { message: '$property| precisa ser >= 1' })
+    @Max(31, { message: '$property| precisa ser <= 31' })
+    orcamento_dia_fechamento?: number;
+
+    /**
      * PDMs anteriores, lista de IDs
      */
     @IsOptional()

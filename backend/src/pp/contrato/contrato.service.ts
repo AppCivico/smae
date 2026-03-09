@@ -1,9 +1,11 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { ContratoDetailDto, ContratoItemDto } from './entities/contrato.entity';
@@ -17,6 +19,7 @@ export class ContratoService {
 
     async create(projeto_id: number, dto: CreateContratoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const now = new Date(Date.now());
+        dto.objeto_detalhado = HtmlSanitizer(dto.objeto_detalhado);
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExiste = await prismaTx.contrato.count({
@@ -107,6 +110,9 @@ export class ContratoService {
                         data: true,
                         data_termino_atualizada: true,
                         valor: true,
+                        tipo_aditivo: {
+                            select: { tipo: true },
+                        },
                     },
                 },
                 processosSei: {
@@ -118,19 +124,19 @@ export class ContratoService {
         });
 
         return linhasContrato.map((contrato) => {
-            const valorMaisAtual = contrato.aditivos.find((aditivo) => aditivo.valor != null)?.valor || contrato.valor;
-
             const linhaComDatas = contrato.aditivos.find((aditivo) => aditivo.data_termino_atualizada != null);
             const dataMaisAtual = linhaComDatas?.data_termino_atualizada ?? contrato.data_termino;
+
+            const totais = this.calcularTotaisAditivos(contrato.aditivos, contrato.valor);
 
             return {
                 id: contrato.id,
                 objeto_resumo: contrato.objeto_resumo,
                 numero: contrato.numero,
                 status: contrato.status,
-                valor: valorMaisAtual,
+                valor: contrato.valor,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
-                quantidade_aditivos: contrato.aditivos.length,
+                ...totais,
                 data_termino_atual: dataMaisAtual,
                 data_termino_inicial: contrato.data_termino,
             };
@@ -201,6 +207,7 @@ export class ContratoService {
                             select: {
                                 id: true,
                                 nome: true,
+                                tipo: true,
                                 habilita_valor: true,
                                 habilita_valor_data_termino: true,
                             },
@@ -210,6 +217,8 @@ export class ContratoService {
             },
         });
         if (!contrato) throw new NotFoundException('Contrato não encontrado');
+
+        const totais = this.calcularTotaisAditivos(contrato.aditivos, contrato.valor);
 
         return {
             id: contrato.id,
@@ -231,6 +240,7 @@ export class ContratoService {
             data_base_mes: contrato.data_base_mes,
             data_base_ano: contrato.data_base_ano,
             valor: contrato.valor,
+            ...totais,
             modalidade_contratacao: contrato.modalidade_contratacao
                 ? { id: contrato.modalidade_contratacao.id, nome: contrato.modalidade_contratacao.nome }
                 : null,
@@ -252,6 +262,7 @@ export class ContratoService {
                     tipo: {
                         id: aditivo.tipo_aditivo.id,
                         nome: aditivo.tipo_aditivo.nome,
+                        tipo: aditivo.tipo_aditivo.tipo,
                         habilita_valor: aditivo.tipo_aditivo.habilita_valor,
                         habilita_valor_data_termino: aditivo.tipo_aditivo.habilita_valor_data_termino,
                     },
@@ -262,6 +273,7 @@ export class ContratoService {
 
     async update(projeto_id: number, id: number, dto: UpdateContratoDto, user: PessoaFromJwt) {
         const now = new Date(Date.now());
+        if (dto.objeto_detalhado) dto.objeto_detalhado = HtmlSanitizer(dto.objeto_detalhado);
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await this.findOne(projeto_id, id, user);
@@ -369,5 +381,28 @@ export class ContratoService {
                 removido_por: user.id,
             },
         });
+    }
+
+    private calcularTotaisAditivos(
+        aditivos: { valor: Decimal | null; tipo_aditivo: { tipo: string } }[],
+        contratoValor: Decimal | null
+    ) {
+        const total_aditivos = aditivos
+            .filter((a) => a.tipo_aditivo.tipo === 'Aditivo' && a.valor != null)
+            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+        const total_reajustes = aditivos
+            .filter((a) => a.tipo_aditivo.tipo === 'Reajuste' && a.valor != null)
+            .reduce((sum, a) => sum.plus(a.valor!), new Decimal(0));
+
+        const valor_reajustado = new Decimal(contratoValor ?? 0).plus(total_aditivos).plus(total_reajustes);
+
+        return {
+            quantidade_aditivos: aditivos.filter((a) => a.tipo_aditivo.tipo === 'Aditivo').length,
+            quantidade_reajustes: aditivos.filter((a) => a.tipo_aditivo.tipo === 'Reajuste').length,
+            total_aditivos,
+            total_reajustes,
+            valor_reajustado,
+        };
     }
 }

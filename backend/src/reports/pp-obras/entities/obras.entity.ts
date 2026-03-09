@@ -11,7 +11,7 @@ import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class RelObrasDto {
-    id: number;
+    obra_id: number;
     pdm_id: number | null;
     pdm_nome: string | null;
     meta_id: number | null;
@@ -131,20 +131,17 @@ export class RelObrasFontesRecursoDto {
 }
 
 export class RelObrasContratosDto {
-    id: number;
+    contrato_id: number;
     obra_id: number;
     numero: string;
     exclusivo: boolean;
-    processos_SEI: string | null;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
-    modalidade_licitacao: IdNomeDto | null;
-    fontes_recurso: string | null;
-    area_gestora: IdSiglaDescricao | null;
     objeto: string | null;
     descricao_detalhada: string | null;
     contratante: string | null;
     empresa_contratada: string | null;
+    cnpj_contratada: string | null;
     prazo: number | null;
     @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
     unidade_prazo: ContratoPrazoUnidade | null;
@@ -153,23 +150,51 @@ export class RelObrasContratosDto {
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
     valor: number | null;
-    valor_reajustado: number | null;
-    percentual_medido: number | null;
     observacoes: string | null;
+    valor_contrato_atualizado: number | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
+    modalidade_licitacao: IdNomeDto | null;
+    area_gestora: IdSiglaDescricao | null;
+    percentual_medido: number | null;
+    processos_sei: string | null;
+    fontes_recurso: string | null;
 }
 
 export class RelObrasAditivosDto {
-    id: number;
+    aditivo_id: number;
     contrato_id: number;
+    tipo_categoria: string;
     tipo: IdNomeDto;
     data: Date | null;
-    valor_com_reajuste: number | null;
+    valor: number | null;
     percentual_medido: number | null;
     data_termino_atual: Date | null;
 }
 
+export class RelObrasTermoEncerramentoDto {
+    obra_id: number;
+    obra_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: string | null;
+    previsao_termino: string | null;
+    data_inicio_real: string | null;
+    data_termino_real: string | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: string;
+}
+
 export class RelObrasOrigemDto {
-    projeto_id: number;
+    obra_id: number;
     pdm_id: number | null;
     pdm_titulo: string | null;
     meta_id: number | null;
@@ -194,7 +219,6 @@ export class PPObrasRelatorioDto {
     linhas: RelObrasDto[];
     cronograma: RelObrasCronogramaDto[];
     acompanhamentos: RelObrasAcompanhamentosDto[];
-    regioes: RelObrasRegioesDto[];
     fontes_recurso: RelObrasFontesRecursoDto[];
     contratos: RelObrasContratosDto[];
     aditivos: RelObrasAditivosDto[];
@@ -206,8 +230,22 @@ export class PPObrasRelatorioDto {
 export class RelObrasGeolocDto {
     obra_id: number;
     endereco: string | null;
-    cep: string | null;
+    zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
-    zona: string | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
+    cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
 }

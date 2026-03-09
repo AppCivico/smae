@@ -1772,6 +1772,7 @@ export class ProjetoService {
                 meta: {
                     select: {
                         pdm_id: true,
+                        pdm: { select: { nome: true } },
                         codigo: true,
                         titulo: true,
                         id: true,
@@ -1789,6 +1790,7 @@ export class ProjetoService {
                                 codigo: true,
                                 titulo: true,
                                 pdm_id: true,
+                                pdm: { select: { nome: true } },
                             },
                         },
                     },
@@ -1810,6 +1812,7 @@ export class ProjetoService {
                                         codigo: true,
                                         titulo: true,
                                         pdm_id: true,
+                                        pdm: { select: { nome: true } },
                                     },
                                 },
                             },
@@ -1919,7 +1922,12 @@ export class ProjetoService {
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
-        let meta: ProjetoMetaDetailDto | null = projeto.meta ? projeto.meta : null;
+        let meta: ProjetoMetaDetailDto | null = projeto.meta
+            ? {
+                  ...projeto.meta,
+                  pdm_nome: projeto.meta.pdm ? projeto.meta.pdm.nome : '',
+              }
+            : null;
 
         let iniciativa: IdCodTituloDto | null = null;
         let atividade: IdCodTituloDto | null = null;
@@ -1940,6 +1948,7 @@ export class ProjetoService {
                 codigo: projeto.iniciativa.meta.codigo,
                 titulo: projeto.iniciativa.meta.titulo,
                 pdm_id: projeto.iniciativa.meta.pdm_id,
+                pdm_nome: projeto.iniciativa.meta.pdm ? projeto.iniciativa.meta.pdm.nome : '',
             };
         }
 
@@ -1961,6 +1970,7 @@ export class ProjetoService {
                 codigo: projeto.atividade.iniciativa.meta.codigo,
                 titulo: projeto.atividade.iniciativa.meta.titulo,
                 pdm_id: projeto.atividade.iniciativa.meta.pdm_id,
+                pdm_nome: projeto.atividade.iniciativa.meta.pdm ? projeto.atividade.iniciativa.meta.pdm.nome : '',
             };
         }
 

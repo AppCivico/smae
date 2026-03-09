@@ -7,6 +7,7 @@ import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import RelacionamentosComOutrosCompromissos from '@/components/RelacionamentosComOutrosCompromissos.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAlertStore } from '@/stores/alert.store';
@@ -16,6 +17,7 @@ import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+import OrcamentoDaMeta from './OrcamentoDaMeta.vue';
 
 defineOptions({
   inheritAttrs: false,
@@ -267,6 +269,12 @@ iniciar();
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="mb2">
+          <hr class="mt2 mb2">
+
+          <OrcamentoDaMeta />
         </div>
 
         <div

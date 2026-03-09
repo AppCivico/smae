@@ -2,7 +2,9 @@ import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -1520,7 +1522,7 @@ export class OrcamentoRealizadoService {
         }
     }
 
-    @Cron(CronExpression.EVERY_6_HOURS)
+    @Cron(CronExpression.EVERY_HOUR)
     async handleCron() {
         if (process.env['DISABLE_PDM_CRONTAB']) return;
 
@@ -1538,75 +1540,65 @@ export class OrcamentoRealizadoService {
             return;
         }
 
-        let saveLog = true;
+        // Lock de sessão (não amarrado a uma transação) para evitar timeout acumulado
+        // quando múltiplos PDMs são processados sequencialmente
+        logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
+        const locked: { locked: boolean }[] =
+            await this.prisma.$queryRaw`SELECT pg_try_advisory_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked`;
+        if (!locked[0].locked) {
+            logger.debug(`Já está em processamento...`);
+            return;
+        }
+
         try {
-            await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
-                    const locked: {
-                        locked: boolean;
-                    }[] = await prismaTx.$queryRaw`SELECT
-                    pg_try_advisory_xact_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked
-                `;
-                    if (!locked[0].locked) {
-                        saveLog = false;
-                        logger.debug(`Já está em processamento...`);
-                        return;
-                    }
+            // Processa cada PDM individualmente, cada um em sua própria transação
+            for (const pdm of pdms) {
+                const pdmLogger = LoggerWithLog(`Orçamento Realizado: Automação PDM ${pdm.id}`);
 
-                    // Processa cada PDM individualmente, para isolar falhas
-                    for (const pdm of pdms) {
-                        const pdmLogger = LoggerWithLog(`Orçamento Realizado: Automação PDM ${pdm.id}`);
+                try {
+                    await this.prisma.$transaction(
+                        async (pdmTx: Prisma.TransactionClient) => {
+                            pdmLogger.log(`Iniciando processamento do PDM ${pdm.id}`);
+                            await this.verificaOrcamentoAberturaFechamento(pdmLogger, pdm.id);
 
-                        try {
-                            await this.prisma.$transaction(
-                                async (pdmTx: Prisma.TransactionClient) => {
-                                    pdmLogger.log(`Iniciando processamento do PDM ${pdm.id}`);
-                                    await this.verificaOrcamentoAberturaFechamento(pdmLogger, pdm.id);
-
-                                    await pdmLogger.saveLogs(pdmTx, {
-                                        pessoa_id: -1,
-                                        ip: '0.0.0.0',
-                                    });
-                                    pdmLogger.log(`PDM ${pdm.id} processado com sucesso`);
-                                },
-                                {
-                                    maxWait: 30000,
-                                    timeout: 60 * 1000 * 10,
-                                    isolationLevel: 'Serializable',
-                                }
-                            );
-                        } catch (error) {
-                            logger.error(`Erro ao processar PDM ${pdm.id}: ${error}`);
-                            pdmLogger.error(`Erro no processamento: ${error}`);
-                            // Save PDM logger even on error (without transaction)
-                            try {
-                                await pdmLogger.saveLogs(this.prisma, {
-                                    pessoa_id: -1,
-                                    ip: '0.0.0.0',
-                                });
-                            } catch (saveError) {
-                                logger.error(`Erro ao salvar logs do PDM ${pdm.id}: ${saveError}`);
-                            }
+                            await pdmLogger.saveLogs(pdmTx, {
+                                pessoa_id: -1,
+                                ip: '0.0.0.0',
+                            });
+                            pdmLogger.log(`PDM ${pdm.id} processado com sucesso`);
+                        },
+                        {
+                            maxWait: 30000,
+                            timeout: 60 * 1000 * 10,
+                            isolationLevel: 'Serializable',
                         }
+                    );
+                } catch (error) {
+                    logger.error(`Erro ao processar PDM ${pdm.id}: ${error}`);
+                    pdmLogger.error(`Erro no processamento: ${error}`);
+                    // Save PDM logger even on error (without transaction)
+                    try {
+                        await pdmLogger.saveLogs(this.prisma, {
+                            pessoa_id: -1,
+                            ip: '0.0.0.0',
+                        });
+                    } catch (saveError) {
+                        logger.error(`Erro ao salvar logs do PDM ${pdm.id}: ${saveError}`);
                     }
-
-                    logger.log(`Verificação concluída com sucesso`);
-                },
-                {
-                    maxWait: 30000,
-                    timeout: 60 * 1000 * 15,
-                    isolationLevel: 'Serializable',
                 }
-            );
+            }
+
+            logger.log(`Verificação concluída com sucesso`);
         } finally {
-            // Save main logger outside transaction, even if it fails
+            // Libera o lock de sessão
+            await this.prisma.$queryRaw`SELECT pg_advisory_unlock(${JOB_PDM_ORCAMENTO_CONCLUIDO})`;
+
+            // Save main logger outside transaction
             try {
-                if (saveLog)
-                    await logger.saveLogs(this.prisma, {
-                        pessoa_id: -1,
-                        ip: '0.0.0.0',
-                    });
+                await logger.saveLogs(this.prisma, {
+                    pessoa_id: -1,
+                    ip: '0.0.0.0',
+                });
             } catch (error) {
                 this.logger.error(`Erro ao salvar logs principais: ${error}`);
             }
@@ -1614,19 +1606,10 @@ export class OrcamentoRealizadoService {
     }
 
     async verificaOrcamentoAberturaFechamento(logger: LoggerWithLog, pdmId: number) {
-        // Obter a data atual
-        const hoje = new Date();
-        const diaAtual = hoje.getDate();
-        const mesAtual = hoje.getMonth() + 1; // Janeiro é 0
-        const anoAtual = hoje.getFullYear(); // Ano em que a automação está sendo executada
+        const nowSP = DateTime.now().setZone(SYSTEM_TIMEZONE);
+        const spYear = nowSP.year;
 
-        logger.log(`Data atual: ${hoje.toISOString()} - Dia: ${diaAtual}, Mês: ${mesAtual}, Ano: ${anoAtual}`);
-
-        // Calcular o mês/ano do orçamento que está sendo trabalhado
-        const mesBudget = mesAtual === 1 ? 12 : mesAtual - 1; // Mês anterior
-        const anoBudget = mesAtual === 1 ? anoAtual - 1 : anoAtual; // Ano do orçamento
-
-        logger.log(`Orçamento de referência: Mês ${mesBudget}/${anoBudget}`);
+        logger.log(`Data atual (SP): ${nowSP.toISO()} - Dia: ${nowSP.day}, Mês: ${nowSP.month}, Ano: ${spYear}`);
 
         // Obter as informações do PDM
         const pdm = await this.prisma.pdm.findFirst({
@@ -1643,7 +1626,21 @@ export class OrcamentoRealizadoService {
             select: { id: true },
         });
 
-        // Obter as metas ativas
+        // Carregar configs para o ano atual e anterior
+        const configs = await this.prisma.pdmOrcamentoConfig.findMany({
+            where: {
+                pdm_id: pdm.id,
+                ano_referencia: { in: [spYear - 1, spYear] },
+            },
+        });
+        if (configs.length === 0) {
+            logger.warn(`Nenhuma configuração de orçamento encontrada para anos ${spYear - 1}/${spYear}`);
+            return;
+        }
+        logger.log(`Configurações carregadas: ${configs.map((c) => c.ano_referencia).join(', ')}`);
+
+        // Carregar metas com registros de controle para os anos relevantes
+        // Inclui spYear+1 porque budgetMonth=12 com budgetYear=spYear gera actionYear=spYear+1
         const metas = await this.prisma.meta.findMany({
             where: {
                 pdm_id: pdm.id,
@@ -1653,148 +1650,132 @@ export class OrcamentoRealizadoService {
                 id: true,
                 PdmOrcamentoRealizadoControleConcluido: {
                     orderBy: { criado_em: 'desc' },
-                    where: { ano_referencia: anoAtual }, // Filtrar por ano da ação
+                    where: { ano_referencia: { in: [spYear - 1, spYear, spYear + 1] } },
                 },
             },
         });
         logger.log(`Encontradas ${metas.length} metas ativas para processar`);
 
-        // Busca a configuração para o ano do orçamento que está sendo gerenciado
-        const configOrcamento = await this.prisma.pdmOrcamentoConfig.findFirst({
-            where: {
-                pdm: { ativo: true },
-                ano_referencia: anoBudget, // Usa o ano do orçamento (2025 em Jan/2026)
-            },
-        });
+        const diaAbertura = pdm.orcamento_dia_abertura;
+        const diaFechamento = pdm.orcamento_dia_fechamento;
 
-        if (!configOrcamento) {
-            logger.warn(`Não encontrada configuração para o ano ${anoBudget}`);
-            logger.log(`Ignorando processamento automático de abertura/fechamento`);
-            return;
-        }
-        logger.log(`Configuração de orçamento carregada para o ano ${anoBudget}`);
-        logger.debug(`Meses disponíveis na configuração: ${JSON.stringify(configOrcamento.execucao_disponivel_meses)}`);
-
-        for (const meta of metas) {
-            // Obter o último registro de controle de conclusão
-            const ultimoControleAbertura = meta.PdmOrcamentoRealizadoControleConcluido.filter(
-                (r) => r.referencia_dia_abertura
-            )[0];
-            const ultimoControleFechamento = meta.PdmOrcamentoRealizadoControleConcluido.filter(
-                (r) => r.referencia_dia_fechamento
-            )[0];
-
-            // ============= LÓGICA DE ABERTURA =============
-            const mesInclude = configOrcamento.execucao_disponivel_meses.includes(mesBudget);
+        for (const config of configs) {
+            const budgetYear = config.ano_referencia;
             logger.debug(
-                `Meta ${meta.id}: Verificando abertura: mesBudget=${mesBudget}, incluído=${mesInclude}, ` +
-                    `ultimoControle=${JSON.stringify(ultimoControleAbertura)}`
+                `Processando config ano ${budgetYear}, meses disponíveis: ${JSON.stringify(config.execucao_disponivel_meses)}`
             );
 
-            if (
-                mesInclude &&
-                diaAtual >= pdm.orcamento_dia_abertura &&
-                (!ultimoControleAbertura ||
-                    ultimoControleAbertura.referencia_dia_abertura !== pdm.orcamento_dia_abertura ||
-                    ultimoControleAbertura.ano_referencia !== anoAtual ||
-                    ultimoControleAbertura.referencia_mes !== mesAtual)
-            ) {
-                logger.log(`Meta ${meta.id}: Abrindo orçamento ${mesBudget}/${anoBudget}`);
-                const now = new Date(Date.now());
-                await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
-                    // Abrir o orçamento para o ano do budget (ex: 2025)
-                    await this.updateOrcamentoConcluido(
-                        prismaTxn,
-                        meta,
-                        anoBudget, // Ano do orçamento (2025 em Jan/2026)
-                        false, // execucao_concluida
-                        botUser,
-                        now
+            for (const budgetMonth of config.execucao_disponivel_meses) {
+                // A ação (abertura/fechamento) ocorre no mês seguinte ao mês do orçamento
+                const actionMonth = budgetMonth === 12 ? 1 : budgetMonth + 1;
+                const actionYear = budgetMonth === 12 ? budgetYear + 1 : budgetYear;
+
+                const daysInActionMonth = DateTime.local(actionYear, actionMonth, 1, {
+                    zone: SYSTEM_TIMEZONE,
+                }).daysInMonth!;
+
+                const openDay = Math.min(diaAbertura, daysInActionMonth);
+                const openDate = DateTime.fromObject(
+                    { year: actionYear, month: actionMonth, day: openDay, hour: 0, minute: 0 },
+                    { zone: SYSTEM_TIMEZONE }
+                );
+
+                const closeDay = Math.min(diaFechamento, daysInActionMonth);
+                // Fechamento efetivo = dia seguinte ao dia configurado (usuário tem o dia inteiro)
+                const closeDate = DateTime.fromObject(
+                    { year: actionYear, month: actionMonth, day: closeDay },
+                    { zone: SYSTEM_TIMEZONE }
+                )
+                    .plus({ days: 1 })
+                    .startOf('day');
+
+                // Pular períodos futuros
+                if (nowSP < openDate) continue;
+                // Pular períodos muito antigos (mais de 1 mês após o fechamento)
+                if (nowSP > closeDate.plus({ months: 1 })) continue;
+
+                // No-op: quando o fechamento cai no último dia (ou além) do mês e a abertura é dia 1,
+                // o orçamento nunca fecha efetivamente — apenas registra controle
+                const isNoOp = closeDay >= daysInActionMonth && diaAbertura === 1;
+
+                logger.debug(
+                    `Budget ${budgetMonth}/${budgetYear}: ação em ${actionMonth}/${actionYear}, ` +
+                        `openDate=${openDate.toISODate()}, closeDate=${closeDate.toISODate()}, ` +
+                        `isNoOp=${isNoOp}`
+                );
+
+                for (const meta of metas) {
+                    // Filtrar registros de controle para este período de ação específico
+                    const controlRecords = meta.PdmOrcamentoRealizadoControleConcluido.filter(
+                        (r) => r.ano_referencia === actionYear && r.referencia_mes === actionMonth
                     );
 
-                    // Registrar a ação no ano atual (ex: 2026)
-                    await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
-                        data: {
-                            meta_id: meta.id,
-                            ano_referencia: anoAtual, // Ano da ação (2026 em Jan/2026)
-                            criado_em: now,
-                            referencia_mes: mesAtual,
-                            referencia_dia_abertura: pdm.orcamento_dia_abertura,
-                            execucao_concluida: false,
-                        },
-                    });
+                    const hasOpening = controlRecords.some((r) => r.referencia_dia_abertura === diaAbertura);
+                    const hasClosing = controlRecords.some((r) => r.referencia_dia_fechamento === diaFechamento);
 
-                    return;
-                });
-            } else {
-                if (!mesInclude) {
-                    logger.debug(
-                        `Meta ${meta.id}: Mês ${mesBudget} não está nos meses disponíveis, ignorando abertura`
-                    );
-                } else if (diaAtual < pdm.orcamento_dia_abertura) {
-                    logger.debug(
-                        `Meta ${meta.id}: Dia atual ${diaAtual} < dia de abertura ${pdm.orcamento_dia_abertura}, aguardando`
-                    );
-                } else {
-                    logger.debug(`Meta ${meta.id}: Abertura já foi processada para este período`);
-                }
-            }
+                    // ============= LÓGICA DE ABERTURA =============
+                    if (nowSP >= openDate && !hasOpening) {
+                        logger.log(
+                            `Meta ${meta.id}: Abrindo orçamento ${budgetMonth}/${budgetYear} ` +
+                                `(ação ${actionMonth}/${actionYear})`
+                        );
+                        const now = new Date(Date.now());
+                        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
+                            if (!isNoOp) {
+                                await this.updateOrcamentoConcluido(prismaTxn, meta, budgetYear, false, botUser, now);
+                            }
 
-            // ============= LÓGICA DE FECHAMENTO =============
-            // Verifica se o mês do orçamento está na configuração de meses disponíveis
-            const deveFechar = configOrcamento.execucao_disponivel_meses.includes(mesBudget);
+                            await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
+                                data: {
+                                    meta_id: meta.id,
+                                    ano_referencia: actionYear,
+                                    criado_em: now,
+                                    referencia_mes: actionMonth,
+                                    referencia_dia_abertura: diaAbertura,
+                                    execucao_concluida: false,
+                                },
+                            });
+                        });
+                    } else if (nowSP < openDate) {
+                        logger.debug(
+                            `Meta ${meta.id}: Aguardando abertura ${budgetMonth}/${budgetYear} ` +
+                                `(openDate=${openDate.toISODate()})`
+                        );
+                    } else if (hasOpening) {
+                        logger.debug(`Meta ${meta.id}: Abertura já processada para ${actionMonth}/${actionYear}`);
+                    }
 
-            logger.debug(
-                `Meta ${meta.id}: Verificando fechamento: mesBudget=${mesBudget}, diaAtual=${diaAtual} >= ` +
-                    `dia_fechamento=${pdm.orcamento_dia_fechamento}, deveFechar=${deveFechar}`
-            );
+                    // ============= LÓGICA DE FECHAMENTO =============
+                    if (nowSP >= closeDate && !hasClosing) {
+                        logger.log(
+                            `Meta ${meta.id}: Fechando orçamento ${budgetMonth}/${budgetYear} ` +
+                                `(ação ${actionMonth}/${actionYear}, closeDate=${closeDate.toISODate()})`
+                        );
+                        const now = new Date(Date.now());
+                        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
+                            if (!isNoOp) {
+                                await this.updateOrcamentoConcluido(prismaTxn, meta, budgetYear, true, botUser, now);
+                            }
 
-            if (
-                deveFechar &&
-                diaAtual >= pdm.orcamento_dia_fechamento &&
-                (!ultimoControleFechamento ||
-                    ultimoControleFechamento.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento ||
-                    ultimoControleFechamento.ano_referencia !== anoAtual ||
-                    ultimoControleFechamento.referencia_mes !== mesAtual)
-            ) {
-                logger.log(`Meta ${meta.id}: Fechando orçamento ${mesBudget}/${anoBudget}`);
-                const now = new Date(Date.now());
-                await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
-                    // Fechar o orçamento para o ano do budget (ex: 2025)
-                    await this.updateOrcamentoConcluido(
-                        prismaTxn,
-                        meta,
-                        anoBudget, // Ano do orçamento (2025 em Jan/2026)
-                        true, // execucao_concluida
-                        botUser,
-                        now
-                    );
-
-                    // Registrar a ação no ano atual (ex: 2026)
-                    await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
-                        data: {
-                            meta_id: meta.id,
-                            ano_referencia: anoAtual, // Ano da ação (2026 em Jan/2026)
-                            criado_em: now,
-                            referencia_mes: mesAtual,
-                            referencia_dia_fechamento: pdm.orcamento_dia_fechamento,
-                            execucao_concluida: true,
-                        },
-                    });
-
-                    return;
-                });
-            } else {
-                if (!deveFechar) {
-                    logger.debug(
-                        `Meta ${meta.id}: Mês ${mesBudget} não está nos meses disponíveis, ignorando fechamento`
-                    );
-                } else if (diaAtual < pdm.orcamento_dia_fechamento) {
-                    logger.debug(
-                        `Meta ${meta.id}: Dia atual ${diaAtual} < dia de fechamento ${pdm.orcamento_dia_fechamento}, aguardando`
-                    );
-                } else {
-                    logger.debug(`Meta ${meta.id}: Fechamento já foi processado para este período`);
+                            await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
+                                data: {
+                                    meta_id: meta.id,
+                                    ano_referencia: actionYear,
+                                    criado_em: now,
+                                    referencia_mes: actionMonth,
+                                    referencia_dia_fechamento: diaFechamento,
+                                    execucao_concluida: true,
+                                },
+                            });
+                        });
+                    } else if (nowSP < closeDate) {
+                        logger.debug(
+                            `Meta ${meta.id}: Aguardando fechamento ${budgetMonth}/${budgetYear} ` +
+                                `(closeDate=${closeDate.toISODate()})`
+                        );
+                    } else if (hasClosing) {
+                        logger.debug(`Meta ${meta.id}: Fechamento já processado para ${actionMonth}/${actionYear}`);
+                    }
                 }
             }
         }

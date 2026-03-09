@@ -150,7 +150,7 @@ watch(itemParaEdicao, (novoValor) => {
         class="flex flexwrap g2 mb1"
       >
         <div class="f1">
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="ativo"
               type="checkbox"
@@ -352,7 +352,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_macro_tema"
               class="inputcheckbox"
@@ -387,7 +387,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_tema"
               class="inputcheckbox"
@@ -422,7 +422,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_sub_tema"
               class="inputcheckbox"
@@ -460,7 +460,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_contexto_meta"
               class="inputcheckbox"
@@ -495,7 +495,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_complementacao_meta"
               class="inputcheckbox"
@@ -533,7 +533,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_iniciativa"
               class="inputcheckbox"
@@ -569,7 +569,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="possui_atividade"
               class="inputcheckbox"
@@ -609,7 +609,7 @@ watch(itemParaEdicao, (novoValor) => {
         <div
           class="f0 fb15em"
         >
-          <label class="block mb1">
+          <label class="mb1">
             <Field
               name="monitoramento_orcamento"
               class="inputcheckbox"
@@ -654,6 +654,30 @@ watch(itemParaEdicao, (novoValor) => {
             </option>
           </Field>
           <ErrorMessage name="nivel_orcamento" />
+        </div>
+        <div
+          v-if="carga.monitoramento_orcamento"
+          class="f1 fb10em"
+        >
+          <LabelFromYup
+            name="orcamento_dia_fechamento"
+            :schema="schema"
+          />
+          <Field
+            name="orcamento_dia_fechamento"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.orcamento_dia_fechamento }"
+          >
+            <option
+              v-for="dia in 28"
+              :key="dia"
+              :value="dia"
+            >
+              {{ dia }}
+            </option>
+          </Field>
+          <ErrorMessage name="orcamento_dia_fechamento" />
         </div>
       </div>
 

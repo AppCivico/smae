@@ -33,6 +33,30 @@ export class MetaIniAtvTag {
     download_token: string | null;
 }
 
+export class MetaOrcamentoConsolidado {
+    // Totais gerais
+    total_previsao: string;
+    total_empenhado: string;
+    total_liquidado: string;
+
+    // Totais de Projetos (primeiro dígito ímpar do projeto_atividade)
+    total_previsao_projeto: string;
+    total_empenhado_projeto: string;
+    total_liquidado_projeto: string;
+
+    // Totais de Atividades (primeiro dígito par e != 0)
+    total_previsao_atividade: string;
+    total_empenhado_atividade: string;
+    total_liquidado_atividade: string;
+
+    // Totais de Operações Especiais (primeiro dígito = 0)
+    total_previsao_operacao_especial: string;
+    total_empenhado_operacao_especial: string;
+    total_liquidado_operacao_especial: string;
+
+    atualizado_em: Date;
+}
+
 export class MetaItemDto extends ResumoDetalheOrigensDto {
     id: number;
     status: string;
@@ -50,6 +74,7 @@ export class MetaItemDto extends ResumoDetalheOrigensDto {
     tags: MetaIniAtvTag[];
     cronograma: CronogramaAtrasoGrau | null;
     geolocalizacao: GeolocalizacaoDto[];
+    orcamento: MetaOrcamentoConsolidado | null;
     pode_editar: boolean;
     ps_tecnico_cp: CreatePSEquipeTecnicoCPDto;
     ps_ponto_focal: CreatePSEquipePontoFocalDto;

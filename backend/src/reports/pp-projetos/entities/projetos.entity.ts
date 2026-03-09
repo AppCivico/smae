@@ -151,16 +151,12 @@ export class RelProjetosAcompanhamentosDto {
 }
 
 export class RelProjetosContratosDto {
-    id: number;
+    contrato_id: number;
     projeto_id: number;
     numero: string;
     exclusivo: boolean;
-    processos_SEI: string | null;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
-    modalidade_licitacao: IdNomeDto | null;
-    fontes_recurso: string | null;
-    area_gestora: IdSiglaDescricao | null;
     objeto: string | null;
     descricao_detalhada: string | null;
     contratante: string | null;
@@ -173,19 +169,48 @@ export class RelProjetosContratosDto {
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
     valor: number | null;
-    valor_reajustado: number | null;
-    percentual_medido: number | null;
     observacoes: string | null;
+    valor_contrato_atualizado: number | null;
+    total_aditivos: number | null;
+    total_reajustes: number | null;
+    modalidade_licitacao: IdNomeDto | null;
+    area_gestora: IdSiglaDescricao | null;
+    percentual_medido: number | null;
+    processos_sei: string | null;
+    fontes_recurso: string | null;
+    cnpj_contratada: string | null;
 }
 
 export class RelProjetosAditivosDto {
-    id: number;
+    aditivo_id: number;
     contrato_id: number;
+    tipo_categoria: string;
     tipo: IdNomeDto;
     data: Date | null;
-    valor_com_reajuste: number | null;
+    valor: number | null;
     percentual_medido: number | null;
     data_termino_atual: Date | null;
+}
+
+export class RelProjetosTermoEncerramentoDto {
+    projeto_id: number;
+    projeto_codigo: string | null;
+    nome_projeto: string;
+    orgao_responsavel_nome: string;
+    portfolios_nomes: string;
+    objeto: string;
+    previsao_inicio: string | null;
+    previsao_termino: string | null;
+    data_inicio_real: string | null;
+    data_termino_real: string | null;
+    previsao_custo: number | null;
+    valor_executado_total: number | null;
+    status_final: string;
+    etapa_nome: string;
+    justificativa: string | null;
+    justificativa_complemento: string | null;
+    responsavel_encerramento_nome: string;
+    data_encerramento: string;
 }
 
 export class RelProjetosOrigemDto {
@@ -203,10 +228,24 @@ export class RelProjetosOrigemDto {
 export class RelProjetosGeolocDto {
     projeto_id: number;
     endereco: string;
-    cep: string;
     zona: string | null;
     distrito: string | null;
     subprefeitura: string | null;
+    coordinates: string | null;
+    geojson_type: string | null;
+    geometry_type: string | null;
+    cep: string | null;
+    rua: string | null;
+    pais: string | null;
+    bairro: string | null;
+    cidade: string | null;
+    estado: string | null;
+    rotulo: string | null;
+    osm_type: string | null;
+    codigo_pais: string | null;
+    string_endereco: string | null;
+    geometry_name: string | null;
+    bbox: string | null;
 }
 
 export class PPProjetosRelatorioDto {
@@ -221,4 +260,5 @@ export class PPProjetosRelatorioDto {
     aditivos: RelProjetosAditivosDto[];
     origens: RelProjetosOrigemDto[];
     enderecos: RelProjetosGeolocDto[];
+    termos_encerramento: RelProjetosTermoEncerramentoDto[];
 }

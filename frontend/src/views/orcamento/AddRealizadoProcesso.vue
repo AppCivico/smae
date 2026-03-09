@@ -272,6 +272,7 @@ watch(currentEdit, (novosValores) => {
         :pdm="activePdm.id"
         :dotação="values.dotacao"
         :processo="values.processo"
+        :id-do-item="$route.params.meta_id"
         class="mb1"
       />
 
@@ -349,16 +350,10 @@ watch(currentEdit, (novosValores) => {
           name="itens"
         />
 
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
+        <SmaeFieldsetSubmit
+          :esta-carregando="isSubmitting"
+          :erros="errors"
+        />
       </template>
     </form>
   </template>

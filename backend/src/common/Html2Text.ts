@@ -56,6 +56,8 @@ export function Html2Text(html: string | null | undefined): string | null | unde
         .map((line) => line.trim().replace(COLLAPSE_SPACE, ' '))
         .join('\n')
         .replace(/\n\s*\n/g, '\n') // Remove linhas vazias extras
+        .replace(/\r\n/g, '\n') // Converte CRLF para LF
+        .replace(/\n/g, '\r\n') // Normaliza newlines para CRLF
         .trim();
 
     return normalized;
