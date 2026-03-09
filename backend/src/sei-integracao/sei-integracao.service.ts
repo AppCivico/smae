@@ -187,10 +187,9 @@ export class SeiIntegracaoService {
                         // Enviando email de notificação para gestores da Casa Civil
                         if (
                             statusSei.processosDistribuicaoRecurso?.length > 0 &&
-                            statusSei.sei_hash !== '' &&
-                            statusSei.resumo_hash !== ''
+                            statusSei.sei_hash !== ''
                         ) {
-                            // Verificando hashes, pois caso ambas vazias, foi criado pelo endpoint de sync de distribuições.
+                            // Verificando sei_hash, pois caso vazio, foi criado pelo endpoint de sync de distribuições.
                             // Logo, não é necessário enviar email de notificação deste primeiro sync.
                             await this.enviarEmailNotificacaoSEI(
                                 params.processo_sei,
@@ -484,38 +483,42 @@ export class SeiIntegracaoService {
             },
         });
 
-        const operations = [];
+        // Agrupa por processo_sei normalizado para evitar race condition:
+        // múltiplos registros com o mesmo processo_sei tentando criar o mesmo StatusSEI em paralelo.
+        const byProcessoSei = new Map<string, number[]>();
         for (const record of activeRecords) {
             const processoSei = this.normalizaProcessoSei(record.processo_sei);
+            const ids = byProcessoSei.get(processoSei) || [];
+            ids.push(record.id);
+            byProcessoSei.set(processoSei, ids);
+        }
 
-            // Caso o registro já exista na table de status SEI, não é necessário criar um novo registro.
-            const rowExistente = await this.prisma.statusSEI.findFirst({
+        // Para cada processo_sei único, resolve o StatusSEI uma vez e conecta todos os registros.
+        for (const [processoSei, recordIds] of byProcessoSei) {
+            let rowExistente = await this.prisma.statusSEI.findFirst({
                 where: { processo_sei: processoSei },
                 select: { id: true },
             });
 
-            operations.push(
-                this.prisma.distribuicaoRecursoSei.update({
-                    where: { id: record.id },
+            if (!rowExistente) {
+                rowExistente = await this.prisma.statusSEI.create({
                     data: {
-                        status_sei: rowExistente
-                            ? { connect: { id: rowExistente.id } }
-                            : {
-                                  create: {
-                                      processo_sei: processoSei,
-                                      link: '',
-                                      sei_hash: '',
-                                      resumo_hash: '',
-                                      ativo: true,
-                                      proxima_sincronizacao: this.calculaProximaSync(),
-                                  },
-                              },
+                        processo_sei: processoSei,
+                        link: '',
+                        sei_hash: '',
+                        resumo_hash: '',
+                        ativo: true,
+                        proxima_sincronizacao: this.calculaProximaSync(),
                     },
-                })
-            );
-        }
+                    select: { id: true },
+                });
+            }
 
-        await Promise.all(operations);
+            await this.prisma.distribuicaoRecursoSei.updateMany({
+                where: { id: { in: recordIds } },
+                data: { status_sei_id: rowExistente.id },
+            });
+        }
     }
 
     async listaProcessos(filters: FilterSeiListParams): Promise<PaginatedDto<SeiIntegracaoDto>> {
