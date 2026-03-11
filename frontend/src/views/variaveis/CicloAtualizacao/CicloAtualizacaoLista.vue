@@ -258,7 +258,7 @@ watch(() => route.query, (query) => {
                     <template #default>
                       Atualização com atraso: <br>
                       {{ obterPrimeiroEUltimoAtraso(cicloAtualizacao.atrasos,
-                        cicloAtualizacao.periodicidade) }}
+                                                    cicloAtualizacao.periodicidade) }}
                     </template>
 
                     <template #botao>

@@ -1,119 +1,3 @@
-<template>
-  <form
-    class="flex flexwrap bottom mb2 g1 filtro"
-    @submit.prevent="dados.pdm_id ? emit('enviado', dados) : null"
-    @change="(ev) => emit('campoMudou', ev)"
-  >
-    <div class="f1 fb15em">
-      <label
-        class="label"
-        for="plano-setorial-id"
-      >
-        {{ $route.meta.tituloPlural || 'Plano Setoriais / Programa de Metas' }}&nbsp;<span
-          class="tvermelho"
-        >*</span>
-      </label>
-
-      <select
-        id="plano-setorial-id"
-        v-model="dados.pdm_id"
-        class="inputtext light"
-        name="pdm_id"
-        :class="{ error: errosDePlanoSetorial.lista }"
-        :aria-busy="chamadasPendentesDePlanoSetoriais.lista"
-        :aria-disabled="planosSetoriaisOuPdMNovos.length < 2"
-        @change="(valor) => { emit('campoMudou', { pdm_id: valor }); }"
-      >
-        <option
-          v-for="item in planosSetoriaisOuPdMNovos"
-          :key="item.id"
-          :value="item.id"
-        >
-          {{ item.nome }}
-        </option>
-      </select>
-
-      <ErrorComponent :erro="errosDePlanoSetorial.lista" />
-    </div>
-
-    <div class="f1 fb10em">
-      <label
-        class="label"
-        for="orgao-responsavel-id"
-      >
-        Órgãos
-      </label>
-
-      <AutocompleteField
-        id="orgao-responsavel-id"
-        name="orgao_id"
-        :controlador="{
-          busca: '',
-          participantes: dados?.orgao_id
-        }"
-        :grupo="órgãosComoLista"
-        label="sigla"
-        :aria-busy="organs.loading"
-        :class="{ error: organs.error }"
-        @change="(valor) => emit('campoMudou', { orgao_id: valor })"
-      />
-      <ErrorComponent :erro="organs.error" />
-    </div>
-
-    <div class="f1 fb15em">
-      <label
-        class="label"
-        for="equipe-id"
-      >
-        Equipes
-      </label>
-
-      <AutocompleteField
-        id="equipe-id"
-        name="equipes"
-        :controlador="{
-          busca: '',
-          participantes: dados?.equipes
-        }"
-        :grupo="listaDeEquipes"
-        label="titulo"
-        :aria-busy="chamadasPendentesDeEquipes.lista"
-        :class="{ error: erroDeEquipes }"
-        @change="(valor) => emit('campoMudou', { equipes: valor })"
-      />
-      <ErrorComponent :erro="erroDeEquipes" />
-    </div>
-
-    <div class="f1 fb5em">
-      <label
-        class="label"
-        for="visao-pessoal"
-      >
-        Visão
-      </label>
-      <select
-        id="visao-pessoal"
-        v-model="dados.visao_pessoal"
-        class="inputtext light"
-        name="visao_pessoal"
-      >
-        <option :value="true">
-          pessoal
-        </option>
-        <option :value="false">
-          administrativa
-        </option>
-      </select>
-    </div>
-    <button
-      class="btn align-start mt2"
-      type="submit"
-      :aria-disabled="!dados.pdm_id"
-    >
-      Filtrar
-    </button>
-  </form>
-</template>
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import {
@@ -250,4 +134,120 @@ camposObrigatorios.forEach((chave) => {
   });
 });
 </script>
+<template>
+  <form
+    class="flex flexwrap bottom mb2 g1 filtro"
+    @submit.prevent="dados.pdm_id ? emit('enviado', dados) : null"
+    @change="(ev) => emit('campoMudou', ev)"
+  >
+    <div class="f1 fb15em">
+      <label
+        class="label"
+        for="plano-setorial-id"
+      >
+        {{ $route.meta.tituloPlural || 'Plano Setoriais / Programa de Metas' }}&nbsp;<span
+          class="tvermelho"
+        >*</span>
+      </label>
+
+      <select
+        id="plano-setorial-id"
+        v-model="dados.pdm_id"
+        class="inputtext light"
+        name="pdm_id"
+        :class="{ error: errosDePlanoSetorial.lista }"
+        :aria-busy="chamadasPendentesDePlanoSetoriais.lista"
+        :aria-disabled="planosSetoriaisOuPdMNovos.length < 2"
+        @change="(valor) => { emit('campoMudou', { pdm_id: valor }); }"
+      >
+        <option
+          v-for="item in planosSetoriaisOuPdMNovos"
+          :key="item.id"
+          :value="item.id"
+        >
+          {{ item.nome }}
+        </option>
+      </select>
+
+      <ErrorComponent :erro="errosDePlanoSetorial.lista" />
+    </div>
+
+    <div class="f1 fb10em">
+      <label
+        class="label"
+        for="orgao-responsavel-id"
+      >
+        Órgãos
+      </label>
+
+      <AutocompleteField
+        id="orgao-responsavel-id"
+        name="orgao_id"
+        :controlador="{
+          busca: '',
+          participantes: dados?.orgao_id
+        }"
+        :grupo="órgãosComoLista"
+        label="sigla"
+        :aria-busy="organs.loading"
+        :class="{ error: organs.error }"
+        @change="(valor) => emit('campoMudou', { orgao_id: valor })"
+      />
+      <ErrorComponent :erro="organs.error" />
+    </div>
+
+    <div class="f1 fb15em">
+      <label
+        class="label"
+        for="equipe-id"
+      >
+        Equipes
+      </label>
+
+      <AutocompleteField
+        id="equipe-id"
+        name="equipes"
+        :controlador="{
+          busca: '',
+          participantes: dados?.equipes
+        }"
+        :grupo="listaDeEquipes"
+        label="titulo"
+        :aria-busy="chamadasPendentesDeEquipes.lista"
+        :class="{ error: erroDeEquipes }"
+        @change="(valor) => emit('campoMudou', { equipes: valor })"
+      />
+      <ErrorComponent :erro="erroDeEquipes" />
+    </div>
+
+    <div class="f1 fb5em">
+      <label
+        class="label"
+        for="visao-pessoal"
+      >
+        Visão
+      </label>
+      <select
+        id="visao-pessoal"
+        v-model="dados.visao_pessoal"
+        class="inputtext light"
+        name="visao_pessoal"
+      >
+        <option :value="true">
+          pessoal
+        </option>
+        <option :value="false">
+          administrativa
+        </option>
+      </select>
+    </div>
+    <button
+      class="btn align-start mt2"
+      type="submit"
+      :aria-disabled="!dados.pdm_id"
+    >
+      Filtrar
+    </button>
+  </form>
+</template>
 <style lang="less" scoped></style>

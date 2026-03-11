@@ -145,7 +145,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
         :store-instances="storeInstances"
         :fontes-estaticas="fontesEstaticas"
         :readonly="readonly"
-        @update:modelValue="val => updateValue(val, key)"
+        @update:model-value="val => updateValue(val, key)"
       />
       <small
         v-if="campoConfig(subConfig)?.meta?.explicacoes?.campo"
@@ -167,7 +167,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :aria-readonly="readonly"
       :readonly="readonly"
       class="inputtext light"
-      @update:modelValue="updateValue"
+      @update:model-value="updateValue"
     />
 
     <SmaeDateInput
@@ -177,7 +177,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :aria-readonly="readonly"
       :readonly="readonly"
       class="inputtext light"
-      @update:modelValue="updateValue"
+      @update:model-value="updateValue"
     />
 
     <AutocompleteField2
@@ -201,7 +201,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :limitar-para-um-orgao="true"
       :numero-maximo-de-participantes="config?.meta?.numeroMaximoDeParticipantes"
       :pessoa-informativo="config?.meta?.balaoInformativo"
-      @update:modelValue="updateValue"
+      @update:model-value="updateValue"
     />
 
     <Field
@@ -226,7 +226,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :aria-readonly="readonly"
       :readonly="readonly"
       :model-value="modelValue"
-      @update:modelValue="updateValue"
+      @update:model-value="updateValue"
     />
 
     <SmaeText
@@ -239,7 +239,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :readonly="readonly"
       :model-value="modelValue"
       :maxlength="maxLength"
-      @update:modelValue="updateValue"
+      @update:model-value="updateValue"
     />
 
     <Field
@@ -252,7 +252,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       @mousedown="readonly && $event.preventDefault()"
       @keydown="readonly && $event.preventDefault()"
       @focus="readonly && $event.target.blur()"
-      @update:modelValue="updateValue"
+      @update:model-value="updateValue"
     >
       <option
         value=""

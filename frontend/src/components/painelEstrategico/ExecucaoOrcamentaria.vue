@@ -1,3 +1,57 @@
+<script setup>
+import { defineProps } from 'vue';
+
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import dinheiro from '@/helpers/dinheiro';
+import truncate from '@/helpers/texto/truncate';
+
+defineProps({
+  orcamentos: {
+    type: Array,
+    default: () => [],
+  },
+  paginacao: {
+    type: Object,
+    default: () => ({}),
+  },
+  chamadasPendentes: {
+    type: Boolean,
+    default: false,
+  },
+  erro: {
+    type: [String, Object],
+    default: null,
+  },
+});
+
+function calcularMaiorValor(orcamento) {
+  const valores = [
+    orcamento.valor_custo_planejado_total,
+    orcamento.valor_custo_planejado_hoje,
+    orcamento.valor_empenhado_total,
+    orcamento.valor_liquidado_total,
+  ];
+
+  return Math.max(...valores);
+}
+
+function calcularPorcentagem(valor, maiorValor) {
+  if (!maiorValor || !valor) {
+    return 0;
+  }
+  return (valor / maiorValor) * 100;
+}
+
+function obterValorTamanho(orcamento, valor) {
+  const tamanho = calcularPorcentagem(
+    valor,
+    calcularMaiorValor(orcamento),
+  );
+
+  return `${tamanho}%`;
+}
+</script>
+
 <template>
   <div
     role="region"
@@ -176,60 +230,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { defineProps } from 'vue';
-
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import dinheiro from '@/helpers/dinheiro';
-import truncate from '@/helpers/texto/truncate';
-
-defineProps({
-  orcamentos: {
-    type: Array,
-    default: () => [],
-  },
-  paginacao: {
-    type: Object,
-    default: () => ({}),
-  },
-  chamadasPendentes: {
-    type: Boolean,
-    default: false,
-  },
-  erro: {
-    type: [String, Object],
-    default: null,
-  },
-});
-
-function calcularMaiorValor(orcamento) {
-  const valores = [
-    orcamento.valor_custo_planejado_total,
-    orcamento.valor_custo_planejado_hoje,
-    orcamento.valor_empenhado_total,
-    orcamento.valor_liquidado_total,
-  ];
-
-  return Math.max(...valores);
-}
-
-function calcularPorcentagem(valor, maiorValor) {
-  if (!maiorValor || !valor) {
-    return 0;
-  }
-  return (valor / maiorValor) * 100;
-}
-
-function obterValorTamanho(orcamento, valor) {
-  const tamanho = calcularPorcentagem(
-    valor,
-    calcularMaiorValor(orcamento),
-  );
-
-  return `${tamanho}%`;
-}
-</script>
 
 <style scoped lang="less">
 .tabela-orcamentos {

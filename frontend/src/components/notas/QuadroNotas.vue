@@ -1,63 +1,3 @@
-<template>
-  <div class="container">
-    <p class="title center">
-      NOTAS
-    </p>
-    <div
-      v-for="(item, index) in lista"
-      :key="index"
-      class="flex center notas"
-    >
-      <div class="bullet" />
-      <p class="identificador">
-        <router-link
-          :to="{
-            name: 'TransferenciasVoluntariasDetalhes',
-            params: { transferenciaId: item.transferencia_id }
-          }"
-          class="tprimary"
-        >
-          {{ item.transferencia_identificador }}
-        </router-link>
-      </p>
-      <div class="text">
-        <p>{{ removerHtml(truncate(item.nota, 50)) }}</p>
-        <p>
-          <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
-        </p>
-      </div>
-    </div>
-
-    <LoadingComponent
-      v-if="chamadasPendentes.lista"
-      class="mb1"
-    >
-      buscando notas
-    </LoadingComponent>
-    <div v-else-if="erro">
-      Erro: {{ erro }}
-    </div>
-    <div
-      v-else-if="!lista.length"
-      class="mt1"
-    >
-      Nenhum resultado encontrado.
-    </div>
-
-    <button
-      v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
-      :disabled="chamadasPendentes.lista"
-      class="btn bgnone outline center mt2"
-      @click="blocoStore.buscarTudoPanorama({
-        ...route.query,
-        token_proxima_pagina: paginação.tokenDaPróximaPágina
-      })"
-    >
-      carregar mais
-    </button>
-  </div>
-</template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
@@ -127,6 +67,66 @@ watch([
 }, { immediate: true });
 
 </script>
+
+<template>
+  <div class="container">
+    <p class="title center">
+      NOTAS
+    </p>
+    <div
+      v-for="(item, index) in lista"
+      :key="index"
+      class="flex center notas"
+    >
+      <div class="bullet" />
+      <p class="identificador">
+        <router-link
+          :to="{
+            name: 'TransferenciasVoluntariasDetalhes',
+            params: { transferenciaId: item.transferencia_id }
+          }"
+          class="tprimary"
+        >
+          {{ item.transferencia_identificador }}
+        </router-link>
+      </p>
+      <div class="text">
+        <p>{{ removerHtml(truncate(item.nota, 50)) }}</p>
+        <p>
+          <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <LoadingComponent
+      v-if="chamadasPendentes.lista"
+      class="mb1"
+    >
+      buscando notas
+    </LoadingComponent>
+    <div v-else-if="erro">
+      Erro: {{ erro }}
+    </div>
+    <div
+      v-else-if="!lista.length"
+      class="mt1"
+    >
+      Nenhum resultado encontrado.
+    </div>
+
+    <button
+      v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
+      :disabled="chamadasPendentes.lista"
+      class="btn bgnone outline center mt2"
+      @click="blocoStore.buscarTudoPanorama({
+        ...route.query,
+        token_proxima_pagina: paginação.tokenDaPróximaPágina
+      })"
+    >
+      carregar mais
+    </button>
+  </div>
+</template>
 
 <style scoped lang="less">
 .container {

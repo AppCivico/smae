@@ -1,3 +1,33 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+
+const route = useRoute();
+const alertStore = useAlertStore();
+const gruposTematicosStore = useGruposTematicosStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(gruposTematicosStore);
+
+async function excluirGrupoTematico(id, item) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${item}"?`,
+    async () => {
+      if (await gruposTematicosStore.excluirItem(id)) {
+        gruposTematicosStore.$reset();
+        gruposTematicosStore.buscarTudo();
+        alertStore.success('Grupo temático removido.');
+      }
+    },
+    'Remover',
+  );
+}
+
+gruposTematicosStore.$reset();
+gruposTematicosStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -73,35 +103,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-
-const route = useRoute();
-const alertStore = useAlertStore();
-const gruposTematicosStore = useGruposTematicosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(gruposTematicosStore);
-
-async function excluirGrupoTematico(id, item) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${item}"?`,
-    async () => {
-      if (await gruposTematicosStore.excluirItem(id)) {
-        gruposTematicosStore.$reset();
-        gruposTematicosStore.buscarTudo();
-        alertStore.success('Grupo temático removido.');
-      }
-    },
-    'Remover',
-  );
-}
-
-gruposTematicosStore.$reset();
-gruposTematicosStore.buscarTudo();
-</script>
 
 <style></style>

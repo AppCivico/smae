@@ -1,3 +1,57 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+import { empreendimento as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  empreendimentoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+const empreendimentosStore = useEmpreendimentosStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(empreendimentosStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.empreendimentoId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (props.empreendimentoId) {
+      response = await empreendimentosStore.salvarItem(
+        dataToSend,
+        props.empreendimentoId,
+      );
+    } else {
+      response = await empreendimentosStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      empreendimentosStore.$reset();
+      router.push({ name: 'mdo.empreendimentos.listar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+if (props.empreendimentoId) {
+  empreendimentosStore.buscarItem(props.empreendimentoId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -80,59 +134,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
-import { empreendimento as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  empreendimentoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const alertStore = useAlertStore();
-const empreendimentosStore = useEmpreendimentosStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(empreendimentosStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.empreendimentoId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (props.empreendimentoId) {
-      response = await empreendimentosStore.salvarItem(
-        dataToSend,
-        props.empreendimentoId,
-      );
-    } else {
-      response = await empreendimentosStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      empreendimentosStore.$reset();
-      router.push({ name: 'mdo.empreendimentos.listar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-if (props.empreendimentoId) {
-  empreendimentosStore.buscarItem(props.empreendimentoId);
-}
-</script>
 
 <style></style>

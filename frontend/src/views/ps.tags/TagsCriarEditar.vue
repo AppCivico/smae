@@ -1,3 +1,67 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field, Form,
+} from 'vee-validate';
+import { defineOptions } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
+import { tag as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOdsStore } from '@/stores/odsPs.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const route = useRoute();
+const router = useRouter();
+
+const alertStore = useAlertStore();
+const tagsStore = useTagsPsStore();
+const odsStore = useOdsStore();
+
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tagsStore);
+const {
+  lista: odsLista, chamadasPendentes: odsChamadasPendentes, erro: odsErro,
+} = storeToRefs(odsStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = route.meta?.tagId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
+
+    if (route.params?.tagId) {
+      response = await tagsStore.salvarItem(
+        dataToSend,
+        route.params?.tagId,
+      );
+    } else {
+      response = await tagsStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      tagsStore.$reset();
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisTags` });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+if (route.params.tagId) {
+  tagsStore.buscarItem(route.params.tagId);
+}
+
+odsStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -102,69 +166,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field, Form,
-} from 'vee-validate';
-import { defineOptions } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
-import { tag as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOdsStore } from '@/stores/odsPs.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-const route = useRoute();
-const router = useRouter();
-
-const alertStore = useAlertStore();
-const tagsStore = useTagsPsStore();
-const odsStore = useOdsStore();
-
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tagsStore);
-const {
-  lista: odsLista, chamadasPendentes: odsChamadasPendentes, erro: odsErro,
-} = storeToRefs(odsStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = route.meta?.tagId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
-
-    if (route.params?.tagId) {
-      response = await tagsStore.salvarItem(
-        dataToSend,
-        route.params?.tagId,
-      );
-    } else {
-      response = await tagsStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      tagsStore.$reset();
-      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisTags` });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-if (route.params.tagId) {
-  tagsStore.buscarItem(route.params.tagId);
-}
-
-odsStore.buscarTudo();
-</script>
 
 <style></style>

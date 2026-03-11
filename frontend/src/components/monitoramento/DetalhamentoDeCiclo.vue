@@ -1,3 +1,147 @@
+<script setup>
+import { onMounted, ref, watch } from 'vue';
+
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import requestS from '@/helpers/requestS.ts';
+
+import ErrorComponent from '../ErrorComponent.vue';
+import LoadingComponent from '../LoadingComponent.vue';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const props = defineProps({
+  cicloDados: {
+    type: Object,
+    default: () => ({}),
+  },
+  metaId: {
+    type: [
+      Number,
+      String,
+    ],
+    required: true,
+  },
+  open: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const chamadasPendentes = ref({
+  risco: false,
+  analise: false,
+  fechamento: false,
+});
+
+const erros = ref({
+  risco: null,
+  analise: null,
+  fechamento: null,
+});
+
+const detailsElem = ref(null);
+
+const risco = ref(null);
+const analise = ref(null);
+const analiseDocumentos = ref([]);
+const fechamento = ref(null);
+const pronto = ref(false);
+
+const estaAberto = ref(false);
+
+function iniciar(cicloId, metaId) {
+  if (!cicloId || !metaId) {
+    return;
+  }
+
+  chamadasPendentes.value.risco = true;
+  chamadasPendentes.value.analise = true;
+  chamadasPendentes.value.fechamento = true;
+
+  erros.value.risco = null;
+  erros.value.analise = null;
+  erros.value.fechamento = null;
+
+  const promessas = [
+    requestS.get(`${baseUrl}/mf/metas/risco`, {
+      ciclo_fisico_id: cicloId,
+      meta_id: metaId,
+      apenas_ultima_revisao: true,
+    })
+      .then((response) => {
+        if (Array.isArray(response.riscos) && response.riscos[0]) {
+          [risco.value] = response.riscos;
+        }
+      })
+      .catch((error) => {
+        erros.value.risco = error;
+      })
+      .finally(() => {
+        chamadasPendentes.value.risco = false;
+      }),
+    requestS.get(`${baseUrl}/mf/metas/fechamento`, {
+      ciclo_fisico_id: cicloId,
+      meta_id: metaId,
+      apenas_ultima_revisao: true,
+    })
+      .then((response) => {
+        if (Array.isArray(response.fechamentos) && response.fechamentos[0]) {
+          [fechamento.value] = response.fechamentos;
+        }
+      })
+      .catch((error) => {
+        erros.value.fechamento = error;
+      })
+      .finally(() => {
+        chamadasPendentes.value.fechamento = false;
+      }),
+    requestS.get(`${baseUrl}/mf/metas/analise-qualitativa`, {
+      ciclo_fisico_id: cicloId,
+      meta_id: metaId,
+      apenas_ultima_revisao: true,
+    })
+      .then((response) => {
+        if (Array.isArray(response.analises) && response.analises[0]) {
+          [analise.value] = response.analises;
+        }
+        if (Array.isArray(response.arquivos)) {
+          analiseDocumentos.value = response.arquivos;
+        }
+      })
+      .catch((error) => {
+        erros.value.analise = error;
+      })
+      .finally(() => {
+        chamadasPendentes.value.analise = false;
+      }),
+  ];
+
+  Promise.allSettled(promessas).then(() => {
+    pronto.value = true;
+  });
+}
+
+onMounted(() => {
+  // definindo o valor inicial na mão e redefinindo num evento porque o
+  // atributo open do `<details>` deixa de existir quando o componente é fechado
+  // e perder a reatividade
+  estaAberto.value = detailsElem.value?.open;
+});
+
+watch(() => estaAberto.value, (novoValor) => {
+  if (novoValor) {
+    iniciar(props.cicloDados?.id, props.metaId);
+  }
+}, { once: true });
+
+watch([() => props.cicloDados?.id, () => props.metaId], ([novoCiclo, novaMeta]) => {
+  if (props.open) {
+    iniciar(novoCiclo, novaMeta);
+  }
+}, { immediate: true });
+</script>
+
 <template>
   <details
     v-if="props.cicloDados?.id && props.metaId"
@@ -228,148 +372,4 @@
     </div>
   </details>
 </template>
-
-<script setup>
-import { onMounted, ref, watch } from 'vue';
-
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import requestS from '@/helpers/requestS.ts';
-
-import ErrorComponent from '../ErrorComponent.vue';
-import LoadingComponent from '../LoadingComponent.vue';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const props = defineProps({
-  cicloDados: {
-    type: Object,
-    default: () => ({}),
-  },
-  metaId: {
-    type: [
-      Number,
-      String,
-    ],
-    required: true,
-  },
-  open: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const chamadasPendentes = ref({
-  risco: false,
-  analise: false,
-  fechamento: false,
-});
-
-const erros = ref({
-  risco: null,
-  analise: null,
-  fechamento: null,
-});
-
-const detailsElem = ref(null);
-
-const risco = ref(null);
-const analise = ref(null);
-const analiseDocumentos = ref([]);
-const fechamento = ref(null);
-const pronto = ref(false);
-
-const estaAberto = ref(false);
-
-function iniciar(cicloId, metaId) {
-  if (!cicloId || !metaId) {
-    return;
-  }
-
-  chamadasPendentes.value.risco = true;
-  chamadasPendentes.value.analise = true;
-  chamadasPendentes.value.fechamento = true;
-
-  erros.value.risco = null;
-  erros.value.analise = null;
-  erros.value.fechamento = null;
-
-  const promessas = [
-    requestS.get(`${baseUrl}/mf/metas/risco`, {
-      ciclo_fisico_id: cicloId,
-      meta_id: metaId,
-      apenas_ultima_revisao: true,
-    })
-      .then((response) => {
-        if (Array.isArray(response.riscos) && response.riscos[0]) {
-          [risco.value] = response.riscos;
-        }
-      })
-      .catch((error) => {
-        erros.value.risco = error;
-      })
-      .finally(() => {
-        chamadasPendentes.value.risco = false;
-      }),
-    requestS.get(`${baseUrl}/mf/metas/fechamento`, {
-      ciclo_fisico_id: cicloId,
-      meta_id: metaId,
-      apenas_ultima_revisao: true,
-    })
-      .then((response) => {
-        if (Array.isArray(response.fechamentos) && response.fechamentos[0]) {
-          [fechamento.value] = response.fechamentos;
-        }
-      })
-      .catch((error) => {
-        erros.value.fechamento = error;
-      })
-      .finally(() => {
-        chamadasPendentes.value.fechamento = false;
-      }),
-    requestS.get(`${baseUrl}/mf/metas/analise-qualitativa`, {
-      ciclo_fisico_id: cicloId,
-      meta_id: metaId,
-      apenas_ultima_revisao: true,
-    })
-      .then((response) => {
-        if (Array.isArray(response.analises) && response.analises[0]) {
-          [analise.value] = response.analises;
-        }
-        if (Array.isArray(response.arquivos)) {
-          analiseDocumentos.value = response.arquivos;
-        }
-      })
-      .catch((error) => {
-        erros.value.analise = error;
-      })
-      .finally(() => {
-        chamadasPendentes.value.analise = false;
-      }),
-  ];
-
-  Promise.allSettled(promessas).then(() => {
-    pronto.value = true;
-  });
-}
-
-onMounted(() => {
-  // definindo o valor inicial na mão e redefinindo num evento porque o
-  // atributo open do `<details>` deixa de existir quando o componente é fechado
-  // e perder a reatividade
-  estaAberto.value = detailsElem.value?.open;
-});
-
-watch(() => estaAberto.value, (novoValor) => {
-  if (novoValor) {
-    iniciar(props.cicloDados?.id, props.metaId);
-  }
-}, { once: true });
-
-watch([() => props.cicloDados?.id, () => props.metaId], ([novoCiclo, novaMeta]) => {
-  if (props.open) {
-    iniciar(novoCiclo, novaMeta);
-  }
-}, { immediate: true });
-</script>
 <style scoped></style>

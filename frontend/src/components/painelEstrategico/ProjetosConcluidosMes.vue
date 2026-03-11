@@ -1,11 +1,3 @@
-<template>
-  <div
-    id="projetosConcluidosMesContainer"
-    class="chartContainer"
-    autoresize
-  />
-</template>
-
 <script setup>
 
 import * as echarts from 'echarts';
@@ -293,6 +285,14 @@ if (props.projetosPlanejadosMes != null && props.projetosPlanejadosMes.length > 
 }
 
 </script>
+
+<template>
+  <div
+    id="projetosConcluidosMesContainer"
+    class="chartContainer"
+    autoresize
+  />
+</template>
 
 <style lang="less">
 

@@ -1,3 +1,87 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, Form, useForm,
+} from 'vee-validate';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
+import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
+import { useAlertStore } from '@/stores/alert.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  statusDistribuicaoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const titulo = typeof route?.meta?.título === 'function'
+  ? computed(() => route.meta.título())
+  : route?.meta?.título;
+
+const alertStore = useAlertStore();
+const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
+const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(statusDistribuicaoWorflowStore);
+
+const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
+const tiposDisponíveis = computed(() => (tipoTransferenciaComoLista.value));
+const tipoSelecionado = ref('');
+
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
+
+function iniciar() {
+  TipoDeTransferenciaStore.buscarTudo();
+}
+
+iniciar();
+
+// TODO: refatorar
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.statusDistribuicaoId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (route.params?.statusDistribuicaoId) {
+      response = await statusDistribuicaoWorflowStore.salvarItem(
+        dataToSend,
+        route.params?.statusDistribuicaoId,
+      );
+    } else {
+      response = await statusDistribuicaoWorflowStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      statusDistribuicaoWorflowStore.$reset();
+      router.push({ name: 'statusDistribuicaoListar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+statusDistribuicaoWorflowStore.$reset();
+// não foi usada a prop.statusDistribuicaoId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.statusDistribuicaoId) {
+  statusDistribuicaoWorflowStore.buscarItem(route.params?.statusDistribuicaoId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <h1> <span v-if="!statusDistribuicaoId" /> {{ titulo || "Status de Distribuição" }}</h1>
@@ -90,89 +174,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, Form, useForm,
-} from 'vee-validate';
-import { computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
-import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
-import { useAlertStore } from '@/stores/alert.store';
-import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  statusDistribuicaoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
-
-const alertStore = useAlertStore();
-const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
-const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(statusDistribuicaoWorflowStore);
-
-const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
-const tiposDisponíveis = computed(() => (tipoTransferenciaComoLista.value));
-const tipoSelecionado = ref('');
-
-const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
-} = useForm({
-  initialValues: itemParaEdicao,
-  validationSchema: schema,
-});
-
-function iniciar() {
-  TipoDeTransferenciaStore.buscarTudo();
-}
-
-iniciar();
-
-// TODO: refatorar
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.statusDistribuicaoId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (route.params?.statusDistribuicaoId) {
-      response = await statusDistribuicaoWorflowStore.salvarItem(
-        dataToSend,
-        route.params?.statusDistribuicaoId,
-      );
-    } else {
-      response = await statusDistribuicaoWorflowStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      statusDistribuicaoWorflowStore.$reset();
-      router.push({ name: 'statusDistribuicaoListar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-statusDistribuicaoWorflowStore.$reset();
-// não foi usada a prop.statusDistribuicaoId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.statusDistribuicaoId) {
-  statusDistribuicaoWorflowStore.buscarItem(route.params?.statusDistribuicaoId);
-}
-</script>
 
   <style></style>

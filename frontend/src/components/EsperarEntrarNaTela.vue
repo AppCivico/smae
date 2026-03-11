@@ -1,24 +1,3 @@
-<template>
-  <template v-if="$slots.default">
-    <component
-      :is="$props.marcadorDePosicao"
-      v-if="!entrouNaTela"
-      ref="elementoTemporario"
-      class="marcador-de-posicao"
-      v-bind="$attrs"
-    >
-      <slot
-        v-if="$slots.marcadorDePosicao"
-        name="conteudoDoMarcadorDePosicao"
-      >
-        <LoadingComponent />
-      </slot>
-    </component>
-    <slot
-      v-else-if="entrouNaTela"
-    />
-  </template>
-</template>
 <script lang="ts" setup>
 import { defineProps, onMounted, ref } from 'vue';
 
@@ -61,6 +40,27 @@ onMounted(() => {
   }
 });
 </script>
+<template>
+  <template v-if="$slots.default">
+    <component
+      :is="$props.marcadorDePosicao"
+      v-if="!entrouNaTela"
+      ref="elementoTemporario"
+      class="marcador-de-posicao"
+      v-bind="$attrs"
+    >
+      <slot
+        v-if="$slots.marcadorDePosicao"
+        name="conteudoDoMarcadorDePosicao"
+      >
+        <LoadingComponent />
+      </slot>
+    </component>
+    <slot
+      v-else-if="entrouNaTela"
+    />
+  </template>
+</template>
 <style scoped>
 .marcador-de-posicao + .marcador-de-posicao {
   min-height: 2rem;

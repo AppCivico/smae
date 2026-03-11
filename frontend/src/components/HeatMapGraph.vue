@@ -1,11 +1,3 @@
-<template>
-  <div
-    id="heatMapContainer"
-    class="chartContainer"
-    autoresize
-  />
-</template>
-
 <script setup>
 
 import * as echarts from 'echarts';
@@ -288,6 +280,14 @@ setTimeout(() => {
 }, 100);
 
 </script>
+
+<template>
+  <div
+    id="heatMapContainer"
+    class="chartContainer"
+    autoresize
+  />
+</template>
 
 <style lang="less">
 

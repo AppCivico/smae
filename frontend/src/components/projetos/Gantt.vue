@@ -1,186 +1,3 @@
-<template>
-  <div class="flex flexwrap center mb2 spacebetween">
-    <div
-      class="f1 mr1 mb1"
-      style="min-width: 7.5em;"
-    >
-      <label class="label tc300">Exibir por</label>
-      <select
-        v-model="tipoDeGantt"
-        class="inputtext"
-        @change="renderChart(config)"
-      >
-        <option
-          v-for="item in tiposDeGráfico"
-          :key="item.value"
-          :value="item.value"
-        >
-          {{ item.name }}
-        </option>
-      </select>
-    </div>
-    <hr class="mr1 f1">
-    <div
-      class="f1 mr1 mb1"
-      style="min-width: 10em;"
-    >
-      <label class="label tc300">Filtrar por</label>
-      <select
-        v-model="filtroAtivo"
-        class="inputtext"
-        @change="renderChart(config)"
-      >
-        <option
-          v-for="item in opçõesDeFiltragem"
-          :key="item.value"
-          :value="item.value"
-        >
-          {{ item.name }}
-        </option>
-      </select>
-    </div>
-    <hr class="mr1 f1">
-    <div class="f1 mr1 mb1">
-      <label class="label tc300">Ano</label>
-      <select
-        v-model="anoEmFoco"
-        :disabled="
-          !['yearly', 'monthly', 'quarterly'].includes(tipoDeGantt)"
-        class="inputtext"
-        @change="renderChart(config)"
-      >
-        <option
-          v-for="item in range(intervalo.início, intervalo.fim)"
-          :key="item"
-          :value="item"
-        >
-          {{ item }}
-        </option>
-      </select>
-    </div>
-    <hr class="mr1 f1">
-    <div class="mb2 f1">
-      <label class="label tc300">
-        Exibir tarefas até nível
-      </label>
-      <div class="flex center">
-        <input
-          id="nivel"
-          v-model.number="nívelMáximoVisível"
-          type="range"
-          name="nivel"
-          min="1"
-          :max="nívelMáximoPermitido"
-          class="f1"
-        >
-        <output
-          class="f1 ml1"
-        >
-          {{ nívelMáximoVisível }}
-        </output>
-      </div>
-    </div>
-  </div>
-
-  <div class="flex mb2 spacebetween t13">
-    <div class="f1">
-      <ul class="legenda mb1">
-        <li
-          v-for="item in tiposDeDependências"
-          :key="item.valor"
-          class="legenda__item mb05"
-          :class="`legenda__item--${item.valor}`"
-        >
-          <svg
-            class="legenda__amostra"
-            height="12"
-            width="12"
-          >
-            <rect
-              width="12"
-              height="12"
-              :fill="coresParaTiposDeDependências[item.valor]"
-            />
-          </svg>
-          {{ item.nome }}
-        </li>
-      </ul>
-    </div>
-
-    <div class="f1">
-      <ul class="legenda mb1">
-        <li class="legenda__item mb05">
-          <svg
-            class="legenda__amostra"
-            width="20"
-            height="12"
-          >
-            <path
-              d="M0,6L20,6"
-              fill="none"
-              stroke="#634A09"
-              stroke-width="1"
-              stroke-dasharray="3, 2"
-            />
-          </svg>
-          início e final planejados
-        </li>
-        <li class="legenda__item mb05">
-          <svg
-            class="legenda__amostra"
-            width="20"
-            height="12"
-          >
-            <path
-              d="M0,6L20,6"
-              fill="none"
-              stroke="#807B65"
-              stroke-width="1"
-              stroke-dasharray="6, 3, 2, 3"
-            />
-          </svg>
-          início real e final planejado
-        </li>
-        <li class="legenda__item mb05">
-          <svg
-            class="legenda__amostra"
-            width="20"
-            height="12"
-          >
-            <path
-              d="M0,6L20,6"
-              fill="none"
-              stroke="#3B5881"
-              stroke-width="1"
-            />
-          </svg>
-          início e final reais
-        </li>
-      </ul>
-      <ul class="legenda mb1">
-        <li class="legenda__item mb05">
-          <svg
-            class="legenda__amostra"
-            width="12"
-            height="12"
-          >
-            <polygon
-              points="0,0 0,12 12,0"
-              fill="red"
-              stroke="none"
-              stroke-width="0"
-            />
-          </svg>
-          marcos do projeto
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div
-    id="gantt"
-    ref="svgElementContainer"
-  />
-</template>
 <script setup>
 import { useResizeObserver } from '@vueuse/core';
 import dayjs from 'dayjs';
@@ -430,6 +247,189 @@ onMounted(async () => {
   }
 });
 </script>
+<template>
+  <div class="flex flexwrap center mb2 spacebetween">
+    <div
+      class="f1 mr1 mb1"
+      style="min-width: 7.5em;"
+    >
+      <label class="label tc300">Exibir por</label>
+      <select
+        v-model="tipoDeGantt"
+        class="inputtext"
+        @change="renderChart(config)"
+      >
+        <option
+          v-for="item in tiposDeGráfico"
+          :key="item.value"
+          :value="item.value"
+        >
+          {{ item.name }}
+        </option>
+      </select>
+    </div>
+    <hr class="mr1 f1">
+    <div
+      class="f1 mr1 mb1"
+      style="min-width: 10em;"
+    >
+      <label class="label tc300">Filtrar por</label>
+      <select
+        v-model="filtroAtivo"
+        class="inputtext"
+        @change="renderChart(config)"
+      >
+        <option
+          v-for="item in opçõesDeFiltragem"
+          :key="item.value"
+          :value="item.value"
+        >
+          {{ item.name }}
+        </option>
+      </select>
+    </div>
+    <hr class="mr1 f1">
+    <div class="f1 mr1 mb1">
+      <label class="label tc300">Ano</label>
+      <select
+        v-model="anoEmFoco"
+        :disabled="
+          !['yearly', 'monthly', 'quarterly'].includes(tipoDeGantt)"
+        class="inputtext"
+        @change="renderChart(config)"
+      >
+        <option
+          v-for="item in range(intervalo.início, intervalo.fim)"
+          :key="item"
+          :value="item"
+        >
+          {{ item }}
+        </option>
+      </select>
+    </div>
+    <hr class="mr1 f1">
+    <div class="mb2 f1">
+      <label class="label tc300">
+        Exibir tarefas até nível
+      </label>
+      <div class="flex center">
+        <input
+          id="nivel"
+          v-model.number="nívelMáximoVisível"
+          type="range"
+          name="nivel"
+          min="1"
+          :max="nívelMáximoPermitido"
+          class="f1"
+        >
+        <output
+          class="f1 ml1"
+        >
+          {{ nívelMáximoVisível }}
+        </output>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex mb2 spacebetween t13">
+    <div class="f1">
+      <ul class="legenda mb1">
+        <li
+          v-for="item in tiposDeDependências"
+          :key="item.valor"
+          class="legenda__item mb05"
+          :class="`legenda__item--${item.valor}`"
+        >
+          <svg
+            class="legenda__amostra"
+            height="12"
+            width="12"
+          >
+            <rect
+              width="12"
+              height="12"
+              :fill="coresParaTiposDeDependências[item.valor]"
+            />
+          </svg>
+          {{ item.nome }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="f1">
+      <ul class="legenda mb1">
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="20"
+            height="12"
+          >
+            <path
+              d="M0,6L20,6"
+              fill="none"
+              stroke="#634A09"
+              stroke-width="1"
+              stroke-dasharray="3, 2"
+            />
+          </svg>
+          início e final planejados
+        </li>
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="20"
+            height="12"
+          >
+            <path
+              d="M0,6L20,6"
+              fill="none"
+              stroke="#807B65"
+              stroke-width="1"
+              stroke-dasharray="6, 3, 2, 3"
+            />
+          </svg>
+          início real e final planejado
+        </li>
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="20"
+            height="12"
+          >
+            <path
+              d="M0,6L20,6"
+              fill="none"
+              stroke="#3B5881"
+              stroke-width="1"
+            />
+          </svg>
+          início e final reais
+        </li>
+      </ul>
+      <ul class="legenda mb1">
+        <li class="legenda__item mb05">
+          <svg
+            class="legenda__amostra"
+            width="12"
+            height="12"
+          >
+            <polygon
+              points="0,0 0,12 12,0"
+              fill="red"
+              stroke="none"
+              stroke-width="0"
+            />
+          </svg>
+          marcos do projeto
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div
+    id="gantt"
+    ref="svgElementContainer"
+  />
+</template>
 <style lang="less">
 @import '@/_less/variables.less';
 

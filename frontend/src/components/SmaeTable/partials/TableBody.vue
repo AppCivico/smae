@@ -203,9 +203,10 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
 
     <tbody v-if="dados.length === 0">
       <tr>
-        <td :colspan="colunasFiltradas.length
-          + (exibirToggle ? 1 : 0)
-          + (temColunaDeAcoes ? 1 : 0)"
+        <td
+          :colspan="colunasFiltradas.length
+            + (exibirToggle ? 1 : 0)
+            + (temColunaDeAcoes ? 1 : 0)"
         >
           Sem dados para exibir
         </td>

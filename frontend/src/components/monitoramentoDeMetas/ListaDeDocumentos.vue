@@ -1,3 +1,23 @@
+<script setup lang="ts">
+import type { ArquivoAnaliseQualitativaDocumentoDto } from '@back/mf/metas/dto/mf-meta-analise-quali.dto';
+
+import { dateToShortDate } from '@/helpers/dateToDate';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+defineEmits(['apagar']);
+
+defineProps({
+  arquivos: {
+    type: Array as () => ArquivoAnaliseQualitativaDocumentoDto[],
+    required: true,
+  },
+  permitirExclusao: {
+    type: Boolean,
+    default: false,
+  },
+});
+</script>
 <template>
   <table
     v-if="Array.isArray($props.arquivos)
@@ -74,23 +94,3 @@
     </tbody>
   </table>
 </template>
-<script setup lang="ts">
-import type { ArquivoAnaliseQualitativaDocumentoDto } from '@back/mf/metas/dto/mf-meta-analise-quali.dto';
-
-import { dateToShortDate } from '@/helpers/dateToDate';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-defineEmits(['apagar']);
-
-defineProps({
-  arquivos: {
-    type: Array as () => ArquivoAnaliseQualitativaDocumentoDto[],
-    required: true,
-  },
-  permitirExclusao: {
-    type: Boolean,
-    default: false,
-  },
-});
-</script>

@@ -1,11 +1,3 @@
-<template>
-  <GraficoDashboard
-    class="pb3"
-    :option="projetosPorEtapaChartOptions"
-    :tooltip-template="formatTooltip"
-  />
-</template>
-
 <script lang="ts" setup>
 import { defineProps, computed } from 'vue';
 
@@ -45,6 +37,14 @@ function formatTooltip(param: TooltipOptions) {
 }
 
 </script>
+
+<template>
+  <GraficoDashboard
+    class="pb3"
+    :option="projetosPorEtapaChartOptions"
+    :tooltip-template="formatTooltip"
+  />
+</template>
 
 <style scoped>
 ::v-deep .chart {

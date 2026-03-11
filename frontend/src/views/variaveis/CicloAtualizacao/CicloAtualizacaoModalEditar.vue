@@ -566,8 +566,8 @@ function restaurarFormulario() {
                 </Field>
 
                 <ErrorMessage
-                  class="error-msg"
                   v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
+                  class="error-msg"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                 />
               </td>

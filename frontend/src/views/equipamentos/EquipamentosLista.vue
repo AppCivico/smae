@@ -1,3 +1,33 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+
+const route = useRoute();
+const alertStore = useAlertStore();
+const equipamentosStore = useEquipamentosStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(equipamentosStore);
+
+async function excluirEquipamento(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await equipamentosStore.excluirItem(id)) {
+        alertStore.success(`"${descricao}" removido.`);
+        equipamentosStore.buscarTudo();
+      }
+    },
+    'Remover',
+  );
+}
+
+equipamentosStore.$reset();
+equipamentosStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -76,35 +106,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
-
-const route = useRoute();
-const alertStore = useAlertStore();
-const equipamentosStore = useEquipamentosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(equipamentosStore);
-
-async function excluirEquipamento(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await equipamentosStore.excluirItem(id)) {
-        alertStore.success(`"${descricao}" removido.`);
-        equipamentosStore.buscarTudo();
-      }
-    },
-    'Remover',
-  );
-}
-
-equipamentosStore.$reset();
-equipamentosStore.buscarTudo();
-</script>
 
 <style></style>

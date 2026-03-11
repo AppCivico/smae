@@ -1,30 +1,3 @@
-<template>
-  <div
-    v-bind="$attrs"
-    tabindex="0"
-    class="envelope-do-grafico br8"
-    @focus="isFocused = true"
-    @blur="isFocused = false"
-  >
-    <v-chart
-      v-if="option"
-      ref="el"
-      :autoresize="{ throttle: 400 }"
-      class="chart"
-      :option="preparedOptions"
-    />
-  </div>
-
-  <div
-    ref="elementoPainelFlutuante"
-    class="painel-flutuante__conteudo"
-    hidden
-  >
-    <component
-      :is="() => conteudoPainelFlutuante"
-    />
-  </div>
-</template>
 <script lang="ts" setup>
 import {
   BarChart, CustomChart, HeatmapChart, LineChart, ScatterChart,
@@ -191,6 +164,33 @@ const preparedOptions = computed((): EChartsCoreOption => {
   };
 });
 </script>
+<template>
+  <div
+    v-bind="$attrs"
+    tabindex="0"
+    class="envelope-do-grafico br8"
+    @focus="isFocused = true"
+    @blur="isFocused = false"
+  >
+    <v-chart
+      v-if="option"
+      ref="el"
+      :autoresize="{ throttle: 400 }"
+      class="chart"
+      :option="preparedOptions"
+    />
+  </div>
+
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component
+      :is="() => conteudoPainelFlutuante"
+    />
+  </div>
+</template>
 <style lang="less" scoped>
 .envelope-do-grafico {
   flex-grow: 1;

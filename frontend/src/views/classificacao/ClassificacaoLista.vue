@@ -1,3 +1,34 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useClassificacaoStore } from '@/stores/classificacao.store';
+
+const alertStore = useAlertStore();
+const classificacaoStore = useClassificacaoStore();
+
+const { lista, erro } = storeToRefs(classificacaoStore);
+
+async function excluirClassificacao(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await classificacaoStore.deletarItem(id)) {
+        classificacaoStore.$reset();
+        classificacaoStore.buscarTudo();
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+onMounted(() => {
+  classificacaoStore.buscarTudo();
+});
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -78,36 +109,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useClassificacaoStore } from '@/stores/classificacao.store';
-
-const alertStore = useAlertStore();
-const classificacaoStore = useClassificacaoStore();
-
-const { lista, erro } = storeToRefs(classificacaoStore);
-
-async function excluirClassificacao(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await classificacaoStore.deletarItem(id)) {
-        classificacaoStore.$reset();
-        classificacaoStore.buscarTudo();
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-onMounted(() => {
-  classificacaoStore.buscarTudo();
-});
-</script>
 
 <style></style>

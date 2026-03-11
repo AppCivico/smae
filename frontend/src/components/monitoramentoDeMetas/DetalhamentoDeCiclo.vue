@@ -1,3 +1,118 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
+
+const route = useRoute();
+
+const props = defineProps({
+  ciclo: {
+    type: Object,
+    default: () => ({}),
+  },
+  metaId: {
+    type: [
+      Number,
+      String,
+    ],
+    required: true,
+  },
+  open: {
+    type: Boolean,
+    default: false,
+  },
+  cicloAtual: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entidadeMãe);
+const estaAberto = ref(false);
+
+const {
+  chamadasPendentes,
+  ciclosDetalhadosPorId,
+  erros,
+} = storeToRefs(monitoramentoDeMetasStore);
+
+const detailsElem = ref(null);
+const cicloDetalhes = computed(() => ciclosDetalhadosPorId.value?.[props.ciclo.id]?.atual || null);
+
+const analise = computed(() => cicloDetalhes.value?.analise || null);
+const analiseDocumentos = computed(() => cicloDetalhes.value?.arquivos || []);
+const risco = computed(() => cicloDetalhes.value?.risco || null);
+const listaDeFechamentos = computed(() => [].concat(
+  cicloDetalhes.value?.fechamento ? [cicloDetalhes.value.fechamento] : [],
+  cicloDetalhes.value?.historico_fechamentos || [],
+));
+
+function handleToggle(event) {
+  estaAberto.value = event.target.open;
+}
+
+// Nem todas as variáveis tem ciclo de monitoramento
+if (props.ciclo?.id) {
+  watch(() => estaAberto.value, (novoValor) => {
+    if (novoValor && !cicloDetalhes.value) {
+      monitoramentoDeMetasStore.buscarCiclo(
+        route.params.planoSetorialId,
+        props.ciclo.id,
+        {
+          meta_id: route.params.meta_id,
+        },
+      );
+    }
+  });
+}
+
+async function reabrirCiclo() {
+  if (chamadasPendentes.value.reabrirCiclo[props.ciclo.id]) return;
+
+  try {
+    const sucesso = await monitoramentoDeMetasStore.reabrirCiclo(
+      route.params.planoSetorialId,
+      props.ciclo.id,
+      {
+        meta_id: route.params.meta_id,
+      },
+    );
+
+    if (sucesso) {
+      // Atualizar tanto a lista quanto os detalhes do ciclo exibido
+      if (estaAberto.value) {
+        monitoramentoDeMetasStore.buscarCiclo(
+          route.params.planoSetorialId,
+          props.ciclo.id,
+          {
+            meta_id: route.params.meta_id,
+          },
+        );
+      }
+      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
+        meta_id: route.params.meta_id,
+      });
+    } else {
+      throw new Error('Falha ao reabrir ciclo');
+    }
+  } catch (erro) {
+    console.error('Erro ao reabrir ciclo:', erro);
+
+    throw erro;
+  }
+}
+
+onMounted(() => {
+  estaAberto.value = props.open;
+});
+</script>
 <template>
   <details
     :id="$attrs.id || (ciclo.id ? `ciclo--${ciclo.id}` : null)"
@@ -243,121 +358,6 @@
     </div>
   </details>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  computed, onMounted, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
-
-import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
-
-const route = useRoute();
-
-const props = defineProps({
-  ciclo: {
-    type: Object,
-    default: () => ({}),
-  },
-  metaId: {
-    type: [
-      Number,
-      String,
-    ],
-    required: true,
-  },
-  open: {
-    type: Boolean,
-    default: false,
-  },
-  cicloAtual: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entidadeMãe);
-const estaAberto = ref(false);
-
-const {
-  chamadasPendentes,
-  ciclosDetalhadosPorId,
-  erros,
-} = storeToRefs(monitoramentoDeMetasStore);
-
-const detailsElem = ref(null);
-const cicloDetalhes = computed(() => ciclosDetalhadosPorId.value?.[props.ciclo.id]?.atual || null);
-
-const analise = computed(() => cicloDetalhes.value?.analise || null);
-const analiseDocumentos = computed(() => cicloDetalhes.value?.arquivos || []);
-const risco = computed(() => cicloDetalhes.value?.risco || null);
-const listaDeFechamentos = computed(() => [].concat(
-  cicloDetalhes.value?.fechamento ? [cicloDetalhes.value.fechamento] : [],
-  cicloDetalhes.value?.historico_fechamentos || [],
-));
-
-function handleToggle(event) {
-  estaAberto.value = event.target.open;
-}
-
-// Nem todas as variáveis tem ciclo de monitoramento
-if (props.ciclo?.id) {
-  watch(() => estaAberto.value, (novoValor) => {
-    if (novoValor && !cicloDetalhes.value) {
-      monitoramentoDeMetasStore.buscarCiclo(
-        route.params.planoSetorialId,
-        props.ciclo.id,
-        {
-          meta_id: route.params.meta_id,
-        },
-      );
-    }
-  });
-}
-
-async function reabrirCiclo() {
-  if (chamadasPendentes.value.reabrirCiclo[props.ciclo.id]) return;
-
-  try {
-    const sucesso = await monitoramentoDeMetasStore.reabrirCiclo(
-      route.params.planoSetorialId,
-      props.ciclo.id,
-      {
-        meta_id: route.params.meta_id,
-      },
-    );
-
-    if (sucesso) {
-      // Atualizar tanto a lista quanto os detalhes do ciclo exibido
-      if (estaAberto.value) {
-        monitoramentoDeMetasStore.buscarCiclo(
-          route.params.planoSetorialId,
-          props.ciclo.id,
-          {
-            meta_id: route.params.meta_id,
-          },
-        );
-      }
-      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
-        meta_id: route.params.meta_id,
-      });
-    } else {
-      throw new Error('Falha ao reabrir ciclo');
-    }
-  } catch (erro) {
-    console.error('Erro ao reabrir ciclo:', erro);
-
-    throw erro;
-  }
-}
-
-onMounted(() => {
-  estaAberto.value = props.open;
-});
-</script>
 <style scoped>
 .ciclo-atual__summary::before {
   display: none;
