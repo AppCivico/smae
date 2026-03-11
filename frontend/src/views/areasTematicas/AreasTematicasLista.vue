@@ -12,7 +12,6 @@ const alertStore = useAlertStore();
 
 const { lista } = storeToRefs(areasTematicasStore);
 
-// Ordenação: ativos primeiro, depois alfabética
 const listaOrdenada = computed(() => {
   const listaClone = [...lista.value];
 
