@@ -1,3 +1,12 @@
+<script lang="ts" setup>
+import type { MetaIniAtvTag } from '@back/meta/entities/meta.entity.ts';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+defineProps<{
+  listaDeTags: MetaIniAtvTag[];
+}>();
+</script>
 <template>
   <h4>Tags</h4>
   <ul class="lista-de-tags flex g1 flexwrap">
@@ -30,15 +39,6 @@
     </li>
   </ul>
 </template>
-<script lang="ts" setup>
-import type { MetaIniAtvTag } from '@back/meta/entities/meta.entity.ts';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-defineProps<{
-  listaDeTags: MetaIniAtvTag[];
-}>();
-</script>
 <style lang="less" scoped>
 .lista-de-tags {}
 

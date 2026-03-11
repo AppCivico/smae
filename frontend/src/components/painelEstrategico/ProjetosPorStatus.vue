@@ -1,11 +1,3 @@
-<template>
-  <GraficoDashboard
-    class="pb3"
-    :option="projetosPorStatusChartOptions"
-    :tooltip-template="formatTooltip"
-  />
-</template>
-
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -44,3 +36,11 @@ function formatTooltip(param: TooltipOptions) {
   `;
 }
 </script>
+
+<template>
+  <GraficoDashboard
+    class="pb3"
+    :option="projetosPorStatusChartOptions"
+    :tooltip-template="formatTooltip"
+  />
+</template>

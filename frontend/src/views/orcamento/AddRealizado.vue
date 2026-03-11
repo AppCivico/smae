@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  ref, toRaw, watch
+  ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 

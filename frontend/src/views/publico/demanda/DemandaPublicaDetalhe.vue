@@ -262,11 +262,14 @@ watch(() => props.id, () => {
   <LoadingComponent v-if="chamadasPendentes.emFoco" />
 
   <article
-    class="erro-demanda"
     v-else-if="erro"
+    class="erro-demanda"
   >
     <h2>Demanda Indisponível</h2>
-    <img src="@/assets/erro-demanda.svg" alt="">
+    <img
+      src="@/assets/erro-demanda.svg"
+      alt=""
+    >
     <p>Entre em contato com a Secretaria Executiva de Relações Institucionais (SERI)</p>
   </article>
   <div

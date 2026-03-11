@@ -1,6 +1,3 @@
-<template>
-  <div ref="svgElementContainer" />
-</template>
 <script setup>
 import { useResizeObserver } from '@vueuse/core';
 import { select as d3Select } from 'd3';
@@ -95,3 +92,6 @@ onMounted(async () => {
   }
 });
 </script>
+<template>
+  <div ref="svgElementContainer" />
+</template>

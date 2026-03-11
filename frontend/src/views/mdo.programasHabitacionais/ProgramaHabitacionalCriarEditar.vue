@@ -1,3 +1,57 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+import { programaHabitacional as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  programaHabitacionalId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+const programaHabitacionalStore = useProgramaHabitacionalStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(programaHabitacionalStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.programaHabitacionalId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    if (route.params?.programaHabitacionalId) {
+      response = await programaHabitacionalStore.salvarItem(
+        values,
+        route.params.programaHabitacionalId,
+      );
+    } else {
+      response = await programaHabitacionalStore.salvarItem(values);
+    }
+    if (response) {
+      alertStore.success(msg);
+      programaHabitacionalStore.$reset();
+      router.push({ name: 'mdoProgramaHabitacional.listar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+programaHabitacionalStore.$reset();
+// não foi usada a prop.programaHabitacionalId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.programaHabitacionalId) {
+  programaHabitacionalStore.buscarItem(route.params?.programaHabitacionalId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -64,59 +118,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
-import { programaHabitacional as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  programaHabitacionalId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const alertStore = useAlertStore();
-const programaHabitacionalStore = useProgramaHabitacionalStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(programaHabitacionalStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.programaHabitacionalId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    if (route.params?.programaHabitacionalId) {
-      response = await programaHabitacionalStore.salvarItem(
-        values,
-        route.params.programaHabitacionalId,
-      );
-    } else {
-      response = await programaHabitacionalStore.salvarItem(values);
-    }
-    if (response) {
-      alertStore.success(msg);
-      programaHabitacionalStore.$reset();
-      router.push({ name: 'mdoProgramaHabitacional.listar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-programaHabitacionalStore.$reset();
-// não foi usada a prop.programaHabitacionalId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.programaHabitacionalId) {
-  programaHabitacionalStore.buscarItem(route.params?.programaHabitacionalId);
-}
-</script>
 
 <style></style>

@@ -1,3 +1,14 @@
+<script setup>
+import dinheiro from '@/helpers/dinheiro';
+
+defineProps({
+  valor: {
+    type: Number,
+    default: null,
+  },
+});
+</script>
+
 <template>
   <div
     v-if="valor"
@@ -13,17 +24,6 @@
     <p>Não foram encontrados dados para os parâmetros selecionados</p>
   </div>
 </template>
-
-<script setup>
-import dinheiro from '@/helpers/dinheiro';
-
-defineProps({
-  valor: {
-    type: Number,
-    default: null,
-  },
-});
-</script>
 
 <style scoped>
 .container {

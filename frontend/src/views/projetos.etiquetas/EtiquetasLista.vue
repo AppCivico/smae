@@ -1,30 +1,3 @@
-<template>
-  <CabecalhoDePagina>
-    <template #acoes>
-      <SmaeLink
-        :to="{ name: 'projeto.etiquetas.criar' }"
-        class="btn big"
-      >
-        Nova etiqueta
-      </SmaeLink>
-    </template>
-  </CabecalhoDePagina>
-
-  <SmaeTable
-    :dados="lista"
-    :colunas="[
-      { chave: 'portfolio.titulo', label: 'Portfólio' },
-      { chave: 'descricao', label: 'Descrição' },
-    ]"
-    :rota-editar="({ id, pode_editar }) => pode_editar && ({
-      name: 'projeto.etiquetas.editar',
-      params: { etiquetaId: id }
-    })"
-    parametro-no-objeto-para-excluir="descricao"
-    @deletar="excluirEtiqueta"
-  />
-</template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
@@ -51,5 +24,32 @@ onMounted(() => {
   projetoEtiquetasStore.buscarTudo();
 });
 </script>
+
+<template>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: 'projeto.etiquetas.criar' }"
+        class="btn big"
+      >
+        Nova etiqueta
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
+
+  <SmaeTable
+    :dados="lista"
+    :colunas="[
+      { chave: 'portfolio.titulo', label: 'Portfólio' },
+      { chave: 'descricao', label: 'Descrição' },
+    ]"
+    :rota-editar="({ id, pode_editar }) => pode_editar && ({
+      name: 'projeto.etiquetas.editar',
+      params: { etiquetaId: id }
+    })"
+    parametro-no-objeto-para-excluir="descricao"
+    @deletar="excluirEtiqueta"
+  />
+</template>
 
 <style></style>

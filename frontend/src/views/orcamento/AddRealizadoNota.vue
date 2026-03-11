@@ -101,7 +101,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
     // sobrescrever propriedade `nota_empenho`
     const r = await OrcamentosStore.insertOrcamentoRealizado({
-      ...values, nota_empenho: notaEmpenhoEAno.value
+      ...values, nota_empenho: notaEmpenhoEAno.value,
     });
     const msg = 'Dados salvos com sucesso!';
 

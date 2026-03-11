@@ -1,3 +1,56 @@
+<script lang="ts" setup>
+import type { VariavelAuxiliarDto } from '@back/variavel/dto/list-variavel.dto';
+import type { VariavelAnaliseQualitativaResponseDto } from '@back/variavel/dto/variavel.ciclo.dto';
+import { computed, PropType } from 'vue';
+
+import fasesDaVariavel from '@/consts/fasesDaVariavel';
+import { localizarDataHorario } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const props = defineProps({
+  analise: {
+    type: Object as PropType<VariavelAnaliseQualitativaResponseDto | null>,
+    default: null,
+  },
+  periodo: {
+    type: String,
+    default: '',
+  },
+  dadosAuxiliares: {
+    type: Object as PropType<VariavelAuxiliarDto>,
+    default: () => null,
+  },
+});
+
+type VariavelFase = 'Preenchimento' | 'Validacao' | 'Liberacao';
+type Fase = {
+  fase: VariavelFase;
+  criador_nome: string;
+  criado_em: Date;
+  eh_liberacao_auto?: boolean;
+  analise_qualitativa?: string;
+};
+
+const fasesMapeadas = computed(() => {
+  const mapa: Record<VariavelFase, Fase | null> = {
+    Preenchimento: null,
+    Validacao: null,
+    Liberacao: null,
+  };
+
+  if (props.analise?.analises && Array.isArray(props.analise?.analises)) {
+    props.analise.analises.forEach((item: Fase) => {
+      if (mapa[item.fase as VariavelFase] !== undefined) {
+        mapa[item.fase as VariavelFase] = item;
+      }
+    });
+  }
+
+  return mapa;
+});
+</script>
 <template>
   <div>
     <h3>
@@ -143,56 +196,3 @@
     </div>
   </div>
 </template>
-<script lang="ts" setup>
-import type { VariavelAuxiliarDto } from '@back/variavel/dto/list-variavel.dto';
-import type { VariavelAnaliseQualitativaResponseDto } from '@back/variavel/dto/variavel.ciclo.dto';
-import { computed, PropType } from 'vue';
-
-import fasesDaVariavel from '@/consts/fasesDaVariavel';
-import { localizarDataHorario } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const props = defineProps({
-  analise: {
-    type: Object as PropType<VariavelAnaliseQualitativaResponseDto | null>,
-    default: null,
-  },
-  periodo: {
-    type: String,
-    default: '',
-  },
-  dadosAuxiliares: {
-    type: Object as PropType<VariavelAuxiliarDto>,
-    default: () => null,
-  },
-});
-
-type VariavelFase = 'Preenchimento' | 'Validacao' | 'Liberacao';
-type Fase = {
-  fase: VariavelFase;
-  criador_nome: string;
-  criado_em: Date;
-  eh_liberacao_auto?: boolean;
-  analise_qualitativa?: string;
-};
-
-const fasesMapeadas = computed(() => {
-  const mapa: Record<VariavelFase, Fase | null> = {
-    Preenchimento: null,
-    Validacao: null,
-    Liberacao: null,
-  };
-
-  if (props.analise?.analises && Array.isArray(props.analise?.analises)) {
-    props.analise.analises.forEach((item: Fase) => {
-      if (mapa[item.fase as VariavelFase] !== undefined) {
-        mapa[item.fase as VariavelFase] = item;
-      }
-    });
-  }
-
-  return mapa;
-});
-</script>

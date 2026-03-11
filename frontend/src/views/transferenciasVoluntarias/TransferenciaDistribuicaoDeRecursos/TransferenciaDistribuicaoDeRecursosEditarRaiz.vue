@@ -1,7 +1,3 @@
-<template>
-  <router-view />
-</template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
@@ -28,3 +24,7 @@ watch(() => route.params.recursoId, (novoRecursoId) => {
   }
 }, { immediate: true });
 </script>
+
+<template>
+  <router-view />
+</template>

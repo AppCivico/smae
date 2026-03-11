@@ -1,32 +1,3 @@
-<template>
-  <Dashboard>
-    <TítuloDePágina>Lista de ícones</TítuloDePágina>
-
-    <dl
-      v-if="lista.length"
-      class="flex flexwrap g2"
-    >
-      <div
-        v-for="item in lista"
-        :key="item.id"
-        class="p1 tc"
-      >
-        <dt class="flex justifycenter">
-          <svg
-            :width="item.width || 24"
-            :height="item.height || 24"
-          ><use :xlink:href="item.url" /></svg>
-        </dt>
-        <dt class="w900 mt1">
-          {{ item.name }}
-        </dt>
-        <dd class="mt1">
-          {{ item.width }}px × {{ item.height }}px
-        </dd>
-      </div>
-    </dl>
-  </Dashboard>
-</template>
 <script lang="ts" setup>
 import { Ref, ref } from 'vue';
 
@@ -68,3 +39,32 @@ function montarLista() {
 
 montarLista();
 </script>
+<template>
+  <Dashboard>
+    <TítuloDePágina>Lista de ícones</TítuloDePágina>
+
+    <dl
+      v-if="lista.length"
+      class="flex flexwrap g2"
+    >
+      <div
+        v-for="item in lista"
+        :key="item.id"
+        class="p1 tc"
+      >
+        <dt class="flex justifycenter">
+          <svg
+            :width="item.width || 24"
+            :height="item.height || 24"
+          ><use :xlink:href="item.url" /></svg>
+        </dt>
+        <dt class="w900 mt1">
+          {{ item.name }}
+        </dt>
+        <dd class="mt1">
+          {{ item.width }}px × {{ item.height }}px
+        </dd>
+      </div>
+    </dl>
+  </Dashboard>
+</template>

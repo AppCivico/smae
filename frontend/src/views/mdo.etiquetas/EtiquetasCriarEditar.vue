@@ -1,3 +1,57 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+import { etiqueta as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  etiquetaId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+const etiquetasStore = useEtiquetasStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(etiquetasStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.etiquetaId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (props.etiquetaId) {
+      response = await etiquetasStore.salvarItem(
+        dataToSend,
+        props.etiquetaId,
+      );
+    } else {
+      response = await etiquetasStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      etiquetasStore.$reset();
+      router.push({ name: 'mdoEtiquetas.listar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+if (props.etiquetaId) {
+  etiquetasStore.buscarItem(props.etiquetaId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -63,59 +117,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
-import { etiqueta as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  etiquetaId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const alertStore = useAlertStore();
-const etiquetasStore = useEtiquetasStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(etiquetasStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.etiquetaId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (props.etiquetaId) {
-      response = await etiquetasStore.salvarItem(
-        dataToSend,
-        props.etiquetaId,
-      );
-    } else {
-      response = await etiquetasStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      etiquetasStore.$reset();
-      router.push({ name: 'mdoEtiquetas.listar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-if (props.etiquetaId) {
-  etiquetasStore.buscarItem(props.etiquetaId);
-}
-</script>
 
 <style></style>

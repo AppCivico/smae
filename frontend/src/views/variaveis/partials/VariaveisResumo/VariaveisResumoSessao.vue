@@ -1,3 +1,47 @@
+<script lang="ts" setup>
+import { computed } from 'vue';
+
+type PossiveisValores = string | number | null | any;
+
+type SessaoDeDetalheLinha = {
+  label: string
+  valor?: PossiveisValores
+  col?: number
+  esconder?: boolean
+}[];
+
+export type SessaoDeDetalheLinhas = SessaoDeDetalheLinha[];
+
+type Props = {
+  linhas: SessaoDeDetalheLinhas
+  removerDivisoria?: boolean
+  titulo?: string
+  quantidadeColunas?: number
+};
+
+const props = defineProps<Props>();
+
+const linhasMapeadas = computed<SessaoDeDetalheLinhas>(() => (
+  props.linhas.map((linha) => linha.filter((item) => !item.esconder))
+));
+
+function valorEhArray(valor: PossiveisValores): boolean {
+  return !!Array.isArray(valor);
+}
+
+function obterLinhas(quantidadeLinhas: number): number {
+  if (props.quantidadeColunas) {
+    return props.quantidadeColunas;
+  }
+
+  if (quantidadeLinhas < 3) {
+    return 3;
+  }
+
+  return quantidadeLinhas;
+}
+</script>
+
 <template>
   <article
     class="flex column g2 variavel-detalhe-sessao"
@@ -62,50 +106,6 @@
     </div>
   </article>
 </template>
-
-<script lang="ts" setup>
-import { computed } from 'vue';
-
-type PossiveisValores = string | number | null | any;
-
-type SessaoDeDetalheLinha = {
-  label: string
-  valor?: PossiveisValores
-  col?: number
-  esconder?: boolean
-}[];
-
-export type SessaoDeDetalheLinhas = SessaoDeDetalheLinha[];
-
-type Props = {
-  linhas: SessaoDeDetalheLinhas
-  removerDivisoria?: boolean
-  titulo?: string
-  quantidadeColunas?: number
-};
-
-const props = defineProps<Props>();
-
-const linhasMapeadas = computed<SessaoDeDetalheLinhas>(() => (
-  props.linhas.map((linha) => linha.filter((item) => !item.esconder))
-));
-
-function valorEhArray(valor: PossiveisValores): boolean {
-  return !!Array.isArray(valor);
-}
-
-function obterLinhas(quantidadeLinhas: number): number {
-  if (props.quantidadeColunas) {
-    return props.quantidadeColunas;
-  }
-
-  if (quantidadeLinhas < 3) {
-    return 3;
-  }
-
-  return quantidadeLinhas;
-}
-</script>
 
 <style lang="less" scoped>
 .variavel-detalhe-sessao__divider-titulo {

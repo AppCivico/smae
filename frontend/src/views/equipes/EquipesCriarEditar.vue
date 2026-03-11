@@ -1,3 +1,165 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { ref, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { equipes as schema } from '@/consts/formSchemas';
+import tipoDePerfil from '@/consts/tipoDePerfil';
+import requestS from '@/helpers/requestS.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useUsersStore } from '@/stores/users.store';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  grupoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const colaboradores = ref({});
+const participantes = ref({});
+
+const alertStore = useAlertStore();
+const usersStore = useUsersStore();
+const orgaosStore = useOrgansStore();
+const equipesStore = useEquipesStore();
+const { órgãosComoLista } = storeToRefs(orgaosStore);
+const {
+  chamadasPendentes, emFoco, erro, itemParaEdicao,
+} = storeToRefs(equipesStore);
+
+const {
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  setFieldValue,
+  values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
+
+const authStore = useAuthStore();
+const { user, temPermissãoPara } = storeToRefs(authStore);
+const formularioSujo = useIsFormDirty();
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  try {
+    let response;
+    const msg = props.grupoId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    if (route.params?.equipeId) {
+      response = await equipesStore.salvarItem(
+        valoresControlados,
+        route.params.equipeId,
+      );
+    } else {
+      response = await equipesStore.salvarItem(values);
+    }
+    if (response) {
+      alertStore.success(msg);
+      equipesStore.$reset();
+      router.push({ name: 'equipesListar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+async function buscarPessoasSimplificadas() {
+  if (!participantes.value[values.orgao_id]) {
+    const { linhas: linhasParticipantes } = await requestS.get(
+      `${baseUrl}/pessoa/reduzido`,
+      {
+        orgao_recursivo: true,
+        orgao_id: values.orgao_id,
+      },
+    );
+
+    if (Array.isArray(linhasParticipantes)) {
+      participantes.value[values.orgao_id] = linhasParticipantes;
+    } else {
+      throw new Error('Erro ao buscar pessoas simplificadas');
+    }
+  }
+
+  if (!colaboradores.value[values.orgao_id]) {
+    const { linhas: linhasColaboradores } = await requestS.get(
+      `${baseUrl}/pessoa/reduzido`,
+      {
+        orgao_recursivo: true,
+        colaborador_grupo_variavel: true,
+        orgao_id: values.orgao_id,
+      },
+    );
+
+    if (Array.isArray(linhasColaboradores)) {
+      colaboradores.value[values.orgao_id] = linhasColaboradores;
+    } else {
+      throw new Error('Erro ao buscar pessoas simplificadas');
+    }
+  }
+}
+
+async function iniciar() {
+  usersStore.buscarPessoasSimplificadas({ orgao_recursivo: true });
+
+  if (emFoco.value?.id !== route.params?.equipeId) {
+    equipesStore.$reset();
+
+    if (route.params?.equipeId) {
+      await equipesStore.buscarItem({ id: route.params.equipeId });
+
+      resetForm({
+        values: itemParaEdicao.value,
+      });
+    }
+  }
+
+  if (orgaosStore.órgãosComoLista.length === 0) {
+    await orgaosStore.getAll().finally(() => {
+      chamadasPendentes.value.emFoco = false;
+    });
+  }
+
+  if (!route.params.equipeId) {
+    setFieldValue('orgao_id', user.value.orgao_id);
+  }
+}
+
+watch(() => values.orgao_id, () => {
+  if (values.orgao_id) {
+    buscarPessoasSimplificadas();
+    setFieldValue('colaboradores', []);
+    setFieldValue('participantes', []);
+  }
+});
+
+onMounted(() => {
+  iniciar();
+});
+</script>
+
 <template>
   <header class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -172,165 +334,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { ref, watch, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { equipes as schema } from '@/consts/formSchemas';
-import tipoDePerfil from '@/consts/tipoDePerfil';
-import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useUsersStore } from '@/stores/users.store';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  grupoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const colaboradores = ref({});
-const participantes = ref({});
-
-const alertStore = useAlertStore();
-const usersStore = useUsersStore();
-const orgaosStore = useOrgansStore();
-const equipesStore = useEquipesStore();
-const { órgãosComoLista } = storeToRefs(orgaosStore);
-const {
-  chamadasPendentes, emFoco, erro, itemParaEdicao,
-} = storeToRefs(equipesStore);
-
-const {
-  errors,
-  handleSubmit,
-  isSubmitting,
-  resetForm,
-  setFieldValue,
-  values,
-} = useForm({
-  initialValues: itemParaEdicao,
-  validationSchema: schema,
-});
-
-const authStore = useAuthStore();
-const { user, temPermissãoPara } = storeToRefs(authStore);
-const formularioSujo = useIsFormDirty();
-
-const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  try {
-    let response;
-    const msg = props.grupoId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    if (route.params?.equipeId) {
-      response = await equipesStore.salvarItem(
-        valoresControlados,
-        route.params.equipeId,
-      );
-    } else {
-      response = await equipesStore.salvarItem(values);
-    }
-    if (response) {
-      alertStore.success(msg);
-      equipesStore.$reset();
-      router.push({ name: 'equipesListar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-});
-
-async function buscarPessoasSimplificadas() {
-  if (!participantes.value[values.orgao_id]) {
-    const { linhas: linhasParticipantes } = await requestS.get(
-      `${baseUrl}/pessoa/reduzido`,
-      {
-        orgao_recursivo: true,
-        orgao_id: values.orgao_id,
-      },
-    );
-
-    if (Array.isArray(linhasParticipantes)) {
-      participantes.value[values.orgao_id] = linhasParticipantes;
-    } else {
-      throw new Error('Erro ao buscar pessoas simplificadas');
-    }
-  }
-
-  if (!colaboradores.value[values.orgao_id]) {
-    const { linhas: linhasColaboradores } = await requestS.get(
-      `${baseUrl}/pessoa/reduzido`,
-      {
-        orgao_recursivo: true,
-        colaborador_grupo_variavel: true,
-        orgao_id: values.orgao_id,
-      },
-    );
-
-    if (Array.isArray(linhasColaboradores)) {
-      colaboradores.value[values.orgao_id] = linhasColaboradores;
-    } else {
-      throw new Error('Erro ao buscar pessoas simplificadas');
-    }
-  }
-}
-
-async function iniciar() {
-  usersStore.buscarPessoasSimplificadas({ orgao_recursivo: true });
-
-  if (emFoco.value?.id !== route.params?.equipeId) {
-    equipesStore.$reset();
-
-    if (route.params?.equipeId) {
-      await equipesStore.buscarItem({ id: route.params.equipeId });
-
-      resetForm({
-        values: itemParaEdicao.value,
-      });
-    }
-  }
-
-  if (orgaosStore.órgãosComoLista.length === 0) {
-    await orgaosStore.getAll().finally(() => {
-      chamadasPendentes.value.emFoco = false;
-    });
-  }
-
-  if (!route.params.equipeId) {
-    setFieldValue('orgao_id', user.value.orgao_id);
-  }
-}
-
-watch(() => values.orgao_id, () => {
-  if (values.orgao_id) {
-    buscarPessoasSimplificadas();
-    setFieldValue('colaboradores', []);
-    setFieldValue('participantes', []);
-  }
-});
-
-onMounted(() => {
-  iniciar();
-});
-</script>

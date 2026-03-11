@@ -1,101 +1,3 @@
-<template>
-  <nav
-    v-if="paginas > 1"
-    class="menu-de-paginacao"
-  >
-    <ul
-      class="menu-de-paginacao__lista"
-      data-test="menu-paginacao"
-    >
-      <li
-        class="menu-de-paginacao__item menu-de-paginacao__item--anterior"
-        :class="{
-          'menu-de-paginacao__item--desabilitado': paginaCorrente === 1
-        }"
-        data-test="item-paginacao-anterior"
-      >
-        <component
-          :is="model ? 'button' : 'router-link'"
-          class="menu-de-paginacao__link"
-          :type="model ? 'button' : null"
-          :to="linkDeRetrocesso"
-          data-test="link-paginacao-anterior"
-          @click.prevent="() => irParaPagina(paginaCorrente - 1)"
-        >
-          <svg
-            aria-hidden="true"
-            width="8"
-            height="13"
-          ><use xlink:href="#i_left" /></svg>
-          <span class="menu-de-paginacao__texto">
-            Anterior
-          </span>
-        </component>
-      </li>
-
-      <li class="menu-de-paginacao__item menu-de-paginacao__item--corrente">
-        <input
-          :aria-busy="navegando || $attrs.ariaBusy"
-          aria-label="Página corrente"
-          :value="paginaCorrente"
-          class="like-a__text menu-de-paginacao__campo"
-          data-test="campo-navegacao-pagina"
-          @change="(ev) => irParaPagina(ev.target.value)"
-          @keyup.enter="(ev) => irParaPagina(ev.target.value)"
-        >
-      </li>
-
-      <li
-        class="menu-de-paginacao__item menu-de-paginacao__item--ultima"
-      >
-        <component
-          :is="model ? 'button' : 'router-link'"
-          class="menu-de-paginacao__link menu-de-paginacao__link--total-de-paginas"
-          :type="model ? 'button' : null"
-          :to="linkParaUltimaPagina"
-          aria-label="Última página"
-          @click.prevent="() => irParaPagina(paginas)"
-        >
-          {{ paginas }}
-        </component>
-      </li>
-
-      <li
-        class="menu-de-paginacao__item menu-de-paginacao__item--seguinte"
-        :class="{
-          'menu-de-paginacao__item--desabilitado': paginaCorrente >= paginas
-        }"
-      >
-        <component
-          :is="model ? 'button' : 'router-link'"
-          class="menu-de-paginacao__link"
-          :type="model ? 'button' : null"
-          :to="linkDeAvanco"
-          data-test="link-paginacao-seguinte"
-          @click.prevent="() => irParaPagina(paginaCorrente + 1)"
-        >
-          <span class="menu-de-paginacao__texto">
-            Seguinte
-          </span>
-          <svg
-            aria-hidden="true"
-            width="8"
-            height="13"
-          ><use xlink:href="#i_right" /></svg>
-        </component>
-      </li>
-    </ul>
-
-    <output
-      v-if="totalRegistros"
-      class="menu-de-paginacao__total-de-registros"
-      role="status"
-      aria-label="Total de registros"
-    >
-      {{ totalRegistros }} registro{{ totalRegistros === 1 ? '' : 's' }}
-    </output>
-  </nav>
-</template>
 <script setup>
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -202,6 +104,104 @@ async function irParaPagina(numero) {
   }
 }
 </script>
+<template>
+  <nav
+    v-if="paginas > 1"
+    class="menu-de-paginacao"
+  >
+    <ul
+      class="menu-de-paginacao__lista"
+      data-test="menu-paginacao"
+    >
+      <li
+        class="menu-de-paginacao__item menu-de-paginacao__item--anterior"
+        :class="{
+          'menu-de-paginacao__item--desabilitado': paginaCorrente === 1
+        }"
+        data-test="item-paginacao-anterior"
+      >
+        <component
+          :is="model ? 'button' : 'router-link'"
+          class="menu-de-paginacao__link"
+          :type="model ? 'button' : null"
+          :to="linkDeRetrocesso"
+          data-test="link-paginacao-anterior"
+          @click.prevent="() => irParaPagina(paginaCorrente - 1)"
+        >
+          <svg
+            aria-hidden="true"
+            width="8"
+            height="13"
+          ><use xlink:href="#i_left" /></svg>
+          <span class="menu-de-paginacao__texto">
+            Anterior
+          </span>
+        </component>
+      </li>
+
+      <li class="menu-de-paginacao__item menu-de-paginacao__item--corrente">
+        <input
+          :aria-busy="navegando || $attrs.ariaBusy"
+          aria-label="Página corrente"
+          :value="paginaCorrente"
+          class="like-a__text menu-de-paginacao__campo"
+          data-test="campo-navegacao-pagina"
+          @change="(ev) => irParaPagina(ev.target.value)"
+          @keyup.enter="(ev) => irParaPagina(ev.target.value)"
+        >
+      </li>
+
+      <li
+        class="menu-de-paginacao__item menu-de-paginacao__item--ultima"
+      >
+        <component
+          :is="model ? 'button' : 'router-link'"
+          class="menu-de-paginacao__link menu-de-paginacao__link--total-de-paginas"
+          :type="model ? 'button' : null"
+          :to="linkParaUltimaPagina"
+          aria-label="Última página"
+          @click.prevent="() => irParaPagina(paginas)"
+        >
+          {{ paginas }}
+        </component>
+      </li>
+
+      <li
+        class="menu-de-paginacao__item menu-de-paginacao__item--seguinte"
+        :class="{
+          'menu-de-paginacao__item--desabilitado': paginaCorrente >= paginas
+        }"
+      >
+        <component
+          :is="model ? 'button' : 'router-link'"
+          class="menu-de-paginacao__link"
+          :type="model ? 'button' : null"
+          :to="linkDeAvanco"
+          data-test="link-paginacao-seguinte"
+          @click.prevent="() => irParaPagina(paginaCorrente + 1)"
+        >
+          <span class="menu-de-paginacao__texto">
+            Seguinte
+          </span>
+          <svg
+            aria-hidden="true"
+            width="8"
+            height="13"
+          ><use xlink:href="#i_right" /></svg>
+        </component>
+      </li>
+    </ul>
+
+    <output
+      v-if="totalRegistros"
+      class="menu-de-paginacao__total-de-registros"
+      role="status"
+      aria-label="Total de registros"
+    >
+      {{ totalRegistros }} registro{{ totalRegistros === 1 ? '' : 's' }}
+    </output>
+  </nav>
+</template>
 <style lang="less" scoped>
 .menu-de-paginacao {
   text-transform: uppercase;

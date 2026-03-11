@@ -1,3 +1,33 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+
+const route = useRoute();
+const alertStore = useAlertStore();
+const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(tiposDeIntervencaoStore);
+
+async function excluirTipo(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await tiposDeIntervencaoStore.excluirItem(id)) {
+        alertStore.success(`"${descricao}" removido.`);
+        tiposDeIntervencaoStore.buscarTudo();
+      }
+    },
+    'Remover',
+  );
+}
+
+tiposDeIntervencaoStore.$reset();
+tiposDeIntervencaoStore.buscarTudo();
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -74,35 +104,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-
-const route = useRoute();
-const alertStore = useAlertStore();
-const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(tiposDeIntervencaoStore);
-
-async function excluirTipo(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await tiposDeIntervencaoStore.excluirItem(id)) {
-        alertStore.success(`"${descricao}" removido.`);
-        tiposDeIntervencaoStore.buscarTudo();
-      }
-    },
-    'Remover',
-  );
-}
-
-tiposDeIntervencaoStore.$reset();
-tiposDeIntervencaoStore.buscarTudo();
-</script>
 
 <style></style>

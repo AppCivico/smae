@@ -1,21 +1,3 @@
-<template>
-  <div
-    class="smae-progress flex g05"
-    :style="{
-      '--progresso': progressoCalculado+'%'
-    }"
-  >
-    <span class="smae-progress__barra" />
-
-    <span
-      v-if="exibirNumero"
-      class="smae-progress__valor"
-    >
-      {{ progressoCalculado }}%
-    </span>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -36,6 +18,24 @@ const progressoCalculado = computed<string>(() => {
 });
 
 </script>
+
+<template>
+  <div
+    class="smae-progress flex g05"
+    :style="{
+      '--progresso': progressoCalculado+'%'
+    }"
+  >
+    <span class="smae-progress__barra" />
+
+    <span
+      v-if="exibirNumero"
+      class="smae-progress__valor"
+    >
+      {{ progressoCalculado }}%
+    </span>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .smae-progress {

@@ -1,3 +1,194 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
+import { obras as schema } from '@/consts/formSchemas';
+import statusObras from '@/consts/statusObras';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+
+const route = useRoute();
+
+const props = defineProps({
+  ariaBusy: {
+    type: Boolean,
+    default: false,
+  },
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+const emit = defineEmits(['enviado']);
+
+const colunasParaOrdenacao = {
+  id: {
+    valor: 'id',
+    nome: '',
+  },
+  nome: {
+    valor: 'nome',
+    nome: schema.fields.nome?.spec.label,
+  },
+  codigo: {
+    valor: 'codigo',
+    nome: 'Código',
+  },
+  portfolio_titulo: {
+    valor: 'portfolio_titulo',
+    nome: schema.fields.portfolio_id?.spec.label,
+  },
+  grupo_tematico_nome: {
+    valor: 'grupo_tematico_nome',
+    nome: schema.fields.grupo_tematico_id?.spec.label,
+  },
+  tipo_intervencao_nome: {
+    valor: 'tipo_intervencao_nome',
+    nome: schema.fields.tipo_intervencao_id?.spec.label,
+  },
+  equipamento_nome: {
+    valor: 'equipamento_nome',
+    nome: schema.fields.equipamento_id?.spec.label,
+  },
+  orgao_origem_nome: {
+    valor: 'orgao_origem_nome',
+    nome: schema.fields.orgao_origem_id?.spec.label,
+  },
+  regioes: {
+    valor: 'regioes',
+    nome: schema.fields.regiao_ids?.spec.label,
+  },
+  status: {
+    valor: 'status',
+    nome: schema.fields.status?.spec.label,
+  },
+  registrado_em: {
+    valor: 'registrado_em',
+    nome: 'Data de registro',
+  },
+};
+
+const chavesDeValoresValidos = [
+  'equipamento_id',
+  'grupo_tematico_id',
+  'ipp',
+  'ordem_coluna',
+  'ordem_direcao',
+  'orgao_origem_id',
+  'palavra_chave',
+  'portfolio_id',
+  'regioes',
+  'registros_sei',
+  'revisado',
+  'status',
+  'tipo_intervencao_id',
+];
+
+function tratandoSubmit(evento) {
+  evento.target.registros_sei.value = evento.target.registros_sei.value.replace(/\D/g, '');
+  emit('enviado', evento);
+}
+
+const itensPorPagina = [
+  10,
+  25,
+  50,
+  100,
+];
+
+const ÓrgãosStore = useOrgansStore();
+const equipamentosStore = useEquipamentosStore();
+const gruposTematicosStore = useGruposTematicosStore();
+const portfolioMdoStore = usePortfolioObraStore();
+const regionsStore = useRegionsStore();
+const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
+
+const {
+  lista: listaDeEquipamentos,
+  chamadasPendentes: chamadasPendentesDeEquipamentos,
+  erro: erroDeEquipamentos,
+} = storeToRefs(equipamentosStore);
+
+const {
+  lista: listaDeGruposTemáticos,
+  chamadasPendentes: chamadasPendentesDeGruposTemáticos,
+  erro: erroDeGrupoTemático,
+} = storeToRefs(gruposTematicosStore);
+
+const {
+  órgãosComoLista,
+  organs,
+} = storeToRefs(ÓrgãosStore);
+
+const {
+  lista: listaDePortfolios,
+  chamadasPendentes: chamadasPendentesDePortfolios,
+  erro: errosDePortfolios,
+} = storeToRefs(portfolioMdoStore);
+
+const {
+  regions, regiõesPorNível,
+} = storeToRefs(regionsStore);
+
+const {
+  lista: listaDeTiposDeIntervenção,
+  chamadasPendentes: chamadasPendentesDeTiposDeIntervenção,
+  erro: erroDeTiposDeIntervenção,
+} = storeToRefs(tiposDeIntervencaoStore);
+
+const pronto = ref(false);
+
+const valoresIniciaisConsolidados = computed(() => chavesDeValoresValidos.reduce((acc, chave) => {
+  acc[chave] = route.query[chave] ?? props.valoresIniciais[chave] ?? '';
+  return acc;
+}, {}));
+
+function iniciar() {
+  const promessas = [];
+
+  if (!listaDePortfolios.value.length && !chamadasPendentesDePortfolios.value.lista) {
+    promessas.push(portfolioMdoStore.buscarTudo());
+  }
+
+  if (!listaDeEquipamentos.value.length && !chamadasPendentesDeEquipamentos.value.lista) {
+    promessas.push(equipamentosStore.buscarTudo());
+  }
+
+  if (!listaDeGruposTemáticos.value.length && !chamadasPendentesDeGruposTemáticos.value.lista) {
+    promessas.push(gruposTematicosStore.buscarTudo());
+  }
+
+  if (!listaDeTiposDeIntervenção.value.length
+    && !chamadasPendentesDeTiposDeIntervenção.value.lista
+  ) {
+    promessas.push(tiposDeIntervencaoStore.buscarTudo());
+  }
+
+  if (!Array.isArray(organs.value) && !organs.value.loading) {
+    promessas.push(ÓrgãosStore.getAll());
+  }
+
+  if (!Array.isArray(regions.value) && !regions.value.loading) {
+    promessas.push(regionsStore.getAll());
+  }
+
+  Promise.allSettled(promessas)
+    .then(() => {
+      pronto.value = true;
+    });
+}
+
+onMounted(() => {
+  iniciar();
+});
+</script>
 <template>
   <form
     class="mb2 fb100"
@@ -304,194 +495,3 @@
     </div>
   </form>
 </template>
-<script setup>
-import { storeToRefs } from 'pinia';
-import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-
-import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { obras as schema } from '@/consts/formSchemas';
-import statusObras from '@/consts/statusObras';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { useRegionsStore } from '@/stores/regions.store';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-
-const route = useRoute();
-
-const props = defineProps({
-  ariaBusy: {
-    type: Boolean,
-    default: false,
-  },
-  valoresIniciais: {
-    type: Object,
-    default: () => ({}),
-  },
-});
-
-const emit = defineEmits(['enviado']);
-
-const colunasParaOrdenacao = {
-  id: {
-    valor: 'id',
-    nome: '',
-  },
-  nome: {
-    valor: 'nome',
-    nome: schema.fields.nome?.spec.label,
-  },
-  codigo: {
-    valor: 'codigo',
-    nome: 'Código',
-  },
-  portfolio_titulo: {
-    valor: 'portfolio_titulo',
-    nome: schema.fields.portfolio_id?.spec.label,
-  },
-  grupo_tematico_nome: {
-    valor: 'grupo_tematico_nome',
-    nome: schema.fields.grupo_tematico_id?.spec.label,
-  },
-  tipo_intervencao_nome: {
-    valor: 'tipo_intervencao_nome',
-    nome: schema.fields.tipo_intervencao_id?.spec.label,
-  },
-  equipamento_nome: {
-    valor: 'equipamento_nome',
-    nome: schema.fields.equipamento_id?.spec.label,
-  },
-  orgao_origem_nome: {
-    valor: 'orgao_origem_nome',
-    nome: schema.fields.orgao_origem_id?.spec.label,
-  },
-  regioes: {
-    valor: 'regioes',
-    nome: schema.fields.regiao_ids?.spec.label,
-  },
-  status: {
-    valor: 'status',
-    nome: schema.fields.status?.spec.label,
-  },
-  registrado_em: {
-    valor: 'registrado_em',
-    nome: 'Data de registro',
-  },
-};
-
-const chavesDeValoresValidos = [
-  'equipamento_id',
-  'grupo_tematico_id',
-  'ipp',
-  'ordem_coluna',
-  'ordem_direcao',
-  'orgao_origem_id',
-  'palavra_chave',
-  'portfolio_id',
-  'regioes',
-  'registros_sei',
-  'revisado',
-  'status',
-  'tipo_intervencao_id',
-];
-
-function tratandoSubmit(evento) {
-  evento.target.registros_sei.value = evento.target.registros_sei.value.replace(/\D/g, '');
-  emit('enviado', evento);
-}
-
-const itensPorPagina = [
-  10,
-  25,
-  50,
-  100,
-];
-
-const ÓrgãosStore = useOrgansStore();
-const equipamentosStore = useEquipamentosStore();
-const gruposTematicosStore = useGruposTematicosStore();
-const portfolioMdoStore = usePortfolioObraStore();
-const regionsStore = useRegionsStore();
-const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
-
-const {
-  lista: listaDeEquipamentos,
-  chamadasPendentes: chamadasPendentesDeEquipamentos,
-  erro: erroDeEquipamentos,
-} = storeToRefs(equipamentosStore);
-
-const {
-  lista: listaDeGruposTemáticos,
-  chamadasPendentes: chamadasPendentesDeGruposTemáticos,
-  erro: erroDeGrupoTemático,
-} = storeToRefs(gruposTematicosStore);
-
-const {
-  órgãosComoLista,
-  organs,
-} = storeToRefs(ÓrgãosStore);
-
-const {
-  lista: listaDePortfolios,
-  chamadasPendentes: chamadasPendentesDePortfolios,
-  erro: errosDePortfolios,
-} = storeToRefs(portfolioMdoStore);
-
-const {
-  regions, regiõesPorNível,
-} = storeToRefs(regionsStore);
-
-const {
-  lista: listaDeTiposDeIntervenção,
-  chamadasPendentes: chamadasPendentesDeTiposDeIntervenção,
-  erro: erroDeTiposDeIntervenção,
-} = storeToRefs(tiposDeIntervencaoStore);
-
-const pronto = ref(false);
-
-const valoresIniciaisConsolidados = computed(() => chavesDeValoresValidos.reduce((acc, chave) => {
-  acc[chave] = route.query[chave] ?? props.valoresIniciais[chave] ?? '';
-  return acc;
-}, {}));
-
-function iniciar() {
-  const promessas = [];
-
-  if (!listaDePortfolios.value.length && !chamadasPendentesDePortfolios.value.lista) {
-    promessas.push(portfolioMdoStore.buscarTudo());
-  }
-
-  if (!listaDeEquipamentos.value.length && !chamadasPendentesDeEquipamentos.value.lista) {
-    promessas.push(equipamentosStore.buscarTudo());
-  }
-
-  if (!listaDeGruposTemáticos.value.length && !chamadasPendentesDeGruposTemáticos.value.lista) {
-    promessas.push(gruposTematicosStore.buscarTudo());
-  }
-
-  if (!listaDeTiposDeIntervenção.value.length
-    && !chamadasPendentesDeTiposDeIntervenção.value.lista
-  ) {
-    promessas.push(tiposDeIntervencaoStore.buscarTudo());
-  }
-
-  if (!Array.isArray(organs.value) && !organs.value.loading) {
-    promessas.push(ÓrgãosStore.getAll());
-  }
-
-  if (!Array.isArray(regions.value) && !regions.value.loading) {
-    promessas.push(regionsStore.getAll());
-  }
-
-  Promise.allSettled(promessas)
-    .then(() => {
-      pronto.value = true;
-    });
-}
-
-onMounted(() => {
-  iniciar();
-});
-</script>

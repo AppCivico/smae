@@ -1,3 +1,59 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { defineOptions } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { subtema as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+const route = useRoute();
+const router = useRouter();
+
+const alertStore = useAlertStore();
+const subtemasStore = useSubtemasPsStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(subtemasStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = route.params?.subtemaId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
+
+    if (route.params?.subtemaId) {
+      response = await subtemasStore.salvarItem(
+        dataToSend,
+        route.params?.subtemaId,
+      );
+    } else {
+      response = await subtemasStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      subtemasStore.$reset();
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisSubtemas` });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+subtemasStore.$reset();
+// não foi usada a prop.subtemaId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.subtemaId) {
+  subtemasStore.buscarItem(route.params?.subtemaId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -62,61 +118,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { defineOptions } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { subtema as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-const route = useRoute();
-const router = useRouter();
-
-const alertStore = useAlertStore();
-const subtemasStore = useSubtemasPsStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(subtemasStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = route.params?.subtemaId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
-
-    if (route.params?.subtemaId) {
-      response = await subtemasStore.salvarItem(
-        dataToSend,
-        route.params?.subtemaId,
-      );
-    } else {
-      response = await subtemasStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      subtemasStore.$reset();
-      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisSubtemas` });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-subtemasStore.$reset();
-// não foi usada a prop.subtemaId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.subtemaId) {
-  subtemasStore.buscarItem(route.params?.subtemaId);
-}
-</script>
 
 <style></style>

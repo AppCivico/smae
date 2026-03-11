@@ -1,143 +1,3 @@
-<template>
-  <div>
-    <label
-      v-if="label"
-      for="busca"
-      class="label"
-    >
-      <!-- eslint-disable-next-line vue/max-attributes-per-line -->
-      {{ label }}&nbsp;<span v-if="obrigatorio" class="tvermelho">*</span>
-    </label>
-
-    <div class="flex g1">
-      <output
-        for="busca"
-        class="inputtext light output"
-        @click="toggleModal"
-      >
-        <slot
-          v-if="itemSelecionado"
-          name="ValorExibido"
-          :item="itemSelecionado"
-        >
-          {{ valorExibido }}
-        </slot>
-      </output>
-
-      <button
-        v-if="podeRemover && itemSelecionado"
-        type="button"
-        class="like-a__text"
-        aria-label="excluir"
-        title="excluir"
-        @click="limparSelecao"
-      >
-        <svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_remove" /></svg>
-      </button>
-
-      <button
-        id="busca"
-        type="button"
-        class="btn bgnone outline tcprimary"
-        @click="toggleModal"
-      >
-        {{ itemSelecionado ? 'Selecionar' : textoDoBotao }}
-      </button>
-    </div>
-
-    <SmallModal
-      :active="estaAberto"
-      :has-close-button="true"
-      @close="toggleModal"
-    >
-      <form @submit.prevent="onSubmit">
-        <label
-          for="palavra-chave"
-          class="label"
-        >
-          {{ textoDeInstrucoes }}
-        </label>
-        <div class="flex g1 mb2">
-          <input
-            id="palavra-chave"
-            v-model="valorDaBusca"
-            v-focus
-            class="inputtext light"
-            :name="chaveDeBusca"
-            :minlength="minimoDeCaracteresParaBusca"
-            required
-            type="search"
-            autocomplete="off"
-          >
-          <button
-            class="btn"
-            type="submit"
-            :aria-disabled="carregando"
-          >
-            Buscar
-          </button>
-        </div>
-      </form>
-
-      <LoadingComponent v-if="carregando" />
-
-      <table
-        v-else-if="buscaRealizada"
-        class="tablemain"
-      >
-        <thead v-if="linhas.length && $slots.TableHeader">
-          <tr>
-            <slot name="TableHeader" />
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <template v-if="linhas.length">
-            <tr
-              v-for="item in linhas"
-              :key="item.id"
-            >
-              <slot
-                name="TableData"
-                v-bind="{ item }"
-              >
-                <td>
-                  {{ item[chaveDeExibicao] }}
-                </td>
-              </slot>
-
-              <td>
-                <div class="flex justifyright">
-                  <button
-                    type="button"
-                    class="btn bgnone outline tcprimary"
-                    @click="selecionarItem(item)"
-                  >
-                    Selecionar
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </template>
-          <template v-else>
-            <tr>
-              <td colspan="999">
-                Nenhum resultado encontrado
-              </td>
-            </tr>
-          </template>
-        </tbody>
-        <tfoot v-if="$slots.TableFooter">
-          <slot name="TableFooter" />
-        </tfoot>
-      </table>
-    </SmallModal>
-  </div>
-</template>
-
 <script setup>
 import {
   ref,
@@ -291,6 +151,146 @@ onMounted(() => {
   itemSelecionado.value = { ...props.valorInicial };
 });
 </script>
+
+<template>
+  <div>
+    <label
+      v-if="label"
+      for="busca"
+      class="label"
+    >
+      <!-- eslint-disable-next-line vue/max-attributes-per-line -->
+      {{ label }}&nbsp;<span v-if="obrigatorio" class="tvermelho">*</span>
+    </label>
+
+    <div class="flex g1">
+      <output
+        for="busca"
+        class="inputtext light output"
+        @click="toggleModal"
+      >
+        <slot
+          v-if="itemSelecionado"
+          name="ValorExibido"
+          :item="itemSelecionado"
+        >
+          {{ valorExibido }}
+        </slot>
+      </output>
+
+      <button
+        v-if="podeRemover && itemSelecionado"
+        type="button"
+        class="like-a__text"
+        aria-label="excluir"
+        title="excluir"
+        @click="limparSelecao"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
+
+      <button
+        id="busca"
+        type="button"
+        class="btn bgnone outline tcprimary"
+        @click="toggleModal"
+      >
+        {{ itemSelecionado ? 'Selecionar' : textoDoBotao }}
+      </button>
+    </div>
+
+    <SmallModal
+      :active="estaAberto"
+      :has-close-button="true"
+      @close="toggleModal"
+    >
+      <form @submit.prevent="onSubmit">
+        <label
+          for="palavra-chave"
+          class="label"
+        >
+          {{ textoDeInstrucoes }}
+        </label>
+        <div class="flex g1 mb2">
+          <input
+            id="palavra-chave"
+            v-model="valorDaBusca"
+            v-focus
+            class="inputtext light"
+            :name="chaveDeBusca"
+            :minlength="minimoDeCaracteresParaBusca"
+            required
+            type="search"
+            autocomplete="off"
+          >
+          <button
+            class="btn"
+            type="submit"
+            :aria-disabled="carregando"
+          >
+            Buscar
+          </button>
+        </div>
+      </form>
+
+      <LoadingComponent v-if="carregando" />
+
+      <table
+        v-else-if="buscaRealizada"
+        class="tablemain"
+      >
+        <thead v-if="linhas.length && $slots.TableHeader">
+          <tr>
+            <slot name="TableHeader" />
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <template v-if="linhas.length">
+            <tr
+              v-for="item in linhas"
+              :key="item.id"
+            >
+              <slot
+                name="TableData"
+                v-bind="{ item }"
+              >
+                <td>
+                  {{ item[chaveDeExibicao] }}
+                </td>
+              </slot>
+
+              <td>
+                <div class="flex justifyright">
+                  <button
+                    type="button"
+                    class="btn bgnone outline tcprimary"
+                    @click="selecionarItem(item)"
+                  >
+                    Selecionar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </template>
+          <template v-else>
+            <tr>
+              <td colspan="999">
+                Nenhum resultado encontrado
+              </td>
+            </tr>
+          </template>
+        </tbody>
+        <tfoot v-if="$slots.TableFooter">
+          <slot name="TableFooter" />
+        </tfoot>
+      </table>
+    </SmallModal>
+  </div>
+</template>
 
 <style scoped>
 .output {

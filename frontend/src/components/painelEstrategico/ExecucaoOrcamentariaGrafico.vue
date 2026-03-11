@@ -1,31 +1,3 @@
-<template>
-  <div
-    role="region"
-    aria-label="Gráfico de execução orçamentária"
-    tabindex="0"
-  >
-    <label class="mb1">
-      <input
-        v-model="numeroCompactado"
-        type="checkbox"
-        class="inputcheckbox interruptor"
-        aria-label="Exibir valores em formato compactado"
-      >
-      valores compactados
-    </label>
-
-    <div
-      class="min-width"
-      style="--min-width: 55rem;"
-    >
-      <GraficoDashboard
-        :key="String(numeroCompactado)"
-        :option="chartOption"
-      />
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import type {
   PainelEstrategicoExecucaoOrcamentariaAno,
@@ -169,3 +141,31 @@ const chartOption = computed(() => ({
   ],
 }));
 </script>
+
+<template>
+  <div
+    role="region"
+    aria-label="Gráfico de execução orçamentária"
+    tabindex="0"
+  >
+    <label class="mb1">
+      <input
+        v-model="numeroCompactado"
+        type="checkbox"
+        class="inputcheckbox interruptor"
+        aria-label="Exibir valores em formato compactado"
+      >
+      valores compactados
+    </label>
+
+    <div
+      class="min-width"
+      style="--min-width: 55rem;"
+    >
+      <GraficoDashboard
+        :key="String(numeroCompactado)"
+        :option="chartOption"
+      />
+    </div>
+  </div>
+</template>

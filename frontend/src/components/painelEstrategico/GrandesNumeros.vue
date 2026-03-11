@@ -1,3 +1,19 @@
+<script setup>
+import { defineProps } from 'vue';
+
+import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
+
+defineProps({
+  grandesNumeros: {
+    type: Object,
+    required: true,
+  },
+});
+
+const tamanhoDoNúmeroPrimário = 100;
+const tamanhoDoNúmeroSecundário = 80;
+</script>
+
 <template>
   <dl class="flex flexwrap g1 justifycenter center pb2">
     <NumeroComLegenda
@@ -32,19 +48,3 @@
     </div>
   </dl>
 </template>
-
-<script setup>
-import { defineProps } from 'vue';
-
-import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
-
-defineProps({
-  grandesNumeros: {
-    type: Object,
-    required: true,
-  },
-});
-
-const tamanhoDoNúmeroPrimário = 100;
-const tamanhoDoNúmeroSecundário = 80;
-</script>

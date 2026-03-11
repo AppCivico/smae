@@ -17,7 +17,10 @@ defineProps({
     class="error p1"
     aria-live="assertive"
   >
-    <div class="error-msg" role="alert">
+    <div
+      class="error-msg"
+      role="alert"
+    >
       <slot>
         {{ erro }}
       </slot>

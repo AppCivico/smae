@@ -571,7 +571,10 @@ if (!planosSimplificadosStore.planosSimplificados.length
       </SmaeDescriptionList>
     </section>
 
-    <section v-if="emFoco?.geolocalizacao?.length" class="borda-inferior">
+    <section
+      v-if="emFoco?.geolocalizacao?.length"
+      class="borda-inferior"
+    >
       <SmaeTable
         titulo="Localização"
         :colunas="colunasDeEnderecos"

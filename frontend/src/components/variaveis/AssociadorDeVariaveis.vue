@@ -1,160 +1,3 @@
-<template>
-  <div class="flex spacebetween center mb2">
-    <h2>Escolher variáveis para {{ $props.indicador?.titulo }}</h2>
-    <hr class="ml2 f1">
-    <CheckClose
-      :apenas-emitir="true"
-      :formulario-sujo="!!combinacaoDeVariaveisSelecionadas.length"
-      @close="emit('close')"
-    />
-  </div>
-
-  <FiltroDeDeVariaveis
-    :aria-busy="chamadasPendentes.lista"
-    :valores-iniciais="valoresIniciais"
-    @submit="($v: SubmitEvent) => aplicarFiltro($v)"
-  />
-
-  <LoadingComponent v-if="chamadasPendentes.lista" />
-  <p v-else>
-    Exibindo do <strong>{{ dadosDaExibicao.primeiro }}º</strong>
-    ao <strong>{{ dadosDaExibicao.ultimo }}º</strong> valores
-    de {{ dadosDaExibicao.total }}.
-  </p>
-
-  <form
-    ref="formularioDeAssociacao"
-    @submit.prevent="associar(false)"
-  >
-    <p class="mb1">
-      <strong>
-        {{ combinacaoDeVariaveisSelecionadas.length }}
-      </strong>
-      <template v-if="combinacaoDeVariaveisSelecionadas.length === 1">
-        variável selecionada
-      </template>
-      <template v-else>
-        variáveis selecionadas
-      </template>
-      de {{ lista.length }}.
-    </p>
-
-    <TabelaDeVariaveisGlobais
-      v-selecionar-multiplas-opcoes
-      :numero-de-colunas-extras="1"
-      class="mb1"
-    >
-      <template #definicaoPrimeirasColunas>
-        <col class="col--botão-de-ação">
-      </template>
-      <template #comecoLinhaCabecalho>
-        <td />
-      </template>
-
-      <template #comecoLinhaVariavel="{ variavel }">
-        <td
-          class="nowrap"
-        >
-          <input
-            v-if="!variavel?.possui_variaveis_filhas"
-            v-model.number="variaveisSelecionadas"
-            type="checkbox"
-            title="selecionar"
-            :value="variavel?.id"
-            name="variavel_ids"
-          >
-          <span
-            v-else-if="numeroDeSelecionadasPorMae[variavel?.id]"
-            class="tc600 tipinfo right"
-          >+{{ numeroDeSelecionadasPorMae[variavel.id] || 0 }}
-            <div>filhas selecionadas</div>
-          </span>
-        </td>
-      </template>
-
-      <template #comecoLinhaVariavelFilha="{ agrupador, variavel, mae }">
-        <td>
-          <input
-            type="checkbox"
-            title="selecionar"
-            :value="variavel?.id"
-            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.includes(variavel.id)"
-            :name="`variavel[${mae.id}].[${agrupador}].filha_ids`"
-            @change="($e) => selecionarFilha(
-              mae?.id,
-              agrupador,
-              variavel?.id,
-              ($e.target as HTMLInputElement)?.checked
-            )"
-          >
-        </td>
-      </template>
-
-      <template #comecoLinhaAgrupadora="{ agrupador, mae }">
-        <td>
-          <input
-            type="checkbox"
-            class="like-a__text"
-            :indeterminate.prop="!!variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length
-              && variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length !==
-                filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
-            v-bind="gerarAtributosDoCampo(mae.id, agrupador)"
-            @change="selecionarTodasAsFilhas(mae.id, agrupador)"
-          >
-        </td>
-      </template>
-    </TabelaDeVariaveisGlobais>
-
-    <MenuPaginacao
-      v-if="paginacao.paginas > 1"
-      v-bind="paginacao"
-      v-model="paginaCorrente"
-      @update:model-value="($v) => passarFolhas($v)"
-    />
-
-    <p class="mb1">
-      <strong>
-        {{ combinacaoDeVariaveisSelecionadas.length }}
-      </strong>
-      <template v-if="combinacaoDeVariaveisSelecionadas.length === 1">
-        variável selecionada
-      </template>
-      <template v-else>
-        variáveis selecionadas
-      </template>
-      de {{ lista.length }}.
-    </p>
-
-    <LoadingComponent
-      v-if="envioPendente"
-      class="mb1"
-    />
-    <ErrorComponent
-      :erro="erro"
-      class="mb1"
-    />
-
-    <div class="flex spacebetween g1 center mb2">
-      <hr class="mr2 f1">
-      <button
-        type="button"
-        class="btn outline bgnone tcprimary big"
-        :aria-disabled="!combinacaoDeVariaveisSelecionadas.length || envioPendente"
-        @click="associar(true)"
-      >
-        Associar e fechar
-      </button>
-      <button
-        type="submit"
-        class="btn big"
-        :aria-disabled="!combinacaoDeVariaveisSelecionadas.length || envioPendente"
-      >
-        Associar
-      </button>
-      <hr class="ml2 f1">
-    </div>
-  </form>
-</template>
 <script setup lang="ts">
 import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import { storeToRefs } from 'pinia';
@@ -353,3 +196,160 @@ variaveisGlobaisStore.buscarTudo({
   not_indicador_id: props.indicador?.id,
 });
 </script>
+<template>
+  <div class="flex spacebetween center mb2">
+    <h2>Escolher variáveis para {{ $props.indicador?.titulo }}</h2>
+    <hr class="ml2 f1">
+    <CheckClose
+      :apenas-emitir="true"
+      :formulario-sujo="!!combinacaoDeVariaveisSelecionadas.length"
+      @close="emit('close')"
+    />
+  </div>
+
+  <FiltroDeDeVariaveis
+    :aria-busy="chamadasPendentes.lista"
+    :valores-iniciais="valoresIniciais"
+    @submit="($v: SubmitEvent) => aplicarFiltro($v)"
+  />
+
+  <LoadingComponent v-if="chamadasPendentes.lista" />
+  <p v-else>
+    Exibindo do <strong>{{ dadosDaExibicao.primeiro }}º</strong>
+    ao <strong>{{ dadosDaExibicao.ultimo }}º</strong> valores
+    de {{ dadosDaExibicao.total }}.
+  </p>
+
+  <form
+    ref="formularioDeAssociacao"
+    @submit.prevent="associar(false)"
+  >
+    <p class="mb1">
+      <strong>
+        {{ combinacaoDeVariaveisSelecionadas.length }}
+      </strong>
+      <template v-if="combinacaoDeVariaveisSelecionadas.length === 1">
+        variável selecionada
+      </template>
+      <template v-else>
+        variáveis selecionadas
+      </template>
+      de {{ lista.length }}.
+    </p>
+
+    <TabelaDeVariaveisGlobais
+      v-selecionar-multiplas-opcoes
+      :numero-de-colunas-extras="1"
+      class="mb1"
+    >
+      <template #definicaoPrimeirasColunas>
+        <col class="col--botão-de-ação">
+      </template>
+      <template #comecoLinhaCabecalho>
+        <td />
+      </template>
+
+      <template #comecoLinhaVariavel="{ variavel }">
+        <td
+          class="nowrap"
+        >
+          <input
+            v-if="!variavel?.possui_variaveis_filhas"
+            v-model.number="variaveisSelecionadas"
+            type="checkbox"
+            title="selecionar"
+            :value="variavel?.id"
+            name="variavel_ids"
+          >
+          <span
+            v-else-if="numeroDeSelecionadasPorMae[variavel?.id]"
+            class="tc600 tipinfo right"
+          >+{{ numeroDeSelecionadasPorMae[variavel.id] || 0 }}
+            <div>filhas selecionadas</div>
+          </span>
+        </td>
+      </template>
+
+      <template #comecoLinhaVariavelFilha="{ agrupador, variavel, mae }">
+        <td>
+          <input
+            type="checkbox"
+            title="selecionar"
+            :value="variavel?.id"
+            :checked="variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.includes(variavel.id)"
+            :name="`variavel[${mae.id}].[${agrupador}].filha_ids`"
+            @change="($e) => selecionarFilha(
+              mae?.id,
+              agrupador,
+              variavel?.id,
+              ($e.target as HTMLInputElement)?.checked
+            )"
+          >
+        </td>
+      </template>
+
+      <template #comecoLinhaAgrupadora="{ agrupador, mae }">
+        <td>
+          <input
+            type="checkbox"
+            class="like-a__text"
+            :indeterminate.prop="!!variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length
+              && variaveisFilhasSelecionadas[mae.id]?.[agrupador]?.length !==
+                filhasPorMaePorNivelDeRegiao[mae.id][agrupador].length"
+            v-bind="gerarAtributosDoCampo(mae.id, agrupador)"
+            @change="selecionarTodasAsFilhas(mae.id, agrupador)"
+          >
+        </td>
+      </template>
+    </TabelaDeVariaveisGlobais>
+
+    <MenuPaginacao
+      v-if="paginacao.paginas > 1"
+      v-bind="paginacao"
+      v-model="paginaCorrente"
+      @update:model-value="($v) => passarFolhas($v)"
+    />
+
+    <p class="mb1">
+      <strong>
+        {{ combinacaoDeVariaveisSelecionadas.length }}
+      </strong>
+      <template v-if="combinacaoDeVariaveisSelecionadas.length === 1">
+        variável selecionada
+      </template>
+      <template v-else>
+        variáveis selecionadas
+      </template>
+      de {{ lista.length }}.
+    </p>
+
+    <LoadingComponent
+      v-if="envioPendente"
+      class="mb1"
+    />
+    <ErrorComponent
+      :erro="erro"
+      class="mb1"
+    />
+
+    <div class="flex spacebetween g1 center mb2">
+      <hr class="mr2 f1">
+      <button
+        type="button"
+        class="btn outline bgnone tcprimary big"
+        :aria-disabled="!combinacaoDeVariaveisSelecionadas.length || envioPendente"
+        @click="associar(true)"
+      >
+        Associar e fechar
+      </button>
+      <button
+        type="submit"
+        class="btn big"
+        :aria-disabled="!combinacaoDeVariaveisSelecionadas.length || envioPendente"
+      >
+        Associar
+      </button>
+      <hr class="ml2 f1">
+    </div>
+  </form>
+</template>

@@ -1,91 +1,3 @@
-<template>
-  <form
-    class="flex flexwrap bottom mb2 g1"
-    @submit.prevent="emit('enviado', dados)"
-    @change="(ev) => emit('campoMudou', ev)"
-  >
-    <div class="f1 fb15em">
-      <label
-        class="label"
-        for="portfolio-id"
-      >
-        Portfolios
-      </label>
-
-      <AutocompleteField
-        id="portfolio-id"
-        name="portfolio_id"
-        :class="{ error: errosDePortfolios }"
-        :controlador="{
-          busca: '',
-          participantes: portfolioId || [],
-        }"
-        :grupo="listaDePortfolios"
-        label="titulo"
-        :aria-busy="chamadasPendentesDePortfolios.lista"
-        @change="(valor) => {
-          projetoId.splice(0);
-          emit('campoMudou', { portfolio_id: valor });
-        }"
-      />
-      <ErrorComponent :erro="errosDePortfolios" />
-    </div>
-
-    <div class="f1 fb15em">
-      <label
-        class="label"
-        for="projeto-id"
-      >
-        Projetos
-      </label>
-
-      <AutocompleteField
-        id="projeto-id"
-        name="projeto_id"
-        :controlador="{
-          busca: '',
-          participantes: projetoId
-        }"
-        :grupo="projetosDisponiveis"
-        label="nome"
-        :aria-busy="chamadasPendentesDeProjetos.lista"
-        :class="{ error: errosDeProjetos }"
-        @change="(valor) => emit('campoMudou', { projeto_id: valor })"
-      />
-      <ErrorComponent :erro="errosDeProjetos" />
-    </div>
-
-    <div class="f1 fb15em">
-      <label
-        class="label"
-        for="orgao-responsavel-id"
-      >
-        Órgãos
-      </label>
-
-      <AutocompleteField
-        id="orgao-responsavel-id"
-        name="orgao_responsavel_id"
-        :controlador="{
-          busca: '',
-          participantes: orgaoResponsavelId
-        }"
-        :grupo="listaDeOrgaos"
-        label="sigla"
-        :aria-busy="listaDeOrgaos.loading"
-        :class="{ error: organs.error }"
-        @change="(valor) => emit('campoMudou', { orgao_responsavel_id: valor })"
-      />
-      <ErrorComponent :erro="organs.error" />
-    </div>
-    <button
-      class="btn outline bgnone tcprimary align-start mt2"
-      type="submit"
-    >
-      Filtrar
-    </button>
-  </form>
-</template>
 <script setup lang="ts">
 import type { ProjetoDto } from '@back/pp/projeto/entities/projeto.entity';
 import { storeToRefs } from 'pinia';
@@ -211,3 +123,91 @@ onUnmounted(() => {
   portfoliosStore.$reset();
 });
 </script>
+<template>
+  <form
+    class="flex flexwrap bottom mb2 g1"
+    @submit.prevent="emit('enviado', dados)"
+    @change="(ev) => emit('campoMudou', ev)"
+  >
+    <div class="f1 fb15em">
+      <label
+        class="label"
+        for="portfolio-id"
+      >
+        Portfolios
+      </label>
+
+      <AutocompleteField
+        id="portfolio-id"
+        name="portfolio_id"
+        :class="{ error: errosDePortfolios }"
+        :controlador="{
+          busca: '',
+          participantes: portfolioId || [],
+        }"
+        :grupo="listaDePortfolios"
+        label="titulo"
+        :aria-busy="chamadasPendentesDePortfolios.lista"
+        @change="(valor) => {
+          projetoId.splice(0);
+          emit('campoMudou', { portfolio_id: valor });
+        }"
+      />
+      <ErrorComponent :erro="errosDePortfolios" />
+    </div>
+
+    <div class="f1 fb15em">
+      <label
+        class="label"
+        for="projeto-id"
+      >
+        Projetos
+      </label>
+
+      <AutocompleteField
+        id="projeto-id"
+        name="projeto_id"
+        :controlador="{
+          busca: '',
+          participantes: projetoId
+        }"
+        :grupo="projetosDisponiveis"
+        label="nome"
+        :aria-busy="chamadasPendentesDeProjetos.lista"
+        :class="{ error: errosDeProjetos }"
+        @change="(valor) => emit('campoMudou', { projeto_id: valor })"
+      />
+      <ErrorComponent :erro="errosDeProjetos" />
+    </div>
+
+    <div class="f1 fb15em">
+      <label
+        class="label"
+        for="orgao-responsavel-id"
+      >
+        Órgãos
+      </label>
+
+      <AutocompleteField
+        id="orgao-responsavel-id"
+        name="orgao_responsavel_id"
+        :controlador="{
+          busca: '',
+          participantes: orgaoResponsavelId
+        }"
+        :grupo="listaDeOrgaos"
+        label="sigla"
+        :aria-busy="listaDeOrgaos.loading"
+        :class="{ error: organs.error }"
+        @change="(valor) => emit('campoMudou', { orgao_responsavel_id: valor })"
+      />
+      <ErrorComponent :erro="organs.error" />
+    </div>
+    <button
+      class="btn outline bgnone tcprimary align-start mt2"
+      type="submit"
+    >
+      Filtrar
+    </button>
+  </form>
+</template>

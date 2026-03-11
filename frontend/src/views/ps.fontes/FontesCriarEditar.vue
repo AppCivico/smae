@@ -1,3 +1,65 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { fonte as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useFontesStore } from '@/stores/fontesPs.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  fonteId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const formularioSujo = useIsFormDirty();
+
+const alertStore = useAlertStore();
+const fontesStore = useFontesStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(fontesStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.fonteId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (route.params?.fonteId) {
+      response = await fontesStore.salvarItem(
+        dataToSend,
+        route.params.fonteId,
+      );
+    } else {
+      response = await fontesStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      fontesStore.$reset();
+      router.push({ name: route.meta.rotaDeEscape });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+onMounted(() => {
+  if (props.fonteId) {
+    fontesStore.$reset();
+    fontesStore.buscarItem(props.fonteId);
+  }
+});
+</script>
+
 <template>
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
@@ -67,65 +129,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, Form, useIsFormDirty,
-} from 'vee-validate';
-import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { fonte as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useFontesStore } from '@/stores/fontesPs.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  fonteId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const formularioSujo = useIsFormDirty();
-
-const alertStore = useAlertStore();
-const fontesStore = useFontesStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(fontesStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.fonteId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (route.params?.fonteId) {
-      response = await fontesStore.salvarItem(
-        dataToSend,
-        route.params.fonteId,
-      );
-    } else {
-      response = await fontesStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      fontesStore.$reset();
-      router.push({ name: route.meta.rotaDeEscape });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-onMounted(() => {
-  if (props.fonteId) {
-    fontesStore.$reset();
-    fontesStore.buscarItem(props.fonteId);
-  }
-});
-</script>

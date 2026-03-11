@@ -1,3 +1,35 @@
+<script lang="ts" setup>
+import { format } from 'date-fns';
+import { computed } from 'vue';
+
+import SmaeLink from '@/components/SmaeLink.vue';
+import truncate from '@/helpers/texto/truncate';
+
+import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface';
+
+type Props = IComunicadoGeralItem;
+type Emits = {
+  (event: 'update:lido', value: boolean): void;
+};
+
+const props = defineProps<Props>();
+const $emit = defineEmits<Emits>();
+
+const dataFormatada = computed<string>(() => format(props.data, "dd/MM/yyyy' às 'HH:mm"));
+const conteudoFormatado = computed<string>(() => truncate(props.conteudo, 722));
+
+function emitirLido(estaSelectionado: boolean) {
+  $emit('update:lido', estaSelectionado);
+}
+
+function handleSelecionarLido(ev: Event) {
+  const target = ev.target as HTMLInputElement;
+
+  emitirLido(target.checked);
+}
+
+</script>
+
 <template>
   <li class="comunicado-geral-item card-shadow">
     <div class="comunicado-geral-item__header">
@@ -43,38 +75,6 @@
     </div>
   </li>
 </template>
-
-<script lang="ts" setup>
-import { format } from 'date-fns';
-import { computed } from 'vue';
-
-import SmaeLink from '@/components/SmaeLink.vue';
-import truncate from '@/helpers/texto/truncate';
-
-import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface';
-
-type Props = IComunicadoGeralItem;
-type Emits = {
-  (event: 'update:lido', value: boolean): void;
-};
-
-const props = defineProps<Props>();
-const $emit = defineEmits<Emits>();
-
-const dataFormatada = computed<string>(() => format(props.data, "dd/MM/yyyy' às 'HH:mm"));
-const conteudoFormatado = computed<string>(() => truncate(props.conteudo, 722));
-
-function emitirLido(estaSelectionado: boolean) {
-  $emit('update:lido', estaSelectionado);
-}
-
-function handleSelecionarLido(ev: Event) {
-  const target = ev.target as HTMLInputElement;
-
-  emitirLido(target.checked);
-}
-
-</script>
 
 <style lang="less" scoped>
 .comunicado-geral-item {

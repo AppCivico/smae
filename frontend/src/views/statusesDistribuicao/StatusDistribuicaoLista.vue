@@ -1,3 +1,37 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+
+const route = useRoute();
+const titulo = typeof route?.meta?.título === 'function'
+  ? computed(() => route.meta.título())
+  : route?.meta?.título;
+const alertStore = useAlertStore();
+const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(statusDistribuicaoWorflowStore);
+
+async function excluirStatusDistribuicao(id, descricao) {
+  alertStore.confirmAction(
+    `Deseja mesmo remover "${descricao}"?`,
+    async () => {
+      if (await statusDistribuicaoWorflowStore.excluirItem(id)) {
+        statusDistribuicaoWorflowStore.$reset();
+        statusDistribuicaoWorflowStore.buscarTudo();
+        alertStore.success(`"${descricao}" removido.`);
+      }
+    },
+    'Remover',
+  );
+}
+
+statusDistribuicaoWorflowStore.$reset();
+statusDistribuicaoWorflowStore.buscarTudo({});
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -80,39 +114,5 @@
     </tbody>
   </table>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-
-import { useAlertStore } from '@/stores/alert.store';
-import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
-
-const route = useRoute();
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
-const alertStore = useAlertStore();
-const statusDistribuicaoWorflowStore = useStatusDistribuicaoWorflowStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(statusDistribuicaoWorflowStore);
-
-async function excluirStatusDistribuicao(id, descricao) {
-  alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
-    async () => {
-      if (await statusDistribuicaoWorflowStore.excluirItem(id)) {
-        statusDistribuicaoWorflowStore.$reset();
-        statusDistribuicaoWorflowStore.buscarTudo();
-        alertStore.success(`"${descricao}" removido.`);
-      }
-    },
-    'Remover',
-  );
-}
-
-statusDistribuicaoWorflowStore.$reset();
-statusDistribuicaoWorflowStore.buscarTudo({});
-</script>
 
   <style></style>

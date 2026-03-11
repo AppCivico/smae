@@ -12,9 +12,9 @@ import {
   string,
 } from 'yup';
 
-import i18n from './config/i18n';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
+import i18n from './config/i18n';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {

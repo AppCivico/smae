@@ -1,3 +1,78 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import { variávelCategórica as schema } from '@/consts/formSchemas';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  variavelId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(variaveisCategoricasStore);
+
+const {
+  errors, isSubmitting, resetForm, values,
+} = useForm({
+  initialValues: itemParaEdicao.value,
+  validationSchema: schema,
+});
+
+const formularioSujo = useIsFormDirty();
+
+async function onSubmit() {
+  try {
+    const msg = props.variavelId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = {
+      ...values,
+      valores: values.valores.map((item) => ({
+        ...item,
+        valor_variavel: Number(item.valor_variavel),
+        ordem: Number(item.ordem),
+      })),
+    };
+
+    const response = await variaveisCategoricasStore.salvarItem(
+      dataToSend,
+      route.params.variavelId,
+    );
+
+    if (response) {
+      alertStore.success(msg);
+      router.push({ name: 'variaveisCategoricas.listar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+// não foi usada a prop.variavelId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.variavelId) {
+  variaveisCategoricasStore.buscarItem(route.params?.variavelId);
+}
+
+watch(itemParaEdicao, (novoValor) => {
+  resetForm({ values: novoValor });
+});
+
+</script>
+
 <template>
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
@@ -237,80 +312,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import { variávelCategórica as schema } from '@/consts/formSchemas';
-import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  variavelId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const alertStore = useAlertStore();
-const variaveisCategoricasStore = useVariaveisCategoricasStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(variaveisCategoricasStore);
-
-const {
-  errors, isSubmitting, resetForm, values,
-} = useForm({
-  initialValues: itemParaEdicao.value,
-  validationSchema: schema,
-});
-
-const formularioSujo = useIsFormDirty();
-
-async function onSubmit() {
-  try {
-    const msg = props.variavelId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = {
-      ...values,
-      valores: values.valores.map((item) => ({
-        ...item,
-        valor_variavel: Number(item.valor_variavel),
-        ordem: Number(item.ordem),
-      })),
-    };
-
-    const response = await variaveisCategoricasStore.salvarItem(
-      dataToSend,
-      route.params.variavelId,
-    );
-
-    if (response) {
-      alertStore.success(msg);
-      router.push({ name: 'variaveisCategoricas.listar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-// não foi usada a prop.variavelId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.variavelId) {
-  variaveisCategoricasStore.buscarItem(route.params?.variavelId);
-}
-
-watch(itemParaEdicao, (novoValor) => {
-  resetForm({ values: novoValor });
-});
-
-</script>
 
 <style></style>

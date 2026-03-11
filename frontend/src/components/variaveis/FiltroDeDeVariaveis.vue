@@ -1,3 +1,174 @@
+<script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import type { Ref } from 'vue';
+import {
+  computed, ref,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
+import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
+import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
+import periodicidades from '@/consts/periodicidades';
+import truncate from '@/helpers/texto/truncate';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { usePsMetasStore } from '@/stores/metasPs.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+
+const route = useRoute();
+
+const props = defineProps({
+  valoresIniciais: {
+    type: Object,
+    default: () => ({}),
+  },
+});
+
+const emit = defineEmits(['enviado']);
+
+const colunasParaOrdenacao = {
+  titulo: {
+    valor: 'titulo',
+    nome: schema.fields.titulo?.spec.label,
+  },
+  codigo: {
+    valor: 'codigo',
+    nome: 'Código',
+  },
+  criado_em: {
+    valor: 'criado_em',
+    nome: 'Data de registro',
+  },
+};
+
+const itensPorPagina = [
+  10,
+  25,
+  50,
+  100,
+];
+
+const chavesDeValoresValidos = [
+  'assuntos',
+  'codigo',
+  'descricao',
+  'ipp',
+  'medicao_orgao_id',
+  'metas',
+  'ordem_coluna',
+  'ordem_direcao',
+  'orgao_proprietario_id',
+  'palavra_chave',
+  'periodicidade',
+  'titulo',
+  'variavel_categorica_id',
+];
+
+const assuntosStore = useAssuntosStore();
+const MetasStore = usePsMetasStore(route.meta.entidadeMãe);
+const ÓrgãosStore = useOrgansStore();
+const regionsStore = useRegionsStore();
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
+
+const {
+  planosSimplificadosPorTipo,
+  planosSimplificados: listaDePlanosSimplificados,
+  chamadasPendentes: chamadasPendentesDePlanosSimplificados,
+  erros: errosDePlanosSimplificados,
+} = storeToRefs(variaveisGlobaisStore);
+
+const {
+  lista: listaDeMetas,
+  chamadasPendentes: chamadasPendentesDeMetas,
+  metasPorPlano,
+  erros: errosDeMetas,
+} = storeToRefs(MetasStore);
+
+const {
+  órgãosComoLista,
+  organs,
+} = storeToRefs(ÓrgãosStore);
+
+const {
+  lista: listaDeAssuntos,
+  chamadasPendentes: chamadasPendentesDeAssuntos,
+  erro: erroDeAssuntos,
+} = storeToRefs(assuntosStore);
+
+const {
+  regions, regiõesPorNívelOrdenadas,
+} = storeToRefs(regionsStore);
+
+const {
+  variaveisPositivas: listaDeVariaveisCategoricas,
+  chamadasPendentes: chamadasPendentesDeVariaveisCategoricas,
+} = storeToRefs(variaveisCategoricasStore);
+
+const pronto = ref(false);
+
+const nivelRegionalizacao: Ref<null | number> = ref(null);
+const planoSetorialId: Ref<null | number> = ref(null);
+const regiaoId: Ref<null | number> = ref(null);
+
+const valoresIniciaisConsolidados = computed(() => chavesDeValoresValidos.reduce((acc, chave) => {
+  acc[chave] = route.query[chave] ?? props.valoresIniciais[chave] ?? '';
+  return acc;
+}, {} as Record<string, unknown>));
+
+const metasDisponiveis = computed(() => (!planoSetorialId.value
+  ? listaDeMetas.value
+  : metasPorPlano.value[planoSetorialId.value]
+  || []));
+
+async function iniciar() {
+  pronto.value = false;
+
+  const promessas = [];
+
+  if (!Array.isArray(organs) && !organs.loading) {
+    promessas.push(ÓrgãosStore.getAll());
+  }
+
+  if (!Array.isArray(regions) && !regions.loading) {
+    promessas.push(regionsStore.getAll());
+  }
+
+  if (!listaDeAssuntos.value.length && !chamadasPendentesDeAssuntos.value.lista) {
+    promessas.push(assuntosStore.buscarTudo());
+  }
+
+  if (!listaDeMetas.value.length && !chamadasPendentesDeMetas.value.lista) {
+    promessas.push(MetasStore.buscarTudo());
+  }
+
+  if (!listaDePlanosSimplificados.value.length
+    && !chamadasPendentesDePlanosSimplificados.value.planosSimplificados) {
+    promessas.push(variaveisGlobaisStore.buscarPlanosSimplificados());
+  }
+
+  if (
+    !listaDeVariaveisCategoricas.value.length
+    && !chamadasPendentesDeVariaveisCategoricas.value.lista
+  ) {
+    promessas.push(variaveisCategoricasStore.buscarTudo());
+  }
+
+  nivelRegionalizacao.value = Number(route.query.nivel_regionalizacao) || 0;
+  planoSetorialId.value = Number(route.query.plano_setorial_id) || 0;
+  regiaoId.value = Number(route.query.regiao_id) || 0;
+
+  Promise.allSettled(promessas)
+    .then(() => {
+      pronto.value = true;
+    });
+}
+
+iniciar();
+</script>
 <template>
   <form
     class="flex flexwrap g2 mb2 fb100"
@@ -391,177 +562,6 @@
     </button>
   </form>
 </template>
-<script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import type { Ref } from 'vue';
-import {
-  computed, ref,
-} from 'vue';
-import { useRoute } from 'vue-router';
-
-import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
-import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
-import periodicidades from '@/consts/periodicidades';
-import truncate from '@/helpers/texto/truncate';
-import { useAssuntosStore } from '@/stores/assuntosPs.store';
-import { usePsMetasStore } from '@/stores/metasPs.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useRegionsStore } from '@/stores/regions.store';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-
-const route = useRoute();
-
-const props = defineProps({
-  valoresIniciais: {
-    type: Object,
-    default: () => ({}),
-  },
-});
-
-const emit = defineEmits(['enviado']);
-
-const colunasParaOrdenacao = {
-  titulo: {
-    valor: 'titulo',
-    nome: schema.fields.titulo?.spec.label,
-  },
-  codigo: {
-    valor: 'codigo',
-    nome: 'Código',
-  },
-  criado_em: {
-    valor: 'criado_em',
-    nome: 'Data de registro',
-  },
-};
-
-const itensPorPagina = [
-  10,
-  25,
-  50,
-  100,
-];
-
-const chavesDeValoresValidos = [
-  'assuntos',
-  'codigo',
-  'descricao',
-  'ipp',
-  'medicao_orgao_id',
-  'metas',
-  'ordem_coluna',
-  'ordem_direcao',
-  'orgao_proprietario_id',
-  'palavra_chave',
-  'periodicidade',
-  'titulo',
-  'variavel_categorica_id',
-];
-
-const assuntosStore = useAssuntosStore();
-const MetasStore = usePsMetasStore(route.meta.entidadeMãe);
-const ÓrgãosStore = useOrgansStore();
-const regionsStore = useRegionsStore();
-const variaveisCategoricasStore = useVariaveisCategoricasStore();
-const variaveisGlobaisStore = useVariaveisGlobaisStore();
-
-const {
-  planosSimplificadosPorTipo,
-  planosSimplificados: listaDePlanosSimplificados,
-  chamadasPendentes: chamadasPendentesDePlanosSimplificados,
-  erros: errosDePlanosSimplificados,
-} = storeToRefs(variaveisGlobaisStore);
-
-const {
-  lista: listaDeMetas,
-  chamadasPendentes: chamadasPendentesDeMetas,
-  metasPorPlano,
-  erros: errosDeMetas,
-} = storeToRefs(MetasStore);
-
-const {
-  órgãosComoLista,
-  organs,
-} = storeToRefs(ÓrgãosStore);
-
-const {
-  lista: listaDeAssuntos,
-  chamadasPendentes: chamadasPendentesDeAssuntos,
-  erro: erroDeAssuntos,
-} = storeToRefs(assuntosStore);
-
-const {
-  regions, regiõesPorNívelOrdenadas,
-} = storeToRefs(regionsStore);
-
-const {
-  variaveisPositivas: listaDeVariaveisCategoricas,
-  chamadasPendentes: chamadasPendentesDeVariaveisCategoricas,
-} = storeToRefs(variaveisCategoricasStore);
-
-const pronto = ref(false);
-
-const nivelRegionalizacao: Ref<null | number> = ref(null);
-const planoSetorialId: Ref<null | number> = ref(null);
-const regiaoId: Ref<null | number> = ref(null);
-
-const valoresIniciaisConsolidados = computed(() => chavesDeValoresValidos.reduce((acc, chave) => {
-  acc[chave] = route.query[chave] ?? props.valoresIniciais[chave] ?? '';
-  return acc;
-}, {} as Record<string, unknown>));
-
-const metasDisponiveis = computed(() => (!planoSetorialId.value
-  ? listaDeMetas.value
-  : metasPorPlano.value[planoSetorialId.value]
-  || []));
-
-async function iniciar() {
-  pronto.value = false;
-
-  const promessas = [];
-
-  if (!Array.isArray(organs) && !organs.loading) {
-    promessas.push(ÓrgãosStore.getAll());
-  }
-
-  if (!Array.isArray(regions) && !regions.loading) {
-    promessas.push(regionsStore.getAll());
-  }
-
-  if (!listaDeAssuntos.value.length && !chamadasPendentesDeAssuntos.value.lista) {
-    promessas.push(assuntosStore.buscarTudo());
-  }
-
-  if (!listaDeMetas.value.length && !chamadasPendentesDeMetas.value.lista) {
-    promessas.push(MetasStore.buscarTudo());
-  }
-
-  if (!listaDePlanosSimplificados.value.length
-    && !chamadasPendentesDePlanosSimplificados.value.planosSimplificados) {
-    promessas.push(variaveisGlobaisStore.buscarPlanosSimplificados());
-  }
-
-  if (
-    !listaDeVariaveisCategoricas.value.length
-    && !chamadasPendentesDeVariaveisCategoricas.value.lista
-  ) {
-    promessas.push(variaveisCategoricasStore.buscarTudo());
-  }
-
-  nivelRegionalizacao.value = Number(route.query.nivel_regionalizacao) || 0;
-  planoSetorialId.value = Number(route.query.plano_setorial_id) || 0;
-  regiaoId.value = Number(route.query.regiao_id) || 0;
-
-  Promise.allSettled(promessas)
-    .then(() => {
-      pronto.value = true;
-    });
-}
-
-iniciar();
-</script>
 <style lang="less" scoped>
 .label {
   color: @c300;

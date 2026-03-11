@@ -1,18 +1,3 @@
-<template>
-  <Teleport
-    to="body"
-  >
-    <div
-      class="barra-de-pendencia__envelope"
-      :class="{
-        'barra-de-pendencia__envelope--recebimento-pendente': recebimentoPendente,
-        'barra-de-pendencia__envelope--recebimento-visível': recebimentoVisível,
-        'barra-de-pendencia__envelope--envio-pendente': envioPendente,
-        'barra-de-pendencia__envelope--envio-visível': envioVisível
-      }"
-    />
-  </Teleport>
-</template>
 <script setup>
 // @see: https://stackabuse.com/lazy-loading-routes-with-vue-router/
 import {
@@ -70,6 +55,21 @@ onBeforeUnmount(() => {
   $eventHub.off('recebimentoEncerrado', encerrarRecebimento);
 });
 </script>
+<template>
+  <Teleport
+    to="body"
+  >
+    <div
+      class="barra-de-pendencia__envelope"
+      :class="{
+        'barra-de-pendencia__envelope--recebimento-pendente': recebimentoPendente,
+        'barra-de-pendencia__envelope--recebimento-visível': recebimentoVisível,
+        'barra-de-pendencia__envelope--envio-pendente': envioPendente,
+        'barra-de-pendencia__envelope--envio-visível': envioVisível
+      }"
+    />
+  </Teleport>
+</template>
 <style lang="less" scoped>
 .barra-de-pendencia__envelope {
   position: fixed;

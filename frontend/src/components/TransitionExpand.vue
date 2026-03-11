@@ -1,14 +1,3 @@
-<template>
-  <transition
-    name="expand"
-    @enter="enter"
-    @after-enter="afterEnter"
-    @leave="leave"
-  >
-    <slot />
-  </transition>
-</template>
-<!-- eslint-disable no-param-reassign -->
 <script>
 import { defineComponent } from 'vue';
 
@@ -64,6 +53,17 @@ export default defineComponent({
   },
 });
 </script>
+<!-- eslint-disable no-param-reassign -->
+<template>
+  <transition
+    name="expand"
+    @enter="enter"
+    @after-enter="afterEnter"
+    @leave="leave"
+  >
+    <slot />
+  </transition>
+</template>
 <style scoped>
 * {
   will-change: height;

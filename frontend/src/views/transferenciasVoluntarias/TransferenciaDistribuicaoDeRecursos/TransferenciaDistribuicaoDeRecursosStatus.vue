@@ -1,80 +1,3 @@
-<template>
-  <div>
-    <div class="flex spacebetween center mb2 mt2">
-      <TítuloDePágina />
-
-      <hr class="ml2 f1">
-
-      <CheckClose
-        :formulario-sujo="formularioSujo"
-        :apenas-emitir="true"
-        @close="voltarTela"
-      />
-    </div>
-
-    <SmaeTable
-      class="mb2"
-      :dados="historicoStatus"
-      :colunas="[
-        { chave: 'data_troca', label: 'Data', formatador: dateToDate },
-        { chave: 'status', label: 'Status', },
-        { chave: 'orgao_responsavel.sigla', label: 'Órgão', },
-        { chave: 'nome_responsavel', label: 'Responsável', },
-        { chave: 'motivo', label: 'Motivo', },
-        { chave: 'dias_no_status', label: 'Total de dias no status', },
-        { chave: 'editar' },
-      ]"
-    >
-      <template #celula:status="{ linha }">
-        {{ (linha.status_base || linha.status_customizado).nome }}
-      </template>
-
-      <template #celula:editar="{ linha }">
-        <button
-          v-if="linha.id === registroMaisRecente?.id"
-          class="like-a__text"
-          aria-label="editar"
-          title="editar"
-          type="button"
-          @click="abrirModalStatus(linha)"
-        >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_edit" />
-          </svg>
-        </button>
-
-        <span v-else />
-      </template>
-    </SmaeTable>
-
-    <button
-      v-if="distribuiçãoEmFoco"
-      class="like-a__text addlink"
-      type="button"
-      @click="abrirModalStatus(null)"
-    >
-      <svg
-        width="20"
-        height="20"
-      >
-        <use xlink:href="#i_+" />
-      </svg>Adicionar status
-    </button>
-
-    <TransferenciasDistribuicaoStatusCriarEditar
-      v-if="exibirModalStatus"
-      :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id || 0"
-      :distribuicao-id="distribuiçãoEmFoco?.id"
-      :status-em-foco="statusEmFoco"
-      @fechar-modal="fecharModalStatus"
-      @salvou-status="fecharModalStatus(true)"
-    />
-  </div>
-</template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
@@ -155,3 +78,80 @@ function fecharModalStatus(carregar = false) {
   }
 }
 </script>
+
+<template>
+  <div>
+    <div class="flex spacebetween center mb2 mt2">
+      <TítuloDePágina />
+
+      <hr class="ml2 f1">
+
+      <CheckClose
+        :formulario-sujo="formularioSujo"
+        :apenas-emitir="true"
+        @close="voltarTela"
+      />
+    </div>
+
+    <SmaeTable
+      class="mb2"
+      :dados="historicoStatus"
+      :colunas="[
+        { chave: 'data_troca', label: 'Data', formatador: dateToDate },
+        { chave: 'status', label: 'Status', },
+        { chave: 'orgao_responsavel.sigla', label: 'Órgão', },
+        { chave: 'nome_responsavel', label: 'Responsável', },
+        { chave: 'motivo', label: 'Motivo', },
+        { chave: 'dias_no_status', label: 'Total de dias no status', },
+        { chave: 'editar' },
+      ]"
+    >
+      <template #celula:status="{ linha }">
+        {{ (linha.status_base || linha.status_customizado).nome }}
+      </template>
+
+      <template #celula:editar="{ linha }">
+        <button
+          v-if="linha.id === registroMaisRecente?.id"
+          class="like-a__text"
+          aria-label="editar"
+          title="editar"
+          type="button"
+          @click="abrirModalStatus(linha)"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
+            <use xlink:href="#i_edit" />
+          </svg>
+        </button>
+
+        <span v-else />
+      </template>
+    </SmaeTable>
+
+    <button
+      v-if="distribuiçãoEmFoco"
+      class="like-a__text addlink"
+      type="button"
+      @click="abrirModalStatus(null)"
+    >
+      <svg
+        width="20"
+        height="20"
+      >
+        <use xlink:href="#i_+" />
+      </svg>Adicionar status
+    </button>
+
+    <TransferenciasDistribuicaoStatusCriarEditar
+      v-if="exibirModalStatus"
+      :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id || 0"
+      :distribuicao-id="distribuiçãoEmFoco?.id"
+      :status-em-foco="statusEmFoco"
+      @fechar-modal="fecharModalStatus"
+      @salvou-status="fecharModalStatus(true)"
+    />
+  </div>
+</template>

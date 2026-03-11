@@ -1,3 +1,57 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { tipoDeIntervencao as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+
+const alertStore = useAlertStore();
+const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tiposDeIntervencaoStore);
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  intervencaoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.intervencaoId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (props.intervencaoId) {
+      response = await tiposDeIntervencaoStore.salvarItem(
+        dataToSend,
+        props.intervencaoId,
+      );
+    } else {
+      response = await tiposDeIntervencaoStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      tiposDeIntervencaoStore.$reset();
+      router.push({ name: 'tiposDeIntervencao' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+if (props.intervencaoId) {
+  tiposDeIntervencaoStore.buscarItem(props.intervencaoId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -75,59 +129,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { tipoDeIntervencao as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-
-const alertStore = useAlertStore();
-const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tiposDeIntervencaoStore);
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  intervencaoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.intervencaoId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (props.intervencaoId) {
-      response = await tiposDeIntervencaoStore.salvarItem(
-        dataToSend,
-        props.intervencaoId,
-      );
-    } else {
-      response = await tiposDeIntervencaoStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      tiposDeIntervencaoStore.$reset();
-      router.push({ name: 'tiposDeIntervencao' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-if (props.intervencaoId) {
-  tiposDeIntervencaoStore.buscarItem(props.intervencaoId);
-}
-</script>
 
 <style></style>

@@ -1,3 +1,137 @@
+<script setup>
+
+import { defineProps } from 'vue';
+
+// Parâtros recebidos do container principal
+const props = defineProps({
+  projetosConcluidosAno: {
+    type: Array,
+    required: true,
+  },
+});
+
+// Define a cor da barra
+const barsBackgroundColor = '#d3a730';
+
+// Verifica se os dados retornaram íntegros
+if (props.projetosConcluidosAno != null && props.projetosConcluidosAno.length > 0) {
+  // Array que receberá o tamanho original das barras, para saber se é plural ou singular
+  const originalBarsWidth = [];
+
+  // Array que receberá o tamanho das barras
+  const barsWidth = [];
+
+  // Variável que receberá o total dos valores de projetos
+  let totalProjects = 0;
+
+  // Array que receberá o título das barras
+  const labels = [];
+
+  // Ordena o array de jsons da resposta da API pelo ano
+  const dataSortedByYear = props.projetosConcluidosAno.sort((a, b) => {
+    if (a.ano < b.ano) {
+      return -1;
+    }
+  });
+
+  // Extrai as informações da resposta da API
+  for (let i = 0; i < dataSortedByYear.length; i++) {
+    labels[i] = `${dataSortedByYear[i].ano}`;
+    originalBarsWidth[i] = dataSortedByYear[i].quantidade;
+    // Acumula o total de projetos
+    totalProjects += dataSortedByYear[i].quantidade;
+  }
+
+  // Calcula o percentual do tamanho das barras
+  barsWidth[0] = Math.ceil(originalBarsWidth[0] / totalProjects * 100);
+  barsWidth[1] = Math.ceil(originalBarsWidth[1] / totalProjects * 100);
+  barsWidth[2] = Math.ceil(originalBarsWidth[2] / totalProjects * 100);
+  barsWidth[3] = Math.ceil(originalBarsWidth[3] / totalProjects * 100);
+
+  function init() {
+    // Valores default para quando a quantidade for igual a 0
+    let barDefaultWidth1 = '0px';
+    let barDefaultWidth2 = '0px';
+    let barDefaultWidth3 = '0px';
+    let barDefaultWidth4 = '0px';
+    let barsBackgroundColor1 = '#ffffff';
+    let barsBackgroundColor2 = '#ffffff';
+    let barsBackgroundColor3 = '#ffffff';
+    let barsBackgroundColor4 = '#ffffff';
+    const barsBorder1 = `1px solid ${barsBackgroundColor}`;
+    const barsBorder2 = `1px solid ${barsBackgroundColor}`;
+    const barsBorder3 = `1px solid ${barsBackgroundColor}`;
+    const barsBorder4 = `1px solid ${barsBackgroundColor}`;
+
+    // Se o valor da barra for maior do que 0, define largura e cor da barra
+    if (barsWidth[0] > 0) {
+      barDefaultWidth1 = `${barsWidth[0]}%`;
+      barsBackgroundColor1 = barsBackgroundColor;
+    }
+    if (barsWidth[1] > 0) {
+      barDefaultWidth2 = `${barsWidth[1]}%`;
+      barsBackgroundColor2 = barsBackgroundColor;
+    }
+    if (barsWidth[2] > 0) {
+      barDefaultWidth3 = `${barsWidth[2]}%`;
+      barsBackgroundColor3 = barsBackgroundColor;
+    }
+    if (barsWidth[3] > 0) {
+      barDefaultWidth4 = `${barsWidth[3]}%`;
+      barsBackgroundColor4 = barsBackgroundColor;
+    }
+
+    // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
+    document.getElementById('ProjetosConcluidosAnoLabel1').innerText = labels[0];
+    document.getElementById('ProjetosConcluidosAnoLabel2').innerText = labels[1];
+    document.getElementById('ProjetosConcluidosAnoLabel3').innerText = labels[2];
+    document.getElementById('ProjetosConcluidosAnoLabel4').innerText = labels[3];
+
+    // Define se a descrição da quantidade é no singular ou plural
+    const singularExpression = 'PROJETO CONCLUÍDO';
+    const pluralExpression = 'PROJETOS CONCLUÍDOS';
+    document.getElementById('ProjetosConcluidosAnoBarra1Desc').innerHTML = pluralExpression;
+    document.getElementById('ProjetosConcluidosAnoBarra2Desc').innerHTML = pluralExpression;
+    document.getElementById('ProjetosConcluidosAnoBarra3Desc').innerHTML = pluralExpression;
+    document.getElementById('ProjetosConcluidosAnoBarra4Desc').innerHTML = pluralExpression;
+    if (originalBarsWidth[0] == 1) {
+      document.getElementById('ProjetosConcluidosAnoBarra1Desc').innerHTML = singularExpression;
+    }
+    if (originalBarsWidth[1] == 1) {
+      document.getElementById('ProjetosConcluidosAnoBarra2Desc').innerHTML = singularExpression;
+    }
+    if (originalBarsWidth[2] == 1) {
+      document.getElementById('ProjetosConcluidosAnoBarra3Desc').innerHTML = singularExpression;
+    }
+    if (originalBarsWidth[3] == 1) {
+      document.getElementById('ProjetosConcluidosAnoBarra4Desc').innerHTML = singularExpression;
+    }
+
+    // Define o tamanho, a cor e o texto do tooltip de cada barra.
+    document.getElementById('ProjetosConcluidosAnoCol1').style.width = barDefaultWidth1;
+    document.getElementById('ProjetosConcluidosAnoBarra1').style.backgroundColor = barsBackgroundColor1;
+    document.getElementById('ProjetosConcluidosAnoBarra1Qtd').innerText = props.projetosConcluidosAno[0].quantidade;
+    document.getElementById('ProjetosConcluidosAnoCol2').style.width = barDefaultWidth2;
+    document.getElementById('ProjetosConcluidosAnoBarra2').style.backgroundColor = barsBackgroundColor2;
+    document.getElementById('ProjetosConcluidosAnoBarra2Qtd').innerText = props.projetosConcluidosAno[1].quantidade;
+    document.getElementById('ProjetosConcluidosAnoCol3').style.width = barDefaultWidth3;
+    document.getElementById('ProjetosConcluidosAnoBarra3').style.backgroundColor = barsBackgroundColor3;
+    document.getElementById('ProjetosConcluidosAnoBarra3Qtd').innerText = props.projetosConcluidosAno[2].quantidade;
+    document.getElementById('ProjetosConcluidosAnoCol4').style.width = barDefaultWidth4;
+    document.getElementById('ProjetosConcluidosAnoBarra4').style.backgroundColor = barsBackgroundColor4;
+    document.getElementById('ProjetosConcluidosAnoBarra4Qtd').innerText = props.projetosConcluidosAno[3].quantidade;
+    document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft = '20px';
+  }
+
+  setTimeout(() => {
+    init();
+  }, 100);
+} else {
+  throw new Error('Não foi possível mostrar o gráfico de barras de Projetos Concluídos! Por favor, contacte o atendimento: smae.prefeitura.sp@fgv.br.');
+}
+
+</script>
+
 <template>
   <div
     class="ProjetosConcluidosAnoMain"
@@ -199,140 +333,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-
-import { defineProps } from 'vue';
-
-// Parâtros recebidos do container principal
-const props = defineProps({
-  projetosConcluidosAno: {
-    type: Array,
-    required: true,
-  },
-});
-
-// Define a cor da barra
-const barsBackgroundColor = '#d3a730';
-
-// Verifica se os dados retornaram íntegros
-if (props.projetosConcluidosAno != null && props.projetosConcluidosAno.length > 0) {
-  // Array que receberá o tamanho original das barras, para saber se é plural ou singular
-  const originalBarsWidth = [];
-
-  // Array que receberá o tamanho das barras
-  const barsWidth = [];
-
-  // Variável que receberá o total dos valores de projetos
-  let totalProjects = 0;
-
-  // Array que receberá o título das barras
-  const labels = [];
-
-  // Ordena o array de jsons da resposta da API pelo ano
-  const dataSortedByYear = props.projetosConcluidosAno.sort((a, b) => {
-    if (a.ano < b.ano) {
-      return -1;
-    }
-  });
-
-  // Extrai as informações da resposta da API
-  for (let i = 0; i < dataSortedByYear.length; i++) {
-    labels[i] = `${dataSortedByYear[i].ano}`;
-    originalBarsWidth[i] = dataSortedByYear[i].quantidade;
-    // Acumula o total de projetos
-    totalProjects += dataSortedByYear[i].quantidade;
-  }
-
-  // Calcula o percentual do tamanho das barras
-  barsWidth[0] = Math.ceil(originalBarsWidth[0] / totalProjects * 100);
-  barsWidth[1] = Math.ceil(originalBarsWidth[1] / totalProjects * 100);
-  barsWidth[2] = Math.ceil(originalBarsWidth[2] / totalProjects * 100);
-  barsWidth[3] = Math.ceil(originalBarsWidth[3] / totalProjects * 100);
-
-  function init() {
-    // Valores default para quando a quantidade for igual a 0
-    let barDefaultWidth1 = '0px';
-    let barDefaultWidth2 = '0px';
-    let barDefaultWidth3 = '0px';
-    let barDefaultWidth4 = '0px';
-    let barsBackgroundColor1 = '#ffffff';
-    let barsBackgroundColor2 = '#ffffff';
-    let barsBackgroundColor3 = '#ffffff';
-    let barsBackgroundColor4 = '#ffffff';
-    const barsBorder1 = `1px solid ${barsBackgroundColor}`;
-    const barsBorder2 = `1px solid ${barsBackgroundColor}`;
-    const barsBorder3 = `1px solid ${barsBackgroundColor}`;
-    const barsBorder4 = `1px solid ${barsBackgroundColor}`;
-
-    // Se o valor da barra for maior do que 0, define largura e cor da barra
-    if (barsWidth[0] > 0) {
-      barDefaultWidth1 = `${barsWidth[0]}%`;
-      barsBackgroundColor1 = barsBackgroundColor;
-    }
-    if (barsWidth[1] > 0) {
-      barDefaultWidth2 = `${barsWidth[1]}%`;
-      barsBackgroundColor2 = barsBackgroundColor;
-    }
-    if (barsWidth[2] > 0) {
-      barDefaultWidth3 = `${barsWidth[2]}%`;
-      barsBackgroundColor3 = barsBackgroundColor;
-    }
-    if (barsWidth[3] > 0) {
-      barDefaultWidth4 = `${barsWidth[3]}%`;
-      barsBackgroundColor4 = barsBackgroundColor;
-    }
-
-    // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
-    document.getElementById('ProjetosConcluidosAnoLabel1').innerText = labels[0];
-    document.getElementById('ProjetosConcluidosAnoLabel2').innerText = labels[1];
-    document.getElementById('ProjetosConcluidosAnoLabel3').innerText = labels[2];
-    document.getElementById('ProjetosConcluidosAnoLabel4').innerText = labels[3];
-
-    // Define se a descrição da quantidade é no singular ou plural
-    const singularExpression = 'PROJETO CONCLUÍDO';
-    const pluralExpression = 'PROJETOS CONCLUÍDOS';
-    document.getElementById('ProjetosConcluidosAnoBarra1Desc').innerHTML = pluralExpression;
-    document.getElementById('ProjetosConcluidosAnoBarra2Desc').innerHTML = pluralExpression;
-    document.getElementById('ProjetosConcluidosAnoBarra3Desc').innerHTML = pluralExpression;
-    document.getElementById('ProjetosConcluidosAnoBarra4Desc').innerHTML = pluralExpression;
-    if (originalBarsWidth[0] == 1) {
-      document.getElementById('ProjetosConcluidosAnoBarra1Desc').innerHTML = singularExpression;
-    }
-    if (originalBarsWidth[1] == 1) {
-      document.getElementById('ProjetosConcluidosAnoBarra2Desc').innerHTML = singularExpression;
-    }
-    if (originalBarsWidth[2] == 1) {
-      document.getElementById('ProjetosConcluidosAnoBarra3Desc').innerHTML = singularExpression;
-    }
-    if (originalBarsWidth[3] == 1) {
-      document.getElementById('ProjetosConcluidosAnoBarra4Desc').innerHTML = singularExpression;
-    }
-
-    // Define o tamanho, a cor e o texto do tooltip de cada barra.
-    document.getElementById('ProjetosConcluidosAnoCol1').style.width = barDefaultWidth1;
-    document.getElementById('ProjetosConcluidosAnoBarra1').style.backgroundColor = barsBackgroundColor1;
-    document.getElementById('ProjetosConcluidosAnoBarra1Qtd').innerText = props.projetosConcluidosAno[0].quantidade;
-    document.getElementById('ProjetosConcluidosAnoCol2').style.width = barDefaultWidth2;
-    document.getElementById('ProjetosConcluidosAnoBarra2').style.backgroundColor = barsBackgroundColor2;
-    document.getElementById('ProjetosConcluidosAnoBarra2Qtd').innerText = props.projetosConcluidosAno[1].quantidade;
-    document.getElementById('ProjetosConcluidosAnoCol3').style.width = barDefaultWidth3;
-    document.getElementById('ProjetosConcluidosAnoBarra3').style.backgroundColor = barsBackgroundColor3;
-    document.getElementById('ProjetosConcluidosAnoBarra3Qtd').innerText = props.projetosConcluidosAno[2].quantidade;
-    document.getElementById('ProjetosConcluidosAnoCol4').style.width = barDefaultWidth4;
-    document.getElementById('ProjetosConcluidosAnoBarra4').style.backgroundColor = barsBackgroundColor4;
-    document.getElementById('ProjetosConcluidosAnoBarra4Qtd').innerText = props.projetosConcluidosAno[3].quantidade;
-    document.getElementById('ProjetosConcluidosAnoBarra4Tooltip').style.marginLeft = '20px';
-  }
-
-  setTimeout(() => {
-    init();
-  }, 100);
-} else {
-  throw new Error('Não foi possível mostrar o gráfico de barras de Projetos Concluídos! Por favor, contacte o atendimento: smae.prefeitura.sp@fgv.br.');
-}
-
-</script>
 
 <style lang="less">
 

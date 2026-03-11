@@ -1,50 +1,3 @@
-<template>
-  <TituloDePagina>Envio de arquivo</TituloDePagina>
-
-  <p>
-    Envie um ou mais arquivos para associar com a análise qualitativa.
-  </p>
-
-  <form
-    class="contentStyle"
-    @submit.prevent="associarDocumentoComAnalise"
-  >
-    <ol v-if="listaDeCampos.length">
-      <li
-        v-for="(arquivo, i) in listaDeCampos"
-        :key="i"
-        :class="{ 'com-erro': erros[i] }"
-      >
-        <CampoDeArquivo
-          id="arquivo"
-          v-model="listaDeCampos[i]"
-          name="arquivo"
-          tipo="DOCUMENTO"
-          @envio-bem-sucedido="listaDeCampos.push('')"
-          @arquivo-removido="listaDeCampos.splice(i, 1)"
-        />
-      </li>
-    </ol>
-
-    <ErrorComponent
-      :erro="erroGeral"
-      class="mb1"
-    />
-
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        type="submit"
-        :aria-busy="enviando"
-        :aria-disabled="!listaDeArquivos.length"
-      >
-        Associar arquivos
-      </button>
-      <hr class="ml2 f1">
-    </div>
-  </form>
-</template>
 <script setup>
 import {
   computed,
@@ -115,6 +68,53 @@ function associarDocumentoComAnalise() {
   });
 }
 </script>
+<template>
+  <TituloDePagina>Envio de arquivo</TituloDePagina>
+
+  <p>
+    Envie um ou mais arquivos para associar com a análise qualitativa.
+  </p>
+
+  <form
+    class="contentStyle"
+    @submit.prevent="associarDocumentoComAnalise"
+  >
+    <ol v-if="listaDeCampos.length">
+      <li
+        v-for="(arquivo, i) in listaDeCampos"
+        :key="i"
+        :class="{ 'com-erro': erros[i] }"
+      >
+        <CampoDeArquivo
+          id="arquivo"
+          v-model="listaDeCampos[i]"
+          name="arquivo"
+          tipo="DOCUMENTO"
+          @envio-bem-sucedido="listaDeCampos.push('')"
+          @arquivo-removido="listaDeCampos.splice(i, 1)"
+        />
+      </li>
+    </ol>
+
+    <ErrorComponent
+      :erro="erroGeral"
+      class="mb1"
+    />
+
+    <div class="flex spacebetween center mb2">
+      <hr class="mr2 f1">
+      <button
+        class="btn big"
+        type="submit"
+        :aria-busy="enviando"
+        :aria-disabled="!listaDeArquivos.length"
+      >
+        Associar arquivos
+      </button>
+      <hr class="ml2 f1">
+    </div>
+  </form>
+</template>
 <style lang="less">
 .com-erro {
   color: @vermelho;

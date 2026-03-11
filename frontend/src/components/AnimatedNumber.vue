@@ -1,13 +1,3 @@
-<template>
-  <component
-    :is="as"
-    ref="element"
-  >
-    <slot name="prefix" />
-    {{ formattedNumber }}
-    <slot name="sufix" />
-  </component>
-</template>
 <script setup lang="ts">
 import {
   computed,
@@ -111,3 +101,13 @@ watch(() => props.value, (newVal: number | string) => {
   }
 }, { immediate: true });
 </script>
+<template>
+  <component
+    :is="as"
+    ref="element"
+  >
+    <slot name="prefix" />
+    {{ formattedNumber }}
+    <slot name="sufix" />
+  </component>
+</template>

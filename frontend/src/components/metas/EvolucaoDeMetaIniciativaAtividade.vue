@@ -1,3 +1,50 @@
+<script lang="ts" setup>
+import type { Indicador } from '@back/indicador/entities/indicador.entity';
+import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
+import { storeToRefs } from 'pinia';
+import { ref, watch, type PropType } from 'vue';
+
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
+import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
+import dateToField from '@/helpers/dateToField';
+import { useAuthStore } from '@/stores/auth.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = authStore;
+
+const props = defineProps({
+  indicador: {
+    type: Object as PropType<Indicador>,
+    default: () => ({}),
+    required: true,
+  },
+  variavel: {
+    type: Object as PropType<VariavelItemDto>,
+    required: true,
+  },
+  parentLink: {
+    type: String,
+    required: true,
+  },
+});
+
+const VariaveisStore = useVariaveisStore();
+const { Valores } = storeToRefs(VariaveisStore);
+
+const haChamadasPendentes = ref(false);
+
+watch(() => props.variavel.id, () => {
+  if (props.variavel.id) {
+    haChamadasPendentes.value = true;
+    VariaveisStore.getValores(props.variavel.id, { leitura: true })
+      .then(() => {
+        haChamadasPendentes.value = false;
+      });
+  }
+}, { immediate: true });
+</script>
 <template>
   <article
     class="board_variavel mb2"
@@ -182,50 +229,3 @@
     </section>
   </article>
 </template>
-<script lang="ts" setup>
-import type { Indicador } from '@back/indicador/entities/indicador.entity';
-import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
-import { storeToRefs } from 'pinia';
-import { ref, watch, type PropType } from 'vue';
-
-import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
-import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
-import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
-import dateToField from '@/helpers/dateToField';
-import { useAuthStore } from '@/stores/auth.store';
-import { useVariaveisStore } from '@/stores/variaveis.store';
-
-const authStore = useAuthStore();
-const { temPermissãoPara } = authStore;
-
-const props = defineProps({
-  indicador: {
-    type: Object as PropType<Indicador>,
-    default: () => ({}),
-    required: true,
-  },
-  variavel: {
-    type: Object as PropType<VariavelItemDto>,
-    required: true,
-  },
-  parentLink: {
-    type: String,
-    required: true,
-  },
-});
-
-const VariaveisStore = useVariaveisStore();
-const { Valores } = storeToRefs(VariaveisStore);
-
-const haChamadasPendentes = ref(false);
-
-watch(() => props.variavel.id, () => {
-  if (props.variavel.id) {
-    haChamadasPendentes.value = true;
-    VariaveisStore.getValores(props.variavel.id, { leitura: true })
-      .then(() => {
-        haChamadasPendentes.value = false;
-      });
-  }
-}, { immediate: true });
-</script>
