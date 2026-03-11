@@ -1,3 +1,60 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { modalidadeContratacao as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  modalidadeId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+const modalidadesStore = useModalidadeDeContratacaoStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(modalidadesStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.modalidadeId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (route.params?.modalidadeId) {
+      response = await modalidadesStore.salvarItem(
+        dataToSend,
+        route.params.modalidadeId,
+      );
+    } else {
+      response = await modalidadesStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      modalidadesStore.$reset();
+      router.push({ name: 'modalidadesListar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+modalidadesStore.$reset();
+// não foi usada a prop.modalidadeId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.modalidadeId) {
+  modalidadesStore.buscarItem(route.params?.modalidadeId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -62,62 +119,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { modalidadeContratacao as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  modalidadeId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const alertStore = useAlertStore();
-const modalidadesStore = useModalidadeDeContratacaoStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(modalidadesStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.modalidadeId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (route.params?.modalidadeId) {
-      response = await modalidadesStore.salvarItem(
-        dataToSend,
-        route.params.modalidadeId,
-      );
-    } else {
-      response = await modalidadesStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      modalidadesStore.$reset();
-      router.push({ name: 'modalidadesListar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-modalidadesStore.$reset();
-// não foi usada a prop.modalidadeId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.modalidadeId) {
-  modalidadesStore.buscarItem(route.params?.modalidadeId);
-}
-</script>
 
 <style></style>

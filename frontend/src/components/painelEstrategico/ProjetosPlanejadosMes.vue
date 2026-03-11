@@ -1,11 +1,3 @@
-<template>
-  <div
-    id="projetosProjetadosMesContainer"
-    class="chartContainer"
-    autoresize
-  />
-</template>
-
 <script setup>
 
 import * as echarts from 'echarts';
@@ -294,6 +286,14 @@ if (props.projetosPlanejadosMes != null && props.projetosPlanejadosMes.length > 
   throw new Error('Não foi possível mostrar o gráfico de calor de Projetos Planejados! Por favor, contacte o atendimento: smae.prefeitura.sp@fgv.br.');
 }
 </script>
+
+<template>
+  <div
+    id="projetosProjetadosMesContainer"
+    class="chartContainer"
+    autoresize
+  />
+</template>
 
 <style lang="less">
 

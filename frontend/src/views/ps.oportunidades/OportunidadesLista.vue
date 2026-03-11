@@ -1,3 +1,129 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOportunidadesStore } from '@/stores/oportunidades.store';
+
+const route = useRoute();
+const router = useRouter();
+
+const oportunidades = useOportunidadesStore();
+const alertStore = useAlertStore();
+
+const valoresIniciais = {
+  avaliacao: 'NaoAvaliada',
+};
+
+const oportunidadeID = ref(null);
+const oportunidadeAvaliacao = ref(null);
+const showModal = ref(false);
+
+const {
+  setFieldValue, handleSubmit,
+} = useForm({
+  initialValues: route.query,
+  validationSchema: schema,
+});
+
+const {
+  lista, chamadasPendentes, erro, paginação,
+} = storeToRefs(oportunidades);
+
+const tipos = [
+  {
+    value: 'Emenda',
+    name: 'Emenda',
+  },
+  {
+    value: 'Especial',
+    name: 'Especial',
+  },
+  {
+    value: 'Especifica',
+    name: 'Específica',
+  },
+  {
+    value: 'Voluntaria',
+    name: 'Voluntária',
+  },
+];
+
+const avaliacoes = [
+  {
+    value: 'Selecionada',
+    name: 'Selecionada',
+  },
+  {
+    value: 'NaoSeAplica',
+    name: 'Não se aplica',
+  },
+  {
+    value: 'NaoAvaliada',
+    name: 'Não avaliada',
+  },
+];
+
+function editarOportunidade(id, avaliacaoOportunidade) {
+  showModal.value = true;
+  oportunidadeID.value = id;
+  oportunidadeAvaliacao.value = avaliacaoOportunidade;
+}
+
+function buscarOportunidades() {
+  oportunidades.$reset();
+  oportunidades.buscarTudo(
+    route.query,
+  );
+}
+
+const editAvaliacao = handleSubmit.withControlled(async (values) => {
+  try {
+    const msg = 'Dados salvos com sucesso!';
+    const resposta = await oportunidades.salvarItem(
+      oportunidadeID.value,
+      { avaliacao: values.avaliacao },
+    );
+    if (resposta) {
+      alertStore.success(msg);
+      buscarOportunidades();
+      showModal.value = false;
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+onMounted(() => {
+  // PRA-FAZER: Isso aqui dará problema se quem usar abrir essa rota por um link compartilhado
+  if (route.query.avaliacao === undefined) {
+    router.replace({
+      query: {
+        ...route.query,
+        avaliacao: valoresIniciais.avaliacao,
+      },
+    });
+  } else {
+    buscarOportunidades();
+  }
+});
+
+watch(oportunidadeID, () => {
+  setFieldValue('avaliacao', oportunidadeAvaliacao.value);
+});
+
+watch(
+  () => route.query,
+  buscarOportunidades,
+);
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
@@ -287,132 +413,6 @@
     </div>
   </SmallModal>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import SmallModal from '@/components/SmallModal.vue';
-import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOportunidadesStore } from '@/stores/oportunidades.store';
-
-const route = useRoute();
-const router = useRouter();
-
-const oportunidades = useOportunidadesStore();
-const alertStore = useAlertStore();
-
-const valoresIniciais = {
-  avaliacao: 'NaoAvaliada',
-};
-
-const oportunidadeID = ref(null);
-const oportunidadeAvaliacao = ref(null);
-const showModal = ref(false);
-
-const {
-  setFieldValue, handleSubmit,
-} = useForm({
-  initialValues: route.query,
-  validationSchema: schema,
-});
-
-const {
-  lista, chamadasPendentes, erro, paginação,
-} = storeToRefs(oportunidades);
-
-const tipos = [
-  {
-    value: 'Emenda',
-    name: 'Emenda',
-  },
-  {
-    value: 'Especial',
-    name: 'Especial',
-  },
-  {
-    value: 'Especifica',
-    name: 'Específica',
-  },
-  {
-    value: 'Voluntaria',
-    name: 'Voluntária',
-  },
-];
-
-const avaliacoes = [
-  {
-    value: 'Selecionada',
-    name: 'Selecionada',
-  },
-  {
-    value: 'NaoSeAplica',
-    name: 'Não se aplica',
-  },
-  {
-    value: 'NaoAvaliada',
-    name: 'Não avaliada',
-  },
-];
-
-function editarOportunidade(id, avaliacaoOportunidade) {
-  showModal.value = true;
-  oportunidadeID.value = id;
-  oportunidadeAvaliacao.value = avaliacaoOportunidade;
-}
-
-function buscarOportunidades() {
-  oportunidades.$reset();
-  oportunidades.buscarTudo(
-    route.query,
-  );
-}
-
-const editAvaliacao = handleSubmit.withControlled(async (values) => {
-  try {
-    const msg = 'Dados salvos com sucesso!';
-    const resposta = await oportunidades.salvarItem(
-      oportunidadeID.value,
-      { avaliacao: values.avaliacao },
-    );
-    if (resposta) {
-      alertStore.success(msg);
-      buscarOportunidades();
-      showModal.value = false;
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-});
-
-onMounted(() => {
-  // PRA-FAZER: Isso aqui dará problema se quem usar abrir essa rota por um link compartilhado
-  if (route.query.avaliacao === undefined) {
-    router.replace({
-      query: {
-        ...route.query,
-        avaliacao: valoresIniciais.avaliacao,
-      },
-    });
-  } else {
-    buscarOportunidades();
-  }
-});
-
-watch(oportunidadeID, () => {
-  setFieldValue('avaliacao', oportunidadeAvaliacao.value);
-});
-
-watch(
-  () => route.query,
-  buscarOportunidades,
-);
-</script>
 <style lang="less" scoped>
 .avaliacao {
   background-color: @cinza-claro-azulado;

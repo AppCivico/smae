@@ -1,14 +1,3 @@
-<template>
-  <th
-    class="table-header-cell"
-    v-bind="props.atributos"
-  >
-    <slot>
-      {{ conteudo }}
-    </slot>
-  </th>
-</template>
-
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
 import type { AnyObjectSchema } from 'yup';
@@ -37,3 +26,14 @@ const conteudo = computed(() => {
   return props.label || props.chave;
 });
 </script>
+
+<template>
+  <th
+    class="table-header-cell"
+    v-bind="props.atributos"
+  >
+    <slot>
+      {{ conteudo }}
+    </slot>
+  </th>
+</template>

@@ -1,34 +1,3 @@
-<template>
-  <div
-    v-if="temTentarNovamente"
-    aria-live="polite"
-    class="indisponivel flex justifycenter center"
-  >
-    <div class="indisponivel__content">
-      <div class="flex column text-center g3">
-        <slot name="textoDescritivo">
-          <p class="w700">
-            {{ textoDescritivo }}
-          </p>
-        </slot>
-        <div>
-          <button
-            type="button"
-            class="btn"
-            :aria-busy="estaTentandoNovamente"
-            @click="recarregarDados"
-          >
-            {{ estaTentandoNovamente
-              ? `Recarregando em ${tempoRestante}
-                ${tempoRestante === 1 ? 'segundo' : 'segundos'}...`
-              : tentarNovamenteTextoDoBotao }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, watch } from 'vue';
 
@@ -112,6 +81,37 @@ watch(
   { immediate: true },
 );
 </script>
+
+<template>
+  <div
+    v-if="temTentarNovamente"
+    aria-live="polite"
+    class="indisponivel flex justifycenter center"
+  >
+    <div class="indisponivel__content">
+      <div class="flex column text-center g3">
+        <slot name="textoDescritivo">
+          <p class="w700">
+            {{ textoDescritivo }}
+          </p>
+        </slot>
+        <div>
+          <button
+            type="button"
+            class="btn"
+            :aria-busy="estaTentandoNovamente"
+            @click="recarregarDados"
+          >
+            {{ estaTentandoNovamente
+              ? `Recarregando em ${tempoRestante}
+                ${tempoRestante === 1 ? 'segundo' : 'segundos'}...`
+              : tentarNovamenteTextoDoBotao }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
   .indisponivel {

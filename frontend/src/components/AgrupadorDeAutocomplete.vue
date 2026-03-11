@@ -1,93 +1,3 @@
-<template>
-  <div class="agrupador-de-autocomplete">
-    <legend
-      v-if="titulo"
-      class="legend mb1"
-    >
-      {{ titulo }}
-    </legend>
-
-    <div
-      v-for="(linhaSelecao, linhaSelecaoIndex) in selecoes"
-      :key="`agrupador-linha--${linhaSelecaoIndex}`"
-      class="flex flexwrap g2 mb1"
-    >
-      <div class="f1 fb10em">
-        <label
-          class="label"
-          :for="`${namePrincipal}[${linhaSelecaoIndex}].campo-agrupador`"
-        >{{ labelCampoAgrupador }}</label>
-
-        <select
-          :id="`${namePrincipal}[${linhaSelecaoIndex}].campo-agrupador`"
-          v-model="linhaSelecao.agrupadorId"
-          :name="`${namePrincipal}[${linhaSelecaoIndex}].campo-agrupador`"
-          class="inputtext light mb1"
-          :disabled="mapaOpcoes[linhaSelecaoIndex].listaDeAgrupadores.length === 0"
-          @change="limparCampoItem(linhaSelecaoIndex)"
-        >
-          <option value="">
-            Selecionar
-          </option>
-
-          <option
-            v-for="agrupadorItem in mapaOpcoes[linhaSelecaoIndex].listaDeAgrupadores"
-            :key="`agrupador-item--${agrupadorItem.id}`"
-            :value="agrupadorItem.id"
-          >
-            {{ agrupadorItem.nome }}
-          </option>
-        </select>
-      </div>
-
-      <div class="f1 fb10em">
-        <label
-          class="label"
-          :for="`${namePrincipal}[${linhaSelecaoIndex}].campo-item`"
-        >{{ labelCampoItem }}</label>
-
-        <AutocompleteField2
-          :id="`${namePrincipal}[${linhaSelecaoIndex}].campo-item`"
-          :controlador="{
-            busca: '',
-            participantes: linhaSelecao.itemId
-          }"
-          :grupo="mapaOpcoes[linhaSelecaoIndex].listaDeItems"
-          label="nome"
-          @change="selecionarItem(linhaSelecaoIndex, $event)"
-        />
-      </div>
-
-      <button
-        class="like-a__text addlink"
-        aria-label="excluir"
-        title="excluir"
-        type="button"
-        @click="removerItem(linhaSelecaoIndex)"
-      >
-        <svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_remove" /></svg>
-      </button>
-    </div>
-
-    <div class="agrupador-de-autocomplete__adicionar">
-      <button
-        class="like-a__text addlink"
-        type="button"
-        @click="adicionarItem"
-      >
-        <svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg>
-        Adicionar {{ titulo }}
-      </button>
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import { cloneDeep } from 'lodash';
 import { watch, computed, ref } from 'vue';
@@ -194,3 +104,93 @@ watch(() => selecoes.value, () => {
   emit('update:modelValue', itemsMapeados);
 }, { deep: true });
 </script>
+
+<template>
+  <div class="agrupador-de-autocomplete">
+    <legend
+      v-if="titulo"
+      class="legend mb1"
+    >
+      {{ titulo }}
+    </legend>
+
+    <div
+      v-for="(linhaSelecao, linhaSelecaoIndex) in selecoes"
+      :key="`agrupador-linha--${linhaSelecaoIndex}`"
+      class="flex flexwrap g2 mb1"
+    >
+      <div class="f1 fb10em">
+        <label
+          class="label"
+          :for="`${namePrincipal}[${linhaSelecaoIndex}].campo-agrupador`"
+        >{{ labelCampoAgrupador }}</label>
+
+        <select
+          :id="`${namePrincipal}[${linhaSelecaoIndex}].campo-agrupador`"
+          v-model="linhaSelecao.agrupadorId"
+          :name="`${namePrincipal}[${linhaSelecaoIndex}].campo-agrupador`"
+          class="inputtext light mb1"
+          :disabled="mapaOpcoes[linhaSelecaoIndex].listaDeAgrupadores.length === 0"
+          @change="limparCampoItem(linhaSelecaoIndex)"
+        >
+          <option value="">
+            Selecionar
+          </option>
+
+          <option
+            v-for="agrupadorItem in mapaOpcoes[linhaSelecaoIndex].listaDeAgrupadores"
+            :key="`agrupador-item--${agrupadorItem.id}`"
+            :value="agrupadorItem.id"
+          >
+            {{ agrupadorItem.nome }}
+          </option>
+        </select>
+      </div>
+
+      <div class="f1 fb10em">
+        <label
+          class="label"
+          :for="`${namePrincipal}[${linhaSelecaoIndex}].campo-item`"
+        >{{ labelCampoItem }}</label>
+
+        <AutocompleteField2
+          :id="`${namePrincipal}[${linhaSelecaoIndex}].campo-item`"
+          :controlador="{
+            busca: '',
+            participantes: linhaSelecao.itemId
+          }"
+          :grupo="mapaOpcoes[linhaSelecaoIndex].listaDeItems"
+          label="nome"
+          @change="selecionarItem(linhaSelecaoIndex, $event)"
+        />
+      </div>
+
+      <button
+        class="like-a__text addlink"
+        aria-label="excluir"
+        title="excluir"
+        type="button"
+        @click="removerItem(linhaSelecaoIndex)"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
+    </div>
+
+    <div class="agrupador-de-autocomplete__adicionar">
+      <button
+        class="like-a__text addlink"
+        type="button"
+        @click="adicionarItem"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg>
+        Adicionar {{ titulo }}
+      </button>
+    </div>
+  </div>
+</template>

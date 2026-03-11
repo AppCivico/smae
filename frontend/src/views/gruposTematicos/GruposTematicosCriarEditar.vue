@@ -1,3 +1,58 @@
+<script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { gruposTematicos as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+
+const router = useRouter();
+const route = useRoute();
+const props = defineProps({
+  grupoTematicoId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+const gruposTematicosStore = useGruposTematicosStore();
+const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(gruposTematicosStore);
+
+async function onSubmit(values) {
+  try {
+    let response;
+    const msg = props.grupoTematicoId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+
+    const dataToSend = { ...values };
+
+    if (props.grupoTematicoId) {
+      response = await gruposTematicosStore.salvarItem(
+        dataToSend,
+        props.grupoTematicoId,
+      );
+    } else {
+      response = await gruposTematicosStore.salvarItem(dataToSend);
+    }
+    if (response) {
+      alertStore.success(msg);
+      gruposTematicosStore.$reset();
+      router.push({ name: 'gruposTematicosObras' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+}
+
+if (props.grupoTematicoId) {
+  gruposTematicosStore.buscarItem(props.grupoTematicoId);
+}
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
@@ -137,60 +192,5 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { gruposTematicos as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-
-const router = useRouter();
-const route = useRoute();
-const props = defineProps({
-  grupoTematicoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const alertStore = useAlertStore();
-const gruposTematicosStore = useGruposTematicosStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(gruposTematicosStore);
-
-async function onSubmit(values) {
-  try {
-    let response;
-    const msg = props.grupoTematicoId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    const dataToSend = { ...values };
-
-    if (props.grupoTematicoId) {
-      response = await gruposTematicosStore.salvarItem(
-        dataToSend,
-        props.grupoTematicoId,
-      );
-    } else {
-      response = await gruposTematicosStore.salvarItem(dataToSend);
-    }
-    if (response) {
-      alertStore.success(msg);
-      gruposTematicosStore.$reset();
-      router.push({ name: 'gruposTematicosObras' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
-if (props.grupoTematicoId) {
-  gruposTematicosStore.buscarItem(props.grupoTematicoId);
-}
-</script>
 
 <style></style>

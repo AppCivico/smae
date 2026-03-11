@@ -1,3 +1,35 @@
+<script lang="ts" setup>
+import { Pagination, Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { ref, computed, defineSlots } from 'vue';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
+const slots = defineSlots<{
+  default(): any
+}>();
+
+const elementos = computed(() => slots.default());
+const ehCarrosel = computed<boolean>(() => elementos.value.length > 1);
+
+const cardAtual = ref<number>(0);
+
+function selecionarCardAtual(atual: number) {
+  cardAtual.value = atual;
+}
+
+const onSwiper = (swiper) => {
+  selecionarCardAtual(swiper.realIndex);
+};
+
+const onSlideChange = (swiper) => {
+  selecionarCardAtual(swiper.realIndex);
+};
+
+</script>
+
 <template>
   <div class="card-envelope-raiz">
     <Swiper
@@ -31,38 +63,6 @@
     </div>
   </div>
 </template>
-
-<script lang="ts" setup>
-import { Pagination, Navigation } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { ref, computed, defineSlots } from 'vue';
-
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-
-const slots = defineSlots<{
-  default(): any
-}>();
-
-const elementos = computed(() => slots.default());
-const ehCarrosel = computed<boolean>(() => elementos.value.length > 1);
-
-const cardAtual = ref<number>(0);
-
-function selecionarCardAtual(atual: number) {
-  cardAtual.value = atual;
-}
-
-const onSwiper = (swiper) => {
-  selecionarCardAtual(swiper.realIndex);
-};
-
-const onSlideChange = (swiper) => {
-  selecionarCardAtual(swiper.realIndex);
-};
-
-</script>
 
 <style lang="less" scoped>
 .card-envelope-raiz {

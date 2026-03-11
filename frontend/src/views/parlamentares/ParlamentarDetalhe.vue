@@ -1,3 +1,38 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+
+import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
+import { useAuthStore } from '@/stores/auth.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const props = defineProps({
+  parlamentarId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const authStore = useAuthStore();
+const parlamentaresStore = useParlamentaresStore();
+
+const emFoco = ref({});
+onMounted(async () => {
+  await parlamentaresStore.buscarItem(props.parlamentarId);
+  emFoco.value = parlamentaresStore.emFoco;
+
+  if (emFoco.value.equipe) {
+    emFoco.value.equipe.sort((a, b) => a.nome.localeCompare(b.nome));
+  }
+});
+
+function formatarNumero(numero) {
+  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+</script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <h1>Parlamentar</h1>
@@ -314,41 +349,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed, onMounted, ref } from 'vue';
-
-import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
-import { useAuthStore } from '@/stores/auth.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const props = defineProps({
-  parlamentarId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const authStore = useAuthStore();
-const parlamentaresStore = useParlamentaresStore();
-
-const emFoco = ref({});
-onMounted(async () => {
-  await parlamentaresStore.buscarItem(props.parlamentarId);
-  emFoco.value = parlamentaresStore.emFoco;
-
-  if (emFoco.value.equipe) {
-    emFoco.value.equipe.sort((a, b) => a.nome.localeCompare(b.nome));
-  }
-});
-
-function formatarNumero(numero) {
-  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
-
-</script>
 
 <style scoped lang="less">
 

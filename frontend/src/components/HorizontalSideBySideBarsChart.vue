@@ -1,3 +1,103 @@
+<script setup>
+
+import { defineProps } from 'vue';
+
+// Parâtros recebidos do container principal
+const props = defineProps({
+  projetosPlanejadosAno: {
+    type: Array,
+    required: true,
+  },
+  projetosConcluidosAno: {
+    type: Array,
+    required: true,
+  },
+});
+
+// Array que receberá o tamanho das barras
+const barsWidth = [];
+
+// Variável que receberá o total dos valores de projetos
+let totalProjects = 0;
+
+// Array que receberá o título das barras
+const labels = [];
+
+// Define a cor da barra
+let barsBackgroundColor = '';
+
+for (let i = 0; i < props.projetosPlanejadosAno.length; i++) {
+  labels[i] = `${props.projetosPlanejadosAno[i].ano}`;
+  barsWidth[i] = props.projetosPlanejadosAno[i].quantidade;
+  // Acumula o total de projetos
+  totalProjects += props.projetosPlanejadosAno[i].quantidade;
+}
+
+barsBackgroundColor = '#A77E11';
+// barsBackgroundColor = "#d3a730";
+
+// Calcula o percentual do tamanho das barras
+barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
+barsWidth[1] = Math.ceil(barsWidth[1] / totalProjects * 100);
+barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
+barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
+
+function init() {
+  // Valores default para quando a quantidade for igual a 0
+  let barDefaultWidth1 = '0px';
+  let barDefaultWidth2 = '0px';
+  let barDefaultWidth3 = '0px';
+  let barDefaultWidth4 = '0px';
+  let barsBackgroundColor1 = '#ffffff';
+  let barsBackgroundColor2 = '#ffffff';
+  let barsBackgroundColor3 = '#ffffff';
+  let barsBackgroundColor4 = '#ffffff';
+
+  // Se o valor da barra for maior do que 0, define largura e cor da barra
+  if (barsWidth[0] > 0) {
+    barDefaultWidth1 = `${barsWidth[0]}%`;
+    barsBackgroundColor1 = barsBackgroundColor;
+  }
+  if (barsWidth[1] > 0) {
+    barDefaultWidth2 = `${barsWidth[1]}%`;
+    barsBackgroundColor2 = barsBackgroundColor;
+  }
+  if (barsWidth[2] > 0) {
+    barDefaultWidth3 = `${barsWidth[2]}%`;
+    barsBackgroundColor3 = barsBackgroundColor;
+  }
+  if (barsWidth[3] > 0) {
+    barDefaultWidth4 = `${barsWidth[3]}%`;
+    barsBackgroundColor4 = barsBackgroundColor;
+  }
+
+  // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
+  document.getElementById('label1').innerText = labels[0];
+  document.getElementById('label2').innerText = labels[1];
+  document.getElementById('label3').innerText = labels[2];
+  document.getElementById('label4').innerText = labels[3];
+
+  // Define o tamanho, a cor e o texto do tooltip de cada barra.
+  document.getElementById('column1').style.width = barDefaultWidth1;
+  document.getElementById('firstBar').style.backgroundColor = barsBackgroundColor1;
+  document.getElementById('firstBarQtd').innerText = props.projetosPlanejadosAno[0].quantidade;
+  document.getElementById('column2').style.width = barDefaultWidth2;
+  document.getElementById('secondBar').style.backgroundColor = barsBackgroundColor2;
+  document.getElementById('secondBarQtd').innerText = props.projetosPlanejadosAno[1].quantidade;
+  document.getElementById('column3').style.width = barDefaultWidth3;
+  document.getElementById('thirdBar').style.backgroundColor = barsBackgroundColor3;
+  document.getElementById('thirdBarQtd').innerText = props.projetosPlanejadosAno[2].quantidade;
+  document.getElementById('column4').style.width = barDefaultWidth4;
+  document.getElementById('fourthBar').style.backgroundColor = barsBackgroundColor4;
+  document.getElementById('fourthBarQtd').innerText = props.projetosPlanejadosAno[3].quantidade;
+}
+
+setTimeout(() => {
+  init();
+}, 100);
+
+</script>
+
 <template>
   <div
     class="barChartBody"
@@ -207,106 +307,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-
-import { defineProps } from 'vue';
-
-// Parâtros recebidos do container principal
-const props = defineProps({
-  projetosPlanejadosAno: {
-    type: Array,
-    required: true,
-  },
-  projetosConcluidosAno: {
-    type: Array,
-    required: true,
-  },
-});
-
-// Array que receberá o tamanho das barras
-const barsWidth = [];
-
-// Variável que receberá o total dos valores de projetos
-let totalProjects = 0;
-
-// Array que receberá o título das barras
-const labels = [];
-
-// Define a cor da barra
-let barsBackgroundColor = '';
-
-for (let i = 0; i < props.projetosPlanejadosAno.length; i++) {
-  labels[i] = `${props.projetosPlanejadosAno[i].ano}`;
-  barsWidth[i] = props.projetosPlanejadosAno[i].quantidade;
-  // Acumula o total de projetos
-  totalProjects += props.projetosPlanejadosAno[i].quantidade;
-}
-
-barsBackgroundColor = '#A77E11';
-// barsBackgroundColor = "#d3a730";
-
-// Calcula o percentual do tamanho das barras
-barsWidth[0] = Math.ceil(barsWidth[0] / totalProjects * 100);
-barsWidth[1] = Math.ceil(barsWidth[1] / totalProjects * 100);
-barsWidth[2] = Math.ceil(barsWidth[2] / totalProjects * 100);
-barsWidth[3] = Math.ceil(barsWidth[3] / totalProjects * 100);
-
-function init() {
-  // Valores default para quando a quantidade for igual a 0
-  let barDefaultWidth1 = '0px';
-  let barDefaultWidth2 = '0px';
-  let barDefaultWidth3 = '0px';
-  let barDefaultWidth4 = '0px';
-  let barsBackgroundColor1 = '#ffffff';
-  let barsBackgroundColor2 = '#ffffff';
-  let barsBackgroundColor3 = '#ffffff';
-  let barsBackgroundColor4 = '#ffffff';
-
-  // Se o valor da barra for maior do que 0, define largura e cor da barra
-  if (barsWidth[0] > 0) {
-    barDefaultWidth1 = `${barsWidth[0]}%`;
-    barsBackgroundColor1 = barsBackgroundColor;
-  }
-  if (barsWidth[1] > 0) {
-    barDefaultWidth2 = `${barsWidth[1]}%`;
-    barsBackgroundColor2 = barsBackgroundColor;
-  }
-  if (barsWidth[2] > 0) {
-    barDefaultWidth3 = `${barsWidth[2]}%`;
-    barsBackgroundColor3 = barsBackgroundColor;
-  }
-  if (barsWidth[3] > 0) {
-    barDefaultWidth4 = `${barsWidth[3]}%`;
-    barsBackgroundColor4 = barsBackgroundColor;
-  }
-
-  // Define o label de cada barra e a margem esquerda, dependendo do tamanho da barra
-  document.getElementById('label1').innerText = labels[0];
-  document.getElementById('label2').innerText = labels[1];
-  document.getElementById('label3').innerText = labels[2];
-  document.getElementById('label4').innerText = labels[3];
-
-  // Define o tamanho, a cor e o texto do tooltip de cada barra.
-  document.getElementById('column1').style.width = barDefaultWidth1;
-  document.getElementById('firstBar').style.backgroundColor = barsBackgroundColor1;
-  document.getElementById('firstBarQtd').innerText = props.projetosPlanejadosAno[0].quantidade;
-  document.getElementById('column2').style.width = barDefaultWidth2;
-  document.getElementById('secondBar').style.backgroundColor = barsBackgroundColor2;
-  document.getElementById('secondBarQtd').innerText = props.projetosPlanejadosAno[1].quantidade;
-  document.getElementById('column3').style.width = barDefaultWidth3;
-  document.getElementById('thirdBar').style.backgroundColor = barsBackgroundColor3;
-  document.getElementById('thirdBarQtd').innerText = props.projetosPlanejadosAno[2].quantidade;
-  document.getElementById('column4').style.width = barDefaultWidth4;
-  document.getElementById('fourthBar').style.backgroundColor = barsBackgroundColor4;
-  document.getElementById('fourthBarQtd').innerText = props.projetosPlanejadosAno[3].quantidade;
-}
-
-setTimeout(() => {
-  init();
-}, 100);
-
-</script>
 
 <style lang="less">
 

@@ -1,8 +1,3 @@
-<template>
-  <Dashboard>
-    <router-view />
-  </Dashboard>
-</template>
 <script setup>
 import { onUnmounted } from 'vue';
 
@@ -13,3 +8,8 @@ const oportunidades = useOportunidadesStore();
 
 onUnmounted(() => { oportunidades.$reset(); });
 </script>
+<template>
+  <Dashboard>
+    <router-view />
+  </Dashboard>
+</template>

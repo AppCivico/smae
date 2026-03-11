@@ -1,28 +1,3 @@
-<template>
-  <div v-if="valores?.linhas?.length">
-    <div class="flex justifycenter">
-      <NumeroComLegenda
-        v-if="posicaoAtual"
-        como-item
-        cor="#221F43"
-        :legenda="`Posição atual ${temMeta ? ' / Meta' : ''}`"
-        cor-de-fundo="#e8e8e866"
-        :tamanho-do-numero="34"
-        :tamanho-da-legenda="12"
-      >
-        <template #numero>
-          {{ formatarNumero(posicaoAtual) }}<span v-if="temMeta">/</span>
-          <small v-if="temMeta">
-            {{ formatarNumero($props.indicador.meta_valor_nominal) }}
-          </small>
-        </template>
-      </NumeroComLegenda>
-    </div>
-
-    <GraficoDashboard :option="configuracaoGrafico" />
-  </div>
-</template>
-
 <script setup>
 import Big from 'big.js';
 import { computed } from 'vue';
@@ -491,6 +466,31 @@ const configuracaoGrafico = computed(() => {
   };
 });
 </script>
+
+<template>
+  <div v-if="valores?.linhas?.length">
+    <div class="flex justifycenter">
+      <NumeroComLegenda
+        v-if="posicaoAtual"
+        como-item
+        cor="#221F43"
+        :legenda="`Posição atual ${temMeta ? ' / Meta' : ''}`"
+        cor-de-fundo="#e8e8e866"
+        :tamanho-do-numero="34"
+        :tamanho-da-legenda="12"
+      >
+        <template #numero>
+          {{ formatarNumero(posicaoAtual) }}<span v-if="temMeta">/</span>
+          <small v-if="temMeta">
+            {{ formatarNumero($props.indicador.meta_valor_nominal) }}
+          </small>
+        </template>
+      </NumeroComLegenda>
+    </div>
+
+    <GraficoDashboard :option="configuracaoGrafico" />
+  </div>
+</template>
 
 <style scoped>
 small {

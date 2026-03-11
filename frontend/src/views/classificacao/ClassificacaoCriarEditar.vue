@@ -1,3 +1,75 @@
+<script lang="ts" setup>
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  computed, onMounted, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { classificacaoCriarEditarSchema as schema } from '@/consts/formSchemas';
+import { useClassificacaoStore } from '@/stores/classificacao.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+
+const { params } = useRoute();
+const $router = useRouter();
+
+const classificacaoStore = useClassificacaoStore();
+const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
+
+const {
+  isSubmitting, handleSubmit, values, setFieldValue, setValues,
+} = useForm({
+  validationSchema: schema,
+});
+
+const estaEditando = computed<boolean>(() => !!params.classificacaoId);
+
+const tiposPorEsfera = computed(() => (
+  tipoDeTransferenciaStore.lista.filter((item) => item.esfera === values.esfera) || []
+));
+
+watch(() => values.esfera, (to, from) => {
+  if (from !== undefined) {
+    setFieldValue('transferencia_tipo_id', null);
+  }
+});
+
+onMounted(async () => {
+  tipoDeTransferenciaStore.buscarTudo();
+
+  if (estaEditando.value) {
+    const classificacao = await classificacaoStore.buscarItem(params.classificacaoId);
+
+    setValues({
+      nome: classificacao.nome,
+      esfera: classificacao.transferencia_tipo.esfera,
+      transferencia_tipo_id: classificacao.transferencia_tipo.id.toString(),
+    });
+  }
+});
+
+function voltarLista() {
+  $router.push({
+    name: 'classificacao',
+  });
+}
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const dados = {
+    nome: valoresControlados.nome,
+    transferencia_tipo_id: Number(valoresControlados.transferencia_tipo_id),
+  };
+
+  if (estaEditando.value) {
+    await classificacaoStore.atualizarItem(params.classificacaoId, dados);
+  } else {
+    await classificacaoStore.salvarItem(dados);
+  }
+
+  voltarLista();
+});
+</script>
+
 <template>
   <section class="mb2">
     <div class="flex g2 spacebetween center mb2">
@@ -115,75 +187,3 @@
     </form>
   </section>
 </template>
-
-<script lang="ts" setup>
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import {
-  computed, onMounted, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { classificacaoCriarEditarSchema as schema } from '@/consts/formSchemas';
-import { useClassificacaoStore } from '@/stores/classificacao.store';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-
-const { params } = useRoute();
-const $router = useRouter();
-
-const classificacaoStore = useClassificacaoStore();
-const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
-
-const {
-  isSubmitting, handleSubmit, values, setFieldValue, setValues,
-} = useForm({
-  validationSchema: schema,
-});
-
-const estaEditando = computed<boolean>(() => !!params.classificacaoId);
-
-const tiposPorEsfera = computed(() => (
-  tipoDeTransferenciaStore.lista.filter((item) => item.esfera === values.esfera) || []
-));
-
-watch(() => values.esfera, (to, from) => {
-  if (from !== undefined) {
-    setFieldValue('transferencia_tipo_id', null);
-  }
-});
-
-onMounted(async () => {
-  tipoDeTransferenciaStore.buscarTudo();
-
-  if (estaEditando.value) {
-    const classificacao = await classificacaoStore.buscarItem(params.classificacaoId);
-
-    setValues({
-      nome: classificacao.nome,
-      esfera: classificacao.transferencia_tipo.esfera,
-      transferencia_tipo_id: classificacao.transferencia_tipo.id.toString(),
-    });
-  }
-});
-
-function voltarLista() {
-  $router.push({
-    name: 'classificacao',
-  });
-}
-
-const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const dados = {
-    nome: valoresControlados.nome,
-    transferencia_tipo_id: Number(valoresControlados.transferencia_tipo_id),
-  };
-
-  if (estaEditando.value) {
-    await classificacaoStore.atualizarItem(params.classificacaoId, dados);
-  } else {
-    await classificacaoStore.salvarItem(dados);
-  }
-
-  voltarLista();
-});
-</script>

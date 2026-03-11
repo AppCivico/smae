@@ -1,3 +1,366 @@
+<script setup>
+import isEqual from 'lodash/isEqual';
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import Grafico from '@/components/graficos/GraficoDashboard.vue';
+import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import dateToDate from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
+import requestS from '@/helpers/requestS.ts';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+
+const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
+const fluxosEtapasProjetos = useEtapasProjetosStore();
+const partidoStore = usePartidosStore();
+const parlamentarStore = useParlamentaresStore();
+
+const {
+  lista: listaEtapas,
+  chamadasPendentes: chamadasPendentesEtapas,
+  etapasPorId,
+  erro: erroNaListaDeEtapas,
+} = storeToRefs(fluxosEtapasProjetos);
+
+const {
+  lista: listaPartidos,
+  chamadasPendentes: chamadasPendentesPartidos,
+  partidosPorId,
+} = storeToRefs(partidoStore);
+
+const {
+  lista: listaParlamentares,
+  chamadasPendentes: chamadasPendentesParlamentares,
+  parlamentaresPorId,
+} = storeToRefs(parlamentarStore);
+
+const route = useRoute();
+const router = useRouter();
+
+let dataCorrente = new Date();
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const colunas = [
+  { chave: 'identificador', label: 'Identificador' },
+  { chave: 'esfera', label: 'Esfera' },
+  { chave: 'tipo.nome', label: 'Tipo' },
+  {
+    chave: 'partido',
+    label: 'Partidos',
+    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'sigla') : ''),
+  },
+  {
+    chave: 'parlamentar',
+    label: 'Parlamentares',
+    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'nome_popular') : ''),
+  },
+  { chave: 'orgao_gestor.sigla', label: 'Órgão Gestor' },
+  {
+    chave: 'objeto',
+    label: 'Objeto',
+    formatador: (valor = '') => `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
+  },
+  {
+    chave: 'repasse',
+    label: 'Repasse',
+    formatador: (valor) => (valor !== undefined && valor !== null ? `R$${dinheiro(valor)}` : '-'),
+  },
+  {
+    chave: 'etapa_id',
+    label: 'Etapa',
+    formatador: (valor) => listaEtapas.value.find((etapa) => etapa.id === valor)?.descricao || 'Workflow não iniciado',
+  },
+];
+const anos = (() => {
+  const listaDeAnos = [];
+  for (let ano = new Date().getFullYear(); ano >= 2004; ano -= 1) {
+    listaDeAnos.push({ ano: ano.toString(), id: ano });
+  }
+  return listaDeAnos;
+})();
+
+const graficosPendentes = ref(false);
+const exibirFiltros = ref(false);
+const tabelaTransferencias = ref(null);
+const graficos = ref({});
+const filtrosEscolhidos = ref({
+  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
+  anos: route.query.anos?.map((ano) => Number(ano)) || [],
+  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
+  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
+});
+const carregandoTransferencias = ref(false);
+const transferencias = ref([]);
+const paginacaoTransferencias = ref({});
+
+const numeroCompactado = ref({
+  porPartidos: true,
+  porOrgaos: true,
+});
+
+const graficosDeNumeroPorPartido = computed(() => (!Array.isArray(
+  graficos.value?.values?.numero_por_partido?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.numero_por_partido,
+    xAxis: {
+      ...graficos.value.values.numero_por_partido.xAxis,
+      axisLabel: {
+        ...graficos.value.values.numero_por_partido.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+    series: graficos.value.values.numero_por_partido.series.map((serie) => ({
+      ...serie,
+      stack: undefined,
+      barWidth: '40%',
+      label: serie.value ? serie.label : undefined,
+    })),
+  }));
+
+const graficoDeValorPorPartido = computed(() => (!Array.isArray(
+  graficos.value?.values?.valor_por_partido?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.valor_por_partido,
+    xAxis: {
+      ...graficos.value.values.valor_por_partido.xAxis,
+      axisLabel: {
+        ...graficos.value.values.valor_por_partido.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+    yAxis: {
+      ...graficos.value.values.valor_por_partido.yAxis,
+      name: undefined,
+      axisLabel: {
+        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porPartidos, minimumFractionDigits: 0 })}`,
+      },
+    },
+    series: graficos.value.values.valor_por_partido.series.map((serie) => ({
+      ...serie,
+      stack: 'total',
+      barWidth: '80%',
+      label: undefined,
+    })),
+  }));
+
+const graficoDeValorPorOrgao = computed(() => (!Array.isArray(
+  graficos.value?.values?.valor_por_orgao?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.valor_por_orgao,
+    xAxis: {
+      ...graficos.value.values.valor_por_orgao.xAxis,
+      axisLabel: {
+        ...graficos.value.values.valor_por_orgao.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+
+    yAxis: {
+      ...graficos.value.values.valor_por_orgao.yAxis,
+      name: undefined,
+      axisLabel: {
+        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porOrgaos, minimumFractionDigits: 0 })}`,
+      },
+    },
+
+    series: graficos.value.values.valor_por_orgao.series.map((serie) => ({
+      ...serie,
+      stack: 'total',
+      barWidth: '80%',
+      label: undefined,
+    })),
+  }));
+
+function atualizarQuery() {
+  const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce(
+    (acc, cur) => {
+      if (filtrosEscolhidos.value[cur].length) {
+        acc[cur] = [...filtrosEscolhidos.value[cur]];
+      } else {
+        acc[cur] = undefined;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  router.replace({
+    query: {
+      ...route.query,
+      ...filtrosLimpos,
+    },
+  });
+}
+
+function onSubmit() {
+  atualizarQuery();
+  dataCorrente = new Date();
+  exibirFiltros.value = false;
+}
+
+function removeTitleProperty(obj) {
+  const { title, ...rest } = obj;
+  return rest;
+}
+
+async function buscarGraficos() {
+  graficosPendentes.value = true;
+  try {
+    const retorno = await requestS.get(
+      `${baseUrl}/panorama/analise-transferencias`,
+      route.query,
+    );
+    graficos.value.values = retorno;
+    graficosPendentes.value = false;
+  } catch (error) {
+    graficosPendentes.value = false;
+    console.log('error:', error);
+  }
+}
+
+async function buscarTransferencias() {
+  carregandoTransferencias.value = true;
+
+  const paramsLimpos = Object.entries(route.query).reduce((acc, [key, value]) => {
+    if (!key.startsWith('transferencias_')) {
+      acc[key] = value;
+    } else {
+      acc[key.replace('transferencias_', '')] = value;
+    }
+    return acc;
+  }, {});
+
+  try {
+    const retorno = await requestS.get(
+      `${baseUrl}/panorama/painel-estrategico-transferencias`,
+      paramsLimpos,
+    );
+    paginacaoTransferencias.value = {
+      temMais: true,
+      paginas: retorno.paginas,
+      tokenPaginacao: retorno.token_paginacao,
+      tokenProximaPagina: retorno.token_paginacao,
+      paginaCorrente: retorno.pagina_corrente,
+      totalRegistros: retorno.total_registros,
+      tokenTtl: retorno.token_ttl,
+    };
+
+    transferencias.value = retorno.linhas;
+  } catch (erro) {
+    console.log('error:', erro);
+  } finally {
+    carregandoTransferencias.value = false;
+  }
+}
+
+function scrollPaginaParaTabela() {
+  if (tabelaTransferencias.value) {
+    tabelaTransferencias.value.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  }
+}
+
+async function iniciar() {
+  fluxosEtapasProjetos.buscarTudo();
+  parlamentarStore.buscarTudo({ ipp: -1 });
+  partidoStore.buscarTudo();
+
+  atualizarQuery();
+  if (!Object.keys(route.query).length) {
+    await router.replace({
+      query: {
+        ...route.query,
+        anos: [dataCorrente.getFullYear()],
+      },
+    });
+  }
+  buscarGraficos();
+  buscarTransferencias();
+}
+
+iniciar();
+
+function resetarPaginacao() {
+  paginacaoTransferencias.value = {
+    temMais: true,
+    paginas: 1,
+    tokenPaginacao: null,
+    tokenProximaPagina: null,
+    paginaCorrente: 1,
+    totalRegistros: 0,
+    tokenTtl: null,
+  };
+
+  const querySemTransferencias = Object.fromEntries(
+    Object.entries(route.query).filter(
+      ([key]) => !key.startsWith('transferencias_'),
+    ),
+  );
+
+  router.replace({
+    query: {
+      ...querySemTransferencias,
+      transferencias_pagina: 1,
+    },
+  });
+}
+
+watch(
+  () => route.query,
+  (queryNova, queryAnterior) => {
+    const queryStringsDosFiltrosNova = Object
+      .fromEntries(Object.entries(queryNova)
+        .filter(([key]) => !key.startsWith('transferencias_')));
+
+    const queryStringsDosFiltrosAntiga = Object
+      .fromEntries(Object.entries(queryAnterior)
+        .filter(([key]) => !key.startsWith('transferencias_')));
+
+    const queryStringsDeTransferenciasNova = Object.fromEntries(Object.entries(queryNova).filter(([key]) => key.startsWith('transferencias_')));
+    const queryStringsDeTransferenciasAntiga = Object.fromEntries(Object.entries(queryAnterior).filter(([key]) => key.startsWith('transferencias_')));
+
+    const teveMudancaNaQueryDosFiltros = !isEqual(
+      queryStringsDosFiltrosNova,
+      queryStringsDosFiltrosAntiga,
+    );
+
+    const teveMudancaNaQueryDasTransferencias = !isEqual(
+      queryStringsDeTransferenciasNova,
+      queryStringsDeTransferenciasAntiga,
+    );
+
+    filtrosEscolhidos.value = {
+      etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
+      anos: route.query.anos?.map((ano) => Number(ano)) || [],
+      partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
+      parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
+    };
+
+    if (teveMudancaNaQueryDosFiltros) {
+      resetarPaginacao(); // resetar a paginação já faz o request para buscar as transferências
+      buscarGraficos();
+    }
+
+    if (teveMudancaNaQueryDasTransferencias) {
+      buscarTransferencias();
+    }
+  },
+);
+</script>
 <template>
   <div class="flex spacebetween fixed">
     <h5>ANÁLISE GERADA EM {{ localizeDate(dataCorrente) }}</h5>
@@ -451,369 +814,6 @@
     </div>
   </div>
 </template>
-<script setup>
-import isEqual from 'lodash/isEqual';
-import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import Grafico from '@/components/graficos/GraficoDashboard.vue';
-import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
-import dateToDate from '@/helpers/dateToDate';
-import dinheiro from '@/helpers/dinheiro';
-import requestS from '@/helpers/requestS.ts';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { usePartidosStore } from '@/stores/partidos.store';
-
-const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
-const fluxosEtapasProjetos = useEtapasProjetosStore();
-const partidoStore = usePartidosStore();
-const parlamentarStore = useParlamentaresStore();
-
-const {
-  lista: listaEtapas,
-  chamadasPendentes: chamadasPendentesEtapas,
-  etapasPorId,
-  erro: erroNaListaDeEtapas,
-} = storeToRefs(fluxosEtapasProjetos);
-
-const {
-  lista: listaPartidos,
-  chamadasPendentes: chamadasPendentesPartidos,
-  partidosPorId,
-} = storeToRefs(partidoStore);
-
-const {
-  lista: listaParlamentares,
-  chamadasPendentes: chamadasPendentesParlamentares,
-  parlamentaresPorId,
-} = storeToRefs(parlamentarStore);
-
-const route = useRoute();
-const router = useRouter();
-
-let dataCorrente = new Date();
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-const colunas = [
-  { chave: 'identificador', label: 'Identificador' },
-  { chave: 'esfera', label: 'Esfera' },
-  { chave: 'tipo.nome', label: 'Tipo' },
-  {
-    chave: 'partido',
-    label: 'Partidos',
-    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'sigla') : ''),
-  },
-  {
-    chave: 'parlamentar',
-    label: 'Parlamentares',
-    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'nome_popular') : ''),
-  },
-  { chave: 'orgao_gestor.sigla', label: 'Órgão Gestor' },
-  {
-    chave: 'objeto',
-    label: 'Objeto',
-    formatador: (valor = '') => `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
-  },
-  {
-    chave: 'repasse',
-    label: 'Repasse',
-    formatador: (valor) => (valor !== undefined && valor !== null ? `R$${dinheiro(valor)}` : '-'),
-  },
-  {
-    chave: 'etapa_id',
-    label: 'Etapa',
-    formatador: (valor) => listaEtapas.value.find((etapa) => etapa.id === valor)?.descricao || 'Workflow não iniciado',
-  },
-];
-const anos = (() => {
-  const listaDeAnos = [];
-  for (let ano = new Date().getFullYear(); ano >= 2004; ano -= 1) {
-    listaDeAnos.push({ ano: ano.toString(), id: ano });
-  }
-  return listaDeAnos;
-})();
-
-const graficosPendentes = ref(false);
-const exibirFiltros = ref(false);
-const tabelaTransferencias = ref(null);
-const graficos = ref({});
-const filtrosEscolhidos = ref({
-  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
-  anos: route.query.anos?.map((ano) => Number(ano)) || [],
-  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
-  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
-});
-const carregandoTransferencias = ref(false);
-const transferencias = ref([]);
-const paginacaoTransferencias = ref({});
-
-const numeroCompactado = ref({
-  porPartidos: true,
-  porOrgaos: true,
-});
-
-const graficosDeNumeroPorPartido = computed(() => (!Array.isArray(
-  graficos.value?.values?.numero_por_partido?.series,
-)
-  ? null
-  : {
-    ...graficos.value.values.numero_por_partido,
-    xAxis: {
-      ...graficos.value.values.numero_por_partido.xAxis,
-      axisLabel: {
-        ...graficos.value.values.numero_por_partido.xAxis.axisLabel,
-        rotate: 45,
-        align: 'right',
-      },
-    },
-    series: graficos.value.values.numero_por_partido.series.map((serie) => ({
-      ...serie,
-      stack: undefined,
-      barWidth: '40%',
-      label: serie.value ? serie.label : undefined,
-    })),
-  }));
-
-const graficoDeValorPorPartido = computed(() => (!Array.isArray(
-  graficos.value?.values?.valor_por_partido?.series,
-)
-  ? null
-  : {
-    ...graficos.value.values.valor_por_partido,
-    xAxis: {
-      ...graficos.value.values.valor_por_partido.xAxis,
-      axisLabel: {
-        ...graficos.value.values.valor_por_partido.xAxis.axisLabel,
-        rotate: 45,
-        align: 'right',
-      },
-    },
-    yAxis: {
-      ...graficos.value.values.valor_por_partido.yAxis,
-      name: undefined,
-      axisLabel: {
-        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porPartidos, minimumFractionDigits: 0 })}`,
-      },
-    },
-    series: graficos.value.values.valor_por_partido.series.map((serie) => ({
-      ...serie,
-      stack: 'total',
-      barWidth: '80%',
-      label: undefined,
-    })),
-  }));
-
-const graficoDeValorPorOrgao = computed(() => (!Array.isArray(
-  graficos.value?.values?.valor_por_orgao?.series,
-)
-  ? null
-  : {
-    ...graficos.value.values.valor_por_orgao,
-    xAxis: {
-      ...graficos.value.values.valor_por_orgao.xAxis,
-      axisLabel: {
-        ...graficos.value.values.valor_por_orgao.xAxis.axisLabel,
-        rotate: 45,
-        align: 'right',
-      },
-    },
-
-    yAxis: {
-      ...graficos.value.values.valor_por_orgao.yAxis,
-      name: undefined,
-      axisLabel: {
-        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porOrgaos, minimumFractionDigits: 0 })}`,
-      },
-    },
-
-    series: graficos.value.values.valor_por_orgao.series.map((serie) => ({
-      ...serie,
-      stack: 'total',
-      barWidth: '80%',
-      label: undefined,
-    })),
-  }));
-
-function atualizarQuery() {
-  const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce(
-    (acc, cur) => {
-      if (filtrosEscolhidos.value[cur].length) {
-        acc[cur] = [...filtrosEscolhidos.value[cur]];
-      } else {
-        acc[cur] = undefined;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  router.replace({
-    query: {
-      ...route.query,
-      ...filtrosLimpos,
-    },
-  });
-}
-
-function onSubmit() {
-  atualizarQuery();
-  dataCorrente = new Date();
-  exibirFiltros.value = false;
-}
-
-function removeTitleProperty(obj) {
-  const { title, ...rest } = obj;
-  return rest;
-}
-
-async function buscarGraficos() {
-  graficosPendentes.value = true;
-  try {
-    const retorno = await requestS.get(
-      `${baseUrl}/panorama/analise-transferencias`,
-      route.query,
-    );
-    graficos.value.values = retorno;
-    graficosPendentes.value = false;
-  } catch (error) {
-    graficosPendentes.value = false;
-    console.log('error:', error);
-  }
-}
-
-async function buscarTransferencias() {
-  carregandoTransferencias.value = true;
-
-  const paramsLimpos = Object.entries(route.query).reduce((acc, [key, value]) => {
-    if (!key.startsWith('transferencias_')) {
-      acc[key] = value;
-    } else {
-      acc[key.replace('transferencias_', '')] = value;
-    }
-    return acc;
-  }, {});
-
-  try {
-    const retorno = await requestS.get(
-      `${baseUrl}/panorama/painel-estrategico-transferencias`,
-      paramsLimpos,
-    );
-    paginacaoTransferencias.value = {
-      temMais: true,
-      paginas: retorno.paginas,
-      tokenPaginacao: retorno.token_paginacao,
-      tokenProximaPagina: retorno.token_paginacao,
-      paginaCorrente: retorno.pagina_corrente,
-      totalRegistros: retorno.total_registros,
-      tokenTtl: retorno.token_ttl,
-    };
-
-    transferencias.value = retorno.linhas;
-  } catch (erro) {
-    console.log('error:', erro);
-  } finally {
-    carregandoTransferencias.value = false;
-  }
-}
-
-function scrollPaginaParaTabela() {
-  if (tabelaTransferencias.value) {
-    tabelaTransferencias.value.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
-  }
-}
-
-async function iniciar() {
-  fluxosEtapasProjetos.buscarTudo();
-  parlamentarStore.buscarTudo({ ipp: -1 });
-  partidoStore.buscarTudo();
-
-  atualizarQuery();
-  if (!Object.keys(route.query).length) {
-    await router.replace({
-      query: {
-        ...route.query,
-        anos: [dataCorrente.getFullYear()],
-      },
-    });
-  }
-  buscarGraficos();
-  buscarTransferencias();
-}
-
-iniciar();
-
-function resetarPaginacao() {
-  paginacaoTransferencias.value = {
-    temMais: true,
-    paginas: 1,
-    tokenPaginacao: null,
-    tokenProximaPagina: null,
-    paginaCorrente: 1,
-    totalRegistros: 0,
-    tokenTtl: null,
-  };
-
-  const querySemTransferencias = Object.fromEntries(
-    Object.entries(route.query).filter(
-      ([key]) => !key.startsWith('transferencias_'),
-    ),
-  );
-
-  router.replace({
-    query: {
-      ...querySemTransferencias,
-      transferencias_pagina: 1,
-    },
-  });
-}
-
-watch(
-  () => route.query,
-  (queryNova, queryAnterior) => {
-    const queryStringsDosFiltrosNova = Object
-      .fromEntries(Object.entries(queryNova)
-        .filter(([key]) => !key.startsWith('transferencias_')));
-
-    const queryStringsDosFiltrosAntiga = Object
-      .fromEntries(Object.entries(queryAnterior)
-        .filter(([key]) => !key.startsWith('transferencias_')));
-
-    const queryStringsDeTransferenciasNova = Object.fromEntries(Object.entries(queryNova).filter(([key]) => key.startsWith('transferencias_')));
-    const queryStringsDeTransferenciasAntiga = Object.fromEntries(Object.entries(queryAnterior).filter(([key]) => key.startsWith('transferencias_')));
-
-    const teveMudancaNaQueryDosFiltros = !isEqual(
-      queryStringsDosFiltrosNova,
-      queryStringsDosFiltrosAntiga,
-    );
-
-    const teveMudancaNaQueryDasTransferencias = !isEqual(
-      queryStringsDeTransferenciasNova,
-      queryStringsDeTransferenciasAntiga,
-    );
-
-    filtrosEscolhidos.value = {
-      etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
-      anos: route.query.anos?.map((ano) => Number(ano)) || [],
-      partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
-      parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
-    };
-
-    if (teveMudancaNaQueryDosFiltros) {
-      resetarPaginacao(); // resetar a paginação já faz o request para buscar as transferências
-      buscarGraficos();
-    }
-
-    if (teveMudancaNaQueryDasTransferencias) {
-      buscarTransferencias();
-    }
-  },
-);
-</script>
 
 <style scoped>
 .chart {

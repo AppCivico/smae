@@ -1,3 +1,47 @@
+<script lang="ts" setup>
+import type {
+  MfListVariavelAnaliseQualitativaDto,
+} from '@back/mf/metas/dto/mf-meta.dto';
+import { computed, PropType } from 'vue';
+
+import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const props = defineProps({
+  analise: {
+    type: Object as PropType<MfListVariavelAnaliseQualitativaDto | null>,
+    default: null,
+  },
+  periodo: {
+    type: String,
+    default: '',
+  },
+  dadosAuxiliares: {
+    type: Object,
+    default: () => null,
+  },
+});
+
+const mappedValues = computed(() => {
+  const mapping = {
+    Previsto: '',
+    Realizado: '',
+    PrevistoAcumulado: '',
+    RealizadoAcumulado: '',
+  };
+
+  if (props.analise) {
+    props.analise.ordem_series.forEach((item: (keyof typeof mapping), index: number) => {
+      mapping[item] = props.analise?.series[index]?.valor_nominal || '';
+    });
+  }
+
+  return mapping;
+});
+
+</script>
 <template>
   <div>
     <h3>
@@ -101,47 +145,3 @@
     </div>
   </div>
 </template>
-<script lang="ts" setup>
-import type {
-  MfListVariavelAnaliseQualitativaDto,
-} from '@back/mf/metas/dto/mf-meta.dto';
-import { computed, PropType } from 'vue';
-
-import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const props = defineProps({
-  analise: {
-    type: Object as PropType<MfListVariavelAnaliseQualitativaDto | null>,
-    default: null,
-  },
-  periodo: {
-    type: String,
-    default: '',
-  },
-  dadosAuxiliares: {
-    type: Object,
-    default: () => null,
-  },
-});
-
-const mappedValues = computed(() => {
-  const mapping = {
-    Previsto: '',
-    Realizado: '',
-    PrevistoAcumulado: '',
-    RealizadoAcumulado: '',
-  };
-
-  if (props.analise) {
-    props.analise.ordem_series.forEach((item: (keyof typeof mapping), index: number) => {
-      mapping[item] = props.analise?.series[index]?.valor_nominal || '';
-    });
-  }
-
-  return mapping;
-});
-
-</script>

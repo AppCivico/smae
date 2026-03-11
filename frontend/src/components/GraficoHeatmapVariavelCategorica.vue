@@ -1,74 +1,3 @@
-<template>
-  <div
-    role="region"
-    aria-label="Gráfico de execução orçamentária"
-    tabindex="0"
-  >
-    <div
-      v-if="anosDisponiveis.length > 1"
-      class="flex flexwrap g1"
-    >
-      <div>
-        <label
-          class="label tc300"
-          for="grafico-ano-inicial"
-        >
-          Ano Inicial
-        </label>
-        <select
-          id="grafico-ano-inicial"
-          v-model="anoInicial"
-          class="inputtext"
-          @change="validarAnoInicial"
-        >
-          <option
-            v-for="ano in anosDisponiveis"
-            :key="ano"
-            :value="ano"
-          >
-            {{ ano }}
-          </option>
-        </select>
-      </div>
-      <div>
-        <label
-          class="label tc300"
-          for="grafico-ano-final"
-        >
-          Ano Final
-        </label>
-        <select
-          id="grafico-ano-final"
-          v-model="anoFinal"
-          class="inputtext"
-          @change="validarAnoFinal"
-        >
-          <option
-            v-for="ano in anosFinaisValidos"
-            :key="ano"
-            :value="ano"
-          >
-            {{ ano }}
-          </option>
-        </select>
-      </div>
-    </div>
-    <div
-      v-if="dadosHeatmap.length > 0"
-      class="min-width"
-      style="--min-width: 55rem;"
-    >
-      <GraficoDashboard
-        :option="configuracaoGrafico"
-        :tooltip-template="formatarTooltip"
-      />
-    </div>
-    <div v-else>
-      <p>Sem dados disponíveis para exibir no gráfico.</p>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { sortBy } from 'lodash';
 import {
@@ -472,3 +401,74 @@ onMounted(() => {
 watch([anoInicial, anoFinal], atualizarDadosGrafico);
 
 </script>
+
+<template>
+  <div
+    role="region"
+    aria-label="Gráfico de execução orçamentária"
+    tabindex="0"
+  >
+    <div
+      v-if="anosDisponiveis.length > 1"
+      class="flex flexwrap g1"
+    >
+      <div>
+        <label
+          class="label tc300"
+          for="grafico-ano-inicial"
+        >
+          Ano Inicial
+        </label>
+        <select
+          id="grafico-ano-inicial"
+          v-model="anoInicial"
+          class="inputtext"
+          @change="validarAnoInicial"
+        >
+          <option
+            v-for="ano in anosDisponiveis"
+            :key="ano"
+            :value="ano"
+          >
+            {{ ano }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label
+          class="label tc300"
+          for="grafico-ano-final"
+        >
+          Ano Final
+        </label>
+        <select
+          id="grafico-ano-final"
+          v-model="anoFinal"
+          class="inputtext"
+          @change="validarAnoFinal"
+        >
+          <option
+            v-for="ano in anosFinaisValidos"
+            :key="ano"
+            :value="ano"
+          >
+            {{ ano }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      v-if="dadosHeatmap.length > 0"
+      class="min-width"
+      style="--min-width: 55rem;"
+    >
+      <GraficoDashboard
+        :option="configuracaoGrafico"
+        :tooltip-template="formatarTooltip"
+      />
+    </div>
+    <div v-else>
+      <p>Sem dados disponíveis para exibir no gráfico.</p>
+    </div>
+  </div>
+</template>

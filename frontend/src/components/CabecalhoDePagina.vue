@@ -29,7 +29,7 @@ defineProps({
       <slot name="titulo" />
     </TituloDePagina>
 
-    <hr class="f1" />
+    <hr class="f1">
 
     <slot name="acoes" />
 

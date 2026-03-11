@@ -1,3 +1,145 @@
+<script lang="ts" setup>
+import type { IdSigla } from '@back/common/dto/IdSigla.dto.ts';
+import type {
+  MetaPdmDto,
+  RelacionadosDTO,
+} from '@back/meta/entities/meta.entity.ts';
+import { uniqBy } from 'lodash';
+import {
+  computed, defineProps, ref, watchEffect,
+} from 'vue';
+import type { RouteMeta } from 'vue-router';
+import { useRoute } from 'vue-router';
+
+import SmaeLink from '@/components/SmaeLink.vue';
+import statusObras from '@/consts/statusObras';
+import tiposDePlanos from '@/consts/tiposDePlanos';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import requestS from '@/helpers/requestS';
+import truncate from '@/helpers/texto/truncate';
+
+import RolagemHorizontal from './rolagem/RolagemHorizontal.vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+type RelacionamentoComOrgaosCombinados = MetaPdmDto & {
+  orgaos: IdSigla[];
+  dentroDePlanoSetorial: boolean;
+};
+
+const props = defineProps({
+  params: {
+    type: Object as () => Record<string, unknown>,
+    default: () => ({}),
+  },
+  // Fornecendo os parâmetros um a um para evitar múltiplas requisições
+  // enquanto o Vue avalia as propriedades de um objeto
+  pdmId: {
+    type: [Number, String],
+    required: true,
+    validator: (value: number | string, otherProps) => !!value
+    && (
+      !!otherProps.iniciativaId
+      || !!otherProps.atividadeId
+      || !!otherProps.metaId
+    ),
+  },
+  metaId: {
+    type: [Number, String],
+    default: 0,
+    validator: (value: number | string, otherProps) => !!value
+    || !!otherProps.iniciativaId
+    || !!otherProps.atividadeId,
+  },
+  iniciativaId: {
+    type: [Number, String],
+    default: 0,
+    validator: (value: number | string, otherProps) => !!value
+    || !!otherProps.metaId
+    || !!otherProps.atividadeId,
+  },
+  atividadeId: {
+    type: [Number, String],
+    default: 0,
+    validator: (value: number | string, otherProps) => !!value
+    || !!otherProps.metaId
+    || !!otherProps.iniciativaId,
+  },
+});
+
+const route = useRoute();
+
+const relacionamentos = ref<RelacionadosDTO | null>(null);
+const erro = ref();
+const carregando = ref(false);
+
+function combinadorDeOrgaos(relacionamento: MetaPdmDto): IdSigla[] {
+  let todosOsOrgaos: IdSigla[] = [];
+
+  if ('meta_orgaos' in relacionamento && Array.isArray(relacionamento.meta_orgaos)) {
+    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.meta_orgaos);
+  }
+
+  if ('iniciativa_orgaos' in relacionamento && Array.isArray(relacionamento.iniciativa_orgaos)) {
+    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.iniciativa_orgaos);
+  }
+
+  if ('atividade_orgaos' in relacionamento && Array.isArray(relacionamento.atividade_orgaos)) {
+    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.atividade_orgaos);
+  }
+
+  return todosOsOrgaos.length
+    ? uniqBy(todosOsOrgaos, 'id')
+    : todosOsOrgaos;
+}
+
+function caminhoParaApi(rotaMeta: RouteMeta) {
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'meta';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-meta';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+  }
+}
+
+// eslint-disable-next-line max-len
+const listaPdmPsComOrgaosCombinados = computed<RelacionamentoComOrgaosCombinados[]>(() => (relacionamentos.value?.metas
+  ? relacionamentos.value?.metas.map((relacionamento) => ({
+    ...relacionamento,
+    orgaos: combinadorDeOrgaos(relacionamento),
+    dentroDePlanoSetorial: 'tipo' in relacionamento
+      && relacionamento.tipo === 'PS'
+      && route.meta.entidadeMãe === 'planoSetorial',
+  }))
+  : []));
+
+watchEffect(async () => {
+  try {
+    if (props.pdmId) {
+      if (props.metaId || props.iniciativaId || props.atividadeId) {
+        carregando.value = true;
+        const response = await requestS.get(`${import.meta.env.VITE_API_URL}/${caminhoParaApi(route.meta)}/relacionados/`, {
+          pdm_id: props.pdmId,
+          meta_id: props.metaId,
+          iniciativa_id: props.iniciativaId,
+          atividade_id: props.atividadeId,
+        }) as RelacionadosDTO;
+        relacionamentos.value = response;
+      }
+    }
+  } catch (error) {
+    erro.value = error;
+    console.error(erro);
+  } finally {
+    carregando.value = false;
+  }
+});
+</script>
 <template>
   <pre v-ScrollLockDebug>$props.params:{{ $props.params }}</pre>
   <LoadingComponent v-if="carregando">
@@ -296,145 +438,3 @@
     </div>
   </div>
 </template>
-<script lang="ts" setup>
-import type { IdSigla } from '@back/common/dto/IdSigla.dto.ts';
-import type {
-  MetaPdmDto,
-  RelacionadosDTO,
-} from '@back/meta/entities/meta.entity.ts';
-import { uniqBy } from 'lodash';
-import {
-  computed, defineProps, ref, watchEffect,
-} from 'vue';
-import type { RouteMeta } from 'vue-router';
-import { useRoute } from 'vue-router';
-
-import SmaeLink from '@/components/SmaeLink.vue';
-import statusObras from '@/consts/statusObras';
-import tiposDePlanos from '@/consts/tiposDePlanos';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
-import requestS from '@/helpers/requestS';
-import truncate from '@/helpers/texto/truncate';
-
-import RolagemHorizontal from './rolagem/RolagemHorizontal.vue';
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-type RelacionamentoComOrgaosCombinados = MetaPdmDto & {
-  orgaos: IdSigla[];
-  dentroDePlanoSetorial: boolean;
-};
-
-const props = defineProps({
-  params: {
-    type: Object as () => Record<string, unknown>,
-    default: () => ({}),
-  },
-  // Fornecendo os parâmetros um a um para evitar múltiplas requisições
-  // enquanto o Vue avalia as propriedades de um objeto
-  pdmId: {
-    type: [Number, String],
-    required: true,
-    validator: (value: number | string, otherProps) => !!value
-    && (
-      !!otherProps.iniciativaId
-      || !!otherProps.atividadeId
-      || !!otherProps.metaId
-    ),
-  },
-  metaId: {
-    type: [Number, String],
-    default: 0,
-    validator: (value: number | string, otherProps) => !!value
-    || !!otherProps.iniciativaId
-    || !!otherProps.atividadeId,
-  },
-  iniciativaId: {
-    type: [Number, String],
-    default: 0,
-    validator: (value: number | string, otherProps) => !!value
-    || !!otherProps.metaId
-    || !!otherProps.atividadeId,
-  },
-  atividadeId: {
-    type: [Number, String],
-    default: 0,
-    validator: (value: number | string, otherProps) => !!value
-    || !!otherProps.metaId
-    || !!otherProps.iniciativaId,
-  },
-});
-
-const route = useRoute();
-
-const relacionamentos = ref<RelacionadosDTO | null>(null);
-const erro = ref();
-const carregando = ref(false);
-
-function combinadorDeOrgaos(relacionamento: MetaPdmDto): IdSigla[] {
-  let todosOsOrgaos: IdSigla[] = [];
-
-  if ('meta_orgaos' in relacionamento && Array.isArray(relacionamento.meta_orgaos)) {
-    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.meta_orgaos);
-  }
-
-  if ('iniciativa_orgaos' in relacionamento && Array.isArray(relacionamento.iniciativa_orgaos)) {
-    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.iniciativa_orgaos);
-  }
-
-  if ('atividade_orgaos' in relacionamento && Array.isArray(relacionamento.atividade_orgaos)) {
-    todosOsOrgaos = todosOsOrgaos.concat(relacionamento.atividade_orgaos);
-  }
-
-  return todosOsOrgaos.length
-    ? uniqBy(todosOsOrgaos, 'id')
-    : todosOsOrgaos;
-}
-
-function caminhoParaApi(rotaMeta: RouteMeta) {
-  switch (rotaMeta.entidadeMãe) {
-    case 'pdm':
-      return 'meta';
-    case 'planoSetorial':
-    case 'programaDeMetas':
-      return 'plano-setorial-meta';
-    default:
-      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
-  }
-}
-
-// eslint-disable-next-line max-len
-const listaPdmPsComOrgaosCombinados = computed<RelacionamentoComOrgaosCombinados[]>(() => (relacionamentos.value?.metas
-  ? relacionamentos.value?.metas.map((relacionamento) => ({
-    ...relacionamento,
-    orgaos: combinadorDeOrgaos(relacionamento),
-    dentroDePlanoSetorial: 'tipo' in relacionamento
-      && relacionamento.tipo === 'PS'
-      && route.meta.entidadeMãe === 'planoSetorial',
-  }))
-  : []));
-
-watchEffect(async () => {
-  try {
-    if (props.pdmId) {
-      if (props.metaId || props.iniciativaId || props.atividadeId) {
-        carregando.value = true;
-        const response = await requestS.get(`${import.meta.env.VITE_API_URL}/${caminhoParaApi(route.meta)}/relacionados/`, {
-          pdm_id: props.pdmId,
-          meta_id: props.metaId,
-          iniciativa_id: props.iniciativaId,
-          atividade_id: props.atividadeId,
-        }) as RelacionadosDTO;
-        relacionamentos.value = response;
-      }
-    }
-  } catch (error) {
-    erro.value = error;
-    console.error(erro);
-  } finally {
-    carregando.value = false;
-  }
-});
-</script>

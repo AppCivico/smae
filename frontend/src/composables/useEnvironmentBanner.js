@@ -17,36 +17,36 @@
  * getBannerColor(config, false) // retorna '#ff0000' se o host iniciar com 'dev.example.com'
  */
 export function getBannerColor(bannerConfig, isDevelopment) {
-  const host = window.location.host;
+  const { host } = window.location;
 
-  if (bannerConfig?.startsWith("[")) {
+  if (bannerConfig?.startsWith('[')) {
     try {
       const configs = JSON.parse(bannerConfig);
       const match = configs.find((cfg) => host.startsWith(cfg.prefix));
       if (match?.color) {
-        return match.color.startsWith("#") ? match.color : `#${match.color}`;
+        return match.color.startsWith('#') ? match.color : `#${match.color}`;
       }
-      return "";
+      return '';
     } catch (e) {
-      console.error("Error parsing banner configuration:", e);
-      return "";
+      console.error('Error parsing banner configuration:', e);
+      return '';
     }
   }
 
   // Show banner for development environments or localhost
   if (
-    bannerConfig ||
-    isDevelopment ||
-    ["localhost", "127.0.0.1"].includes(host)
+    bannerConfig
+    || isDevelopment
+    || ['localhost', '127.0.0.1'].includes(host)
   ) {
     return bannerConfig
-      ? bannerConfig.startsWith("#")
+      ? bannerConfig.startsWith('#')
         ? bannerConfig
         : `#${bannerConfig}`
-      : "#f2ff00";
+      : '#f2ff00';
   }
 
-  return "";
+  return '';
 }
 
 export default function useFaixaConstrucao() {
@@ -56,7 +56,7 @@ export default function useFaixaConstrucao() {
   const corDaFaixa = getBannerColor(config, isDev);
 
   if (corDaFaixa) {
-    window.document.documentElement.classList.add("dev-environment");
+    window.document.documentElement.classList.add('dev-environment');
   }
 
   return {
