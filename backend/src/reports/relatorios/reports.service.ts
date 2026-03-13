@@ -410,10 +410,10 @@ export class ReportsService {
                 service = this.psMonitoramentoMensal;
                 break;
             case 'AtvPendentes':
+                service = this.casaCivilAtividadesPendentesService;
+                break;
             case 'Demandas':
                 service = this.demandasService;
-                break;
-                service = this.casaCivilAtividadesPendentesService;
                 break;
             default:
                 dto.fonte satisfies never;
