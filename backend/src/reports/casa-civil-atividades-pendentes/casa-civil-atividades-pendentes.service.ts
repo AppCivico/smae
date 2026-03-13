@@ -30,8 +30,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
     `;
 
         if (params.tipo_id && params.tipo_id.length > 0)
-            whereConditions = Prisma.sql`${whereConditions} AND tt.id = ANY(${params.tipo_id}::int[])`;
-
+            whereConditions = Prisma.sql`${whereConditions} AND tt.id IN (${Prisma.join(params.tipo_id)})`;
         if (params.data_inicio) {
             const dataInicio = Date2YMD.toString(params.data_inicio);
             whereConditions = Prisma.sql`${whereConditions} AND tf.inicio_planejado >= ${dataInicio}::date`;
@@ -46,8 +45,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
             whereConditions = Prisma.sql`${whereConditions} AND t.esfera = ${params.esfera}::"TransferenciaTipoEsfera"`;
 
         if (params.orgao_id && params.orgao_id.length > 0)
-            whereConditions = Prisma.sql`${whereConditions} AND tf.orgao_id = ANY(${params.orgao_id}::int[])`;
-
+            whereConditions = Prisma.sql`${whereConditions} AND tf.orgao_id IN (${Prisma.join(params.orgao_id)})`;
         const linhas = await this.prisma.$queryRaw`
         SELECT
             t.identificador,
