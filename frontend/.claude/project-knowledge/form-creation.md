@@ -84,62 +84,6 @@ watch(emFoco, (novosValores) => {
     <SmaeFieldsetSubmit :disabled="isSubmitting" :erros="errors" />
   </form>
 </template>
-<script lang="ts" setup>
-import { storeToRefs } from "pinia";
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from "vee-validate";
-import { onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
-
-import { minhaEntidadeSchema as schema } from "@/consts/formSchemas/minhaEntidade";
-import escaparDaRota from "@/helpers/escaparDaRota";
-import { useMinhaEntidadeStore } from "@/stores/minhaEntidade.store";
-
-const router = useRouter();
-
-const props = defineProps<{ minhaEntidadeId?: number | null }>();
-const minhaEntidadeStore = useMinhaEntidadeStore();
-const { emFoco } = storeToRefs(minhaEntidadeStore);
-
-const { errors, handleSubmit, isSubmitting, resetForm } = useForm({
-  initialValues: emFoco,
-  validationSchema: schema,
-  keepValuesOnUnmount: true,
-});
-
-const formularioSujo = useIsFormDirty();
-
-const onSubmit = handleSubmit.withControlled(async (carga) => {
-  await minhaEntidadeStore.salvarItem(carga, props.minhaEntidadeId);
-
-  minhaEntidadeStore.$reset();
-  escaparDaRota(router);
-});
-
-onMounted(() => {
-  if (props.minhaEntidadeId)
-    minhaEntidadeStore.buscarItem(props.minhaEntidadeId);
-});
-
-watch(emFoco, (novosValores) => {
-  resetForm({ values: novosValores });
-});
-</script>
-
-<template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
-
-  <form class="flex column g2" @submit="onSubmit">
-    <!-- campos aqui -->
-
-    <SmaeFieldsetSubmit :disabled="isSubmitting" :erros="errors" />
-  </form>
-</template>
 ```
 
 > **Atenção:** O padrão com `<Form>` wrapper do vee-validate **não deve ser usado** neste projeto. Sempre use o padrão com `useForm` acima, independentemente da complexidade do formulário.

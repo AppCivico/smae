@@ -21,11 +21,11 @@ Antes de criar uma lista, pergunte ao usuário:
    - Com persistência na URL → `FiltroParaPagina`
    - Busca simples client-side → `LocalFilter` (ou `filtrarObjetos` com `route.query`)
 
-2. **A listagem tem paginação?** Se sim, usar `MenuPaginacao`. Ver seção [MenuPaginacao](#8-menupaginacao).
+2. **A listagem tem paginação?** Se sim, usar `MenuPaginacao`. Ver seção [MenuPaginacao](#7-menupaginacao).
 
 ---
 
-## 4. Convenção de Arquivos e Nomes
+## 3. Convenção de Arquivos e Nomes
 
 ```
 src/views/<dominio>/
@@ -36,7 +36,7 @@ src/views/<dominio>/
 
 ---
 
-## 5. Template Mínimo de Lista (padrão atual)
+## 4. Template Mínimo de Lista (padrão atual)
 
 ```vue
 <script setup>
@@ -90,7 +90,7 @@ onMounted(() => {
 
 ---
 
-## 5.1 Watch para Filtros e Paginação
+## 4.1 Watch para Filtros e Paginação
 
 Se a lista tiver **filtros via URL** (`FiltroParaPagina` ou `route.query`), adicionar um `watch` que recarrega os dados quando os query params mudam:
 
@@ -128,7 +128,7 @@ watchEffect(() => {
 
 ---
 
-## 6. SmaeTable
+## 5. SmaeTable
 
 **Caminho:** `@/components/SmaeTable/SmaeTable.vue`
 
@@ -136,7 +136,7 @@ Ver documentação completa em [src/components/SmaeTable/README.md](../../src/co
 
 ---
 
-## 7. CabecalhoDePagina
+## 6. CabecalhoDePagina
 
 **Caminho:** `@/components/CabecalhoDePagina.vue`
 
@@ -156,7 +156,7 @@ Slots disponíveis: `#titulo`, `#subtitulo`, `#acoes`.
 
 ---
 
-## 8. MenuPaginacao
+## 7. MenuPaginacao
 
 **Caminho:** `@/components/MenuPaginacao.vue`
 
@@ -164,7 +164,7 @@ Ver documentação completa em [src/components/MenuPaginacao.md](../../src/compo
 
 ---
 
-## 10. FiltroParaPagina
+## 8. FiltroParaPagina
 
 **Caminho:** `@/components/FiltroParaPagina.vue`
 
@@ -172,15 +172,16 @@ Ver documentação completa em [src/components/FiltroParaPagina.md](../../src/co
 
 ---
 
-## 11. Pinia Store
+## 9. Pinia Store
 
 Ver documentação completa em [store-creation.md](store-creation.md).
 
 ---
 
-## 12. Configuração de Rotas
+## 10. Configuração de Rotas
 
 ```javascript
+import tiparPropsDeRota from "@/router/helpers/tiparPropsDeRota";
 import MinhaEntidadeRaiz from "@/views/minhaEntidade/MinhaEntidadeRaiz.vue";
 import MinhaEntidadeLista from "@/views/minhaEntidade/MinhaEntidadeLista.vue";
 import MinhaEntidadeCriarEditar from "@/views/minhaEntidade/MinhaEntidadeCriarEditar.vue";
@@ -213,10 +214,7 @@ export default {
       name: "minhaEntidade.editar",
       path: ":entidadeId",
       component: MinhaEntidadeCriarEditar,
-      props: ({ params }) => ({
-        ...params,
-        entidadeId: Number.parseInt(params.entidadeId, 10) || undefined,
-      }),
+      props: tiparPropsDeRota,
       meta: {
         título: "Editar Entidade",
         rotasParaMigalhasDePão: ["minhaEntidade.listar"],
@@ -229,7 +227,7 @@ export default {
 
 ---
 
-## 13. Ordenação Client-Side
+## 11. Ordenação Client-Side
 
 ```javascript
 import { computed } from "vue";
@@ -276,7 +274,7 @@ function aplicarOrdenação(nome, valor) {
 
 ---
 
-## 14. Helpers Disponíveis
+## 12. Helpers Disponíveis
 
 | Helper           | Caminho                    | Uso                                                    |
 | ---------------- | -------------------------- | ------------------------------------------------------ |
@@ -288,7 +286,7 @@ function aplicarOrdenação(nome, valor) {
 
 ---
 
-## 15. Exemplos Reais no Projeto
+## 13. Exemplos Reais no Projeto
 
 | Arquivo                                                                                                      | Características                                                         |
 | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
