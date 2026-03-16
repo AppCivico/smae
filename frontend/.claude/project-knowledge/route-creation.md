@@ -22,6 +22,8 @@ Para criar rotas de um novo módulo, crie `src/router/meu-modulo.js` e registre 
 ## Estrutura Básica de uma Rota
 
 ```js
+import tiparPropsDeRota from '@/router/helpers/tiparPropsDeRota';
+
 {
   path: '/meu-modulo',
   component: MeuModuloRaiz,
@@ -54,10 +56,7 @@ Para criar rotas de um novo módulo, crie `src/router/meu-modulo.js` e registre 
       path: ':itemId',
       name: 'entidadeMae.meuModulo.editar',
       component: MeuModuloCriarEditar,
-      props: ({ params }) => ({
-        ...params,
-        itemId: Number.parseInt(params.itemId, 10) || undefined,
-      }),
+      props: tiparPropsDeRota,
       meta: {
         título: 'Editar item',
         rotaDeEscape: 'entidadeMae.meuModulo.listar',
@@ -88,17 +87,6 @@ import tiparPropsDeRota from '@/router/helpers/tiparPropsDeRota';
 ```
 
 A função converte automaticamente os parâmetros para os tipos corretos (string, boolean, number) e decodifica primitivas.
-
-### Props com conversão manual
-
-Quando precisar forçar um tipo específico:
-
-```js
-props: ({ params }) => ({
-  ...params,
-  portfolioId: Number.parseInt(params.portfolioId, 10) || undefined,
-}),
-```
 
 ### Props estáticas
 
@@ -234,6 +222,6 @@ const routes = [
 
 ## Convenções de Nomenclatura
 
-- Nomes de rotas: camelCase seguindo o padrão `módulo + Ação` → `portfolioListar`, `portfolioCriar`, `portfolioEditar`
+- Nomes de rotas: dot notation seguindo o padrão `módulo.entidade.ação` → `portfolio.listar`, `portfolio.criar`, `portfolio.editar` (código legado usa flat camelCase como `portfolioListar` — não replicar em código novo)
 - Paths: kebab-case → `/meu-modulo/novo`
 - Params de ID: sempre `nomeEntidadeId` → `:portfolioId`, `:metaId`
