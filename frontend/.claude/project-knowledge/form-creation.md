@@ -53,7 +53,6 @@ const { emFoco } = storeToRefs(minhaEntidadeStore);
 const { errors, handleSubmit, isSubmitting, resetForm } = useForm({
   initialValues: emFoco,
   validationSchema: schema,
-  keepValuesOnUnmount: true,
 });
 
 const formularioSujo = useIsFormDirty();
