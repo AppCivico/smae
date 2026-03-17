@@ -270,7 +270,6 @@ watch(itemParaEdicao, (novoValor) => {
           name="tarefa"
           class="inputtext light mb1"
           :schema="schema"
-          :model-value="values.tarefa"
           :class="{ 'error': errors.tarefa }"
         />
         <ErrorMessage

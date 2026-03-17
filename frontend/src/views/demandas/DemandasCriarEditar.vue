@@ -583,24 +583,17 @@ watch(itemParaEdicao, (novosValores) => {
           :schema="schema"
         />
 
-        <Field
-          v-slot="{ handleChange, value, field}"
+        <SmaeText
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ error: errors.descricao }"
+          :schema="schema"
           name="descricao"
-        >
-          <SmaeText
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ error: errors[field.name] }"
-            :schema="schema"
-            :name="field.name"
-            :model-value="value"
-            :disabled="bloquearCampos"
-            :aria-disabled="bloquearCampos"
-            anular-vazio
-            @update:model-value="handleChange"
-          />
-        </Field>
+          :disabled="bloquearCampos"
+          :aria-disabled="bloquearCampos"
+          anular-vazio
+        />
 
         <ErrorMessage
           name="descricao"
@@ -614,24 +607,17 @@ watch(itemParaEdicao, (novosValores) => {
           :schema="schema"
         />
 
-        <Field
-          v-slot="{ handleChange, value, field}"
+        <SmaeText
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ error: errors.justificativa }"
+          :schema="schema"
           name="justificativa"
-        >
-          <SmaeText
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ error: errors[field.name] }"
-            :schema="schema"
-            :name="field.name"
-            :model-value="value"
-            :disabled="bloquearCampos"
-            :aria-disabled="bloquearCampos"
-            anular-vazio
-            @update:model-value="handleChange"
-          />
-        </Field>
+          :disabled="bloquearCampos"
+          :aria-disabled="bloquearCampos"
+          anular-vazio
+        />
 
         <ErrorMessage
           name="justificativa"
@@ -765,24 +751,17 @@ watch(itemParaEdicao, (novosValores) => {
           :schema="schema"
         />
 
-        <Field
-          v-slot="{ handleChange, value, field}"
+        <SmaeText
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ error: errors.observacao }"
+          :schema="schema"
           name="observacao"
-        >
-          <SmaeText
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ error: errors[field.name] }"
-            :schema="schema"
-            :name="field.name"
-            :model-value="value"
-            :disabled="bloquearCampos"
-            :aria-disabled="bloquearCampos"
-            anular-vazio
-            @update:model-value="handleChange"
-          />
-        </Field>
+          :disabled="bloquearCampos"
+          :aria-disabled="bloquearCampos"
+          anular-vazio
+        />
 
         <ErrorMessage
           name="observacao"
@@ -834,24 +813,17 @@ watch(itemParaEdicao, (novosValores) => {
           :schema="schema"
         />
 
-        <Field
-          v-slot="{ handleChange, value, field}"
+        <SmaeText
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ error: errors.encaminhamento_justificativa }"
+          :schema="schema"
           name="encaminhamento_justificativa"
-        >
-          <SmaeText
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ error: errors[field.name] }"
-            :schema="schema"
-            :name="field.name"
-            :model-value="value"
-            :disabled="bloquearCampos"
-            :aria-disabled="bloquearCampos"
-            anular-vazio
-            @update:model-value="handleChange"
-          />
-        </Field>
+          :disabled="bloquearCampos"
+          :aria-disabled="bloquearCampos"
+          anular-vazio
+        />
 
         <ErrorMessage
           name="encaminhamento_justificativa"

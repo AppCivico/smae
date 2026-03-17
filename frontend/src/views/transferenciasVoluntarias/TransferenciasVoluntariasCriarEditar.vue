@@ -653,7 +653,6 @@ watch(itemParaEdicao, (novosValores) => {
       />
       <SmaeText
         name="objeto"
-        :model-value="values.objeto"
         :schema="schema"
         as="textarea"
         class="inputtext light mb1"
@@ -674,7 +673,6 @@ watch(itemParaEdicao, (novosValores) => {
 
       <SmaeText
         name="detalhamento"
-        :model-value="values.detalhamento"
         :schema="schema"
         as="textarea"
         class="inputtext light mb1"
@@ -764,7 +762,6 @@ watch(itemParaEdicao, (novosValores) => {
 
       <SmaeText
         name="observacoes"
-        :model-value="values.observacoes"
         :schema="schema"
         as="textarea"
         maxlength="2048"

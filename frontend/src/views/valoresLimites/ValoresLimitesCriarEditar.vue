@@ -181,22 +181,15 @@ watch(emFoco, (val) => {
         :schema="schema"
       />
 
-      <Field
-        v-slot="{ field, handleChange, value }"
+      <SmaeText
+        as="textarea"
+        rows="5"
+        class="inputtext light mb1"
+        :class="{ error: errors.observacao }"
+        :schema="schema"
         name="observacao"
-      >
-        <SmaeText
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :class="{ error: errors.observacao }"
-          :schema="schema"
-          :name="field.name"
-          :model-value="value"
-          anular-vazio
-          @update:model-value="handleChange"
-        />
-      </Field>
+        anular-vazio
+      />
 
       <ErrorMessage
         name="observacao"

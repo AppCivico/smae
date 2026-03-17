@@ -469,22 +469,15 @@ watch(() => activePdm.value.id, async (novoValor) => {
             {{ activePdm.rotulo_contexto_meta }} <span class="tvermelho">*</span>
           </label>
 
-          <Field
-            v-slot="{ field, handleChange, value }"
+          <SmaeText
+            as="textarea"
+            anular-vazio
+            :rows="3"
+            :schema="schema"
+            class="inputtext light mb1"
+            :class="{ error: errors.contexto }"
             name="contexto"
-          >
-            <SmaeText
-              as="textarea"
-              anular-vazio
-              :rows="3"
-              :schema="schema"
-              class="inputtext light mb1"
-              :class="{ error: errors.contexto }"
-              :name="field.name"
-              :model-value="value"
-              @update:model-value="handleChange"
-            />
-          </Field>
+          />
 
           <div class="error-msg">
             {{ errors.contexto }}
@@ -498,22 +491,15 @@ watch(() => activePdm.value.id, async (novoValor) => {
         <div class="f1">
           <label class="label">{{ activePdm.rotulo_complementacao_meta }}</label>
 
-          <Field
-            v-slot="{ field, handleChange, value }"
+          <SmaeText
+            anular-vazio
+            as="textarea"
+            :rows="3"
+            :schema="schema"
+            class="inputtext light mb1"
+            :class="{ error: errors.complemento }"
             name="complemento"
-          >
-            <SmaeText
-              anular-vazio
-              as="textarea"
-              :rows="3"
-              :schema="schema"
-              class="inputtext light mb1"
-              :class="{ error: errors.complemento }"
-              :name="field.name"
-              :model-value="value"
-              @update:model-value="handleChange"
-            />
-          </Field>
+          />
 
           <div class="error-msg">
             {{ errors.complemento }}
