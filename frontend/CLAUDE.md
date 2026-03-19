@@ -13,3 +13,10 @@
 
 - **Criação de stores Pinia** (estado, actions, paginação, watch vs watchEffect):
   [.claude/project-knowledge/store-creation.md](.claude/project-knowledge/store-creation.md)
+
+## Skills Disponíveis
+
+- `/novo-formulario` — cria CRUD completo (schema Yup, store, lista, formulário, rota)
+- `/nova-lista` — cria página de listagem (SmaeTable, filtros, paginação, rota)
+- `/nova-store` — cria store Pinia para uma entidade
+- `/nova-rota` — cria configuração de rota para um módulo

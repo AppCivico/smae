@@ -168,6 +168,85 @@ No template, usar `v-bind="paginacao"` — colocar acima e abaixo da tabela:
 
 ---
 
+## Stores com Entidade Mãe (multi-módulo)
+
+Algumas entidades existem em mais de um módulo do sistema (ex: temas no PDM e no Plano Setorial). Há dois padrões para lidar com isso.
+
+### Convenção de nomes de arquivo
+
+| `entidadeMãe` | Módulo | Convenção |
+|---|---|---|
+| `pdm` | PDM (legado) | sufixo `Ps` |
+| `programaDeMetas` | Programa de Metas | sufixo `Ps` |
+| `planoSetorial` | Planos Setoriais | sufixo `Ps` |
+| `projeto` / `portfolio` | Gestão de Projetos | prefixo `projeto` |
+| `mdo` / `obras` | Monitoramento de Obras | sufixo `Mdo` |
+| `TransferenciasVoluntarias` | Transferências Voluntárias | — |
+
+---
+
+### Padrão 1 — Implícito via `route.meta` (store estática)
+
+Usado quando a store tem **uma única instância** e resolve o módulo dinamicamente pela rota atual. Exemplos: `temasPs`, `macrotemasPs`, `tagsPs`.
+
+```typescript
+function caminhoParaApi(rotaMeta: RouteMeta): string {
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'minha-entidade';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-minha-entidade';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+  }
+}
+
+export const useMinhaEntidadePsStore = defineStore('minhaEntidadePsStore', {
+  // ...
+  actions: {
+    async buscarTudo(params = {}): Promise<void> {
+      // ...
+      const { linhas } = await this.requestS.get(
+        `${baseUrl}/${caminhoParaApi(this.route.meta)}`,
+        params,
+      );
+    },
+  },
+});
+```
+
+---
+
+### Padrão 2 — Explícito via factory function (store por módulo)
+
+Usado quando cada módulo precisa de **instâncias independentes de estado** no Pinia. O ID da store recebe o prefixo da entidade mãe (`${entidadeMae}.minhaEntidade`), garantindo isolamento. Exemplos: `termoEncerramento`, `tipoEncerramento`, `observadores`.
+
+```typescript
+export const useMinhaEntidadeStore = (
+  entidadeMae: ModuloSistema.MDO | ModuloSistema.Projetos,
+) => defineStore(`${entidadeMae}.minhaEntidade`, {
+  // ...
+  actions: {
+    async buscarTudo(params = {}): Promise<void> {
+      const caminho = entidadeMae === ModuloSistema.Projetos
+        ? 'minha-entidade'
+        : 'minha-entidade-mdo';
+      const { linhas } = await this.requestS.get(`${baseUrl}/${caminho}`, params);
+    },
+  },
+})(); // ← invocar imediatamente
+```
+
+Para usar no componente:
+
+```typescript
+// instância específica do módulo
+const store = useMinhaEntidadeStore(ModuloSistema.Projetos);
+```
+
+---
+
 ## Regra watch vs watchEffect
 
 | Situação | Hook |

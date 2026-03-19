@@ -102,13 +102,10 @@ const route = useRoute();
 
 // Recarrega quando qualquer filtro muda
 watch(
-  () => [
-    route.query.campo1,
-    route.query.campo2,
-  ],
+  () => [route.query.campo1, route.query.campo2],
   () => {
     store.$reset();
-    store.buscarTudo(route.query);
+    store.buscarTudo();
   },
 );
 ```

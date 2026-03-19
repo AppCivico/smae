@@ -97,11 +97,7 @@ props: { type: 'novo', parentPage: 'metas' },
 ### Props de query e params juntos
 
 ```js
-props: ({ params, query }) => ({
-  ...params,
-  ...query,
-  opcao: Number(query.opcao),
-}),
+props: tiparPropsDeRota,
 ```
 
 ---

@@ -33,12 +33,17 @@ declare global {
     emFoco: null | unknown;
   };
 
-  type Estado = {
-    lista: unknown[];
-    emFoco: unknown | null;
+  type Estado<ItemLista = unknown, ItemDetalhe = unknown> = {
+    lista: ItemLista[];
+    emFoco: ItemDetalhe | null;
     chamadasPendentes: ChamadasPendentes;
     erros: Erros;
   };
+
+  type EstadoPaginacao<ItemLista = unknown, ItemDetalhe = unknown> =
+    Estado<ItemLista, ItemDetalhe> & {
+      paginacao: Paginacao;
+    };
 
   type Paginacao = {
     tokenPaginacao: string | null;
