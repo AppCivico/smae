@@ -19,48 +19,41 @@ interface Item {
   // adicionar campos conforme o DTO do backend
 }
 
-interface Estado {
-  lista: Item[];
-  emFoco: Item | null;
-  chamadasPendentes: { lista: boolean; emFoco: boolean };
-  erro: null | unknown;
-}
-
 export const useMinhaEntidadeStore = defineStore('minhaEntidade', {
-  state: (): Estado => ({
+  state: (): Estado<Item> => ({
     lista: [],
     emFoco: null,
     chamadasPendentes: { lista: false, emFoco: false },
-    erro: null,
+    erros: { lista: null, emFoco: null },
   }),
 
   actions: {
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erros.lista = null;
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/minha-entidade`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async buscarItem(id: number): Promise<void> {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erros.emFoco = null;
       try {
         this.emFoco = await this.requestS.get(`${baseUrl}/minha-entidade/${id}`);
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.emFoco = erro;
       }
       this.chamadasPendentes.emFoco = false;
     },
 
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erros.emFoco = null;
       try {
         if (id) {
           await this.requestS.patch(`${baseUrl}/minha-entidade/${id}`, params);
@@ -70,7 +63,7 @@ export const useMinhaEntidadeStore = defineStore('minhaEntidade', {
         this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
       }
@@ -78,13 +71,13 @@ export const useMinhaEntidadeStore = defineStore('minhaEntidade', {
 
     async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erros.lista = null;
       try {
         await this.requestS.delete(`${baseUrl}/minha-entidade/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.lista = erro;
         this.chamadasPendentes.lista = false;
         return false;
       }
@@ -105,29 +98,17 @@ export const useMinhaEntidadeStore = defineStore('minhaEntidade', {
 Adicionar `paginacao` ao estado e mapear a resposta da API para as props do `MenuPaginacao` (camelCase):
 
 ```typescript
-interface Estado {
-  lista: Item[];
-  emFoco: Item | null;
-  chamadasPendentes: { lista: boolean; emFoco: boolean };
-  erro: null | unknown;
-  paginacao: {
-    paginas: number;
-    temMais: boolean;
-    tokenPaginacao: string;
-    totalRegistros: number;
-  };
-}
-
 // estado inicial
-state: (): Estado => ({
+state: (): EstadoPaginacao<Item> => ({
   lista: [],
   emFoco: null,
   chamadasPendentes: { lista: false, emFoco: false },
-  erro: null,
+  erros: { lista: null, emFoco: null },
   paginacao: {
     paginas: 0,
+    paginaCorrente: 0,
     temMais: false,
-    tokenPaginacao: '',
+    tokenPaginacao: null,
     totalRegistros: 0,
   },
 }),
@@ -138,11 +119,12 @@ state: (): Estado => ({
 ```typescript
 async buscarTudo(params = {}): Promise<void> {
   this.chamadasPendentes.lista = true;
-  this.erro = null;
+  this.erros.lista = null;
   try {
     const {
       linhas,
       paginas,
+      pagina_corrente: paginaCorrente,
       tem_mais: temMais,
       token_proxima_pagina: tokenPaginacao,
       total: totalRegistros,
@@ -151,12 +133,13 @@ async buscarTudo(params = {}): Promise<void> {
     this.lista = linhas;
     this.paginacao = {
       paginas: paginas ?? 0,
+      paginaCorrente: paginaCorrente ?? 0,
       temMais: temMais ?? false,
-      tokenPaginacao: tokenPaginacao ?? '',
+      tokenPaginacao: tokenPaginacao ?? null,
       totalRegistros: totalRegistros ?? 0,
     };
   } catch (erro: unknown) {
-    this.erro = erro;
+    this.erros.lista = erro;
   }
   this.chamadasPendentes.lista = false;
 },
