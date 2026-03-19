@@ -5,7 +5,7 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
-import SmaeRange from '@/components/camposDeFormulario/SmaeRange.vue';
+import SmaeRangeInput from '@/components/camposDeFormulario/SmaeRangeInput.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
@@ -248,7 +248,7 @@ onUnmounted(() => {
     <div class="">
       <label class="label tc300"> Exibir tarefas até nível </label>
       <div class="flex g1 center">
-        <SmaeRange
+        <SmaeRangeInput
           id="nivel"
           v-model="nívelMáximoVisível"
           name="nivel"

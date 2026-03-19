@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
-import SmaeRangeInput from '@/components/camposDeFormulario/SmaeRangeInput.vue';
+import SmaeDoubleRangeInput from '@/components/camposDeFormulario/SmaeDoubleRangeInput.vue';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -435,7 +435,7 @@ const camadasParaMapa = computed(() => camadasGeo.value.map((camada) => ({
         <div class="flex g2 flexwrap">
           <div class="f1">
             <label class="label">Valor</label>
-            <SmaeRangeInput
+            <SmaeDoubleRangeInput
               v-if="filtros?.valor_range"
               name-min="valor_min"
               name-max="valor_max"
