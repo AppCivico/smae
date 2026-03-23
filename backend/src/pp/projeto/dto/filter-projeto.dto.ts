@@ -30,7 +30,7 @@ export class FilterProjetoDto {
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
-    arquivado?: boolean;
+    retornar_arquivados?: boolean;
 
     @IsOptional()
     @Transform(({ value }: any) => {

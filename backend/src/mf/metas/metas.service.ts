@@ -8,7 +8,7 @@ import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { SeriesArrayShuffle } from '../../common/shuffleArray';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelComCategorica, VariavelService } from '../../variavel/variavel.service';
@@ -46,7 +46,6 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
-import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 

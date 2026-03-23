@@ -89,10 +89,12 @@ const chavesDeValoresValidos = [
   'revisado',
   'status',
   'tipo_intervencao_id',
+  'retornar_arquivados',
 ];
 
 function tratandoSubmit(evento) {
   evento.target.registros_sei.value = evento.target.registros_sei.value.replace(/\D/g, '');
+
   emit('enviado', evento);
 }
 
@@ -408,19 +410,54 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="f1 fb25em mb2">
-      <label
-        class="label"
-        for="palavra-chave"
-      >Palavra-chave</label>
-      <input
-        id="palavra-chave"
-        class="inputtext light"
-        name="palavra_chave"
-        type="search"
-        :value="valoresIniciaisConsolidados.palavra_chave"
-      >
+    <div class="flex g2 mb2 fb100 flexwrap">
+      <div class="f1 fb25em mb2">
+        <label
+          class="label"
+          for="palavra-chave"
+        >
+          Palavra-chave
+        </label>
+
+        <input
+          id="palavra-chave"
+          class="inputtext light"
+          name="palavra_chave"
+          type="search"
+          :value="valoresIniciaisConsolidados.palavra_chave"
+        >
+      </div>
+
+      <div class="f1">
+        <label
+          class="label"
+          for="retornar_arquivados"
+        >
+          Retornar arquivados
+        </label>
+
+        <div
+          class="flex itemscenter"
+          style="height: 41px;"
+        >
+          <input
+            type="hidden"
+            name="retornar_arquivados"
+            value="false"
+          >
+
+          <input
+            id="retornar_arquivados"
+            name="retornar_arquivados"
+            type="checkbox"
+            value="true"
+            class="interruptor"
+            :checked="valoresIniciaisConsolidados.retornar_arquivados === true"
+          >
+        </div>
+      </div>
     </div>
+
     <div class="flex g2 center flexwrap">
       <div class="flex flexwrap g2 maxw">
         <div class="f1 fb10em">

@@ -368,6 +368,9 @@ export class EquipeRespService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             logger.log(`Dados: ${JSON.stringify(dto)}`);
 
+            // Rastreia todas as pessoas afetadas (anteriores + novas) para recalcular perfis ao final
+            const pessoasAfetadas = new Set<number>();
+
             // Obtém todos os IDs de órgãos permitidos (órgão base + subordinados) se estamos atualizando
             // participantes ou colaboradores
             let allowedOrgaoIds: number[] = [];
@@ -427,6 +430,9 @@ export class EquipeRespService {
                 }
 
                 const keptRecord: number[] = prevVersion?.GrupoResponsavelEquipePessoa.map((r) => r.pessoa_id) ?? [];
+                // Inclui participantes anteriores E novos no conjunto de afetados
+                for (const id of keptRecord) pessoasAfetadas.add(id);
+                for (const id of dto.participantes) pessoasAfetadas.add(id);
 
                 for (const pessoaId of keptRecord) {
                     if (!dto.participantes.includes(pessoaId)) {
@@ -561,18 +567,9 @@ export class EquipeRespService {
                 }
             }
 
-            // Recalcula perfis de todas as pessoas afetadas (participantes e colaboradores atuais da equipe)
-            if (dto.participantes || dto.colaboradores) {
-                const currentMembers = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
-                    where: { grupo_responsavel_equipe_id: gp.id, removido_em: null },
-                    select: { pessoa_id: true },
-                    distinct: ['pessoa_id'],
-                });
-                const affectedIds = new Set(currentMembers.map((m) => m.pessoa_id));
-
-                for (const pessoaId of affectedIds) {
-                    await recalculaPessoaPdmTipos(pessoaId, prismaTx);
-                }
+            // Recalcula perfis de todas as pessoas afetadas (participantes anteriores + atuais)
+            for (const pessoaId of pessoasAfetadas) {
+                await recalculaPessoaPdmTipos(pessoaId, prismaTx);
             }
 
             await prismaTx.grupoResponsavelEquipe.update({

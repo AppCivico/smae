@@ -77,7 +77,7 @@ function iniciarAdicionarAquivo(): void {
   adicionandoArquivo.value = true;
 }
 
-const submit = handleSubmit(async (values) => {
+const submit = handleSubmit.withControlled(async (values) => {
   const { token, nomeOriginal, descricao } = await fileStore.upload({
     tipo_id: values.tipo_documento_id,
     descricao: values.descricao,

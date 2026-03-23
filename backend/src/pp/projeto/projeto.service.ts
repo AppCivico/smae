@@ -42,29 +42,22 @@ import {
 } from './entities/projeto.entity';
 
 import { JwtService } from '@nestjs/jwt';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
-import { PrismaHelpers } from '../../common/PrismaHelpers';
-
+import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { CompromissoOrigemHelper } from '../../common/helpers/CompromissoOrigem';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { LoggerWithLog } from '../../common/LoggerWithLog';
 import { Object2Hash } from '../../common/object2hash';
+import { PrismaHelpers } from '../../common/PrismaHelpers';
+import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
-import {
-    GeoLocService,
-    UpsertEnderecoDto,
-    UpsertEnderecoIdDto,
-    UpsertEnderecoRegiaoDto,
-} from '../../geo-loc/geo-loc.service';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
+import { GeoLocService, UpsertEnderecoDto, UpsertEnderecoIdDto } from '../../geo-loc/geo-loc.service';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
-import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
-import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
-import { LoggerWithLog } from '../../common/LoggerWithLog';
-import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -1110,7 +1103,7 @@ export class ProjetoService {
                 tipo: tipo,
                 eh_prioritario: filters.eh_prioritario,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
-                arquivado: filters.arquivado,
+                arquivado: filters.retornar_arquivados === true ? true : false,
                 status: filters.status ? { in: filters.status } : undefined,
                 portfolio_id: filters.portfolio_id,
                 AND:
@@ -3158,7 +3151,7 @@ export class ProjetoService {
         prismaTx: Prisma.TransactionClient,
         now: Date,
         user: PessoaFromJwt,
-        tipo?: TipoProjeto
+        _tipo?: TipoProjeto
     ) {
         // Comportamento original: apenas adiciona regiões de novos endereços
         const regioesExistentes = self.ProjetoRegiao.map((r) => r.regiao_id);
@@ -4099,7 +4092,7 @@ export class ProjetoService {
                 tipo_intervencao_id: filters.tipo_intervencao_id ? { in: filters.tipo_intervencao_id } : undefined,
                 equipamento_id: filters.equipamento_id ? { in: filters.equipamento_id } : undefined,
                 eh_prioritario: filters.eh_prioritario,
-                arquivado: filters.arquivado,
+                arquivado: filters.retornar_arquivados === true ? true : false,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 ProjetoRegistroSei: filters.registros_sei?.length
                     ? { some: { processo_sei: { in: filters.registros_sei.map((e) => e.replace(/\D/g, '')) } } }

@@ -101,6 +101,7 @@ const campos = computed<Formulario>(() => [
   {
     campos: {
       palavra_chave: { tipo: 'search' },
+      retornar_arquivados: { tipo: 'checkbox' },
     },
   },
   {

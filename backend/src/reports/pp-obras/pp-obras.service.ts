@@ -399,11 +399,43 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        const contratosFields = [
+            'contrato_id',
+            'obra_id',
+            'numero',
+            'exclusivo',
+            'status',
+            'objeto',
+            'descricao_detalhada',
+            'contratante',
+            'empresa_contratada',
+            'cnpj_contratada',
+            'prazo',
+            'unidade_prazo',
+            'data_base',
+            'data_inicio',
+            'data_termino',
+            'data_termino_atualizada',
+            'valor',
+            'observacoes',
+            'valor_contrato_atualizado',
+            'total_aditivos',
+            'total_reajustes',
+            'modalidade_contratacao_id',
+            'modalidade_contratacao_nome',
+            'orgao_id',
+            'orgao_sigla',
+            'orgao_descricao',
+            'percentual_medido',
+            'processos_sei',
+            'fontes_recurso',
+        ];
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataContratos()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'contratos.csv'
+                'contratos.csv',
+                contratosFields
             )
         );
 

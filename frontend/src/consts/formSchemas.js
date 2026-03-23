@@ -3033,6 +3033,9 @@ export const projetoFiltro = object().shape({
     .label('data de registro')
     .max(new Date())
     .nullableOuVazio(),
+  retornar_arquivados: boolean()
+    .label('Retornar arquivados')
+    .nullableOuVazio(),
   revisado: boolean()
     .label('Revisado')
     .nullableOuVazio(),

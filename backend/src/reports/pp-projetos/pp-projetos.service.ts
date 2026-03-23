@@ -920,7 +920,7 @@ export class PPProjetosService implements ReportableService {
 
         // 8. Processar contratos
         const contratosFields = [
-            'id',
+            'contrato_id',
             'projeto_id',
             'numero',
             'exclusivo',
@@ -952,7 +952,7 @@ export class PPProjetosService implements ReportableService {
         ];
 
         const contratosFieldNames = [
-            'ID Contrato',
+            'contrato_id',
             'ID Projeto',
             'Número',
             'Exclusivo',
@@ -1059,18 +1059,48 @@ export class PPProjetosService implements ReportableService {
 
         // 12. Processar Geolocalização
         const geolocFields = [
-            'projeto_id', 'endereco', 'zona', 'distrito', 'subprefeitura',
-            'coordinates', 'geojson_type', 'geometry_type', 'cep', 'rua', 'pais',
-            'bairro', 'cidade', 'estado', 'rotulo', 'osm_type', 'codigo_pais',
-            'string_endereco', 'geometry_name', 'bbox',
+            'projeto_id',
+            'endereco',
+            'zona',
+            'distrito',
+            'subprefeitura',
+            'coordinates',
+            'geojson_type',
+            'geometry_type',
+            'cep',
+            'rua',
+            'pais',
+            'bairro',
+            'cidade',
+            'estado',
+            'rotulo',
+            'osm_type',
+            'codigo_pais',
+            'string_endereco',
+            'geometry_name',
+            'bbox',
         ];
         const geolocFieldNames = [
-            'ID Projeto', 'Endereço', 'Zona', 'Distrito', 'Subprefeitura',
-            'geojson.geometry.coordinates', 'geojson.type', 'geojson.geometry.type',
-            'geojson.properties.cep', 'geojson.properties.rua', 'geojson.properties.pais',
-            'geojson.properties.bairro', 'geojson.properties.cidade', 'geojson.properties.estado',
-            'geojson.properties.rotulo', 'geojson.properties.osm_type', 'geojson.properties.codigo_pais',
-            'geojson.properties.string_endereco', 'geojson.geometry_name', 'geojson.bbox',
+            'ID Projeto',
+            'Endereço',
+            'Zona',
+            'Distrito',
+            'Subprefeitura',
+            'geojson.geometry.coordinates',
+            'geojson.type',
+            'geojson.geometry.type',
+            'geojson.properties.cep',
+            'geojson.properties.rua',
+            'geojson.properties.pais',
+            'geojson.properties.bairro',
+            'geojson.properties.cidade',
+            'geojson.properties.estado',
+            'geojson.properties.rotulo',
+            'geojson.properties.osm_type',
+            'geojson.properties.codigo_pais',
+            'geojson.properties.string_endereco',
+            'geojson.geometry_name',
+            'geojson.bbox',
         ];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 95);
 

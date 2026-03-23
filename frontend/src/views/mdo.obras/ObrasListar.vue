@@ -80,7 +80,7 @@ watchEffect(() => {
       <FiltroDeListagemDeObras
         :aria-busy="chamadasPendentes.lista"
         :class="{ 'formulario-sujo': formularioSujo }"
-        @submit="aplicarQueryStrings"
+        @enviado="aplicarQueryStrings"
         @campo-mudou="detectarMudancas"
       />
     </FormularioQueryString>

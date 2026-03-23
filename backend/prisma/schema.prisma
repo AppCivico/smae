@@ -384,6 +384,7 @@ model Pessoa {
     LogGenerico                      LogGenerico[]
     TarefaCronogramaQCriei           TarefaCronograma[]          @relation("criador")
     TarefaCronogramaQRemovi          TarefaCronograma[]          @relation("removedor")
+    TarefaQueAtualizei               Tarefa[]                    @relation("TarefaAtualizador")
     ProjetoEtapaQCriei               ProjetoEtapa[]              @relation("Criador")
     ProjetoEtapaQRemovi              ProjetoEtapa[]              @relation("Removedor")
     ProjetoEtapaQAtualizei           ProjetoEtapa[]              @relation("Atualizador")
@@ -4563,7 +4564,11 @@ model Tarefa {
     removido_em  DateTime?
     removido_por Int?
 
-    atualizado_em DateTime?
+    atualizado_em         DateTime?
+    atualizado_por        Int?
+    atualizado_em_usuario DateTime?
+
+    atualizador Pessoa? @relation("TarefaAtualizador", fields: [atualizado_por], references: [id])
 
     dependencias    TarefaDependente[] @relation("dependencias")
     ref_dependentes TarefaDependente[] @relation("ref_dependentes")

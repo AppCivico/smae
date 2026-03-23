@@ -9,6 +9,8 @@ import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.se
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
+import { LoggerWithLog } from '../../common/LoggerWithLog';
+import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 import { IsCrontabDisabled } from '../../common/crontab-utils';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
@@ -34,7 +36,6 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
-import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -161,6 +162,9 @@ export class TarefaService {
 
         const executarCriacao = async (prismaTx: Prisma.TransactionClient) => {
             await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+            const logger = LoggerWithLog('TarefaService.create');
+            logger.log(`cronograma=${tarefaCronoId}`);
+            logger.log(`DTO: ${JSON.stringify(dto)}`);
 
             const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
                 tarefa_corrente_id: 0,
@@ -253,8 +257,12 @@ export class TarefaService {
                     termino_planejado_calculado,
                     ordem_topologica_inicio_planejado: calcDependencias.ordem_topologica_inicio_planejado,
                     ordem_topologica_termino_planejado: calcDependencias.ordem_topologica_termino_planejado,
+
+                    atualizado_por: user.id,
+                    atualizado_em_usuario: new Date(Date.now()),
                 },
             });
+            logger.log(`Tarefa criada id=${tarefa.id}, nivel=${dto.nivel}, pai=${dto.tarefa_pai_id ?? 'nenhum'}`);
 
             if (dto.dependencias && dto.dependencias.length > 0) {
                 await prismaTx.tarefaDependente.createMany({
@@ -269,6 +277,7 @@ export class TarefaService {
                 });
             }
 
+            await logger.saveLogs(prismaTx, user.getLogData());
             return { id: tarefa.id };
         };
 
@@ -1092,6 +1101,9 @@ export class TarefaService {
             const now = new Date(Date.now());
 
             await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+            const logger = LoggerWithLog('TarefaService.update');
+            logger.log(`tarefa=${id}, cronograma=${tarefaCronoId}`);
+            logger.log(`DTO: ${JSON.stringify(dto)}`);
 
             const tarefa = await prismaTx.tarefa.findFirst({
                 where: {
@@ -1296,7 +1308,7 @@ export class TarefaService {
 
             let recalcNivel = false;
             if (
-                'dependencias' in dto &&
+                'tarefa_pai_id' in dto &&
                 ((dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id) ||
                     (dto.numero !== undefined && dto.numero !== tarefa.numero))
             ) {
@@ -1305,11 +1317,8 @@ export class TarefaService {
                 if (dto.numero === undefined) dto.numero = tarefa.numero;
 
                 if (dto.tarefa_pai_id !== tarefa.tarefa_pai_id) {
-                    this.logger.debug(
-                        `Mudança da tarefa pai detectada: ${JSON.stringify({
-                            novoPaiDesejado: dto.tarefa_pai_id,
-                            antigoPai: tarefa.tarefa_pai_id,
-                        })}`
+                    logger.log(
+                        `Mudança de pai: ${tarefa.tarefa_pai_id} -> ${dto.tarefa_pai_id}, nivel: ${tarefa.nivel} -> ${dto.nivel}`
                     );
 
                     if (dto.tarefa_pai_id === null && dto.nivel > 1)
@@ -1349,9 +1358,7 @@ export class TarefaService {
                         );
                     }
 
-                    const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
-
-                    // abaixa o numero de onde era
+                    // abaixa o numero de onde era (pai antigo)
                     await this.utils.decrementaNumero(
                         {
                             id: tarefa.id,
@@ -1359,11 +1366,15 @@ export class TarefaService {
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId,
-                        maiorNumero
+                        tarefaCronoId
                     );
 
-                    // aumenta o numero de onde vai entrar
+                    // aumenta o numero de onde vai entrar (pai novo)
+                    const maiorNumeroNovoPai = await this.utils.maiorNumeroDoNivel(
+                        prismaTx,
+                        dto.tarefa_pai_id,
+                        tarefaCronoId
+                    );
                     dto.numero = await this.utils.incrementaNumero(
                         {
                             numero: dto.numero,
@@ -1372,16 +1383,14 @@ export class TarefaService {
                         prismaTx,
                         tarefaCronoId,
                         tarefa.id,
-                        maiorNumero
+                        maiorNumeroNovoPai
                     );
-                    console.log('dto.numero' + dto.numero);
+                    logger.log(`Novo numero após incrementa: ${dto.numero}`);
 
                     recalcNivel = true;
                 } else {
                     // mudou apenas o numero
-                    this.logger.debug('Apenas mudança de número foi detectada');
-
-                    const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+                    logger.log(`Mudança de número: ${tarefa.numero} -> ${dto.numero}`);
 
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero(
@@ -1391,8 +1400,14 @@ export class TarefaService {
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
+                        tarefaCronoId
+                    );
+
+                    const maiorNumero = await this.utils.maiorNumeroDoNivel(
+                        prismaTx,
+                        dto.tarefa_pai_id,
                         tarefaCronoId,
-                        maiorNumero
+                        tarefa.id
                     );
 
                     // aumenta o numero de onde vai entrar
@@ -1406,13 +1421,13 @@ export class TarefaService {
                         tarefa.id,
                         maiorNumero
                     );
-                    console.log('dto.numero' + dto.numero);
+                    logger.log(`Novo numero após incrementa: ${dto.numero}`);
                     recalcNivel = true;
                 }
             } else if ('dependencias' in dto) {
                 // nao deixar nem o nivel sem passar o pai
                 // pq as validações estão apenas acima
-                this.logger.warn('removendo campos numero, nivel e tarefa_pai_id da atualização');
+                logger.warn('removendo campos numero, nivel e tarefa_pai_id da atualização');
 
                 delete dto.numero;
                 delete dto.nivel;
@@ -1433,6 +1448,8 @@ export class TarefaService {
                     ),
                     dependencias: undefined,
                     atualizado_em: now,
+                    atualizado_por: user.id,
+                    atualizado_em_usuario: now,
                 },
                 select: {
                     transferencia_fase_id: true,
@@ -1516,13 +1533,17 @@ export class TarefaService {
                 }
             }
 
-            if (recalcNivel) await this.utils.recalcNivel(prismaTx, tarefaCronoId);
+            if (recalcNivel) {
+                logger.log(`Recalculando níveis do cronograma ${tarefaCronoId}`);
+                await this.utils.recalcNivel(prismaTx, tarefaCronoId);
+            }
 
+            logger.log(`Tarefa ${tarefa.id} atualizada`);
+            await logger.saveLogs(prismaTx, user.getLogData());
             return { id: tarefa.id };
         };
 
         if (prismaTx) {
-            console.log('tem tx');
             return update(prismaTx);
         } else {
             return this.prisma.$transaction(update, {
@@ -1661,6 +1682,9 @@ export class TarefaService {
                 const now = new Date(Date.now());
 
                 await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+                const logger = LoggerWithLog('TarefaService.remove');
+                logger.log(`tarefa=${id}, cronograma=${tarefaCronoId}`);
+
                 const tarefa = await prismaTx.tarefa.findFirst({
                     where: {
                         removido_em: null,
@@ -1671,6 +1695,8 @@ export class TarefaService {
                 });
                 if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
                 if (tarefa.n_filhos_imediatos > 0) throw new HttpException('Apague primeiro as tarefas filhas.', 400);
+
+                logger.log(`nivel=${tarefa.nivel}, numero=${tarefa.numero}, pai=${tarefa.tarefa_pai_id ?? 'nenhum'}`);
 
                 const tenhoDependencia = await prismaTx.tarefaDependente.findFirst({
                     where: {
@@ -1692,7 +1718,8 @@ export class TarefaService {
                     tarefa_pai_id: tarefa.tarefa_pai_id,
                 };
 
-                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId, Number.MAX_SAFE_INTEGER);
+                logger.log(`Decrementando números e removendo dependências`);
+                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId);
 
                 await prismaTx.tarefa.update({
                     where: {
@@ -1710,6 +1737,8 @@ export class TarefaService {
                     },
                 });
 
+                logger.log(`Tarefa ${tarefa.id} removida`);
+                await logger.saveLogs(prismaTx, user.getLogData());
                 return { id: tarefa.id };
             },
             {

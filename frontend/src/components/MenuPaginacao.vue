@@ -106,10 +106,10 @@ async function irParaPagina(numero) {
 </script>
 <template>
   <nav
-    v-if="paginas > 1"
     class="menu-de-paginacao"
   >
     <ul
+      v-if="paginas > 1"
       class="menu-de-paginacao__lista"
       data-test="menu-paginacao"
     >
@@ -306,7 +306,6 @@ async function irParaPagina(numero) {
 
 .menu-de-paginacao__total-de-registros {
   margin-left: auto;
-  margin-right: auto;
   font-size: smaller;
 }
 </style>

@@ -5,23 +5,22 @@ import {
     IsArray,
     IsBoolean,
     IsNumber,
-    IsNumberString,
     IsOptional,
     IsString,
     MaxLength,
     ValidateIf,
-    ValidateNested,
+    ValidateNested
 } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { IsNumberStringCustom } from '../../../common/decorators/IsNumberStringCustom';
 
+import { MAX_LENGTH_HTML } from 'src/common/consts';
 import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { DateYMD } from '../../../common/date2ymd';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 
 export const MfPerfilDto = {
     'ponto_focal': 'ponto_focal',

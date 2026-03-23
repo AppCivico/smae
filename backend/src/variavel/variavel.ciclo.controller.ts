@@ -3,21 +3,21 @@ import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { MetaSetorialController } from '../meta/meta.controller';
 import {
     BatchAnaliseQualitativaDto,
-    FilterVariavelGlobalCicloDto,
-    ListVariavelGlobalCicloDto,
+    FilterDocumentosPorVariavelGlobalDto,
     FilterVariavelAnaliseQualitativaGetDto,
+    FilterVariavelGlobalCicloDto,
+    ListaDocumentosPorVariavelGlobalDto,
+    ListVariavelGlobalCicloDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelCicloFaseCountDto,
-    FilterDocumentosPorVariavelGlobalDto,
-    ListaDocumentosPorVariavelGlobalDto,
 } from './dto/variavel.ciclo.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelCicloService } from './variavel.ciclo.service';
 import { VariavelGlobalController } from './variavel.controller';
-import { LoggerWithLog } from '../common/LoggerWithLog';
 
 @ApiTags('Variável Global - Ciclo')
 @Controller('')

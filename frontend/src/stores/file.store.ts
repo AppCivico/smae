@@ -27,16 +27,12 @@ export const useFileStore = defineStore('FileStore', {
     carregando: false,
   }),
   actions: {
-    async upload(opcoes: OpcoesArquivo, ev: Event): Promise<NovoArquivo> {
-      const target = ev.target as HTMLInputElement;
-
-      if (!target.files) {
+    async upload(opcoes: OpcoesArquivo, file: File): Promise<NovoArquivo> {
+      if (!file) {
         throw new Error('Erro ao receber arquivo');
       }
 
       this.carregando = true;
-
-      const [file] = target.files;
 
       const formData = new FormData();
       formData.append('tipo', 'DOCUMENTO');
@@ -45,12 +41,10 @@ export const useFileStore = defineStore('FileStore', {
       formData.append('arquivo', file);
 
       try {
-        const arquivoAtualizado: Upload = await this.requestS.upload(
+        const arquivoAtualizado = (await this.requestS.upload(
           `${baseUrl}/upload`,
           formData,
-        );
-
-        console.log(arquivoAtualizado);
+        )) as unknown as Upload;
 
         return {
           token: arquivoAtualizado.upload_token,

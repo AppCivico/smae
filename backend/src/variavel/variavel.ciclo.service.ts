@@ -10,7 +10,6 @@ import { IdTituloDto } from '../common/dto/IdTitulo.dto';
 import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { AddTaskRefreshMeta } from '../meta/meta.service';
-import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     BuildArquivoBaseDto,
@@ -1009,6 +1008,42 @@ export class VariavelCicloService {
                 );
                 return { realizado, realizadoAcumulado };
             };
+
+            // Fallback: quando RealizadoAcumulado não existe para o data_referencia atual,
+            // busca o valor mais recente anterior por variável
+            const allVarIds: number[] =
+                variavel.variaveis_filhas.length > 0
+                    ? variavel.variaveis_filhas.filter((v) => v.suspendida_em === null).map((v) => v.id)
+                    : [variavel_id];
+
+            // em casos onde já veio, não precisa da query
+            const varIdsMissingAcumulado = allVarIds.filter(
+                (id) => !valoresSerieVariavel.some((v) => v.variavel_id === id && v.serie === 'RealizadoAcumulado')
+            );
+            if (varIdsMissingAcumulado.length > 0) {
+                const previousAcumulados = await this.prisma.$queryRaw<
+                    Array<{ variavel_id: number; valor_nominal: string }>
+                >`
+                    SELECT DISTINCT ON (variavel_id)
+                        variavel_id,
+                        valor_nominal::text as valor_nominal
+                    FROM serie_variavel
+                    WHERE variavel_id IN (${Prisma.join(varIdsMissingAcumulado)})
+                      AND serie = 'RealizadoAcumulado'
+                      AND data_valor < ${data_referencia}
+                      AND valor_nominal IS NOT NULL
+                      AND
+                    ORDER BY variavel_id, data_valor DESC
+                `;
+
+                for (const row of previousAcumulados) {
+                    valoresSerieVariavel.push({
+                        variavel_id: row.variavel_id,
+                        serie: 'RealizadoAcumulado' as const,
+                        valor_nominal: new Prisma.Decimal(row.valor_nominal),
+                    });
+                }
+            }
 
             const variavelProcessadas = new Set<number>();
 
