@@ -18,6 +18,7 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
@@ -27,7 +28,10 @@ const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 const emailsStore = useEmailsStore();
+
+const { sistemaCorrente } = storeToRefs(authStore);
 const { emFoco: emailEmFoco } = storeToRefs(emailsStore);
 const {
   chamadasPendentes,
@@ -332,7 +336,10 @@ onMounted(() => {
       {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
     </div>
 
-    <div class="flex g2 mb1">
+    <div
+      v-if="sistemaCorrente !== 'CasaCivil'"
+      class="flex g2 mb1"
+    >
       <div class="f1 mb1">
         <legend class="label mt2 mb1">
           {{ schema.fields[nomeDoCampoDeCusto]?.spec.label }}
@@ -440,49 +447,72 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="flex g2">
+    <div
+      v-else
+      class="flex g2"
+    >
       <div class="f1 mb1">
         <LabelFromYup
-          name="percentual_concluido"
+          name="custo_real"
           :schema="schema"
-        >
-          {{ schema.fields.percentual_concluido.spec.label }}&nbsp;<span class="tvermelho">*</span>
-        </LabelFromYup>
-        <Field
-          name="percentual_concluido"
-          type="number"
-          min="0"
-          max="100"
-          class="inputtext light mb1"
+        />
+        <MaskedFloatInput
+          name="custo_real"
+          :value="values.custo_real"
           :disabled="emFoco.n_filhos_imediatos > 0"
-          :class="{ 'error': errors.percentual_concluido }"
-          @update:model-value="values.percentual_concluido = Number(values.percentual_concluido)
-            ?? null"
+          class="inputtext light mb1"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="percentual_concluido"
+          name="custo_real"
         />
       </div>
-    </div>
 
-    <FormErrorsList :errors="errors" />
+      <div class="flex g2">
+        <div class="f1 mb1">
+          <LabelFromYup
+            name="percentual_concluido"
+            :schema="schema"
+          >
+            {{ schema.fields.percentual_concluido.spec.label }}&nbsp;
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
+          <Field
+            name="percentual_concluido"
+            type="number"
+            min="0"
+            max="100"
+            class="inputtext light mb1"
+            :disabled="emFoco.n_filhos_imediatos > 0"
+            :class="{ 'error': errors.percentual_concluido }"
+            @update:model-value="values.percentual_concluido = Number(values.percentual_concluido)
+              ?? null"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="percentual_concluido"
+          />
+        </div>
+      </div>
 
-    <div
-      v-if="emFoco.n_filhos_imediatos === 0 && emFoco.pode_editar_realizado"
-      class="flex spacebetween center mb2"
-    >
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
+      <FormErrorsList :errors="errors" />
+
+      <div
+        v-if="emFoco.n_filhos_imediatos === 0 && emFoco.pode_editar_realizado"
+        class="flex spacebetween center mb2"
       >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting || Object.keys(errors)?.length"
+          :title="Object.keys(errors)?.length
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
     </div>
   </form>
 

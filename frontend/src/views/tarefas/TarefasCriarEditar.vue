@@ -21,6 +21,7 @@ import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -33,8 +34,11 @@ const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
+const authStore = useAuthStore();
+
 const route = useRoute();
 const projetosStore = useProjetosStore();
+const { sistemaCorrente } = storeToRefs(authStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
   órgãosEnvolvidosNoProjetoEmFoco,
@@ -785,7 +789,14 @@ watch(itemParaEdicao, (novoValor) => {
       {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
     </div>
 
-    <div class="flex g2 mb1">
+    <h2>
+      -{{ nomeDoCampoDeCusto }}-
+    </h2>
+
+    <div
+      v-if="sistemaCorrente !== 'CasaCivil'"
+      class="flex g2 mb1"
+    >
       <div class="f1 mb1">
         <legend class="label mt2 mb1">
           {{ schema.fields[nomeDoCampoDeCusto]?.spec.label }}
@@ -896,6 +907,36 @@ watch(itemParaEdicao, (novoValor) => {
         <span v-else>
           Custo Estimado registrado nas Tarefas-Filhas
         </span>
+      </div>
+    </div>
+
+    <div
+      v-else
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="custo_estimado"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          v-if="!values?.n_filhos_imediatos"
+          name="custo_estimado"
+          :value="values.custo_estimado"
+          class="inputtext light mb1"
+        />
+        <input
+          v-else
+          type="text"
+          name="custo_estimado"
+          :value="dinheiro(itemParaEdicao.custo_estimado)"
+          class="inputtext light mb1"
+          disabled
+        >
+        <ErrorMessage
+          class="error-msg mb1"
+          name="custo_estimado"
+        />
       </div>
     </div>
 
