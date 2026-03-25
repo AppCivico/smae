@@ -789,10 +789,6 @@ watch(itemParaEdicao, (novoValor) => {
       {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
     </div>
 
-    <h2>
-      -{{ nomeDoCampoDeCusto }}-
-    </h2>
-
     <div
       v-if="sistemaCorrente !== 'CasaCivil'"
       class="flex g2 mb1"
