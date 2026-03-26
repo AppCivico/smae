@@ -447,11 +447,11 @@ onMounted(() => {
       </div>
     </div>
 
-    <div
-      v-else
-      class="flex g2"
-    >
-      <div class="f1 mb1">
+    <div class="flex g2">
+      <div
+        v-if="sistemaCorrente === 'CasaCivil'"
+        class="f1 mb1"
+      >
         <LabelFromYup
           name="custo_real"
           :schema="schema"
@@ -468,7 +468,7 @@ onMounted(() => {
         />
       </div>
 
-      <div class="flex g2">
+      <div class="flex g2 f1">
         <div class="f1 mb1">
           <LabelFromYup
             name="percentual_concluido"
@@ -494,9 +494,9 @@ onMounted(() => {
           />
         </div>
       </div>
-
-      <FormErrorsList :errors="errors" />
     </div>
+
+    <FormErrorsList :errors="errors" />
 
     <div
       v-if="emFoco.n_filhos_imediatos === 0 && emFoco.pode_editar_realizado"
