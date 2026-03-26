@@ -232,6 +232,7 @@ const classeContainer = computed(() => [
       :key="index"
       class="description-list__item"
       v-bind="item.atributosDoItem"
+      :aria-field="item.chave"
     >
       <dt
         class="description-list__term t12 uc w700 mb05 tamarelo"

@@ -66,7 +66,9 @@ const props = defineProps({
 
 const schema = ref(schemaTarefa('estimado'));
 
-const tarefaComFilhos = computed(() => emFoco.value?.n_filhos_imediatos !== 0);
+const tarefaComFilhos = computed(() => (
+  emFoco.value?.n_filhos_imediatos && emFoco.value?.n_filhos_imediatos !== 0
+));
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
@@ -793,13 +795,15 @@ watch(itemParaEdicao, (novoValor) => {
       v-if="sistemaCorrente !== 'CasaCivil'"
       class="flex g2 mb1"
     >
-      <div class="f1 mb1">
+      <div
+        v-if="!tarefaComFilhos"
+        class="f1 mb1"
+      >
         <legend class="label mt2 mb1">
           {{ schema.fields[nomeDoCampoDeCusto]?.spec.label }}
         </legend>
 
         <FieldArray
-          v-if="!tarefaComFilhos"
           v-slot="{ fields, push, remove }"
           :name="nomeDoCampoDeCusto"
         >
@@ -899,9 +903,19 @@ watch(itemParaEdicao, (novoValor) => {
             </span>
           </div>
         </FieldArray>
+      </div>
 
-        <span v-else>
+      <div class="g2 mb1">
+        <legend class="label mt2 mb1">
+          {{ schema.fields.custo_estimado.spec.label }}
+        </legend>
+
+        <span>
           Custo Estimado registrado nas Tarefas-Filhas
+
+          <p>
+            <strong>Total: {{ dinheiro(emFoco?.custo_estimado) }}</strong>
+          </p>
         </span>
       </div>
     </div>
