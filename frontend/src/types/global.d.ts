@@ -41,7 +41,7 @@ declare global {
   };
 
   type Paginacao = {
-    tokenPaginacao: string | null;
+    tokenPaginacao: string;
     paginas: number;
     paginaCorrente: number;
     temMais: boolean;

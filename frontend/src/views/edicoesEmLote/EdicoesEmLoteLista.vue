@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
+import { watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import dateToDate from '@/helpers/dateToDate';
@@ -13,7 +14,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const route = useRoute();
 
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
-const { lista } = storeToRefs(edicoesEmLoteStore);
+const { lista, paginacao } = storeToRefs(edicoesEmLoteStore);
 
 type MapaStatus = { [key: string]: string };
 
@@ -30,10 +31,20 @@ function obterTraducaoStatus(status: keyof MapaStatus) {
   return mapaStatus[status as keyof MapaStatus] || status;
 }
 
-onMounted(() => {
-  edicoesEmLoteStore.buscarTudo({ tipo: route.meta.tipoDeAcoesEmLote as string });
-  edicoesEmLoteStore.limparIdsSelecionados();
-});
+watch(
+  () => [
+    route.query.pagina,
+  ],
+  () => {
+    edicoesEmLoteStore.buscarTudo({
+      ...route.query,
+      tipo: route.meta.tipoDeAcoesEmLote as string,
+    });
+    edicoesEmLoteStore.limparIdsSelecionados();
+  },
+  { immediate: true },
+);
+
 </script>
 
 <template>
@@ -154,6 +165,8 @@ onMounted(() => {
         </div>
       </template>
     </SmaeTable>
+
+    <MenuPaginacao v-bind="paginacao" />
   </section>
 </template>
 
