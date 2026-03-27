@@ -37,7 +37,8 @@ watch(
   ],
   () => {
     edicoesEmLoteStore.buscarTudo({
-      ...route.query,
+      ipp: 50,
+      token_proxima_pagina: route.query.token_paginacao,
       tipo: route.meta.tipoDeAcoesEmLote as string,
     });
     edicoesEmLoteStore.limparIdsSelecionados();
