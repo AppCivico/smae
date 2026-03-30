@@ -51,7 +51,6 @@ const dadosPrincipais = computed(() => [
     metadados: { descricao: emFoco.value?.orgao?.descricao },
   },
   { chave: 'modalidade_contratacao_id', valor: emFoco.value?.modalidade_contratacao?.nome, larguraBase: '25em' },
-  { chave: 'data_termino', valor: emFoco.value?.data_termino ? dateToShortDate(emFoco.value.data_termino) : null, larguraBase: '25em' },
   {
     chave: 'fontes_recurso',
     valor: emFoco.value?.fontes_recurso?.length ? ' ' : null,
@@ -68,12 +67,12 @@ const dadosPrincipais = computed(() => [
   { chave: 'contratante', valor: emFoco.value?.contratante, larguraBase: '25em' },
   { chave: 'empresa_contratada', valor: emFoco.value?.empresa_contratada, larguraBase: '25em' },
   { chave: 'cnpj_contratada', valor: emFoco.value?.cnpj_contratada, larguraBase: '25em' },
-  { chave: 'data_assinatura', valor: emFoco.value?.data_assinatura ? dateToShortDate(emFoco.value.data_assinatura) : null, larguraBase: '25em' },
   {
     chave: 'prazo_numero',
     valor: emFoco.value?.prazo_numero ? `${emFoco.value.prazo_numero} ${emFoco.value.prazo_unidade || ''}` : null,
     larguraBase: '25em',
   },
+  { chave: 'data_assinatura', valor: emFoco.value?.data_assinatura ? dateToShortDate(emFoco.value.data_assinatura) : null, larguraBase: '25em' },
   {
     chave: 'data_base',
     titulo: schema.value?.fields?.data_base_mes?.spec?.label,
@@ -81,6 +80,8 @@ const dadosPrincipais = computed(() => [
     larguraBase: '25em',
   },
   { chave: 'data_inicio', valor: emFoco.value?.data_inicio ? dateToShortDate(emFoco.value.data_inicio) : null, larguraBase: '25em' },
+  { chave: 'data_termino', valor: emFoco.value?.data_termino ? dateToShortDate(emFoco.value.data_termino) : null, larguraBase: '25em' },
+
   { chave: 'valor', valor: emFoco.value?.valor ? `R$ ${dinheiro(emFoco.value.valor)}` : null, larguraBase: '25em' },
   {
     chave: 'total_aditivos',

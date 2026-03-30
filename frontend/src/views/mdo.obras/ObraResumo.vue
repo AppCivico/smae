@@ -95,7 +95,7 @@ const dadosDeEnderecos = computed(() => {
   if (!Array.isArray(emFoco.value?.geolocalizacao)) return [];
 
   return emFoco.value.geolocalizacao.map((item) => ({
-    rotulo: item.rotulo || '-',
+    rotulo: item.endereco?.properties?.rotulo,
     endereco: item.endereco_exibicao
       || item.endereco?.properties?.string_endereco
       || '-',
@@ -680,6 +680,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         :lista="estimativasIniciais"
         layout="flex"
       >
+        <template #termo="{item}">
+          <span style="color: #F2890D">{{ item.titulo }}</span>
+        </template>
+
         <template #descricao--previsao_inicio="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
         </template>
@@ -717,7 +721,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </SmaeDescriptionList>
     </section>
 
-    <section>
+    <section class="borda-superior">
       <h2>Órgãos/Partes interessadas</h2>
 
       <SmaeDescriptionList
@@ -727,7 +731,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       />
     </section>
 
-    <section>
+    <section class="borda-inferior">
       <SmaeDescriptionList
         :lista="orgaoResponsavelLista"
         layout="grid"
@@ -766,9 +770,13 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       />
     </section>
 
-    <section v-if="emFoco?.status === 'Fechado'">
+    <section
+      v-if="emFoco?.status === 'Fechado'"
+      class="borda-superior"
+    >
+      <h2>Encerramento do projeto - RESUMO</h2>
+
       <SmaeTable
-        titulo="Encerramento do projeto"
         :colunas="colunasDeEncerramento"
         :dados="dadosDeEncerramento"
       />
@@ -793,6 +801,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 .destaque {
   padding: 1.5rem 1rem;
   border-block: 1px solid #ccc;
+  border-block-end-style: none;
   background-color: #f9f9f9;
+}
+
+section h2 {
+  text-transform: capitalize;
 }
 </style>

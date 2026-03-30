@@ -13,7 +13,7 @@ WITH ProjetoRegioes AS (
 ), CustoPrevisto AS (
     SELECT
         po.projeto_id,
-        SUM(custo_previsto::numeric(14,2)) AS total_custo_previsto
+        ROUND(SUM(custo_previsto::numeric), 2) AS total_custo_previsto
     FROM meta_orcamento po
     WHERE po.removido_em IS NULL
     AND po.ultima_revisao = TRUE

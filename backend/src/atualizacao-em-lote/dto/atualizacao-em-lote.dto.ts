@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import { ModuloSistema, StatusAtualizacaoEmLote, TipoAtualizacaoEmLote } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { NumberTransformOrUndef } from '../../auth/transforms/number.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
@@ -56,7 +56,6 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
     results_log?: any;
 
     operacao_processada: OperacaoProcessadaDto | null;
-
 }
 
 export class FilterAtualizacaoEmLoteDto {
@@ -91,6 +90,9 @@ export class FilterAtualizacaoEmLoteDto {
     /**
      * Token para buscar próxima página
      */
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
     @ApiPropertyOptional({ description: 'Token para buscar a próxima página de resultados' })
     token_proxima_pagina?: string;
 

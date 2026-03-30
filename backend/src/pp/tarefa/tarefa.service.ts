@@ -1434,11 +1434,7 @@ export class TarefaService {
                 delete dto.tarefa_pai_id;
             }
 
-            const updatedSelf = await prismaTx.tarefa.update({
-                where: {
-                    id: tarefa.id,
-                },
-                data: {
+            const updateData = {
                     ...dto,
                     ...this.buildCustoUpdateDto(
                         (dto as any).custo_estimado,
@@ -1450,7 +1446,14 @@ export class TarefaService {
                     atualizado_em: now,
                     atualizado_por: user.id,
                     atualizado_em_usuario: now,
+                };
+            logger.log(`Dados para update tarefa ${tarefa.id}: ${JSON.stringify(updateData)}`);
+
+            const updatedSelf = await prismaTx.tarefa.update({
+                where: {
+                    id: tarefa.id,
                 },
+                data: updateData,
                 select: {
                     transferencia_fase_id: true,
                     transferencia_tarefa_id: true,
@@ -2214,13 +2217,14 @@ export class TarefaService {
         // já foi validado em checkCustosAnualizados
 
         // Processar custo_estimado
+        // Prisma Json? fields: `null` sends JSON null (not SQL NULL), use Prisma.DbNull for SQL NULL
         if (custo_estimado !== undefined) {
             result.custo_estimado = custo_estimado;
-            result.custo_estimado_anualizado = null;
+            result.custo_estimado_anualizado = Prisma.DbNull;
             result.backup_custo_estimado = null;
         } else if (custo_estimado_anualizado !== undefined) {
             if (custo_estimado_anualizado === null || custo_estimado_anualizado.length === 0) {
-                result.custo_estimado_anualizado = null;
+                result.custo_estimado_anualizado = Prisma.DbNull;
                 result.custo_estimado = null;
                 result.backup_custo_estimado = null;
             } else {
@@ -2241,11 +2245,11 @@ export class TarefaService {
         // Processar custo_real
         if (custo_real !== undefined) {
             result.custo_real = custo_real;
-            result.custo_real_anualizado = null;
+            result.custo_real_anualizado = Prisma.DbNull;
             result.backup_custo_real = null;
         } else if (custo_real_anualizado !== undefined) {
             if (custo_real_anualizado === null || custo_real_anualizado.length === 0) {
-                result.custo_real_anualizado = null;
+                result.custo_real_anualizado = Prisma.DbNull;
                 result.custo_real = null;
                 result.backup_custo_real = null;
             } else {

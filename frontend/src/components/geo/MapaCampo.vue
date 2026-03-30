@@ -325,7 +325,9 @@ const formularioSujo = useIsFormDirty();
 
     <thead>
       <tr>
-        <th />
+        <th scope="col">
+          Rótulo
+        </th>
         <th scope="col">
           Endereço
         </th>

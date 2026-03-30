@@ -27,7 +27,20 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
 </script>
 <template>
   <section class="boards mb2">
-    <h2>Resumo do Cronograma</h2>
+    <h2 class="capitalize">
+      Resumo do Cronograma
+    </h2>
+
+    <div
+      v-if="$route.meta.entidadeMãe === 'projeto'
+        || $route.meta.entidadeMãe === 'obras'
+        && $props.emFoco.projeto_etapa"
+      class="etapa mb2"
+    >
+      <span>
+        Etapa atual: {{ $props.emFoco?.projeto_etapa?.descricao }}
+      </span>
+    </div>
 
     <dl class="flex flexwrap g2">
       <div class="mr2">
@@ -169,3 +182,15 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
     </dl>
   </section>
 </template>
+
+<style lang="less" scoped>
+.etapa{
+  padding: 8px;
+  background-color: #E2EAFE;
+  font-size: 14px;
+  color: #152741;
+  line-height: 18px;
+  display: inline-block;
+  border-radius: 10px;
+}
+</style>

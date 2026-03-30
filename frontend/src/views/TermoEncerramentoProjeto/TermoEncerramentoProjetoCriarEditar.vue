@@ -127,7 +127,14 @@ watch(itemParaEdicao, (novoValor) => {
     return;
   }
 
-  resetForm({ values: novoValor });
+  resetForm({
+    values: {
+      ...novoValor,
+      responsavel_encerramento_nome: novoValor.id
+        ? novoValor.responsavel_encerramento_nome
+        : null,
+    },
+  });
   verificarIcone(novoValor);
 }, { immediate: true });
 

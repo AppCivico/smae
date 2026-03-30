@@ -185,10 +185,7 @@ export class SeiIntegracaoService {
                         updateData.usuarios_lidos = []; // mudou o hash, então reset a lista de usuários que leram
 
                         // Enviando email de notificação para gestores da Casa Civil
-                        if (
-                            statusSei.processosDistribuicaoRecurso?.length > 0 &&
-                            statusSei.sei_hash !== ''
-                        ) {
+                        if (statusSei.processosDistribuicaoRecurso?.length > 0 && statusSei.sei_hash !== '') {
                             // Verificando sei_hash, pois caso vazio, foi criado pelo endpoint de sync de distribuições.
                             // Logo, não é necessário enviar email de notificação deste primeiro sync.
                             await this.enviarEmailNotificacaoSEI(
@@ -420,9 +417,14 @@ export class SeiIntegracaoService {
         const activeRecords = await this.prisma.statusSEI.findMany({
             where: {
                 ativo: true,
-                relatorio_sincronizado_em: {
-                    lte: new Date(new Date().getTime() - 60 * 60 * 1000),
-                },
+                OR: [
+                    { relatorio_sincronizado_em: null },
+                    {
+                        relatorio_sincronizado_em: {
+                            lte: new Date(new Date().getTime() - 60 * 60 * 1000),
+                        },
+                    },
+                ],
                 proxima_sincronizacao: {
                     lte: new Date(),
                 },

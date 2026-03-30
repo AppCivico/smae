@@ -1043,11 +1043,18 @@ CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update
 CREATE OR REPLACE FUNCTION f_trg_tarefa_sync_custo_anualizado() RETURNS trigger AS $$
 BEGIN
     -- Se custo_estimado_anualizado foi modificado, recalcula custo_estimado
+    -- Nota: JSON null ('null'::json) IS NOT NULL = true, por isso o check com json_typeof
     IF (TG_OP = 'INSERT' AND NEW.custo_estimado_anualizado IS NOT NULL) OR
        (TG_OP = 'UPDATE' AND NEW.custo_estimado_anualizado::jsonb IS DISTINCT FROM OLD.custo_estimado_anualizado::jsonb) THEN
-        IF NEW.custo_estimado_anualizado IS NULL THEN
+        IF NEW.custo_estimado_anualizado IS NULL OR json_typeof(NEW.custo_estimado_anualizado::json) = 'null' THEN
             NEW.custo_estimado := NULL;
         ELSE
+            IF json_typeof(NEW.custo_estimado_anualizado::json) != 'object' THEN
+                RAISE EXCEPTION 'tarefa id=% custo_estimado_anualizado nao e um objeto JSON (tipo=%, valor=%)',
+                    NEW.id,
+                    json_typeof(NEW.custo_estimado_anualizado::json),
+                    NEW.custo_estimado_anualizado;
+            END IF;
             SELECT SUM((kv.val)::numeric) INTO NEW.custo_estimado
             FROM json_each_text(NEW.custo_estimado_anualizado::json) AS kv(key, val);
         END IF;
@@ -1056,9 +1063,15 @@ BEGIN
     -- Se custo_real_anualizado foi modificado, recalcula custo_real
     IF (TG_OP = 'INSERT' AND NEW.custo_real_anualizado IS NOT NULL) OR
        (TG_OP = 'UPDATE' AND NEW.custo_real_anualizado::jsonb IS DISTINCT FROM OLD.custo_real_anualizado::jsonb) THEN
-        IF NEW.custo_real_anualizado IS NULL THEN
+        IF NEW.custo_real_anualizado IS NULL OR json_typeof(NEW.custo_real_anualizado::json) = 'null' THEN
             NEW.custo_real := NULL;
         ELSE
+            IF json_typeof(NEW.custo_real_anualizado::json) != 'object' THEN
+                RAISE EXCEPTION 'tarefa id=% custo_real_anualizado nao e um objeto JSON (tipo=%, valor=%)',
+                    NEW.id,
+                    json_typeof(NEW.custo_real_anualizado::json),
+                    NEW.custo_real_anualizado;
+            END IF;
             SELECT SUM((kv.val)::numeric) INTO NEW.custo_real
             FROM json_each_text(NEW.custo_real_anualizado::json) AS kv(key, val);
         END IF;

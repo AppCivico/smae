@@ -199,16 +199,7 @@ onUnmounted(() => {
   >
     Salvando
   </LoadingComponent>
-  <div
-    v-if="$route.meta.entidadeMãe === 'projeto'
-      || $route.meta.entidadeMãe === 'obras'
-      && projetoEmFoco.projeto_etapa"
-    class="etapa mb2"
-  >
-    <span>
-      Etapa atual: {{ projetoEmFoco?.projeto_etapa?.descricao }}
-    </span>
-  </div>
+
   <CabecalhoResumo
     :em-foco="projetoEmFoco"
     :existe-email="emailEmFoco?.linhas[0]?.id !== undefined"
@@ -234,156 +225,160 @@ onUnmounted(() => {
     </SmaeLink>
   </div>
 
-  <h2>Cronograma detalhado</h2>
+  <section class="borda-superior">
+    <h2 class="capitalize">
+      Cronograma detalhado
+    </h2>
 
-  <div class="mb2 flex g2 end justifyright">
-    <ListaLegendas
-      orientacao="horizontal"
-      align="right"
-      :legendas="[
-        { item: 'dado planejado', color: '#634A09' },
-        { item: 'dado real', color: '#3B5881' },
-      ]"
-    />
-    <div class="">
-      <label class="label tc300"> Exibir tarefas até nível </label>
-      <div class="flex g1 center">
-        <SmaeRange
-          id="nivel"
-          v-model="nívelMáximoVisível"
-          name="nivel"
-          min="1"
-          :max="nivelMáximoDisponível"
-          class="f1 fb100"
-        />
-        <output class="f1 fb0">
-          {{ nívelMáximoVisível }}
-        </output>
+    <div class="mb2 flex g2 end justifyright">
+      <ListaLegendas
+        orientacao="horizontal"
+        align="right"
+        :legendas="[
+          { item: 'dado planejado', color: '#634A09' },
+          { item: 'dado real', color: '#3B5881' },
+        ]"
+      />
+      <div class="">
+        <label class="label tc300"> Exibir tarefas até nível </label>
+        <div class="flex g1 center">
+          <SmaeRange
+            id="nivel"
+            v-model="nívelMáximoVisível"
+            name="nivel"
+            min="1"
+            :max="nivelMáximoDisponível"
+            class="f1 fb100"
+          />
+          <output class="f1 fb0">
+            {{ nívelMáximoVisível }}
+          </output>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div
-    role="region"
-    aria-labelledby="titulo-da-pagina"
-    tabindex="0"
-    class="pl2"
-    style="margin-left: -2rem"
-  >
-    <table
-      v-if="árvoreDeTarefas.length"
-      class="tabela-de-etapas"
+    <div
+      role="region"
+      aria-labelledby="titulo-da-pagina"
+      tabindex="0"
+      class="pl2"
+      style="margin-left: -2rem"
     >
-      <colgroup>
-        <col class="genealogia">
-        <col>
-        <col>
-        <col>
-
-        <col class="col--data">
-        <col class="col--data">
-        <col class="col--data">
-        <col class="col--data">
-
-        <col class="col--number">
-        <col class="col--number">
-        <col class="col--number">
-        <col>
-        <col class="col--botão-de-ação">
-
-        <template v-if="!apenasLeitura">
-          <col class="col--botão-de-ação">
-          <col class="col--botão-de-ação">
-          <col class="col--botão-de-ação">
-        </template>
-      </colgroup>
-
-      <thead>
-        <tr class="pl3 center mb05 tc300 w700 t12 uc">
-          <th />
-          <th />
-          <th />
-          <th />
-          <th
-            colspan="2"
-            class="dado-estimado"
-          >
-            Planejado
-          </th>
-          <th
-            colspan="2"
-            class="dado-efetivo"
-          >
-            Real
-          </th>
-          <th colspan="2">
-            Custo <small>(R$)</small>
-          </th>
-          <th />
-          <th />
-          <th />
-          <template v-if="!apenasLeitura">
-            <th />
-            <th />
-            <th />
-          </template>
-        </tr>
-        <tr class="pl3 center mb05 tc300 w700 t12 uc">
-          <th />
-          <th />
-          <th class="cell--number nowrap">
-            % conclusão
-          </th>
-          <th class="cell--number">
-            Duração
-          </th>
-          <th class="cell--data">
-            Início
-          </th>
-          <th class="cell--data">
-            Término
-          </th>
-          <th class="cell--data">
-            Início
-          </th>
-          <th class="cell--data">
-            Término
-          </th>
-          <th class="cell--number dado-estimado">
-            Planejado
-          </th>
-          <th class="cell--number dado-efetivo">
-            Real
-          </th>
-          <th class="cell--number">
-            Atraso
-          </th>
-          <th>
-            Responsável
-          </th>
-          <th />
-          <template v-if="!apenasLeitura">
-            <th />
-            <th />
-            <th />
-          </template>
-        </tr>
-      </thead>
-
-      <tbody
-        v-for="(r, i) in árvoreDeTarefas"
-        :key="r.id"
-        class="tabela-de-etapas__item"
+      <table
+        v-if="árvoreDeTarefas.length"
+        class="tabela-de-etapas"
       >
-        <LinhaDeCronograma
+        <colgroup>
+          <col class="genealogia">
+          <col>
+          <col>
+          <col>
+
+          <col class="col--data">
+          <col class="col--data">
+          <col class="col--data">
+          <col class="col--data">
+
+          <col class="col--number">
+          <col class="col--number">
+          <col class="col--number">
+          <col>
+          <col class="col--botão-de-ação">
+
+          <template v-if="!apenasLeitura">
+            <col class="col--botão-de-ação">
+            <col class="col--botão-de-ação">
+            <col class="col--botão-de-ação">
+          </template>
+        </colgroup>
+
+        <thead>
+          <tr class="pl3 center mb05 tc300 w700 t12 uc">
+            <th />
+            <th />
+            <th />
+            <th />
+            <th
+              colspan="2"
+              class="dado-estimado"
+            >
+              Planejado
+            </th>
+            <th
+              colspan="2"
+              class="dado-efetivo"
+            >
+              Real
+            </th>
+            <th colspan="2">
+              Custo <small>(R$)</small>
+            </th>
+            <th />
+            <th />
+            <th />
+            <template v-if="!apenasLeitura">
+              <th />
+              <th />
+              <th />
+            </template>
+          </tr>
+          <tr class="pl3 center mb05 tc300 w700 t12 uc">
+            <th />
+            <th />
+            <th class="cell--number nowrap">
+              % conclusão
+            </th>
+            <th class="cell--number">
+              Duração
+            </th>
+            <th class="cell--data">
+              Início
+            </th>
+            <th class="cell--data">
+              Término
+            </th>
+            <th class="cell--data">
+              Início
+            </th>
+            <th class="cell--data">
+              Término
+            </th>
+            <th class="cell--number dado-estimado">
+              Planejado
+            </th>
+            <th class="cell--number dado-efetivo">
+              Real
+            </th>
+            <th class="cell--number">
+              Atraso
+            </th>
+            <th>
+              Responsável
+            </th>
+            <th />
+            <template v-if="!apenasLeitura">
+              <th />
+              <th />
+              <th />
+            </template>
+          </tr>
+        </thead>
+
+        <tbody
+          v-for="(r, i) in árvoreDeTarefas"
           :key="r.id"
-          :linha="r"
-          :índice="i"
-          :nível-máximo-visível="nívelMáximoVisível"
-        />
-      </tbody>
-    </table>
-  </div>
+          class="tabela-de-etapas__item"
+        >
+          <LinhaDeCronograma
+            :key="r.id"
+            :linha="r"
+            :índice="i"
+            :nível-máximo-visível="nívelMáximoVisível"
+          />
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <span
     v-if="chamadasPendentes?.lista"
@@ -406,13 +401,4 @@ onUnmounted(() => {
   max-width: 900px;
 }
 
-.etapa{
-  padding: 8px;
-  background-color: #E2EAFE;
-  font-size: 14px;
-  color: #152741;
-  line-height: 18px;
-  display: inline-block;
-  border-radius: 10px;
-}
 </style>

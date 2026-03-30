@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UploadModule } from 'src/upload/upload.module';
 import { CacheKVModule } from '../../common/services/cache-kv.module';
@@ -17,6 +18,10 @@ import { OrgaoModule } from '../../orgao/orgao.module';
         CacheKVModule,
         forwardRef(() => TaskModule),
         forwardRef(() => OrgaoModule),
+        JwtModule.register({
+            secret: process.env.SESSION_JWT_SECRET + ':pagination',
+            signOptions: { expiresIn: '30d' },
+        }),
     ],
     controllers: [DemandaController, PublicDemandaController, DemandaAcaoController],
     providers: [DemandaService],

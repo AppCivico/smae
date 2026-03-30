@@ -691,8 +691,14 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
-            // Gestor de Distribuição de Recurso não pode editar distribuições
-            const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+            // Gestor de Distribuição de Recurso não pode editar distribuições,
+            // a menos que também seja Gestor de Transferências (que tem precedência)
+            const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+            const isGestorTransferencia = user.hasSomeRoles([
+                'CadastroTransferencia.editar',
+                'CadastroTransferencia.administrador',
+            ]);
+            const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
 
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
@@ -1013,8 +1019,14 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso não pode editar distribuições
-        const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+        // Gestor de Distribuição de Recurso não pode editar distribuições,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+        const isGestorTransferencia = user.hasSomeRoles([
+            'CadastroTransferencia.editar',
+            'CadastroTransferencia.administrador',
+        ]);
+        const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1163,8 +1175,12 @@ export class DistribuicaoRecursoService {
     async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const self = await this.findOne(id, user);
 
-        // Gestor de Distribuição de Recurso não pode editar distribuições
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode editar distribuições,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para editar distribuições.', 403);
         }
 
@@ -1792,8 +1808,12 @@ export class DistribuicaoRecursoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover distribuições
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode remover distribuições,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para remover distribuições.', 403);
         }
 

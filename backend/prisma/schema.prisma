@@ -545,6 +545,8 @@ model Pessoa {
     DemandaHistoricoQueCriei       DemandaHistorico[]   @relation("Criador")
     DemandaSnapshotQueCriei        DemandaSnapshot[]    @relation("Criador")
 
+    DemandaEmailParlamentarQueCriei DemandaEmailParlamentar[] @relation("Criador")
+
     AreaTematicaQueCriei     AreaTematica[] @relation("Criador")
     AreaTematicaQueAtualizei AreaTematica[] @relation("Atualizador")
     AreaTematicaQueRemovi    AreaTematica[] @relation("Removedor")
@@ -5764,6 +5766,7 @@ model Parlamentar {
     transferencias              TransferenciaParlamentar[]
     distribuicoes               DistribuicaoParlamentar[]
     view_ranking_transferencias ViewRankingTransferenciaParlamentar[]
+    emails_parlamentar_itens    DemandaEmailParlamentarItem[]
 
     @@map("parlamentar")
 }
@@ -8580,6 +8583,41 @@ model DemandaSnapshot {
 
     @@index([demanda_id])
     @@map("demanda_snapshot")
+}
+
+model DemandaEmailParlamentar {
+    id                  Int    @id @default(autoincrement())
+    assunto             String @db.VarChar
+    corpo               String @db.Text
+    nomes_parlamentares String @db.Text
+
+    vetores_busca Unsupported("tsvector")? @default(dbgenerated())
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    criador Pessoa                        @relation("Criador", fields: [criado_por], references: [id])
+    itens   DemandaEmailParlamentarItem[]
+
+    @@index([criado_em])
+    @@map("demanda_email_parlamentar")
+}
+
+model DemandaEmailParlamentarItem {
+    id                           Int    @id @default(autoincrement())
+    demanda_email_parlamentar_id Int
+    parlamentar_id               Int
+    email                        String @db.VarChar
+    emaildb_queue_id             String @db.Uuid
+
+    criado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    lote        DemandaEmailParlamentar @relation(fields: [demanda_email_parlamentar_id], references: [id])
+    parlamentar Parlamentar             @relation(fields: [parlamentar_id], references: [id])
+
+    @@index([demanda_email_parlamentar_id])
+    @@index([parlamentar_id])
+    @@map("demanda_email_parlamentar_item")
 }
 
 model CacheKV {

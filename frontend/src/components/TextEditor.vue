@@ -114,7 +114,7 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
     </button>
     <button
       type="button"
-      class="editorbt c"
+      class="editorbt"
       @click="editor.chain().focus().setHardBreak().run()"
     >
       &crarr;

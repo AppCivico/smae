@@ -2859,51 +2859,53 @@ export class ProjetoService {
             dto.publico_alvo = HtmlSanitizer(dto.publico_alvo);
             dto.nao_escopo = HtmlSanitizer(dto.nao_escopo);
 
-            if (dto.portfolios_compartilhados?.length) {
-                const portfoliosCompartilhados = portfolios.filter((p) =>
-                    dto.portfolios_compartilhados?.some((x) => x == p.id)
-                );
-                await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
+            if (Array.isArray(dto.portfolios_compartilhados)) {
+                if (dto.portfolios_compartilhados.length) {
+                    const portfoliosCompartilhados = portfolios.filter((p) =>
+                        dto.portfolios_compartilhados?.some((x) => x == p.id)
+                    );
+                    await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
 
-                const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(
-                    projeto.portfolios_compartilhados?.map((pc) => pc.id),
-                    dto.portfolios_compartilhados
-                );
+                    const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(
+                        projeto.portfolios_compartilhados?.map((pc) => pc.id),
+                        dto.portfolios_compartilhados
+                    );
 
-                if (deletedPC.length) {
+                    if (deletedPC.length) {
+                        await prismaTx.portfolioProjetoCompartilhado.updateMany({
+                            where: {
+                                portfolio_id: { in: deletedPC },
+                                projeto_id: projetoId,
+                            },
+                            data: {
+                                removido_em: now,
+                                removido_por: user.id,
+                            },
+                        });
+                    }
+
+                    if (createdPC.length) {
+                        await prismaTx.portfolioProjetoCompartilhado.createMany({
+                            data: createdPC.map((cpc) => {
+                                return {
+                                    projeto_id: projetoId,
+                                    portfolio_id: cpc,
+                                    criado_em: now,
+                                    criado_por: user.id,
+                                };
+                            }),
+                        });
+                    }
+                } else {
+                    // Enviou array vazio explicitamente, remover todos.
                     await prismaTx.portfolioProjetoCompartilhado.updateMany({
-                        where: {
-                            portfolio_id: { in: deletedPC },
-                            projeto_id: projetoId,
-                        },
+                        where: { projeto_id: projetoId, removido_em: null },
                         data: {
                             removido_em: now,
                             removido_por: user.id,
                         },
                     });
                 }
-
-                if (createdPC.length) {
-                    await prismaTx.portfolioProjetoCompartilhado.createMany({
-                        data: createdPC.map((cpc) => {
-                            return {
-                                projeto_id: projetoId,
-                                portfolio_id: cpc,
-                                criado_em: now,
-                                criado_por: user.id,
-                            };
-                        }),
-                    });
-                }
-            } else {
-                // Verificar se possui compartilhados e caso possua, remover.
-                await prismaTx.portfolioProjetoCompartilhado.updateMany({
-                    where: { projeto_id: projetoId, removido_em: null },
-                    data: {
-                        removido_em: now,
-                        removido_por: user.id,
-                    },
-                });
             }
 
             if (dto.tolerancia_atraso !== undefined) {

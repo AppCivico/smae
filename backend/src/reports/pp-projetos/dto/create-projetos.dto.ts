@@ -1,14 +1,17 @@
-import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
-import { Transform, Expose } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform, Expose, TransformFnParams } from 'class-transformer';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 
-export class CreateRelProjetosDto extends PickType(FilterProjetoDto, [
-    'orgao_responsavel_id',
-    'projeto_id',
-]) {
+export class CreateRelProjetosDto extends PickType(FilterProjetoDto, ['projeto_id']) {
+    @IsOptional()
+    @IsInt()
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @Expose()
+    orgao_responsavel_id?: number;
+
     @IsOptional()
     @IsString()
     @Expose()

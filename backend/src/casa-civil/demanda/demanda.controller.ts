@@ -9,7 +9,10 @@ import { DemandaService } from './demanda.service';
 import { CreateDemandaDto } from './dto/create-demanda.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
 import { UpdateDemandaDto } from './dto/create-demanda.dto';
+import { EnviarEmailParlamentaresDto } from './dto/enviar-email-parlamentares.dto';
+import { FilterDemandaEmailParlamentarDto } from './dto/filter-demanda-email-parlamentar.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, ListDemandaDto } from './entities/demanda.entity';
+import { ListDemandaEmailParlamentarDto } from './entities/demanda-email-parlamentar.entity';
 import { CreateDemandaAcaoDto } from './dto/acao.dto';
 import { OrgaoReduzidoDto } from 'src/orgao/entities/orgao.entity';
 
@@ -37,6 +40,27 @@ export class DemandaController {
     @Roles(['CadastroDemanda.listar'])
     async orgaoParaDemandas(@CurrentUser() user: PessoaFromJwt): Promise<OrgaoReduzidoDto[]> {
         return await this.demandaService.findOrgaosComDemandas(user);
+    }
+
+    @Post('enviar-email-parlamentares')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.validar']) // Apenas SERI pode enviar emails
+    @ApiResponse({ description: 'E-mails enviados com sucesso', status: 200 })
+    async enviarEmailParlamentares(
+        @Body() dto: EnviarEmailParlamentaresDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.demandaService.enviarEmailParaParlamentares(dto, user);
+    }
+
+    @Get('emails-parlamentares')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDemanda.listar'])
+    async listarEmailsParlamentares(
+        @Query() filters: FilterDemandaEmailParlamentarDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListDemandaEmailParlamentarDto> {
+        return await this.demandaService.listarEmailsParlamentares(filters, user);
     }
 
     @Get(':id')

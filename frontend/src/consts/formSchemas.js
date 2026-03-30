@@ -134,7 +134,7 @@ export const aditivoDeContrato = object({
     .label('Data')
     .required(),
   numero: string()
-    .label('Número do aditivo')
+    .label('Número do aditivo/reajuste')
     .min(1)
     .max(500)
     .required(),
@@ -452,7 +452,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
     data_termino: date()
       .nullable()
       .min(ref('data_inicio'), 'Data de término deve ser posterior à data de início')
-      .label('Data de término previsto')
+      .label('Data de término previsto do contrato')
       .transform((v) => (v === '' ? null : v)),
     valor: string()
       .nullable()

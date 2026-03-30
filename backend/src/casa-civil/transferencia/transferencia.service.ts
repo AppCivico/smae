@@ -350,8 +350,12 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        // Gestor de Distribuição de Recurso não pode editar transferências
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode editar transferências,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para editar transferências.', 403);
         }
 
@@ -1102,8 +1106,12 @@ export class TransferenciaService {
         }
 
         // Gestores de Distribuição de Recurso só veem transferências
-        // que possuem pelo menos uma distribuição do seu órgão
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // que possuem pelo menos uma distribuição do seu órgão.
+        // Exceto se também forem Gestores de Transferências (que têm precedência e veem tudo).
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
             permissionsSet.push({
@@ -1563,8 +1571,14 @@ export class TransferenciaService {
         });
         if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso não pode editar transferências
-        const pode_editar = !user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+        // Gestor de Distribuição de Recurso não pode editar transferências,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+        const isGestorTransferencia = user.hasSomeRoles([
+            'CadastroTransferencia.editar',
+            'CadastroTransferencia.administrador',
+        ]);
+        const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
 
         return {
             id: row.id,
@@ -1676,8 +1690,12 @@ export class TransferenciaService {
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover transferências
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode remover transferências,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para remover transferências.', 403);
         }
 
@@ -1691,8 +1709,12 @@ export class TransferenciaService {
     }
 
     async append_document(transferenciaId: number, dto: CreateTransferenciaAnexoDto, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode adicionar documentos
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode adicionar documentos,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para adicionar documentos nesta transferência.', 403);
         }
 
@@ -1744,7 +1766,12 @@ export class TransferenciaService {
             },
         });
 
-        const pode_editar: boolean = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) ? false : true;
+        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
+        const isGestorTransferencia = user.hasSomeRoles([
+            'CadastroTransferencia.editar',
+            'CadastroTransferencia.administrador',
+        ]);
+        const pode_editar: boolean = !isGestorDistribuicao || isGestorTransferencia;
 
         const documentosRet: TransferenciaAnexoDto[] = documentosDB.map((d) => {
             const link = this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token;
@@ -1769,8 +1796,12 @@ export class TransferenciaService {
         dto: UpdateTransferenciaAnexoDto,
         user: PessoaFromJwt
     ) {
-        // Gestor de Distribuição de Recurso não pode atualizar documentos
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode atualizar documentos,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para atualizar documentos nesta transferência.', 403);
         }
 
@@ -1800,8 +1831,12 @@ export class TransferenciaService {
     }
 
     async remove_document(transferenciaId: number, transferenciaAnexoId: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover documentos
-        if (user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso'])) {
+        // Gestor de Distribuição de Recurso não pode remover documentos,
+        // a menos que também seja Gestor de Transferências (que tem precedência)
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
             throw new HttpException('Você não tem permissão para remover documentos nesta transferência.', 403);
         }
 

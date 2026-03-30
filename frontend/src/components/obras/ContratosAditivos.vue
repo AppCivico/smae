@@ -270,7 +270,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
   <SmallModal v-if="exibirDialogo">
     <CabecalhoDePagina>
       <template #titulo>
-        Aditivo/Ajuste
+        Aditivo/Reajuste
       </template>
 
       <template #acoes>

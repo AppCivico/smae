@@ -7,10 +7,14 @@ import {
     Logger,
     NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
+import { AnyPageTokenJwtBody, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { Object2Hash } from 'src/common/object2hash';
+import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { CreateGeoEnderecoReferenciaDto, FindGeoEnderecoReferenciaDto } from 'src/geo-loc/entities/geo-loc.entity';
@@ -23,8 +27,11 @@ import { ObjectDiff } from '../../common/objectDiff';
 import { CacheKVService } from '../../common/services/cache-kv.service';
 import { CreateDemandaAcaoDto } from './dto/acao.dto';
 import { CreateDemandaDto, UpdateDemandaDto } from './dto/create-demanda.dto';
+import { EnviarEmailParlamentaresDto } from './dto/enviar-email-parlamentares.dto';
 import { FilterDemandaDto } from './dto/filter-demanda.dto';
+import { FilterDemandaEmailParlamentarDto } from './dto/filter-demanda-email-parlamentar.dto';
 import { DemandaDetailDto, DemandaHistoricoDto, DemandaPermissoesDto, ListDemandaDto } from './entities/demanda.entity';
+import { ListDemandaEmailParlamentarDto } from './entities/demanda-email-parlamentar.entity';
 import { TaskService } from '../../task/task.service';
 import { OrgaoService } from '../../orgao/orgao.service';
 import { FilterOrgaoDto } from '../../orgao/dto/filter-orgao.dto';
@@ -70,7 +77,9 @@ export class DemandaService {
         private readonly taskService: TaskService,
         //
         @Inject(forwardRef(() => OrgaoService))
-        private readonly orgaoService: OrgaoService
+        private readonly orgaoService: OrgaoService,
+        //
+        private readonly jwtService: JwtService
     ) {}
 
     async create(dto: CreateDemandaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -1351,5 +1360,263 @@ export class DemandaService {
                 user
             );
         }
+    }
+
+    /**
+     * Envia e-mail global de novas oportunidades para todos os parlamentares eleitos na eleição vigente
+     * que não são suplentes. Limite de 1 envio por dia (global, timezone America/Sao_Paulo).
+     */
+    async enviarEmailParaParlamentares(dto: EnviarEmailParlamentaresDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const result = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            // Verifica limite diário global (timezone America/Sao_Paulo)
+            const hoje = await prismaTxn.$queryRaw<[{ inicio: Date; fim: Date }]>`
+                SELECT
+                    (now() AT TIME ZONE 'America/Sao_Paulo')::date::timestamptz AS inicio,
+                    ((now() AT TIME ZONE 'America/Sao_Paulo')::date + interval '1 day')::timestamptz AS fim
+            `;
+            const envioHoje = await prismaTxn.demandaEmailParlamentar.findFirst({
+                where: {
+                    criado_em: {
+                        gte: hoje[0].inicio,
+                        lt: hoje[0].fim,
+                    },
+                },
+            });
+            if (envioHoje) {
+                throw new HttpException('Já foi realizado um envio de e-mail para parlamentares hoje', 400);
+            }
+
+            // Busca a eleição vigente
+            const eleicaoVigente = await prismaTxn.eleicao.findFirst({
+                where: { atual_para_mandatos: true },
+            });
+
+            if (!eleicaoVigente) {
+                throw new HttpException('Não há eleição vigente configurada', 400);
+            }
+
+            // Busca parlamentares eleitos que não são suplentes
+            const mandatos = await prismaTxn.parlamentarMandato.findMany({
+                where: {
+                    eleicao_id: eleicaoVigente.id,
+                    eleito: true,
+                    suplencia: null,
+                    removido_em: null,
+                    email: { not: null },
+                },
+                include: {
+                    parlamentar: {
+                        select: {
+                            id: true,
+                            nome: true,
+                            nome_popular: true,
+                        },
+                    },
+                    partido_atual: {
+                        select: {
+                            sigla: true,
+                        },
+                    },
+                },
+            });
+
+            if (mandatos.length === 0) {
+                throw new HttpException('Não há parlamentares eleitos com e-mail cadastrado na eleição vigente', 400);
+            }
+
+            // Buscar configuração do órgão e URL do SMAE
+            const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+            const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+            if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+
+            const orgao = await prismaTxn.orgao.findUnique({
+                where: { id: orgaoId },
+                select: { descricao: true },
+            });
+
+            if (!orgao) {
+                throw new Error('Erro ao buscar dados do órgão para envio de e-mail');
+            }
+
+            const smaeUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+            const linkPortfolio = `${smaeUrl}/demandas-publicas`;
+
+            // Monta nomes dos parlamentares separados por vírgula
+            const nomesParlamentares = mandatos.map((m) => m.parlamentar.nome_popular || m.parlamentar.nome).join(', ');
+
+            // Cria registro do lote de envio
+            const lote = await prismaTxn.demandaEmailParlamentar.create({
+                data: {
+                    assunto: dto.assunto,
+                    corpo: dto.corpo,
+                    nomes_parlamentares: nomesParlamentares,
+                    criado_por: user.id,
+                },
+            });
+
+            // Para cada parlamentar, envia o e-mail e cria item
+            for (const mandato of mandatos) {
+                const cargoTexto = this.formatarCargoParlamentar(mandato.cargo);
+                const emailId = uuidv7();
+
+                await prismaTxn.emaildbQueue.create({
+                    data: {
+                        id: emailId,
+                        config_id: 1,
+                        subject: dto.assunto,
+                        template: 'parlamentar-convite-emendas.html',
+                        to: mandato.email!,
+                        variables: {
+                            cargo_parlamentar: cargoTexto,
+                            nome_parlamentar: mandato.parlamentar.nome,
+                            corpo: dto.corpo,
+                            link_portfolio: linkPortfolio,
+                            orgao_nome: orgao.descricao,
+                        },
+                    },
+                });
+
+                await prismaTxn.demandaEmailParlamentarItem.create({
+                    data: {
+                        demanda_email_parlamentar_id: lote.id,
+                        parlamentar_id: mandato.parlamentar.id,
+                        email: mandato.email!,
+                        emaildb_queue_id: emailId,
+                    },
+                });
+            }
+
+            return { id: lote.id };
+        });
+
+        return result;
+    }
+
+    /**
+     * Lista os lotes de e-mails enviados para parlamentares, com paginação e busca textual.
+     */
+    async listarEmailsParlamentares(
+        filters: FilterDemandaEmailParlamentarDto,
+        user: PessoaFromJwt
+    ): Promise<ListDemandaEmailParlamentarDto> {
+        const ipp = filters.ipp ?? 25;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
+        let retToken = filters.token_paginacao;
+
+        if (page > 1 && !filters.token_paginacao) {
+            throw new HttpException('Campo token_paginacao é obrigatório para paginação', 400);
+        }
+
+        const filterToken = filters.token_paginacao;
+        // Remove campos de paginação para calcular hash consistente
+        const filtersForHash = { ...filters };
+        delete filtersForHash.pagina;
+        delete filtersForHash.token_paginacao;
+
+        // Busca por palavras-chave via tsvector
+        const palavrasChave = await PrismaHelpers.buscaIdsPalavraChave(
+            this.prisma,
+            'demanda_email_parlamentar',
+            filters.palavra_chave
+        );
+
+        const where: Prisma.DemandaEmailParlamentarWhereInput = {};
+        if (palavrasChave !== undefined) {
+            where.id = { in: palavrasChave };
+        }
+
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filtersForHash);
+            total_registros = decoded.total_rows;
+        }
+
+        const offset = (page - 1) * ipp;
+
+        const [countResult, linhas] = await this.prisma.$transaction([
+            filterToken
+                ? this.prisma.demandaEmailParlamentar.count({ where: { id: -1 } }) // skip count when token exists
+                : this.prisma.demandaEmailParlamentar.count({ where }),
+            this.prisma.demandaEmailParlamentar.findMany({
+                where,
+                orderBy: { criado_em: 'desc' },
+                skip: offset,
+                take: ipp,
+                select: {
+                    id: true,
+                    assunto: true,
+                    nomes_parlamentares: true,
+                    criado_em: true,
+                    criador: {
+                        select: {
+                            id: true,
+                            nome_exibicao: true,
+                        },
+                    },
+                },
+            }),
+        ]);
+
+        if (!filterToken) {
+            total_registros = countResult;
+            const body: AnyPageTokenJwtBody = {
+                search_hash: Object2Hash(filtersForHash),
+                ipp,
+                issued_at: Date.now(),
+                total_rows: total_registros,
+            };
+            retToken = this.jwtService.sign(body);
+        }
+
+        const tem_mais = offset + linhas.length < total_registros;
+        const paginas = Math.ceil(total_registros / ipp);
+
+        return {
+            linhas: linhas.map((l) => ({
+                id: l.id,
+                assunto: l.assunto,
+                nomes_parlamentares: l.nomes_parlamentares,
+                criado_por: {
+                    id: l.criador.id,
+                    nome_exibicao: l.criador.nome_exibicao,
+                },
+                criado_em: Date2YMD.toString(l.criado_em),
+            })),
+            tem_mais,
+            total_registros,
+            pagina_corrente: page,
+            paginas,
+            token_paginacao: retToken ?? null,
+            token_ttl: PAGINATION_TOKEN_TTL,
+        };
+    }
+
+    private decodeNextPageToken(jwt: string | undefined, filters: Record<string, any>): AnyPageTokenJwtBody {
+        let tmp: AnyPageTokenJwtBody | null = null;
+
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as AnyPageTokenJwtBody;
+        } catch {
+            throw new HttpException('token_paginacao inválido', 400);
+        }
+        if (!tmp) throw new HttpException('token_paginacao inválido ou faltando', 400);
+
+        if (tmp.search_hash !== Object2Hash(filters)) {
+            throw new HttpException(
+                'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
+                400
+            );
+        }
+        return tmp;
+    }
+
+    private formatarCargoParlamentar(cargo: string): string {
+        const cargos: Record<string, string> = {
+            Senador: 'Senador(a)',
+            DeputadoFederal: 'Deputado(a) Federal',
+            DeputadoEstadual: 'Deputado(a) Estadual',
+            Vereador: 'Vereador(a)',
+        };
+        return cargos[cargo] || cargo;
     }
 }
