@@ -148,4 +148,14 @@ export const FiltroDemandaSchema = object()
       .nullableOuVazio(),
   });
 
+export const FiltroEnvioDeEmailsSchema = object()
+  .shape({
+    palavra_chave: string()
+      .label('Palavra-chave')
+      .nullableOuVazio(),
+    criado_em: string()
+      .label('Enviado em')
+      .nullableOuVazio(),
+  });
+
 export default { };
