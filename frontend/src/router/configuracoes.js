@@ -108,6 +108,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternos.listar',
   'equipesListar',
   'Workflow',
+  'envioDeEmails.listar',
   'configuracaoDemandas',
   'programaDeMetas.planosSetoriaisListar',
 ];
@@ -1060,6 +1061,25 @@ export default [
                 },
               },
             ],
+          },
+        ],
+      },
+      {
+        path: 'envio-de-emails',
+        component: () => import('@/views/envioDeEmails/EnvioDeEmailsRaiz.vue'),
+        meta: {
+          título: 'Envio de E-mails',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroDemanda.validar',
+        },
+        children: [
+          {
+            name: 'envioDeEmails.listar',
+            path: '',
+            component: () => import('@/views/envioDeEmails/EnvioDeEmailsLista.vue'),
+            meta: {
+              título: 'Envio de E-mails',
+            },
           },
         ],
       },
