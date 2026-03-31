@@ -3758,6 +3758,18 @@ export const workflow = object({
     .nullable(),
 });
 
+export const filtroWorkflow = object({
+  esfera: string()
+    .label('Esfera')
+    .nullable(),
+  transferencia_tipo_id: number()
+    .label('Tipo de transferência')
+    .nullable(),
+  ativo: string()
+    .label('Ativo')
+    .nullable(),
+});
+
 export const fasesFluxo = object({
   ordem: number()
     .label('Posição dentro do fluxo')

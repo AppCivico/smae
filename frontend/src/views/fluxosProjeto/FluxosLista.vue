@@ -1,10 +1,17 @@
 <script setup>
 import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { filtroWorkflow } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+
+const route = useRoute();
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
@@ -12,6 +19,34 @@ const { lista, chamadasPendentes, erro } = storeToRefs(fluxosProjetoStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 
 const alertStore = useAlertStore();
+
+const getTipoTransferencia = (tipoTransferenciaId) => (
+  tipoTransferenciaComoLista.value.find((t) => t.id === tipoTransferenciaId)
+);
+
+const getEsfera = (tipoTransferenciaId) => {
+  const tipoTransferencia = getTipoTransferencia(tipoTransferenciaId);
+  return tipoTransferencia ? tipoTransferencia.esfera : '-';
+};
+
+const camposDeFiltro = computed(() => [
+  {
+    campos: {
+      esfera: {
+        tipo: 'select',
+        opcoes: Object.values(esferasDeTransferencia).map((e) => ({ id: e.valor, label: e.nome })),
+      },
+      transferencia_tipo_id: {
+        tipo: 'select',
+        opcoes: tipoTransferenciaComoLista.value.map((t) => ({ id: t.id, label: t.nome })),
+      },
+      ativo: {
+        tipo: 'select',
+        opcoes: [{ id: 'true', label: 'Sim' }, { id: 'false', label: 'Não' }],
+      },
+    },
+  },
+]);
 
 async function excluirFluxo(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -22,19 +57,22 @@ async function excluirFluxo(id) {
   }, 'Remover');
 }
 
-function ordenarListaAlfabeticamente() {
-  lista.value.sort((a, b) => a.nome.localeCompare(b.nome));
-}
-
-const getTipoTransferencia = (tipoTransferenciaId) => tipoTransferenciaComoLista.value.find((t) => t.id === tipoTransferenciaId);
-
-const getEsfera = (tipoTransferenciaId) => {
-  const tipoTransferencia = getTipoTransferencia(tipoTransferenciaId);
-  return tipoTransferencia ? tipoTransferencia.esfera : '-';
-};
+watch(
+  () => [
+    route.query.transferencia_tipo_id,
+    route.query.ativo,
+  ],
+  () => {
+    fluxosProjetoStore.buscarTudo({
+      esfera: route.query?.esfera,
+      transferencia_tipo_id: route.query?.transferencia_tipo_id,
+      ativo: route.query?.ativo,
+    });
+  },
+  { immediate: true },
+);
 
 tipoDeTransferenciaStore.buscarTudo();
-fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -47,6 +85,13 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
       Novo fluxo
     </router-link>
   </div>
+
+  <FiltroParaPagina
+    class="mb2"
+    :formulario="camposDeFiltro"
+    :schema="filtroWorkflow"
+    :carregando="chamadasPendentes.lista"
+  />
 
   <table class="tablemain">
     <colgroup>
@@ -81,7 +126,7 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
     </thead>
     <tbody>
       <tr
-        v-for="item in lista"
+        v-for="item in lista || []"
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
