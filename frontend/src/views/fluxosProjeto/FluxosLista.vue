@@ -60,6 +60,7 @@ async function excluirFluxo(id) {
 
 watch(
   () => [
+    route.query.esfera,
     route.query.transferencia_tipo_id,
     route.query.ativo,
   ],
@@ -67,7 +68,6 @@ watch(
     fluxosProjetoStore.buscarTudo({
       esfera: route.query?.esfera,
       transferencia_tipo_id: route.query?.transferencia_tipo_id,
-      palavra_chave: 'Individual -  Finalidade definida',
       ativo: route.query?.ativo,
     });
   },
