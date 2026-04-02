@@ -3761,13 +3761,13 @@ export const workflow = object({
 export const filtroWorkflow = object({
   esfera: string()
     .label('Esfera')
-    .nullable(),
+    .nullableOuVazio(),
   transferencia_tipo_id: number()
     .label('Tipo de transferência')
-    .nullable(),
+    .nullableOuVazio(),
   ativo: string()
     .label('Ativo')
-    .nullable(),
+    .nullableOuVazio(),
 });
 
 export const fasesFluxo = object({

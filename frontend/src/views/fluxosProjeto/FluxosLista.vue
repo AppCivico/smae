@@ -4,6 +4,7 @@ import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { filtroWorkflow } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
@@ -66,6 +67,7 @@ watch(
     fluxosProjetoStore.buscarTudo({
       esfera: route.query?.esfera,
       transferencia_tipo_id: route.query?.transferencia_tipo_id,
+      palavra_chave: 'Individual -  Finalidade definida',
       ativo: route.query?.ativo,
     });
   },
@@ -74,17 +76,18 @@ watch(
 
 tipoDeTransferenciaStore.buscarTudo();
 </script>
+
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
-    <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'fluxosCriar' }"
-      class="btn big ml2"
-    >
-      Novo fluxo
-    </router-link>
-  </div>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: 'fluxosCriar' }"
+        class="btn big ml2"
+      >
+        Novo fluxo
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <FiltroParaPagina
     class="mb2"
@@ -93,93 +96,41 @@ tipoDeTransferenciaStore.buscarTudo();
     :carregando="chamadasPendentes.lista"
   />
 
-  <table class="tablemain">
-    <colgroup>
-      <col>
-      <col>
-      <col>
-      <col>
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-    </colgroup>
-    <thead>
-      <tr>
-        <th>
-          Nome
-        </th>
-        <th>
-          Esfera
-        </th>
-        <th>
-          Tipo de transferência
-        </th>
-        <th>
-          Fim da vigência
-        </th>
-        <th>
-          Ativo
-        </th>
-        <th>
-          Início da vigência
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="item in lista || []"
-        :key="item.id"
-      >
-        <td>{{ item.nome }}</td>
-        <td>{{ getEsfera(item.transferencia_tipo.id) }}</td>
-        <td>{{ item.transferencia_tipo.nome }}</td>
-        <td>{{ item.termino? dateToField(item.termino) : '-' }}</td>
-        <td>{{ item.ativo? 'Sim' : 'Não' }}</td>
-        <td>{{ item.inicio? dateToField(item.inicio) : '-' }}</td>
-        <td>
-          <button
-            class="like-a__text"
-            aria-label="excluir"
-            title="excluir"
-            @click="excluirFluxo(item.id)"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg>
-          </button>
-        </td>
-        <td>
-          <router-link
-            :to="{
-              name: 'fluxosEditar',
-              params: { fluxoId: item.id }
-            }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
-      </tr>
-      <tr v-if="chamadasPendentes.lista">
-        <td colspan="3">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td colspan="3">
-          Erro: {{ erro }}
-        </td>
-      </tr>
-      <tr v-else-if="!lista.length">
-        <td colspan="3">
-          Nenhum resultado encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <SmaeTable
+    :dados="lista || []"
+    :colunas="[
+      { chave: 'nome', label: 'Nome' },
+      { chave: 'esfera', label: 'Esfera' },
+      { chave: 'transferencia_tipo.nome', label: 'Tipo de transferência' },
+      { chave: 'termino', label: 'Fim da vigência' },
+      { chave: 'ativo', label: 'Ativo' },
+      { chave: 'inicio', label: 'Início da vigência' },
+    ]"
+    :carregando="chamadasPendentes.lista"
+    :erro="erro"
+    :rota-editar="({ id }) => ({
+      name: 'fluxosEditar',
+      params: { fluxoId: id }
+    })"
+    parametro-no-objeto-para-excluir="nome"
+    @deletar="({ id }) => excluirFluxo(id)"
+  >
+    <template #celula:esfera="{ linha }">
+      {{ getEsfera(linha.transferencia_tipo.id) }}
+    </template>
+
+    <template #celula:termino="{ linha }">
+      {{ linha.termino ? dateToField(linha.termino) : '-' }}
+    </template>
+
+    <template #celula:ativo="{ linha }">
+      {{ linha.ativo ? 'Sim' : 'Não' }}
+    </template>
+
+    <template #celula:inicio="{ linha }">
+      {{ linha.inicio ? dateToField(linha.inicio) : '-' }}
+    </template>
+  </SmaeTable>
 
   <div
     v-if="erro"
