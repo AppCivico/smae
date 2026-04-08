@@ -1032,7 +1032,6 @@ export class VariavelCicloService {
                       AND serie = 'RealizadoAcumulado'
                       AND data_valor < ${data_referencia}
                       AND valor_nominal IS NOT NULL
-                      AND
                     ORDER BY variavel_id, data_valor DESC
                 `;
 
