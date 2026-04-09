@@ -674,7 +674,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </section>
 
     <section class="pl1 pr1">
-      <h2>Estimativas iniciais pré-planejamento</h2>
+      <h2>Estimativas Iniciais Pré-planejamento</h2>
 
       <SmaeDescriptionList
         :lista="estimativasIniciais"
@@ -722,7 +722,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </section>
 
     <section class="borda-superior">
-      <h2>Órgãos/Partes interessadas</h2>
+      <h2>Órgãos/Partes Interessadas</h2>
 
       <SmaeDescriptionList
         :lista="orgaoGestorLista"
@@ -774,7 +774,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       v-if="emFoco?.status === 'Fechado'"
       class="borda-superior"
     >
-      <h2>Encerramento do projeto - RESUMO</h2>
+      <h2>Encerramento do Projeto - RESUMO</h2>
 
       <SmaeTable
         :colunas="colunasDeEncerramento"
@@ -803,9 +803,5 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
   border-block: 1px solid #ccc;
   border-block-end-style: none;
   background-color: #f9f9f9;
-}
-
-section h2 {
-  text-transform: capitalize;
 }
 </style>

@@ -107,21 +107,27 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
     // Encaminhamento
     encaminhamento: mixed<DemandaAcao>()
       .label('Encaminhamento')
-      .oneOf(
-        [
-          'editar',
-          'enviar',
-          'validar',
-          'devolver',
-          'cancelar',
-        ],
-        'Selecione um encaminhamento válido',
+      .test(
+        'encaminhamento-required',
+        'Encaminhamento é obrigatório',
+        function encaminhamentoIsNotRequired(value) {
+          const { permissoes } = this.parent;
+
+          if (
+            permissoes
+            && !permissoes.pode_editar
+            && !permissoes.pode_devolver
+            && !permissoes.pode_enviar
+            && !permissoes.pode_validar
+            && !permissoes.pode_cancelar
+          ) {
+            return true;
+          }
+
+          return ['editar', 'enviar', 'validar', 'devolver', 'cancelar'].includes(value);
+        },
       )
-      .when('id', {
-        is: (val: string) => !!val,
-        then: (s) => s.required(),
-        otherwise: (s) => s.nullable(),
-      }),
+      .nullable(),
     encaminhamento_justificativa: string()
       .label('Motivo')
       .max(2048)
@@ -145,6 +151,16 @@ export const FiltroDemandaSchema = object()
       .nullableOuVazio(),
     palavra_chave: string()
       .label('Palavra-chave')
+      .nullableOuVazio(),
+  });
+
+export const FiltroEnvioDeEmailsSchema = object()
+  .shape({
+    palavra_chave: string()
+      .label('Palavra-chave')
+      .nullableOuVazio(),
+    criado_em: string()
+      .label('Enviado em')
       .nullableOuVazio(),
   });
 

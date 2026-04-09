@@ -6,6 +6,15 @@ import { WorkflowFluxoTarefaDto } from '../fluxo-tarefa/entities/workflow-fluxo-
 import { WorkflowSituacaoDto } from '../situacao/entities/workflow-situacao.entity';
 import { DistribuicaoStatusDto } from 'src/casa-civil/distribuicao-recurso/distribuicao-status/entities/distribuicao-status.dto';
 import { IsDateYMD } from '../../../../auth/decorators/date.decorator';
+import { PaginatedWithPagesDto } from 'src/common/dto/paginated.dto';
+import { TransferenciaTipoEsfera } from '@prisma/client';
+
+export class WorkflowTransferenciaTipoDto {
+    id: number;
+    nome: string;
+    @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
+    esfera: TransferenciaTipoEsfera;
+}
 
 export class WorkflowDto {
     id: number;
@@ -15,11 +24,12 @@ export class WorkflowDto {
     inicio: string;
     @IsDateYMD({ nullable: true })
     termino: string | null;
-    transferencia_tipo: IdNomeDto;
+    transferencia_tipo: WorkflowTransferenciaTipoDto;
 }
 
-export class ListWorkflowDto {
-    linhas: WorkflowDto[];
+export class ListWorkflowDto extends PaginatedWithPagesDto<WorkflowDto> {
+    @ApiProperty({ type: [WorkflowDto] })
+    declare linhas: WorkflowDto[];
 }
 
 export class WorkflowDetailDto {

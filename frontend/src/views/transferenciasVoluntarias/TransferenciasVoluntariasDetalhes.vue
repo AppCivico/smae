@@ -332,7 +332,7 @@ nextTick(() => {
         Objeto
       </dt>
 
-      <dd class="break-word">
+      <dd class="pre-wrap">
         {{ parlamentar.objeto || '-' }}
       </dd>
     </dl>
@@ -377,7 +377,7 @@ nextTick(() => {
         <dt class="t16 w700 mb05 tamarelo">
           Objeto/Empreendimento
         </dt>
-        <dd class="break-word">
+        <dd class="pre-wrap">
           {{ transferenciaEmFoco?.objeto || '-' }}
         </dd>
       </dl>
@@ -385,7 +385,7 @@ nextTick(() => {
         <dt class="t16 w700 mb05 tamarelo">
           Detalhamento
         </dt>
-        <dd class="text">
+        <dd class="pre-wrap">
           {{ transferenciaEmFoco?.detalhamento }}
         </dd>
       </dl>
@@ -433,7 +433,7 @@ nextTick(() => {
         <dt class="t16 w700 mb05 tamarelo">
           Observações
         </dt>
-        <dd>
+        <dd class="pre-wrap">
           {{ transferenciaEmFoco?.observacoes || '-' }}
         </dd>
       </dl>

@@ -2760,7 +2760,7 @@ export const projeto = object()
           .required(),
       ),
     fonte_recursos: array()
-      .label('Fontes de recursos')
+      .label('Fontes de Recursos')
       .nullable()
       .of(
         object()
@@ -3756,6 +3756,18 @@ export const workflow = object({
   distribuicao_statuses_customizados: array()
     .label('Statuses Customizados Atrelados ao Workflow')
     .nullable(),
+});
+
+export const filtroWorkflow = object({
+  esfera: string()
+    .label('Esfera')
+    .nullableOuVazio(),
+  transferencia_tipo_id: number()
+    .label('Tipo de transferência')
+    .nullableOuVazio(),
+  ativo: string()
+    .label('Ativo')
+    .nullableOuVazio(),
 });
 
 export const fasesFluxo = object({

@@ -200,7 +200,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       },
       {
         label: schema.fields.responsavel_encerramento_nome.spec.label,
-        valor: emFoco.value.responsavel_encerramento_nome,
+        valor: emFoco.value.id && emFoco.value.responsavel_encerramento_nome,
       },
     ],
     [

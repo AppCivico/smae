@@ -142,7 +142,7 @@ const registrosSei = computed(() => {
                   Objeto/Empreendimento
                 </dt>
 
-                <dd>
+                <dd class="pre-wrap">
                   {{ distribuicao.objeto || '-' }}
                 </dd>
               </dl>

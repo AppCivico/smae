@@ -597,15 +597,15 @@ export class TransferenciasService implements ReportableService {
                 { value: 'distribuicao_recurso.nome_responsavel', label: 'Gestor Municipal (servidor)' },
                 { value: 'distribuicao_recurso.objeto', label: 'Objeto detalhado' },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso?.valor), // Added ?. for safety
+                    value: (row) => this.formatCurrency(row['distribuicao_recurso.valor']),
                     label: 'Distribuição - Valor do Repasse',
                 },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso?.valor_total), // Added ?.
+                    value: (row) => this.formatCurrency(row['distribuicao_recurso.valor_total']),
                     label: 'Distribuição - Valor Total',
                 },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso?.valor_contrapartida), // Added ?.
+                    value: (row) => this.formatCurrency(row['distribuicao_recurso.valor_contrapartida']),
                     label: 'Distribuição - Valor da Contrapartida',
                 },
                 { value: 'distribuicao_recurso.empenho', label: 'Distribuição - Empenho' },

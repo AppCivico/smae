@@ -3,6 +3,7 @@ BEGIN
     NEW.vetores_busca = to_tsvector(
         'simple',
         COALESCE(NEW.assunto, '') || ' ' ||
+        COALESCE(NEW.corpo, '') || ' ' ||
         COALESCE(NEW.nomes_parlamentares, '')
     );
     RETURN NEW;

@@ -683,7 +683,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
     </section>
 
     <section class="pl1 pr1">
-      <h2>Estimativas iniciais pré-planejamento</h2>
+      <h2>Estimativas Iniciais Pré-planejamento</h2>
 
       <SmaeDescriptionList
         :lista="estimativasIniciais"
@@ -728,7 +728,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
     </section>
 
     <section class="borda-superior">
-      <h2>Órgãos/Partes interessadas</h2>
+      <h2>Órgãos/Partes Interessadas</h2>
 
       <SmaeDescriptionList
         :lista="orgaoGestorLista"
@@ -804,7 +804,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
     </section>
 
     <section>
-      <h2>Controle de versões</h2>
+      <h2>Controle de Versões</h2>
 
       <SmaeDescriptionList
         :lista="controleDeVersoes"
@@ -824,7 +824,7 @@ if (!planosSimplificadosStore.planosSimplificados.length
       v-if="emFoco?.status === 'Fechado'"
       class="borda-superior"
     >
-      <h2>Encerramento do projeto - RESUMO</h2>
+      <h2>Encerramento do Projeto - RESUMO</h2>
 
       <SmaeTable
         :colunas="colunasDeEncerramento"
@@ -855,7 +855,4 @@ if (!planosSimplificadosStore.planosSimplificados.length
   background-color: #f9f9f9;
 }
 
-section h2 {
-  text-transform: capitalize;
-}
 </style>

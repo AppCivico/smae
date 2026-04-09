@@ -1,14 +1,14 @@
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class EnviarEmailParlamentaresDto {
+    @IsOptional()
     @IsString()
-    @IsNotEmpty({ message: 'Assunto é obrigatório' })
     @MaxLength(500)
-    assunto: string;
+    assunto?: string;
 
+    @IsOptional()
     @IsString()
-    @IsNotEmpty({ message: 'Corpo do e-mail é obrigatório' })
     @MaxLength(MAX_LENGTH_MEDIO)
-    corpo: string;
+    corpo?: string;
 }

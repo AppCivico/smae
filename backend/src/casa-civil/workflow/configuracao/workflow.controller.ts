@@ -7,9 +7,10 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { WorkflowService } from './workflow.service';
-import { ListWorkflowDto, WorkflowDetailDto } from './entities/workflow.entity';
+import { WorkflowDto, WorkflowDetailDto } from './entities/workflow.entity';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
+import { ApiPaginatedWithPagesResponse } from 'src/auth/decorators/paginated.decorator';
 
 @ApiTags('Workflow - Configuração')
 @Controller('workflow')
@@ -26,8 +27,9 @@ export class WorkflowController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroWorkflows.listar'])
     @Get()
-    async findAll(@Query() filters: FilterWorkflowDto, @CurrentUser() user: PessoaFromJwt): Promise<ListWorkflowDto> {
-        return { linhas: await this.workflowService.findAll(filters, user) };
+    @ApiPaginatedWithPagesResponse(WorkflowDto)
+    async findAll(@Query() filters: FilterWorkflowDto, @CurrentUser() user: PessoaFromJwt) {
+        return await this.workflowService.findAll(filters, user);
     }
 
     @Get(':id')

@@ -1063,7 +1063,6 @@ export default [
           },
         ],
       },
-
       {
         path: '/configuracao-demandas',
         name: 'configuracaoDemandas',
@@ -1079,6 +1078,7 @@ export default [
           rotasParaMenuSecundário: [
             'areasTematicas.listar',
             'valoresLimites.listar',
+            'envioDeEmails.listar',
           ],
         },
         children: [
@@ -1182,6 +1182,25 @@ export default [
                   limitarÀsPermissões: 'CadastroDemandaConfig.editar',
                   rotaDeEscape: 'valoresLimites.listar',
                   rotasParaMigalhasDePão: ['valoresLimites.listar'],
+                },
+              },
+            ],
+          },
+          {
+            path: 'envio-de-emails',
+            component: () => import('@/views/envioDeEmails/EnvioDeEmailsRaiz.vue'),
+            meta: {
+              título: 'Envio de E-mails',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroDemanda.validar',
+            },
+            children: [
+              {
+                name: 'envioDeEmails.listar',
+                path: '',
+                component: () => import('@/views/envioDeEmails/EnvioDeEmailsLista.vue'),
+                meta: {
+                  título: 'Envio de E-mails',
                 },
               },
             ],

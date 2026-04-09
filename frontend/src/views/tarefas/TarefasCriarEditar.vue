@@ -905,7 +905,10 @@ watch(itemParaEdicao, (novoValor) => {
         </FieldArray>
       </div>
 
-      <div class="g2 mb1">
+      <div
+        v-else
+        class="g2 mb1"
+      >
         <legend class="label mt2 mb1">
           {{ schema.fields.custo_estimado.spec.label }}
         </legend>

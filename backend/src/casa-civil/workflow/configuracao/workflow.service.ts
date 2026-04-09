@@ -1,18 +1,24 @@
 import { HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma } from '@prisma/client';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { DateTime } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
-import { WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
+import { ListWorkflowDto, WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Date2YMD } from '../../../common/date2ymd';
+import { AnyPageTokenJwtBody, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
+import { Object2Hash } from 'src/common/object2hash';
 
 @Injectable()
 export class WorkflowService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly jwtService: JwtService
+    ) {}
 
     async create(dto: CreateWorkflowDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
@@ -23,8 +29,7 @@ export class WorkflowService {
                         removido_em: null,
                     },
                 });
-                if (!transferenciaTipoExiste)
-                    throw new HttpException('Tipo de transferência não existe.', 400);
+                if (!transferenciaTipoExiste) throw new HttpException('Tipo de transferência não existe.', 400);
 
                 const similarExists = await prismaTxn.workflow.count({
                     where: {
@@ -193,9 +198,7 @@ export class WorkflowService {
                         },
                     });
                     if (workflowJaAtivo)
-                        throw new HttpException('Já existe um workflow ativo para este tipo de transferência.',
-                            400
-                        );
+                        throw new HttpException('Já existe um workflow ativo para este tipo de transferência.', 400);
                 }
 
                 // Se for modificada a data de término e estiver ativo.
@@ -231,35 +234,107 @@ export class WorkflowService {
         return updated;
     }
 
-    async findAll(filters: FilterWorkflowDto, user: PessoaFromJwt): Promise<WorkflowDto[]> {
-        const rows = await this.prisma.workflow.findMany({
-            where: {
-                ativo: filters.ativo,
-                transferencia_tipo_id: filters.transferencia_tipo_id,
-                removido_em: null,
-            },
-            select: {
-                id: true,
-                nome: true,
-                ativo: true,
-                inicio: true,
-                termino: true,
-                transferencia_tipo: {
-                    select: {
-                        id: true,
-                        nome: true,
+    async findAll(filters: FilterWorkflowDto, user: PessoaFromJwt): Promise<ListWorkflowDto> {
+        const ipp = filters.ipp ?? 25;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
+        let retToken = filters.token_paginacao;
+
+        if (page > 1 && !filters.token_paginacao) {
+            throw new HttpException('Campo token_paginacao é obrigatório para paginação', 400);
+        }
+
+        const filterToken = filters.token_paginacao;
+        const filtersForHash = { ...filters };
+        delete filtersForHash.pagina;
+        delete filtersForHash.token_paginacao;
+
+        const where: Prisma.WorkflowWhereInput = {
+            ativo: filters.ativo,
+            transferencia_tipo_id: filters.transferencia_tipo_id,
+            removido_em: null,
+            ...(filters.esfera ? { transferencia_tipo: { esfera: filters.esfera } } : {}),
+        };
+
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filtersForHash);
+            total_registros = decoded.total_rows;
+        }
+
+        const offset = (page - 1) * ipp;
+
+        const [countResult, rows] = await this.prisma.$transaction([
+            filterToken ? this.prisma.workflow.count({ where: { id: -1 } }) : this.prisma.workflow.count({ where }),
+            this.prisma.workflow.findMany({
+                where,
+                orderBy: { id: 'desc' },
+                skip: offset,
+                take: ipp,
+                select: {
+                    id: true,
+                    nome: true,
+                    ativo: true,
+                    inicio: true,
+                    termino: true,
+                    transferencia_tipo: {
+                        select: {
+                            id: true,
+                            nome: true,
+                            esfera: true,
+                        },
                     },
                 },
-            },
-        });
+            }),
+        ]);
 
-        return rows.map((r) => {
-            return {
-                ...r,
-                inicio: Date2YMD.toString(r.inicio),
-                termino: Date2YMD.toStringOrNull(r.termino),
+        if (!filterToken) {
+            total_registros = countResult;
+            const body: AnyPageTokenJwtBody = {
+                search_hash: Object2Hash(filtersForHash),
+                ipp,
+                issued_at: Date.now(),
+                total_rows: total_registros,
             };
-        });
+            retToken = this.jwtService.sign(body);
+        }
+
+        const tem_mais = offset + rows.length < total_registros;
+        const paginas = Math.ceil(total_registros / ipp);
+
+        return {
+            linhas: rows.map((r) => {
+                return {
+                    ...r,
+                    inicio: Date2YMD.toString(r.inicio),
+                    termino: Date2YMD.toStringOrNull(r.termino),
+                };
+            }),
+            tem_mais,
+            total_registros,
+            pagina_corrente: page,
+            paginas,
+            token_paginacao: retToken ?? null,
+            token_ttl: PAGINATION_TOKEN_TTL,
+        };
+    }
+
+    private decodeNextPageToken(jwt: string, filters: Record<string, any>): AnyPageTokenJwtBody {
+        let tmp: AnyPageTokenJwtBody | null = null;
+
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as AnyPageTokenJwtBody;
+        } catch {
+            throw new HttpException('token_paginacao inválido', 400);
+        }
+        if (!tmp) throw new HttpException('token_paginacao inválido ou faltando', 400);
+
+        if (tmp.search_hash !== Object2Hash(filters)) {
+            throw new HttpException(
+                'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
+                400
+            );
+        }
+        return tmp;
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<WorkflowDetailDto> {

@@ -1219,14 +1219,6 @@ export class TarefaService {
                         dto.termino_planejado = dataDependencias.termino_planejado;
                     }
 
-                    // achei melhor do que colocar os campos lá no DTO e botar pra esconder no swagger
-                    (dto as any).duracao_planejado_calculado = duracao_planejado_calculado;
-                    (dto as any).inicio_planejado_calculado = inicio_planejado_calculado;
-                    (dto as any).termino_planejado_calculado = termino_planejado_calculado;
-                    (dto as any).ordem_topologica_inicio_planejado = calcDependencias.ordem_topologica_inicio_planejado;
-                    (dto as any).ordem_topologica_termino_planejado =
-                        calcDependencias.ordem_topologica_termino_planejado;
-
                     // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
                     const patched = await this.calcInfereDataPeloPeriodo(
                         prismaTx,
@@ -1244,6 +1236,14 @@ export class TarefaService {
                     dto.termino_planejado = patched.termino_planejado;
                     dto.duracao_planejado = patched.duracao_planejado;
                 }
+
+                // sempre atualiza os flags, inclusive quando dependências foram removidas (dataDependencias == null)
+                (dto as any).duracao_planejado_calculado = duracao_planejado_calculado;
+                (dto as any).inicio_planejado_calculado = inicio_planejado_calculado;
+                (dto as any).termino_planejado_calculado = termino_planejado_calculado;
+                (dto as any).ordem_topologica_inicio_planejado = calcDependencias!.ordem_topologica_inicio_planejado;
+                (dto as any).ordem_topologica_termino_planejado =
+                    calcDependencias!.ordem_topologica_termino_planejado;
 
                 await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: tarefa.id } });
 
