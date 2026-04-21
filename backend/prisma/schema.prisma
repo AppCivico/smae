@@ -554,6 +554,11 @@ model Pessoa {
     AcaoQueAtualizei         Acao[]         @relation("Atualizador")
     AcaoQueRemovi            Acao[]         @relation("Removedor")
 
+    DistribuicaoSolicitacaoAjusteQueCriei     DistribuicaoRecursoSolicitacaoAjuste[] @relation("Criador")
+    DistribuicaoSolicitacaoAjusteQueAtualizei DistribuicaoRecursoSolicitacaoAjuste[] @relation("Atualizador")
+    DistribuicaoSolicitacaoAjusteQueRemovi    DistribuicaoRecursoSolicitacaoAjuste[] @relation("Removedor")
+    DistribuicaoSolicitacaoAjusteQueRespondi  DistribuicaoRecursoSolicitacaoAjuste[] @relation("Respondedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -663,6 +668,7 @@ model Orgao {
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
     AtualizacaoEmLote                 AtualizacaoEmLote[]
     demandas                          Demanda[]
+    solicitacoes_ajuste_distribuicao  DistribuicaoRecursoSolicitacaoAjuste[]
 
     @@map("orgao")
 }
@@ -6235,12 +6241,13 @@ model DistribuicaoRecurso {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    registros_sei DistribuicaoRecursoSei[]
-    aditamentos   DistribuicaoRecursoAditamento[]
-    status        DistribuicaoRecursoStatus[]
-    tarefas       Tarefa[]
-    parlamentares DistribuicaoParlamentar[]
-    vinculos      DistribuicaoRecursoVinculo[]
+    registros_sei       DistribuicaoRecursoSei[]
+    aditamentos         DistribuicaoRecursoAditamento[]
+    status              DistribuicaoRecursoStatus[]
+    tarefas             Tarefa[]
+    parlamentares       DistribuicaoParlamentar[]
+    vinculos            DistribuicaoRecursoVinculo[]
+    solicitacoes_ajuste DistribuicaoRecursoSolicitacaoAjuste[]
 
     @@map("distribuicao_recurso")
 }
@@ -8618,6 +8625,44 @@ model DemandaEmailParlamentarItem {
     @@index([demanda_email_parlamentar_id])
     @@index([parlamentar_id])
     @@map("demanda_email_parlamentar_item")
+}
+
+model DistribuicaoRecursoSolicitacaoAjuste {
+    id Int @id @default(autoincrement())
+
+    distribuicao_recurso_id Int
+    distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
+
+    orgao_gestor_id Int
+    orgao_gestor    Orgao @relation(fields: [orgao_gestor_id], references: [id])
+
+    status DistribuicaoSolicitacaoStatus @default(Pendente)
+
+    campos_solicitados Json
+
+    resposta_motivo String?
+    respondido_por  Int?
+    respondido_em   DateTime? @db.Timestamptz(6)
+    respondedor     Pessoa?   @relation("Respondedor", fields: [respondido_por], references: [id])
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_recurso_solicitacao_ajuste")
+}
+
+enum DistribuicaoSolicitacaoStatus {
+    Pendente
+    Aprovada
+    Recusada
 }
 
 model CacheKV {
