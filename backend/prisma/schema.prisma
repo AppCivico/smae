@@ -343,6 +343,14 @@ model Pessoa {
     distribuicoesRecursoSEIQueAtualizei DistribuicaoRecursoSei[] @relation("Atualizador")
     distribuicoesRecursoSEIQueRemovi    DistribuicaoRecursoSei[] @relation("Removedor")
 
+    distribuicoesRecursoDotacaoQueCriei     DistribuicaoRecursoDotacao[] @relation("Criador")
+    distribuicoesRecursoDotacaoQueAtualizei DistribuicaoRecursoDotacao[] @relation("Atualizador")
+    distribuicoesRecursoDotacaoQueRemovi    DistribuicaoRecursoDotacao[] @relation("Removedor")
+
+    transferenciaDotacaoQueCriei     TransferenciaDotacao[] @relation("Criador")
+    transferenciaDotacaoQueAtualizei TransferenciaDotacao[] @relation("Atualizador")
+    transferenciaDotacaoQueRemovi    TransferenciaDotacao[] @relation("Removedor")
+
     fluxosWorkflowQueCriei     Fluxo[] @relation("Criador")
     fluxosWorkflowQueAtualizei Fluxo[] @relation("Atualizador")
     fluxosWorkflowQueRemovi    Fluxo[] @relation("Removedor")
@@ -6028,7 +6036,6 @@ model Transferencia {
 
     ano                  Int?
     emenda               String?
-    dotacao              String?
     demanda              String?
     programa             String?
     banco_fim            String?
@@ -6073,6 +6080,7 @@ model Transferencia {
     diretorios                     Diretorio[]
     TarefaCronograma               TarefaCronograma[]
     distribuicao_recursos          DistribuicaoRecurso[]
+    dotacoes                       TransferenciaDotacao[]
     andamentoWorkflow              TransferenciaAndamento[]
     TransferenciaStatusConsolidado TransferenciaStatusConsolidado[]
     ViewNotasTransferencias        ViewNotasTransferencias[]
@@ -6197,7 +6205,6 @@ model DistribuicaoRecurso {
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
     programa_orcamentario_municipal String?
-    dotacao                         String?
     proposta                        String?
     contrato                        String?
     convenio                        String?
@@ -6236,6 +6243,7 @@ model DistribuicaoRecurso {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     registros_sei DistribuicaoRecursoSei[]
+    dotacoes      DistribuicaoRecursoDotacao[]
     aditamentos   DistribuicaoRecursoAditamento[]
     status        DistribuicaoRecursoStatus[]
     tarefas       Tarefa[]
@@ -6324,6 +6332,54 @@ model DistribuicaoRecursoSei {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
 
     @@map("distribuicao_recurso_sei")
+}
+
+model DistribuicaoRecursoDotacao {
+    id Int @id @default(autoincrement())
+
+    distribuicao_recurso_id Int
+    distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
+
+    dotacao String
+
+    criado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    criado_por Int?
+
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+
+    removido_em  DateTime? @db.Timestamptz(6)
+    removido_por Int?
+
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_recurso_dotacao")
+}
+
+model TransferenciaDotacao {
+    id Int @id @default(autoincrement())
+
+    transferencia_id Int
+    transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    dotacao String
+
+    criado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    criado_por Int?
+
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+
+    removido_em  DateTime? @db.Timestamptz(6)
+    removido_por Int?
+
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("transferencia_dotacao")
 }
 
 model Workflow {

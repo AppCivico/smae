@@ -61,10 +61,11 @@ export class CompletarTransferenciaDto {
     pct_investimento?: number;
 
     @IsOptional()
-    @IsString()
-    @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Dotação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
-    dotacao?: string;
+    @IsArray()
+    @IsString({ each: true })
+    @MinLength(1, { each: true })
+    @MaxLength(MAX_LENGTH_DEFAULT, { each: true, message: `Cada dotação deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    dotacoes?: string[];
 
     @IsOptional()
     @IsString()
