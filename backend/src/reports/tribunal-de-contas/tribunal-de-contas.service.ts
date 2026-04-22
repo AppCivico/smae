@@ -38,7 +38,10 @@ export class TribunalDeContasService implements ReportableService {
                 valor: true,
                 objeto: true,
                 vigencia: true,
-                dotacao: true,
+                dotacoes: {
+                    where: { removido_em: null },
+                    select: { dotacao: true },
+                },
                 rubrica_de_receita: true,
                 finalidade: true,
                 valor_empenho: true,
@@ -101,18 +104,15 @@ export class TribunalDeContasService implements ReportableService {
             }
 
             // Construindo str de dotação(es)
-            // A str é formada por concatenação da dotação da distribuição e os vínculos de dotação.
+            // A str é formada por concatenação das dotações da distribuição e os vínculos de dotação.
             // (unique dotações)
-            const dotacoes: string[] = [];
-            if (distribuicao.dotacao) {
-                dotacoes.push(distribuicao.dotacao);
-            }
+            const dotacoes: string[] = distribuicao.dotacoes.map((d) => d.dotacao);
             distribuicao.vinculos.forEach((vinculo) => {
                 if (vinculo.valor_vinculo && !dotacoes.includes(vinculo.valor_vinculo)) {
                     dotacoes.push(vinculo.valor_vinculo);
                 }
             });
-            distribuicao.dotacao = dotacoes.join(' | ');
+            const dotacaoStr = dotacoes.join(' | ');
 
             return {
                 ano: distribuicao.transferencia.ano,
@@ -124,7 +124,7 @@ export class TribunalDeContasService implements ReportableService {
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
                 prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
-                dotacao_orcamentaria: distribuicao.dotacao ? `="${distribuicao.dotacao}"` : ' - ',
+                dotacao_orcamentaria: dotacaoStr ? `="${dotacaoStr}"` : ' - ',
                 rubrica_de_receita: distribuicao.rubrica_de_receita ?? '',
                 finalidade: distribuicao.finalidade ?? '',
                 valor_empenho: distribuicao.valor_empenho?.toNumber() ?? null,

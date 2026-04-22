@@ -152,7 +152,12 @@ export class TransferenciasService implements ReportableService {
                 t.valor_contrapartida,
                 t.emenda,
                 t.emenda_unitaria,
-                t.dotacao,
+                (
+                    SELECT STRING_AGG(td.dotacao, '|' ORDER BY td.criado_em)
+                    FROM transferencia_dotacao td
+                    WHERE td.transferencia_id = t.id
+                    AND td.removido_em IS NULL
+                ) AS dotacao,
                 t.demanda,
                 t.banco_fim,
                 t.conta_fim,
@@ -191,7 +196,12 @@ export class TransferenciasService implements ReportableService {
                                     string_to_array(
                                         CONCAT_WS(
                                             '|',
-                                            dr.dotacao,
+                                            (
+                                                SELECT STRING_AGG(drd.dotacao, '|')
+                                                FROM distribuicao_recurso_dotacao drd
+                                                WHERE drd.distribuicao_recurso_id = dr.id
+                                                AND drd.removido_em IS NULL
+                                            ),
                                             (
                                                 SELECT STRING_AGG(drv.valor_vinculo, '|')
                                                 FROM distribuicao_recurso_vinculo drv

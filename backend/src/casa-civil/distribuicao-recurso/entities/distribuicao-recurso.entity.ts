@@ -32,7 +32,7 @@ export class DistribuicaoRecursoDto {
     data_empenho: string | null;
     programa_orcamentario_estadual: String | null;
     programa_orcamentario_municipal: String | null;
-    dotacao: String | null;
+    dotacoes: string[];
     proposta: String | null;
     contrato: String | null;
     convenio: String | null;
