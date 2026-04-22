@@ -37,16 +37,16 @@ CREATE TABLE "transferencia_dotacao" (
 );
 
 -- Migrate existing single dotacao values from distribuicao_recurso
-INSERT INTO "distribuicao_recurso_dotacao" ("distribuicao_recurso_id", "dotacao", "criado_em", "atualizado_em")
-SELECT id, dotacao, criado_em, criado_em
+INSERT INTO "distribuicao_recurso_dotacao" ("distribuicao_recurso_id", "dotacao", "criado_em", "criado_por", "atualizado_em", "atualizado_por")
+SELECT id, btrim(dotacao), criado_em, criado_por, COALESCE(atualizado_em, criado_em), atualizado_por
 FROM "distribuicao_recurso"
-WHERE dotacao IS NOT NULL AND dotacao != '';
+WHERE dotacao IS NOT NULL AND btrim(dotacao) <> '';
 
 -- Migrate existing single dotacao values from transferencia
-INSERT INTO "transferencia_dotacao" ("transferencia_id", "dotacao", "criado_em", "atualizado_em")
-SELECT id, dotacao, criado_em, criado_em
+INSERT INTO "transferencia_dotacao" ("transferencia_id", "dotacao", "criado_em", "criado_por", "atualizado_em", "atualizado_por")
+SELECT id, btrim(dotacao), criado_em, criado_por, COALESCE(atualizado_em, criado_em), atualizado_por
 FROM "transferencia"
-WHERE dotacao IS NOT NULL AND dotacao != '';
+WHERE dotacao IS NOT NULL AND btrim(dotacao) <> '';
 
 -- AlterTable
 ALTER TABLE "distribuicao_recurso" DROP COLUMN "dotacao";
@@ -77,3 +77,15 @@ ALTER TABLE "transferencia_dotacao" ADD CONSTRAINT "transferencia_dotacao_atuali
 
 -- AddForeignKey
 ALTER TABLE "transferencia_dotacao" ADD CONSTRAINT "transferencia_dotacao_removido_por_fkey" FOREIGN KEY ("removido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- CreateIndex (parent FK lookup)
+CREATE INDEX "distribuicao_recurso_dotacao_distribuicao_recurso_id_idx" ON "distribuicao_recurso_dotacao"("distribuicao_recurso_id");
+
+-- CreateIndex (parent FK lookup)
+CREATE INDEX "transferencia_dotacao_transferencia_id_idx" ON "transferencia_dotacao"("transferencia_id");
+
+-- CreateIndex (partial unique: enforce uniqueness for active rows)
+CREATE UNIQUE INDEX "distribuicao_recurso_dotacao_active_uniq" ON "distribuicao_recurso_dotacao"("distribuicao_recurso_id", "dotacao") WHERE "removido_em" IS NULL;
+
+-- CreateIndex (partial unique: enforce uniqueness for active rows)
+CREATE UNIQUE INDEX "transferencia_dotacao_active_uniq" ON "transferencia_dotacao"("transferencia_id", "dotacao") WHERE "removido_em" IS NULL;

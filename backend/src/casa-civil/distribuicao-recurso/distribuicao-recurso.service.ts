@@ -353,6 +353,8 @@ export class DistribuicaoRecursoService {
                 },
             });
 
+            const dotacoesUnicas = dto.dotacoes ? [...new Set(dto.dotacoes)] : [];
+
             const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                 data: {
                     transferencia_id: dto.transferencia_id,
@@ -368,10 +370,10 @@ export class DistribuicaoRecursoService {
                     data_empenho: dto.data_empenho,
                     programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
                     programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                    dotacoes: dto.dotacoes?.length
+                    dotacoes: dotacoesUnicas.length
                         ? {
                               createMany: {
-                                  data: dto.dotacoes.map((dotacao) => ({
+                                  data: dotacoesUnicas.map((dotacao) => ({
                                       dotacao,
                                       criado_em: agora,
                                       criado_por: user.id,
@@ -458,10 +460,10 @@ export class DistribuicaoRecursoService {
             }
 
             // Propaga as dotações para a Transferência (sem duplicar)
-            if (dto.dotacoes?.length) {
+            if (dotacoesUnicas.length) {
                 await this.propagaDotacoesParaTransferencia(
                     dto.transferencia_id,
-                    dto.dotacoes,
+                    dotacoesUnicas,
                     prismaTx,
                     user,
                     agora
@@ -1996,7 +1998,7 @@ export class DistribuicaoRecursoService {
             select: { dotacao: true },
         });
         const existentesSet = new Set(existentes.map((e) => e.dotacao));
-        const novas = dotacoes.filter((d) => !existentesSet.has(d));
+        const novas = [...new Set(dotacoes)].filter((d) => !existentesSet.has(d));
         if (novas.length) {
             await prismaTx.transferenciaDotacao.createMany({
                 data: novas.map((dotacao) => ({
@@ -2018,8 +2020,9 @@ export class DistribuicaoRecursoService {
         user: PessoaFromJwt,
         now: Date
     ) {
-        const created = sentDotacoes.filter((d) => !currDotacoes.includes(d));
-        const deleted = currDotacoes.filter((d) => !sentDotacoes.includes(d));
+        const sentDotacoesUnicas = [...new Set(sentDotacoes)];
+        const created = sentDotacoesUnicas.filter((d) => !currDotacoes.includes(d));
+        const deleted = currDotacoes.filter((d) => !sentDotacoesUnicas.includes(d));
 
         if (created.length) {
             await prismaTx.distribuicaoRecursoDotacao.createMany({

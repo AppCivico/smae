@@ -6355,6 +6355,7 @@ model DistribuicaoRecursoDotacao {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([distribuicao_recurso_id, dotacao])
     @@map("distribuicao_recurso_dotacao")
 }
 
@@ -6379,6 +6380,7 @@ model TransferenciaDotacao {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([transferencia_id, dotacao])
     @@map("transferencia_dotacao")
 }
 

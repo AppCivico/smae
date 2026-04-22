@@ -881,6 +881,9 @@ export class TransferenciaService {
                     },
                 });
 
+                const dotacoesParaDistribuicao =
+                    dto.dotacoes !== undefined ? [...new Set(dto.dotacoes)] : self.dotacoes.map((d) => d.dotacao);
+
                 if (!jaTemDistribuicao) {
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
                         where: {
@@ -898,7 +901,7 @@ export class TransferenciaService {
                             // Para preencher o nome, extraimos os 100 primeiros caracteres do objeto.
                             nome: self.objeto.substring(0, 100),
                             transferencia_id: transferencia.id,
-                            dotacoes: self.dotacoes.length ? self.dotacoes.map((d) => d.dotacao) : undefined,
+                            dotacoes: dotacoesParaDistribuicao.length ? dotacoesParaDistribuicao : undefined,
                             valor: self.valor!.toNumber(),
                             valor_contrapartida: self.valor_contrapartida!.toNumber(),
                             valor_total: self.valor_total!.toNumber(),
@@ -917,8 +920,8 @@ export class TransferenciaService {
                 // Atualiza dotacoes da transferência (diff: adiciona novas, remove excluídas)
                 if (dto.dotacoes !== undefined) {
                     const currDotacoesSet = new Set(self.dotacoes.map((d) => d.dotacao));
-                    const sentDotacoesSet = new Set(dto.dotacoes);
-                    const novas = dto.dotacoes.filter((d) => !currDotacoesSet.has(d));
+                    const sentDotacoesSet = new Set(dotacoesParaDistribuicao);
+                    const novas = dotacoesParaDistribuicao.filter((d) => !currDotacoesSet.has(d));
                     const removidas = self.dotacoes.map((d) => d.dotacao).filter((d) => !sentDotacoesSet.has(d));
                     if (novas.length) {
                         await prismaTxn.transferenciaDotacao.createMany({

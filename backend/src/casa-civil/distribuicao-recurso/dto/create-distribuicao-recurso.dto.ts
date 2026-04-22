@@ -10,6 +10,8 @@ import {
     MinLength,
     ValidateIf,
     ValidateNested,
+    ArrayMaxSize,
+    ArrayUnique,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { IsNumberStringCustom } from 'src/common/decorators/IsNumberStringCustom';
@@ -145,6 +147,8 @@ export class CreateDistribuicaoRecursoDto {
 
     @IsOptional()
     @IsArray()
+    @ArrayMaxSize(100)
+    @ArrayUnique({ message: 'dotacoes não pode conter valores duplicados' })
     @IsString({ each: true })
     @MinLength(1, { each: true })
     @MaxLength(MAX_LENGTH_DEFAULT, { each: true, message: `Cada dotação deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
