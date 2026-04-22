@@ -15,6 +15,7 @@ import { NumberTransform } from 'src/auth/transforms/number.transform';
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
     transferencia_id: number;
+    emenda: string | null;
     identificador: string;
     atividade: string;
     @IsDateYMD({ nullable: true })
