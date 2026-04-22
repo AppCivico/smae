@@ -353,6 +353,8 @@ export class DistribuicaoRecursoService {
                 },
             });
 
+            const dotacoesUnicas = dto.dotacoes ? [...new Set(dto.dotacoes)] : [];
+
             const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                 data: {
                     transferencia_id: dto.transferencia_id,
@@ -368,7 +370,17 @@ export class DistribuicaoRecursoService {
                     data_empenho: dto.data_empenho,
                     programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
                     programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                    dotacao: dto.dotacao,
+                    dotacoes: dotacoesUnicas.length
+                        ? {
+                              createMany: {
+                                  data: dotacoesUnicas.map((dotacao) => ({
+                                      dotacao,
+                                      criado_em: agora,
+                                      criado_por: user.id,
+                                  })),
+                              },
+                          }
+                        : undefined,
                     proposta: dto.proposta,
                     contrato: dto.contrato,
                     convenio: dto.convenio,
@@ -445,6 +457,17 @@ export class DistribuicaoRecursoService {
                 );
 
                 if (workflowConfigValida) await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
+            }
+
+            // Propaga as dotações para a Transferência (sem duplicar)
+            if (dotacoesUnicas.length) {
+                await this.propagaDotacoesParaTransferencia(
+                    dto.transferencia_id,
+                    dotacoesUnicas,
+                    prismaTx,
+                    user,
+                    agora
+                );
             }
 
             return { id: distribuicaoRecurso.id };
@@ -560,7 +583,10 @@ export class DistribuicaoRecursoService {
                     data_empenho: true,
                     programa_orcamentario_estadual: true,
                     programa_orcamentario_municipal: true,
-                    dotacao: true,
+                    dotacoes: {
+                        where: { removido_em: null },
+                        select: { dotacao: true },
+                    },
                     proposta: true,
                     contrato: true,
                     convenio: true,
@@ -787,7 +813,7 @@ export class DistribuicaoRecursoService {
                 data_empenho: Date2YMD.toStringOrNull(r.data_empenho),
                 programa_orcamentario_estadual: r.programa_orcamentario_estadual,
                 programa_orcamentario_municipal: r.programa_orcamentario_municipal,
-                dotacao: r.dotacao,
+                dotacoes: r.dotacoes.map((d) => d.dotacao),
                 proposta: r.proposta,
                 contrato: r.contrato,
                 convenio: r.convenio,
@@ -889,7 +915,10 @@ export class DistribuicaoRecursoService {
                 data_empenho: true,
                 programa_orcamentario_estadual: true,
                 programa_orcamentario_municipal: true,
-                dotacao: true,
+                dotacoes: {
+                    where: { removido_em: null },
+                    select: { dotacao: true },
+                },
                 proposta: true,
                 contrato: true,
                 convenio: true,
@@ -1130,7 +1159,7 @@ export class DistribuicaoRecursoService {
             data_empenho: Date2YMD.toStringOrNull(row.data_empenho),
             programa_orcamentario_estadual: row.programa_orcamentario_estadual,
             programa_orcamentario_municipal: row.programa_orcamentario_municipal,
-            dotacao: row.dotacao,
+            dotacoes: row.dotacoes.map((d) => d.dotacao),
             proposta: row.proposta,
             contrato: row.contrato,
             convenio: row.convenio,
@@ -1216,6 +1245,19 @@ export class DistribuicaoRecursoService {
                     });
                 }
                 delete dto.registros_sei;
+
+                if (dto.dotacoes !== undefined) {
+                    await this.checkDiffDotacoes(
+                        id,
+                        dto.dotacoes,
+                        self.dotacoes,
+                        self.transferencia_id,
+                        prismaTx,
+                        user,
+                        now
+                    );
+                }
+                delete (dto as any).dotacoes;
 
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
                     throw new HttpException('Obrigatório quando for empenho.', 400);
@@ -1410,7 +1452,6 @@ export class DistribuicaoRecursoService {
                         data_empenho: dto.data_empenho,
                         programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
                         programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                        dotacao: dto.dotacao,
                         proposta: dto.proposta,
                         contrato: dto.contrato,
                         convenio: dto.convenio,
@@ -1951,6 +1992,73 @@ export class DistribuicaoRecursoService {
         }
 
         await Promise.all(operations);
+    }
+
+    private async propagaDotacoesParaTransferencia(
+        transferenciaId: number,
+        dotacoes: string[],
+        prismaTx: Prisma.TransactionClient,
+        user: PessoaFromJwt,
+        agora: Date
+    ) {
+        const existentes = await prismaTx.transferenciaDotacao.findMany({
+            where: { transferencia_id: transferenciaId, removido_em: null },
+            select: { dotacao: true },
+        });
+        const existentesSet = new Set(existentes.map((e) => e.dotacao));
+        const novas = [...new Set(dotacoes)].filter((d) => !existentesSet.has(d));
+        if (novas.length) {
+            await prismaTx.transferenciaDotacao.createMany({
+                data: novas.map((dotacao) => ({
+                    transferencia_id: transferenciaId,
+                    dotacao,
+                    criado_em: agora,
+                    criado_por: user.id,
+                })),
+            });
+        }
+    }
+
+    private async checkDiffDotacoes(
+        distribuicaoRecursoId: number,
+        sentDotacoes: string[],
+        currDotacoes: string[],
+        transferenciaId: number,
+        prismaTx: Prisma.TransactionClient,
+        user: PessoaFromJwt,
+        now: Date
+    ) {
+        const sentDotacoesUnicas = [...new Set(sentDotacoes)];
+        const created = sentDotacoesUnicas.filter((d) => !currDotacoes.includes(d));
+        const deleted = currDotacoes.filter((d) => !sentDotacoesUnicas.includes(d));
+
+        if (created.length) {
+            await prismaTx.distribuicaoRecursoDotacao.createMany({
+                data: created.map((dotacao) => ({
+                    distribuicao_recurso_id: distribuicaoRecursoId,
+                    dotacao,
+                    criado_em: now,
+                    criado_por: user.id,
+                })),
+            });
+            // Propaga novas dotações para a Transferência (sem duplicar)
+            await this.propagaDotacoesParaTransferencia(transferenciaId, created, prismaTx, user, now);
+        }
+
+        if (deleted.length) {
+            await prismaTx.distribuicaoRecursoDotacao.updateMany({
+                where: {
+                    distribuicao_recurso_id: distribuicaoRecursoId,
+                    dotacao: { in: deleted },
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+            // Intencionalmente NÃO remove da TransferenciaDotacao
+        }
     }
 
     async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {

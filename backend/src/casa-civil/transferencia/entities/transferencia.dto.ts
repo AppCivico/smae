@@ -20,6 +20,7 @@ export class TransferenciaDto {
     id: number;
     ano: number | null;
     identificador: string;
+    emenda: string | null;
     valor: Decimal | null;
     partido: IdSigla[] | null;
     parlamentar: ParlamnetarIdNomes[] | null;
@@ -71,7 +72,7 @@ export class TransferenciaDetailDto {
     investimento: Decimal | null;
     pct_investimento: Decimal | null;
     emenda: string | null;
-    dotacao: string | null;
+    dotacoes: string[];
     demanda: string | null;
     banco_fim: string | null;
     conta_fim: string | null;
