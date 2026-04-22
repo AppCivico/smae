@@ -1172,6 +1172,7 @@ export class TransferenciaService {
             select: {
                 id: true,
                 identificador: true,
+                emenda: true,
                 ano: true,
                 objeto: true,
                 esfera: true,
@@ -1293,6 +1294,7 @@ export class TransferenciaService {
                 id: r.id,
                 ano: r.ano,
                 identificador: r.identificador,
+                emenda: r.emenda,
                 valor: r.valor,
                 partido: r.parlamentar
                     .filter((e) => e.partido)

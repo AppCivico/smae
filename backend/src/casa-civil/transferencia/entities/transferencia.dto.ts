@@ -20,6 +20,7 @@ export class TransferenciaDto {
     id: number;
     ano: number | null;
     identificador: string;
+    emenda: string | null;
     valor: Decimal | null;
     partido: IdSigla[] | null;
     parlamentar: ParlamnetarIdNomes[] | null;
