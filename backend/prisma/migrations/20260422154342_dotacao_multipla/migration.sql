@@ -40,13 +40,13 @@ CREATE TABLE "transferencia_dotacao" (
 INSERT INTO "distribuicao_recurso_dotacao" ("distribuicao_recurso_id", "dotacao", "criado_em", "criado_por", "atualizado_em", "atualizado_por")
 SELECT id, btrim(dotacao), criado_em, criado_por, COALESCE(atualizado_em, criado_em), atualizado_por
 FROM "distribuicao_recurso"
-WHERE dotacao IS NOT NULL AND btrim(dotacao) <> '';
+WHERE dotacao IS NOT NULL AND length(btrim(dotacao)) > 0;
 
 -- Migrate existing single dotacao values from transferencia
 INSERT INTO "transferencia_dotacao" ("transferencia_id", "dotacao", "criado_em", "criado_por", "atualizado_em", "atualizado_por")
 SELECT id, btrim(dotacao), criado_em, criado_por, COALESCE(atualizado_em, criado_em), atualizado_por
 FROM "transferencia"
-WHERE dotacao IS NOT NULL AND btrim(dotacao) <> '';
+WHERE dotacao IS NOT NULL AND length(btrim(dotacao)) > 0;
 
 -- AlterTable
 ALTER TABLE "distribuicao_recurso" DROP COLUMN "dotacao";

@@ -93,19 +93,13 @@ export class CreateDistribuicaoRecursoDto {
     gestor_contrato?: string;
 
     @IsOptional()
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'até duas casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     pct_custeio?: number;
 
     @IsOptional()
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'até duas casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     pct_investimento?: number;
@@ -151,7 +145,10 @@ export class CreateDistribuicaoRecursoDto {
     @ArrayUnique({ message: 'dotacoes não pode conter valores duplicados' })
     @IsString({ each: true })
     @MinLength(1, { each: true })
-    @MaxLength(MAX_LENGTH_DEFAULT, { each: true, message: `Cada dotação deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        each: true,
+        message: `Cada dotação deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     dotacoes?: string[];
 
     @IsOptional()

@@ -6342,10 +6342,10 @@ model DistribuicaoRecursoDotacao {
 
     dotacao String
 
-    criado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int?
 
-    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
 
     removido_em  DateTime? @db.Timestamptz(6)
@@ -6367,10 +6367,10 @@ model TransferenciaDotacao {
 
     dotacao String
 
-    criado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int?
 
-    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
 
     removido_em  DateTime? @db.Timestamptz(6)

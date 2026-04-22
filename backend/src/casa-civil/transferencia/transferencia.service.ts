@@ -882,7 +882,7 @@ export class TransferenciaService {
                 });
 
                 const dotacoesParaDistribuicao =
-                    dto.dotacoes !== undefined ? [...new Set(dto.dotacoes)] : self.dotacoes.map((d) => d.dotacao);
+                    dto.dotacoes === undefined ? self.dotacoes.map((d) => d.dotacao) : [...new Set(dto.dotacoes)];
 
                 if (!jaTemDistribuicao) {
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({

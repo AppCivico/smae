@@ -1247,7 +1247,15 @@ export class DistribuicaoRecursoService {
                 delete dto.registros_sei;
 
                 if (dto.dotacoes !== undefined) {
-                    await this.checkDiffDotacoes(id, dto.dotacoes, self.dotacoes, self.transferencia_id, prismaTx, user, now);
+                    await this.checkDiffDotacoes(
+                        id,
+                        dto.dotacoes,
+                        self.dotacoes,
+                        self.transferencia_id,
+                        prismaTx,
+                        user,
+                        now
+                    );
                 }
                 delete (dto as any).dotacoes;
 
