@@ -75,6 +75,7 @@ export class DashTransferenciaService {
                     select: {
                         id: true,
                         identificador: true,
+                        emenda: true,
                         esfera: true,
                         objeto: true,
                         parlamentar: {
@@ -95,6 +96,7 @@ export class DashTransferenciaService {
                     data_origem: r.data_origem,
                     atividade: r.situacao,
                     identificador: r.transferencia.identificador,
+                    emenda: r.transferencia.emenda,
                     transferencia_id: r.transferencia.id,
                     esfera: r.transferencia.esfera,
                     orgaos: r.orgaos_envolvidos,
