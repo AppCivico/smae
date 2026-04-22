@@ -267,7 +267,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             throw new HttpException('Apenas solicitações pendentes podem ser gerenciadas.', 400);
         }
 
-        if (dto.status === 'Aprovada') {
+        if (dto.status === DistribuicaoSolicitacaoStatus.Aprovada) {
             const campos = solicitacao.campos_solicitados as unknown as CamposSolicitados;
 
             const distribuicaoAtual = await this.distribuicaoRecursoService.findOne(
@@ -285,7 +285,8 @@ export class DistribuicaoSolicitacaoAjusteService {
             };
 
             for (const [campo, mudanca] of Object.entries(campos)) {
-                (updateDto as any)[campo] = mudanca.para;
+                if (!(campo in DISTRIBUICAO_SELECT_CAMPOS)) continue;
+                (updateDto as Record<string, unknown>)[campo] = mudanca.para;
             }
 
             await this.distribuicaoRecursoService.update(solicitacao.distribuicao_recurso_id, updateDto, user);
@@ -318,11 +319,10 @@ export class DistribuicaoSolicitacaoAjusteService {
     }
 
     private buildCamposSolicitados(dto: Record<string, any>, distribuicao: Record<string, any>): CamposSolicitados {
-        const ignoredKeys = new Set(['distribuicao_recurso_id']);
         const campos: CamposSolicitados = {};
 
         for (const [key, paraValue] of Object.entries(dto)) {
-            if (ignoredKeys.has(key) || paraValue === undefined) continue;
+            if (!(key in DISTRIBUICAO_SELECT_CAMPOS) || paraValue === undefined) continue;
             campos[key] = { de: distribuicao[key] ?? null, para: paraValue };
         }
 

@@ -6,7 +6,7 @@ export class FilterDistribuicaoSolicitacaoAjusteDto {
     @IsOptional()
     @IsInt()
     @IsPositive()
-    @Transform(({ value }) => +value)
+    @Transform(({ value }) => (value === undefined || value === null || value === '' ? value : +value))
     distribuicao_recurso_id?: number;
 
     @IsOptional()

@@ -1,8 +1,8 @@
 import { DistribuicaoSolicitacaoStatus } from '@prisma/client';
 
 export class CampoSolicitadoDto {
-    de: any;
-    para: any;
+    de: unknown;
+    para: unknown;
 }
 
 export class DistribuicaoSolicitacaoAjusteDto {
