@@ -14,41 +14,47 @@ import {
     ListDistribuicaoSolicitacaoAjusteDto,
 } from './entities/distribuicao-solicitacao-ajuste.entity';
 
-type CamposSolicitados = Record<string, { de: any; para: any }>;
+type CamposSolicitados = Record<string, { de: unknown; para: unknown }>;
+
+// Campos permitidos para ajuste — subconjunto dos campos de leitura.
+// Exclui id, orgao_gestor_id, parlamentares, registros_sei, transferencia_id.
+const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
+    'objeto',
+    'nome',
+    'valor',
+    'valor_total',
+    'valor_contrapartida',
+    'custeio',
+    'pct_custeio',
+    'investimento',
+    'pct_investimento',
+    'valor_empenho',
+    'valor_liquidado',
+    'empenho',
+    'data_empenho',
+    'programa_orcamentario_estadual',
+    'programa_orcamentario_municipal',
+    'dotacao',
+    'proposta',
+    'contrato',
+    'convenio',
+    'assinatura_termo_aceite',
+    'assinatura_municipio',
+    'assinatura_estado',
+    'vigencia',
+    'conclusao_suspensiva',
+    'distribuicao_banco',
+    'distribuicao_agencia',
+    'distribuicao_conta',
+    'rubrica_de_receita',
+    'finalidade',
+    'gestor_contrato',
+] as const;
 
 const DISTRIBUICAO_SELECT_CAMPOS = {
     id: true,
     orgao_gestor_id: true,
-    objeto: true,
-    nome: true,
-    valor: true,
-    valor_total: true,
-    valor_contrapartida: true,
-    custeio: true,
-    pct_custeio: true,
-    investimento: true,
-    pct_investimento: true,
-    valor_empenho: true,
-    valor_liquidado: true,
-    empenho: true,
-    data_empenho: true,
-    programa_orcamentario_estadual: true,
-    programa_orcamentario_municipal: true,
-    dotacao: true,
-    proposta: true,
-    contrato: true,
-    convenio: true,
-    assinatura_termo_aceite: true,
-    assinatura_municipio: true,
-    assinatura_estado: true,
-    vigencia: true,
-    conclusao_suspensiva: true,
-    distribuicao_banco: true,
-    distribuicao_agencia: true,
-    distribuicao_conta: true,
-    rubrica_de_receita: true,
-    finalidade: true,
-    gestor_contrato: true,
+    ...Object.fromEntries(DISTRIBUICAO_AJUSTE_CAMPOS.map((c) => [c, true])),
 } as const;
 
 @Injectable()
@@ -111,6 +117,14 @@ export class DistribuicaoSolicitacaoAjusteService {
                         atualizado_em: new Date(),
                     },
                     select: { id: true },
+                }).catch((err: any) => {
+                    if (err?.code === 'P2002') {
+                        throw new HttpException(
+                            'Já existe uma solicitação de ajuste pendente para esta distribuição. Edite a solicitação existente.',
+                            400
+                        );
+                    }
+                    throw err;
                 });
 
                 return { id: solicitacao.id };
@@ -215,14 +229,23 @@ export class DistribuicaoSolicitacaoAjusteService {
                     throw new HttpException('Nenhum campo foi informado para solicitar ajuste.', 400);
                 }
 
-                await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.update({
-                    where: { id },
+                const { count } = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.updateMany({
+                    where: {
+                        id,
+                        orgao_gestor_id: user.orgao_id,
+                        removido_em: null,
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                    },
                     data: {
                         campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
                         atualizado_por: user.id,
                         atualizado_em: new Date(),
                     },
                 });
+
+                if (count === 0) {
+                    throw new HttpException('Solicitação não encontrada ou já foi processada.', 409);
+                }
 
                 return { id };
             },
@@ -235,21 +258,19 @@ export class DistribuicaoSolicitacaoAjusteService {
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
-                const solicitacao = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
-                    where: { id, removido_em: null, orgao_gestor_id: user.orgao_id },
-                    select: { id: true, status: true },
-                });
-
-                if (!solicitacao) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
-
-                if (solicitacao.status !== DistribuicaoSolicitacaoStatus.Pendente) {
-                    throw new HttpException('Apenas solicitações pendentes podem ser removidas.', 400);
-                }
-
-                await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.update({
-                    where: { id },
+                const { count } = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.updateMany({
+                    where: {
+                        id,
+                        orgao_gestor_id: user.orgao_id,
+                        removido_em: null,
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                    },
                     data: { removido_por: user.id, removido_em: new Date() },
                 });
+
+                if (count === 0) {
+                    throw new HttpException('Solicitação não encontrada, já processada ou sem permissão.', 409);
+                }
             },
             { isolationLevel: 'ReadCommitted' }
         );
@@ -257,7 +278,7 @@ export class DistribuicaoSolicitacaoAjusteService {
 
     async gestao(id: number, dto: GestaoDistribuicaoSolicitacaoAjusteDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const solicitacao = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findFirst({
-            where: { id, removido_em: null },
+            where: { id, removido_em: null, ...this.buildOrgaoFilter(user) },
             select: { id: true, status: true, distribuicao_recurso_id: true, campos_solicitados: true },
         });
 
@@ -270,14 +291,34 @@ export class DistribuicaoSolicitacaoAjusteService {
         if (dto.status === DistribuicaoSolicitacaoStatus.Aprovada) {
             const campos = solicitacao.campos_solicitados as unknown as CamposSolicitados;
 
-            const distribuicaoAtual = await this.distribuicaoRecursoService.findOne(
-                solicitacao.distribuicao_recurso_id,
-                user
-            );
+            // Valida que os valores "de" ainda correspondem ao estado atual da distribuição.
+            const distribuicaoAtual = await this.prisma.distribuicaoRecurso.findFirst({
+                where: { id: solicitacao.distribuicao_recurso_id, removido_em: null },
+                select: DISTRIBUICAO_SELECT_CAMPOS,
+            });
+            if (!distribuicaoAtual) throw new HttpException('Distribuição de recurso não encontrada.', 404);
+
+            const camposDivergentes: string[] = [];
+            for (const [campo, mudanca] of Object.entries(campos)) {
+                if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(campo)) continue;
+                const valorAtual = this.normalizeValue((distribuicaoAtual as Record<string, unknown>)[campo]);
+                const valorDe = this.normalizeValue(mudanca.de);
+                if (JSON.stringify(valorAtual) !== JSON.stringify(valorDe)) {
+                    camposDivergentes.push(campo);
+                }
+            }
+            if (camposDivergentes.length > 0) {
+                throw new HttpException(
+                    `Os seguintes campos foram alterados desde a solicitação e divergem do valor original: ${camposDivergentes.join(', ')}. Recuse ou peça nova solicitação.`,
+                    409
+                );
+            }
 
             const updateDto: UpdateDistribuicaoRecursoDto = {
-                // Preserva os registros_sei existentes para o update não os remover
-                registros_sei: (distribuicaoAtual.registros_sei ?? []).map((s) => ({
+                registros_sei: ((await this.distribuicaoRecursoService.findOne(
+                    solicitacao.distribuicao_recurso_id,
+                    user
+                )).registros_sei ?? []).map((s) => ({
                     id: s.id,
                     nome: s.nome ?? undefined,
                     processo_sei: s.processo_sei,
@@ -285,29 +326,33 @@ export class DistribuicaoSolicitacaoAjusteService {
             };
 
             for (const [campo, mudanca] of Object.entries(campos)) {
-                if (!(campo in DISTRIBUICAO_SELECT_CAMPOS)) continue;
+                if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(campo)) continue;
                 (updateDto as Record<string, unknown>)[campo] = mudanca.para;
             }
 
             await this.distribuicaoRecursoService.update(solicitacao.distribuicao_recurso_id, updateDto, user);
         }
 
-        await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient) => {
-                await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.update({
-                    where: { id },
-                    data: {
-                        status: dto.status,
-                        resposta_motivo: dto.resposta_motivo ?? null,
-                        respondido_por: user.id,
-                        respondido_em: new Date(),
-                        atualizado_por: user.id,
-                        atualizado_em: new Date(),
-                    },
-                });
+        // Conditional update: only update if status is still Pendente (race guard)
+        const { count } = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.updateMany({
+            where: {
+                id,
+                status: DistribuicaoSolicitacaoStatus.Pendente,
+                removido_em: null,
             },
-            { isolationLevel: 'ReadCommitted' }
-        );
+            data: {
+                status: dto.status,
+                resposta_motivo: dto.resposta_motivo ?? null,
+                respondido_por: user.id,
+                respondido_em: new Date(),
+                atualizado_por: user.id,
+                atualizado_em: new Date(),
+            },
+        });
+
+        if (count === 0) {
+            throw new HttpException('Solicitação já foi processada por outro usuário.', 409);
+        }
 
         return { id };
     }
@@ -322,11 +367,23 @@ export class DistribuicaoSolicitacaoAjusteService {
         const campos: CamposSolicitados = {};
 
         for (const [key, paraValue] of Object.entries(dto)) {
-            if (!(key in DISTRIBUICAO_SELECT_CAMPOS) || paraValue === undefined) continue;
-            campos[key] = { de: distribuicao[key] ?? null, para: paraValue };
+            if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(key) || paraValue === undefined) continue;
+            campos[key] = {
+                de: this.normalizeValue(distribuicao[key] ?? null),
+                para: this.normalizeValue(paraValue),
+            };
         }
 
         return campos;
+    }
+
+    /** Normaliza valores para armazenamento JSON-safe (Dates → ISO string, Decimal → number). */
+    private normalizeValue(value: unknown): unknown {
+        if (value === null || value === undefined) return null;
+        if (value instanceof Date) return value.toISOString();
+        if (typeof value === 'object' && 'toNumber' in value && typeof (value as any).toNumber === 'function')
+            return (value as any).toNumber();
+        return value;
     }
 
     private rowToDto(row: {
@@ -348,7 +405,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             distribuicao_recurso_id: row.distribuicao_recurso_id,
             orgao_gestor_id: row.orgao_gestor_id,
             status: row.status,
-            campos_solicitados: row.campos_solicitados as Record<string, { de: any; para: any }>,
+            campos_solicitados: row.campos_solicitados as Record<string, { de: unknown; para: unknown }>,
             resposta_motivo: row.resposta_motivo,
             respondido_por: row.respondido_por,
             respondido_em: row.respondido_em,

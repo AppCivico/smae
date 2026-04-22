@@ -65,10 +65,9 @@ export class DistribuicaoSolicitacaoAjusteController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroDistribuicaoSolicitacaoAjuste.remover'])
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
+    @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.service.remove(+params.id, user);
-        return '';
     }
 
     @Patch(':id/gestao')

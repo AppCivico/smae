@@ -8627,6 +8627,8 @@ model DemandaEmailParlamentarItem {
     @@map("demanda_email_parlamentar_item")
 }
 
+// Partial unique index managed manually in migration (Prisma doesn't support partial indexes):
+// CREATE UNIQUE INDEX ... ON distribuicao_recurso_solicitacao_ajuste (distribuicao_recurso_id) WHERE status = 'Pendente' AND removido_em IS NULL;
 model DistribuicaoRecursoSolicitacaoAjuste {
     id Int @id @default(autoincrement())
 
