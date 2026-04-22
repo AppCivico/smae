@@ -52,7 +52,7 @@ const props = defineProps({
     required: false,
     default: () => null,
   },
-  quebras: {
+  quebrarAntesDe: {
     type: Array as () => Array<number | string>,
     required: false,
     default: () => [],
@@ -206,12 +206,12 @@ const listaConvertida = computed(() => {
 const gruposDeItens = computed(() => {
   const lista = listaConvertida.value;
 
-  if (!props.quebras.length) {
+  if (!props.quebrarAntesDe.length) {
     return [lista];
   }
 
   const pontosDeQuebra = new Set(
-    props.quebras.map((q) => (typeof q === 'number'
+    props.quebrarAntesDe.map((q) => (typeof q === 'number'
       ? q
       : lista.findIndex((item) => item.chave === q))),
   );
