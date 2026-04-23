@@ -10,6 +10,7 @@ BEGIN
 END
 $$ LANGUAGE 'plpgsql';
 
+DROP TRIGGER IF EXISTS tsvector_demanda_email_parlamentar_update ON demanda_email_parlamentar;
 CREATE TRIGGER tsvector_demanda_email_parlamentar_update
     BEFORE INSERT OR UPDATE ON demanda_email_parlamentar
     FOR EACH ROW

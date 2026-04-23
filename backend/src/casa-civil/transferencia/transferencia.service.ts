@@ -111,14 +111,18 @@ export class TransferenciaService {
                     throw new HttpException('Esfera da transferência e esfera do tipo devem ser iguais', 400);
 
                 // Criando identificador
-                // Identificador segue a seguinte regra: count(1) + 1 de transf / ano
-                // O count é relativo ao ano.
-                const idParaAno: number =
-                    (await prismaTxn.transferencia.count({
-                        where: {
-                            ano: dto.ano,
-                        },
-                    })) + 1;
+                // Identificador segue a seguinte regra: max(identificador_nro) + 1 de transf / ano
+                // Usa max + 1 (e não count + 1) para evitar colisão quando há gaps,
+                // por exemplo quando uma transferência do ano X tem seu ano editado para Y.
+                const maxIdParaAno = await prismaTxn.transferencia.aggregate({
+                    where: {
+                        ano: dto.ano,
+                    },
+                    _max: {
+                        identificador_nro: true,
+                    },
+                });
+                const idParaAno: number = (maxIdParaAno._max.identificador_nro ?? 0) + 1;
 
                 const identificador: string = `${idParaAno}/${dto.ano}`;
 
@@ -433,13 +437,16 @@ export class TransferenciaService {
                             400
                         );
 
-                    // Gerando novo identificador
-                    const idParaAno: number =
-                        (await prismaTxn.transferencia.count({
-                            where: {
-                                ano: dto.ano,
-                            },
-                        })) + 1;
+                    // Gerando novo identificador (max + 1 para evitar colisão com gaps)
+                    const maxIdParaAno = await prismaTxn.transferencia.aggregate({
+                        where: {
+                            ano: dto.ano,
+                        },
+                        _max: {
+                            identificador_nro: true,
+                        },
+                    });
+                    const idParaAno: number = (maxIdParaAno._max.identificador_nro ?? 0) + 1;
 
                     identificador = `${idParaAno}/${dto.ano}`;
 
@@ -798,7 +805,6 @@ export class TransferenciaService {
                         pct_custeio: dto.pct_custeio,
                         investimento: dto.investimento,
                         pct_investimento: dto.pct_investimento,
-                        dotacao: dto.dotacao,
                         ordenador_despesa: dto.ordenador_despesa,
                         gestor_contrato: dto.gestor_contrato,
                         banco_aceite: dto.banco_aceite,
@@ -830,7 +836,10 @@ export class TransferenciaService {
                         pendente_preenchimento_valores: true,
                         empenho: true,
                         objeto: true,
-                        dotacao: true,
+                        dotacoes: {
+                            where: { removido_em: null },
+                            select: { dotacao: true },
+                        },
                         parlamentar: {
                             where: { removido_em: null },
                             select: {
@@ -872,6 +881,9 @@ export class TransferenciaService {
                     },
                 });
 
+                const dotacoesParaDistribuicao =
+                    dto.dotacoes === undefined ? self.dotacoes.map((d) => d.dotacao) : [...new Set(dto.dotacoes)];
+
                 if (!jaTemDistribuicao) {
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
                         where: {
@@ -889,7 +901,7 @@ export class TransferenciaService {
                             // Para preencher o nome, extraimos os 100 primeiros caracteres do objeto.
                             nome: self.objeto.substring(0, 100),
                             transferencia_id: transferencia.id,
-                            dotacao: self.dotacao ? self.dotacao : undefined,
+                            dotacoes: dotacoesParaDistribuicao.length ? dotacoesParaDistribuicao : undefined,
                             valor: self.valor!.toNumber(),
                             valor_contrapartida: self.valor_contrapartida!.toNumber(),
                             valor_total: self.valor_total!.toNumber(),
@@ -903,6 +915,34 @@ export class TransferenciaService {
                         true,
                         prismaTxn
                     );
+                }
+
+                // Atualiza dotacoes da transferência (diff: adiciona novas, remove excluídas)
+                if (dto.dotacoes !== undefined) {
+                    const currDotacoesSet = new Set(self.dotacoes.map((d) => d.dotacao));
+                    const sentDotacoesSet = new Set(dotacoesParaDistribuicao);
+                    const novas = dotacoesParaDistribuicao.filter((d) => !currDotacoesSet.has(d));
+                    const removidas = self.dotacoes.map((d) => d.dotacao).filter((d) => !sentDotacoesSet.has(d));
+                    if (novas.length) {
+                        await prismaTxn.transferenciaDotacao.createMany({
+                            data: novas.map((dotacao) => ({
+                                transferencia_id: id,
+                                dotacao,
+                                criado_em: agora,
+                                criado_por: user.id,
+                            })),
+                        });
+                    }
+                    if (removidas.length) {
+                        await prismaTxn.transferenciaDotacao.updateMany({
+                            where: {
+                                transferencia_id: id,
+                                dotacao: { in: removidas },
+                                removido_em: null,
+                            },
+                            data: { removido_em: agora, removido_por: user.id },
+                        });
+                    }
                 }
 
                 // Tratando controles de limites de valores.
@@ -1165,6 +1205,7 @@ export class TransferenciaService {
             select: {
                 id: true,
                 identificador: true,
+                emenda: true,
                 ano: true,
                 objeto: true,
                 esfera: true,
@@ -1286,6 +1327,7 @@ export class TransferenciaService {
                 id: r.id,
                 ano: r.ano,
                 identificador: r.identificador,
+                emenda: r.emenda,
                 valor: r.valor,
                 partido: r.parlamentar
                     .filter((e) => e.partido)
@@ -1422,7 +1464,10 @@ export class TransferenciaService {
                 investimento: true,
                 pct_investimento: true,
                 emenda: true,
-                dotacao: true,
+                dotacoes: {
+                    where: { removido_em: null },
+                    select: { dotacao: true },
+                },
                 demanda: true,
                 banco_fim: true,
                 conta_fim: true,
@@ -1603,7 +1648,7 @@ export class TransferenciaService {
             investimento: row.investimento,
             pct_investimento: row.pct_investimento,
             emenda: row.emenda,
-            dotacao: row.dotacao,
+            dotacoes: row.dotacoes.map((d) => d.dotacao),
             demanda: row.demanda,
             banco_fim: row.banco_fim,
             conta_fim: row.conta_fim,

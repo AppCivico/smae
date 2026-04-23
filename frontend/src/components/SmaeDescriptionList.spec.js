@@ -759,6 +759,117 @@ describe('SmaeDescriptionList', () => {
     });
   });
 
+  describe('propriedade quebrarAntesDe', () => {
+    it('não quebra quando a prop não é fornecida', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+          { chave: 'c', valor: '3' },
+        ],
+      });
+
+      expect(wrapper.findAll('dl')).toHaveLength(1);
+    });
+
+    it('não quebra quando a prop está vazia', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+        ],
+        quebrarAntesDe: [],
+      });
+
+      expect(wrapper.findAll('dl')).toHaveLength(1);
+    });
+
+    it('quebra pelo nome da chave', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+          { chave: 'c', valor: '3' },
+        ],
+        quebrarAntesDe: ['b'],
+      });
+
+      const grupos = wrapper.findAll('dl');
+      expect(grupos).toHaveLength(2);
+      expect(grupos[0].findAll('.description-list__item')).toHaveLength(1);
+      expect(grupos[1].findAll('.description-list__item')).toHaveLength(2);
+    });
+
+    it('quebra pelo índice numérico', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+          { chave: 'c', valor: '3' },
+        ],
+        quebrarAntesDe: [2],
+      });
+
+      const grupos = wrapper.findAll('dl');
+      expect(grupos).toHaveLength(2);
+      expect(grupos[0].findAll('.description-list__item')).toHaveLength(2);
+      expect(grupos[1].findAll('.description-list__item')).toHaveLength(1);
+    });
+
+    it('cria múltiplos grupos com várias quebras', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+          { chave: 'c', valor: '3' },
+          { chave: 'd', valor: '4' },
+        ],
+        quebrarAntesDe: ['b', 'c'],
+      });
+
+      expect(wrapper.findAll('dl')).toHaveLength(3);
+    });
+
+    it('ignora chave inexistente na lista', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+        ],
+        quebrarAntesDe: ['inexistente'],
+      });
+
+      expect(wrapper.findAll('dl')).toHaveLength(1);
+    });
+
+    it('aceita mistura de chaves e índices', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+          { chave: 'c', valor: '3' },
+        ],
+        quebrarAntesDe: [1, 'c'],
+      });
+
+      expect(wrapper.findAll('dl')).toHaveLength(3);
+    });
+
+    it('quebra no índice 0 não cria grupo vazio', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'a', valor: '1' },
+          { chave: 'b', valor: '2' },
+        ],
+        quebrarAntesDe: [0],
+      });
+
+      const grupos = wrapper.findAll('dl');
+      expect(grupos).toHaveLength(1);
+      expect(grupos[0].findAll('.description-list__item')).toHaveLength(2);
+    });
+  });
+
   describe('propriedade maximoDeColunas', () => {
     it('aplica classe e CSS var quando maximoDeColunas é fornecida no modo grid', () => {
       const wrapper = montarComponente({

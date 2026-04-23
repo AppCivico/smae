@@ -138,6 +138,7 @@ const dadosFinais = computed(() => [
     <SmaeDescriptionList
       :lista="dadosPrincipais"
       :schema="schema"
+      :quebrar-antes-de="['data_assinatura', 'valor']"
     >
       <template #descricao--processos_sei="{ item }">
         <ul v-if="item.metadados?.lista?.length">
