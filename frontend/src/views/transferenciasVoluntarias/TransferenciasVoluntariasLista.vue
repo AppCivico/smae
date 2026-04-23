@@ -194,6 +194,9 @@ watch([
           Identificador
         </th>
         <th>
+          Emenda
+        </th>
+        <th>
           Esfera
         </th>
         <th>
@@ -256,6 +259,9 @@ watch([
           </router-link>
         </th>
         <td>
+          {{ item.emenda ? item.emenda : '-' }}
+        </td>
+        <td>
           {{ item.esfera }}
         </td>
         <td>
@@ -276,15 +282,20 @@ watch([
         <td>
           {{ item.andamento_etapa? item.andamento_etapa : '-' }}
         </td>
-        <td>
-          {{ item.andamento_fase? item.andamento_fase : '-' }}
+        <td
+          :title="item.fase?.length > 35
+            ? item.fase
+            : undefined
+          "
+        >
+          {{ truncate(item.andamento_fase, 35) }}
         </td>
         <td>
           {{ item.fase_status? item.fase_status : '-' }}
         </td>
         <td
           :title="
-            item.objeto.length > 35 ?
+            item.objeto?.length > 35 ?
               item.objeto : undefined
           "
         >
@@ -331,17 +342,17 @@ watch([
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="12">
+        <td colspan="13">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="12">
+        <td colspan="13">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="12">
+        <td colspan="13">
           Nenhum resultado encontrado.
         </td>
       </tr>

@@ -357,6 +357,7 @@ onUnmounted(() => {
           <thead>
             <tr>
               <th>Identificador</th>
+              <th>Emenda</th>
               <th>Transferência</th>
               <th>Atividade</th>
               <th>Responsável</th>
@@ -381,6 +382,9 @@ onUnmounted(() => {
                 </router-link>
               </th>
               <td>
+                {{ item.emenda ? item.emenda : " - " }}
+              </td>
+              <td>
                 {{ item.objeto ? item.objeto : " - " }}
               </td>
               <td>
@@ -394,17 +398,17 @@ onUnmounted(() => {
               </td>
             </tr>
             <tr v-if="chamadasPendentes.lista">
-              <td colspan="4">
+              <td colspan="6">
                 Carregando
               </td>
             </tr>
             <tr v-else-if="erro">
-              <td colspan="5">
+              <td colspan="6">
                 Erro: {{ erro }}
               </td>
             </tr>
             <tr v-else-if="!lista.length">
-              <td colspan="5">
+              <td colspan="6">
                 Nenhum resultado encontrado.
               </td>
             </tr>
