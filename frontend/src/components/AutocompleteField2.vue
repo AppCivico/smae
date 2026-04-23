@@ -189,6 +189,7 @@ function desistir(e) {
   <template v-if="grupo?.length">
     <div class="suggestion search">
       <input
+        :id="name || undefined"
         ref="inputRef"
         v-bind="$attrs"
         v-model="control.busca"
@@ -260,6 +261,7 @@ function desistir(e) {
   <template v-else>
     <div class="search">
       <input
+        :id="name || undefined"
         v-bind="$attrs"
         type="text"
         aria-disabled="true"

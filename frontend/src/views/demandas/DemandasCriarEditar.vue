@@ -12,7 +12,7 @@ import {
 import { useRouter } from 'vue-router';
 
 import ModalDeDocumentos from '@/components/arquivos/ModalDeDocumentos/ModalDeDocumentos.vue';
-import AutocompleteField2 from '@/components/AutocompleteField2.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
@@ -404,26 +404,19 @@ watch(itemParaEdicao, (novosValores) => {
             :schema="schema"
           />
 
-          <Field
-            v-slot="{ handleChange, value }"
+          <AutocompleteField
+            unique
             name="orgao_id"
-            :class="{ error: errors.orgao_id }"
-          >
-            <AutocompleteField2
-              unique
-              :model-value="value"
-              :controlador="{
-                busca: '',
-                participantes: value ? [value] : []
-              }"
-              label="nome_completo"
-              :grupo="listaOrgaos || []"
-              :numero-maximo-de-participantes="1"
-              :readonly="bloquearCampos"
-              :aria-disabled="bloquearCampos"
-              @change="handleChange"
-            />
-          </Field>
+            :controlador="{
+              busca: '',
+              participantes: values.orgao_id ? [values.orgao_id] : []
+            }"
+            label="nome_completo"
+            :grupo="listaOrgaos || []"
+            :numero-maximo-de-participantes="1"
+            :readonly="bloquearCampos"
+            :aria-disabled="bloquearCampos"
+          />
 
           <ErrorMessage
             name="orgao_id"
@@ -734,24 +727,17 @@ watch(itemParaEdicao, (novosValores) => {
           :schema="schema"
         />
 
-        <Field
-          v-slot="{ handleChange, value }"
+        <AutocompleteField
           name="acao_ids"
-          :class="{ error: errors.acao_ids }"
-        >
-          <AutocompleteField2
-            :model-value="value"
-            :controlador="{
-              busca: '',
-              participantes: value || []
-            }"
-            label="nome"
-            :grupo="acoesDaAreaTematica"
-            :readonly="bloquearCampos"
-            :aria-disabled="bloquearCampos"
-            @change="handleChange"
-          />
-        </Field>
+          :controlador="{
+            busca: '',
+            participantes: values.acao_ids || []
+          }"
+          label="nome"
+          :grupo="acoesDaAreaTematica"
+          :readonly="bloquearCampos"
+          :aria-disabled="bloquearCampos"
+        />
 
         <ErrorMessage
           name="acao_ids"

@@ -52,6 +52,11 @@ const props = defineProps({
     required: false,
     default: () => null,
   },
+  quebrarAntesDe: {
+    type: Array as () => Array<number | string>,
+    required: false,
+    default: () => [],
+  },
   larguraMinima: {
     type: String,
     required: false,
@@ -198,6 +203,29 @@ const listaConvertida = computed(() => {
   }));
 });
 
+const gruposDeItens = computed(() => {
+  const lista = listaConvertida.value;
+
+  if (!props.quebrarAntesDe.length) {
+    return [lista];
+  }
+
+  const pontosDeQuebra = new Set(
+    props.quebrarAntesDe.map((q) => (typeof q === 'number'
+      ? q
+      : lista.findIndex((item) => item.chave === q))),
+  );
+
+  return lista.reduce<ItemDeLista[][]>((grupos, item, i) => {
+    if (pontosDeQuebra.has(i)) {
+      grupos.push([]);
+    }
+    grupos.at(-1)?.push(item);
+    return grupos;
+  }, [[]])
+    .filter((g) => g.length);
+});
+
 const estiloContainer = computed(() => {
   if (!isGrid.value) return undefined;
 
@@ -222,50 +250,53 @@ const classeContainer = computed(() => [
 </script>
 
 <template>
-  <dl
-    v-if="listaConvertida.length"
-    :class="classeContainer"
-    :style="estiloContainer"
-  >
-    <div
-      v-for="(item, index) in listaConvertida"
-      :key="index"
-      class="description-list__item"
-      v-bind="item.atributosDoItem"
-      :aria-field="item.chave"
+  <template v-if="listaConvertida.length">
+    <dl
+      v-for="(grupo, grupoIndex) in gruposDeItens"
+      :key="grupoIndex"
+      :class="classeContainer"
+      :style="estiloContainer"
     >
-      <dt
-        class="description-list__term t12 uc w700 mb05 tamarelo"
+      <div
+        v-for="(item, index) in grupo"
+        :key="index"
+        class="description-list__item"
+        v-bind="item.atributosDoItem"
+        :aria-field="item.chave"
       >
-        <slot
-          :name="`termo--${item.chave}`"
-          :item="item"
+        <dt
+          class="description-list__term t12 uc w700 mb05 tamarelo"
         >
           <slot
-            name="termo"
+            :name="`termo--${item.chave}`"
             :item="item"
           >
-            {{ item.titulo || item.chave }}
+            <slot
+              name="termo"
+              :item="item"
+            >
+              {{ item.titulo || item.chave }}
+            </slot>
           </slot>
-        </slot>
-      </dt>
-      <dd
-        class="description-list__description t13"
-      >
-        <slot
-          :name="`descricao--${item.chave}`"
-          :item="item"
+        </dt>
+        <dd
+          class="description-list__description t13"
         >
           <slot
-            name="descricao"
+            :name="`descricao--${item.chave}`"
             :item="item"
           >
-            {{ item.valor === 0 ? 0 : item.valor || '—' }}
+            <slot
+              name="descricao"
+              :item="item"
+            >
+              {{ item.valor === 0 ? 0 : item.valor || '—' }}
+            </slot>
           </slot>
-        </slot>
-      </dd>
-    </div>
-  </dl>
+        </dd>
+      </div>
+    </dl>
+  </template>
 </template>
 
 <style>

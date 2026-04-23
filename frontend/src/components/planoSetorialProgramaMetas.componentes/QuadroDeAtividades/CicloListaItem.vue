@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
+import type { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
 

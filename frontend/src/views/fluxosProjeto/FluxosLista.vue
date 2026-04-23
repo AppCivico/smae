@@ -1,9 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { filtroWorkflow } from '@/consts/formSchemas';
@@ -16,19 +17,18 @@ const route = useRoute();
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(fluxosProjetoStore);
-const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
+const {
+  lista, chamadasPendentes, erro, paginacao,
+} = storeToRefs(fluxosProjetoStore);
+const {
+  lista: tipoTransferenciaComoLista,
+  tiposDeTransferenciaPorId,
+  tiposDeTransferenciaPorEsfera,
+} = storeToRefs(tipoDeTransferenciaStore);
 
 const alertStore = useAlertStore();
 
-const getTipoTransferencia = (tipoTransferenciaId) => (
-  tipoTransferenciaComoLista.value.find((t) => t.id === tipoTransferenciaId)
-);
-
-const getEsfera = (tipoTransferenciaId) => {
-  const tipoTransferencia = getTipoTransferencia(tipoTransferenciaId);
-  return tipoTransferencia ? tipoTransferencia.esfera : '-';
-};
+const parametrosTemporariosDeBusca = ref({});
 
 const camposDeFiltro = computed(() => [
   {
@@ -39,7 +39,13 @@ const camposDeFiltro = computed(() => [
       },
       transferencia_tipo_id: {
         tipo: 'select',
-        opcoes: tipoTransferenciaComoLista.value.map((t) => ({ id: t.id, label: t.nome })),
+        opcoes: (parametrosTemporariosDeBusca.value.esfera
+          ? tiposDeTransferenciaPorEsfera
+            .value[
+              parametrosTemporariosDeBusca.value.esfera
+            ]?.map((t) => ({ id: t.id, label: t.nome }))
+          : tipoTransferenciaComoLista.value.map((t) => ({ id: t.id, label: t.nome }))) || []
+        ,
       },
       ativo: {
         tipo: 'select',
@@ -58,21 +64,20 @@ async function excluirFluxo(id) {
   }, 'Remover');
 }
 
-watch(
-  () => [
-    route.query.esfera,
-    route.query.transferencia_tipo_id,
-    route.query.ativo,
-  ],
-  () => {
-    fluxosProjetoStore.buscarTudo({
-      esfera: route.query?.esfera,
-      transferencia_tipo_id: route.query?.transferencia_tipo_id,
-      ativo: route.query?.ativo,
-    });
-  },
-  { immediate: true },
-);
+const parametrosDeBusca = computed(() => ({
+  esfera: route.query.esfera || undefined,
+  transferencia_tipo_id: route.query.transferencia_tipo_id || undefined,
+  ativo: route.query.ativo || undefined,
+  pagina: route.query.pagina || undefined,
+  ipp: route.query.ipp || 15,
+  token_paginacao: route.query.token_paginacao || undefined,
+}));
+
+const parametrosSerializados = computed(() => JSON.stringify(parametrosDeBusca.value));
+
+watch(parametrosSerializados, () => {
+  fluxosProjetoStore.buscarTudo(parametrosDeBusca.value);
+}, { immediate: true });
 
 tipoDeTransferenciaStore.buscarTudo();
 </script>
@@ -90,11 +95,16 @@ tipoDeTransferenciaStore.buscarTudo();
   </CabecalhoDePagina>
 
   <FiltroParaPagina
+    v-model="parametrosTemporariosDeBusca"
     class="mb2"
     :formulario="camposDeFiltro"
     :schema="filtroWorkflow"
     :carregando="chamadasPendentes.lista"
   />
+
+  <p v-if="!chamadasPendentes.lista">
+    Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
+  </p>
 
   <SmaeTable
     :dados="lista || []"
@@ -116,7 +126,7 @@ tipoDeTransferenciaStore.buscarTudo();
     @deletar="({ id }) => excluirFluxo(id)"
   >
     <template #celula:esfera="{ linha }">
-      {{ getEsfera(linha.transferencia_tipo.id) }}
+      {{ tiposDeTransferenciaPorId[linha.transferencia_tipo.id]?.esfera || '-' }}
     </template>
 
     <template #celula:termino="{ linha }">
@@ -131,6 +141,11 @@ tipoDeTransferenciaStore.buscarTudo();
       {{ linha.inicio ? dateToField(linha.inicio) : '-' }}
     </template>
   </SmaeTable>
+
+  <MenuPaginacao
+    class="mt2"
+    v-bind="paginacao"
+  />
 
   <div
     v-if="erro"

@@ -82,6 +82,7 @@ A ordem de prioridade para resolução de títulos é:
 | `itensSelecionados` | `Array<string \| ConfigDeItem>` | Não | Define quais campos exibir, sua ordem, títulos e configurações |
 | `schema` | `AnyObjectSchema` (Yup) | Não | Schema Yup de onde os títulos (`label`) podem ser obtidos automaticamente |
 | `layout` | `'flex' \| 'grid'` | Não | Layout do container. Padrão: `'flex'` |
+| `quebrarAntesDe` | `Array<string \| number>` | Não | Define pontos de quebra na lista: cada valor é uma chave (string) ou índice (number) antes do qual se inicia um novo grupo |
 | `larguraMinima` | `string` | Não | Largura mínima dos itens no modo grid (ex: `'15rem'`). Padrão: `''` (o CSS define `13rem` como fallback) |
 | `maximoDeColunas` | `number \| string` | Não | Número máximo de colunas no modo grid. Limita o grid mantendo o comportamento responsivo. |
 

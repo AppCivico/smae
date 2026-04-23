@@ -107,11 +107,19 @@ function formatarTexto(texto) {
     <TextoComBotao>
       <template #texto>
         <p class="t20 mb0">
-          Estas são as <strong>etapas</strong>, você pode navegar entre elas.
+          Estas são as <strong>etapas</strong>. Você pode navegar entre elas.
         </p>
-        <p class="t20 mb0">
+        <p
+          v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])"
+          class="t20 mb0"
+        >
           Se for necessário <strong>reabrir a fase anterior</strong> ou
-          <strong>excluir o workflow</strong>, clique em <strong>"Configurar Workflow"</strong>
+          <strong>excluir o workflow</strong>, clique em <button
+            class="w900 like-a__text"
+            @click="abrirConfigurarWorkflow"
+          >
+            "Configurar Workflow"
+          </button>.
         </p>
       </template>
       <template #botao>

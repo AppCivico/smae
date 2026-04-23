@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { PSMFSituacaoVariavelDto } from '@back/mf/ps-dash/dto/ps.dto';
+import type { PSMFSituacaoVariavelDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { ListaVariaveis } from '@/components/graficos/GraficoBarraEmLinha.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 

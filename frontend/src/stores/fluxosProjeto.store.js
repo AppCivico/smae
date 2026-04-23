@@ -13,6 +13,13 @@ export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
       emFoco: false,
     },
     erro: null,
+    paginacao: {
+      tokenPaginacao: '',
+      paginas: 0,
+      paginaCorrente: 0,
+      temMais: true,
+      totalRegistros: 0,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
@@ -35,8 +42,22 @@ export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/workflow`, params);
+        const {
+          linhas,
+          token_paginacao: tokenPaginacao,
+          paginas,
+          pagina_corrente: paginaCorrente,
+          tem_mais: temMais,
+          total_registros: totalRegistros,
+        } = await this.requestS.get(`${baseUrl}/workflow`, params);
+
         this.lista = linhas;
+
+        this.paginacao.tokenPaginacao = tokenPaginacao;
+        this.paginacao.paginas = paginas;
+        this.paginacao.paginaCorrente = paginaCorrente;
+        this.paginacao.temMais = temMais;
+        this.paginacao.totalRegistros = totalRegistros;
       } catch (erro) {
         this.erro = erro;
       }

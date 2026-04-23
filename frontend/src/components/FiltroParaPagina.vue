@@ -150,6 +150,12 @@ watch(() => props.modelValue, async (val) => {
 
   const valoresLocais = structuredClone(toRaw(val)) as LocationQuery;
 
+  // Evita loop infinito: quando o componente emite update:modelValue com os valores
+  // atuais e o pai re-atribui a mesma prop (nova referência, mesmo conteúdo),
+  // o watcher seria disparado novamente e chamaria setValues, que alteraria values,
+  // que emitiria update:modelValue, criando um ciclo infinito.
+  if (JSON.stringify(valoresLocais) === JSON.stringify(toRaw(values))) return;
+
   setValues(valoresLocais);
   await nextTick();
 

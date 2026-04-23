@@ -605,7 +605,7 @@ export class SeiIntegracaoService {
                 },
                 select: {
                     transferencia: {
-                        select: { id: true },
+                        select: { id: true, identificador: true },
                     },
                 },
             });
@@ -649,14 +649,15 @@ export class SeiIntegracaoService {
                         to: gestor.email,
                         variables: {
                             numero_processo: processo,
+                            transferencia_identificador: distribuicaoRecurso.transferencia.identificador,
                             link: new URL(
                                 [
                                     baseUrl,
                                     'transferencias-voluntarias',
                                     distribuicaoRecurso.transferencia.id,
-                                    'detalhes',
+                                    'resumo',
                                 ].join('/')
-                            ),
+                            ).toString(),
                         },
                     },
                 });

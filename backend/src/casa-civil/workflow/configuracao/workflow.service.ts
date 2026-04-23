@@ -267,7 +267,7 @@ export class WorkflowService {
             filterToken ? this.prisma.workflow.count({ where: { id: -1 } }) : this.prisma.workflow.count({ where }),
             this.prisma.workflow.findMany({
                 where,
-                orderBy: { id: 'desc' },
+                orderBy: [{ ativo: 'desc' }, { id: 'desc' }],
                 skip: offset,
                 take: ipp,
                 select: {

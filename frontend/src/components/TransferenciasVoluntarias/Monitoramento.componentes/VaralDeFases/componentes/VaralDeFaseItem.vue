@@ -210,6 +210,8 @@ function handleEditar() {
 
 .varal-de-fase-item {
   width: 100%;
+  hyphens: auto;
+  word-break: break-word;
 }
 
 .varal-de-fase-item--secundario {

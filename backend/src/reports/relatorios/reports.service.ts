@@ -186,6 +186,33 @@ export class ReportsService {
         return sistema;
     }
 
+    /**
+     * Detecta se um Buffer contém um arquivo XLSX (assinatura ZIP: PK\x03\x04).
+     * Usado em zipFiles para identificar arquivos já gerados como XLSX nativamente.
+     */
+    private isXlsxBuffer(buf: Buffer): boolean {
+        return buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04;
+    }
+
+    /**
+     * Lê os primeiros 4 bytes de um arquivo em disco para detectar assinatura XLSX.
+     */
+    private isXlsxLocalFile(filePath: string): boolean {
+        try {
+            const fd = fs.openSync(filePath, 'r');
+            const header = Buffer.alloc(4);
+            fs.readSync(fd, header, 0, 4, 0);
+            fs.closeSync(fd);
+            return this.isXlsxBuffer(header);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Converte CSV para XLSX. Usado apenas para arquivos CSV legados (ex: CsvFileHandler).
+     * Corrige o padrão ="valor" convertendo-o em células de texto puro.
+     */
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
         const useDuckDb = await this.smaeConfigService.getConfig('DUCKDB_XLSX');
 
@@ -194,12 +221,7 @@ export class ReportsService {
             const csvFile = GetTempFileName('csv-file', '.csv');
             const xlsxFile = GetTempFileName('xlsx-file', '.xlsx');
 
-            // Write CSV content to temporary file
-            if (typeof csvContent === 'string') {
-                fs.writeFileSync(csvFile, csvContent);
-            } else {
-                fs.writeFileSync(csvFile, csvContent);
-            }
+            fs.writeFileSync(csvFile, csvContent);
 
             let success: boolean = false;
             let error: any | undefined = undefined;
@@ -233,10 +255,8 @@ export class ReportsService {
 
             if (!success) throw new InternalServerErrorException(`process did not finished successfully, check logs`);
 
-            // Read the XLSX file to buffer
             const xlsxBuffer = fs.readFileSync(xlsxFile);
 
-            // Clean up temporary files
             try {
                 fs.unlinkSync(csvFile);
                 fs.unlinkSync(xlsxFile);
@@ -244,23 +264,70 @@ export class ReportsService {
                 this.logger.warn(`Failed to clean up temporary files: ${err}`);
             }
 
-            return xlsxBuffer;
+            // Post-processa o XLSX gerado pelo DuckDB para corrigir células ="valor"
+            return this.fixFormulaStringsInXlsx(xlsxBuffer);
         } else {
-            // Use XLSX library approach (current new code)
-            // Parse CSV content
+            // Analisa o CSV sem interpretar fórmulas para controle explícito dos tipos
             const workbook = XLSX.read(csvContent, {
                 type: 'string',
+                cellFormula: false,
                 cellDates: true,
                 dateNF: 'yyyy-mm-dd',
             });
 
-            // Write to buffer with proper options
+            this.fixFormulaStringsInWorkbook(workbook);
+
             return XLSX.write(workbook, {
                 type: 'buffer',
                 bookType: 'xlsx',
                 bookSST: false,
                 compression: true,
             });
+        }
+    }
+
+    /**
+     * Lê um buffer XLSX, corrige células ="valor" e retorna o buffer corrigido.
+     */
+    private fixFormulaStringsInXlsx(xlsxBuffer: Buffer): Buffer {
+        const workbook = XLSX.read(xlsxBuffer, { type: 'buffer', cellFormula: false });
+        this.fixFormulaStringsInWorkbook(workbook);
+        return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx', bookSST: false, compression: true });
+    }
+
+    /**
+     * Percorre todas as células do workbook e converte o padrão ="valor" em
+     * células de texto puro, eliminando exibição de fórmula no Excel.
+     */
+    private fixFormulaStringsInWorkbook(workbook: XLSX.WorkBook): void {
+        for (const sheetName of workbook.SheetNames) {
+            const sheet = workbook.Sheets[sheetName];
+            for (const addr of Object.keys(sheet)) {
+                if (addr[0] === '!') continue;
+                const cell: XLSX.CellObject = sheet[addr];
+                if (!cell) continue;
+
+                // Célula com fórmula ="string" (SheetJS armazena a fórmula em .f sem o "=")
+                // Ex: ="1234" → cell.f = '"1234"'
+                if (typeof cell.f === 'string') {
+                    const m = cell.f.match(/^"([\s\S]*)"$/);
+                    if (m) {
+                        cell.v = m[1].replace(/""/g, '"');
+                        cell.t = 's';
+                        delete (cell as any).f;
+                        delete (cell as any).w;
+                    }
+                }
+
+                // Célula de texto com valor ="string" → extrai o conteúdo interno
+                if (cell.t === 's' && typeof cell.v === 'string') {
+                    const m = (cell.v as string).match(/^="([\s\S]*)"$/);
+                    if (m) {
+                        cell.v = m[1].replace(/""/g, '"');
+                        delete cell.w;
+                    }
+                }
+            }
         }
     }
 
