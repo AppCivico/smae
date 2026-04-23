@@ -2276,9 +2276,14 @@ export const transferenciaDistribuicaoDeRecursos = object({
   distribuicao_conta: string()
     .label('Conta Corrente')
     .nullable(),
-  dotacao: string()
-    .label('Dotacao')
-    .nullable()
+  dotacoes: array()
+    .label('Dotações')
+    .of(string()
+      .label('Dotação')
+      .trim()
+      .max(255)
+      .min(1))
+    .semDuplicatas('Dotações não podem ter valores repetidos')
     .meta({
       balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
     }),
@@ -2444,9 +2449,14 @@ export const registroDeTransferencia = object({
     .required(),
   percentagem_custeio: number()
     .min(0),
-  dotacao: string()
-    .label('Dotação')
-    .nullable()
+  dotacoes: array()
+    .label('Dotações')
+    .of(string()
+      .label('Dotação')
+      .trim()
+      .max(255)
+      .min(1))
+    .semDuplicatas('Dotações não podem ter valores repetidos')
     .meta({
       balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
     }),

@@ -508,11 +508,19 @@ nextTick(() => {
       <div class="flex column g4 p1 f1">
         <div>
           <div class="t16 w700 mb05 tamarelo">
-            Dotação
+            Dotações
           </div>
 
-          <div>
-            {{ transferenciaEmFoco?.dotacao ?? '-' }}
+          <template v-if="transferenciaEmFoco?.dotacoes?.length">
+            <div
+              v-for="(dotacao, index) in transferenciaEmFoco.dotacoes"
+              :key="`${index}-${dotacao}`"
+            >
+              {{ dotacao }}
+            </div>
+          </template>
+          <div v-else>
+            -
           </div>
         </div>
 

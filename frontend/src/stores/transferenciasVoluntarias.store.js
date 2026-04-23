@@ -214,6 +214,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
       itemParaEdicao: ({ emFoco }) => ({
         ...emFoco,
         clausula_suspensiva_vencimento: dateTimeToDate(emFoco?.clausula_suspensiva_vencimento),
+        dotacoes: emFoco?.dotacoes || [],
         orgao_concedente_id: emFoco?.orgao_concedente?.id || null,
         parlamentar_id: emFoco?.parlamentar?.id || null,
         partido_id: emFoco?.partido?.id || null,
