@@ -8,6 +8,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { Dashboard } from '@/components';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -340,89 +341,64 @@ onUnmounted(() => {
     </form>
 
     <div class="flex flexwrap g2 start">
-      <div
-        role="region"
-        aria-label="Panorama de transferências"
-        tabindex="0"
+      <SmaeTable
+        titulo-para-rolagem-horizontal="Panorama de transferências"
+        rolagem-horizontal
         class="mb1 f1 fb25em"
+        :dados="listaComOrgaos"
+        :colunas="[
+          {
+            chave: 'emenda',
+            label: 'Emenda',
+          },
+          {
+            chave: 'identificador',
+            label: 'Identificador',
+            ehCabecalho: true, atributosDaColuna: { class: 'col--minimum' }
+          },
+          { chave: 'objeto', label: 'Transferência' },
+          { chave: 'atividade', label: 'Atividade' },
+          { chave: 'orgaos', label: 'Responsável' },
+          { chave: 'data', label: 'Prazo', atributosDaColuna: { class: 'col--data' } },
+        ]"
       >
-        <table class="tablemain">
-          <colgroup>
-            <col class="col--minimum">
-            <col>
-            <col>
-            <col>
-            <col class="col--data">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Identificador</th>
-              <th>Emenda</th>
-              <th>Transferência</th>
-              <th>Atividade</th>
-              <th>Responsável</th>
-              <th>Prazo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="item in listaComOrgaos"
-              :key="item.transferencia_id"
-            >
-              <th>
-                <router-link
-                  v-if="item?.transferencia_id"
-                  :to="{
-                    name: 'TransferenciasVoluntariasDetalhes',
-                    params: { transferenciaId: item.transferencia_id },
-                  }"
-                  class="tprimary"
-                >
-                  {{ item.identificador }}
-                </router-link>
-              </th>
-              <td>
-                {{ item.emenda ? item.emenda : " - " }}
-              </td>
-              <td>
-                {{ item.objeto ? item.objeto : " - " }}
-              </td>
-              <td>
-                {{ item.atividade }}
-              </td>
-              <td>
-                {{ item.orgaos }}
-              </td>
-              <td :style="{ color: dataColor(item.data) }">
-                {{ item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "" }}
-              </td>
-            </tr>
-            <tr v-if="chamadasPendentes.lista">
-              <td colspan="6">
-                Carregando
-              </td>
-            </tr>
-            <tr v-else-if="erro">
-              <td colspan="6">
-                Erro: {{ erro }}
-              </td>
-            </tr>
-            <tr v-else-if="!lista.length">
-              <td colspan="6">
-                Nenhum resultado encontrado.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <template #celula:identificador="{ linha }">
+          <SmaeLink
+            :to="{
+              name: 'TransferenciasVoluntariasDetalhes',
+              params: { transferenciaId: linha.transferencia_id },
+            }"
+            :desabilitar="!linha.transferencia_id"
+            class="tprimary"
+          >
+            {{ linha.identificador }}
+          </SmaeLink>
+        </template>
+
+        <template #celula:emenda="{ linha }">
+          {{ linha.emenda ? linha.emenda : ' - ' }}
+        </template>
+
+        <template #celula:data="{ linha }">
+          <span :style="{ color: dataColor(linha.data) }">
+            {{ linha.data ? new Date(linha.data).toLocaleDateString('pt-BR') : '' }}
+          </span>
+        </template>
+      </SmaeTable>
+
+      <p v-if="chamadasPendentes.lista">
+        Carregando
+      </p>
+      <p v-else-if="erro">
+        Erro: {{ erro }}
+      </p>
       <QuadroNotas />
     </div>
   </Dashboard>
 </template>
-
 <style scoped>
-.tablemain tbody td:nth-child(2) {
-  max-width: 200px;
+:deep(.table-cell--objeto) {
+  max-width: 14em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
