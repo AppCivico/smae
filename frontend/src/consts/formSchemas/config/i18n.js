@@ -3,11 +3,11 @@ export default {
   array: {
     min: ({ label, min }) => (label
       ? `${label}: escolha ao menos ${min}`
-      : 'Escolha ao menos ${min}'
+      : `Escolha ao menos ${min}`
     ),
     max: ({ label, max }) => (label
       ? `${label}: escolha no máximo ${max}`
-      : 'Escolha no máximo ${max}'
+      : `Escolha no máximo ${max}`
     ),
   },
   date: {
@@ -16,8 +16,8 @@ export default {
     required: ({ label }) => (label ? `${label} não é opcional` : 'Data obrigatória'),
   },
   mixed: {
-    default: 'Valor de ${label} não é válido',
-    oneOf: 'Opção inválida para ${label}',
+    default: ({ label }) => (label ? `Valor de ${label} não é válido` : 'Valor não é válido'),
+    oneOf: ({ label }) => (label ? `Opção inválida para ${label}` : 'Opção inválida'),
     notType: ({ label }) => (label ? `Valor de ${label} inválido` : 'Valor inválido'),
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
@@ -31,11 +31,11 @@ export default {
     email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
     min: ({ label, min }) => (label
       ? `${label} está menor que ${min} caracteres`
-      : 'Esse texto é menor que ${min} caracteres'),
+      : `Esse texto é menor que ${min} caracteres`),
     matches: ({ label }) => (label ? `${label} está fora do formato` : 'Formato inválido'),
     max: ({ label, max }) => (label
       ? `${label} está maior que ${max} caracteres`
-      : 'Esse texto é maior que ${max} caracteres'),
+      : `Esse texto é maior que ${max} caracteres`),
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
 };
