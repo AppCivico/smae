@@ -31,11 +31,11 @@ export default {
     email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
     min: ({ label, min }) => (label
       ? `${label} está menor que ${min} caracteres`
-      : `Esse texto é menor que ${min} caracteres`),
+      : `Esse texto está menor que ${min} caracteres`),
     matches: ({ label }) => (label ? `${label} está fora do formato` : 'Formato inválido'),
     max: ({ label, max }) => (label
       ? `${label} está maior que ${max} caracteres`
-      : `Esse texto é maior que ${max} caracteres`),
+      : `Esse texto está maior que ${max} caracteres`),
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
 };
