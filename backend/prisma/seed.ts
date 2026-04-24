@@ -1633,7 +1633,7 @@ async function criar_texto_config() {
 async function remover_feature_flags_obsoletas() {
     await prisma.smaeConfig.deleteMany({
         where: {
-            chave: { in: ['LIBERA_SPRINT_30', 'LIBERA_SPRINT_31'] },
+            key: { in: ['LIBERA_SPRINT_30', 'LIBERA_SPRINT_31'] },
         },
     });
 }
