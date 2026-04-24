@@ -375,23 +375,20 @@ onUnmounted(() => {
           </SmaeLink>
         </template>
 
-        <template #celula:emenda="{ linha }">
-          {{ linha.emenda ? linha.emenda : ' - ' }}
-        </template>
-
         <template #celula:data="{ linha }">
-          <span :style="{ color: dataColor(linha.data) }">
-            {{ linha.data ? new Date(linha.data).toLocaleDateString('pt-BR') : '' }}
-          </span>
+          <span
+            v-if="linha.data"
+            :style="{ color: dataColor(linha.data) }"
+          >{{ new Date(linha.data).toLocaleDateString('pt-BR') }}</span>
+          <template v-else>-</template>
         </template>
       </SmaeTable>
 
-      <p v-if="chamadasPendentes.lista">
-        Carregando
-      </p>
-      <p v-else-if="erro">
-        Erro: {{ erro }}
-      </p>
+      <LoadingComponent v-if="chamadasPendentes.lista" />
+      <ErrorComponent
+        v-else-if="erro"
+        :erro="erro"
+      />
       <QuadroNotas />
     </div>
   </Dashboard>

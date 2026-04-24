@@ -290,12 +290,11 @@ watch([
     </template>
   </SmaeTable>
 
-  <p v-if="chamadasPendentes.lista">
-    Carregando
-  </p>
-  <p v-else-if="erro">
-    Erro: {{ erro }}
-  </p>
+  <LoadingComponent v-if="chamadasPendentes.lista" />
+  <ErrorComponent
+    v-else-if="erro"
+    :erro="erro"
+  />
 
   <button
     v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
