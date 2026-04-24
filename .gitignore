@@ -4,6 +4,7 @@
 .~lock*
 !.env.example
 utils/sync-proxy.sh
+utils/sync-fgv-gh.sh
 *.env
 openapitools.json
 .DS_Store
