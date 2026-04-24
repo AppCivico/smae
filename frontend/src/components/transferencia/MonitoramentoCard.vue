@@ -132,6 +132,8 @@ const classeDoStatus = computed(() => {
   background-color: #fafafa;
   border: 1px solid #ddd;
   box-shadow: 2px 3px 10px 0 rgba(0,0,0,0.2);
+  hyphens: auto;
+  word-break: break-word;
 
   &::before,
   &::after {

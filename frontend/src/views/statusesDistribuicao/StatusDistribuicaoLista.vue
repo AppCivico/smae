@@ -3,6 +3,8 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 
@@ -43,76 +45,47 @@ statusDistribuicaoWorflowStore.buscarTudo({});
       Novo {{ titulo }}
     </router-link>
   </div>
-  <table class="tablemain">
-    <colgroup>
-      <col>
-      <col>
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-    </colgroup>
-    <thead>
-      <tr>
-        <th>
-          Nome
-        </th>
-        <th>
-          Tipo
-        </th>
-        <th />
-        <th />
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="item in lista"
-        :key="item.id"
+  <SmaeTable
+    :dados="lista"
+    :colunas="[
+      { chave: 'nome', label: 'Nome' },
+      {
+        chave: 'tipo',
+        label: 'Tipo',
+        formatador: (valor) => tiposStatusDistribuicao[valor]?.nome ?? valor ?? '-',
+      },
+    ]"
+  >
+    <template #acoes="{ linha }">
+      <router-link
+        v-if="linha.pode_editar"
+        :to="{ name: 'statusDistribuicaoEditar', params: { statusDistribuicaoId: linha.id } }"
+        class="tprimary"
       >
-        <td>{{ item.nome }}</td>
-        <td>{{ item.tipo }}</td>
-        <td>
-          <router-link
-            v-if="item.pode_editar"
-            :to="{ name: 'statusDistribuicaoEditar', params: { statusDistribuicaoId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
-        <td>
-          <button
-            v-if="item.pode_editar"
-            class="like-a__text"
-            aria-label="excluir"
-            title="excluir"
-            @click="excluirStatusDistribuicao(item.id, item.nome)"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg>
-          </button>
-        </td>
-      </tr>
-      <tr v-if="chamadasPendentes.lista">
-        <td colspan="4">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td colspan="4">
-          Erro: {{ erro }}
-        </td>
-      </tr>
-      <tr v-else-if="!lista.length">
-        <td colspan="4">
-          Nenhum resultado encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</template>
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_edit" /></svg>
+      </router-link>
+      <button
+        v-if="linha.pode_editar"
+        class="like-a__text"
+        aria-label="excluir"
+        title="excluir"
+        @click="excluirStatusDistribuicao(linha.id, linha.nome)"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
+    </template>
+  </SmaeTable>
 
-  <style></style>
+  <p v-if="chamadasPendentes.lista">
+    Carregando
+  </p>
+  <p v-else-if="erro">
+    Erro: {{ erro }}
+  </p>
+</template>
