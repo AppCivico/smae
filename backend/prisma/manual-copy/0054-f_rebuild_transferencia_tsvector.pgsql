@@ -24,7 +24,7 @@ BEGIN
             COALESCE(o2.sigla, ' ') || ' ' ||
             COALESCE(o2.descricao, ' ') || ' ' ||
             COALESCE(
-                ( SELECT string_agg(CAST(p.nome_popular AS TEXT), ' ')
+                ( SELECT string_agg(CAST(p.nome_popular AS TEXT) || ' ' || CAST(p.nome AS TEXT), ' ')
                     FROM transferencia_parlamentar tp
                     JOIN parlamentar p ON p.id = tp.parlamentar_id
                     WHERE tp.transferencia_id = t_main.id AND tp.removido_em IS NULL
@@ -54,7 +54,8 @@ BEGIN
                     WHERE dr.transferencia_id = t_main.id AND dr.removido_em IS NULL
                 ),
                 ' '
-            )
+            ) || ' ' ||
+            COALESCE(t_main.programa, ' ')
         )
     INTO v_tsvector_payload
     FROM transferencia t_main

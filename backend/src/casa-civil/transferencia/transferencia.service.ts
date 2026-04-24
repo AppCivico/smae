@@ -2258,4 +2258,12 @@ export class TransferenciaService {
             );
         }
     }
+
+    async rebuildAllVetoresBusca(): Promise<void> {
+        await this.prisma.$executeRaw`
+            UPDATE transferencia
+            SET vetores_busca = f_rebuild_transferencia_tsvector(id)
+            WHERE removido_em IS NULL;
+        `;
+    }
 }
