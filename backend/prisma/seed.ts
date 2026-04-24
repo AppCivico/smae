@@ -1425,6 +1425,7 @@ async function main() {
 
             if (!locked[0].locked) return;
 
+            await remover_feature_flags_obsoletas();
             await criar_emaildb_config();
             await criar_texto_config();
             await atualizar_modulos_e_privilegios();
@@ -1625,6 +1626,14 @@ async function criar_texto_config() {
         create: {
             bemvindo_email: 'Ao acessar o SMAE, Você está ciente e autoriza...',
             tos: '...O acesso ao SMAE indica ciência e concordância com os termos acima',
+        },
+    });
+}
+
+async function remover_feature_flags_obsoletas() {
+    await prisma.smaeConfig.deleteMany({
+        where: {
+            chave: { in: ['LIBERA_SPRINT_30', 'LIBERA_SPRINT_31'] },
         },
     });
 }
