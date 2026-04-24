@@ -12,6 +12,8 @@ import { SeiIntegracaoModule } from '../../sei-integracao/sei-integracao.module'
 import { WorkflowModule } from '../workflow/configuracao/workflow.module';
 import { TransferenciaModule } from '../transferencia/transferencia.module';
 import { JwtModule } from '@nestjs/jwt';
+import { DistribuicaoSolicitacaoAjusteService } from './distribuicao-solicitacao-ajuste.service';
+import { DistribuicaoSolicitacaoAjusteController } from './distribuicao-solicitacao-ajuste.controller';
 
 @Module({
     imports: [
@@ -28,8 +30,8 @@ import { JwtModule } from '@nestjs/jwt';
             signOptions: { expiresIn: '30d' },
         }),
     ],
-    controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController],
-    providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],
+    controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController, DistribuicaoSolicitacaoAjusteController],
+    providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService, DistribuicaoSolicitacaoAjusteService],
     exports: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],
 })
 export class DistribuicaoRecursoModule {}

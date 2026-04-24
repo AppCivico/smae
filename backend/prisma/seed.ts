@@ -115,6 +115,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroBancada: ['Bancadas', 'CasaCivil'],
     CadastroParlamentar: ['Parlamentares', 'CasaCivil'],
     CadastroTransferencia: ['Transferências', 'CasaCivil'],
+    CadastroDistribuicaoSolicitacaoAjuste: ['Solicitações de Ajuste de Distribuição de Recurso', 'CasaCivil'],
     CadastroWorkflow: ['Workflows', 'CasaCivil'],
     ReportsCasaCivil: ['Relatórios de Transferências Voluntárias', 'CasaCivil'],
 
@@ -549,6 +550,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferenciaAnexo.editar', 'Editar Anexo de Transferência'],
         ['CadastroTransferenciaAnexo.listar', 'Listar Anexos de Transferência'],
         ['CadastroTransferenciaAnexo.remover', 'Remover Anexo de Transferência'],
+    ],
+    CadastroDistribuicaoSolicitacaoAjuste: [
+        ['CadastroDistribuicaoSolicitacaoAjuste.inserir', 'Solicitar ajuste em distribuição de recurso do próprio órgão'],
+        ['CadastroDistribuicaoSolicitacaoAjuste.editar', 'Editar solicitação de ajuste pendente'],
+        ['CadastroDistribuicaoSolicitacaoAjuste.listar', 'Listar solicitações de ajuste'],
+        ['CadastroDistribuicaoSolicitacaoAjuste.remover', 'Remover solicitação de ajuste pendente'],
+        ['CadastroDistribuicaoSolicitacaoAjuste.administrador', 'Gerir (aprovar/recusar) solicitações de ajuste de distribuição'],
     ],
     CadastroWorkflow: [
         ['CadastroWorkflows.editar', 'Editar Workflows'],
@@ -1254,6 +1262,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferenciaAnexo.listar',
             'CadastroTransferenciaAnexo.remover',
 
+            'CadastroDistribuicaoSolicitacaoAjuste.listar',
+            'CadastroDistribuicaoSolicitacaoAjuste.administrador',
+
             'CadastroDemandaConfig.editar',
             'CadastroDemandaConfig.inserir',
             'CadastroDemandaConfig.remover',
@@ -1286,6 +1297,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemanda.inserir',
             'CadastroDemanda.editar',
             'CadastroParlamentar.listar',
+
+            'CadastroDistribuicaoSolicitacaoAjuste.inserir',
+            'CadastroDistribuicaoSolicitacaoAjuste.editar',
+            'CadastroDistribuicaoSolicitacaoAjuste.listar',
+            'CadastroDistribuicaoSolicitacaoAjuste.remover',
         ],
     },
     {
