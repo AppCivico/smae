@@ -1909,18 +1909,9 @@ export class PessoaService implements OnModuleInit {
             }
         }
 
-        const priv_remover: ListaDePrivilegios[] = [
-            'CadastroTipoVinculo.editar',
-            'CadastroTipoVinculo.inserir',
-            'CadastroTipoVinculo.listar',
-            'CadastroTipoVinculo.remover',
-            'CadastroVinculo.editar',
-            'CadastroVinculo.inserir',
-            'CadastroVinculo.listar',
-            'CadastroVinculo.remover',
-        ];
-        for (const priv of priv_remover) {
-            ret.privilegios = ret.privilegios.filter((v) => v !== priv);
+        // só pode ter esse Menu quem tem o CadastroTransferencia.administrador
+        if (ret.privilegios.includes('CadastroTransferencia.administrador')) {
+            ret.privilegios.push('Menu.cc_consulta_geral');
         }
 
         if (ret.privilegios.includes('CadastroDemanda.listar')) {
