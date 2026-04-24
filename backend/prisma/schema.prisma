@@ -6255,13 +6255,7 @@ model DistribuicaoRecurso {
     parlamentares       DistribuicaoParlamentar[]
     vinculos            DistribuicaoRecursoVinculo[]
     solicitacoes_ajuste DistribuicaoRecursoSolicitacaoAjuste[]
-    registros_sei       DistribuicaoRecursoSei[]
     dotacoes            DistribuicaoRecursoDotacao[]
-    aditamentos         DistribuicaoRecursoAditamento[]
-    status              DistribuicaoRecursoStatus[]
-    tarefas             Tarefa[]
-    parlamentares       DistribuicaoParlamentar[]
-    vinculos            DistribuicaoRecursoVinculo[]
 
     @@map("distribuicao_recurso")
 }
