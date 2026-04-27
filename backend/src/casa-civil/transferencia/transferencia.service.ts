@@ -355,15 +355,7 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        // Gestor de Distribuição de Recurso não pode editar transferências,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para editar transferências.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.editar']) no controller.
         const agora = new Date(Date.now());
         let workflowCriado: boolean = false;
         const updated = await this.prisma.$transaction(
@@ -1171,12 +1163,12 @@ export class TransferenciaService {
             return permissionsSet;
         }
 
-        // Gestores de Distribuição de Recurso só veem transferências
-        // que possuem pelo menos uma distribuição do seu órgão.
-        // Exceto se também forem Gestores de Transferências (que têm precedência e veem tudo).
+        // Usuários do perfil restrito de gestor de distribuição (que possuem
+        // CadastroDistribuicaoSolicitacaoAjuste.inserir mas não administram transferências)
+        // só veem transferências que possuem pelo menos uma distribuição do seu órgão.
         if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+            user.hasSomeRoles(['CadastroDistribuicaoSolicitacaoAjuste.inserir']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.administrador'])
         ) {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
@@ -1642,14 +1634,10 @@ export class TransferenciaService {
         });
         if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso não pode editar transferências,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
-        const isGestorTransferencia = user.hasSomeRoles([
+        const pode_editar = user.hasSomeRoles([
             'CadastroTransferencia.editar',
             'CadastroTransferencia.administrador',
         ]);
-        const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
 
         return {
             id: row.id,
@@ -1761,15 +1749,7 @@ export class TransferenciaService {
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover transferências,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para remover transferências.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.remover']) no controller.
         await this.prisma.transferencia.update({
             where: { id },
             data: {
@@ -1780,15 +1760,7 @@ export class TransferenciaService {
     }
 
     async append_document(transferenciaId: number, dto: CreateTransferenciaAnexoDto, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode adicionar documentos,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para adicionar documentos nesta transferência.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferenciaAnexo.inserir']) no controller.
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
 
         const documento = await this.prisma.$transaction(
@@ -1837,12 +1809,10 @@ export class TransferenciaService {
             },
         });
 
-        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
-        const isGestorTransferencia = user.hasSomeRoles([
+        const pode_editar: boolean = user.hasSomeRoles([
             'CadastroTransferencia.editar',
             'CadastroTransferencia.administrador',
         ]);
-        const pode_editar: boolean = !isGestorDistribuicao || isGestorTransferencia;
 
         const documentosRet: TransferenciaAnexoDto[] = documentosDB.map((d) => {
             const link = this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token;
@@ -1867,15 +1837,7 @@ export class TransferenciaService {
         dto: UpdateTransferenciaAnexoDto,
         user: PessoaFromJwt
     ) {
-        // Gestor de Distribuição de Recurso não pode atualizar documentos,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para atualizar documentos nesta transferência.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferenciaAnexo.editar']) no controller.
         this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
@@ -1902,15 +1864,7 @@ export class TransferenciaService {
     }
 
     async remove_document(transferenciaId: number, transferenciaAnexoId: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover documentos,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para remover documentos nesta transferência.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferenciaAnexo.remover']) no controller.
         await this.prisma.transferenciaAnexo.updateMany({
             where: { transferencia_id: transferenciaId, removido_em: null, id: transferenciaAnexoId },
             data: {
