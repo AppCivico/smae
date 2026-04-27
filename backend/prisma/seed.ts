@@ -1438,7 +1438,6 @@ async function main() {
             if (!locked[0].locked) return;
 
             await remover_feature_flags_obsoletas();
-            await remover_privilegios_obsoletos();
             await criar_emaildb_config();
             await criar_texto_config();
             await atualizar_modulos_e_privilegios();
@@ -1648,21 +1647,6 @@ async function remover_feature_flags_obsoletas() {
         where: {
             key: { in: ['LIBERA_SPRINT_30', 'LIBERA_SPRINT_31'] },
         },
-    });
-}
-
-async function remover_privilegios_obsoletos() {
-    // Remoção explícita de privilégios descontinuados.
-    // A FK em perfil_privilegio não cascateia (onDelete: NoAction),
-    // por isso é necessário limpar a tabela associativa antes.
-    const codigosObsoletos = ['SMAE.gestor_distribuicao_recurso'];
-
-    await prisma.perfilPrivilegio.deleteMany({
-        where: { privilegio: { codigo: { in: codigosObsoletos } } },
-    });
-
-    await prisma.privilegio.deleteMany({
-        where: { codigo: { in: codigosObsoletos } },
     });
 }
 
