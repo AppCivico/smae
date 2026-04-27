@@ -394,6 +394,14 @@ export class ReportsService {
         if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             if (Array.isArray(parametros.orgaos) && parametros.orgaos.length === 0) delete parametros.orgaos;
         }
+
+        // Trava de órgão para o perfil restrito "Gestor(a) de Distribuição de Recurso":
+        // força o filtro no momento da criação para que persista na task e no JSON da relatorio.
+        if (dto.fonte === 'Demandas' && user?.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+            parametros.orgao_id = user.orgao_id;
+        }
+
         console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
