@@ -251,6 +251,8 @@ export class PessoaService implements OnModuleInit {
         if (user.hasSomeRoles(['SMAE.superadmin']) == false) {
             await this.verificarPerfilNaoContemAdmin(createPessoaDto.perfil_acesso_ids);
         }
+
+        await this.verificarPerfisCompativeis(createPessoaDto.perfil_acesso_ids);
     }
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
@@ -284,6 +286,8 @@ export class PessoaService implements OnModuleInit {
                 await this.verificarPerfilNaoContemAdmin(updatePessoaDto.perfil_acesso_ids);
             }
         }
+
+        await this.verificarPerfisCompativeis(updatePessoaDto.perfil_acesso_ids);
 
         const pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirst({
             where: {
@@ -367,6 +371,44 @@ export class PessoaService implements OnModuleInit {
                 'O seu usuário não pode adicionar ou remover permissões de outros usuários que são administradores do sistema, ou adicionar a permissão de administrador para um usuário já existente.',
                 400
             );
+    }
+
+    /**
+     * Rejeita combinações de perfis cujos privilégios efetivos sejam conflitantes.
+     *
+     * `CadastroDistribuicaoSolicitacaoAjuste.inserir` é exclusivo do perfil restrito
+     * "Gestor(a) de Distribuição de Recurso" (sem acesso de edição às transferências).
+     * `CadastroTransferencia.editar` só vem de perfis amplos (Gestor de TVs/Administrador).
+     * A coexistência indica combinação errada na atribuição de perfis.
+     */
+    private async verificarPerfisCompativeis(perfil_acesso_ids: number[] | undefined) {
+        if (!perfil_acesso_ids || perfil_acesso_ids.length === 0) return;
+
+        const rows = await this.prisma.perfilAcesso.findMany({
+            where: { id: { in: perfil_acesso_ids } },
+            select: {
+                perfil_privilegio: {
+                    select: { privilegio: { select: { codigo: true } } },
+                },
+            },
+        });
+
+        const privilegios = new Set<string>();
+        for (const r of rows) {
+            for (const pp of r.perfil_privilegio) {
+                privilegios.add(pp.privilegio.codigo);
+            }
+        }
+
+        if (
+            privilegios.has('CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
+            privilegios.has('CadastroTransferencia.editar')
+        ) {
+            throw new HttpException(
+                'O perfil de Gestor(a) de Distribuição de Recurso não pode ser combinado com perfis que possuem CadastroTransferencia.editar (Gestor de Transferências Voluntárias ou Administrador). Esses perfis têm escopos conflitantes.',
+                400
+            );
+        }
     }
 
     private verificarCPFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {

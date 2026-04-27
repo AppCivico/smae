@@ -605,7 +605,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
-        ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.AtualizacaoEmLote', 'Acesso a ferramenta de atualização em lote'],
         ['SMAE.gerente_de_projeto', 'Editar os responsáveis de projetos após a fase de planejamento'],
     ],
@@ -1286,9 +1285,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         nome: atualizarNomePerfil('Gestor(a) de Distribuição de Recurso', ['Gestor de Distribuição de Recurso']),
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
-            // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
-            'SMAE.gestor_distribuicao_recurso',
-
             'CadastroAreaTematica.listar',
             'CadastroDemandaConfig.listar',
 
@@ -1442,6 +1438,7 @@ async function main() {
             if (!locked[0].locked) return;
 
             await remover_feature_flags_obsoletas();
+            await remover_privilegios_obsoletos();
             await criar_emaildb_config();
             await criar_texto_config();
             await atualizar_modulos_e_privilegios();
@@ -1651,6 +1648,21 @@ async function remover_feature_flags_obsoletas() {
         where: {
             key: { in: ['LIBERA_SPRINT_30', 'LIBERA_SPRINT_31'] },
         },
+    });
+}
+
+async function remover_privilegios_obsoletos() {
+    // Remoção explícita de privilégios descontinuados.
+    // A FK em perfil_privilegio não cascateia (onDelete: NoAction),
+    // por isso é necessário limpar a tabela associativa antes.
+    const codigosObsoletos = ['SMAE.gestor_distribuicao_recurso'];
+
+    await prisma.perfilPrivilegio.deleteMany({
+        where: { privilegio: { codigo: { in: codigosObsoletos } } },
+    });
+
+    await prisma.privilegio.deleteMany({
+        where: { codigo: { in: codigosObsoletos } },
     });
 }
 

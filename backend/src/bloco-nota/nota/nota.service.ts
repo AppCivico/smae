@@ -766,15 +766,6 @@ export class NotaService {
             write = nota.orgao_responsavel_id == user.orgao_id;
         }
 
-        // Caso usuário tenha priv de gestor de distribuição de recurso (sem ser gestor de transferências)
-        // Não pode editar. Gestor de Transferências tem precedência.
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            write = false;
-        }
-
         return {
             token: this.jwtService.sign(
                 {
