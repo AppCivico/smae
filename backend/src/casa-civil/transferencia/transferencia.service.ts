@@ -1163,13 +1163,9 @@ export class TransferenciaService {
             return permissionsSet;
         }
 
-        // Usuários do perfil restrito de gestor de distribuição (que possuem
-        // CadastroDistribuicaoSolicitacaoAjuste.inserir mas não administram transferências)
+        // Usuários do perfil restrito "Gestor(a) de Distribuição de Recurso"
         // só veem transferências que possuem pelo menos uma distribuição do seu órgão.
-        if (
-            user.hasSomeRoles(['CadastroDistribuicaoSolicitacaoAjuste.inserir']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.administrador'])
-        ) {
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
             permissionsSet.push({

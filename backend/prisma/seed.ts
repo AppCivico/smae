@@ -1298,6 +1298,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDistribuicaoSolicitacaoAjuste.editar',
             'CadastroDistribuicaoSolicitacaoAjuste.listar',
             'CadastroDistribuicaoSolicitacaoAjuste.remover',
+
+            'Reports.executar.CasaCivil',
+            'Reports.remover.CasaCivil',
         ],
     },
     {

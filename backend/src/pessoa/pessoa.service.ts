@@ -1960,6 +1960,19 @@ export class PessoaService implements OnModuleInit {
             ret.privilegios.push('Menu.demandas');
         }
 
+        // Privilégio virtual que identifica o perfil restrito "Gestor(a) de Distribuição de Recurso".
+        // A posse de CadastroDistribuicaoSolicitacaoAjuste.inserir é exclusiva desse perfil —
+        // verificarPerfisCompativeis() rejeita combinações com CadastroTransferencia.editar
+        // (e administradores carregam .editar transitivamente). O `!administrador` cobre
+        // eventuais cadastros legados antes da validação. Frontend deve checar este priv
+        // único em vez de duplicar a regra composta.
+        if (
+            ret.privilegios.includes('CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
+            !ret.privilegios.includes('CadastroTransferencia.administrador')
+        ) {
+            ret.privilegios.push('SMAE.PerfilGestorDistribuicaoRecurso');
+        }
+
         return ret;
     }
 
