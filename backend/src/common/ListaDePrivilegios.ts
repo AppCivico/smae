@@ -182,6 +182,8 @@ export type ListaDePrivilegios =
     | 'Reports.remover.Projetos'
     | 'Reports.executar.CasaCivil'
     | 'Reports.remover.CasaCivil'
+    | 'Reports.executar.CasaCivilGestorDistRec'
+    | 'Reports.remover.CasaCivilGestorDistRec'
     | 'Reports.executar.ProgramaDeMetas'
     | 'Reports.remover.ProgramaDeMetas'
     | 'CadastroEquipamentoMDO.inserir'
