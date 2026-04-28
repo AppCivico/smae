@@ -1316,6 +1316,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
 
             'Reports.executar.CasaCivilGestorDistRec',
             'Reports.remover.CasaCivilGestorDistRec',
+
+            'CadastroTransferencia.listar',
+            'AndamentoWorkflow.listar',
+            'CadastroCronogramaTransferencia.listar',
         ],
     },
     {
