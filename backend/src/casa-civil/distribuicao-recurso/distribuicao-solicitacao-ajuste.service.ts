@@ -1,7 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { DistribuicaoSolicitacaoStatus, Prisma } from '@prisma/client';
+import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { CONST_PERFIL_CASA_CIVIL } from 'src/common/consts';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DistribuicaoRecursoService } from './distribuicao-recurso.service';
 import { CreateDistribuicaoSolicitacaoAjusteDto } from './dto/create-distribuicao-solicitacao-ajuste.dto';
@@ -59,9 +62,12 @@ const DISTRIBUICAO_SELECT_CAMPOS = {
 
 @Injectable()
 export class DistribuicaoSolicitacaoAjusteService {
+    private readonly logger = new Logger(DistribuicaoSolicitacaoAjusteService.name);
+
     constructor(
         private readonly prisma: PrismaService,
-        private readonly distribuicaoRecursoService: DistribuicaoRecursoService
+        private readonly distribuicaoRecursoService: DistribuicaoRecursoService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async create(dto: CreateDistribuicaoSolicitacaoAjusteDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -71,7 +77,12 @@ export class DistribuicaoSolicitacaoAjusteService {
             async (prismaTxn: Prisma.TransactionClient) => {
                 const distribuicao = await prismaTxn.distribuicaoRecurso.findFirst({
                     where: { id: dto.distribuicao_recurso_id, removido_em: null },
-                    select: DISTRIBUICAO_SELECT_CAMPOS,
+                    select: {
+                        ...DISTRIBUICAO_SELECT_CAMPOS,
+                        nome: true,
+                        transferencia: { select: { id: true, identificador: true } },
+                        orgao_gestor: { select: { sigla: true } },
+                    },
                 });
 
                 if (!distribuicao) throw new HttpException('Distribuição de recurso não encontrada.', 404);
@@ -105,27 +116,31 @@ export class DistribuicaoSolicitacaoAjusteService {
                     throw new HttpException('Nenhum campo foi informado para solicitar ajuste.', 400);
                 }
 
-                const solicitacao = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.create({
-                    data: {
-                        distribuicao_recurso_id: dto.distribuicao_recurso_id,
-                        orgao_gestor_id: distribuicao.orgao_gestor_id,
-                        status: DistribuicaoSolicitacaoStatus.Pendente,
-                        campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
-                        criado_por: user.id,
-                        criado_em: new Date(),
-                        atualizado_por: user.id,
-                        atualizado_em: new Date(),
-                    },
-                    select: { id: true },
-                }).catch((err: any) => {
-                    if (err?.code === 'P2002') {
-                        throw new HttpException(
-                            'Já existe uma solicitação de ajuste pendente para esta distribuição. Edite a solicitação existente.',
-                            400
-                        );
-                    }
-                    throw err;
-                });
+                const solicitacao = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste
+                    .create({
+                        data: {
+                            distribuicao_recurso_id: dto.distribuicao_recurso_id,
+                            orgao_gestor_id: distribuicao.orgao_gestor_id,
+                            status: DistribuicaoSolicitacaoStatus.Pendente,
+                            campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
+                            criado_por: user.id,
+                            criado_em: new Date(),
+                            atualizado_por: user.id,
+                            atualizado_em: new Date(),
+                        },
+                        select: { id: true },
+                    })
+                    .catch((err: any) => {
+                        if (err?.code === 'P2002') {
+                            throw new HttpException(
+                                'Já existe uma solicitação de ajuste pendente para esta distribuição. Edite a solicitação existente.',
+                                400
+                            );
+                        }
+                        throw err;
+                    });
+
+                await this.enviarEmailSolicitacaoCriada(prismaTxn, distribuicao);
 
                 return { id: solicitacao.id };
             },
@@ -279,7 +294,13 @@ export class DistribuicaoSolicitacaoAjusteService {
     async gestao(id: number, dto: GestaoDistribuicaoSolicitacaoAjusteDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const solicitacao = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findFirst({
             where: { id, removido_em: null, ...this.buildOrgaoFilter(user) },
-            select: { id: true, status: true, distribuicao_recurso_id: true, campos_solicitados: true },
+            select: {
+                id: true,
+                status: true,
+                distribuicao_recurso_id: true,
+                campos_solicitados: true,
+                orgao_gestor_id: true,
+            },
         });
 
         if (!solicitacao) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
@@ -315,10 +336,10 @@ export class DistribuicaoSolicitacaoAjusteService {
             }
 
             const updateDto: UpdateDistribuicaoRecursoDto = {
-                registros_sei: ((await this.distribuicaoRecursoService.findOne(
-                    solicitacao.distribuicao_recurso_id,
-                    user
-                )).registros_sei ?? []).map((s) => ({
+                registros_sei: (
+                    (await this.distribuicaoRecursoService.findOne(solicitacao.distribuicao_recurso_id, user))
+                        .registros_sei ?? []
+                ).map((s) => ({
                     id: s.id,
                     nome: s.nome ?? undefined,
                     processo_sei: s.processo_sei,
@@ -354,6 +375,14 @@ export class DistribuicaoSolicitacaoAjusteService {
             throw new HttpException('Solicitação já foi processada por outro usuário.', 409);
         }
 
+        if (dto.status === DistribuicaoSolicitacaoStatus.Recusada) {
+            await this.enviarEmailSolicitacaoRecusada(
+                solicitacao.distribuicao_recurso_id,
+                solicitacao.orgao_gestor_id,
+                dto.resposta_motivo ?? null
+            );
+        }
+
         return { id };
     }
 
@@ -384,6 +413,125 @@ export class DistribuicaoSolicitacaoAjusteService {
         if (typeof value === 'object' && 'toNumber' in value && typeof (value as any).toNumber === 'function')
             return (value as any).toNumber();
         return value;
+    }
+
+    private async enviarEmailSolicitacaoCriada(
+        prismaTx: Prisma.TransactionClient,
+        distribuicao: {
+            orgao_gestor: { sigla: string };
+            transferencia: { id: number; identificador: string };
+            nome: string | null;
+        }
+    ): Promise<void> {
+        try {
+            const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+            const orgaoSeri = await prismaTx.orgao.findFirst({
+                where: { removido_em: null, sigla: 'SERI' },
+                select: { id: true },
+            });
+
+            if (!orgaoSeri) {
+                this.logger.warn('Órgão SERI não encontrado para envio de e-mail de solicitação de ajuste.');
+                return;
+            }
+
+            const gestores = await prismaTx.pessoa.findMany({
+                where: {
+                    desativado: false,
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: { nome: CONST_PERFIL_CASA_CIVIL },
+                        },
+                    },
+                    pessoa_fisica: { orgao_id: orgaoSeri.id },
+                },
+                select: { email: true },
+            });
+
+            const link = new URL(
+                ['transferencias-voluntarias', distribuicao.transferencia.id, 'resumo'].join('/'),
+                baseUrl
+            ).toString();
+
+            for (const gestor of gestores) {
+                await prismaTx.emaildbQueue.create({
+                    data: {
+                        id: uuidv7(),
+                        config_id: 1,
+                        subject: `SMAE - Solicitação de ajuste na distribuição da transferência ${distribuicao.transferencia.identificador}`,
+                        template: 'solicitacao-ajuste-criada.html',
+                        to: gestor.email,
+                        variables: {
+                            orgao_sigla: distribuicao.orgao_gestor.sigla,
+                            transferencia_identificador: distribuicao.transferencia.identificador,
+                            distribuicao_nome: distribuicao.nome ?? '',
+                            link,
+                        },
+                    },
+                });
+            }
+        } catch (err) {
+            this.logger.error('Erro ao enviar e-mail de solicitação de ajuste criada', err);
+        }
+    }
+
+    private async enviarEmailSolicitacaoRecusada(
+        distribuicao_recurso_id: number,
+        orgao_gestor_id: number,
+        motivo: string | null
+    ): Promise<void> {
+        try {
+            const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+            const distribuicao = await this.prisma.distribuicaoRecurso.findFirst({
+                where: { id: distribuicao_recurso_id, removido_em: null },
+                select: {
+                    nome: true,
+                    transferencia: { select: { id: true, identificador: true } },
+                },
+            });
+
+            if (!distribuicao) return;
+
+            const gestoresOrgao = await this.prisma.pessoa.findMany({
+                where: {
+                    desativado: false,
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: { nome: CONST_PERFIL_CASA_CIVIL },
+                        },
+                    },
+                    pessoa_fisica: { orgao_id: orgao_gestor_id },
+                },
+                select: { email: true },
+            });
+
+            const link = new URL(
+                ['transferencias-voluntarias', distribuicao.transferencia.id, 'resumo'].join('/'),
+                baseUrl
+            ).toString();
+
+            for (const pessoa of gestoresOrgao) {
+                await this.prisma.emaildbQueue.create({
+                    data: {
+                        id: uuidv7(),
+                        config_id: 1,
+                        subject: `SMAE - Solicitação de ajuste recusada na transferência ${distribuicao.transferencia.identificador}`,
+                        template: 'solicitacao-ajuste-recusada.html',
+                        to: pessoa.email,
+                        variables: {
+                            transferencia_identificador: distribuicao.transferencia.identificador,
+                            distribuicao_nome: distribuicao.nome ?? '',
+                            motivo: motivo ?? '',
+                            link,
+                        },
+                    },
+                });
+            }
+        } catch (err) {
+            this.logger.error('Erro ao enviar e-mail de solicitação de ajuste recusada', err);
+        }
     }
 
     private rowToDto(row: {
