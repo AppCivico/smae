@@ -15,6 +15,7 @@ import {
     CONST_PERFIL_CASA_CIVIL,
     CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
     CONST_PERFIL_COORDENADOR_EQUIPE,
+    CONST_PERFIL_GESTOR_DIST_RECURSO,
     CONST_PERFIL_GESTOR_OBRA,
     CONST_PERFIL_PARTICIPANTE_EQUIPE,
     CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
@@ -536,7 +537,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroTransferencia: [
         ['CadastroTransferencia.administrador', 'Inserir, Listar e remover transferência de qualquer órgão'],
-        ['CadastroTransferencia.editar', 'Editar Transferência'],
+        ['CadastroTransferencia.editar', 'Editar Transferência'], // NUNCA adicione esse priv no CONST_PERFIL_GESTOR_DIST_RECURSO
         ['CadastroTransferencia.listar', 'Listar Transferência dos órgãos ao qual pertence'],
         ['CadastroTransferencia.inserir', 'Inserir Transferência'],
         ['CadastroTransferencia.remover', 'Remover Transferência'],
@@ -552,11 +553,17 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferenciaAnexo.remover', 'Remover Anexo de Transferência'],
     ],
     CadastroDistribuicaoSolicitacaoAjuste: [
-        ['CadastroDistribuicaoSolicitacaoAjuste.inserir', 'Solicitar ajuste em distribuição de recurso do próprio órgão'],
+        [
+            'CadastroDistribuicaoSolicitacaoAjuste.inserir',
+            'Solicitar ajuste em distribuição de recurso do próprio órgão',
+        ],
         ['CadastroDistribuicaoSolicitacaoAjuste.editar', 'Editar solicitação de ajuste pendente'],
         ['CadastroDistribuicaoSolicitacaoAjuste.listar', 'Listar solicitações de ajuste'],
         ['CadastroDistribuicaoSolicitacaoAjuste.remover', 'Remover solicitação de ajuste pendente'],
-        ['CadastroDistribuicaoSolicitacaoAjuste.administrador', 'Gerir (aprovar/recusar) solicitações de ajuste de distribuição'],
+        [
+            'CadastroDistribuicaoSolicitacaoAjuste.administrador',
+            'Gerir (aprovar/recusar) solicitações de ajuste de distribuição',
+        ],
     ],
     CadastroWorkflow: [
         ['CadastroWorkflows.editar', 'Editar Workflows'],
@@ -595,6 +602,14 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ReportsCasaCivil: [
         ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
+        [
+            'Reports.executar.CasaCivilGestorDistRec',
+            'Executar relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
+        ],
+        [
+            'Reports.remover.CasaCivilGestorDistRec',
+            'Remover relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
+        ],
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
     CadastroPainelExternoRegra: [['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo']],
@@ -1282,7 +1297,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor(a) de Distribuição de Recurso', ['Gestor de Distribuição de Recurso']),
+        nome: atualizarNomePerfil(CONST_PERFIL_GESTOR_DIST_RECURSO, ['Gestor de Distribuição de Recurso']),
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
             'CadastroAreaTematica.listar',
@@ -1299,8 +1314,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDistribuicaoSolicitacaoAjuste.listar',
             'CadastroDistribuicaoSolicitacaoAjuste.remover',
 
-            'Reports.executar.CasaCivil',
-            'Reports.remover.CasaCivil',
+            'Reports.executar.CasaCivilGestorDistRec',
+            'Reports.remover.CasaCivilGestorDistRec',
         ],
     },
     {

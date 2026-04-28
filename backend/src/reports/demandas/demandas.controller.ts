@@ -14,7 +14,7 @@ export class DemandasController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles(['Reports.executar.CasaCivil'])
+    @Roles(['Reports.executar.CasaCivil', 'Reports.executar.CasaCivilGestorDistRec'])
     async create(@Body() dto: CreateRelDemandasDto, @CurrentUser() user: PessoaFromJwt): Promise<DemandasRelatorioDto> {
         return await this.demandasService.asJSON(dto, user);
     }

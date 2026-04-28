@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     forwardRef,
     HttpException,
     Inject,
@@ -402,6 +403,23 @@ export class ReportsService {
             parametros.orgao_id = user.orgao_id;
         }
 
+        // Privilégio escopado `Reports.executar.CasaCivilGestorDistRec` só libera fonte=Demandas.
+        // Se o usuário só tem o escopado (sem o `Reports.executar.CasaCivil` amplo), bloqueia
+        // outras fontes do módulo CasaCivil que o decorator @Roles deixou passar.
+        const fontesCasaCivilNaoDemandas: FonteRelatorio[] = [
+            FonteRelatorio.Parlamentares,
+            FonteRelatorio.TribunalDeContas,
+            FonteRelatorio.Transferencias,
+            FonteRelatorio.AtvPendentes,
+        ];
+        if (
+            user &&
+            fontesCasaCivilNaoDemandas.includes(dto.fonte) &&
+            !user.hasSomeRoles(['Reports.executar.CasaCivil'])
+        ) {
+            throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
+        }
+
         console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
@@ -511,10 +529,21 @@ export class ReportsService {
             ipp = decodedPageToken.ipp;
         }
 
+        // Se o usuário só tem o privilégio escopado de CasaCivil (Demandas), força o filtro
+        // para que ele não enxergue relatórios de outras fontes do módulo, mesmo via filtro
+        // explícito ou registros legados.
+        let fonteFilter: FonteRelatorio | undefined = filters.fonte;
+        if (
+            user.hasSomeRoles(['Reports.executar.CasaCivilGestorDistRec']) &&
+            !user.hasSomeRoles(['Reports.executar.CasaCivil'])
+        ) {
+            fonteFilter = FonteRelatorio.Demandas;
+        }
+
         const rows = await this.prisma.relatorio.findMany({
             where: {
                 id: filters.id,
-                fonte: filters.fonte,
+                fonte: fonteFilter,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
                 sistema: { in: [sistema, 'SMAE'] },
@@ -646,6 +675,27 @@ export class ReportsService {
     }
 
     async delete(id: number, user: PessoaFromJwt) {
+        // Privilégio escopado `Reports.remover.CasaCivilGestorDistRec` só libera remoção de
+        // fonte=Demandas. Se o usuário só tem o escopado (sem o `Reports.remover.CasaCivil`),
+        // bloqueia outras fontes CasaCivil que o decorator @Roles deixou passar.
+        const fontesCasaCivilNaoDemandas: FonteRelatorio[] = [
+            FonteRelatorio.Parlamentares,
+            FonteRelatorio.TribunalDeContas,
+            FonteRelatorio.Transferencias,
+            FonteRelatorio.AtvPendentes,
+        ];
+        const relatorio = await this.prisma.relatorio.findFirst({
+            where: { id, removido_em: null },
+            select: { fonte: true },
+        });
+        if (
+            relatorio &&
+            fontesCasaCivilNaoDemandas.includes(relatorio.fonte) &&
+            !user.hasSomeRoles(['Reports.remover.CasaCivil'])
+        ) {
+            throw new ForbiddenException('Usuário não tem permissão para remover este relatório.');
+        }
+
         await this.prisma.relatorio.updateMany({
             where: {
                 id: id,

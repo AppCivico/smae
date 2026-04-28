@@ -23,6 +23,7 @@ export class ReportsController {
     @ApiBearerAuth('access-token')
     @Roles([
         'Reports.executar.CasaCivil',
+        'Reports.executar.CasaCivilGestorDistRec',
         'Reports.executar.PDM',
         'Reports.executar.Projetos',
         'Reports.executar.MDO',
@@ -43,6 +44,7 @@ export class ReportsController {
     @Get()
     @Roles([
         'Reports.executar.CasaCivil',
+        'Reports.executar.CasaCivilGestorDistRec',
         'Reports.executar.PDM',
         'Reports.executar.Projetos',
         'Reports.executar.MDO',
@@ -61,6 +63,7 @@ export class ReportsController {
     @ApiBearerAuth('access-token')
     @Roles([
         'Reports.remover.CasaCivil',
+        'Reports.remover.CasaCivilGestorDistRec',
         'Reports.remover.PDM',
         'Reports.remover.Projetos',
         'Reports.remover.MDO',
