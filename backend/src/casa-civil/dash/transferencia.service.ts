@@ -21,7 +21,7 @@ import {
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
-import { TransferenciaTipoEsfera } from '@prisma/client';
+import { Prisma, TransferenciaTipoEsfera } from '@prisma/client';
 import { UploadService } from 'src/upload/upload.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Date2YMD } from '../../common/date2ymd';
@@ -48,6 +48,20 @@ export class DashTransferenciaService {
         // Construir condições de busca combinada (identificador + palavras-chave)
         const searchConditions = await this.transferenciaService.buildSearchConditions(filter.palavra_chave);
 
+        const transferenciaWhere: Prisma.TransferenciaWhereInput = {
+            AND: this.transferenciaService.permissionSet(user),
+            esfera: filter.esfera ? { in: filter.esfera } : undefined,
+            // Busca combinada por identificador e palavras-chave
+            ...(searchConditions ? { OR: searchConditions } : {}),
+            parlamentar: filter.partido_ids
+                ? {
+                      some: {
+                          partido_id: { in: filter.partido_ids },
+                      },
+                  }
+                : undefined,
+        };
+
         // eh marco, ter data de termino (ter data planejado), não ter data de termino real
         //
         const rows = await this.prisma.transferenciaStatusConsolidado.findMany({
@@ -56,19 +70,7 @@ export class DashTransferenciaService {
                 situacao: filter.atividade ? { in: filter.atividade } : undefined,
                 // Filtro "prazo" é em dias, então caso seja passado 60. Buscamos transferencias que a data seja menor ou igual a hoje + 60 dias
                 data: filter.prazo ? { lte: new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000) } : undefined,
-                transferencia: {
-                    AND: this.transferenciaService.permissionSet(user),
-                    esfera: filter.esfera ? { in: filter.esfera } : undefined,
-                    // Busca combinada por identificador e palavras-chave
-                    ...(searchConditions ? { OR: searchConditions } : {}),
-                    parlamentar: filter.partido_ids
-                        ? {
-                              some: {
-                                  partido_id: { in: filter.partido_ids },
-                              },
-                          }
-                        : undefined,
-                },
+                transferencia: transferenciaWhere,
             },
             include: {
                 transferencia: {
@@ -89,29 +91,88 @@ export class DashTransferenciaService {
             orderBy: [{ data: { sort: 'asc', nulls: 'first' } }, { transferencia: { identificador: 'asc' } }],
         });
 
-        const ret: ListMfDashTransferenciasDto = {
-            linhas: rows.map((r): MfDashTransferenciasDto => {
-                return {
-                    data: Date2YMD.toStringOrNull(r.data),
-                    data_origem: r.data_origem,
-                    atividade: r.situacao,
-                    identificador: r.transferencia.identificador,
-                    emenda: r.transferencia.emenda,
-                    transferencia_id: r.transferencia.id,
-                    esfera: r.transferencia.esfera,
-                    orgaos: r.orgaos_envolvidos,
-                    objeto: r.transferencia.objeto,
-                    partido_ids: r.transferencia.parlamentar.length
-                        ? r.transferencia.parlamentar.map((p) => p.partido_id!)
-                        : null,
-                };
-            }),
-        };
+        const linhas: MfDashTransferenciasDto[] = rows.map((r): MfDashTransferenciasDto => {
+            return {
+                data: Date2YMD.toStringOrNull(r.data),
+                data_origem: r.data_origem,
+                atividade: r.situacao,
+                identificador: r.transferencia.identificador,
+                emenda: r.transferencia.emenda,
+                transferencia_id: r.transferencia.id,
+                esfera: r.transferencia.esfera,
+                orgaos: r.orgaos_envolvidos,
+                objeto: r.transferencia.objeto,
+                partido_ids: r.transferencia.parlamentar.length
+                    ? r.transferencia.parlamentar.map((p) => p.partido_id!)
+                    : null,
+            };
+        });
 
-        return ret;
+        // Para transferências que ainda não finalizaram o workflow, mas que não
+        // possuem fase/tarefa em aberto (sem linhas no consolidado), apresentar 1
+        // linha como "Aguardando liberação da próxima de fase".
+        // Pula esse complemento quando o usuário aplica filtros que só fazem
+        // sentido para linhas de cronograma (atividade, prazo, órgãos).
+        const aplicaFiltrosCronograma =
+            (filter.atividade && filter.atividade.length > 0) ||
+            filter.prazo != undefined ||
+            (filter.orgaos_ids && filter.orgaos_ids.length > 0);
+
+        if (!aplicaFiltrosCronograma) {
+            const transferenciaIdsComLinhas = Array.from(new Set(rows.map((r) => r.transferencia.id)));
+
+            const transferenciasSemFase = await this.prisma.transferencia.findMany({
+                where: {
+                    ...transferenciaWhere,
+                    removido_em: null,
+                    workflow_finalizado: false,
+                    id: transferenciaIdsComLinhas.length ? { notIn: transferenciaIdsComLinhas } : undefined,
+                },
+                select: {
+                    id: true,
+                    identificador: true,
+                    emenda: true,
+                    esfera: true,
+                    objeto: true,
+                    parlamentar: { select: { partido_id: true } },
+                },
+                orderBy: { identificador: 'asc' },
+            });
+
+            for (const t of transferenciasSemFase) {
+                linhas.push({
+                    data: null,
+                    data_origem: 'Workflow',
+                    atividade: 'Aguardando liberação da próxima de fase',
+                    identificador: t.identificador,
+                    emenda: t.emenda,
+                    transferencia_id: t.id,
+                    esfera: t.esfera,
+                    orgaos: [],
+                    objeto: t.objeto,
+                    partido_ids: t.parlamentar.length ? t.parlamentar.map((p) => p.partido_id!) : null,
+                });
+            }
+        }
+
+        return { linhas };
     }
 
     async notas(filters: FilterDashNotasDto, user: PessoaFromJwt): Promise<PaginatedDto<MfDashNotasDto>> {
+        // O quadro "Notas" não é apresentado para o perfil "Gestor(a) de Distribuição de Recurso"
+        // (a não ser que também acumule perfil de Gestor de Transferências/Administrador).
+        if (
+            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
+            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
+        ) {
+            return {
+                tem_mais: false,
+                token_ttl: PAGINATION_TOKEN_TTL,
+                token_proxima_pagina: null,
+                linhas: [],
+            };
+        }
+
         // Construir condições de busca combinada (identificador + palavras-chave)
         const searchConditions = await this.transferenciaService.buildSearchConditions(filters.palavra_chave);
 
