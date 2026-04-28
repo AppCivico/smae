@@ -937,6 +937,27 @@ export class TransferenciaService {
                         });
                     }
                     if (removidas.length) {
+                        // Verificando se alguma dotação removida está em uso por uma distribuição de recurso.
+                        const dotacoesEmUso = await prismaTxn.distribuicaoRecursoDotacao.findMany({
+                            where: {
+                                dotacao: { in: removidas },
+                                removido_em: null,
+                                distribuicao_recurso: {
+                                    transferencia_id: id,
+                                    removido_em: null,
+                                },
+                            },
+                            select: { dotacao: true },
+                        });
+
+                        if (dotacoesEmUso.length) {
+                            const dotacoesStr = [...new Set(dotacoesEmUso.map((d) => d.dotacao))].join(', ');
+                            throw new HttpException(
+                                `As seguintes dotações não podem ser removidas pois estão em uso por distribuição de recurso: ${dotacoesStr}`,
+                                400
+                            );
+                        }
+
                         await prismaTxn.transferenciaDotacao.updateMany({
                             where: {
                                 transferencia_id: id,
