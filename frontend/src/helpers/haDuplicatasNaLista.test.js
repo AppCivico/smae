@@ -13,10 +13,10 @@ describe('haDuplicatasNaLista', () => {
     expect(() => haDuplicatasNaLista(array, { apenas: 'foo', exceto: 'bar' })).toThrow();
   });
 
-  it('Deve retornar `false` para uma lista vazia', () => {
+  it('Deve retornar lista vazia para uma lista sem duplicatas', () => {
     const array = [];
 
-    expect(haDuplicatasNaLista(array)).toBe(false);
+    expect(haDuplicatasNaLista(array)).toStrictEqual([]);
   });
 
   describe('Identifica duplicatas em lista de primitivas', () => {
@@ -46,7 +46,7 @@ describe('haDuplicatasNaLista', () => {
         expected: false,
       },
     ])('haDuplicatasNaLista($array) -> $expected', ({ array, expected }) => {
-      expect(haDuplicatasNaLista(array)).toBe(expected);
+      expect(haDuplicatasNaLista(array).length > 0).toBe(expected);
     });
   });
 
@@ -86,7 +86,28 @@ describe('haDuplicatasNaLista', () => {
         expected: true,
       },
     ])('haDuplicatasNaLista($array) -> $expected', ({ array, expected }) => {
-      expect(haDuplicatasNaLista(array)).toBe(expected);
+      expect(haDuplicatasNaLista(array).length > 0).toBe(expected);
+    });
+  });
+
+  describe('Retorna os índices corretos das duplicatas', () => {
+    it('Retorna os índices de todas as ocorrências duplicadas em lista de primitivas', () => {
+      expect(haDuplicatasNaLista([1, 2, 3, 4, 5, 3])).toStrictEqual([2, 5]);
+    });
+
+    it('Retorna os índices de todas as ocorrências duplicadas em lista de objetos', () => {
+      const array = [
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+        { id: 3, name: 'Charlie' },
+        { id: 4, name: 'David' },
+        { id: 3, name: 'Charlie' },
+      ];
+      expect(haDuplicatasNaLista(array)).toStrictEqual([2, 4]);
+    });
+
+    it('Retorna índices de múltiplos grupos de duplicatas', () => {
+      expect(haDuplicatasNaLista([1, 2, 1, 2, 3])).toStrictEqual([0, 1, 2, 3]);
     });
   });
 
@@ -107,7 +128,7 @@ describe('haDuplicatasNaLista', () => {
         expected: false,
       },
     ])('haDuplicatasNaLista($array) -> $expected', ({ array, expected }) => {
-      expect(haDuplicatasNaLista(array)).toBe(expected);
+      expect(haDuplicatasNaLista(array).length > 0).toBe(expected);
     });
   });
 
@@ -133,7 +154,7 @@ describe('haDuplicatasNaLista', () => {
         expected: true,
       },
     ])('haDuplicatasNaLista($array) -> $expected', ({ array, expected }) => {
-      expect(haDuplicatasNaLista(array)).toBe(expected);
+      expect(haDuplicatasNaLista(array).length > 0).toBe(expected);
     });
   });
 
@@ -216,7 +237,7 @@ describe('haDuplicatasNaLista', () => {
         expected: true,
       },
     ])('$describe', ({ array, params, expected }) => {
-      expect(haDuplicatasNaLista(array, params)).toBe(expected);
+      expect(haDuplicatasNaLista(array, params).length > 0).toBe(expected);
     });
   });
 
@@ -257,7 +278,7 @@ describe('haDuplicatasNaLista', () => {
         expected: false,
       },
     ])('haDuplicatasNaLista($array, $params) -> $expected', ({ array, params, expected }) => {
-      expect(haDuplicatasNaLista(array, params)).toBe(expected);
+      expect(haDuplicatasNaLista(array, params).length > 0).toBe(expected);
     });
   });
 });

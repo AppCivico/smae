@@ -1,5 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import {
+  ValidationError,
   addMethod,
   array,
   boolean,
@@ -46,6 +47,7 @@ addMethod(string, 'nullableOuVazio', function _() {
     .transform((v) => (v === '' ? null : v));
 });
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'validarCasasDecimais', function _(casasDecimais = 0) {
   return this
     .test('casas-decimais', (value, { createError }) => {
@@ -90,9 +92,15 @@ addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não
   return this.test('semDuplicatas', message, function semDuplicatasTeste(value) {
     const { path, createError } = this;
 
-    return haDuplicatasNaLista(value, params)
-      ? createError({ path, message })
-      : true;
+    const indices = haDuplicatasNaLista(value, params);
+
+    if (!indices.length) return true;
+
+    return new ValidationError(
+      indices.map((i) => createError({ path: `${path}[${i}]`, message })),
+      value,
+      path,
+    );
   });
 });
 
