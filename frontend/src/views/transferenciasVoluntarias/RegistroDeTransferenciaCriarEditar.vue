@@ -45,7 +45,7 @@ const props = defineProps({
 });
 
 const {
-  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
+  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm, validateField,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema,
@@ -159,6 +159,17 @@ watch(itemParaEdicao, async (novosValores) => {
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
 }, { immediate: true });
+
+// Garante que erros de duplicatas em `dotacoes` sejam reavaliados quando um item é removido.
+// Sem isso, remover o último item duplicado deixa o erro de validação visível até um blur manual.
+// `validateField('dotacoes')` não funciona porque o VeeValidate usa `dotacoes[N]` como
+// nome de cada item, não o array. Validar `dotacoes[0]` aciona o validateSchema interno do
+// VeeValidate, que reavalia o schema completo e limpa os erros de duplicata obsoletos.
+watch(() => values.dotacoes?.length, (newLength) => {
+  if ((newLength ?? 0) > 0) {
+    validateField('dotacoes[0]');
+  }
+});
 </script>
 <template>
   <pre v-scrollLockDebug>
