@@ -3,38 +3,45 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
 } from 'vee-validate';
+import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { relatórioDeDemandas as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
-const ÓrgãosStore = useOrgansStore();
-const AreasTematicasStore = useAreasTematicasStore();
+const orgaosStore = useOrgansStore();
+const areasTematicasStore = useAreasTematicasStore();
+const authStore = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
 
-const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { lista: areasTematicasComoLista } = storeToRefs(AreasTematicasStore);
+const { órgãosComoLista } = storeToRefs(orgaosStore);
+const { lista: areasTematicasComoLista } = storeToRefs(areasTematicasStore);
 
 const statusOptions = ['Registro', 'Validacao', 'Publicado', 'Encerrado'];
 
-const valoresIniciais = {
+const orgaoPreSelecionado = ref(authStore.temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')
+  ? authStore.user?.orgao_id
+  : null);
+
+const valoresIniciais = ref({
   fonte: 'Demandas',
   parametros: {
     status: [],
     data_registro_inicio: null,
     data_registro_fim: null,
-    orgao_id: null,
+    orgao_id: orgaoPreSelecionado.value,
     area_tematica_id: null,
   },
   eh_publico: null,
-};
+});
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue,
@@ -56,8 +63,12 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-ÓrgãosStore.getAll();
-AreasTematicasStore.buscarTudo();
+orgaosStore.getAll();
+areasTematicasStore.buscarTudo();
+
+watch(orgaoPreSelecionado, (novoValor) => {
+  setFieldValue('parametros.orgao_id', novoValor);
+});
 </script>
 <template>
   <CabecalhoDePagina :formulario-sujo="false" />
@@ -87,6 +98,7 @@ AreasTematicasStore.buscarTudo();
           v-for="status in statusOptions"
           :key="status"
           class="block"
+          for="parametros.status"
         >
           <Field
             type="checkbox"
@@ -149,7 +161,10 @@ AreasTematicasStore.buscarTudo();
     </div>
 
     <div class="flex flexwrap g2 mb2">
-      <div class="f1">
+      <div
+        v-show="!orgaoPreSelecionado"
+        class="f1"
+      >
         <LabelFromYup
           name="parametros.orgao_id"
           :schema="schema.fields.parametros"
@@ -158,11 +173,11 @@ AreasTematicasStore.buscarTudo();
           name="parametros.orgao_id"
           as="select"
           class="inputtext light"
+          :aria-busy="orgaosStore.chamadasPendentes?.lista"
           :class="{
             error: errors['parametros.orgao_id'],
-            loading: ÓrgãosStore.chamadasPendentes?.lista,
           }"
-          :disabled="isSubmitting || ÓrgãosStore.chamadasPendentes?.lista"
+          :disabled="isSubmitting || orgaosStore.chamadasPendentes?.lista"
         >
           <option :value="null">
             Todos os órgãos
@@ -190,11 +205,11 @@ AreasTematicasStore.buscarTudo();
           name="parametros.area_tematica_id"
           as="select"
           class="inputtext light"
+          :aria-busy="areasTematicasStore.chamadasPendentes?.lista"
           :class="{
-            error: errors['parametros.area_tematica_id'],
-            loading: AreasTematicasStore.chamadasPendentes?.lista,
+  error: errors['parametros.area_tematica_id'],
           }"
-          :disabled="isSubmitting || AreasTematicasStore.chamadasPendentes?.lista"
+          :disabled="isSubmitting || areasTematicasStore.chamadasPendentes?.lista"
         >
           <option :value="null">
             Todas as áreas
