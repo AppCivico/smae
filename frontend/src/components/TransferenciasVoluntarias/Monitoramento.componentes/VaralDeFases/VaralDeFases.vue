@@ -83,11 +83,12 @@ onMounted(() => {
       </template>
 
       <template
-        v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
+        v-if="inícioDeFasePermitido
+          && temPermissãoPara('CadastroWorkflows.editar')
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         #botao
       >
         <button
-
           type="button"
           class="btn"
           @click="iniciarFase"

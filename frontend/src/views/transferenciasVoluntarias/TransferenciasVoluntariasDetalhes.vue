@@ -130,7 +130,8 @@ nextTick(() => {
     </h3>
     <hr class="f1">
     <SmaeLink
-      v-if="transferenciaEmFoco?.pode_editar"
+      v-if="transferenciaEmFoco?.pode_editar
+        && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
       class="btn with-icon bgnone tcprimary p0"
@@ -449,7 +450,8 @@ nextTick(() => {
       <hr class="f1">
 
       <SmaeLink
-        v-if="transferenciaEmFoco?.pode_editar"
+        v-if="transferenciaEmFoco?.pode_editar
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         :to="{ name: 'RegistroDeTransferenciaEditar' }"
         title="Editar recursos financeiros"
         class="btn with-icon bgnone tcprimary p0"
@@ -611,6 +613,7 @@ nextTick(() => {
     </h3>
     <hr class="f1">
     <SmaeLink
+      v-if="!temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
       :to="{ name: 'TransferenciaDistribuicaoDeRecursos.Lista' }"
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"

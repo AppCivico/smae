@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import SmallModal from '@/components/SmallModal.vue';
 import TextoComBotao from '@/components/TextoComBotao.vue';
@@ -101,6 +101,9 @@ function formatarTexto(texto) {
   }
   return texto.replace(/([a-z])([A-Z])/g, '$1 $2');
 }
+
+const temPermissaoParaConfigurar = computed(() => temPermissãoPara.value(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
+  && !temPermissãoPara.value('SMAE.PerfilGestorDistribuicaoRecurso'));
 </script>
 <template>
   <div>
@@ -110,7 +113,7 @@ function formatarTexto(texto) {
           Estas são as <strong>etapas</strong>. Você pode navegar entre elas.
         </p>
         <p
-          v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])"
+          v-if="temPermissaoParaConfigurar"
           class="t20 mb0"
         >
           Se for necessário <strong>reabrir a fase anterior</strong> ou
@@ -124,7 +127,7 @@ function formatarTexto(texto) {
       </template>
       <template #botao>
         <button
-          v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])"
+          v-if="temPermissaoParaConfigurar"
           type="button"
           class="btn bgnone outline tcprimary"
           @click="abrirConfigurarWorkflow"

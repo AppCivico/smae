@@ -236,7 +236,8 @@ const colunas = computed(() => {
         </SmaeLink>
 
         <button
-          v-if="!!temPermissãoPara('CadastroVinculo.remover')"
+          v-if="!!temPermissãoPara('CadastroVinculo.remover')
+            && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
           class="like-a__text"
           type="button"
           aria-label="Remover item"
