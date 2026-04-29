@@ -198,7 +198,7 @@ onBeforeRouteLeave(() => {
     <template #celula:acoes="{ linha }">
       <div class="flex center g1">
         <button
-          v-if="temPermissãoPara(['Reports.remover.'])"
+          v-if="linha.pode_remover"
           class="like-a__text"
           :aria-label="!linha.arquivo ? 'cancelar geração' : 'excluir'"
           :title="!linha.arquivo ? 'cancelar geração' : 'excluir'"
