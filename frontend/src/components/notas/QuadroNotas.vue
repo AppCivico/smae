@@ -4,6 +4,7 @@ import { watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { localizarData } from '@/helpers/dateToDate';
 import removerHtml from '@/helpers/html/removerHtml';
 import truncate from '@/helpers/texto/truncate';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
@@ -17,20 +18,6 @@ const {
 } = storeToRefs(blocoStore);
 
 const route = useRoute();
-
-function formatarData(data) {
-  if (!data) return '';
-
-  const dataObj = new Date(data);
-
-  const diaMesAno = dataObj.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-
-  return { diaMesAno };
-}
 
 watch([
   () => route.query.esfera,
@@ -93,7 +80,7 @@ watch([
       <div class="text">
         <p>{{ removerHtml(truncate(item.nota, 50)) }}</p>
         <p>
-          <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
+          <strong>{{ localizarData(item.data_nota) }}</strong>
         </p>
       </div>
     </div>

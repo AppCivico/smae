@@ -10,6 +10,7 @@ import { Dashboard } from '@/components';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { localizarData } from '@/helpers/dateToDate';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
@@ -379,8 +380,10 @@ onUnmounted(() => {
           <span
             v-if="linha.data"
             :style="{ color: dataColor(linha.data) }"
-          >{{ new Date(linha.data).toLocaleDateString('pt-BR') }}</span>
-          <template v-else>-</template>
+          >{{ localizarData(linha.data) }}</span>
+          <template v-else>
+            -
+          </template>
         </template>
       </SmaeTable>
 
