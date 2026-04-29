@@ -70,6 +70,13 @@ export class DistribuicaoSolicitacaoAjusteController {
         await this.service.remove(+params.id, user);
     }
 
+    @Patch(':id/submeter')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.inserir'])
+    async submeter(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.service.submeter(+params.id, user);
+    }
+
     @Patch(':id/gestao')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroDistribuicaoSolicitacaoAjuste.administrador'])

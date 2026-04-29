@@ -4,7 +4,7 @@ import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class GestaoDistribuicaoSolicitacaoAjusteDto {
     @IsEnum(DistribuicaoSolicitacaoStatus, { message: 'Status deve ser Aprovada ou Recusada' })
-    @IsNotIn(['Pendente'], { message: 'Status deve ser Aprovada ou Recusada' })
+    @IsNotIn(['Pendente', 'EmRegistro'], { message: 'Status deve ser Aprovada ou Recusada' })
     status: 'Aprovada' | 'Recusada';
 
     @IsOptional()

@@ -90,7 +90,9 @@ export class DistribuicaoSolicitacaoAjusteService {
                 const solicitacaoPendente = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
                     where: {
                         distribuicao_recurso_id: dto.distribuicao_recurso_id,
-                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                        status: {
+                            in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente],
+                        },
                         removido_em: null,
                     },
                     select: { id: true },
@@ -98,23 +100,19 @@ export class DistribuicaoSolicitacaoAjusteService {
 
                 if (solicitacaoPendente) {
                     throw new HttpException(
-                        `Já existe uma solicitação de ajuste pendente para esta distribuição (id: ${solicitacaoPendente.id}). Edite a solicitação existente.`,
+                        `Já existe uma solicitação de ajuste em andamento para esta distribuição (id: ${solicitacaoPendente.id}). Edite a solicitação existente.`,
                         400
                     );
                 }
 
                 const campos_solicitados = this.buildCamposSolicitados(dto, distribuicao);
 
-                if (Object.keys(campos_solicitados).length === 0) {
-                    throw new HttpException('Nenhum campo foi informado para solicitar ajuste.', 400);
-                }
-
                 const solicitacao = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste
                     .create({
                         data: {
                             distribuicao_recurso_id: dto.distribuicao_recurso_id,
                             orgao_gestor_id: distribuicao.orgao_gestor_id,
-                            status: DistribuicaoSolicitacaoStatus.Pendente,
+                            status: DistribuicaoSolicitacaoStatus.EmRegistro,
                             campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
                             informacoes_complementares: dto.informacoes_complementares ?? null,
                             criado_por: user.id,
@@ -127,14 +125,12 @@ export class DistribuicaoSolicitacaoAjusteService {
                     .catch((err: any) => {
                         if (err?.code === 'P2002') {
                             throw new HttpException(
-                                'Já existe uma solicitação de ajuste pendente para esta distribuição. Edite a solicitação existente.',
+                                'Já existe uma solicitação de ajuste em andamento para esta distribuição. Edite a solicitação existente.',
                                 400
                             );
                         }
                         throw err;
                     });
-
-                await this.enviarEmailSolicitacaoCriada(prismaTxn, distribuicao);
 
                 return { id: solicitacao.id };
             },
@@ -223,8 +219,11 @@ export class DistribuicaoSolicitacaoAjusteService {
 
                 if (!solicitacao) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
 
-                if (solicitacao.status !== DistribuicaoSolicitacaoStatus.Pendente) {
-                    throw new HttpException('Apenas solicitações pendentes podem ser editadas.', 400);
+                if (
+                    solicitacao.status !== DistribuicaoSolicitacaoStatus.EmRegistro &&
+                    solicitacao.status !== DistribuicaoSolicitacaoStatus.Pendente
+                ) {
+                    throw new HttpException('Apenas solicitações em registro ou pendentes podem ser editadas.', 400);
                 }
 
                 const distribuicao = await prismaTxn.distribuicaoRecurso.findFirst({
@@ -245,7 +244,9 @@ export class DistribuicaoSolicitacaoAjusteService {
                         id,
                         orgao_gestor_id: user.orgao_id,
                         removido_em: null,
-                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                        status: {
+                            in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente],
+                        },
                     },
                     data: {
                         campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
@@ -275,7 +276,9 @@ export class DistribuicaoSolicitacaoAjusteService {
                         id,
                         orgao_gestor_id: user.orgao_id,
                         removido_em: null,
-                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                        status: {
+                            in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente],
+                        },
                     },
                     data: { removido_por: user.id, removido_em: new Date() },
                 });
@@ -283,6 +286,72 @@ export class DistribuicaoSolicitacaoAjusteService {
                 if (count === 0) {
                     throw new HttpException('Solicitação não encontrada, já processada ou sem permissão.', 409);
                 }
+            },
+            { isolationLevel: 'ReadCommitted' }
+        );
+    }
+
+    async submeter(id: number, user: PessoaFromJwt): Promise<RecordWithId> {
+        if (!user.orgao_id) throw new HttpException('Usuário não possui órgão associado.', 400);
+
+        return await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                const solicitacao = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
+                    where: { id, removido_em: null, orgao_gestor_id: user.orgao_id },
+                    select: {
+                        id: true,
+                        status: true,
+                        distribuicao_recurso_id: true,
+                        campos_solicitados: true,
+                    },
+                });
+
+                if (!solicitacao) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
+
+                if (solicitacao.status !== DistribuicaoSolicitacaoStatus.EmRegistro) {
+                    throw new HttpException('Apenas solicitações em registro podem ser submetidas.', 400);
+                }
+
+                const campos = solicitacao.campos_solicitados as unknown as CamposSolicitados;
+                if (!campos || Object.keys(campos).length === 0) {
+                    throw new HttpException(
+                        'A solicitação deve ter ao menos um campo para ajuste antes de ser submetida.',
+                        400
+                    );
+                }
+
+                const { count } = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.updateMany({
+                    where: {
+                        id,
+                        orgao_gestor_id: user.orgao_id,
+                        removido_em: null,
+                        status: DistribuicaoSolicitacaoStatus.EmRegistro,
+                    },
+                    data: {
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(),
+                    },
+                });
+
+                if (count === 0) {
+                    throw new HttpException('Solicitação já foi submetida ou processada.', 409);
+                }
+
+                const distribuicao = await prismaTxn.distribuicaoRecurso.findFirst({
+                    where: { id: solicitacao.distribuicao_recurso_id, removido_em: null },
+                    select: {
+                        nome: true,
+                        transferencia: { select: { id: true, identificador: true } },
+                        orgao_gestor: { select: { sigla: true } },
+                    },
+                });
+
+                if (distribuicao) {
+                    await this.enviarEmailSolicitacaoCriada(prismaTxn, distribuicao);
+                }
+
+                return { id };
             },
             { isolationLevel: 'ReadCommitted' }
         );

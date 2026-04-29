@@ -7,7 +7,13 @@ import {
     InternalServerErrorException,
     Logger,
 } from '@nestjs/common';
-import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
+import {
+    DistribuicaoSolicitacaoStatus,
+    DistribuicaoStatusTipo,
+    Prisma,
+    TarefaDependenteTipo,
+    WorkflowResponsabilidade,
+} from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -1044,10 +1050,7 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
-        const pode_editar = user.hasSomeRoles([
-            'CadastroTransferencia.editar',
-            'CadastroTransferencia.administrador',
-        ]);
+        const pode_editar = user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1709,6 +1712,8 @@ export class DistribuicaoRecursoService {
             console.error(`Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`, err);
         });
 
+        await this.invalidarSolicitacoesAjusteSeNecessario(id, dto);
+
         return { id };
     }
 
@@ -1829,6 +1834,41 @@ export class DistribuicaoRecursoService {
                 user,
                 prismaTx
             );
+        }
+    }
+
+    private async invalidarSolicitacoesAjusteSeNecessario(
+        distribuicaoRecursoId: number,
+        dto: UpdateDistribuicaoRecursoDto
+    ): Promise<void> {
+        const camposAlterados = Object.keys(dto).filter((k) => (dto as Record<string, unknown>)[k] !== undefined);
+        if (camposAlterados.length === 0) return;
+
+        const solicitacoes = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findMany({
+            where: {
+                distribuicao_recurso_id: distribuicaoRecursoId,
+                status: { in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente] },
+                removido_em: null,
+            },
+            select: { id: true, campos_solicitados: true },
+        });
+
+        for (const solicitacao of solicitacoes) {
+            const campos = solicitacao.campos_solicitados as Record<string, unknown> | null;
+            if (!campos) continue;
+
+            const camposAfetados = Object.keys(campos).filter((c) => camposAlterados.includes(c));
+            if (camposAfetados.length === 0) continue;
+
+            await this.prisma.distribuicaoRecursoSolicitacaoAjuste.update({
+                where: { id: solicitacao.id },
+                data: {
+                    status: DistribuicaoSolicitacaoStatus.Recusada,
+                    resposta_motivo: `Solicitação invalidada automaticamente. Os seguintes campos foram alterados diretamente na distribuição: ${camposAfetados.join(', ')}.`,
+                    respondido_em: new Date(),
+                    atualizado_em: new Date(),
+                },
+            });
         }
     }
 

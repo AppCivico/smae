@@ -637,18 +637,18 @@ model Orgao {
     projetos_participando  ProjetoOrgaoParticipante[]
 
     PortifolioOrgao                   PortfolioOrgao[]
-    orgao_responsavel                 Projeto[]                            @relation("orgao_responsavel")
-    orgao_origem                      Projeto[]                            @relation("orgao_origem")
-    orgao_executor                    Projeto[]                            @relation("orgao_executor")
-    projetos_geridos                  Projeto[]                            @relation("orgao_gestor")
-    projeto_colaborados               Projeto[]                            @relation("orgao_colaborador")
+    orgao_responsavel                 Projeto[]                              @relation("orgao_responsavel")
+    orgao_origem                      Projeto[]                              @relation("orgao_origem")
+    orgao_executor                    Projeto[]                              @relation("orgao_executor")
+    projetos_geridos                  Projeto[]                              @relation("orgao_gestor")
+    projeto_colaborados               Projeto[]                              @relation("orgao_colaborador")
     GrupoPortfolio                    GrupoPortfolio[]
     GrupoPortfolioPessoa              GrupoPortfolioPessoa[]
     ProjetoEquipe                     ProjetoEquipe[]
     GrupoPainelExterno                GrupoPainelExterno[]
     GrupoPainelExternoPessoa          GrupoPainelExternoPessoa[]
-    TransferenciasOrgao               Transferencia[]                      @relation("orgao_concedente")
-    TransferenciasSecretaria          Transferencia[]                      @relation("secretaria_concedente")
+    TransferenciasOrgao               Transferencia[]                        @relation("orgao_concedente")
+    TransferenciasSecretaria          Transferencia[]                        @relation("secretaria_concedente")
     distribuicao_recursos             DistribuicaoRecurso[]
     Nota                              Nota[]
     NotaEnderecamento                 NotaEnderecamento[]
@@ -660,20 +660,20 @@ model Orgao {
     Pdm                               Pdm[]
     statusDistribuicaoRecusro         DistribuicaoRecursoStatus[]
     ViewProjetoMDO                    ViewProjetoMDO[]
-    VariavelProprietario              Variavel[]                           @relation("proprietario")
-    MedicaoOrgaoVariavel              Variavel[]                           @relation("medicao_orgao")
-    MalidacaoOrgaoVariavel            Variavel[]                           @relation("validacao_orgao")
-    MiberacaoOrgaoVariavel            Variavel[]                           @relation("liberacao_orgao")
+    VariavelProprietario              Variavel[]                             @relation("proprietario")
+    MedicaoOrgaoVariavel              Variavel[]                             @relation("medicao_orgao")
+    MalidacaoOrgaoVariavel            Variavel[]                             @relation("validacao_orgao")
+    MiberacaoOrgaoVariavel            Variavel[]                             @relation("liberacao_orgao")
     GrupoResponsavelEquipe            GrupoResponsavelEquipe[]
     GrupoResponsavelEquipePessoa      GrupoResponsavelEquipeParticipante[]
     contratos                         Contrato[]
-    ViewVariavelGlobalQSouResp        ViewVariavelGlobal[]                 @relation("resp")
-    ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                 @relation("prop")
+    ViewVariavelGlobalQSouResp        ViewVariavelGlobal[]                   @relation("resp")
+    ViewVariavelGlobalQSouProp        ViewVariavelGlobal[]                   @relation("prop")
     GrupoResponsavelEquipeColaborador GrupoResponsavelEquipeResponsavel[]
     FormulaComposta                   FormulaComposta[]
     ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
-    ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
-    ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
+    ViewProjetoV2Resp                 ViewProjetoV2[]                        @relation("orgao_responsavel")
+    ViewProjetoV2Origem               ViewProjetoV2[]                        @relation("orgao_origem")
     AtualizacaoEmLote                 AtualizacaoEmLote[]
     demandas                          Demanda[]
     solicitacoes_ajuste_distribuicao  DistribuicaoRecursoSolicitacaoAjuste[]
@@ -8696,10 +8696,10 @@ model DistribuicaoRecursoSolicitacaoAjuste {
     orgao_gestor_id Int
     orgao_gestor    Orgao @relation(fields: [orgao_gestor_id], references: [id])
 
-    status DistribuicaoSolicitacaoStatus @default(Pendente)
+    status DistribuicaoSolicitacaoStatus @default(EmRegistro)
 
-    campos_solicitados          Json
-    informacoes_complementares  String?
+    campos_solicitados         Json
+    informacoes_complementares String?
 
     resposta_motivo String?
     respondido_por  Int?
@@ -8721,6 +8721,7 @@ model DistribuicaoRecursoSolicitacaoAjuste {
 }
 
 enum DistribuicaoSolicitacaoStatus {
+    EmRegistro
     Pendente
     Aprovada
     Recusada
