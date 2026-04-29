@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, HttpException, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.decorator';
@@ -47,7 +47,7 @@ export class DashTransferenciaController {
 
     @Get('notas')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroTransferencia.dashboard'])
     @ApiExtraModels(MfDashNotasDto)
     async notas(
         @Query() params: FilterDashNotasDto,
