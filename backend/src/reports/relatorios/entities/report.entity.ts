@@ -28,6 +28,7 @@ export class RelatorioDto {
     parametros_processados: RelatorioParamDto[] | null;
     resumo_saida: object[] | null;
     pdm_id: number | null;
+    pode_remover: boolean;
 }
 
 export class RelatorioProcessamentoDto {

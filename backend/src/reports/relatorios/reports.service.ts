@@ -690,6 +690,7 @@ export class ReportsService {
                 criado_em: true,
                 criador: { select: { nome_exibicao: true } },
                 fonte: true,
+                sistema: true,
                 visibilidade: true,
                 arquivo_id: true,
                 parametros: true,
@@ -719,11 +720,14 @@ export class ReportsService {
                 const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
 
                 const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
+                const pode_remover = hasReportPriv(user, 'remover', r.sistema, r.fonte);
+                const { sistema: _sistema, ...rest } = r;
 
                 return {
-                    ...r,
+                    ...rest,
                     progresso: progresso,
                     eh_publico: eh_publico,
+                    pode_remover: pode_remover,
                     parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: r.arquivo_id
