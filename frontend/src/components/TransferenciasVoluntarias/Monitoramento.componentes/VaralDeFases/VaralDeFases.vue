@@ -39,7 +39,7 @@ async function iniciarFase() {
 
   await workflowAndamentoStore.iniciarFase(
     proximaFase.value.fase.id,
-    route.params.transferenciaId,
+    Number(route.params.transferenciaId),
   );
 
   workflowAndamentoStore.buscar();
