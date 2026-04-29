@@ -24,15 +24,8 @@ type CamposSolicitados = Record<string, { de: unknown; para: unknown }>;
 const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
     'objeto',
     'nome',
-    'valor',
-    'valor_total',
-    'valor_contrapartida',
-    'custeio',
     'pct_custeio',
-    'investimento',
     'pct_investimento',
-    'valor_empenho',
-    'valor_liquidado',
     'empenho',
     'data_empenho',
     'programa_orcamentario_estadual',
@@ -123,6 +116,7 @@ export class DistribuicaoSolicitacaoAjusteService {
                             orgao_gestor_id: distribuicao.orgao_gestor_id,
                             status: DistribuicaoSolicitacaoStatus.Pendente,
                             campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
+                            informacoes_complementares: dto.informacoes_complementares ?? null,
                             criado_por: user.id,
                             criado_em: new Date(),
                             atualizado_por: user.id,
@@ -172,6 +166,7 @@ export class DistribuicaoSolicitacaoAjusteService {
                 orgao_gestor_id: true,
                 status: true,
                 campos_solicitados: true,
+                informacoes_complementares: true,
                 resposta_motivo: true,
                 respondido_por: true,
                 respondido_em: true,
@@ -200,6 +195,7 @@ export class DistribuicaoSolicitacaoAjusteService {
                 orgao_gestor_id: true,
                 status: true,
                 campos_solicitados: true,
+                informacoes_complementares: true,
                 resposta_motivo: true,
                 respondido_por: true,
                 respondido_em: true,
@@ -253,6 +249,7 @@ export class DistribuicaoSolicitacaoAjusteService {
                     },
                     data: {
                         campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
+                        informacoes_complementares: dto.informacoes_complementares ?? undefined,
                         atualizado_por: user.id,
                         atualizado_em: new Date(),
                     },
@@ -540,6 +537,7 @@ export class DistribuicaoSolicitacaoAjusteService {
         orgao_gestor_id: number;
         status: DistribuicaoSolicitacaoStatus;
         campos_solicitados: any;
+        informacoes_complementares: string | null;
         resposta_motivo: string | null;
         respondido_por: number | null;
         respondido_em: Date | null;
@@ -554,6 +552,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             orgao_gestor_id: row.orgao_gestor_id,
             status: row.status,
             campos_solicitados: row.campos_solicitados as Record<string, { de: unknown; para: unknown }>,
+            informacoes_complementares: row.informacoes_complementares,
             resposta_motivo: row.resposta_motivo,
             respondido_por: row.respondido_por,
             respondido_em: row.respondido_em,

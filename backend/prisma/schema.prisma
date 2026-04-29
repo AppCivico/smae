@@ -8698,7 +8698,8 @@ model DistribuicaoRecursoSolicitacaoAjuste {
 
     status DistribuicaoSolicitacaoStatus @default(Pendente)
 
-    campos_solicitados Json
+    campos_solicitados          Json
+    informacoes_complementares  String?
 
     resposta_motivo String?
     respondido_por  Int?

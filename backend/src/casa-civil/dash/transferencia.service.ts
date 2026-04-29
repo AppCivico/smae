@@ -1056,12 +1056,8 @@ export class DashTransferenciaService {
         const andamentoFilter: Prisma.TransferenciaAndamentoWhereInput = {
             data_termino: null,
             removido_em: null,
-            ...(filter.atividade
-                ? { workflow_fase: { fase: { in: filter.atividade } } }
-                : {}),
-            ...(filter.orgaos_ids
-                ? { orgao_responsavel_id: { in: filter.orgaos_ids } }
-                : {}),
+            ...(filter.atividade ? { workflow_fase: { fase: { in: filter.atividade } } } : {}),
+            ...(filter.orgaos_ids ? { orgao_responsavel_id: { in: filter.orgaos_ids } } : {}),
         };
 
         const where: Prisma.TransferenciaWhereInput = {
@@ -1070,12 +1066,8 @@ export class DashTransferenciaService {
             AND: this.transferenciaService.permissionSet(user),
             esfera: filter.esfera ? { in: filter.esfera } : undefined,
             ...(searchConditions ? { OR: searchConditions } : {}),
-            parlamentar: filter.partido_ids
-                ? { some: { partido_id: { in: filter.partido_ids } } }
-                : undefined,
-            ...(filter.atividade || filter.orgaos_ids
-                ? { andamentoWorkflow: { some: andamentoFilter } }
-                : {}),
+            parlamentar: filter.partido_ids ? { some: { partido_id: { in: filter.partido_ids } } } : undefined,
+            ...(filter.atividade || filter.orgaos_ids ? { andamentoWorkflow: { some: andamentoFilter } } : {}),
         };
 
         const [countResult, rows] = await this.prisma.$transaction([
@@ -1204,9 +1196,7 @@ export class DashTransferenciaService {
                 orgaos,
                 esfera: r.esfera,
                 objeto: r.objeto,
-                partido_ids: r.parlamentar.length
-                    ? r.parlamentar.map((p) => p.partido_id!)
-                    : null,
+                partido_ids: r.parlamentar.length ? r.parlamentar.map((p) => p.partido_id!) : null,
             };
         });
 

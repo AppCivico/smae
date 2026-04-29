@@ -11,6 +11,7 @@ export class DistribuicaoSolicitacaoAjusteDto {
     orgao_gestor_id: number;
     status: DistribuicaoSolicitacaoStatus;
     campos_solicitados: Record<string, CampoSolicitadoDto>;
+    informacoes_complementares: string | null;
     resposta_motivo: string | null;
     respondido_por: number | null;
     respondido_em: Date | null;
