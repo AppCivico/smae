@@ -603,11 +603,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
         [
-            'Reports.executar.CasaCivilGestorDistRec',
+            'Reports.executar.CasaCivil:Demandas',
             'Executar relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
         ],
         [
-            'Reports.remover.CasaCivilGestorDistRec',
+            'Reports.remover.CasaCivil:Demandas',
             'Remover relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
         ],
     ],
@@ -1314,8 +1314,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDistribuicaoSolicitacaoAjuste.listar',
             'CadastroDistribuicaoSolicitacaoAjuste.remover',
 
-            'Reports.executar.CasaCivilGestorDistRec',
-            'Reports.remover.CasaCivilGestorDistRec',
+            'Reports.executar.CasaCivil:Demandas',
+            'Reports.remover.CasaCivil:Demandas',
 
             'CadastroTransferencia.listar',
             'AndamentoWorkflow.listar',
