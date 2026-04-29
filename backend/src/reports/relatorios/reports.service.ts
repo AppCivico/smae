@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoPdm, TipoRelatorio } from '@prisma/client';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { fork } from 'child_process';
 import { validate } from 'class-validator';
 import * as crypto from 'crypto';
@@ -51,6 +52,90 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
+
+// Mapa de propriedade fonte → sistema. Fonte de verdade para "esta fonte pertence a qual módulo?".
+// Algumas fontes (PS*) são compartilhadas entre PlanoSetorial e ProgramaDeMetas — por isso o
+// valor é uma lista, não um único módulo.
+const FONTES_POR_SISTEMA: Record<ModuloSistema, readonly FonteRelatorio[]> = {
+    SMAE: [],
+    PDM: [
+        FonteRelatorio.Orcamento,
+        FonteRelatorio.PrevisaoCusto,
+        FonteRelatorio.Indicadores,
+        FonteRelatorio.MonitoramentoMensal,
+    ],
+    PlanoSetorial: [
+        FonteRelatorio.PSOrcamento,
+        FonteRelatorio.PSPrevisaoCusto,
+        FonteRelatorio.PSIndicadores,
+        FonteRelatorio.PSMonitoramentoMensal,
+    ],
+    ProgramaDeMetas: [
+        FonteRelatorio.PSOrcamento,
+        FonteRelatorio.PSPrevisaoCusto,
+        FonteRelatorio.PSIndicadores,
+        FonteRelatorio.PSMonitoramentoMensal,
+    ],
+    Projetos: [
+        FonteRelatorio.Projeto,
+        FonteRelatorio.Projetos,
+        FonteRelatorio.ProjetoStatus,
+        FonteRelatorio.ProjetoOrcamento,
+        FonteRelatorio.ProjetoPrevisaoCusto,
+    ],
+    MDO: [
+        FonteRelatorio.Obras,
+        FonteRelatorio.ObraStatus,
+        FonteRelatorio.ObrasOrcamento,
+        FonteRelatorio.ObrasPrevisaoCusto,
+    ],
+    CasaCivil: [
+        FonteRelatorio.Parlamentares,
+        FonteRelatorio.TribunalDeContas,
+        FonteRelatorio.Transferencias,
+        FonteRelatorio.AtvPendentes,
+        FonteRelatorio.Demandas,
+    ],
+};
+
+// Mapas de discriminador da fonte: forçam `parametros.tipo_projeto`/`tipo_pdm` antes do report
+// rodar, já que algumas fontes (Orcamento, PSOrcamento, ...) são compartilhadas entre sistemas.
+const FONTES_TIPO_PROJETO: Partial<Record<FonteRelatorio, 'MDO' | 'PP'>> = {
+    [FonteRelatorio.Obras]: 'MDO',
+    [FonteRelatorio.ObraStatus]: 'MDO',
+    [FonteRelatorio.ObrasOrcamento]: 'MDO',
+    [FonteRelatorio.ObrasPrevisaoCusto]: 'MDO',
+    [FonteRelatorio.Projeto]: 'PP',
+    [FonteRelatorio.Projetos]: 'PP',
+    [FonteRelatorio.ProjetoOrcamento]: 'PP',
+    [FonteRelatorio.ProjetoPrevisaoCusto]: 'PP',
+};
+const FONTES_TIPO_PDM_FIXO: Partial<Record<FonteRelatorio, 'PDM'>> = {
+    [FonteRelatorio.Orcamento]: 'PDM',
+    [FonteRelatorio.PrevisaoCusto]: 'PDM',
+    [FonteRelatorio.Indicadores]: 'PDM',
+};
+const FONTES_TIPO_PDM_CALC: readonly FonteRelatorio[] = [
+    FonteRelatorio.PSOrcamento,
+    FonteRelatorio.PSPrevisaoCusto,
+    FonteRelatorio.PSIndicadores,
+    FonteRelatorio.PSMonitoramentoMensal,
+];
+
+// Convenção de privilégio escopado: `Reports.{action}.{sistema}:{fonte}` libera apenas aquela
+// fonte específica; o privilégio sem `:` (ex.: `Reports.executar.CasaCivil`) libera todas as
+// fontes do sistema.
+function hasReportPriv(
+    user: PessoaFromJwt,
+    action: 'executar' | 'remover',
+    sistema: ModuloSistema,
+    fonte: FonteRelatorio
+): boolean {
+    return user.hasSomeRoles([
+        `Reports.${action}.${sistema}` as ListaDePrivilegios,
+        `Reports.${action}.${sistema}:${fonte}` as ListaDePrivilegios,
+    ]);
+}
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -117,29 +202,15 @@ export class ReportsService {
             );
         }
 
-        // Ajusta o tipo de relatório para MDO, se for de status de obra
-        if (
-            dto.fonte == 'ObraStatus' ||
-            dto.fonte === 'Obras' ||
-            dto.fonte === 'ObrasOrcamento' ||
-            dto.fonte === 'ObrasPrevisaoCusto'
-        ) {
-            parametros.tipo_projeto = 'MDO';
-        } else if (
-            dto.fonte === 'ProjetoOrcamento' ||
-            dto.fonte === 'ProjetoPrevisaoCusto' ||
-            dto.fonte === 'Projetos' ||
-            dto.fonte === 'Projeto'
-        ) {
-            parametros.tipo_projeto = 'PP';
-        } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
-            parametros.tipo_pdm = 'PDM';
-        } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
+        // Força o discriminador da fonte (tipo_projeto / tipo_pdm) — fontes que rodam em mais
+        // de um sistema (Orcamento, PSOrcamento, etc.) precisam disso para o service saber qual
+        // variante produzir.
+        if (FONTES_TIPO_PROJETO[dto.fonte]) {
+            parametros.tipo_projeto = FONTES_TIPO_PROJETO[dto.fonte];
+        } else if (FONTES_TIPO_PDM_FIXO[dto.fonte]) {
+            parametros.tipo_pdm = FONTES_TIPO_PDM_FIXO[dto.fonte];
+        } else if (FONTES_TIPO_PDM_CALC.includes(dto.fonte)) {
             parametros.tipo_pdm = await this.calcTipoPdm(ctx, parametros);
-        } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
-            parametros.tipo_pdm = await this.calcTipoPdm(ctx, parametros);
-        } else if (dto.fonte === 'Indicadores') {
-            parametros.tipo_pdm = 'PDM';
         }
 
         const parametrosOriginal = structuredClone(parametros);
@@ -403,20 +474,15 @@ export class ReportsService {
             parametros.orgao_id = user.orgao_id;
         }
 
-        // Privilégio escopado `Reports.executar.CasaCivilGestorDistRec` só libera fonte=Demandas.
-        // Se o usuário só tem o escopado (sem o `Reports.executar.CasaCivil` amplo), bloqueia
-        // outras fontes do módulo CasaCivil que o decorator @Roles deixou passar.
-        const fontesCasaCivilNaoDemandas: FonteRelatorio[] = [
-            FonteRelatorio.Parlamentares,
-            FonteRelatorio.TribunalDeContas,
-            FonteRelatorio.Transferencias,
-            FonteRelatorio.AtvPendentes,
-        ];
-        if (
-            user &&
-            fontesCasaCivilNaoDemandas.includes(dto.fonte) &&
-            !user.hasSomeRoles(['Reports.executar.CasaCivil'])
-        ) {
+        // Garante que a fonte pertence ao sistema da requisição. Sem isso, um usuário multi-módulo
+        // poderia mandar uma fonte CasaCivil com X-Sistemas: PDM e contornar o gate por privilégio.
+        if (!FONTES_POR_SISTEMA[sistema].includes(dto.fonte)) {
+            throw new BadRequestException(`Fonte ${dto.fonte} não pertence ao sistema ${sistema}.`);
+        }
+
+        // Autorização: aceita o privilégio amplo `Reports.executar.{sistema}` ou o escopado
+        // `Reports.executar.{sistema}:{fonte}`.
+        if (user && !hasReportPriv(user, 'executar', sistema, dto.fonte)) {
             throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
         }
 
@@ -529,15 +595,19 @@ export class ReportsService {
             ipp = decodedPageToken.ipp;
         }
 
-        // Se o usuário só tem o privilégio escopado de CasaCivil (Demandas), força o filtro
-        // para que ele não enxergue relatórios de outras fontes do módulo, mesmo via filtro
-        // explícito ou registros legados.
-        let fonteFilter: FonteRelatorio | undefined = filters.fonte;
-        if (
-            user.hasSomeRoles(['Reports.executar.CasaCivilGestorDistRec']) &&
-            !user.hasSomeRoles(['Reports.executar.CasaCivil'])
-        ) {
-            fonteFilter = FonteRelatorio.Demandas;
+        // Se o usuário não tem o privilégio amplo `Reports.executar.{sistema}`, restringe a
+        // listagem às fontes que ele tem privilégio escopado para executar. Cobre o caso do
+        // gestor (só `Reports.executar.CasaCivil:Demandas`) sem hardcodar a fonte.
+        let fonteFilter: Prisma.RelatorioWhereInput['fonte'] = filters.fonte;
+        if (!user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios])) {
+            const fontesEscopadas = FONTES_POR_SISTEMA[sistema].filter((f) =>
+                user.hasSomeRoles([`Reports.executar.${sistema}:${f}` as ListaDePrivilegios])
+            );
+            fonteFilter = filters.fonte
+                ? fontesEscopadas.includes(filters.fonte)
+                    ? filters.fonte
+                    : { in: [] }
+                : { in: fontesEscopadas };
         }
 
         const rows = await this.prisma.relatorio.findMany({
@@ -675,24 +745,14 @@ export class ReportsService {
     }
 
     async delete(id: number, user: PessoaFromJwt) {
-        // Privilégio escopado `Reports.remover.CasaCivilGestorDistRec` só libera remoção de
-        // fonte=Demandas. Se o usuário só tem o escopado (sem o `Reports.remover.CasaCivil`),
-        // bloqueia outras fontes CasaCivil que o decorator @Roles deixou passar.
-        const fontesCasaCivilNaoDemandas: FonteRelatorio[] = [
-            FonteRelatorio.Parlamentares,
-            FonteRelatorio.TribunalDeContas,
-            FonteRelatorio.Transferencias,
-            FonteRelatorio.AtvPendentes,
-        ];
         const relatorio = await this.prisma.relatorio.findFirst({
             where: { id, removido_em: null },
-            select: { fonte: true },
+            select: { fonte: true, sistema: true },
         });
-        if (
-            relatorio &&
-            fontesCasaCivilNaoDemandas.includes(relatorio.fonte) &&
-            !user.hasSomeRoles(['Reports.remover.CasaCivil'])
-        ) {
+        // Autorização pelo sistema persistido no relatório (fonte de verdade do recurso).
+        // Aceita o privilégio amplo `Reports.remover.{sistema}` ou o escopado
+        // `Reports.remover.{sistema}:{fonte}`.
+        if (relatorio && !hasReportPriv(user, 'remover', relatorio.sistema, relatorio.fonte)) {
             throw new ForbiddenException('Usuário não tem permissão para remover este relatório.');
         }
 
