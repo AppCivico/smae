@@ -7,25 +7,28 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 import { Dashboard } from '@/components';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { localizarData } from '@/helpers/dateToDate';
 import truncate from '@/helpers/texto/truncate';
+import { useAuthStore } from '@/stores/auth.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
+import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store.ts';
 import { usePartidosStore } from '@/stores/partidos.store';
 
 const panoramaTransferenciasStore = usePanoramaTransferenciasStore();
 const partidoStore = usePartidosStore();
 const OrgaosStore = useOrgansStore();
+const authStore = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
 
-const { chamadasPendentes, erro, lista } = storeToRefs(
-  panoramaTransferenciasStore,
-);
+const {
+  chamadasPendentes, erro, lista, paginacao,
+} = storeToRefs(panoramaTransferenciasStore);
 const { partidosPorId } = storeToRefs(partidoStore);
 const { órgãosPorId } = storeToRefs(OrgaosStore);
 
@@ -102,50 +105,40 @@ function atualizarUrl() {
       prazo: prazo.value || undefined,
       palavra_chave: palavraChave.value || undefined,
       atividade: atividade.value || undefined,
+      pagina: 1,
+      token_paginacao: undefined,
     },
   });
 }
 
-watch([
-  () => route.query.esfera,
-  () => route.query.partido_ids,
-  () => route.query.orgaos_ids,
-  () => route.query.palavra_chave,
-  () => route.query.atividade,
-  () => route.query.prazo,
-], async () => {
+const parametrosDeBusca = computed(() => ({
+  esfera: route.query.esfera
+    ? Object.keys(esferasDeTransferencia)
+      .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
+    : undefined,
+  partido_ids: route.query.partido_ids,
+  orgaos_ids: route.query.orgaos_ids,
+  palavra_chave: typeof route.query.palavra_chave === 'string'
+    ? route.query.palavra_chave.trim()
+    : route.query.palavra_chave,
+  atividade: route.query.atividade,
+  prazo: route.query.prazo || prazo.value,
+  pagina: route.query.pagina,
+  ipp: route.query.ipp,
+  token_paginacao: route.query.token_paginacao,
+}));
+
+const parametrosSerializados = computed(() => JSON.stringify(parametrosDeBusca.value));
+
+watch(parametrosSerializados, async () => {
   if (!partidosDisponiveis.value.length
     && !atividadesDisponiveis.value.length
     && !orgaosDisponiveis.value.length
   ) {
     await iniciar();
-
-    panoramaTransferenciasStore.$reset();
   }
 
-  const {
-    partido_ids: partidoFiltro,
-    orgaos_ids: orgaoFiltro,
-    atividade: atividadeFiltro,
-  } = route.query;
-  let {
-    palavra_chave: palavraChaveParaBusca,
-  } = route.query;
-  if (typeof palavraChaveParaBusca === 'string') {
-    palavraChaveParaBusca = palavraChaveParaBusca.trim();
-  }
-  panoramaTransferenciasStore.$reset();
-  panoramaTransferenciasStore.buscarTudo({
-    esfera: route.query.esfera
-      ? Object.keys(esferasDeTransferencia)
-        .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
-      : undefined,
-    partido_ids: partidoFiltro,
-    orgaos_ids: orgaoFiltro,
-    palavra_chave: palavraChaveParaBusca,
-    atividade: atividadeFiltro,
-    prazo: prazo.value,
-  })
+  panoramaTransferenciasStore.buscarTudo(parametrosDeBusca.value)
     .then(() => {
       listaSemFiltro.value = cloneDeep(lista.value);
     });
@@ -341,6 +334,10 @@ onUnmounted(() => {
       </button>
     </form>
 
+    <p v-if="!chamadasPendentes.lista">
+      Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
+    </p>
+
     <div class="flex flexwrap g2 start">
       <SmaeTable
         titulo-para-rolagem-horizontal="Panorama de transferências"
@@ -392,8 +389,13 @@ onUnmounted(() => {
         v-else-if="erro"
         :erro="erro"
       />
-      <QuadroNotas />
+      <QuadroNotas v-if="!authStore.temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')" />
     </div>
+
+    <MenuPaginacao
+      class="mt2"
+      v-bind="paginacao"
+    />
   </Dashboard>
 </template>
 <style scoped>
