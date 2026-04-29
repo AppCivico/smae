@@ -18,10 +18,11 @@ import {
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
     FilterDashTransferenciasPainelEstrategicoDto,
+    FilterDashTransferenciasWorkflowDto,
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
-import { TransferenciaTipoEsfera } from '@prisma/client';
+import { Prisma, TransferenciaTipoEsfera } from '@prisma/client';
 import { UploadService } from 'src/upload/upload.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Date2YMD } from '../../common/date2ymd';
@@ -1028,5 +1029,259 @@ export class DashTransferenciaService {
 
     private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         return this.jwtService.sign(opt);
+    }
+
+    async transferenciasWorkflow(
+        filter: FilterDashTransferenciasWorkflowDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<MfDashTransferenciasDto>> {
+        const searchConditions = await this.transferenciaService.buildSearchConditions(filter.palavra_chave);
+
+        const ipp = filter.ipp ?? 25;
+        const page = filter.pagina ?? 1;
+        let offset = 0;
+        let total_registros = 0;
+
+        if (page > 1 && !filter.token_paginacao) throw new HttpException('Campo obrigatório para paginação', 400);
+
+        if (filter.token_paginacao) {
+            const decoded = this.decodeNextPageTokenWorkflow(filter.token_paginacao, filter);
+            total_registros = decoded.total_rows;
+            offset = (page - 1) * ipp;
+        } else {
+            offset = (page - 1) * ipp;
+        }
+
+        // Build andamento filter conditions (combined so atividade+orgaos match the same row)
+        const andamentoFilter: Prisma.TransferenciaAndamentoWhereInput = {
+            data_termino: null,
+            removido_em: null,
+            ...(filter.atividade
+                ? { workflow_fase: { fase: { in: filter.atividade } } }
+                : {}),
+            ...(filter.orgaos_ids
+                ? { orgao_responsavel_id: { in: filter.orgaos_ids } }
+                : {}),
+        };
+
+        const where: Prisma.TransferenciaWhereInput = {
+            removido_em: null,
+            workflow_id: { not: null },
+            AND: this.transferenciaService.permissionSet(user),
+            esfera: filter.esfera ? { in: filter.esfera } : undefined,
+            ...(searchConditions ? { OR: searchConditions } : {}),
+            parlamentar: filter.partido_ids
+                ? { some: { partido_id: { in: filter.partido_ids } } }
+                : undefined,
+            ...(filter.atividade || filter.orgaos_ids
+                ? { andamentoWorkflow: { some: andamentoFilter } }
+                : {}),
+        };
+
+        const [countResult, rows] = await this.prisma.$transaction([
+            this.prisma.transferencia.count({ where }),
+            this.prisma.transferencia.findMany({
+                where,
+                select: {
+                    id: true,
+                    identificador: true,
+                    emenda: true,
+                    esfera: true,
+                    objeto: true,
+                    workflow_id: true,
+                    parlamentar: {
+                        select: { partido_id: true },
+                    },
+                    andamentoWorkflow: {
+                        where: {
+                            data_termino: null,
+                            removido_em: null,
+                        },
+                        select: {
+                            id: true,
+                            data_inicio: true,
+                            workflow_fase_id: true,
+                            workflow_etapa_id: true,
+                            orgao_responsavel_id: true,
+                            workflow_fase: {
+                                select: { fase: true },
+                            },
+                        },
+                        take: 1,
+                    },
+                },
+                orderBy: [{ identificador: 'asc' }],
+                skip: offset,
+                take: ipp + 1,
+            }),
+        ]);
+
+        if (!filter.token_paginacao) {
+            total_registros = countResult;
+        }
+
+        let tem_mais = false;
+        let token_paginacao: string | null = null;
+        const linhasRaw = [...rows];
+
+        if (linhasRaw.length > ipp) {
+            tem_mais = true;
+            linhasRaw.pop();
+        }
+
+        // Batch fetch FluxoFase.duracao for all active andamento entries
+        const andamentoEntries = linhasRaw
+            .flatMap((r) => r.andamentoWorkflow)
+            .filter((a) => a !== undefined && a !== null);
+
+        const faseIds = [...new Set(andamentoEntries.map((a) => a.workflow_fase_id))];
+        const workflowIds = [...new Set(linhasRaw.map((r) => r.workflow_id).filter((id): id is number => id !== null))];
+
+        let fluxoFaseDuracaoMap = new Map<string, number | null>();
+
+        if (faseIds.length > 0 && workflowIds.length > 0) {
+            const fluxoFases = await this.prisma.fluxoFase.findMany({
+                where: {
+                    fase_id: { in: faseIds },
+                    fluxo: {
+                        workflow_id: { in: workflowIds },
+                    },
+                    removido_em: null,
+                },
+                select: {
+                    fase_id: true,
+                    duracao: true,
+                    fluxo: {
+                        select: { workflow_id: true },
+                    },
+                },
+            });
+
+            for (const ff of fluxoFases) {
+                const key = `${ff.fluxo.workflow_id}-${ff.fase_id}`;
+                // If multiple fluxo_fase entries exist for same (workflow_id, fase_id),
+                // use the one with duracao defined (prefer non-null)
+                if (!fluxoFaseDuracaoMap.has(key) || (ff.duracao !== null && fluxoFaseDuracaoMap.get(key) === null)) {
+                    fluxoFaseDuracaoMap.set(key, ff.duracao);
+                }
+            }
+        }
+
+        // Map results to MfDashTransferenciasDto
+        let linhas: MfDashTransferenciasDto[] = linhasRaw.map((r) => {
+            const andamento = r.andamentoWorkflow[0] ?? null;
+
+            let atividade: string;
+            let data: string | null = null;
+            let orgaos: number[] = [];
+
+            if (!andamento) {
+                atividade = 'Aguardando liberação da próxima de fase';
+            } else {
+                atividade = andamento.workflow_fase.fase;
+                orgaos = andamento.orgao_responsavel_id ? [andamento.orgao_responsavel_id] : [];
+
+                // Calculate deadline from data_inicio + duracao
+                if (andamento.data_inicio && r.workflow_id) {
+                    const key = `${r.workflow_id}-${andamento.workflow_fase_id}`;
+                    const duracao = fluxoFaseDuracaoMap.get(key) ?? null;
+
+                    if (duracao !== null) {
+                        const deadline = new Date(andamento.data_inicio);
+                        deadline.setDate(deadline.getDate() + duracao);
+                        data = Date2YMD.toStringOrNull(deadline);
+                    }
+                }
+            }
+
+            return {
+                transferencia_id: r.id,
+                emenda: r.emenda,
+                identificador: r.identificador,
+                atividade,
+                data,
+                data_origem: 'Workflow',
+                orgaos,
+                esfera: r.esfera,
+                objeto: r.objeto,
+                partido_ids: r.parlamentar.length
+                    ? r.parlamentar.map((p) => p.partido_id!)
+                    : null,
+            };
+        });
+
+        // App-level prazo filter on the calculated deadline
+        if (filter.prazo !== undefined) {
+            const prazoLimit = new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000);
+            const prazoLimitStr = Date2YMD.toStringOrNull(prazoLimit);
+
+            linhas = linhas.filter((l) => {
+                // If no deadline calculated, keep it (not considered delayed)
+                if (l.data === null) return true;
+                return l.data <= prazoLimitStr!;
+            });
+        }
+
+        // Generate pagination token
+        if (!filter.token_paginacao) {
+            const body: AnyPageTokenJwtBody = {
+                search_hash: Object2Hash({
+                    esfera: filter.esfera,
+                    partido_ids: filter.partido_ids,
+                    atividade: filter.atividade,
+                    orgaos_ids: filter.orgaos_ids,
+                    palavra_chave: filter.palavra_chave,
+                    prazo: filter.prazo,
+                }),
+                ipp,
+                issued_at: Date.now(),
+                total_rows: total_registros,
+            };
+            token_paginacao = this.jwtService.sign(body);
+        } else {
+            token_paginacao = filter.token_paginacao;
+        }
+
+        const paginas = Math.ceil(total_registros / ipp);
+        const pagina_corrente = page;
+
+        return {
+            linhas,
+            paginas,
+            pagina_corrente,
+            total_registros,
+            tem_mais,
+            token_paginacao,
+            token_ttl: PAGINATION_TOKEN_TTL,
+        };
+    }
+
+    private decodeNextPageTokenWorkflow(
+        jwt: string | undefined,
+        filter: FilterDashTransferenciasWorkflowDto
+    ): AnyPageTokenJwtBody {
+        let tmp: AnyPageTokenJwtBody | null = null;
+
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as AnyPageTokenJwtBody;
+        } catch {
+            throw new HttpException('token_paginacao invalido', 400);
+        }
+        if (!tmp) throw new HttpException('token_paginacao invalido ou faltando', 400);
+
+        const filterHash = Object2Hash({
+            esfera: filter.esfera,
+            partido_ids: filter.partido_ids,
+            atividade: filter.atividade,
+            orgaos_ids: filter.orgaos_ids,
+            palavra_chave: filter.palavra_chave,
+            prazo: filter.prazo,
+        });
+        if (tmp.search_hash != filterHash)
+            throw new HttpException(
+                'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
+                400
+            );
+        return tmp;
     }
 }

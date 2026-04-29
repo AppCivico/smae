@@ -136,6 +136,22 @@ export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(Fi
     token_paginacao?: string;
 }
 
+export class FilterDashTransferenciasWorkflowDto extends FilterDashTransferenciasDto {
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pagina?: number = 1;
+
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
+}
+
 export class DashAnaliseTranferenciasDto {
     valor_total: number;
 

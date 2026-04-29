@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PaginatedDto, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
@@ -12,7 +13,9 @@ import {
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
     FilterDashTransferenciasPainelEstrategicoDto,
+    FilterDashTransferenciasWorkflowDto,
     ListMfDashTransferenciasDto,
+    MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
 import { DashTransferenciaService } from './transferencia.service';
 
@@ -80,5 +83,16 @@ export class DashTransferenciaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PaginatedWithPagesDto<DashTransferenciasPainelEstrategicoDto>> {
         return await this.metasDashService.getTransferenciasPainelEstrategico(params, user);
+    }
+
+    @Get('transferencias-workflow')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.listar'])
+    @ApiPaginatedWithPagesResponse(MfDashTransferenciasDto)
+    async transferenciasWorkflow(
+        @Query() params: FilterDashTransferenciasWorkflowDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<MfDashTransferenciasDto>> {
+        return await this.metasDashService.transferenciasWorkflow(params, user);
     }
 }
