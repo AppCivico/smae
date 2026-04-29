@@ -403,18 +403,13 @@ export class ReportsService {
             parametros.orgao_id = user.orgao_id;
         }
 
-        // Privilégio escopado `Reports.executar.CasaCivilGestorDistRec` só libera fonte=Demandas.
-        // Se o usuário só tem o escopado (sem o `Reports.executar.CasaCivil` amplo), bloqueia
-        // outras fontes do módulo CasaCivil que o decorator @Roles deixou passar.
-        const fontesCasaCivilNaoDemandas: FonteRelatorio[] = [
-            FonteRelatorio.Parlamentares,
-            FonteRelatorio.TribunalDeContas,
-            FonteRelatorio.Transferencias,
-            FonteRelatorio.AtvPendentes,
-        ];
+        // Dentro do módulo CasaCivil, a única forma de passar pelo @Roles sem o privilégio
+        // amplo `Reports.executar.CasaCivil` é via o escopado `CasaCivilGestorDistRec`,
+        // que só libera fonte=Demandas.
         if (
             user &&
-            fontesCasaCivilNaoDemandas.includes(dto.fonte) &&
+            sistema === 'CasaCivil' &&
+            dto.fonte !== FonteRelatorio.Demandas &&
             !user.hasSomeRoles(['Reports.executar.CasaCivil'])
         ) {
             throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
@@ -675,22 +670,18 @@ export class ReportsService {
     }
 
     async delete(id: number, user: PessoaFromJwt) {
-        // Privilégio escopado `Reports.remover.CasaCivilGestorDistRec` só libera remoção de
-        // fonte=Demandas. Se o usuário só tem o escopado (sem o `Reports.remover.CasaCivil`),
-        // bloqueia outras fontes CasaCivil que o decorator @Roles deixou passar.
-        const fontesCasaCivilNaoDemandas: FonteRelatorio[] = [
-            FonteRelatorio.Parlamentares,
-            FonteRelatorio.TribunalDeContas,
-            FonteRelatorio.Transferencias,
-            FonteRelatorio.AtvPendentes,
-        ];
+        const sistema = user.assertOneModuloSistema('remover', 'Relatórios');
         const relatorio = await this.prisma.relatorio.findFirst({
             where: { id, removido_em: null },
             select: { fonte: true },
         });
+        // Dentro do módulo CasaCivil, a única forma de passar pelo @Roles sem o privilégio
+        // amplo `Reports.remover.CasaCivil` é via o escopado `CasaCivilGestorDistRec`,
+        // que só libera remoção de fonte=Demandas.
         if (
             relatorio &&
-            fontesCasaCivilNaoDemandas.includes(relatorio.fonte) &&
+            sistema === 'CasaCivil' &&
+            relatorio.fonte !== FonteRelatorio.Demandas &&
             !user.hasSomeRoles(['Reports.remover.CasaCivil'])
         ) {
             throw new ForbiddenException('Usuário não tem permissão para remover este relatório.');
