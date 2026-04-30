@@ -1369,21 +1369,29 @@ export class DemandaService {
     async enviarEmailParaParlamentares(dto: EnviarEmailParlamentaresDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const result = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // Verifica limite diário global (timezone America/Sao_Paulo)
-            const hoje = await prismaTxn.$queryRaw<[{ inicio: Date; fim: Date }]>`
-                SELECT
-                    (now() AT TIME ZONE 'America/Sao_Paulo')::date::timestamptz AS inicio,
-                    ((now() AT TIME ZONE 'America/Sao_Paulo')::date + interval '1 day')::timestamptz AS fim
-            `;
-            const envioHoje = await prismaTxn.demandaEmailParlamentar.findFirst({
-                where: {
-                    criado_em: {
-                        gte: hoje[0].inicio,
-                        lt: hoje[0].fim,
+            // Em homologação, o limite pode ser desabilitado via config
+            const limiteDesabilitado = await this.smaeConfigService.getConfigBooleanWithDefault(
+                'DISABLE_LIMITE_DIARIO_EMAIL_PARLAMENTAR',
+                false
+            );
+
+            if (!limiteDesabilitado) {
+                const hoje = await prismaTxn.$queryRaw<[{ inicio: Date; fim: Date }]>`
+                    SELECT
+                        (now() AT TIME ZONE 'America/Sao_Paulo')::date::timestamptz AS inicio,
+                        ((now() AT TIME ZONE 'America/Sao_Paulo')::date + interval '1 day')::timestamptz AS fim
+                `;
+                const envioHoje = await prismaTxn.demandaEmailParlamentar.findFirst({
+                    where: {
+                        criado_em: {
+                            gte: hoje[0].inicio,
+                            lt: hoje[0].fim,
+                        },
                     },
-                },
-            });
-            if (envioHoje) {
-                throw new HttpException('Já foi realizado um envio de e-mail para parlamentares hoje', 400);
+                });
+                if (envioHoje) {
+                    throw new HttpException('Já foi realizado um envio de e-mail para parlamentares hoje', 400);
+                }
             }
 
             // Busca todas as eleições vigentes
