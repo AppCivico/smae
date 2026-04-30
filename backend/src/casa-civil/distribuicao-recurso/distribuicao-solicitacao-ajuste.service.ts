@@ -87,25 +87,45 @@ export class DistribuicaoSolicitacaoAjusteService {
                     );
                 }
 
-                const solicitacaoPendente = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
+                const solicitacaoEmRegistro = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
                     where: {
                         distribuicao_recurso_id: dto.distribuicao_recurso_id,
-                        status: {
-                            in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente],
-                        },
+                        status: DistribuicaoSolicitacaoStatus.EmRegistro,
                         removido_em: null,
                     },
                     select: { id: true },
                 });
 
-                if (solicitacaoPendente) {
+                if (solicitacaoEmRegistro) {
                     throw new HttpException(
-                        `Já existe uma solicitação de ajuste em andamento para esta distribuição (id: ${solicitacaoPendente.id}). Edite a solicitação existente.`,
+                        `Já existe uma solicitação de ajuste em rascunho para esta distribuição. Edite a solicitação existente.`,
                         400
                     );
                 }
 
                 const campos_solicitados = this.buildCamposSolicitados(dto, distribuicao);
+
+                const solicitacaoPendente = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
+                    where: {
+                        distribuicao_recurso_id: dto.distribuicao_recurso_id,
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                        removido_em: null,
+                    },
+                    select: { campos_solicitados: true },
+                });
+
+                if (solicitacaoPendente) {
+                    const camposPendentes = solicitacaoPendente.campos_solicitados as Record<string, unknown> | null;
+                    if (camposPendentes) {
+                        const overlap = Object.keys(campos_solicitados).filter((c) => c in camposPendentes);
+                        if (overlap.length > 0) {
+                            throw new HttpException(
+                                `Já existe uma solicitação pendente que inclui os campos: ${overlap.join(', ')}. Aguarde a resolução antes de solicitar ajuste nesses campos.`,
+                                400
+                            );
+                        }
+                    }
+                }
 
                 const solicitacao = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste
                     .create({
@@ -219,11 +239,8 @@ export class DistribuicaoSolicitacaoAjusteService {
 
                 if (!solicitacao) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
 
-                if (
-                    solicitacao.status !== DistribuicaoSolicitacaoStatus.EmRegistro &&
-                    solicitacao.status !== DistribuicaoSolicitacaoStatus.Pendente
-                ) {
-                    throw new HttpException('Apenas solicitações em registro ou pendentes podem ser editadas.', 400);
+                if (solicitacao.status !== DistribuicaoSolicitacaoStatus.EmRegistro) {
+                    throw new HttpException('Apenas solicitações em registro podem ser editadas.', 400);
                 }
 
                 const distribuicao = await prismaTxn.distribuicaoRecurso.findFirst({
@@ -244,9 +261,7 @@ export class DistribuicaoSolicitacaoAjusteService {
                         id,
                         orgao_gestor_id: user.orgao_id,
                         removido_em: null,
-                        status: {
-                            in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente],
-                        },
+                        status: DistribuicaoSolicitacaoStatus.EmRegistro,
                     },
                     data: {
                         campos_solicitados: campos_solicitados as unknown as Prisma.JsonObject,
@@ -276,9 +291,7 @@ export class DistribuicaoSolicitacaoAjusteService {
                         id,
                         orgao_gestor_id: user.orgao_id,
                         removido_em: null,
-                        status: {
-                            in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente],
-                        },
+                        status: DistribuicaoSolicitacaoStatus.EmRegistro,
                     },
                     data: { removido_por: user.id, removido_em: new Date() },
                 });
@@ -310,6 +323,23 @@ export class DistribuicaoSolicitacaoAjusteService {
 
                 if (solicitacao.status !== DistribuicaoSolicitacaoStatus.EmRegistro) {
                     throw new HttpException('Apenas solicitações em registro podem ser submetidas.', 400);
+                }
+
+                const jaExistePendente = await prismaTxn.distribuicaoRecursoSolicitacaoAjuste.findFirst({
+                    where: {
+                        distribuicao_recurso_id: solicitacao.distribuicao_recurso_id,
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                        removido_em: null,
+                        id: { not: id },
+                    },
+                    select: { id: true },
+                });
+
+                if (jaExistePendente) {
+                    throw new HttpException(
+                        'Já existe uma solicitação pendente para esta distribuição. Aguarde a resolução antes de submeter.',
+                        400
+                    );
                 }
 
                 const campos = solicitacao.campos_solicitados as unknown as CamposSolicitados;
@@ -615,6 +645,8 @@ export class DistribuicaoSolicitacaoAjusteService {
         atualizado_por: number | null;
         atualizado_em: Date;
     }): DistribuicaoSolicitacaoAjusteDto {
+        const pode_editar = row.status === DistribuicaoSolicitacaoStatus.EmRegistro;
+
         return {
             id: row.id,
             distribuicao_recurso_id: row.distribuicao_recurso_id,
@@ -629,6 +661,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             criado_em: row.criado_em,
             atualizado_por: row.atualizado_por,
             atualizado_em: row.atualizado_em,
+            pode_editar,
         };
     }
 }

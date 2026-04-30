@@ -1697,6 +1697,8 @@ export class DistribuicaoRecursoService {
 
                 if (operations.length) await Promise.all(operations);
 
+                await this.invalidarSolicitacoesAjusteSeNecessario(prismaTx, id, dto);
+
                 return { id };
             },
             {
@@ -1711,8 +1713,6 @@ export class DistribuicaoRecursoService {
             // Optional: log if the background task fails for some reason
             console.error(`Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`, err);
         });
-
-        await this.invalidarSolicitacoesAjusteSeNecessario(id, dto);
 
         return { id };
     }
@@ -1838,16 +1838,17 @@ export class DistribuicaoRecursoService {
     }
 
     private async invalidarSolicitacoesAjusteSeNecessario(
+        prismaTx: Prisma.TransactionClient,
         distribuicaoRecursoId: number,
         dto: UpdateDistribuicaoRecursoDto
     ): Promise<void> {
         const camposAlterados = Object.keys(dto).filter((k) => (dto as Record<string, unknown>)[k] !== undefined);
         if (camposAlterados.length === 0) return;
 
-        const solicitacoes = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findMany({
+        const solicitacoes = await prismaTx.distribuicaoRecursoSolicitacaoAjuste.findMany({
             where: {
                 distribuicao_recurso_id: distribuicaoRecursoId,
-                status: { in: [DistribuicaoSolicitacaoStatus.EmRegistro, DistribuicaoSolicitacaoStatus.Pendente] },
+                status: DistribuicaoSolicitacaoStatus.Pendente,
                 removido_em: null,
             },
             select: { id: true, campos_solicitados: true },
@@ -1860,7 +1861,7 @@ export class DistribuicaoRecursoService {
             const camposAfetados = Object.keys(campos).filter((c) => camposAlterados.includes(c));
             if (camposAfetados.length === 0) continue;
 
-            await this.prisma.distribuicaoRecursoSolicitacaoAjuste.update({
+            await prismaTx.distribuicaoRecursoSolicitacaoAjuste.update({
                 where: { id: solicitacao.id },
                 data: {
                     status: DistribuicaoSolicitacaoStatus.Recusada,
