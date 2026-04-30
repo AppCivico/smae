@@ -1102,7 +1102,7 @@ export class DashTransferenciaService {
                         take: 1,
                     },
                 },
-                orderBy: [{ identificador: 'asc' }],
+                orderBy: [{ ano: 'desc' }, { identificador_nro: 'asc' }],
                 skip: offset,
                 take: ipp + 1,
             }),
