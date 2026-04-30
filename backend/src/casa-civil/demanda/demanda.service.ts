@@ -1547,6 +1547,7 @@ export class DemandaService {
                     id: true,
                     assunto: true,
                     nomes_parlamentares: true,
+                    corpo: true,
                     criado_em: true,
                     criador: {
                         select: {
@@ -1573,9 +1574,10 @@ export class DemandaService {
         const paginas = Math.ceil(total_registros / ipp);
 
         return {
-            linhas: linhas.map((l) => ({
+            linhas: linhas.map((l, index) => ({
                 id: l.id,
                 assunto: l.assunto,
+                corpo: index === 0 ? l.corpo : null,
                 nomes_parlamentares: l.nomes_parlamentares,
                 criado_por: {
                     id: l.criador.id,

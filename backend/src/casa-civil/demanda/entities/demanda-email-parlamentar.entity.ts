@@ -17,6 +17,9 @@ export class DemandaEmailParlamentarDto {
     assunto: string;
 
     @ApiProperty()
+    corpo: string | null;
+
+    @ApiProperty()
     nomes_parlamentares: string;
 
     @ApiProperty()
