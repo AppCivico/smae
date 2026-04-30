@@ -1196,7 +1196,12 @@ export class DistribuicaoRecursoService {
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
-    async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        id: number,
+        dto: UpdateDistribuicaoRecursoDto,
+        user: PessoaFromJwt,
+        opts?: { fromSolicitacaoId?: number }
+    ): Promise<RecordWithId> {
         const self = await this.findOne(id, user);
 
         // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.editar']) no controller.
@@ -1245,6 +1250,8 @@ export class DistribuicaoRecursoService {
                     );
                 }
                 delete (dto as any).dotacoes;
+
+                await this.verificarConflitoCamposSolicitacao(prismaTx, id, dto, opts?.fromSolicitacaoId);
 
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
                     throw new HttpException('Obrigatório quando for empenho.', 400);
@@ -1697,7 +1704,7 @@ export class DistribuicaoRecursoService {
 
                 if (operations.length) await Promise.all(operations);
 
-                await this.invalidarSolicitacoesAjusteSeNecessario(prismaTx, id, dto);
+                await this.invalidarSolicitacoesAjusteSeNecessario(prismaTx, id, dto, opts?.fromSolicitacaoId);
 
                 return { id };
             },
@@ -1837,10 +1844,93 @@ export class DistribuicaoRecursoService {
         }
     }
 
+    private async verificarConflitoCamposSolicitacao(
+        prismaTx: Prisma.TransactionClient,
+        distribuicaoRecursoId: number,
+        dto: UpdateDistribuicaoRecursoDto,
+        fromSolicitacaoId?: number
+    ): Promise<void> {
+        const camposAjuste = [
+            'objeto',
+            'nome',
+            'pct_custeio',
+            'pct_investimento',
+            'empenho',
+            'data_empenho',
+            'programa_orcamentario_estadual',
+            'programa_orcamentario_municipal',
+            'proposta',
+            'contrato',
+            'convenio',
+            'assinatura_termo_aceite',
+            'assinatura_municipio',
+            'assinatura_estado',
+            'vigencia',
+            'conclusao_suspensiva',
+            'distribuicao_banco',
+            'distribuicao_agencia',
+            'distribuicao_conta',
+            'rubrica_de_receita',
+            'finalidade',
+            'gestor_contrato',
+        ];
+
+        const camposNoDto = camposAjuste.filter((c) => (dto as Record<string, unknown>)[c] !== undefined);
+        if (camposNoDto.length === 0) return;
+
+        const distribuicaoAtual = await prismaTx.distribuicaoRecurso.findFirst({
+            where: { id: distribuicaoRecursoId, removido_em: null },
+            select: Object.fromEntries(camposNoDto.map((c) => [c, true])),
+        });
+        if (!distribuicaoAtual) return;
+
+        const camposRealmenteAlterados: string[] = [];
+        for (const campo of camposNoDto) {
+            const novoValor = (dto as Record<string, unknown>)[campo];
+            const valorAtual = (distribuicaoAtual as Record<string, unknown>)[campo];
+            if (this.normalizarCampoParaComparacao(novoValor) !== this.normalizarCampoParaComparacao(valorAtual)) {
+                camposRealmenteAlterados.push(campo);
+            }
+        }
+        if (camposRealmenteAlterados.length === 0) return;
+
+        const solicitacaoPendente = await prismaTx.distribuicaoRecursoSolicitacaoAjuste.findFirst({
+            where: {
+                distribuicao_recurso_id: distribuicaoRecursoId,
+                status: DistribuicaoSolicitacaoStatus.Pendente,
+                removido_em: null,
+                ...(fromSolicitacaoId ? { id: { not: fromSolicitacaoId } } : {}),
+            },
+            select: { id: true, campos_solicitados: true },
+        });
+
+        if (solicitacaoPendente) {
+            const camposPendentes = solicitacaoPendente.campos_solicitados as Record<string, unknown> | null;
+            if (camposPendentes) {
+                const overlap = camposRealmenteAlterados.filter((c) => c in camposPendentes);
+                if (overlap.length > 0) {
+                    throw new HttpException(
+                        `Não é possível alterar os campos: ${overlap.join(', ')}. Existe uma solicitação de ajuste pendente que inclui esses campos.`,
+                        400
+                    );
+                }
+            }
+        }
+    }
+
+    private normalizarCampoParaComparacao(v: unknown): string {
+        if (v === null || v === undefined) return 'null';
+        if (v instanceof Date) return v.getTime().toString();
+        if (typeof v === 'object' && v !== null && 'toNumber' in v && typeof (v as any).toNumber === 'function')
+            return (v as any).toNumber().toString();
+        return String(v);
+    }
+
     private async invalidarSolicitacoesAjusteSeNecessario(
         prismaTx: Prisma.TransactionClient,
         distribuicaoRecursoId: number,
-        dto: UpdateDistribuicaoRecursoDto
+        dto: UpdateDistribuicaoRecursoDto,
+        fromSolicitacaoId?: number
     ): Promise<void> {
         const camposAlterados = Object.keys(dto).filter((k) => (dto as Record<string, unknown>)[k] !== undefined);
         if (camposAlterados.length === 0) return;
@@ -1850,6 +1940,7 @@ export class DistribuicaoRecursoService {
                 distribuicao_recurso_id: distribuicaoRecursoId,
                 status: DistribuicaoSolicitacaoStatus.Pendente,
                 removido_em: null,
+                ...(fromSolicitacaoId ? { id: { not: fromSolicitacaoId } } : {}),
             },
             select: { id: true, campos_solicitados: true },
         });

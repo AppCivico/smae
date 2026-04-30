@@ -447,7 +447,9 @@ export class DistribuicaoSolicitacaoAjusteService {
                 (updateDto as Record<string, unknown>)[campo] = mudanca.para;
             }
 
-            await this.distribuicaoRecursoService.update(solicitacao.distribuicao_recurso_id, updateDto, user);
+            await this.distribuicaoRecursoService.update(solicitacao.distribuicao_recurso_id, updateDto, user, {
+                fromSolicitacaoId: solicitacao.id,
+            });
         }
 
         // Conditional update: only update if status is still Pendente (race guard)
