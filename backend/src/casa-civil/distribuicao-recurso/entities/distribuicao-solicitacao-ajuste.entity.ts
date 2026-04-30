@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { DistribuicaoSolicitacaoStatus } from '@prisma/client';
 
 export class CampoSolicitadoDto {
@@ -9,7 +10,9 @@ export class DistribuicaoSolicitacaoAjusteDto {
     id: number;
     distribuicao_recurso_id: number;
     orgao_gestor_id: number;
+    @ApiProperty({ enum: DistribuicaoSolicitacaoStatus, enumName: 'DistribuicaoSolicitacaoStatus' })
     status: DistribuicaoSolicitacaoStatus;
+    @ApiProperty({ type: 'object', additionalProperties: true })
     campos_solicitados: Record<string, CampoSolicitadoDto>;
     informacoes_complementares: string | null;
     resposta_motivo: string | null;

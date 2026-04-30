@@ -1,6 +1,7 @@
 import { IsEnum, IsInt, IsOptional, IsPositive } from 'class-validator';
 import { DistribuicaoSolicitacaoStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FilterDistribuicaoSolicitacaoAjusteDto {
     @IsOptional()
@@ -10,6 +11,7 @@ export class FilterDistribuicaoSolicitacaoAjusteDto {
     distribuicao_recurso_id?: number;
 
     @IsOptional()
+    @ApiPropertyOptional({ enum: DistribuicaoSolicitacaoStatus, enumName: 'DistribuicaoSolicitacaoStatus' })
     @IsEnum(DistribuicaoSolicitacaoStatus, { message: 'Status inválido' })
     status?: DistribuicaoSolicitacaoStatus;
 }
