@@ -376,7 +376,7 @@ export class PessoaService implements OnModuleInit {
     /**
      * Rejeita combinações de perfis cujos privilégios efetivos sejam conflitantes.
      *
-     * `CadastroDistribuicaoSolicitacaoAjuste.inserir` é exclusivo do perfil restrito
+     * `SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir` é exclusivo do perfil restrito
      * "Gestor(a) de Distribuição de Recurso" (sem acesso de edição às transferências).
      * `CadastroTransferencia.editar` só vem de perfis amplos (Gestor de TVs/Administrador).
      * A coexistência indica combinação errada na atribuição de perfis.
@@ -401,7 +401,7 @@ export class PessoaService implements OnModuleInit {
         }
 
         if (
-            privilegios.has('CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
+            privilegios.has('SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
             privilegios.has('CadastroTransferencia.editar')
         ) {
             throw new HttpException(
@@ -1961,13 +1961,13 @@ export class PessoaService implements OnModuleInit {
         }
 
         // Privilégio virtual que identifica o perfil restrito "Gestor(a) de Distribuição de Recurso".
-        // A posse de CadastroDistribuicaoSolicitacaoAjuste.inserir é exclusiva desse perfil —
+        // A posse de SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir é exclusiva desse perfil —
         // verificarPerfisCompativeis() rejeita combinações com CadastroTransferencia.editar
         // (e administradores carregam .editar transitivamente). O `!administrador` cobre
         // eventuais cadastros legados antes da validação. Frontend deve checar este priv
         // único em vez de duplicar a regra composta.
         if (
-            ret.privilegios.includes('CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
+            ret.privilegios.includes('SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
             !ret.privilegios.includes('CadastroTransferencia.administrador')
         ) {
             ret.privilegios.push('SMAE.PerfilGestorDistribuicaoRecurso');

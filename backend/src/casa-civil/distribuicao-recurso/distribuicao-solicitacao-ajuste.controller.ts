@@ -22,7 +22,7 @@ export class DistribuicaoSolicitacaoAjusteController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.inserir'])
+    @Roles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir'])
     async create(
         @Body() dto: CreateDistribuicaoSolicitacaoAjusteDto,
         @CurrentUser() user: PessoaFromJwt
@@ -32,7 +32,7 @@ export class DistribuicaoSolicitacaoAjusteController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.listar'])
+    @Roles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar'])
     async findAll(
         @Query() filters: FilterDistribuicaoSolicitacaoAjusteDto,
         @CurrentUser() user: PessoaFromJwt
@@ -42,7 +42,7 @@ export class DistribuicaoSolicitacaoAjusteController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.listar'])
+    @Roles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar'])
     async findOne(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -52,7 +52,7 @@ export class DistribuicaoSolicitacaoAjusteController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.editar'])
+    @Roles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateDistribuicaoSolicitacaoAjusteDto,
@@ -63,7 +63,7 @@ export class DistribuicaoSolicitacaoAjusteController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.remover'])
+    @Roles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -72,7 +72,7 @@ export class DistribuicaoSolicitacaoAjusteController {
 
     @Patch(':id/submeter')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroDistribuicaoSolicitacaoAjuste.inserir'])
+    @Roles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir'])
     async submeter(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.service.submeter(+params.id, user);
     }

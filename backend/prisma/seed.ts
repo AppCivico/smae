@@ -554,12 +554,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroDistribuicaoSolicitacaoAjuste: [
         [
-            'CadastroDistribuicaoSolicitacaoAjuste.inserir',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
             'Solicitar ajuste em distribuição de recurso do próprio órgão',
         ],
-        ['CadastroDistribuicaoSolicitacaoAjuste.editar', 'Editar solicitação de ajuste pendente'],
-        ['CadastroDistribuicaoSolicitacaoAjuste.listar', 'Listar solicitações de ajuste'],
-        ['CadastroDistribuicaoSolicitacaoAjuste.remover', 'Remover solicitação de ajuste pendente'],
+        ['SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar', 'Editar solicitação de ajuste pendente'],
+        ['SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar', 'Listar solicitações de ajuste'],
+        ['SMAE.CadastroDistribuicaoSolicitacaoAjuste.remover', 'Remover solicitação de ajuste pendente'],
         [
             'CadastroDistribuicaoSolicitacaoAjuste.administrador',
             'Gerir (aprovar/recusar) solicitações de ajuste de distribuição',
@@ -1276,7 +1276,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferenciaAnexo.listar',
             'CadastroTransferenciaAnexo.remover',
 
-            'CadastroDistribuicaoSolicitacaoAjuste.listar',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar',
             'CadastroDistribuicaoSolicitacaoAjuste.administrador',
 
             'CadastroDemandaConfig.editar',
@@ -1309,10 +1309,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemanda.editar',
             'CadastroParlamentar.listar',
 
-            'CadastroDistribuicaoSolicitacaoAjuste.inserir',
-            'CadastroDistribuicaoSolicitacaoAjuste.editar',
-            'CadastroDistribuicaoSolicitacaoAjuste.listar',
-            'CadastroDistribuicaoSolicitacaoAjuste.remover',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.remover',
 
             'Reports.executar.CasaCivil:Demandas',
             'Reports.remover.CasaCivil:Demandas',
