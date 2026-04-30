@@ -5,6 +5,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 interface EmailItem {
   id: number;
   assunto: string;
+  corpo: string | null;
   nomes_parlamentares: string;
   criado_em: string;
   criado_por: { id: number; nome_exibicao: string };
@@ -74,8 +75,7 @@ export const useEnvioDeEmailsStore = defineStore('envioDeEmails', {
 
         this.lista = linhas;
         this.assuntoUltimoEmail = linhas[0]?.assunto ?? '';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.corpoUltimoEmail = (linhas[0] as any)?.corpo ?? '';
+        this.corpoUltimoEmail = linhas[0]?.corpo ?? '';
         this.paginacao.paginaCorrente = paginaCorrente;
         this.paginacao.paginas = paginas;
         this.paginacao.temMais = temMais;

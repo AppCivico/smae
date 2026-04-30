@@ -29,9 +29,7 @@ watch(
   { immediate: true },
 );
 
-if (!envioDeEmailsStore.lista.length) {
-  envioDeEmailsStore.buscarTudo({ pagina: 1 });
-}
+envioDeEmailsStore.buscarTudo({ pagina: 1 });
 
 function handleEnviar() {
   alertStore.confirmAction('Deseja enviar o e-mail para os parlamentares?', async () => {
