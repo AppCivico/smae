@@ -119,7 +119,26 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
-          class="mr1 ml1"
+          :to="{
+            name: 'DistribuicaoSolicitacaoAjuste.Lista',
+            params: {
+              ...$route.params,
+              recursoId: linha.id,
+            },
+          }"
+        >
+          <span class="tipinfo">
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_atividade" />
+            </svg>
+            <div>Solicitações de ajuste</div>
+          </span>
+        </SmaeLink>
+
+        <SmaeLink
           :to="{
             name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
             params: {

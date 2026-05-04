@@ -13,6 +13,8 @@ import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
+import DistribuicaoSolicitacaoAjusteCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/DistribuicaoSolicitacaoAjusteCriarEditar.vue';
+import DistribuicaoSolicitacaoAjusteLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/DistribuicaoSolicitacaoAjusteLista.vue';
 import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciaDistribuicaoDeRecursosEditarRaiz from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosEditarRaiz.vue';
 import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
@@ -230,6 +232,65 @@ export default {
                   'TransferenciasVoluntariasDetalhes',
                   'TransferenciaDistribuicaoDeRecursos.Lista',
                   'TransferenciaDistribuicaoDeRecursos.Editar',
+                ],
+              },
+            },
+            {
+              path: 'solicitacoes-de-ajuste',
+              name: 'DistribuicaoSolicitacaoAjuste.Lista',
+              component: DistribuicaoSolicitacaoAjusteLista,
+              meta: {
+                título: 'Solicitações de ajuste',
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Editar',
+                limitarÀsPermissões: [
+                  'CadastroDistribuicaoSolicitacaoAjuste.',
+                  'SMAE.PerfilGestorDistribuicaoRecurso',
+                ],
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'TransferenciaDistribuicaoDeRecursos.Editar',
+                ],
+              },
+            },
+            {
+              path: 'solicitacoes-de-ajuste/nova',
+              name: 'DistribuicaoSolicitacaoAjuste.Novo',
+              component: DistribuicaoSolicitacaoAjusteCriarEditar,
+              meta: {
+                título: 'Alterar Distribuição de Recursos',
+                rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
+                limitarÀsPermissões: [
+                  'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+                ],
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'TransferenciaDistribuicaoDeRecursos.Editar',
+                  'DistribuicaoSolicitacaoAjuste.Lista',
+                ],
+              },
+            },
+            {
+              path: 'solicitacoes-de-ajuste/:ajusteId',
+              name: 'DistribuicaoSolicitacaoAjuste.Editar',
+              component: DistribuicaoSolicitacaoAjusteCriarEditar,
+              props: (route) => tiparPropsDeRota(route, { ajusteId: 'number', recursoId: 'number', transferenciaId: 'number' }),
+              meta: {
+                título: 'Alterar Distribuição de Recursos',
+                rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
+                limitarÀsPermissões: [
+                  'CadastroDistribuicaoSolicitacaoAjuste.editar',
+                  'SMAE.PerfilGestorDistribuicaoRecurso',
+                ],
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'TransferenciaDistribuicaoDeRecursos.Editar',
+                  'DistribuicaoSolicitacaoAjuste.Lista',
                 ],
               },
             },

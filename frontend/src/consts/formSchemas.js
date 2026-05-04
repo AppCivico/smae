@@ -2418,6 +2418,107 @@ export const transferenciaDistribuicaoDeRecursos = object({
     })),
 });
 
+export const distribuicaoSolicitacaoAjuste = object({
+  assinatura_estado: date()
+    .label('Data de assinatura do representante do estado')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  assinatura_municipio: date()
+    .label('Data de assinatura do representante do município')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  assinatura_termo_aceite: date()
+    .label('Data de assinatura do termo de aceite')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  conclusao_suspensiva: date()
+    .label('Data de conclusão da suspensiva')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  contrato: string()
+    .label('Número do contrato')
+    .nullable(),
+  convenio: string()
+    .label('Número convênio/pré-convênio')
+    .nullable(),
+  data_empenho: date()
+    .label('Data do empenho')
+    .max(dataMax)
+    .min(dataMin)
+    .nullableOuVazio(),
+  distribuicao_agencia: string()
+    .label('Agência Bancária')
+    .nullable(),
+  distribuicao_banco: string()
+    .label('Banco')
+    .nullable(),
+  distribuicao_conta: string()
+    .label('Conta Corrente')
+    .nullable(),
+  dotacoes: array()
+    .label('Dotações')
+    .of(string()
+      .label('Dotação')
+      .trim()
+      .max(255)
+      .min(1))
+    .semDuplicatas('Dotações não podem ter valores repetidos'),
+  empenho: boolean()
+    .label('Empenho')
+    .nullable(),
+  finalidade: string()
+    .label('Finalidade')
+    .nullable(),
+  gestor_contrato: string()
+    .label('Gestor do contrato')
+    .nullable(),
+  informacoes_complementares: string()
+    .label('Informações Complementares')
+    .max(255)
+    .nullable(),
+  nome: string()
+    .label('Nome')
+    .min(1)
+    .max(1024)
+    .required(),
+  objeto: string()
+    .label('Objeto/Empreendimento')
+    .max(1000)
+    .required(),
+  programa_orcamentario_estadual: string()
+    .label('Programa orçamentário estadual')
+    .nullable(),
+  programa_orcamentario_municipal: string()
+    .label('Programa orçamentário municipal')
+    .nullable(),
+  proposta: string()
+    .label('Proposta')
+    .nullable(),
+  rubrica_de_receita: string()
+    .label('Rubrica de receita')
+    .nullable(),
+  valor_empenho: number()
+    .label('Valor empenho')
+    .nullable(),
+  valor_liquidado: string()
+    .label('Liquidação/Pagamento')
+    .nullable(),
+  vigencia: date()
+    .label('Data de vigência')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+});
+
 export const registroDeTransferencia = object({
   agencia_aceite: string()
     .label('Agência da conta de aceite')
