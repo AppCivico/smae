@@ -1872,7 +1872,7 @@ export const portfolio = object({
     .label('Data de criação')
     .nullable()
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v)),
   descricao: string()
     .label('Descrição')
@@ -2117,7 +2117,7 @@ export const statusDistribuicao = object({
   data_troca: date()
     .label('Data')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .required()
     .transform((v) => (!v ? null : v)),
   orgao_responsavel_id: number()
@@ -2221,25 +2221,25 @@ export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   assinatura_municipio: date()
     .label('Data de assinatura do representante do município')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   assinatura_termo_aceite: date()
     .label('Data de assinatura do termo de aceite')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   conclusao_suspensiva: date()
     .label('Data de conclusão da suspensiva')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   contrato: string()
@@ -2265,7 +2265,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullableOuVazio(),
   distribuicao_agencia: string()
     .label('Agência Bancária')
@@ -2397,7 +2397,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   vigencia: date()
     .label('Data de vigência')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   parlamentares: array()
@@ -2538,7 +2538,7 @@ export const transferenciasVoluntarias = object({
   clausula_suspensiva_vencimento: date()
     .label('data de vencimento da cláusula suspensiva')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v))
     .meta({
       balaoInformativo: 'Indica a data de vencimento para atendimento das pendências contratuais que permitem o início da Transferência Voluntária.',
@@ -2744,12 +2744,12 @@ export const projeto = object()
       .label('Data de aprovação')
       .nullable()
       .max(dataMax)
-      .min(new Date(2003, 0, 1)),
+      .min(dataMin),
     data_revisao: date()
       .label('Data de revisão')
       .nullable()
       .max(dataMax)
-      .min(new Date(2003, 0, 1)),
+      .min(dataMin),
     equipe: array()
       .label('Equipe do Projeto')
       .nullable()
@@ -3247,13 +3247,13 @@ export const relatórioDeStatus = relatorioValidacaoBase.concat(object({
     periodo_inicio: date()
       .label('Início do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     periodo_fim: date()
       .label('Final do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     portfolio_id: number()
@@ -3272,13 +3272,13 @@ export const relatórioDeStatusObra = relatorioValidacaoBase.concat(object({
     periodo_inicio: date()
       .label('Início do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     periodo_fim: date()
       .label('Final do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     portfolio_id: number()
@@ -3342,7 +3342,7 @@ export const relatórioDePortfolioObras = relatorioValidacaoBase.concat(object({
     periodo: date()
       .label('Obras que iniciam a partir de')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
   }),
@@ -3742,7 +3742,7 @@ export const workflow = object({
     .label('Início da vigência')
     .nullable()
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v))
     .required(),
   nome: string()
@@ -3752,7 +3752,7 @@ export const workflow = object({
     .label('fim da vigência')
     .nullable()
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v)),
   transferencia_tipo_id: number()
     .label('Tipo de transferência')
