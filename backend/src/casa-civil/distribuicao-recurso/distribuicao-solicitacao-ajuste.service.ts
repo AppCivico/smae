@@ -500,10 +500,10 @@ export class DistribuicaoSolicitacaoAjusteService {
         for (const [key, paraValue] of Object.entries(dto)) {
             if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(key) || paraValue === undefined) continue;
             const deRaw = key === 'dotacoes' ? this.normalizeDotacoes(distribuicao[key]) : (distribuicao[key] ?? null);
-            campos[key] = {
-                de: this.normalizeValue(deRaw),
-                para: this.normalizeValue(paraValue),
-            };
+            const de = this.normalizeValue(deRaw);
+            const para = this.normalizeValue(paraValue);
+            if (JSON.stringify(de) === JSON.stringify(para)) continue;
+            campos[key] = { de, para };
         }
 
         return campos;
