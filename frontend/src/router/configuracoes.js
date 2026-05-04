@@ -1203,6 +1203,15 @@ export default [
                   título: 'Envio de E-mails',
                 },
               },
+              {
+                name: 'envioDeEmails.detalhes',
+                path: 'detalhes',
+                component: () => import('@/views/envioDeEmails/EnvioDeEmailsDetalhes.vue'),
+                meta: {
+                  título: 'Detalhes do E-mail',
+                  rotaDeEscape: 'envioDeEmails.listar',
+                },
+              },
             ],
           },
         ],

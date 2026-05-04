@@ -39,11 +39,6 @@ function buscarDados() {
   });
 }
 
-async function handleEnviarEmail() {
-  await envioDeEmailsStore.dispararEmail();
-  buscarDados();
-}
-
 watch(
   () => [
     route.query?.pagina,
@@ -61,13 +56,12 @@ watch(
 <template>
   <CabecalhoDePagina>
     <template #acoes>
-      <button
+      <router-link
+        :to="{ name: 'envioDeEmails.detalhes' }"
         class="btn big"
-        type="button"
-        @click="handleEnviarEmail"
       >
         Enviar e-mail
-      </button>
+      </router-link>
     </template>
   </CabecalhoDePagina>
 
