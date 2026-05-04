@@ -106,7 +106,7 @@ onUnmounted(() => {
       }">
         <svg width="20" height="20">
           <use xlink:href="#i_+" />
-        </svg> Registrar nova alteração da distribuição de recurso
+        </svg> Registrar nova solicitação de ajuste
       </SmaeLink>
     </p>
   </div>
