@@ -90,10 +90,11 @@ function obterObjetoVinculado() {
     || vinculoAtual.value?.meta
     || vinculoAtual.value?.iniciativa
     || vinculoAtual.value?.atividade
+    || vinculoAtual.value?.demanda
     || null;
 }
 
-function obterPortfolioOuModulo() {
+function obterPortfolioOuModuloOuDemanda() {
   if (vinculoAtual.value?.projeto?.portfolio) {
     return `Portfolio: ${vinculoAtual.value.projeto.portfolio.nome}`;
   }
@@ -109,6 +110,10 @@ function obterPortfolioOuModulo() {
   if (vinculoAtual.value?.meta) {
     return 'PDM/Meta';
   }
+  if (vinculoAtual.value?.demanda) {
+    return 'Demanda';
+  }
+
   return '-';
 }
 
@@ -116,7 +121,6 @@ function obterLabelCampoVinculo() {
   const campo = vinculoAtual.value?.campo_vinculo;
   if (campo === 'Endereco') return 'Endereço';
   if (campo === 'Dotacao') return 'Dotação';
-  if (campo === 'Demanda') return 'Demanda';
   return '-';
 }
 </script>
@@ -185,13 +189,14 @@ function obterLabelCampoVinculo() {
       <h3 class="w700 tc600 t16 mb1 mt2">
         Objeto Vinculado
       </h3>
+
       <div class="flex g2 flexwrap">
         <dl class="f1">
           <dt class="t14 w700 mb05 tamarelo">
-            {{ obterPortfolioOuModulo() }}
+            {{ obterPortfolioOuModuloOuDemanda() }}
           </dt>
           <dd>
-            {{ obterObjetoVinculado()?.nome || '-' }}
+            {{ obterObjetoVinculado()?.nome || obterObjetoVinculado()?.nome_projeto || '-' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -202,7 +207,21 @@ function obterLabelCampoVinculo() {
             {{ obterObjetoVinculado()?.orgao?.sigla || '-' }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl
+          v-if="obterObjetoVinculado()?.area_tematica"
+          class="f1"
+        >
+          <dt class="t14 w700 mb05 tamarelo">
+            Área temática
+          </dt>
+          <dd>
+            {{ obterObjetoVinculado()?.area_tematica?.nome || '-' }}
+          </dd>
+        </dl>
+        <dl
+          v-else
+          class="f1"
+        >
           <dt class="t14 w700 mb05 tamarelo">
             Status
           </dt>
@@ -212,7 +231,10 @@ function obterLabelCampoVinculo() {
         </dl>
       </div>
 
-      <div class="flex g2 flexwrap mt1">
+      <div
+        v-if="vinculoAtual?.campo_vinculo !== 'Demanda'"
+        class="flex g2 flexwrap mt1"
+      >
         <dl class="f1">
           <dt class="t14 w700 mb05 tamarelo">
             {{ obterLabelCampoVinculo() }}
