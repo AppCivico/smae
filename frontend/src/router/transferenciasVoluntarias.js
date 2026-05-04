@@ -163,7 +163,10 @@ export default {
       meta: {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: [
+          'CadastroTransferencia.editar',
+          'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+        ],
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
@@ -423,7 +426,9 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.listar',
+        limitarÀsPermissões: [
+          'CadastroClassificacao.listar',
+        ],
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
