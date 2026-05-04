@@ -368,6 +368,7 @@ onUnmounted(() => {
             }"
             :desabilitar="!linha.transferencia_id"
             class="tprimary"
+            exibir-desabilitado
           >
             {{ linha.identificador }}
           </SmaeLink>
