@@ -148,10 +148,7 @@ onMounted(() => {
 <template>
   <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
+  <LoadingComponent v-if="chamadasPendentes?.emFoco" />
 
   <ErrorComponent :erro="erros.emFoco" />
 
