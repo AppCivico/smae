@@ -1440,8 +1440,10 @@ export class TransferenciaService {
             }
         }
 
-        // Adiciona busca por palavras-chave (vetores)
-        if (idsPalavrasChave !== undefined && idsPalavrasChave.length > 0) {
+        // Adiciona busca por palavras-chave (vetores).
+        // Inclui mesmo quando o array está vazio: { id: { in: [] } } não casa com nada,
+        // garantindo que a busca sem resultados não seja ignorada.
+        if (idsPalavrasChave !== undefined) {
             searchConditions.push({ id: { in: idsPalavrasChave } });
         }
 
@@ -1630,10 +1632,7 @@ export class TransferenciaService {
         });
         if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
-        const pode_editar = user.hasSomeRoles([
-            'CadastroTransferencia.editar',
-            'CadastroTransferencia.administrador',
-        ]);
+        const pode_editar = user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']);
 
         return {
             id: row.id,
