@@ -17,7 +17,6 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import FormErrorsList from '@/components/FormErrorsList.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -267,19 +266,29 @@ onMounted(async () => {
 <template>
   <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
-
   <div
-    v-if="erro"
-    class="error p1"
+    v-if="$route.params.recursoId"
+    class="flex mb2"
   >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
+    <SmaeLink
+      class="like-a__text addlink"
+      :to="{
+        name: 'DistribuicaoSolicitacaoAjuste.Lista',
+        params: { ...$route.params },
+      }"
+    >
+      <svg
+        width="20"
+        height="20"
+      >
+        <use xlink:href="#i_history" />
+      </svg> Solicitações de ajuste
+    </SmaeLink>
   </div>
+
+  <LoadingComponent v-if="chamadasPendentes?.emFoco" />
+
+  <ErrorComponent :erro="erro" />
 
   <form @submit.prevent="!isSubmitting ? onSubmit() : null">
     <fieldset>
@@ -1227,21 +1236,9 @@ onMounted(async () => {
       </div>
     </fieldset>
 
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-
-      <button
-        class="btn big"
-        :aria-busy="isSubmitting"
-        :aria-disabled="Object.keys(errors)?.length"
-        type="submit"
-      >
-        Salvar
-      </button>
-
-      <hr class="ml2 f1">
-    </div>
+    <SmaeFieldsetSubmit
+      :esta-carregando="isSubmitting"
+      :erros="errors"
+    />
   </form>
 </template>
