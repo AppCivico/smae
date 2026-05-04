@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, onUnmounted } from 'vue';
+import { onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import SmaeLink from '@/components/SmaeLink.vue';
@@ -55,7 +55,12 @@ onUnmounted(() => {
 
     <ErrorComponent :erro="erros.lista" />
 
-    <SmaeTable v-if="!chamadasPendentes.lista" class="mb2" :colunas="colunas" :dados="lista">
+    <SmaeTable
+      v-if="!chamadasPendentes.lista"
+      class="mb2"
+      :colunas="colunas"
+      :dados="lista"
+    >
       <template #acoes="{ linha }">
         <SmaeLink
           v-if="podeMostrarLapis(linha)"
@@ -63,29 +68,42 @@ onUnmounted(() => {
           aria-label="editar"
           title="editar"
           :to="{
-          name: 'DistribuicaoSolicitacaoAjuste.Editar',
-          params: {
-            ...$route.params,
-            ajusteId: linha.id,
-          },
-        }">
+            name: 'DistribuicaoSolicitacaoAjuste.Editar',
+            params: {
+              ...$route.params,
+              ajusteId: linha.id,
+            },
+          }"
+        >
           <span class="tipinfo">
-            <svg width="20" height="20">
+            <svg
+              width="20"
+              height="20"
+            >
               <use xlink:href="#i_edit" />
             </svg>
             <div>Editar</div>
           </span>
         </SmaeLink>
 
-        <SmaeLink v-else class="like-a__text" aria-label="visualizar" title="visualizar" :to="{
-          name: 'DistribuicaoSolicitacaoAjuste.Editar',
-          params: {
-            ...$route.params,
-            ajusteId: linha.id,
-          },
-        }">
+        <SmaeLink
+          v-else
+          class="like-a__text"
+          aria-label="visualizar"
+          title="visualizar"
+          :to="{
+            name: 'DistribuicaoSolicitacaoAjuste.Editar',
+            params: {
+              ...$route.params,
+              ajusteId: linha.id,
+            },
+          }"
+        >
           <span class="tipinfo">
-            <svg width="20" height="20">
+            <svg
+              width="20"
+              height="20"
+            >
               <use xlink:href="#i_view" />
             </svg>
             <div>Visualizar</div>
@@ -100,11 +118,17 @@ onUnmounted(() => {
 </pre>
 
     <p v-if="ehCriador">
-      <SmaeLink class="like-a__text addlink" :to="{
-        name: 'DistribuicaoSolicitacaoAjuste.Novo',
-        params: { ...$route.params },
-      }">
-        <svg width="20" height="20">
+      <SmaeLink
+        class="like-a__text addlink"
+        :to="{
+          name: 'DistribuicaoSolicitacaoAjuste.Novo',
+          params: { ...$route.params },
+        }"
+      >
+        <svg
+          width="20"
+          height="20"
+        >
           <use xlink:href="#i_+" />
         </svg> Registrar nova solicitação de ajuste
       </SmaeLink>
