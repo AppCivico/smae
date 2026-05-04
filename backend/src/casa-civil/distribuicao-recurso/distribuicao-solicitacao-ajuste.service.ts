@@ -30,7 +30,6 @@ const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
     'data_empenho',
     'programa_orcamentario_estadual',
     'programa_orcamentario_municipal',
-    'dotacao',
     'proposta',
     'contrato',
     'convenio',
@@ -45,13 +44,15 @@ const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
     'rubrica_de_receita',
     'finalidade',
     'gestor_contrato',
+    'dotacoes',
 ] as const;
 
 const DISTRIBUICAO_SELECT_CAMPOS = {
     id: true,
     orgao_gestor_id: true,
-    ...Object.fromEntries(DISTRIBUICAO_AJUSTE_CAMPOS.map((c) => [c, true])),
-} as const;
+    ...Object.fromEntries(DISTRIBUICAO_AJUSTE_CAMPOS.filter((c) => c !== 'dotacoes').map((c) => [c, true])),
+    dotacoes: { where: { removido_em: null }, select: { dotacao: true } },
+};
 
 @Injectable()
 export class DistribuicaoSolicitacaoAjusteService {
@@ -418,7 +419,10 @@ export class DistribuicaoSolicitacaoAjusteService {
             const camposDivergentes: string[] = [];
             for (const [campo, mudanca] of Object.entries(campos)) {
                 if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(campo)) continue;
-                const valorAtual = this.normalizeValue((distribuicaoAtual as Record<string, unknown>)[campo]);
+                const rawValue = (distribuicaoAtual as Record<string, unknown>)[campo];
+                const valorAtual = this.normalizeValue(
+                    campo === 'dotacoes' ? this.normalizeDotacoes(rawValue) : rawValue
+                );
                 const valorDe = this.normalizeValue(mudanca.de);
                 if (JSON.stringify(valorAtual) !== JSON.stringify(valorDe)) {
                     camposDivergentes.push(campo);
@@ -495,13 +499,19 @@ export class DistribuicaoSolicitacaoAjusteService {
 
         for (const [key, paraValue] of Object.entries(dto)) {
             if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(key) || paraValue === undefined) continue;
+            const deRaw = key === 'dotacoes' ? this.normalizeDotacoes(distribuicao[key]) : (distribuicao[key] ?? null);
             campos[key] = {
-                de: this.normalizeValue(distribuicao[key] ?? null),
+                de: this.normalizeValue(deRaw),
                 para: this.normalizeValue(paraValue),
             };
         }
 
         return campos;
+    }
+
+    private normalizeDotacoes(value: unknown): string[] {
+        if (!Array.isArray(value)) return [];
+        return value.map((d: { dotacao: string }) => d.dotacao).sort();
     }
 
     /** Normaliza valores para armazenamento JSON-safe (Dates → ISO string, Decimal → number). */
