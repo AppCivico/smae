@@ -22,7 +22,7 @@ import {
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
-import { Prisma, TransferenciaTipoEsfera } from '@prisma/client';
+import { Prisma, TransferenciaTipoEsfera, WorkflowResponsabilidade } from '@prisma/client';
 import { UploadService } from 'src/upload/upload.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Date2YMD } from '../../common/date2ymd';
@@ -1098,6 +1098,10 @@ export class DashTransferenciaService {
                             workflow_fase: {
                                 select: { fase: true },
                             },
+                            tarefaEspelhada: {
+                                select: { id: true },
+                                take: 1,
+                            },
                         },
                         take: 1,
                     },
@@ -1130,6 +1134,7 @@ export class DashTransferenciaService {
         const workflowIds = [...new Set(linhasRaw.map((r) => r.workflow_id).filter((id): id is number => id !== null))];
 
         let fluxoFaseDuracaoMap = new Map<string, number | null>();
+        let fluxoFaseResponsabilidadeMap = new Map<string, WorkflowResponsabilidade>();
 
         if (faseIds.length > 0 && workflowIds.length > 0) {
             const fluxoFases = await this.prisma.fluxoFase.findMany({
@@ -1143,6 +1148,7 @@ export class DashTransferenciaService {
                 select: {
                     fase_id: true,
                     duracao: true,
+                    responsabilidade: true,
                     fluxo: {
                         select: { workflow_id: true },
                     },
@@ -1151,6 +1157,7 @@ export class DashTransferenciaService {
 
             for (const ff of fluxoFases) {
                 const key = `${ff.fluxo.workflow_id}-${ff.fase_id}`;
+                fluxoFaseResponsabilidadeMap.set(key, ff.responsabilidade);
                 // If multiple fluxo_fase entries exist for same (workflow_id, fase_id),
                 // use the one with duracao defined (prefer non-null)
                 if (!fluxoFaseDuracaoMap.has(key) || (ff.duracao !== null && fluxoFaseDuracaoMap.get(key) === null)) {
@@ -1159,45 +1166,115 @@ export class DashTransferenciaService {
             }
         }
 
+        // For OutroOrgao phases the responsible org and activity label live on Tarefa
+        // (cronograma child tasks), not on TransferenciaAndamento.
+        // The andamento has a "mirror" Tarefa (nivel 2) via tarefaEspelhada; the actual
+        // per-distribution tasks are its children (nivel 3, tarefa_pai_id = mirror.id).
+        const espelhadaIds = andamentoEntries
+            .flatMap((a) => a.tarefaEspelhada)
+            .map((t) => t.id)
+            .filter((id) => id != null);
+
+        const tarefasOutroOrgao =
+            espelhadaIds.length > 0
+                ? await this.prisma.tarefa.findMany({
+                      where: {
+                          tarefa_pai_id: { in: espelhadaIds },
+                          termino_real: null,
+                          removido_em: null,
+                      },
+                      select: {
+                          tarefa_pai_id: true,
+                          tarefa: true,
+                          orgao_id: true,
+                      },
+                  })
+                : [];
+
+        // espelhadaId → list of { atividade, orgao_id } for open distribution tasks
+        const espelhadaTarefasMap = new Map<number, { atividade: string; orgao_id: number | null }[]>();
+        for (const t of tarefasOutroOrgao) {
+            if (t.tarefa_pai_id === null) continue;
+            if (!espelhadaTarefasMap.has(t.tarefa_pai_id)) {
+                espelhadaTarefasMap.set(t.tarefa_pai_id, []);
+            }
+            espelhadaTarefasMap.get(t.tarefa_pai_id)!.push({ atividade: t.tarefa, orgao_id: t.orgao_id });
+        }
+
         // Map results to MfDashTransferenciasDto
-        let linhas: MfDashTransferenciasDto[] = linhasRaw.map((r) => {
+        // OutroOrgao phases expand to one row per open cronograma task (one per distribution).
+        let linhas: MfDashTransferenciasDto[] = linhasRaw.flatMap((r) => {
             const andamento = r.andamentoWorkflow[0] ?? null;
 
             let atividade: string;
             let data: string | null = null;
-            let orgaos: number[] = [];
 
             if (!andamento) {
                 atividade = 'Aguardando liberação da próxima de fase';
-            } else {
-                atividade = andamento.workflow_fase.fase;
-                orgaos = andamento.orgao_responsavel_id ? [andamento.orgao_responsavel_id] : [];
+                return [
+                    {
+                        transferencia_id: r.id,
+                        emenda: r.emenda,
+                        identificador: r.identificador,
+                        atividade,
+                        data,
+                        data_origem: 'Workflow' as const,
+                        orgaos: [],
+                        esfera: r.esfera,
+                        objeto: r.objeto,
+                        partido_ids: r.parlamentar.length ? r.parlamentar.map((p) => p.partido_id!) : null,
+                    },
+                ];
+            }
 
-                // Calculate deadline from data_inicio + duracao
-                if (andamento.data_inicio && r.workflow_id) {
-                    const key = `${r.workflow_id}-${andamento.workflow_fase_id}`;
-                    const duracao = fluxoFaseDuracaoMap.get(key) ?? null;
+            atividade = andamento.workflow_fase.fase;
 
-                    if (duracao !== null) {
-                        const deadline = new Date(andamento.data_inicio);
-                        deadline.setDate(deadline.getDate() + duracao);
-                        data = Date2YMD.toStringOrNull(deadline);
-                    }
+            // Calculate deadline from data_inicio + duracao
+            if (andamento.data_inicio && r.workflow_id) {
+                const key = `${r.workflow_id}-${andamento.workflow_fase_id}`;
+                const duracao = fluxoFaseDuracaoMap.get(key) ?? null;
+                if (duracao !== null) {
+                    const deadline = new Date(andamento.data_inicio);
+                    deadline.setDate(deadline.getDate() + duracao);
+                    data = Date2YMD.toStringOrNull(deadline);
                 }
             }
 
-            return {
+            const baseRow = {
                 transferencia_id: r.id,
                 emenda: r.emenda,
                 identificador: r.identificador,
                 atividade,
                 data,
-                data_origem: 'Workflow',
-                orgaos,
+                data_origem: 'Workflow' as const,
                 esfera: r.esfera,
                 objeto: r.objeto,
                 partido_ids: r.parlamentar.length ? r.parlamentar.map((p) => p.partido_id!) : null,
             };
+
+            // For OutroOrgao phases, expand to one row per open task (each tied to a distribution).
+            // The responsible org and activity label come from the cronograma child tarefas,
+            // not from TransferenciaAndamento.
+            if (r.workflow_id) {
+                const key = `${r.workflow_id}-${andamento.workflow_fase_id}`;
+                const responsabilidade = fluxoFaseResponsabilidadeMap.get(key);
+
+                if (responsabilidade === WorkflowResponsabilidade.OutroOrgao) {
+                    const espelhadaId = andamento.tarefaEspelhada[0]?.id;
+                    const openTarefas = espelhadaId != null ? (espelhadaTarefasMap.get(espelhadaId) ?? []) : [];
+                    if (openTarefas.length > 0) {
+                        return openTarefas.map((t) => ({
+                            ...baseRow,
+                            atividade: t.atividade,
+                            orgaos: t.orgao_id !== null ? [t.orgao_id] : [],
+                        }));
+                    }
+                    return [{ ...baseRow, orgaos: [] }];
+                }
+            }
+
+            const orgaos = andamento.orgao_responsavel_id ? [andamento.orgao_responsavel_id] : [];
+            return [{ ...baseRow, orgaos }];
         });
 
         // App-level prazo filter on the calculated deadline
