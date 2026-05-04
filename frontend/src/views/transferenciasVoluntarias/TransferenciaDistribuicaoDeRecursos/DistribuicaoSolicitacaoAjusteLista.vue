@@ -36,7 +36,7 @@ const colunas = [
 
 function podeMostrarLapis(linha) {
   if (ehAprovador.value) return true;
-  if (ehCriador.value) return linha.status === 'Pendente';
+  if (ehCriador.value) return linha.status === 'Pendente' && !!linha.pode_editar;
   return false;
 }
 

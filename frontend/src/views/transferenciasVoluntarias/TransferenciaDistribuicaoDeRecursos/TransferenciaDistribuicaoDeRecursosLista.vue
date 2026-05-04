@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
-import { onUnmounted } from 'vue';
+import { computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import SmaeLink from '@/components/SmaeLink.vue';
@@ -10,6 +10,8 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+
+import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
 
 const router = useRouter();
 const { params } = useRoute();
@@ -20,6 +22,9 @@ const alertStore = useAlertStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
+
+const { ehCriador, ehAprovador } = useDistribuicaoSolicitacaoAjustePermissoes();
+const podeAcessarSolicitacaoAjuste = computed(() => ehCriador.value || ehAprovador.value);
 
 const colunas = [
   { chave: 'orgao_gestor.sigla', label: 'Gestor municipal' },
@@ -119,6 +124,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
+          v-if="podeAcessarSolicitacaoAjuste"
           :to="{
             name: 'DistribuicaoSolicitacaoAjuste.Lista',
             params: {

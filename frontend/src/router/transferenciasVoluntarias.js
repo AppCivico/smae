@@ -262,6 +262,7 @@ export default {
                 título: 'Alterar Distribuição de Recursos',
                 rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
                 limitarÀsPermissões: [
+                  'SMAE.PerfilGestorDistribuicaoRecurso',
                   'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
                 ],
                 rotasParaMigalhasDePão: [
@@ -282,8 +283,9 @@ export default {
                 título: 'Alterar Distribuição de Recursos',
                 rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
                 limitarÀsPermissões: [
-                  'CadastroDistribuicaoSolicitacaoAjuste.editar',
                   'SMAE.PerfilGestorDistribuicaoRecurso',
+                  'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+                  'CadastroDistribuicaoSolicitacaoAjuste.administrador',
                 ],
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
