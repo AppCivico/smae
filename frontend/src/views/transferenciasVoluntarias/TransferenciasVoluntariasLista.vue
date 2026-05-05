@@ -179,7 +179,12 @@ watch([
     rolagem-horizontal
     titulo-para-rolagem-horizontal="Lista de transferências voluntárias"
     :colunas="[
-      { chave: 'alerta', label: '', atributosDaColuna: { class: 'col--botão-de-ação' } },
+      {
+        chave: 'alerta',
+        label: '',
+        permitirValorVazio: true,
+        atributosDaColuna: { class: 'col--botão-de-ação' },
+      },
       { chave: 'emenda', label: 'Emenda' },
       { chave: 'identificador', label: 'Identificador', ehCabecalho: true },
       { chave: 'esfera', label: 'Esfera' },
