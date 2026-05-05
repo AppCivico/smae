@@ -383,18 +383,12 @@ export class DistribuicaoSolicitacaoAjusteService {
     }
 
     async gestao(id: number, dto: GestaoDistribuicaoSolicitacaoAjusteDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const solicitacao = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findFirst({
-            where: { id, removido_em: null, ...this.buildOrgaoFilter(user) },
-            select: {
-                id: true,
-                status: true,
-                distribuicao_recurso_id: true,
-                campos_solicitados: true,
-                orgao_gestor_id: true,
-            },
-        });
+        const solicitacao = await this.findOne(id, user);
 
         if (!solicitacao) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
+        if (!solicitacao.pode_aprovar) {
+            throw new HttpException('Você não tem permissão para aprovar esta solicitação.', 403);
+        }
 
         if (solicitacao.status !== DistribuicaoSolicitacaoStatus.Pendente) {
             throw new HttpException('Apenas solicitações pendentes podem ser gerenciadas.', 400);
