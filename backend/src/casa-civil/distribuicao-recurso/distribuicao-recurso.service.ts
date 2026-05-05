@@ -1056,6 +1056,15 @@ export class DistribuicaoRecursoService {
                         valor: true,
                     },
                 },
+                solicitacoes_ajuste: {
+                    where: {
+                        removido_em: null,
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                    },
+                    select: {
+                        id: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
@@ -1203,6 +1212,7 @@ export class DistribuicaoRecursoService {
             distribuicao_conta: row.distribuicao_conta,
             distribuicao_banco: row.distribuicao_banco,
             pode_editar: pode_editar,
+            possui_solicitacao_ajuste_pendente: row.solicitacoes_ajuste.length > 0,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 

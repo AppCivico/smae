@@ -1309,7 +1309,7 @@ export class DashTransferenciaService {
             token_paginacao = filter.token_paginacao;
         }
 
-        const paginas = Math.ceil(total_registros / ipp);
+        const paginas = total_registros > 0 ? Math.ceil(total_registros / ipp) : 1;
         const pagina_corrente = page;
 
         return {
