@@ -32,20 +32,24 @@ const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
 const router = useRouter();
 const route = useRoute();
 
-const { chamadasPendentes, erros, itemParaEdicao } = storeToRefs(ajusteStore);
+const {
+  chamadasPendentes,
+  emFoco,
+  erros,
+  itemParaEdicao,
+} = storeToRefs(ajusteStore);
 
 const { ehCriador, ehAprovador } = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const eNovo = computed(() => !route.params.ajusteId);
 
 const modoLeitura = computed(() => {
-  if (ehAprovador.value) return false;
-  if (ehCriador.value) return itemParaEdicao.value?.status && itemParaEdicao.value.status !== 'Pendente';
+  if (ehCriador.value) return !!emFoco.value?.status && emFoco.value.status !== 'Pendente';
   return true;
 });
 
 const podeSalvar = computed(() => ehCriador.value && !modoLeitura.value);
-const podeAprovar = computed(() => ehAprovador.value && itemParaEdicao.value?.status === 'Pendente');
+const podeAprovar = computed(() => ehAprovador.value && emFoco.value?.status === 'Pendente');
 
 const itemParaEdicaoInicial = computed(() => {
   if (!route.params.ajusteId) {
