@@ -468,6 +468,10 @@ export default {
 
               return `Resumo da transferência ${emFoco.identificador}`;
             },
+            limitarÀsPermissões: [
+              'CadastroClassificacao.listar',
+              'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+            ],
             rotasParaMenuSecundário,
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
@@ -488,6 +492,10 @@ export default {
               : 'Monitoramento de transferência'),
             títuloParaMenu: 'Monitoramento',
             rotaDeEscape: 'TransferenciasVoluntariasDetalhes',
+            limitarÀsPermissões: [
+              'CadastroClassificacao.listar',
+              'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+            ],
           },
         },
       ],
@@ -570,6 +578,7 @@ export default {
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
+          'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
         ],
       },
       children: [
