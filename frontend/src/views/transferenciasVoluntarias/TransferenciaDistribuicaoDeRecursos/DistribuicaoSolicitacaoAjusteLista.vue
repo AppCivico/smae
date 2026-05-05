@@ -88,7 +88,7 @@ onUnmounted(() => {
               width="20"
               height="20"
             >
-              <use :xlink:href="linha.pode_editar ? '#i_edit' : '#i_view'" />
+              <use :xlink:href="linha.pode_editar ? '#i_edit' : '#i_eye'" />
             </svg>
             <div>{{ linha.pode_editar ? 'Editar' : 'Visualizar' }}</div>
           </span>
