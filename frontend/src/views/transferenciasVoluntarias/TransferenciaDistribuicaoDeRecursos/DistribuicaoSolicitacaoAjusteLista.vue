@@ -20,9 +20,8 @@ const { ehCriador } = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const colunas = [
   {
-    chave: 'orgao_gestor.sigla',
+    chave: 'gestor_contrato',
     label: 'Gestor municipal',
-    atributosDoCabecalhoDeColuna: { class: 'col--minimum' },
   },
   {
     chave: 'criado_em',
