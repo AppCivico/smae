@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DistribuicaoSolicitacaoStatus } from '@prisma/client';
+import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 
 export class CampoSolicitadoDto {
     de: unknown;
@@ -20,6 +21,7 @@ export class DistribuicaoSolicitacaoAjusteDto {
     respondido_em: Date | null;
     criado_por: number;
     criado_em: Date;
+    criador: IdNomeExibicaoDto;
     atualizado_por: number | null;
     atualizado_em: Date;
     pode_editar: boolean;
