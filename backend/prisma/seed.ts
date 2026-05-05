@@ -1912,6 +1912,17 @@ async function atualizar_superadmin() {
             },
         });
     }
+
+    const idPerfilSysadmin = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'SYSADMIN' } })).id;
+
+    const pessoaPerfilSysadmin = await prisma.pessoaPerfil.findFirst({
+        where: { pessoa_id: pessoa.id, perfil_acesso_id: idPerfilSysadmin },
+    });
+    if (!pessoaPerfilSysadmin) {
+        await prisma.pessoaPerfil.create({
+            data: { pessoa_id: pessoa.id, perfil_acesso_id: idPerfilSysadmin },
+        });
+    }
 }
 
 async function ensure_bot_user() {

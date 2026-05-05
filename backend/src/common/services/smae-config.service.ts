@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+    NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
@@ -229,5 +235,38 @@ export class EmailConfigService {
         if (!exists) throw new BadRequestException('Configuração de e-mail não encontrada');
 
         await this.prisma.emaildbConfig.delete({ where: { id } });
+    }
+}
+
+@Injectable()
+export class SysadminService {
+    constructor(private readonly prisma: PrismaService) {}
+
+    async grantSysadmin(pessoaId: number): Promise<void> {
+        const pessoa = await this.prisma.pessoa.findUnique({ where: { id: pessoaId } });
+        if (!pessoa) throw new NotFoundException('Pessoa não encontrada');
+
+        const perfil = await this.prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'SYSADMIN' } });
+
+        const existing = await this.prisma.pessoaPerfil.findFirst({
+            where: { pessoa_id: pessoaId, perfil_acesso_id: perfil.id },
+        });
+        if (!existing) {
+            await this.prisma.pessoaPerfil.create({
+                data: { pessoa_id: pessoaId, perfil_acesso_id: perfil.id },
+            });
+        }
+    }
+
+    async revokeSysadmin(pessoaId: number): Promise<void> {
+        const pessoa = await this.prisma.pessoa.findUnique({ where: { id: pessoaId } });
+        if (!pessoa) throw new NotFoundException('Pessoa não encontrada');
+
+        const perfil = await this.prisma.perfilAcesso.findFirst({ where: { nome: 'SYSADMIN' } });
+        if (!perfil) return;
+
+        await this.prisma.pessoaPerfil.deleteMany({
+            where: { pessoa_id: pessoaId, perfil_acesso_id: perfil.id },
+        });
     }
 }
