@@ -691,6 +691,15 @@ export class DistribuicaoRecursoService {
                             valor: true,
                         },
                     },
+                    solicitacoes_ajuste: {
+                        where: {
+                            removido_em: null,
+                            status: DistribuicaoSolicitacaoStatus.Pendente,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    },
                 },
             }),
         ]);
@@ -856,6 +865,7 @@ export class DistribuicaoRecursoService {
                 distribuicao_conta: r.distribuicao_conta,
                 distribuicao_banco: r.distribuicao_banco,
                 pode_editar: pode_editar,
+                possui_solicitacao_ajuste_pendente: r.solicitacoes_ajuste.length > 0,
             } satisfies DistribuicaoRecursoDto;
         });
 
