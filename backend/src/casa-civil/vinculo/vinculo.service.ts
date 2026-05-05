@@ -797,6 +797,7 @@ export class VinculoService {
                     select: {
                         transferencia: {
                             select: {
+                                id: true,
                                 identificador: true,
                             },
                         },
@@ -854,6 +855,7 @@ export class VinculoService {
                     area_tematica: demanda.area_tematica.nome,
                     orgao_nome: orgao.descricao,
                     smae_url: smaeUrl,
+                    transferencia_url: `${smaeUrl}/transferencias-voluntarias/${vinculo.distribuicao.transferencia.id}/resumo`,
                 },
             },
         });
