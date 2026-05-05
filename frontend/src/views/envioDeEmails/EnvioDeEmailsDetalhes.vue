@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
+import TextEditor from '@/components/TextEditor.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEnvioDeEmailsStore } from '@/stores/envioDeEmails.store';
 
@@ -44,15 +45,17 @@ function handleEnviar() {
 <template>
   <CabecalhoDePagina />
 
+  <LoadingComponent v-if="chamadasPendentes.lista" />
+
   <form
+    v-else
     class="mt2"
     @submit.prevent="handleEnviar"
   >
     <div class="mb2">
-      <SmaeLabel
-        for="assunto"
-        label="Assunto"
-      />
+      <SmaeLabel for="assunto">
+        Assunto
+      </SmaeLabel>
       <input
         id="assunto"
         v-model="assunto"
@@ -61,16 +64,12 @@ function handleEnviar() {
       >
     </div>
 
-    <div class="mb2">
-      <SmaeLabel
-        for="corpo"
-        label="Conteúdo"
-      />
-      <textarea
-        id="corpo"
+    <div class="corpo-email mb2">
+      <SmaeLabel for="corpo">
+        Conteúdo
+      </SmaeLabel>
+      <TextEditor
         v-model="corpo"
-        class="inputtext light big"
-        rows="20"
       />
     </div>
 
@@ -86,3 +85,9 @@ function handleEnviar() {
     </SmaeFieldsetSubmit>
   </form>
 </template>
+
+<style scoped>
+.corpo-email :deep(.ProseMirror) {
+  min-height: 30em;
+}
+</style>
