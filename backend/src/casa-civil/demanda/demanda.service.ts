@@ -412,6 +412,7 @@ export class DemandaService {
         // Monta cláusula where baseada nos filtros
         const where: Prisma.DemandaWhereInput = {
             removido_em: null,
+            NOT: { status: DemandaStatus.Encerrado },
         };
 
         // Aplica filtros de permissão
@@ -568,6 +569,7 @@ export class DemandaService {
             by: ['orgao_id'],
             where: {
                 removido_em: null,
+                NOT: { status: DemandaStatus.Encerrado },
                 AND: permissionsSet,
             },
             _count: { orgao_id: true },
