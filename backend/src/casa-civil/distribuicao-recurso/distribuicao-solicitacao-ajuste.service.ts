@@ -641,7 +641,12 @@ export class DistribuicaoSolicitacaoAjusteService {
     }
 
     private rowToDto(row: SolicitacaoAjusteRow, user: PessoaFromJwt): DistribuicaoSolicitacaoAjusteDto {
-        const pode_editar = row.status === DistribuicaoSolicitacaoStatus.EmRegistro;
+        // CONST_PERFIL_GESTOR_DIST_RECURSO, que é o gestor (pediu solicitação)
+        const pode_editar =
+            row.status === DistribuicaoSolicitacaoStatus.EmRegistro &&
+            user.hasSomeRoles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar']);
+
+        // CONST_PERFIL_CASA_CIVIL, quem é o admin real
         const pode_aprovar =
             row.status === DistribuicaoSolicitacaoStatus.Pendente &&
             user.hasSomeRoles(['CadastroDistribuicaoSolicitacaoAjuste.administrador']);
