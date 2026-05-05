@@ -15,7 +15,7 @@ const { params } = useRoute();
 const ajusteStore = useDistribuicaoSolicitacaoAjusteStore();
 const { chamadasPendentes, erros, lista } = storeToRefs(ajusteStore);
 
-const { ehCriador, ehAprovador } = useDistribuicaoSolicitacaoAjustePermissoes();
+const { ehCriador } = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const colunas = [
   {
@@ -33,12 +33,6 @@ const colunas = [
   { chave: 'criador.nome_exibicao', label: 'Solicitante' },
   { chave: 'status', label: 'Status' },
 ];
-
-function podeMostrarLapis(linha) {
-  if (ehAprovador.value) return true;
-  if (ehCriador.value) return linha.status === 'Pendente' && !!linha.pode_editar;
-  return false;
-}
 
 ajusteStore.buscarTudo({ distribuicao_recurso_id: params.recursoId });
 
@@ -63,10 +57,9 @@ onUnmounted(() => {
     >
       <template #acoes="{ linha }">
         <SmaeLink
-          v-if="podeMostrarLapis(linha)"
           class="like-a__text"
-          aria-label="editar"
-          title="editar"
+          :aria-label="linha.pode_editar ? 'editar' : 'visualizar'"
+          :title="linha.pode_editar ? 'editar' : 'visualizar'"
           :to="{
             name: 'DistribuicaoSolicitacaoAjuste.Editar',
             params: {
@@ -80,42 +73,13 @@ onUnmounted(() => {
               width="20"
               height="20"
             >
-              <use xlink:href="#i_edit" />
+              <use :xlink:href="linha.pode_editar ? '#i_edit' : '#i_view'" />
             </svg>
-            <div>Editar</div>
-          </span>
-        </SmaeLink>
-
-        <SmaeLink
-          v-else
-          class="like-a__text"
-          aria-label="visualizar"
-          title="visualizar"
-          :to="{
-            name: 'DistribuicaoSolicitacaoAjuste.Editar',
-            params: {
-              ...$route.params,
-              ajusteId: linha.id,
-            },
-          }"
-        >
-          <span class="tipinfo">
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_view" />
-            </svg>
-            <div>Visualizar</div>
+            <div>{{ linha.pode_editar ? 'Editar' : 'Visualizar' }}</div>
           </span>
         </SmaeLink>
       </template>
     </SmaeTable>
-
-    <pre v-ScrollLockDebug>
-  ehCriador: {{ ehCriador }}
-  ehAprovador: {{ ehAprovador }}
-</pre>
 
     <p v-if="ehCriador">
       <SmaeLink

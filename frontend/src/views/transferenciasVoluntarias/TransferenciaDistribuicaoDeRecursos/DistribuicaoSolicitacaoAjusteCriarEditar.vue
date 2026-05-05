@@ -22,8 +22,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoSolicitacaoAjusteStore } from '@/stores/distribuicaoSolicitacaoAjuste.store.ts';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
-import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
-
 const alertStore = useAlertStore();
 
 const ajusteStore = useDistribuicaoSolicitacaoAjusteStore();
@@ -39,17 +37,11 @@ const {
   itemParaEdicao,
 } = storeToRefs(ajusteStore);
 
-const { ehCriador, ehAprovador } = useDistribuicaoSolicitacaoAjustePermissoes();
-
 const eNovo = computed(() => !route.params.ajusteId);
 
-const modoLeitura = computed(() => {
-  if (ehCriador.value) return !!emFoco.value?.status && emFoco.value.status !== 'Pendente';
-  return true;
-});
-
-const podeSalvar = computed(() => ehCriador.value && !modoLeitura.value);
-const podeAprovar = computed(() => ehAprovador.value && emFoco.value?.status === 'Pendente');
+const podeSalvar = computed(() => eNovo.value || !!emFoco.value?.pode_editar);
+const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
+const modoLeitura = computed(() => !podeSalvar.value);
 
 const itemParaEdicaoInicial = computed(() => {
   if (!route.params.ajusteId) {
