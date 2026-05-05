@@ -413,6 +413,13 @@ onMounted(() => {
           class="label mb1"
         />
 
+        <p
+          v-if="!values.dotacoes?.length && modoLeitura"
+          class="mb1"
+        >
+          Não há dotações cadastradas para esta distribuição de recursos.
+        </p>
+
         <FieldArray
           v-slot="{ fields, push, remove }"
           name="dotacoes"
