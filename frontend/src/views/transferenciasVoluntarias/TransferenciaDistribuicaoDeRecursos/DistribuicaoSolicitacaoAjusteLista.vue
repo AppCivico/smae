@@ -49,12 +49,12 @@ onUnmounted(() => {
   <div>
     <CabecalhoDePagina />
 
-    <LoadingComponent v-if="chamadasPendentes.lista" />
-
     <ErrorComponent :erro="erros.lista" />
 
+    <LoadingComponent v-if="chamadasPendentes.lista" />
+
     <SmaeTable
-      v-if="!chamadasPendentes.lista"
+      v-else
       class="mb2"
       :colunas="colunas"
       :dados="lista"
