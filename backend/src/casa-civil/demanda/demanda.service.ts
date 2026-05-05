@@ -13,6 +13,8 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
 import { AnyPageTokenJwtBody, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { Html2Text } from 'src/common/Html2Text';
+import { HtmlSanitizer } from 'src/common/html-sanitizer';
 import { Object2Hash } from 'src/common/object2hash';
 import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
@@ -1471,7 +1473,8 @@ export class DemandaService {
 
             const corpoFallback = `À Sua Excelência,\n\nReafirmo o interesse da Prefeitura de São Paulo em fortalecer a parceria entre V.Exa e o nosso município através da execução de Emendas Parlamentares.\n\nAproveito para encaminhar propostas de demandas do nosso município, que poderão ensejar a formulação de Emendas Parlamentares à LOA. As propostas de demandas estão disponíveis através do site ${linkPortfolio}\n\nRessalto a possibilidade da destinação de outras Emendas de acordo com o vosso trabalho no interesse do nosso município.\n\nDestaco também que o quanto antes for apresentado interesse em indicar emendas para o município de São Paulo, maior a exequibilidade das demandas.\n\nNosso apreço e gratidão pela atenção sempre dispensada a esta municipalidade.\n\nAtenciosamente,\nSERI – ${orgao.descricao}`;
 
-            const corpoFinal = dto.corpo || corpoFallback;
+            const corpoSanitizado = HtmlSanitizer(dto.corpo);
+            const corpoFinal = corpoSanitizado || corpoFallback;
 
             // Cria registro do lote de envio
             const lote = await prismaTxn.demandaEmailParlamentar.create({
@@ -1498,7 +1501,7 @@ export class DemandaService {
                         variables: {
                             cargo_parlamentar: cargoTexto,
                             nome_parlamentar: mandato.parlamentar.nome,
-                            corpo: dto.corpo,
+                            corpo: corpoSanitizado,
                             link_portfolio: linkPortfolio,
                             orgao_nome: orgao.descricao,
                         },
@@ -1600,7 +1603,7 @@ export class DemandaService {
             linhas: linhas.map((l, index) => ({
                 id: l.id,
                 assunto: l.assunto,
-                corpo: index === 0 ? l.corpo : null,
+                corpo: index === 0 ? Html2Text(l.corpo) : null,
                 nomes_parlamentares: l.nomes_parlamentares,
                 criado_por: {
                     id: l.criador.id,
