@@ -532,9 +532,21 @@ export class DistribuicaoRecursoService {
 
         const palavrasChave = await this.transferenciaService.buscaIdsPalavraChave(filters.palavra_chave);
 
+        // Permissão: usuários do perfil restrito "Gestor(a) de Distribuição de Recurso"
+        // só veem distribuições do seu próprio órgão.
+        const permissionAnd: Prisma.Enumerable<Prisma.DistribuicaoRecursoWhereInput> = [];
+        if (
+            !user.hasSomeRoles(['CadastroTransferencia.administrador']) &&
+            user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])
+        ) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+            permissionAnd.push({ orgao_gestor_id: user.orgao_id });
+        }
+
         const where: Prisma.DistribuicaoRecursoWhereInput = {
             removido_em: null,
             transferencia_id: filters.transferencia_id,
+            AND: permissionAnd,
 
             // Filtros de ano, esfera e palavra-chave são aplicados na transferência.
             transferencia: {
