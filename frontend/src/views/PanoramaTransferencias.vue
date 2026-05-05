@@ -124,7 +124,7 @@ const parametrosDeBusca = computed(() => ({
   atividade: route.query.atividade,
   prazo: route.query.prazo || prazo.value,
   pagina: route.query.pagina,
-  ipp: route.query.ipp,
+  ipp: route.query.ipp || 1000,
   token_paginacao: route.query.token_paginacao,
 }));
 
