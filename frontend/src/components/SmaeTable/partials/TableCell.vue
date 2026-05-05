@@ -13,6 +13,7 @@ type ParametrosDaCelula = {
   linhaIndex: number
   caminho: string
   formatador?: (args: unknown) => number | string
+  permitirValorVazio?: boolean
 };
 
 const slots = defineSlots();
@@ -45,7 +46,7 @@ const elementoEnvelope = computed<'td' | 'th'>(() => (props.ehCabecalho ? 'th' :
       :celula="conteudoColuna"
       :linha-index="linhaIndex"
     >
-      {{ conteudoColuna || '-' }}
+      {{ conteudoColuna || (props.permitirValorVazio ? '' : '-') }}
     </slot>
   </component>
 </template>
