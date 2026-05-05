@@ -137,10 +137,16 @@ onUnmounted(() => {
             <svg
               width="20"
               height="20"
+              :class="{
+                tvermelho: linha.possui_solicitacao_ajuste_pendente
+              }"
             >
               <use xlink:href="#i_atividade" />
             </svg>
-            <div>Solicitações de ajuste</div>
+            <div v-if="linha.possui_solicitacao_ajuste_pendente">
+              Há solicitações de ajuste pendentes
+            </div>
+            <div v-else>Solicitações de ajuste</div>
           </span>
         </SmaeLink>
 
