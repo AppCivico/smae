@@ -532,21 +532,9 @@ export class DistribuicaoRecursoService {
 
         const palavrasChave = await this.transferenciaService.buscaIdsPalavraChave(filters.palavra_chave);
 
-        // Permissão: usuários do perfil restrito "Gestor(a) de Distribuição de Recurso"
-        // só veem distribuições do seu próprio órgão.
-        const permissionAnd: Prisma.Enumerable<Prisma.DistribuicaoRecursoWhereInput> = [];
-        if (
-            !user.hasSomeRoles(['CadastroTransferencia.administrador']) &&
-            user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])
-        ) {
-            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
-            permissionAnd.push({ orgao_gestor_id: user.orgao_id });
-        }
-
         const where: Prisma.DistribuicaoRecursoWhereInput = {
             removido_em: null,
             transferencia_id: filters.transferencia_id,
-            AND: permissionAnd,
 
             // Filtros de ano, esfera e palavra-chave são aplicados na transferência.
             transferencia: {
@@ -744,10 +732,9 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
-            const pode_editar = user.hasSomeRoles([
-                'CadastroTransferencia.editar',
-                'CadastroTransferencia.administrador',
-            ]);
+            const pode_editar =
+                user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']) &&
+                (!user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) || r.orgao_gestor.id === user.orgao_id);
 
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
@@ -1081,7 +1068,9 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
-        const pode_editar = user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']);
+        const pode_editar =
+            user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']) &&
+            (!user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) || row.orgao_gestor.id === user.orgao_id);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
