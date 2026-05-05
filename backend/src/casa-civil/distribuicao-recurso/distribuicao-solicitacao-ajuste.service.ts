@@ -66,6 +66,7 @@ const SOLICITACAO_AJUSTE_SELECT = {
     respondido_em: true,
     criado_por: true,
     criado_em: true,
+    criador: { select: { id: true, nome_exibicao: true } },
     atualizado_por: true,
     atualizado_em: true,
 } satisfies Prisma.DistribuicaoRecursoSolicitacaoAjusteSelect;
@@ -654,6 +655,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             criado_em: row.criado_em,
             atualizado_por: row.atualizado_por,
             atualizado_em: row.atualizado_em,
+            criador: row.criador,
             pode_editar,
             pode_aprovar,
         };
