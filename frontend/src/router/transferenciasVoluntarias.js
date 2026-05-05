@@ -578,7 +578,6 @@ export default {
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
-          'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
         ],
       },
       children: [
