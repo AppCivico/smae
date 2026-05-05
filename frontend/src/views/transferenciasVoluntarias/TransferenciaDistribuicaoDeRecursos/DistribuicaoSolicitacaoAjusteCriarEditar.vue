@@ -37,9 +37,7 @@ const {
   itemParaEdicao,
 } = storeToRefs(ajusteStore);
 
-const eNovo = computed(() => !route.params.ajusteId);
-
-const podeSalvar = computed(() => eNovo.value || !!emFoco.value?.pode_editar);
+const podeSalvar = computed(() => !!emFoco.value?.pode_editar);
 const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
 const modoLeitura = computed(() => !podeSalvar.value);
 
