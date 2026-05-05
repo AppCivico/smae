@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import statusAjustesDistribuicaoRecursos from '@/consts/statusAjustesDistribuicaoRecursos';
 import dateToField from '@/helpers/dateToField';
 import { useDistribuicaoSolicitacaoAjusteStore } from '@/stores/distribuicaoSolicitacaoAjuste.store.ts';
 
@@ -31,7 +32,11 @@ const colunas = [
     atributosDoCabecalhoDeColuna: { class: 'col--data' },
   },
   { chave: 'criador.nome_exibicao', label: 'Solicitante' },
-  { chave: 'status', label: 'Status' },
+  {
+    chave: 'status',
+    label: 'Status',
+    formatador: (valor) => statusAjustesDistribuicaoRecursos[valor]?.nome || valor,
+  },
 ];
 
 ajusteStore.buscarTudo({ distribuicao_recurso_id: params.recursoId });
