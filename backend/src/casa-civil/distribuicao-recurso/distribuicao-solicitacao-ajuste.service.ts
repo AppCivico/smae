@@ -1,17 +1,17 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { DistribuicaoSolicitacaoStatus, Prisma } from '@prisma/client';
-import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { CONST_PERFIL_CASA_CIVIL } from 'src/common/consts';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { uuidv7 } from 'uuidv7';
 import { DistribuicaoRecursoService } from './distribuicao-recurso.service';
 import { CreateDistribuicaoSolicitacaoAjusteDto } from './dto/create-distribuicao-solicitacao-ajuste.dto';
 import { FilterDistribuicaoSolicitacaoAjusteDto } from './dto/filter-distribuicao-solicitacao-ajuste.dto';
 import { GestaoDistribuicaoSolicitacaoAjusteDto } from './dto/gestao-distribuicao-solicitacao-ajuste.dto';
-import { UpdateDistribuicaoSolicitacaoAjusteDto } from './dto/update-distribuicao-solicitacao-ajuste.dto';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
+import { UpdateDistribuicaoSolicitacaoAjusteDto } from './dto/update-distribuicao-solicitacao-ajuste.dto';
 import {
     DistribuicaoSolicitacaoAjusteDto,
     ListDistribuicaoSolicitacaoAjusteDto,
@@ -53,6 +53,26 @@ const DISTRIBUICAO_SELECT_CAMPOS = {
     ...Object.fromEntries(DISTRIBUICAO_AJUSTE_CAMPOS.filter((c) => c !== 'dotacoes').map((c) => [c, true])),
     dotacoes: { where: { removido_em: null }, select: { dotacao: true } },
 };
+
+const SOLICITACAO_AJUSTE_SELECT = {
+    id: true,
+    distribuicao_recurso_id: true,
+    orgao_gestor_id: true,
+    status: true,
+    campos_solicitados: true,
+    informacoes_complementares: true,
+    resposta_motivo: true,
+    respondido_por: true,
+    respondido_em: true,
+    criado_por: true,
+    criado_em: true,
+    atualizado_por: true,
+    atualizado_em: true,
+} satisfies Prisma.DistribuicaoRecursoSolicitacaoAjusteSelect;
+
+type SolicitacaoAjusteRow = Prisma.DistribuicaoRecursoSolicitacaoAjusteGetPayload<{
+    select: typeof SOLICITACAO_AJUSTE_SELECT;
+}>;
 
 @Injectable()
 export class DistribuicaoSolicitacaoAjusteService {
@@ -177,24 +197,10 @@ export class DistribuicaoSolicitacaoAjusteService {
         const rows = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findMany({
             where,
             orderBy: { criado_em: 'desc' },
-            select: {
-                id: true,
-                distribuicao_recurso_id: true,
-                orgao_gestor_id: true,
-                status: true,
-                campos_solicitados: true,
-                informacoes_complementares: true,
-                resposta_motivo: true,
-                respondido_por: true,
-                respondido_em: true,
-                criado_por: true,
-                criado_em: true,
-                atualizado_por: true,
-                atualizado_em: true,
-            },
+            select: SOLICITACAO_AJUSTE_SELECT,
         });
 
-        return { linhas: rows.map((r) => this.rowToDto(r)) };
+        return { linhas: rows.map((r) => this.rowToDto(r, user)) };
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoSolicitacaoAjusteDto> {
@@ -206,26 +212,12 @@ export class DistribuicaoSolicitacaoAjusteService {
 
         const row = await this.prisma.distribuicaoRecursoSolicitacaoAjuste.findFirst({
             where,
-            select: {
-                id: true,
-                distribuicao_recurso_id: true,
-                orgao_gestor_id: true,
-                status: true,
-                campos_solicitados: true,
-                informacoes_complementares: true,
-                resposta_motivo: true,
-                respondido_por: true,
-                respondido_em: true,
-                criado_por: true,
-                criado_em: true,
-                atualizado_por: true,
-                atualizado_em: true,
-            },
+            select: SOLICITACAO_AJUSTE_SELECT,
         });
 
         if (!row) throw new HttpException('Solicitação de ajuste não encontrada.', 404);
 
-        return this.rowToDto(row);
+        return this.rowToDto(row, user);
     }
 
     async update(id: number, dto: UpdateDistribuicaoSolicitacaoAjusteDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -642,22 +634,11 @@ export class DistribuicaoSolicitacaoAjusteService {
         }
     }
 
-    private rowToDto(row: {
-        id: number;
-        distribuicao_recurso_id: number;
-        orgao_gestor_id: number;
-        status: DistribuicaoSolicitacaoStatus;
-        campos_solicitados: any;
-        informacoes_complementares: string | null;
-        resposta_motivo: string | null;
-        respondido_por: number | null;
-        respondido_em: Date | null;
-        criado_por: number;
-        criado_em: Date;
-        atualizado_por: number | null;
-        atualizado_em: Date;
-    }): DistribuicaoSolicitacaoAjusteDto {
+    private rowToDto(row: SolicitacaoAjusteRow, user: PessoaFromJwt): DistribuicaoSolicitacaoAjusteDto {
         const pode_editar = row.status === DistribuicaoSolicitacaoStatus.EmRegistro;
+        const pode_aprovar =
+            row.status === DistribuicaoSolicitacaoStatus.Pendente &&
+            user.hasSomeRoles(['CadastroDistribuicaoSolicitacaoAjuste.administrador']);
 
         return {
             id: row.id,
@@ -674,6 +655,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             atualizado_por: row.atualizado_por,
             atualizado_em: row.atualizado_em,
             pode_editar,
+            pode_aprovar,
         };
     }
 }

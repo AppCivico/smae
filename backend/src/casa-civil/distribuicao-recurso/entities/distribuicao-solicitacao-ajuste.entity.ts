@@ -23,6 +23,7 @@ export class DistribuicaoSolicitacaoAjusteDto {
     atualizado_por: number | null;
     atualizado_em: Date;
     pode_editar: boolean;
+    pode_aprovar: boolean;
 }
 
 export class ListDistribuicaoSolicitacaoAjusteDto {
