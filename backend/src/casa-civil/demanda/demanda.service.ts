@@ -1603,7 +1603,7 @@ export class DemandaService {
             linhas: linhas.map((l, index) => ({
                 id: l.id,
                 assunto: l.assunto,
-                corpo: index === 0 ? Html2Text(l.corpo) : null,
+                corpo: index === 0 ? l.corpo : null,
                 nomes_parlamentares: l.nomes_parlamentares,
                 criado_por: {
                     id: l.criador.id,
