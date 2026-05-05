@@ -287,7 +287,7 @@ export default {
                 rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
                 limitarÀsPermissões: [
                   'SMAE.PerfilGestorDistribuicaoRecurso',
-                  'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+                  'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
                   'CadastroDistribuicaoSolicitacaoAjuste.administrador',
                 ],
                 rotasParaMigalhasDePão: [
