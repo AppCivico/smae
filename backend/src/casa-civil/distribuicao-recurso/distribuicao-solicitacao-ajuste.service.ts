@@ -58,6 +58,7 @@ const SOLICITACAO_AJUSTE_SELECT = {
     id: true,
     distribuicao_recurso_id: true,
     orgao_gestor_id: true,
+    orgao_gestor: { select: { id: true, sigla: true, descricao: true } },
     status: true,
     campos_solicitados: true,
     informacoes_complementares: true,
@@ -69,11 +70,6 @@ const SOLICITACAO_AJUSTE_SELECT = {
     criador: { select: { id: true, nome_exibicao: true } },
     atualizado_por: true,
     atualizado_em: true,
-    distribuicao_recurso: {
-        select: {
-            gestor_contrato: true,
-        },
-    },
 } satisfies Prisma.DistribuicaoRecursoSolicitacaoAjusteSelect;
 
 type SolicitacaoAjusteRow = Prisma.DistribuicaoRecursoSolicitacaoAjusteGetPayload<{
@@ -666,7 +662,7 @@ export class DistribuicaoSolicitacaoAjusteService {
             atualizado_por: row.atualizado_por,
             atualizado_em: row.atualizado_em,
             criador: row.criador,
-            gestor_contrato: row.distribuicao_recurso.gestor_contrato,
+            orgao_gestor: row.orgao_gestor,
             pode_editar,
             pode_aprovar,
         };
