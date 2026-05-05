@@ -27,10 +27,22 @@ export class DemandaConfigService {
                 }
 
                 // Validate values
-                const valorMinimo = parseFloat(dto.valor_minimo);
-                const valorMaximo = parseFloat(dto.valor_maximo);
-                if (valorMaximo < valorMinimo) {
-                    throw new HttpException('valor_maximo deve ser maior ou igual a valor_minimo', 400);
+                const valorMinimoCusteio = parseFloat(dto.valor_minimo_custeio);
+                const valorMaximoCusteio = parseFloat(dto.valor_maximo_custeio);
+                if (valorMaximoCusteio < valorMinimoCusteio) {
+                    throw new HttpException(
+                        'valor_maximo_custeio deve ser maior ou igual a valor_minimo_custeio',
+                        400
+                    );
+                }
+
+                const valorMinimoInvestimento = parseFloat(dto.valor_minimo_investimento);
+                const valorMaximoInvestimento = parseFloat(dto.valor_maximo_investimento);
+                if (valorMaximoInvestimento < valorMinimoInvestimento) {
+                    throw new HttpException(
+                        'valor_maximo_investimento deve ser maior ou igual a valor_minimo_investimento',
+                        400
+                    );
                 }
 
                 // Find current active record FIRST (before overlap check)
@@ -88,8 +100,10 @@ export class DemandaConfigService {
                     data: {
                         data_inicio_vigencia: dto.data_inicio_vigencia,
                         data_fim_vigencia: dto.data_fim_vigencia,
-                        valor_minimo: dto.valor_minimo,
-                        valor_maximo: dto.valor_maximo,
+                        valor_minimo_custeio: dto.valor_minimo_custeio,
+                        valor_maximo_custeio: dto.valor_maximo_custeio,
+                        valor_minimo_investimento: dto.valor_minimo_investimento,
+                        valor_maximo_investimento: dto.valor_maximo_investimento,
                         bloqueio_valor_min: dto.bloqueio_valor_min ?? true,
                         bloqueio_valor_max: dto.bloqueio_valor_max ?? false,
                         alerta_valor_min: dto.alerta_valor_min ?? false,
@@ -137,8 +151,10 @@ export class DemandaConfigService {
                         id: true,
                         data_inicio_vigencia: true,
                         data_fim_vigencia: true,
-                        valor_minimo: true,
-                        valor_maximo: true,
+                        valor_minimo_custeio: true,
+                        valor_maximo_custeio: true,
+                        valor_minimo_investimento: true,
+                        valor_maximo_investimento: true,
                     },
                 });
 
@@ -164,16 +180,33 @@ export class DemandaConfigService {
                     throw new HttpException('data_fim_vigencia deve ser maior ou igual a data_inicio_vigencia', 400);
                 }
 
-                // Validate values if provided
-                const newValorMinimo = dto.valor_minimo
-                    ? parseFloat(dto.valor_minimo)
-                    : parseFloat(existing.valor_minimo.toString());
-                const newValorMaximo = dto.valor_maximo
-                    ? parseFloat(dto.valor_maximo)
-                    : parseFloat(existing.valor_maximo.toString());
+                // Validate values if provided (each finalidade pair must satisfy max >= min)
+                const newValorMinimoCusteio = dto.valor_minimo_custeio
+                    ? parseFloat(dto.valor_minimo_custeio)
+                    : parseFloat(existing.valor_minimo_custeio.toString());
+                const newValorMaximoCusteio = dto.valor_maximo_custeio
+                    ? parseFloat(dto.valor_maximo_custeio)
+                    : parseFloat(existing.valor_maximo_custeio.toString());
 
-                if (newValorMaximo < newValorMinimo) {
-                    throw new HttpException('valor_maximo deve ser maior ou igual a valor_minimo', 400);
+                if (newValorMaximoCusteio < newValorMinimoCusteio) {
+                    throw new HttpException(
+                        'valor_maximo_custeio deve ser maior ou igual a valor_minimo_custeio',
+                        400
+                    );
+                }
+
+                const newValorMinimoInvestimento = dto.valor_minimo_investimento
+                    ? parseFloat(dto.valor_minimo_investimento)
+                    : parseFloat(existing.valor_minimo_investimento.toString());
+                const newValorMaximoInvestimento = dto.valor_maximo_investimento
+                    ? parseFloat(dto.valor_maximo_investimento)
+                    : parseFloat(existing.valor_maximo_investimento.toString());
+
+                if (newValorMaximoInvestimento < newValorMinimoInvestimento) {
+                    throw new HttpException(
+                        'valor_maximo_investimento deve ser maior ou igual a valor_minimo_investimento',
+                        400
+                    );
                 }
 
                 // Check for date overlaps (excluding current record)
@@ -185,8 +218,10 @@ export class DemandaConfigService {
                     data: {
                         data_inicio_vigencia: dto.data_inicio_vigencia,
                         data_fim_vigencia: dto.data_fim_vigencia !== undefined ? dto.data_fim_vigencia : undefined,
-                        valor_minimo: dto.valor_minimo,
-                        valor_maximo: dto.valor_maximo,
+                        valor_minimo_custeio: dto.valor_minimo_custeio,
+                        valor_maximo_custeio: dto.valor_maximo_custeio,
+                        valor_minimo_investimento: dto.valor_minimo_investimento,
+                        valor_maximo_investimento: dto.valor_maximo_investimento,
                         bloqueio_valor_min: dto.bloqueio_valor_min,
                         bloqueio_valor_max: dto.bloqueio_valor_max,
                         alerta_valor_min: dto.alerta_valor_min,
@@ -270,8 +305,10 @@ export class DemandaConfigService {
                 id: true,
                 data_inicio_vigencia: true,
                 data_fim_vigencia: true,
-                valor_minimo: true,
-                valor_maximo: true,
+                valor_minimo_custeio: true,
+                valor_maximo_custeio: true,
+                valor_minimo_investimento: true,
+                valor_maximo_investimento: true,
                 bloqueio_valor_min: true,
                 bloqueio_valor_max: true,
                 alerta_valor_min: true,
@@ -305,8 +342,10 @@ export class DemandaConfigService {
                 id: true,
                 data_inicio_vigencia: true,
                 data_fim_vigencia: true,
-                valor_minimo: true,
-                valor_maximo: true,
+                valor_minimo_custeio: true,
+                valor_maximo_custeio: true,
+                valor_minimo_investimento: true,
+                valor_maximo_investimento: true,
                 bloqueio_valor_min: true,
                 bloqueio_valor_max: true,
                 alerta_valor_min: true,
@@ -344,8 +383,10 @@ export class DemandaConfigService {
                 id: true,
                 data_inicio_vigencia: true,
                 data_fim_vigencia: true,
-                valor_minimo: true,
-                valor_maximo: true,
+                valor_minimo_custeio: true,
+                valor_maximo_custeio: true,
+                valor_minimo_investimento: true,
+                valor_maximo_investimento: true,
                 bloqueio_valor_min: true,
                 bloqueio_valor_max: true,
                 alerta_valor_min: true,
@@ -580,8 +621,10 @@ export class DemandaConfigService {
             id: row.id,
             data_inicio_vigencia: row.data_inicio_vigencia.toISOString().split('T')[0],
             data_fim_vigencia: row.data_fim_vigencia ? row.data_fim_vigencia.toISOString().split('T')[0] : null,
-            valor_minimo: row.valor_minimo.toString(),
-            valor_maximo: row.valor_maximo.toString(),
+            valor_minimo_custeio: row.valor_minimo_custeio.toString(),
+            valor_maximo_custeio: row.valor_maximo_custeio.toString(),
+            valor_minimo_investimento: row.valor_minimo_investimento.toString(),
+            valor_maximo_investimento: row.valor_maximo_investimento.toString(),
             bloqueio_valor_min: row.bloqueio_valor_min,
             bloqueio_valor_max: row.bloqueio_valor_max,
             alerta_valor_min: row.alerta_valor_min,

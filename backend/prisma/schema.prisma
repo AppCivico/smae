@@ -8379,8 +8379,10 @@ model DemandaConfig {
     data_inicio_vigencia DateTime  @db.Date
     data_fim_vigencia    DateTime? @db.Date
 
-    valor_minimo Decimal @db.Decimal(15, 2)
-    valor_maximo Decimal @db.Decimal(15, 2)
+    valor_minimo_custeio      Decimal @db.Decimal(15, 2) @map("valor_minimo")
+    valor_maximo_custeio      Decimal @db.Decimal(15, 2) @map("valor_maximo")
+    valor_minimo_investimento Decimal @db.Decimal(15, 2)
+    valor_maximo_investimento Decimal @db.Decimal(15, 2)
 
     // Configuration flags
     bloqueio_valor_min Boolean @default(true)

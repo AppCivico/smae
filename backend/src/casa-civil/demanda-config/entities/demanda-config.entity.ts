@@ -9,8 +9,10 @@ export class DemandaConfigDto {
     id: number;
     data_inicio_vigencia: string; // YYYY-MM-DD format
     data_fim_vigencia: string | null; // YYYY-MM-DD format
-    valor_minimo: string;
-    valor_maximo: string;
+    valor_minimo_custeio: string;
+    valor_maximo_custeio: string;
+    valor_minimo_investimento: string;
+    valor_maximo_investimento: string;
     bloqueio_valor_min: boolean;
     bloqueio_valor_max: boolean;
     alerta_valor_min: boolean;

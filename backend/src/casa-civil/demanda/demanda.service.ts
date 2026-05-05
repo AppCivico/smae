@@ -8,7 +8,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
+import { DemandaFinalidade, DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
 import { AnyPageTokenJwtBody, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
@@ -88,8 +88,8 @@ export class DemandaService {
                 // Valida acesso ao órgão
                 await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
 
-                // Valida valor contra DemandaConfig
-                await this.validateValor(prismaTxn, dto.valor);
+                // Valida valor contra DemandaConfig (limites por finalidade)
+                await this.validateValor(prismaTxn, dto.valor, dto.finalidade);
 
                 // Valida se área temática existe
                 await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
@@ -255,7 +255,7 @@ export class DemandaService {
             await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
         }
         if (dto.valor) {
-            await this.validateValor(prismaTxn, dto.valor);
+            await this.validateValor(prismaTxn, dto.valor, dto.finalidade ?? existing.finalidade);
         }
         if (dto.area_tematica_id) {
             await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
@@ -1117,7 +1117,11 @@ export class DemandaService {
         }
     }
 
-    private async validateValor(prisma: Prisma.TransactionClient, valor: string): Promise<void> {
+    private async validateValor(
+        prisma: Prisma.TransactionClient,
+        valor: string,
+        finalidade: DemandaFinalidade
+    ): Promise<void> {
         const config = await prisma.demandaConfig.findFirst({
             where: {
                 ativo: true,
@@ -1129,17 +1133,26 @@ export class DemandaService {
             return; // Sem config ativa, pula validação
         }
 
+        const valorMinimo =
+            finalidade === DemandaFinalidade.Investimento
+                ? config.valor_minimo_investimento
+                : config.valor_minimo_custeio;
+        const valorMaximo =
+            finalidade === DemandaFinalidade.Investimento
+                ? config.valor_maximo_investimento
+                : config.valor_maximo_custeio;
+
         const valorNum = parseFloat(valor);
 
-        if (config.bloqueio_valor_min && valorNum < parseFloat(config.valor_minimo.toString())) {
+        if (config.bloqueio_valor_min && valorNum < parseFloat(valorMinimo.toString())) {
             throw new BadRequestException(
-                `Valor não pode ser menor que o mínimo configurado: R$ ${config.valor_minimo}`
+                `Valor não pode ser menor que o mínimo configurado para ${finalidade}: R$ ${valorMinimo}`
             );
         }
 
-        if (config.bloqueio_valor_max && valorNum > parseFloat(config.valor_maximo.toString())) {
+        if (config.bloqueio_valor_max && valorNum > parseFloat(valorMaximo.toString())) {
             throw new BadRequestException(
-                `Valor não pode ser maior que o máximo configurado: R$ ${config.valor_maximo}`
+                `Valor não pode ser maior que o máximo configurado para ${finalidade}: R$ ${valorMaximo}`
             );
         }
     }
