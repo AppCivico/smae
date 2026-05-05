@@ -43,38 +43,10 @@ const podeSalvar = computed(() => eNovo.value || !!emFoco.value?.pode_editar);
 const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
 const modoLeitura = computed(() => !podeSalvar.value);
 
-const itemParaEdicaoInicial = computed(() => {
-  if (!route.params.ajusteId) {
-    const distribuicao = distribuicaoRecursosStore.itemParaEdicao;
-    return {
-      nome: distribuicao?.nome || '',
-      objeto: distribuicao?.objeto || '',
-      programa_orcamentario_municipal: distribuicao?.programa_orcamentario_municipal || null,
-      programa_orcamentario_estadual: distribuicao?.programa_orcamentario_estadual || null,
-      distribuicao_banco: distribuicao?.distribuicao_banco || null,
-      distribuicao_agencia: distribuicao?.distribuicao_agencia || null,
-      distribuicao_conta: distribuicao?.distribuicao_conta || null,
-      finalidade: distribuicao?.finalidade || null,
-      rubrica_de_receita: distribuicao?.rubrica_de_receita || null,
-      empenho: distribuicao?.empenho ?? null,
-      data_empenho: distribuicao?.data_empenho || null,
-      valor_empenho: distribuicao?.valor_empenho || null,
-      gestor_contrato: distribuicao?.gestor_contrato || null,
-      valor_liquidado: distribuicao?.valor_liquidado || null,
-      dotacoes: distribuicao?.dotacoes || [],
-      proposta: distribuicao?.proposta || null,
-      convenio: distribuicao?.convenio || null,
-      contrato: distribuicao?.contrato || null,
-      assinatura_termo_aceite: distribuicao?.assinatura_termo_aceite || null,
-      assinatura_estado: distribuicao?.assinatura_estado || null,
-      assinatura_municipio: distribuicao?.assinatura_municipio || null,
-      vigencia: distribuicao?.vigencia || null,
-      conclusao_suspensiva: distribuicao?.conclusao_suspensiva || null,
-      informacoes_complementares: null,
-    };
-  }
-  return itemParaEdicao.value;
-});
+const itemParaEdicaoInicial = computed(() => ({
+  ...distribuicaoRecursosStore.itemParaEdicao,
+  ...itemParaEdicao.value,
+}));
 
 const {
   errors,

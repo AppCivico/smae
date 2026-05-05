@@ -147,11 +147,12 @@ export const useDistribuicaoSolicitacaoAjusteStore = defineStore(
         return Object.keys(camposSolicitados).reduce((acc, campo) => {
           const valor = camposSolicitados[campo];
 
-          if (valor?.de) {
+          if (valor?.para) {
             if (camposDeData.has(campo)) {
-              acc[campo] = dateTimeToDate(valor.de);
+              // eslint-disable-next-line max-len
+              acc[campo as keyof UpdateDistribuicaoSolicitacaoAjusteDto] = dateTimeToDate(valor.para);
             } else {
-              acc[campo] = valor.de;
+              acc[campo as keyof UpdateDistribuicaoSolicitacaoAjusteDto] = valor.para as string;
             }
           }
           return acc;
