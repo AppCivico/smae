@@ -16,6 +16,7 @@ export class DistribuicaoSolicitacaoAjusteDto {
     @ApiProperty({ type: 'object', additionalProperties: true })
     campos_solicitados: Record<string, CampoSolicitadoDto>;
     informacoes_complementares: string | null;
+    gestor_contrato: string | null;
     resposta_motivo: string | null;
     respondido_por: number | null;
     respondido_em: Date | null;
