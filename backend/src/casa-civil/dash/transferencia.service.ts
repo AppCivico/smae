@@ -1277,6 +1277,11 @@ export class DashTransferenciaService {
             return [{ ...baseRow, orgaos }];
         });
 
+        // For "Gestor de Distribuição de Recurso", show only activities from own Órgão
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) && user.orgao_id) {
+            linhas = linhas.filter((l) => l.orgaos.includes(user.orgao_id!));
+        }
+
         // App-level prazo filter on the calculated deadline
         if (filter.prazo !== undefined) {
             const prazoLimit = new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000);
@@ -1288,6 +1293,14 @@ export class DashTransferenciaService {
                 return l.data <= prazoLimitStr!;
             });
         }
+
+        // Sort by prazo ascending (nulls last)
+        linhas.sort((a, b) => {
+            if (a.data === null && b.data === null) return 0;
+            if (a.data === null) return 1;
+            if (b.data === null) return -1;
+            return a.data < b.data ? -1 : a.data > b.data ? 1 : 0;
+        });
 
         // Generate pagination token
         if (!filter.token_paginacao) {
