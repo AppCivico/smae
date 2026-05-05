@@ -1045,12 +1045,9 @@ export class DashTransferenciaService {
         if (page > 1 && !filter.token_paginacao) throw new HttpException('Campo obrigatório para paginação', 400);
 
         if (filter.token_paginacao) {
-            const decoded = this.decodeNextPageTokenWorkflow(filter.token_paginacao, filter);
-            total_registros = decoded.total_rows;
-            offset = (page - 1) * ipp;
-        } else {
-            offset = (page - 1) * ipp;
+            this.decodeNextPageTokenWorkflow(filter.token_paginacao, filter);
         }
+        offset = (page - 1) * ipp;
 
         // Build andamento filter conditions (combined so atividade+orgaos match the same row)
         const andamentoFilter: Prisma.TransferenciaAndamentoWhereInput = {
@@ -1070,68 +1067,53 @@ export class DashTransferenciaService {
             ...(filter.atividade || filter.orgaos_ids ? { andamentoWorkflow: { some: andamentoFilter } } : {}),
         };
 
-        const [countResult, rows] = await this.prisma.$transaction([
-            this.prisma.transferencia.count({ where }),
-            this.prisma.transferencia.findMany({
-                where,
-                select: {
-                    id: true,
-                    identificador: true,
-                    emenda: true,
-                    esfera: true,
-                    objeto: true,
-                    workflow_id: true,
-                    parlamentar: {
-                        select: { partido_id: true },
-                    },
-                    andamentoWorkflow: {
-                        where: {
-                            data_termino: null,
-                            removido_em: null,
-                        },
-                        select: {
-                            id: true,
-                            data_inicio: true,
-                            workflow_fase_id: true,
-                            workflow_etapa_id: true,
-                            orgao_responsavel_id: true,
-                            workflow_fase: {
-                                select: { fase: true },
-                            },
-                            tarefaEspelhada: {
-                                select: { id: true },
-                                take: 1,
-                            },
-                        },
-                        take: 1,
-                    },
+        const rows = await this.prisma.transferencia.findMany({
+            where,
+            select: {
+                id: true,
+                identificador: true,
+                emenda: true,
+                esfera: true,
+                objeto: true,
+                workflow_id: true,
+                parlamentar: {
+                    select: { partido_id: true },
                 },
-                orderBy: [{ ano: 'desc' }, { identificador_nro: 'asc' }],
-                skip: offset,
-                take: ipp + 1,
-            }),
-        ]);
-
-        if (!filter.token_paginacao) {
-            total_registros = countResult;
-        }
+                andamentoWorkflow: {
+                    where: {
+                        data_termino: null,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        data_inicio: true,
+                        workflow_fase_id: true,
+                        workflow_etapa_id: true,
+                        orgao_responsavel_id: true,
+                        workflow_fase: {
+                            select: { fase: true },
+                        },
+                        tarefaEspelhada: {
+                            select: { id: true },
+                            take: 1,
+                        },
+                    },
+                    take: 1,
+                },
+            },
+            orderBy: [{ ano: 'desc' }, { identificador_nro: 'asc' }],
+        });
 
         let tem_mais = false;
         let token_paginacao: string | null = null;
-        const linhasRaw = [...rows];
-
-        if (linhasRaw.length > ipp) {
-            tem_mais = true;
-            linhasRaw.pop();
-        }
 
         // Batch fetch FluxoFase.duracao for all active andamento entries
-        const andamentoEntries = linhasRaw
+        const andamentoEntries = rows
             .flatMap((r) => r.andamentoWorkflow)
             .filter((a) => a !== undefined && a !== null);
 
         const faseIds = [...new Set(andamentoEntries.map((a) => a.workflow_fase_id))];
-        const workflowIds = [...new Set(linhasRaw.map((r) => r.workflow_id).filter((id): id is number => id !== null))];
+        const workflowIds = [...new Set(rows.map((r) => r.workflow_id).filter((id): id is number => id !== null))];
 
         let fluxoFaseDuracaoMap = new Map<string, number | null>();
         let fluxoFaseResponsabilidadeMap = new Map<string, WorkflowResponsabilidade>();
@@ -1203,7 +1185,7 @@ export class DashTransferenciaService {
 
         // Map results to MfDashTransferenciasDto
         // OutroOrgao phases expand to one row per open cronograma task (one per distribution).
-        let linhas: MfDashTransferenciasDto[] = linhasRaw.flatMap((r) => {
+        let linhas: MfDashTransferenciasDto[] = rows.flatMap((r) => {
             const andamento = r.andamentoWorkflow[0] ?? null;
 
             let atividade: string;
@@ -1301,6 +1283,11 @@ export class DashTransferenciaService {
             if (b.data === null) return -1;
             return a.data < b.data ? -1 : a.data > b.data ? 1 : 0;
         });
+
+        // Paginate after expansion — DB pagination can't account for 1-to-many flatMap
+        total_registros = linhas.length;
+        tem_mais = offset + ipp < total_registros;
+        linhas = linhas.slice(offset, offset + ipp);
 
         // Generate pagination token
         if (!filter.token_paginacao) {
