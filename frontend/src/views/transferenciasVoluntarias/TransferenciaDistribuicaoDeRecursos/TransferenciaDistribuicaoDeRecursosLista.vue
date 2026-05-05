@@ -9,6 +9,7 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
 import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
@@ -19,6 +20,7 @@ const { params } = useRoute();
 const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
+const authStore = useAuthStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
@@ -172,6 +174,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <button
+          v-if="authStore.temPermissãoPara('CadastroTransferencia.remover')"
           class="like-a__text"
           aria-label="excluir"
           title="excluir"
@@ -188,7 +191,9 @@ onUnmounted(() => {
       </template>
     </SmaeTable>
 
-    <p>
+    <p
+      v-if="authStore.temPermissãoPara('CadastroTransferencia.inserir')"
+    >
       <SmaeLink
         class="like-a__text addlink"
         :to="{

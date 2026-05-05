@@ -189,6 +189,7 @@ export default {
               component: TransferenciaDistribuicaoDeRecursosCriarEditar,
               meta: {
                 título: 'Novo Recurso',
+                limitarÀsPermissões: 'CadastroTransferencia.inserir',
                 rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
