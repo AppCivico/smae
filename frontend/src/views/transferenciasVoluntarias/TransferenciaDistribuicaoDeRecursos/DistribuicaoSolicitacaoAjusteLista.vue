@@ -20,8 +20,9 @@ const { ehCriador } = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const colunas = [
   {
-    chave: 'gestor_contrato',
+    chave: 'orgao_gestor',
     label: 'Gestor municipal',
+    atributosDoCabecalhoDeColuna: { class: 'col--minimum' },
   },
   {
     chave: 'criado_em',
@@ -59,6 +60,16 @@ onUnmounted(() => {
       :colunas="colunas"
       :dados="lista"
     >
+      <template #celula:orgao_gestor="{ celula }">
+        <abbr
+          v-if="celula.descricao"
+          :title="celula.descricao"
+        >{{ celula.sigla }}</abbr>
+        <template v-else>
+          {{ celula.sigla || celula }}
+        </template>
+      </template>
+
       <template #acoes="{ linha }">
         <SmaeLink
           class="like-a__text"
