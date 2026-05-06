@@ -77,10 +77,15 @@ export class RefreshDemandaService implements TaskableService {
                 return { results };
             }
 
+            this.logger.log('Refresh: geocamadas');
             results.geocamadas = await this.refreshGeocamadas(params.force_all || params.force_geocamadas || false);
+            this.logger.log('Refresh: geopoints');
             results.geopoints = await this.refreshGeopoints();
+            this.logger.log('Refresh: summary');
             results.summary = await this.refreshSummary();
+            this.logger.log('Refresh: full');
             results.full = await this.refreshFull();
+            this.logger.log('Refresh: individual');
             results.individual = await this.refreshAllIndividualDemandas();
 
             return { results };
