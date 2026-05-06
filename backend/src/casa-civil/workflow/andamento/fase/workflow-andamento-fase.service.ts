@@ -404,6 +404,18 @@ export class WorkflowAndamentoFaseService {
                             percentual_concluido: 100,
                             termino_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
+                            fase_atual_workflow: false,
+                        },
+                    });
+
+                    // Tarefas filhas (ex: distribuição de recurso) também devem ser desmarcadas.
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_pai_id: self.tarefaEspelhada[0].id,
+                            removido_em: null,
+                        },
+                        data: {
+                            fase_atual_workflow: false,
                         },
                     });
                 }
@@ -759,6 +771,17 @@ export class WorkflowAndamentoFaseService {
                             percentual_concluido: 0,
                             termino_real: null,
                             atualizado_em: new Date(Date.now()),
+                            fase_atual_workflow: true,
+                        },
+                    });
+
+                    // Tarefas filhas (ex: distribuição de recurso) também devem ser remarcadas.
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_pai_id: faseParaReabrir.tarefaEspelhada[0].id,
+                            removido_em: null,
+                        },
+                        data: {
                             fase_atual_workflow: true,
                         },
                     });

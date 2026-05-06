@@ -49,11 +49,17 @@ export class DashTransferenciaService {
         // Construir condições de busca combinada (identificador + palavras-chave)
         const searchConditions = await this.transferenciaService.buildSearchConditions(filter.palavra_chave);
 
+        // Gestor(a) de Distribuição de Recurso só enxerga linhas do seu próprio órgão.
+        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']);
+        if (isGestorDistribuicao && !user.orgao_id) throw new HttpException('Usuário sem órgão associado.', 400);
+
+        const orgaosFilter = isGestorDistribuicao ? [user.orgao_id!] : filter.orgaos_ids;
+
         // eh marco, ter data de termino (ter data planejado), não ter data de termino real
         //
         const rows = await this.prisma.transferenciaStatusConsolidado.findMany({
             where: {
-                orgaos_envolvidos: filter.orgaos_ids ? { hasSome: filter.orgaos_ids } : undefined,
+                orgaos_envolvidos: orgaosFilter ? { hasSome: orgaosFilter } : undefined,
                 situacao: filter.atividade ? { in: filter.atividade } : undefined,
                 // Filtro "prazo" é em dias, então caso seja passado 60. Buscamos transferencias que a data seja menor ou igual a hoje + 60 dias
                 data: filter.prazo ? { lte: new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000) } : undefined,

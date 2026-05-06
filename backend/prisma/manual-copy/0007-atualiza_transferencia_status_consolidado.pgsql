@@ -74,6 +74,7 @@ BEGIN
             WHERE id = pTransferenciaId
               AND removido_em IS NULL
               AND workflow_finalizado = false
+              AND workflow_id IS NOT NULL
         )
         AND NOT EXISTS (
             SELECT 1
