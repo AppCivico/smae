@@ -1,8 +1,14 @@
 import type { MfDashTransferenciasDto } from '@back/casa-civil/dash/dto/transferencia.dto';
-import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+type RespostaTransferencias = {
+  linhas: MfDashTransferenciasDto[];
+  requestInfo: {
+    queryTook: number;
+  };
+};
 
 export const usePanoramaTransferenciasStore = defineStore(
   'panoramaTransferencias',
@@ -16,14 +22,6 @@ export const usePanoramaTransferenciasStore = defineStore(
         emFoco: false,
       } as ChamadasPendentes,
       erro: null as unknown,
-
-      paginacao: {
-        tokenPaginacao: '',
-        paginas: 0,
-        paginaCorrente: 0,
-        temMais: true,
-        totalRegistros: 0,
-      } as Paginacao,
     }),
     actions: {
       async buscarTudo(params = {}): Promise<void> {
@@ -33,23 +31,12 @@ export const usePanoramaTransferenciasStore = defineStore(
         try {
           const {
             linhas,
-            token_paginacao: tokenPaginacao,
-            paginas,
-            pagina_corrente: paginaCorrente,
-            tem_mais: temMais,
-            total_registros: totalRegistros,
           } = (await this.requestS.get(
-            `${baseUrl}/panorama/transferencias-workflow`,
+            `${baseUrl}/panorama/transferencias`,
             params,
-          )) as PaginatedWithPagesDto<MfDashTransferenciasDto>;
+          )) as RespostaTransferencias;
 
           this.lista = linhas;
-
-          this.paginacao.tokenPaginacao = tokenPaginacao;
-          this.paginacao.paginas = paginas;
-          this.paginacao.paginaCorrente = paginaCorrente;
-          this.paginacao.temMais = temMais;
-          this.paginacao.totalRegistros = totalRegistros;
         } catch (error_: unknown) {
           this.erro = error_;
         }

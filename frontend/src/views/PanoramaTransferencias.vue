@@ -7,7 +7,6 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 import { Dashboard } from '@/components';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -27,7 +26,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  chamadasPendentes, erro, lista, paginacao,
+  chamadasPendentes, erro, lista,
 } = storeToRefs(panoramaTransferenciasStore);
 const { partidosPorId } = storeToRefs(partidoStore);
 const { órgãosPorId } = storeToRefs(OrgaosStore);
@@ -105,8 +104,6 @@ function atualizarUrl() {
       prazo: prazo.value || undefined,
       palavra_chave: palavraChave.value || undefined,
       atividade: atividade.value || undefined,
-      pagina: 1,
-      token_paginacao: undefined,
     },
   });
 }
@@ -123,9 +120,6 @@ const parametrosDeBusca = computed(() => ({
     : route.query.palavra_chave,
   atividade: route.query.atividade,
   prazo: route.query.prazo || prazo.value,
-  pagina: route.query.pagina,
-  ipp: route.query.ipp || 1000,
-  token_paginacao: route.query.token_paginacao,
 }));
 
 const parametrosSerializados = computed(() => JSON.stringify(parametrosDeBusca.value));
@@ -334,10 +328,6 @@ onUnmounted(() => {
       </button>
     </form>
 
-    <p v-if="!chamadasPendentes.lista">
-      Exibindo <strong>{{ lista.length }}</strong> resultados de {{ paginacao.totalRegistros }}.
-    </p>
-
     <div class="flex flexwrap g2 start">
       <SmaeTable
         titulo-para-rolagem-horizontal="Panorama de transferências"
@@ -392,11 +382,6 @@ onUnmounted(() => {
       />
       <QuadroNotas v-if="!authStore.temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')" />
     </div>
-
-    <MenuPaginacao
-      class="mt2"
-      v-bind="paginacao"
-    />
   </Dashboard>
 </template>
 <style scoped>
