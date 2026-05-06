@@ -7,7 +7,11 @@
       <mj-column>
         <mj-text>
           <p>Houve [% quantidade %] alteração(ões) em processos SEI nas transferências voluntárias listadas abaixo:</p>
-          [% lista_html %]
+          <ul>
+            [% FOREACH item IN items %]
+            <li>SEI [% item.processo %] &mdash; <a href="[% item.link %]">Transferência [% item.identificador %]</a></li>
+            [% END %]
+          </ul>
         </mj-text>
         <mj-text>
           <p>Para maiores detalhes acesse o SMAE.</p>

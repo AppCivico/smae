@@ -779,17 +779,13 @@ export class SeiIntegracaoService {
 
             if (gestores.length === 0) return;
 
-            const listaHtml =
-                '<ul>' +
-                items
-                    .map((it) => {
-                        const url = new URL(
-                            [baseUrl, 'transferencias-voluntarias', it.transferencia_id, 'resumo'].join('/')
-                        ).toString();
-                        return `<li>SEI ${this.formatSEI(it.processo)} &mdash; <a href="${this.formatSEI(url)}">Transferência ${this.formatSEI(it.identificador)}</a></li>`;
-                    })
-                    .join('') +
-                '</ul>';
+            const itemsTpl = items.map((it) => ({
+                processo: this.formatSEI(it.processo),
+                identificador: it.identificador,
+                link: new URL(
+                    [baseUrl, 'transferencias-voluntarias', it.transferencia_id, 'resumo'].join('/')
+                ).toString(),
+            }));
 
             for (const gestor of gestores) {
                 await prismaTx.emaildbQueue.create({
@@ -801,7 +797,7 @@ export class SeiIntegracaoService {
                         to: gestor.email,
                         variables: {
                             quantidade: items.length,
-                            lista_html: listaHtml,
+                            items: itemsTpl,
                         },
                     },
                 });
