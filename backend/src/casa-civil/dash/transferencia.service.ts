@@ -46,70 +46,281 @@ export class DashTransferenciaService {
         filter: FilterDashTransferenciasDto,
         user: PessoaFromJwt
     ): Promise<ListMfDashTransferenciasDto> {
-        // Construir condições de busca combinada (identificador + palavras-chave)
         const searchConditions = await this.transferenciaService.buildSearchConditions(filter.palavra_chave);
 
-        // eh marco, ter data de termino (ter data planejado), não ter data de termino real
-        //
-        const rows = await this.prisma.transferenciaStatusConsolidado.findMany({
-            where: {
-                orgaos_envolvidos: filter.orgaos_ids ? { hasSome: filter.orgaos_ids } : undefined,
-                situacao: filter.atividade ? { in: filter.atividade } : undefined,
-                // Filtro "prazo" é em dias, então caso seja passado 60. Buscamos transferencias que a data seja menor ou igual a hoje + 60 dias
-                data: filter.prazo ? { lte: new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000) } : undefined,
-                transferencia: {
-                    AND: this.transferenciaService.permissionSet(user),
-                    esfera: filter.esfera ? { in: filter.esfera } : undefined,
-                    // Busca combinada por identificador e palavras-chave
-                    ...(searchConditions ? { OR: searchConditions } : {}),
-                    parlamentar: filter.partido_ids
-                        ? {
-                              some: {
-                                  partido_id: { in: filter.partido_ids },
-                              },
-                          }
-                        : undefined,
-                },
-            },
-            include: {
-                transferencia: {
-                    select: {
-                        id: true,
-                        identificador: true,
-                        emenda: true,
-                        esfera: true,
-                        objeto: true,
-                        parlamentar: {
-                            select: {
-                                partido_id: true,
-                            },
-                        },
-                    },
-                },
-            },
-            orderBy: [{ data: { sort: 'asc', nulls: 'first' } }, { transferencia: { identificador: 'asc' } }],
-        });
-
-        const ret: ListMfDashTransferenciasDto = {
-            linhas: rows.map((r): MfDashTransferenciasDto => {
-                return {
-                    data: Date2YMD.toStringOrNull(r.data),
-                    data_origem: r.data_origem,
-                    atividade: r.situacao,
-                    identificador: r.transferencia.identificador,
-                    emenda: r.transferencia.emenda,
-                    transferencia_id: r.transferencia.id,
-                    esfera: r.transferencia.esfera,
-                    orgaos: r.orgaos_envolvidos,
-                    objeto: r.transferencia.objeto,
-                    partido_ids: r.transferencia.parlamentar.length
-                        ? r.transferencia.parlamentar.map((p) => p.partido_id!)
-                        : null,
-                };
-            }),
+        const andamentoFilter: Prisma.TransferenciaAndamentoWhereInput = {
+            data_termino: null,
+            removido_em: null,
+            ...(filter.atividade ? { workflow_fase: { fase: { in: filter.atividade } } } : {}),
+            ...(filter.orgaos_ids ? { orgao_responsavel_id: { in: filter.orgaos_ids } } : {}),
         };
 
-        return ret;
+        const where: Prisma.TransferenciaWhereInput = {
+            removido_em: null,
+            workflow_id: { not: null },
+            workflow_finalizado: false,
+            AND: this.transferenciaService.permissionSet(user),
+            esfera: filter.esfera ? { in: filter.esfera } : undefined,
+            ...(searchConditions ? { OR: searchConditions } : {}),
+            parlamentar: filter.partido_ids ? { some: { partido_id: { in: filter.partido_ids } } } : undefined,
+            ...(filter.atividade || filter.orgaos_ids ? { andamentoWorkflow: { some: andamentoFilter } } : {}),
+        };
+
+        const rows = await this.prisma.transferencia.findMany({
+            where,
+            select: {
+                id: true,
+                ano: true,
+                identificador: true,
+                identificador_nro: true,
+                emenda: true,
+                esfera: true,
+                objeto: true,
+                workflow_id: true,
+                parlamentar: {
+                    select: { partido_id: true },
+                },
+                andamentoWorkflow: {
+                    where: {
+                        data_termino: null,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        data_inicio: true,
+                        workflow_fase_id: true,
+                        workflow_etapa_id: true,
+                        orgao_responsavel_id: true,
+                        workflow_fase: {
+                            select: { fase: true },
+                        },
+                        tarefaEspelhada: {
+                            select: { id: true },
+                            take: 1,
+                        },
+                    },
+                    take: 1,
+                },
+            },
+        });
+
+        const andamentoEntries = rows
+            .flatMap((r) => r.andamentoWorkflow)
+            .filter((a) => a !== undefined && a !== null);
+
+        const faseIds = [...new Set(andamentoEntries.map((a) => a.workflow_fase_id))];
+        const workflowIds = [...new Set(rows.map((r) => r.workflow_id).filter((id): id is number => id !== null))];
+
+        const fluxoFaseDuracaoMap = new Map<string, number | null>();
+        const fluxoFaseResponsabilidadeMap = new Map<string, WorkflowResponsabilidade>();
+
+        if (faseIds.length > 0 && workflowIds.length > 0) {
+            const fluxoFases = await this.prisma.fluxoFase.findMany({
+                where: {
+                    fase_id: { in: faseIds },
+                    fluxo: {
+                        workflow_id: { in: workflowIds },
+                    },
+                    removido_em: null,
+                },
+                select: {
+                    fase_id: true,
+                    duracao: true,
+                    responsabilidade: true,
+                    fluxo: {
+                        select: { workflow_id: true },
+                    },
+                },
+            });
+
+            for (const ff of fluxoFases) {
+                const key = `${ff.fluxo.workflow_id}-${ff.fase_id}`;
+                fluxoFaseResponsabilidadeMap.set(key, ff.responsabilidade);
+                if (!fluxoFaseDuracaoMap.has(key) || (ff.duracao !== null && fluxoFaseDuracaoMap.get(key) === null)) {
+                    fluxoFaseDuracaoMap.set(key, ff.duracao);
+                }
+            }
+        }
+
+        // Para fases OutroOrgao, as tarefas reais (uma por distribuição) ficam no cronograma
+        // como filhas (nivel 3, com distribuicao_recurso_id) da Tarefa "espelhada" (nivel 2)
+        // vinculada ao TransferenciaAndamento. Mesma regra de filtragem usada na tela de
+        // andamento do workflow (workflow-andamento.service.ts: nivel=3 + distribuicao_recurso ativa).
+        const espelhadaIds = andamentoEntries
+            .flatMap((a) => a.tarefaEspelhada)
+            .map((t) => t.id)
+            .filter((id) => id != null);
+
+        const tarefasOutroOrgao =
+            espelhadaIds.length > 0
+                ? await this.prisma.tarefa.findMany({
+                      where: {
+                          tarefa_pai_id: { in: espelhadaIds },
+                          nivel: 3,
+                          termino_real: null,
+                          removido_em: null,
+                          distribuicao_recurso: {
+                              removido_em: null,
+                          },
+                      },
+                      select: {
+                          tarefa_pai_id: true,
+                          tarefa: true,
+                          orgao_id: true,
+                          inicio_planejado: true,
+                          termino_planejado: true,
+                          duracao_planejado: true,
+                      },
+                  })
+                : [];
+
+        const espelhadaTarefasMap = new Map<
+            number,
+            { atividade: string; orgao_id: number | null; data: string | null }[]
+        >();
+        for (const t of tarefasOutroOrgao) {
+            if (t.tarefa_pai_id === null) continue;
+            if (!espelhadaTarefasMap.has(t.tarefa_pai_id)) {
+                espelhadaTarefasMap.set(t.tarefa_pai_id, []);
+            }
+            // Prazo da tarefa: termino_planejado direto, ou inicio_planejado + duracao_planejado.
+            let dataTarefa: string | null = null;
+            if (t.termino_planejado) {
+                dataTarefa = Date2YMD.toStringOrNull(t.termino_planejado);
+            } else if (t.inicio_planejado && t.duracao_planejado !== null) {
+                const deadline = new Date(t.inicio_planejado);
+                deadline.setDate(deadline.getDate() + t.duracao_planejado);
+                dataTarefa = Date2YMD.toStringOrNull(deadline);
+            }
+            espelhadaTarefasMap
+                .get(t.tarefa_pai_id)!
+                .push({ atividade: t.tarefa, orgao_id: t.orgao_id, data: dataTarefa });
+        }
+
+        type LinhaInterna = MfDashTransferenciasDto & { ano: number | null; identificador_nro: number };
+
+        let linhas: LinhaInterna[] = rows.flatMap((r): LinhaInterna[] => {
+            const andamento = r.andamentoWorkflow[0] ?? null;
+
+            if (!andamento) {
+                return [
+                    {
+                        transferencia_id: r.id,
+                        emenda: r.emenda,
+                        identificador: r.identificador,
+                        atividade: 'Aguardando liberação da próxima fase',
+                        data: null,
+                        data_origem: 'Workflow',
+                        orgaos: [],
+                        esfera: r.esfera,
+                        objeto: r.objeto,
+                        partido_ids: r.parlamentar.length ? r.parlamentar.map((p) => p.partido_id!) : null,
+                        ano: r.ano,
+                        identificador_nro: r.identificador_nro,
+                    },
+                ];
+            }
+
+            let data: string | null = null;
+            if (andamento.data_inicio && r.workflow_id) {
+                const key = `${r.workflow_id}-${andamento.workflow_fase_id}`;
+                const duracao = fluxoFaseDuracaoMap.get(key) ?? null;
+                if (duracao !== null) {
+                    const deadline = new Date(andamento.data_inicio);
+                    deadline.setDate(deadline.getDate() + duracao);
+                    data = Date2YMD.toStringOrNull(deadline);
+                }
+            }
+
+            const baseRow = {
+                transferencia_id: r.id,
+                emenda: r.emenda,
+                identificador: r.identificador,
+                esfera: r.esfera,
+                objeto: r.objeto,
+                partido_ids: r.parlamentar.length ? r.parlamentar.map((p) => p.partido_id!) : null,
+                ano: r.ano,
+                identificador_nro: r.identificador_nro,
+            };
+
+            // Linha da fase atual (workflow), sempre emitida.
+            const linhaFase: LinhaInterna = {
+                ...baseRow,
+                atividade: andamento.workflow_fase.fase,
+                data,
+                data_origem: 'Workflow',
+                orgaos: andamento.orgao_responsavel_id ? [andamento.orgao_responsavel_id] : [],
+            };
+
+            const linhasTV: LinhaInterna[] = [linhaFase];
+
+            // Para fases OutroOrgao, adicionar 1 linha por tarefa em aberto no cronograma
+            // (uma por distribuição). Não substitui a linha da fase — soma a ela.
+            if (r.workflow_id) {
+                const key = `${r.workflow_id}-${andamento.workflow_fase_id}`;
+                const responsabilidade = fluxoFaseResponsabilidadeMap.get(key);
+
+                if (responsabilidade === WorkflowResponsabilidade.OutroOrgao) {
+                    const espelhadaId = andamento.tarefaEspelhada[0]?.id;
+                    const openTarefas = espelhadaId != null ? (espelhadaTarefasMap.get(espelhadaId) ?? []) : [];
+                    for (const t of openTarefas) {
+                        linhasTV.push({
+                            ...baseRow,
+                            atividade: t.atividade,
+                            data: t.data,
+                            data_origem: 'Cronograma',
+                            orgaos: t.orgao_id !== null ? [t.orgao_id] : [],
+                        });
+                    }
+                }
+            }
+
+            return linhasTV;
+        });
+
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) && user.orgao_id) {
+            linhas = linhas.filter((l) => l.orgaos.includes(user.orgao_id!));
+        }
+
+        if (filter.prazo !== undefined) {
+            const prazoLimit = new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000);
+            const prazoLimitStr = Date2YMD.toStringOrNull(prazoLimit);
+
+            linhas = linhas.filter((l) => {
+                if (l.data === null) return true;
+                return l.data <= prazoLimitStr!;
+            });
+        }
+
+        // Ordenação: prazo asc (mais atrasados/vencidos primeiro, nulos por último), ano asc, identificador_nro asc.
+        linhas.sort((a, b) => {
+            if (a.data !== b.data) {
+                if (a.data === null) return 1;
+                if (b.data === null) return -1;
+                return a.data < b.data ? -1 : 1;
+            }
+            const anoA = a.ano ?? 0;
+            const anoB = b.ano ?? 0;
+            if (anoA !== anoB) return anoA - anoB;
+            return a.identificador_nro - b.identificador_nro;
+        });
+
+        return {
+            linhas: linhas.map(
+                (l): MfDashTransferenciasDto => ({
+                    transferencia_id: l.transferencia_id,
+                    emenda: l.emenda,
+                    identificador: l.identificador,
+                    atividade: l.atividade,
+                    data: l.data,
+                    data_origem: l.data_origem,
+                    orgaos: l.orgaos,
+                    esfera: l.esfera,
+                    objeto: l.objeto,
+                    partido_ids: l.partido_ids,
+                })
+            ),
+        };
     }
 
     async notas(filters: FilterDashNotasDto, user: PessoaFromJwt): Promise<PaginatedDto<MfDashNotasDto>> {
