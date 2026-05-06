@@ -125,54 +125,53 @@ onUnmounted(() => {
           </span>
         </SmaeLink>
 
-        <template v-if="linha.pode_solicitar_ajuste">
-          <SmaeLink
-            :to="{
-              name: 'DistribuicaoSolicitacaoAjuste.Lista',
-              params: {
-                ...$route.params,
-                recursoId: linha.id,
-              },
-            }"
-          >
-            <span class="tipinfo">
-              <svg
-                width="20"
-                height="20"
-                :class="{
-                  tvermelho: linha.possui_solicitacao_ajuste_pendente
-                }"
-              >
-                <use xlink:href="#i_atividade" />
-              </svg>
-              <div v-if="linha.possui_solicitacao_ajuste_pendente">
-                Há solicitações de ajuste pendentes
-              </div>
-              <div v-else>Solicitações de ajuste</div>
-            </span>
-          </SmaeLink>
+        <SmaeLink
+          :to="{
+            name: 'DistribuicaoSolicitacaoAjuste.Lista',
+            params: {
+              ...$route.params,
+              recursoId: linha.id,
+            },
+          }"
+        >
+          <span class="tipinfo">
+            <svg
+              width="20"
+              height="20"
+              :class="{
+                tvermelho: linha.possui_solicitacao_ajuste_pendente
+              }"
+            >
+              <use xlink:href="#i_atividade" />
+            </svg>
+            <div v-if="linha.possui_solicitacao_ajuste_pendente">
+              Há solicitações de ajuste pendentes
+            </div>
+            <div v-else>Solicitações de ajuste</div>
+          </span>
+        </SmaeLink>
 
-          <SmaeLink
-            :to="{
-              name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
-              params: {
-                ...$route.params,
-                recursoId: linha.id,
-              },
-            }"
-          >
-            <span class="tipinfo">
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_check" />
-              </svg>
+        <SmaeLink
+          v-if="linha.pode_solicitar_ajuste"
+          :to="{
+            name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
+            params: {
+              ...$route.params,
+              recursoId: linha.id,
+            },
+          }"
+        >
+          <span class="tipinfo">
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_check" />
+            </svg>
 
-              <div>Histórico de Status</div>
-            </span>
-          </SmaeLink>
-        </template>
+            <div>Histórico de Status</div>
+          </span>
+        </SmaeLink>
 
         <button
           v-if="authStore.temPermissãoPara('CadastroTransferencia.remover')"
