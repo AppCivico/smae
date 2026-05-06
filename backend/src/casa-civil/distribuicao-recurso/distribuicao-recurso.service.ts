@@ -508,6 +508,32 @@ export class DistribuicaoRecursoService {
         }
     }
 
+    private assertGestorPodeAcessar(user: PessoaFromJwt, orgaoGestorId: number, acao: 'acessar' | 'remover'): void {
+        if (
+            user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) &&
+            orgaoGestorId !== user.orgao_id
+        ) {
+            throw new HttpException(
+                `Você não tem permissão para ${acao} esta distribuição de recurso.`,
+                403
+            );
+        }
+    }
+
+    private podeEditar(user: PessoaFromJwt, orgaoGestorId: number): boolean {
+        return (
+            user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']) &&
+            (!user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) || orgaoGestorId === user.orgao_id)
+        );
+    }
+
+    private podeSolicitarAjuste(user: PessoaFromJwt, orgaoGestorId: number): boolean {
+        return (
+            user.hasSomeRoles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir']) &&
+            orgaoGestorId === user.orgao_id
+        );
+    }
+
     async findAll(
         filters: FilterDistribuicaoRecursoDto,
         user: PessoaFromJwt
@@ -732,9 +758,8 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
-            const pode_editar =
-                user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']) &&
-                (!user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) || r.orgao_gestor.id === user.orgao_id);
+            const pode_editar = this.podeEditar(user, r.orgao_gestor.id);
+            const pode_solicitar_ajuste = this.podeSolicitarAjuste(user, r.orgao_gestor.id);
 
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
@@ -864,6 +889,7 @@ export class DistribuicaoRecursoService {
                 distribuicao_conta: r.distribuicao_conta,
                 distribuicao_banco: r.distribuicao_banco,
                 pode_editar: pode_editar,
+                pode_solicitar_ajuste: pode_solicitar_ajuste,
                 possui_solicitacao_ajuste_pendente: r.solicitacoes_ajuste.length > 0,
             } satisfies DistribuicaoRecursoDto;
         });
@@ -1068,9 +1094,10 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
-        const pode_editar =
-            user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']) &&
-            (!user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) || row.orgao_gestor.id === user.orgao_id);
+        this.assertGestorPodeAcessar(user, row.orgao_gestor.id, 'acessar');
+
+        const pode_editar = this.podeEditar(user, row.orgao_gestor.id);
+        const pode_solicitar_ajuste = this.podeSolicitarAjuste(user, row.orgao_gestor.id);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1213,6 +1240,7 @@ export class DistribuicaoRecursoService {
             distribuicao_conta: row.distribuicao_conta,
             distribuicao_banco: row.distribuicao_banco,
             pode_editar: pode_editar,
+            pode_solicitar_ajuste: pode_solicitar_ajuste,
             possui_solicitacao_ajuste_pendente: row.solicitacoes_ajuste.length > 0,
         } satisfies DistribuicaoRecursoDetailDto;
     }
@@ -1996,8 +2024,11 @@ export class DistribuicaoRecursoService {
                 select: {
                     id: true,
                     transferencia_id: true,
+                    orgao_gestor_id: true,
                 },
             });
+
+            this.assertGestorPodeAcessar(user, self.orgao_gestor_id, 'remover');
 
             await prismaTx.distribuicaoRecurso.updateMany({
                 where: {
