@@ -121,44 +121,59 @@ DECLARE
     v_anos  int[];
 BEGIN
 
-    WITH _int AS (
-        SELECT
-            extract('year' FROM coalesce(tc.previsao_inicio, p.previsao_inicio)) AS ini,
-            extract('year' FROM coalesce(tc.realizado_termino, tc.previsao_termino, tc.previsao_inicio, p.previsao_termino, p.previsao_inicio)) AS fim
-        FROM
-            projeto p
-            left join tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
-        WHERE
-            p.id = pProjetoId
-    ),
-    _anos AS ( SELECT ano.ano FROM _int, generate_series(ini::int, fim::int, 1) ano ),
-    _prev_custo AS (
-        SELECT DISTINCT ano_referencia
-        FROM meta_orcamento
+    WITH _all_years AS (
+        -- anos das datas de cada tarefa (cobre tarefas mesmo quando o rollup do tarefa_cronograma está incompleto)
+        SELECT extract('year' FROM d)::int AS ano
+        FROM tarefa t
+        JOIN tarefa_cronograma tc ON tc.id = t.tarefa_cronograma_id AND tc.removido_em IS NULL
+        CROSS JOIN LATERAL (
+            VALUES (t.inicio_planejado), (t.termino_planejado), (t.inicio_real), (t.termino_real)
+        ) AS v(d)
+        WHERE tc.projeto_id = pProjetoId
+          AND t.removido_em IS NULL
+          AND d IS NOT NULL
+
+        UNION ALL
+
+        -- anos do rollup do tarefa_cronograma
+        SELECT extract('year' FROM d)::int AS ano
+        FROM tarefa_cronograma tc
+        CROSS JOIN LATERAL (
+            VALUES (tc.previsao_inicio), (tc.previsao_termino), (tc.realizado_inicio), (tc.realizado_termino)
+        ) AS v(d)
+        WHERE tc.projeto_id = pProjetoId
+          AND tc.removido_em IS NULL
+          AND d IS NOT NULL
+
+        UNION ALL
+
+        -- anos do projeto
+        SELECT extract('year' FROM d)::int AS ano
+        FROM projeto p
+        CROSS JOIN LATERAL (
+            VALUES (p.previsao_inicio), (p.previsao_termino)
+        ) AS v(d)
+        WHERE p.id = pProjetoId
+          AND d IS NOT NULL
+
+        UNION ALL
+
+        SELECT ano_referencia FROM meta_orcamento
         WHERE projeto_id = pProjetoId AND removido_em IS NULL
-    ),
-    _orc_plan AS (
-        SELECT DISTINCT ano_referencia
-        FROM orcamento_planejado
+
+        UNION ALL
+
+        SELECT ano_referencia FROM orcamento_planejado
         WHERE projeto_id = pProjetoId AND removido_em IS NULL
-    ),
-    _orc_real AS (
-        SELECT DISTINCT ano_referencia
-        FROM orcamento_realizado
+
+        UNION ALL
+
+        SELECT ano_referencia FROM orcamento_realizado
         WHERE projeto_id = pProjetoId AND removido_em IS NULL
     ),
     _range AS (
-        SELECT ano
-        FROM _anos
-        UNION ALL
-        SELECT ano_referencia
-        FROM _orc_plan
-        UNION ALL
-        SELECT *
-        FROM _prev_custo
-        UNION ALL
-        SELECT *
-        FROM _orc_real
+        SELECT generate_series(min(ano), max(ano)) AS ano
+        FROM _all_years
     )
     SELECT
         array_agg(DISTINCT ano ORDER BY ano) into v_anos

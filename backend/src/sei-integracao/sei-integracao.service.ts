@@ -1,9 +1,15 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import * as crypto from 'crypto';
+import { DateTime } from 'luxon';
+import { uuidv7 } from 'uuidv7';
+import { CONST_PERFIL_CASA_CIVIL } from '../common/consts';
+import { IsCrontabDisabled } from '../common/crontab-utils';
 import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RetornoRelatorioProcesso, RetornoResumoProcesso, SeiApiService, SeiError } from '../sei-api/sei-api.service';
 import {
@@ -12,18 +18,17 @@ import {
     SeiIntegracaoDto,
     SeiProcessadoDto,
 } from './entities/sei-entidade.entity';
-import { JwtService } from '@nestjs/jwt';
-import { DateTime } from 'luxon';
-import { uuidv7 } from 'uuidv7';
-import { SmaeConfigService } from '../common/services/smae-config.service';
-import { CONST_PERFIL_CASA_CIVIL } from '../common/consts';
-import { IsCrontabDisabled } from '../common/crontab-utils';
+import { Html2Text } from '../common/Html2Text';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
     offset: number;
     ipp: number;
 }
+
+type SeiBatchEntry = { processo: string; statusSeiId: number };
+type SeiBatchAccumulator = SeiBatchEntry[];
+
 @Injectable()
 export class SeiIntegracaoService {
     private readonly logger = new Logger(SeiIntegracaoService.name);
@@ -125,7 +130,7 @@ export class SeiIntegracaoService {
         return readStatusMap;
     }
 
-    async buscaSeiRelatorio(params: FilterSeiParams): Promise<SeiIntegracaoDto> {
+    async buscaSeiRelatorio(params: FilterSeiParams, batch?: SeiBatchAccumulator): Promise<SeiIntegracaoDto> {
         params.processo_sei = this.normalizaProcessoSei(params.processo_sei);
 
         const now = new Date();
@@ -188,10 +193,14 @@ export class SeiIntegracaoService {
                         if (statusSei.processosDistribuicaoRecurso?.length > 0 && statusSei.sei_hash !== '') {
                             // Verificando sei_hash, pois caso vazio, foi criado pelo endpoint de sync de distribuições.
                             // Logo, não é necessário enviar email de notificação deste primeiro sync.
-                            await this.enviarEmailNotificacaoSEI(
-                                params.processo_sei,
-                                statusSei.processosDistribuicaoRecurso[0].id
-                            );
+                            if (batch) {
+                                batch.push({
+                                    processo: params.processo_sei,
+                                    statusSeiId: statusSei.id,
+                                });
+                            } else {
+                                await this.enviarEmailNotificacaoSEI(params.processo_sei, statusSei.id);
+                            }
                         }
                     }
 
@@ -434,9 +443,12 @@ export class SeiIntegracaoService {
             take: 1000,
         });
 
+        const batchEnabled = await this.smaeConfigService.getConfigBooleanWithDefault('SEI_EMAIL_BATCH_MULTI', false);
+        const batch: SeiBatchAccumulator | undefined = batchEnabled ? [] : undefined;
+
         for (const record of activeRecords) {
             try {
-                await this.buscaSeiRelatorio({ processo_sei: record.processo_sei });
+                await this.buscaSeiRelatorio({ processo_sei: record.processo_sei }, batch);
             } catch (error) {
                 const updateData: Prisma.StatusSEIUpdateInput = {
                     status_code: 500,
@@ -460,6 +472,14 @@ export class SeiIntegracaoService {
                 this.logger.error(
                     `Erro ao atualizar SEI ${record.processo_sei}: ${error.message} // ${updateData.sincronizacao_errmsg}`
                 );
+            }
+        }
+
+        if (batch && batch.length > 0) {
+            try {
+                await this.enviarEmailNotificacaoSEIBatch(batch);
+            } catch (error) {
+                this.logger.error(`Erro ao enviar email batch de notificação SEI: ${error?.message ?? error}`);
             }
         }
 
@@ -594,25 +614,41 @@ export class SeiIntegracaoService {
         return this.jwtService.sign(opt);
     }
 
-    private async enviarEmailNotificacaoSEI(processo: string, distribuicao_recurso_id: number) {
+    private async enviarEmailNotificacaoSEI(processo: string, status_sei_id: number) {
         const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirst({
+            const links = await prismaTx.distribuicaoRecursoSei.findMany({
                 where: {
-                    id: distribuicao_recurso_id,
+                    status_sei_id: status_sei_id,
                     removido_em: null,
+                    distribuicao_recurso: {
+                        removido_em: null,
+                        transferencia: {
+                            removido_em: null,
+                        },
+                    },
                 },
                 select: {
-                    transferencia: {
-                        select: { id: true, identificador: true },
+                    distribuicao_recurso: {
+                        select: {
+                            transferencia: {
+                                select: { id: true, identificador: true },
+                            },
+                        },
                     },
                 },
             });
 
-            if (!distribuicaoRecurso) {
+            const transferenciasUnicas = new Map<number, { id: number; identificador: string }>();
+            for (const link of links) {
+                const t = link.distribuicao_recurso.transferencia;
+                if (!transferenciasUnicas.has(t.id)) transferenciasUnicas.set(t.id, t);
+            }
+
+            if (transferenciasUnicas.size === 0) {
                 this.logger.log(
-                    `Processo SEI (${processo}) não possui distribuição de recurso atrelada, portanto não será enviado e-mail notificando mudança.`
+                    `Processo SEI (${processo}) não possui distribuição de recurso ativa, portanto não será enviado e-mail notificando mudança.`
                 );
                 return;
             }
@@ -639,25 +675,133 @@ export class SeiIntegracaoService {
                 select: { email: true },
             });
 
+            const processoFmt = this.formatSEI(processo);
+
+            for (const transferencia of transferenciasUnicas.values()) {
+                for (const gestor of gestores) {
+                    await prismaTx.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `SMAE - Alteração no processo SEI ${processoFmt}`,
+                            template: 'processo-sei-atualizacao.html',
+                            to: gestor.email,
+                            variables: {
+                                numero_processo: processoFmt,
+                                transferencia_identificador: transferencia.identificador,
+                                link: new URL(
+                                    [baseUrl, 'transferencias-voluntarias', transferencia.id, 'resumo'].join('/')
+                                ).toString(),
+                            },
+                        },
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Formata um número de processo SEI no padrão `NNNN.AAAA/NNNNNNN-D`.
+     * Aceita entrada já formatada ou só com dígitos. Strings inesperadas
+     * (tamanho diferente após normalização) caem em fallback via Html2Text.
+     */
+    private formatSEI(s: string): string {
+        const digits = this.normalizaProcessoSei(s);
+        if (digits.length !== 16) return Html2Text(s);
+        return `${digits.slice(0, 4)}.${digits.slice(4, 8)}/${digits.slice(8, 15)}-${digits.slice(15)}`;
+    }
+
+    private async enviarEmailNotificacaoSEIBatch(entries: SeiBatchAccumulator) {
+        if (entries.length === 0) return;
+
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            type Item = { processo: string; transferencia_id: number; identificador: string };
+            const items: Item[] = [];
+
+            for (const entry of entries) {
+                const links = await prismaTx.distribuicaoRecursoSei.findMany({
+                    where: {
+                        status_sei_id: entry.statusSeiId,
+                        removido_em: null,
+                        distribuicao_recurso: {
+                            removido_em: null,
+                            transferencia: { removido_em: null },
+                        },
+                    },
+                    select: {
+                        distribuicao_recurso: {
+                            select: {
+                                transferencia: { select: { id: true, identificador: true } },
+                            },
+                        },
+                    },
+                });
+
+                const seen = new Set<number>();
+                for (const link of links) {
+                    const t = link.distribuicao_recurso.transferencia;
+                    if (seen.has(t.id)) continue;
+                    seen.add(t.id);
+                    items.push({
+                        processo: entry.processo,
+                        transferencia_id: t.id,
+                        identificador: t.identificador,
+                    });
+                }
+            }
+
+            if (items.length === 0) {
+                this.logger.log(
+                    `Batch SEI: nenhum dos ${entries.length} processo(s) possui distribuição ativa, email não será enviado.`
+                );
+                return;
+            }
+
+            const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+            const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+
+            const gestores = await prismaTx.pessoa.findMany({
+                where: {
+                    desativado: false,
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: {
+                                nome: CONST_PERFIL_CASA_CIVIL,
+                            },
+                        },
+                    },
+                    pessoa_fisica: orgaoId ? { orgao_id: orgaoId } : undefined,
+                },
+                select: { email: true },
+            });
+
+            if (gestores.length === 0) return;
+
+            const listaHtml =
+                '<ul>' +
+                items
+                    .map((it) => {
+                        const url = new URL(
+                            [baseUrl, 'transferencias-voluntarias', it.transferencia_id, 'resumo'].join('/')
+                        ).toString();
+                        return `<li>SEI ${this.formatSEI(it.processo)} &mdash; <a href="${this.formatSEI(url)}">Transferência ${this.formatSEI(it.identificador)}</a></li>`;
+                    })
+                    .join('') +
+                '</ul>';
+
             for (const gestor of gestores) {
                 await prismaTx.emaildbQueue.create({
                     data: {
                         id: uuidv7(),
                         config_id: 1,
-                        subject: `SMAE - Alteração no processo SEI ${processo}`,
-                        template: 'processo-sei-atualizacao.html',
+                        subject: `SMAE - ${items.length} alteração(ões) em processos SEI`,
+                        template: 'processo-sei-atualizacao-multi.html',
                         to: gestor.email,
                         variables: {
-                            numero_processo: processo,
-                            transferencia_identificador: distribuicaoRecurso.transferencia.identificador,
-                            link: new URL(
-                                [
-                                    baseUrl,
-                                    'transferencias-voluntarias',
-                                    distribuicaoRecurso.transferencia.id,
-                                    'resumo',
-                                ].join('/')
-                            ).toString(),
+                            quantidade: items.length,
+                            lista_html: listaHtml,
                         },
                     },
                 });
