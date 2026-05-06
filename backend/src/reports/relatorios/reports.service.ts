@@ -486,6 +486,28 @@ export class ReportsService {
             throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
         }
 
+        // Trava de listagem por órgão para usuários sem o privilégio amplo
+        // `Reports.executar.{sistema}` (ex.: gestor com `:Demandas` apenas). Persiste o
+        // `restrito_para.portfolio_orgao_ids` no momento da criação — assim a listagem usa o
+        // filtro JSON existente (e o índice GIN) e a restrição não muda se o usuário trocar de
+        // órgão depois. `Publico` é forçado a `Restrito` aqui pois só faz sentido como
+        // verdadeiramente público quando criado por usuário com o privilégio amplo.
+        let visibilidade: RelatorioVisibilidade = dto.eh_publico ? 'Publico' : 'Privado';
+        let restritoParaData: Prisma.InputJsonValue | undefined;
+        const temPrivAmplo =
+            !user || user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios]);
+        if (!temPrivAmplo) {
+            const orgaoIdParam = (parametros as { orgao_id?: number | string }).orgao_id;
+            const orgaoId = orgaoIdParam != null ? Number(orgaoIdParam) : user!.orgao_id;
+            if (!orgaoId) {
+                throw new BadRequestException(
+                    'Usuário sem privilégio amplo e sem órgão associado — defina parametros.orgao_id ou associe um órgão.'
+                );
+            }
+            visibilidade = 'Restrito';
+            restritoParaData = { portfolio_orgao_ids: [orgaoId] };
+        }
+
         console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
@@ -493,8 +515,8 @@ export class ReportsService {
                     pdm_id: pdmId,
                     fonte: dto.fonte,
                     sistema: sistema,
-                    /// here it's easy because the user is saying what he wants
-                    visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
+                    visibilidade: visibilidade,
+                    restrito_para: restritoParaData,
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                     parametros: parametros,
                     parametros_processados: await BuildParametrosProcessados(this.prisma, {
@@ -598,8 +620,9 @@ export class ReportsService {
         // Se o usuário não tem o privilégio amplo `Reports.executar.{sistema}`, restringe a
         // listagem às fontes que ele tem privilégio escopado para executar. Cobre o caso do
         // gestor (só `Reports.executar.CasaCivil:Demandas`) sem hardcodar a fonte.
+        const temPrivAmplo = user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios]);
         let fonteFilter: Prisma.RelatorioWhereInput['fonte'] = filters.fonte;
-        if (!user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios])) {
+        if (!temPrivAmplo) {
             const fontesEscopadas = FONTES_POR_SISTEMA[sistema].filter((f) =>
                 user.hasSomeRoles([`Reports.executar.${sistema}:${f}` as ListaDePrivilegios])
             );
@@ -608,6 +631,19 @@ export class ReportsService {
                     ? filters.fonte
                     : { in: [] }
                 : { in: fontesEscopadas };
+        }
+
+        // `Publico` só vale como "globalmente visível" quando criado por usuário com privilégio
+        // amplo. Para usuários escopados, omitimos o ramo Publico do OR — eles só veem seus
+        // próprios `Privado` e `Restrito` cujo `restrito_para` casa com o orgao deles.
+        const visibilidadeOR: Prisma.RelatorioWhereInput[] = [
+            {
+                visibilidade: 'Privado',
+                criado_por: user.id,
+            },
+        ];
+        if (temPrivAmplo) {
+            visibilidadeOR.push({ visibilidade: 'Publico' });
         }
 
         const rows = await this.prisma.relatorio.findMany({
@@ -620,13 +656,7 @@ export class ReportsService {
                 AND: [
                     {
                         OR: [
-                            {
-                                visibilidade: 'Privado',
-                                criado_por: user.id,
-                            },
-                            {
-                                visibilidade: 'Publico',
-                            },
+                            ...visibilidadeOR,
                             {
                                 visibilidade: 'Restrito',
                                 OR: [
@@ -849,12 +879,24 @@ export class ReportsService {
     ) {
         const obj = contexto.getRestricaoAcesso();
 
+        // Preserva `restrito_para` gravado em saveReport (escopo por órgão para usuário sem
+        // privilégio amplo) — sem o merge, o pós-processamento sobrescreveria com null e a
+        // listagem voltaria a vazar reports entre órgãos.
+        const existing = await prismaTx.relatorio.findUnique({
+            where: { id: relatorioId },
+            select: { restrito_para: true },
+        });
+        const merged =
+            existing?.restrito_para || obj
+                ? { ...((existing?.restrito_para as object) ?? {}), ...(obj ?? {}) }
+                : null;
+
         await prismaTx.relatorio.update({
             where: { id: relatorioId },
             data: {
                 arquivo_id: arquivoId,
                 processado_em: now,
-                restrito_para: obj === null ? null : (obj as any),
+                restrito_para: merged === null ? null : (merged as any),
             },
         });
     }
