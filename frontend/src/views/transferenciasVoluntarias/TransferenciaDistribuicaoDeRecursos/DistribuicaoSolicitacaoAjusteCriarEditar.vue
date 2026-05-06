@@ -111,20 +111,16 @@ const submeterItem = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 async function aprovar() {
-  try {
-    const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Aprovada');
-    if (r) {
-      alertStore.success('Alteração aprovada com sucesso!');
-      router.push(prepararRotaDeEscape(route));
-    }
-  } catch (error) {
-    alertStore.error(error);
+  const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Aprovada', emFoco.value?.motivo_recusa || undefined);
+  if (r) {
+    alertStore.success('Alteração aprovada com sucesso!');
+    router.push(prepararRotaDeEscape(route));
   }
 }
 
 async function reprovar() {
   alertStore.confirmAction('Deseja reprovar esta alteração?', async () => {
-    const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Recusada');
+    const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Recusada', emFoco.value?.motivo_recusa || undefined);
     if (r) {
       alertStore.success('Alteração reprovada.');
       router.push(prepararRotaDeEscape(route));
@@ -646,6 +642,26 @@ onMounted(() => {
             class="error-msg"
           />
         </div>
+      </div>
+    </fieldset>
+
+    <fieldset
+      v-if="podeAprovar || emFoco.motivo_recusa"
+    >
+      <div class="f1 fb10em">
+        <LabelFromYup>
+          Motivo da decisão
+        </LabelFromYup>
+        <SmaeText
+          v-model="emFoco.motivo_recusa"
+          as="textarea"
+          rows="5"
+          name="motivo_recusa"
+          class="inputtext light mb1"
+          maxlength="255"
+          :readonly="!podeAprovar"
+          :aria-disabled="!podeAprovar"
+        />
       </div>
     </fieldset>
 
