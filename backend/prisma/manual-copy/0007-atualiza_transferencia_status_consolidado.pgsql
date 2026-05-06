@@ -40,7 +40,6 @@ BEGIN
         JOIN tarefa tf ON tf.tarefa_cronograma_id = tc.id
     WHERE
         t.removido_em IS NULL
-        AND tf.n_filhos_imediatos = 0
         AND tc.removido_em IS NULL
         AND tf.removido_em IS NULL
         AND tf.termino_planejado IS NOT NULL
@@ -51,6 +50,36 @@ BEGIN
         AND tf.fase_atual_workflow = true
     ORDER BY
         tf.termino_planejado;
+
+    -- Para TVs sem nenhuma fase/tarefa em aberto, virtualiza uma linha de espera.
+    INSERT INTO transferencia_status_consolidado (
+        transferencia_id,
+        situacao,
+        orgaos_envolvidos,
+        "data",
+        data_origem,
+        atualizado_em
+    )
+    SELECT
+        pTransferenciaId,
+        'Aguardando liberação da próxima fase',
+        '{}'::int[],
+        NULL,
+        'Workflow',
+        now()
+    WHERE
+        EXISTS (
+            SELECT 1
+            FROM transferencia
+            WHERE id = pTransferenciaId
+              AND removido_em IS NULL
+              AND workflow_finalizado = false
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM transferencia_status_consolidado
+            WHERE transferencia_id = pTransferenciaId
+        );
 
     --
     RETURN v_debug;
