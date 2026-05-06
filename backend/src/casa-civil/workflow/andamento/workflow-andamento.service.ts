@@ -18,8 +18,7 @@ export class WorkflowAndamentoService {
     ) {}
 
     async findAndamento(filter: FilterWorkflowAndamentoDto, user: PessoaFromJwt): Promise<WorkflowAndamentoDto | void> {
-        if (!filter.transferencia_id)
-            throw new HttpException('É obrigatório para uso deste endpoint.', 400);
+        if (!filter.transferencia_id) throw new HttpException('É obrigatório para uso deste endpoint.', 400);
 
         const transferencia = await this.prisma.transferencia.findFirst({
             where: {
@@ -505,8 +504,7 @@ export class WorkflowAndamentoService {
                 },
             },
         });
-        if (!transferencia)
-            throw new HttpException('Transferência com workflow, não encontrada.', 400);
+        if (!transferencia) throw new HttpException('Transferência com workflow, não encontrada.', 400);
 
         if (!transferencia.andamentoWorkflow.length)
             throw new HttpException('Transferência sem linhas de andamento', 400);
@@ -639,6 +637,7 @@ export class WorkflowAndamentoService {
                         data: {
                             inicio_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
+                            fase_atual_workflow: true,
                         },
                     });
                 }
@@ -651,6 +650,7 @@ export class WorkflowAndamentoService {
                         data: {
                             inicio_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
+                            fase_atual_workflow: true,
                         },
                     });
                 }
@@ -675,6 +675,7 @@ export class WorkflowAndamentoService {
                     data: {
                         termino_real: new Date(Date.now()),
                         atualizado_em: new Date(Date.now()),
+                        fase_atual_workflow: false,
                     },
                 });
 

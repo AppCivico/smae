@@ -4604,6 +4604,10 @@ model Tarefa {
     distribuicao_recurso_id Int?
     distribuicao_recurso    DistribuicaoRecurso? @relation(fields: [distribuicao_recurso_id], references: [id])
 
+    // Coluna utilizada para marcar fase atual do Workflow (transferencias voluntarias)
+    // Pode ser null para tarefas que não são de TV/Dist
+    fase_atual_workflow Boolean?
+
     @@unique([transferencia_fase_id])
     @@unique([transferencia_tarefa_id])
     @@index([tarefa_pai_id])
@@ -8379,8 +8383,8 @@ model DemandaConfig {
     data_inicio_vigencia DateTime  @db.Date
     data_fim_vigencia    DateTime? @db.Date
 
-    valor_minimo_custeio      Decimal @db.Decimal(15, 2) @map("valor_minimo")
-    valor_maximo_custeio      Decimal @db.Decimal(15, 2) @map("valor_maximo")
+    valor_minimo_custeio      Decimal @map("valor_minimo") @db.Decimal(15, 2)
+    valor_maximo_custeio      Decimal @map("valor_maximo") @db.Decimal(15, 2)
     valor_minimo_investimento Decimal @db.Decimal(15, 2)
     valor_maximo_investimento Decimal @db.Decimal(15, 2)
 

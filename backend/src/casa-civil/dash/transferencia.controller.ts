@@ -84,15 +84,4 @@ export class DashTransferenciaController {
     ): Promise<PaginatedWithPagesDto<DashTransferenciasPainelEstrategicoDto>> {
         return await this.metasDashService.getTransferenciasPainelEstrategico(params, user);
     }
-
-    @Get('transferencias-workflow')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
-    @ApiPaginatedWithPagesResponse(MfDashTransferenciasDto)
-    async transferenciasWorkflow(
-        @Query() params: FilterDashTransferenciasWorkflowDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<PaginatedWithPagesDto<MfDashTransferenciasDto>> {
-        return await this.metasDashService.transferenciasWorkflow(params, user);
-    }
 }

@@ -48,6 +48,7 @@ BEGIN
             AND (tf.percentual_concluido IS NULL
                 OR tf.percentual_concluido != 100))
         AND t.id = pTransferenciaId
+        AND tf.fase_atual_workflow = true
     ORDER BY
         tf.termino_planejado;
 
