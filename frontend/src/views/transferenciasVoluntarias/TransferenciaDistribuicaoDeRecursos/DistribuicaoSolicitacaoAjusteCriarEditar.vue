@@ -22,6 +22,10 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoSolicitacaoAjusteStore } from '@/stores/distribuicaoSolicitacaoAjuste.store.ts';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
+import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
+
+const { ehCriador } = useDistribuicaoSolicitacaoAjustePermissoes();
+
 const alertStore = useAlertStore();
 
 const ajusteStore = useDistribuicaoSolicitacaoAjusteStore();
@@ -37,9 +41,10 @@ const {
   itemParaEdicao,
 } = storeToRefs(ajusteStore);
 
+const podeCriar = computed(() => !route.params.ajusteId && ehCriador.value);
 const podeSalvar = computed(() => !!emFoco.value?.pode_editar);
 const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
-const modoLeitura = computed(() => !podeSalvar.value);
+const modoLeitura = computed(() => !podeSalvar.value && !podeCriar.value);
 
 const itemParaEdicaoInicial = computed(() => ({
   ...distribuicaoRecursosStore.itemParaEdicao,
@@ -59,9 +64,11 @@ const {
 
 const formularioSujo = useIsFormDirty();
 
-const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
+const salvar = handleSubmit.withControlled(async (controlledValues) => {
   const carga = nulificadorTotal({ dotacoes: [], ...controlledValues });
   carga.distribuicao_recurso_id = Number(route.params.recursoId);
+
+  if (isSubmitting.value) return;
 
   try {
     const r = await ajusteStore.salvarItem(
@@ -72,6 +79,31 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     if (r) {
       alertStore.success('Dados salvos com sucesso!');
       router.push(prepararRotaDeEscape(route));
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+const submeterItem = handleSubmit.withControlled(async (controlledValues) => {
+  const carga = nulificadorTotal({ dotacoes: [], ...controlledValues });
+  carga.distribuicao_recurso_id = Number(route.params.recursoId);
+
+  if (isSubmitting.value) return;
+
+  try {
+    const r = await ajusteStore.salvarItem(
+      carga,
+      route.params.ajusteId ? Number(route.params.ajusteId) : 0,
+    );
+
+    if (r) {
+      const ajusteId = route.params.ajusteId ? Number(route.params.ajusteId) : r?.id;
+      const s = await ajusteStore.solicitarAprovacao(ajusteId);
+      if (s) {
+        alertStore.success('Alteração enviada para validação com sucesso!');
+        router.push(prepararRotaDeEscape(route));
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -118,7 +150,7 @@ onMounted(() => {
 
   <ErrorComponent :erro="erros.emFoco" />
 
-  <form @submit.prevent="!isSubmitting && podeSalvar ? onSubmit() : null">
+  <form @submit.prevent="!isSubmitting && podeSalvar ? salvar() : null">
     <fieldset :disabled="modoLeitura">
       <div class="flex g2 mb1">
         <div class="f1">
@@ -621,19 +653,30 @@ onMounted(() => {
       v-if="podeSalvar || podeAprovar"
       :erros="errors"
     >
-      <button
-        v-if="podeSalvar"
-        class="btn big"
-        type="submit"
-        :aria-busy="isSubmitting"
-        :aria-disabled="!!Object.keys(errors).length"
-      >
-        Salvar
-      </button>
+      <template v-if="podeSalvar">
+        <button
+          class="btn big"
+          type="submit"
+          :aria-busy="isSubmitting"
+          :aria-disabled="!!Object.keys(errors).length"
+        >
+          Salvar
+        </button>
+
+        <button
+          class="btn big bgnone tcprimary outline"
+          type="button"
+          :aria-busy="isSubmitting"
+          :aria-disabled="!!Object.keys(errors).length"
+          @click="submeterItem()"
+        >
+          Salvar e encaminhar para validação
+        </button>
+      </template>
 
       <template v-if="podeAprovar">
         <button
-          class="btn big mr1"
+          class="btn big bgnone tvermelho outline"
           type="button"
           :aria-busy="chamadasPendentes.emFoco"
           @click="reprovar"

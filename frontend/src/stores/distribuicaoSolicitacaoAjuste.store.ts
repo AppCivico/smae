@@ -2,12 +2,12 @@ import { defineStore } from 'pinia';
 
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 
+import type { GestaoDistribuicaoSolicitacaoAjusteDto } from '@back/casa-civil/distribuicao-recurso/dto/gestao-distribuicao-solicitacao-ajuste.dto';
+import type { UpdateDistribuicaoSolicitacaoAjusteDto } from '@back/casa-civil/distribuicao-recurso/dto/update-distribuicao-solicitacao-ajuste.dto';
 import type {
   DistribuicaoSolicitacaoAjusteDto,
   ListDistribuicaoSolicitacaoAjusteDto,
 } from '@back/casa-civil/distribuicao-recurso/entities/distribuicao-solicitacao-ajuste.entity';
-
-import type { UpdateDistribuicaoSolicitacaoAjusteDto } from '@back/casa-civil/distribuicao-recurso/dto/update-distribuicao-solicitacao-ajuste.dto';
 
 interface Estado {
   lista: DistribuicaoSolicitacaoAjusteDto[];
@@ -107,7 +107,8 @@ export const useDistribuicaoSolicitacaoAjusteStore = defineStore(
 
       async aplicarDecisao(
         id: number,
-        decisao: 'Aprovada' | 'Recusada',
+        status: GestaoDistribuicaoSolicitacaoAjusteDto['status'],
+        resposta_motivo?: GestaoDistribuicaoSolicitacaoAjusteDto['resposta_motivo'],
       ): Promise<boolean> {
         this.chamadasPendentes.emFoco = true;
         this.erros.emFoco = null;
@@ -115,7 +116,25 @@ export const useDistribuicaoSolicitacaoAjusteStore = defineStore(
         try {
           (await this.requestS.patch(
             `${baseUrl}/distribuicao-recurso-solicitacao-ajuste/${id}/gestao`,
-            { decisao },
+            { status, resposta_motivo },
+          )) as RecordWithId;
+          this.chamadasPendentes.emFoco = false;
+          return true;
+        } catch (error_) {
+          this.erros.emFoco = error_;
+          this.chamadasPendentes.emFoco = false;
+          return false;
+        }
+      },
+
+      async solicitarAprovacao(id: number): Promise<boolean> {
+        this.chamadasPendentes.emFoco = true;
+        this.erros.emFoco = null;
+
+        try {
+          (await this.requestS.patch(
+            `${baseUrl}/distribuicao-recurso-solicitacao-ajuste/${id}/submeter`,
+            { id },
           )) as RecordWithId;
           this.chamadasPendentes.emFoco = false;
           return true;
