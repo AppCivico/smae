@@ -4,21 +4,35 @@ import {
   object, number, string, array, mixed,
 } from './initSchema';
 
-export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
+export const CadastroDemandaSchema = ({
+  valorMinimoCusteio = 0,
+  valorMinimoInvestimento = 0,
+}: {
+  valorMinimoCusteio?: number;
+  valorMinimoInvestimento?: number;
+} = {}) => object()
   .shape({
     id: number()
       .nullable(),
 
     // Recurso Financeiro
+    finalidade: string()
+      .label('Finalidade')
+      .oneOf(['Custeio', 'Investimento'], 'Selecione uma finalidade válida')
+      .required(),
+
     valor: string()
-      .label(`Valor (mínimo de ${dinheiro(valorMinimo, { style: 'currency' })})`)
+      .label('Valor')
       .required()
-      .test('valor-minimo-e-maximo', (valor, { createError }) => {
+      .test('valor-minimo', (valor, { createError, parent }) => {
         if (!valor) {
           return false;
         }
 
         const valorNumero = parseFloat(valor);
+        const valorMinimo = parent.finalidade === 'Investimento'
+          ? valorMinimoInvestimento
+          : valorMinimoCusteio;
 
         if (Number.isNaN(valorNumero) || valorNumero < valorMinimo) {
           return createError({ message: `Valor mínimo de ${dinheiro(valorMinimo, { style: 'currency' })}` });
@@ -26,10 +40,6 @@ export const CadastroDemandaSchema = ({ valorMinimo = 0 }) => object()
 
         return true;
       }),
-    finalidade: string()
-      .label('Finalidade')
-      .oneOf(['Custeio', 'Investimento'], 'Selecione uma finalidade válida')
-      .required(),
 
     // Contato do Proponente
     orgao_id: number()
