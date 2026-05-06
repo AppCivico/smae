@@ -121,20 +121,28 @@ watch(emFoco, (val) => {
       </div>
     </div>
 
+    <div class="flex center mt2">
+      <h2 class="label tc300">
+        Custeio
+      </h2>
+
+      <hr class="ml2 f1">
+    </div>
+
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <SmaeLabel
-          name="valor_minimo"
+          name="valor_minimo_custeio"
           :schema="schema"
         />
 
         <Field
           v-slot="{ field, handleChange, value }"
-          name="valor_minimo"
+          name="valor_minimo_custeio"
         >
           <MaskedFloatInput
             class="inputtext light"
-            :class="{ error: errors.valor_minimo }"
+            :class="{ error: errors.valor_minimo_custeio }"
             :value="value"
             :name="field.name"
             converter-para="string"
@@ -143,24 +151,24 @@ watch(emFoco, (val) => {
         </Field>
 
         <ErrorMessage
-          name="valor_minimo"
+          name="valor_minimo_custeio"
           class="error-msg"
         />
       </div>
 
       <div class="f1 mb1">
         <SmaeLabel
-          name="valor_maximo"
+          name="valor_maximo_custeio"
           :schema="schema"
         />
 
         <Field
           v-slot="{ field, handleChange, value }"
-          name="valor_maximo"
+          name="valor_maximo_custeio"
         >
           <MaskedFloatInput
             class="inputtext light"
-            :class="{ error: errors.valor_maximo }"
+            :class="{ error: errors.valor_maximo_custeio }"
             :value="value"
             :name="field.name"
             converter-para="string"
@@ -169,7 +177,68 @@ watch(emFoco, (val) => {
         </Field>
 
         <ErrorMessage
-          name="valor_maximo"
+          name="valor_maximo_custeio"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex center mt2">
+      <h2 class="label tc300">
+        Investimento
+      </h2>
+      <hr class="ml2 f1">
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <SmaeLabel
+          name="valor_minimo_investimento"
+          :schema="schema"
+        />
+
+        <Field
+          v-slot="{ field, handleChange, value }"
+          name="valor_minimo_investimento"
+        >
+          <MaskedFloatInput
+            class="inputtext light"
+            :class="{ error: errors.valor_minimo_investimento }"
+            :value="value"
+            :name="field.name"
+            converter-para="string"
+            @update:model-value="handleChange"
+          />
+        </Field>
+
+        <ErrorMessage
+          name="valor_minimo_investimento"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <SmaeLabel
+          name="valor_maximo_investimento"
+          :schema="schema"
+        />
+
+        <Field
+          v-slot="{ field, handleChange, value }"
+          name="valor_maximo_investimento"
+        >
+          <MaskedFloatInput
+            class="inputtext light"
+            :class="{ error: errors.valor_maximo_investimento }"
+            :value="value"
+            :name="field.name"
+            converter-para="string"
+            @update:model-value="handleChange"
+          />
+        </Field>
+
+        <ErrorMessage
+          name="valor_maximo_investimento"
           class="error-msg"
         />
       </div>

@@ -75,13 +75,23 @@ const colunas = [
     formatador: (valor) => dateToField(valor) || '-',
   },
   {
-    chave: 'valor_minimo',
-    label: 'Valor Mínimo',
+    chave: 'valor_minimo_custeio',
+    label: 'Custeio Mín',
     formatador: (valor) => `R$ ${dinheiro(valor)}`,
   },
   {
-    chave: 'valor_maximo',
-    label: 'Valor Máximo',
+    chave: 'valor_maximo_custeio',
+    label: 'Custeio Máx',
+    formatador: (valor) => `R$ ${dinheiro(valor)}`,
+  },
+  {
+    chave: 'valor_minimo_investimento',
+    label: 'Investimento Mín',
+    formatador: (valor) => `R$ ${dinheiro(valor)}`,
+  },
+  {
+    chave: 'valor_maximo_investimento',
+    label: 'Investimento Máx',
     formatador: (valor) => `R$ ${dinheiro(valor)}`,
   },
   {
