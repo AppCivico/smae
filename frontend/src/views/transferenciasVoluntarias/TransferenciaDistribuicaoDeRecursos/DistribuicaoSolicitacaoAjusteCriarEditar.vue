@@ -646,7 +646,7 @@ onMounted(() => {
     </fieldset>
 
     <fieldset
-      v-if="podeAprovar || emFoco.motivo_recusa"
+      v-if="podeAprovar || emFoco?.motivo_recusa"
     >
       <div class="f1 fb10em">
         <LabelFromYup>
