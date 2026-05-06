@@ -1355,7 +1355,7 @@ export class DemandaService {
         return result;
     }
 
-    private async handlePostStatusChange(
+    async handlePostStatusChange(
         demandaId: number,
         fromStatus: DemandaStatus,
         toStatus: DemandaStatus,

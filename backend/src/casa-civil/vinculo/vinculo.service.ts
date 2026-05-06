@@ -80,7 +80,7 @@ export class VinculoService {
 
         const dadosExtra = this.parseDadosExtra(dto.dados_extra);
 
-        return await this.prisma.$transaction(async (prismaTx) => {
+        const row = await this.prisma.$transaction(async (prismaTx) => {
             const row = await prismaTx.distribuicaoRecursoVinculo.create({
                 data: {
                     tipo_vinculo_id: dto.tipo_vinculo_id,
@@ -109,6 +109,17 @@ export class VinculoService {
 
             return row;
         });
+
+        if (dto.demanda_id) {
+            await this.demandaService.handlePostStatusChange(
+                dto.demanda_id,
+                DemandaStatus.Publicado,
+                DemandaStatus.Encerrado,
+                user
+            );
+        }
+
+        return row;
     }
 
     async update(id: number, dto: UpdateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
