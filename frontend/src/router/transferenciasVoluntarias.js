@@ -263,7 +263,7 @@ export default {
               name: 'DistribuicaoSolicitacaoAjuste.Novo',
               component: DistribuicaoSolicitacaoAjusteCriarEditar,
               meta: {
-                título: 'Alterar Distribuição de Recursos',
+                título: 'Solicitar ajuste de Distribuição de Recursos',
                 rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
                 limitarÀsPermissões: [
                   'SMAE.PerfilGestorDistribuicaoRecurso',
@@ -284,7 +284,7 @@ export default {
               component: DistribuicaoSolicitacaoAjusteCriarEditar,
               props: (route) => tiparPropsDeRota(route, { ajusteId: 'number', recursoId: 'number', transferenciaId: 'number' }),
               meta: {
-                título: 'Alterar Distribuição de Recursos',
+                título: 'Solicitar ajuste de Distribuição de Recursos',
                 rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
                 limitarÀsPermissões: [
                   'SMAE.PerfilGestorDistribuicaoRecurso',
