@@ -111,7 +111,7 @@ const submeterItem = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 async function aprovar() {
-  const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Aprovada', emFoco.value?.motivo_recusa || undefined);
+  const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Aprovada', emFoco.value?.resposta_motivo || undefined);
   if (r) {
     alertStore.success('Alteração aprovada com sucesso!');
     router.push(prepararRotaDeEscape(route));
@@ -120,7 +120,7 @@ async function aprovar() {
 
 async function reprovar() {
   alertStore.confirmAction('Deseja reprovar esta alteração?', async () => {
-    const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Recusada', emFoco.value?.motivo_recusa || undefined);
+    const r = await ajusteStore.aplicarDecisao(Number(route.params.ajusteId), 'Recusada', emFoco.value?.resposta_motivo || undefined);
     if (r) {
       alertStore.success('Alteração reprovada.');
       router.push(prepararRotaDeEscape(route));
@@ -646,17 +646,20 @@ onMounted(() => {
     </fieldset>
 
     <fieldset
-      v-if="podeAprovar || emFoco?.motivo_recusa"
+      v-if="podeAprovar || emFoco?.resposta_motivo"
     >
       <div class="f1 fb10em">
-        <LabelFromYup>
+        <LabelFromYup
+          for="resposta_motivo"
+        >
           Motivo da decisão
         </LabelFromYup>
         <SmaeText
-          v-model="emFoco.motivo_recusa"
+          v-model="emFoco.resposta_motivo"
           as="textarea"
           rows="5"
-          name="motivo_recusa"
+          id="resposta_motivo"
+          name="resposta_motivo"
           class="inputtext light mb1"
           maxlength="255"
           :readonly="!podeAprovar"
