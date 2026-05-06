@@ -4862,25 +4862,47 @@ export const valoresLimites = object({
         return !dataFim || !dataInicio || dataFim >= dataInicio;
       },
     ),
-  valor_minimo: string()
+  valor_minimo_custeio: string()
     .label('Valor Mínimo')
-    .required('Informe o valor mínimo')
+    .required('Informe o valor mínimo de custeio')
     .test(
-      'verificar-valor-minimo',
+      'verificar-valor-minimo-custeio',
       'O valor mínimo não pode ser maior que o valor máximo',
       (valorMinimo, { resolve }) => {
-        const valorMaximo = resolve(ref('valor_maximo'));
+        const valorMaximo = resolve(ref('valor_maximo_custeio'));
         return !valorMinimo || !valorMaximo || parseFloat(valorMinimo) <= parseFloat(valorMaximo);
       },
     ),
-  valor_maximo: string()
+  valor_maximo_custeio: string()
     .label('Valor Máximo')
-    .required('Informe o valor máximo')
+    .required('Informe o valor máximo de custeio')
     .test(
-      'verificar-valor-maximo',
+      'verificar-valor-maximo-custeio',
       'O valor máximo não pode ser menor que o valor mínimo',
       (valorMaximo, { resolve }) => {
-        const valorMinimo = resolve(ref('valor_minimo'));
+        const valorMinimo = resolve(ref('valor_minimo_custeio'));
+        return !valorMaximo || !valorMinimo || parseFloat(valorMaximo) >= parseFloat(valorMinimo);
+      },
+    ),
+  valor_minimo_investimento: string()
+    .label('Valor Mínimo')
+    .required('Informe o valor mínimo de investimento')
+    .test(
+      'verificar-valor-minimo-investimento',
+      'O valor mínimo não pode ser maior que o valor máximo',
+      (valorMinimo, { resolve }) => {
+        const valorMaximo = resolve(ref('valor_maximo_investimento'));
+        return !valorMinimo || !valorMaximo || parseFloat(valorMinimo) <= parseFloat(valorMaximo);
+      },
+    ),
+  valor_maximo_investimento: string()
+    .label('Valor Máximo')
+    .required('Informe o valor máximo de investimento')
+    .test(
+      'verificar-valor-maximo-investimento',
+      'O valor máximo não pode ser menor que o valor mínimo',
+      (valorMaximo, { resolve }) => {
+        const valorMinimo = resolve(ref('valor_minimo_investimento'));
         return !valorMaximo || !valorMinimo || parseFloat(valorMaximo) >= parseFloat(valorMinimo);
       },
     ),
