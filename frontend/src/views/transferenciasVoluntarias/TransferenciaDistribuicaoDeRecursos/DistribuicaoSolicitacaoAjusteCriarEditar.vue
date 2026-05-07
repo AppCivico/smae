@@ -56,6 +56,7 @@ const {
   handleSubmit,
   isSubmitting,
   resetForm,
+  setFieldValue,
   values,
 } = useForm({
   initialValues: itemParaEdicaoInicial,
@@ -126,6 +127,18 @@ async function reprovar() {
 
 watch(itemParaEdicao, () => {
   resetForm({ values: itemParaEdicaoInicial.value });
+});
+
+watch(() => values.vigencia, (novoValor) => {
+  if (
+    itemParaEdicao.value?.vigencia
+    && !itemParaEdicao.value?.justificativa_aditamento
+    && novoValor !== itemParaEdicao.value?.vigencia
+  ) {
+    setFieldValue('justificativa_aditamento', '');
+  } else {
+    setFieldValue('justificativa_aditamento', itemParaEdicao.value?.justificativa_aditamento);
+  }
 });
 
 onMounted(() => {
@@ -617,6 +630,29 @@ onMounted(() => {
           />
           <ErrorMessage
             name="vigencia"
+            class="error-msg"
+          />
+        </div>
+
+        <div
+          v-if="values.justificativa_aditamento !== undefined
+            && values.justificativa_aditamento !== null"
+          class="f1 fb40"
+        >
+          <LabelFromYup
+            name="justificativa_aditamento"
+            :schema="schema"
+            :required="true"
+          />
+          <Field
+            name="justificativa_aditamento"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ error: errors.justificativa_aditamento }"
+            maxlength="250"
+          />
+          <ErrorMessage
+            name="justificativa_aditamento"
             class="error-msg"
           />
         </div>
