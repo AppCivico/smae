@@ -46,6 +46,8 @@ const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
     'gestor_contrato',
     'dotacoes',
     'justificativa_aditamento',
+    'valor_empenho',
+    'valor_liquidado',
 ] as const;
 
 // Campos que não são colunas reais em DistribuicaoRecurso (são transitórios/DTO-only).

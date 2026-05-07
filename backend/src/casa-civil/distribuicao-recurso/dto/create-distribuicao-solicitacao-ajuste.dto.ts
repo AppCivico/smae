@@ -14,8 +14,6 @@ export class DistribuicaoSolicitacaoAjusteCamposDto extends OmitType(UpdateDistr
     'valor_contrapartida',
     'custeio',
     'investimento',
-    'valor_empenho',
-    'valor_liquidado',
 ] as const) {}
 
 export class CreateDistribuicaoSolicitacaoAjusteDto extends DistribuicaoSolicitacaoAjusteCamposDto {
