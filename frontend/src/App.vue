@@ -75,7 +75,7 @@ onErrorCaptured((err) => {
     v-if="corDaFaixa"
   >
     .dev-environment:root body::after {
-    background-color: v-bind(corDaFaixa) !important;
+    background-color: {{ corDaFaixa }} !important;
     }
   </component>
 
