@@ -10,7 +10,7 @@ import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 
-import BarraDePendência from './components/BarraDeChamadaPendente.vue';
+import BarraDeChamadaPendente from './components/BarraDeChamadaPendente.vue';
 import BotaoWiki from './components/BotaoWiki.vue';
 import useFaixaConstrucao from './composables/useEnvironmentBanner';
 import useRotaAtual from './composables/useRotaAtual';
@@ -99,7 +99,7 @@ onErrorCaptured((err) => {
       </button>
     </div>
   </ErrorComponent>
-  <BarraDePendência />
+  <BarraDeChamadaPendente />
   <!-- vamos avançar até essa chave ser desnecessária para o sistema todo -->
   <router-view v-if="$route.meta.rotaPrescindeDeChave ?? gblHabilitarBeta" />
   <router-view
