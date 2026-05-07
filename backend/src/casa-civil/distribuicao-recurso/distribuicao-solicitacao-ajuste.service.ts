@@ -48,10 +48,18 @@ const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
     'justificativa_aditamento',
 ] as const;
 
+// Campos que não são colunas reais em DistribuicaoRecurso (são transitórios/DTO-only).
+// São permitidos no ajuste, mas não devem ser usados em select/comparação contra a tabela.
+const DISTRIBUICAO_AJUSTE_CAMPOS_VIRTUAIS: readonly string[] = ['justificativa_aditamento'] as const;
+
 const DISTRIBUICAO_SELECT_CAMPOS = {
     id: true,
     orgao_gestor_id: true,
-    ...Object.fromEntries(DISTRIBUICAO_AJUSTE_CAMPOS.filter((c) => c !== 'dotacoes').map((c) => [c, true])),
+    ...Object.fromEntries(
+        DISTRIBUICAO_AJUSTE_CAMPOS.filter(
+            (c) => c !== 'dotacoes' && !DISTRIBUICAO_AJUSTE_CAMPOS_VIRTUAIS.includes(c)
+        ).map((c) => [c, true])
+    ),
     dotacoes: { where: { removido_em: null }, select: { dotacao: true } },
 };
 
@@ -408,6 +416,8 @@ export class DistribuicaoSolicitacaoAjusteService {
             const camposDivergentes: string[] = [];
             for (const [campo, mudanca] of Object.entries(campos)) {
                 if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(campo)) continue;
+                // Campos virtuais (DTO-only) não têm estado na tabela para validar.
+                if (DISTRIBUICAO_AJUSTE_CAMPOS_VIRTUAIS.includes(campo)) continue;
                 const rawValue = (distribuicaoAtual as Record<string, unknown>)[campo];
                 const valorAtual = this.normalizeValue(
                     campo === 'dotacoes' ? this.normalizeDotacoes(rawValue) : rawValue
@@ -488,6 +498,11 @@ export class DistribuicaoSolicitacaoAjusteService {
 
         for (const [key, paraValue] of Object.entries(dto)) {
             if (!DISTRIBUICAO_AJUSTE_CAMPOS.includes(key) || paraValue === undefined) continue;
+            // Campos virtuais (DTO-only) não têm estado "de" na tabela; armazena apenas "para".
+            if (DISTRIBUICAO_AJUSTE_CAMPOS_VIRTUAIS.includes(key)) {
+                campos[key] = { de: null, para: this.normalizeValue(paraValue) };
+                continue;
+            }
             const deRaw = key === 'dotacoes' ? this.normalizeDotacoes(distribuicao[key]) : (distribuicao[key] ?? null);
             const de = this.normalizeValue(deRaw);
             const para = this.normalizeValue(paraValue);
