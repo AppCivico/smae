@@ -45,6 +45,7 @@ const DISTRIBUICAO_AJUSTE_CAMPOS: readonly string[] = [
     'finalidade',
     'gestor_contrato',
     'dotacoes',
+    'justificativa_aditamento',
 ] as const;
 
 const DISTRIBUICAO_SELECT_CAMPOS = {

@@ -509,14 +509,8 @@ export class DistribuicaoRecursoService {
     }
 
     private assertGestorPodeAcessar(user: PessoaFromJwt, orgaoGestorId: number, acao: 'acessar' | 'remover'): void {
-        if (
-            user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) &&
-            orgaoGestorId !== user.orgao_id
-        ) {
-            throw new HttpException(
-                `Você não tem permissão para ${acao} esta distribuição de recurso.`,
-                403
-            );
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) && orgaoGestorId !== user.orgao_id) {
+            throw new HttpException(`Você não tem permissão para ${acao} esta distribuição de recurso.`, 403);
         }
     }
 
@@ -529,8 +523,7 @@ export class DistribuicaoRecursoService {
 
     private podeSolicitarAjuste(user: PessoaFromJwt, orgaoGestorId: number): boolean {
         return (
-            user.hasSomeRoles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir']) &&
-            orgaoGestorId === user.orgao_id
+            user.hasSomeRoles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir']) && orgaoGestorId === user.orgao_id
         );
     }
 
@@ -1782,7 +1775,7 @@ export class DistribuicaoRecursoService {
     ) {
         // Verificando se a justificativa foi enviada e não é null.
         // Ela é required na tabela.
-        if (!dto.justificativa_aditamento) throw new HttpException('Deve ser enviada.', 400);
+        if (!dto.justificativa_aditamento) throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
 
         const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
@@ -1799,7 +1792,8 @@ export class DistribuicaoRecursoService {
                 orgao_gestor_id: true,
             },
         });
-        if (!dto.justificativa_aditamento || self.vigencia == null) throw new HttpException('Deve ser enviada.', 400);
+        if (!dto.justificativa_aditamento || self.vigencia == null)
+            throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
 
         await prismaTx.distribuicaoRecursoAditamento.create({
             data: {
