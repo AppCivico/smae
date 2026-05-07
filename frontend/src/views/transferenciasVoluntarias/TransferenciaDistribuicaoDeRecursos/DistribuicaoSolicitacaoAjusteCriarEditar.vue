@@ -68,8 +68,6 @@ const salvar = handleSubmit.withControlled(async (controlledValues) => {
   const carga = nulificadorTotal({ dotacoes: [], ...controlledValues });
   carga.distribuicao_recurso_id = Number(route.params.recursoId);
 
-  if (isSubmitting.value) return;
-
   try {
     const r = await ajusteStore.salvarItem(
       carga,
@@ -88,8 +86,6 @@ const salvar = handleSubmit.withControlled(async (controlledValues) => {
 const submeterItem = handleSubmit.withControlled(async (controlledValues) => {
   const carga = nulificadorTotal({ dotacoes: [], ...controlledValues });
   carga.distribuicao_recurso_id = Number(route.params.recursoId);
-
-  if (isSubmitting.value) return;
 
   try {
     const r = await ajusteStore.salvarItem(
@@ -687,7 +683,7 @@ onMounted(() => {
           type="button"
           :aria-busy="isSubmitting"
           :aria-disabled="!!Object.keys(errors).length"
-          @click="submeterItem()"
+          @click="isSubmitting ? null : submeterItem()"
         >
           Salvar e encaminhar para validação
         </button>
