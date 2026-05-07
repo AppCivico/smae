@@ -49,8 +49,6 @@ export const useDistribuicaoSolicitacaoAjusteStore = defineStore(
             params,
           )) as DistribuicaoSolicitacaoAjusteDto;
 
-          console.debug('resposta', resposta);
-
           this.emFoco = resposta;
         } catch (error_) {
           this.erros.emFoco = error_;
