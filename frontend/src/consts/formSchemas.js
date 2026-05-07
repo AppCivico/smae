@@ -2517,6 +2517,14 @@ export const distribuicaoSolicitacaoAjuste = object({
     .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
+  justificativa_aditamento: string()
+    .label('Justificativa para aditamento')
+    .max(250)
+    .min(1, 'Justificativa para aditamento é obrigatório após editar a data de vigência')
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica os motivos que justificam aditamento do contrato relacionado à Transferência Voluntária.',
+    }),
 });
 
 export const registroDeTransferencia = object({
