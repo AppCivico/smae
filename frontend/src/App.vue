@@ -117,6 +117,7 @@ onErrorCaptured((err) => {
   <BotaoWiki />
   <SmaeAvatar
     v-if="corDaFaixa"
+    v-ScrollLockDebug
     class="avatar-flutuante"
     :name="`${authStore.user?.id}+${authStore.user?.nome_exibicao}`"
     :nome-exibicao="authStore.user?.nome_exibicao"
@@ -129,5 +130,6 @@ onErrorCaptured((err) => {
   top: 0;
   right: 3rem;
   z-index: 10000;
+  width: auto;
 }
 </style>
