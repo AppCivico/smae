@@ -42,7 +42,7 @@ const {
 } = storeToRefs(ajusteStore);
 
 const podeCriar = computed(() => !route.params.ajusteId && ehCriador.value);
-const podeSalvar = computed(() => !route.params.ajusteId && !!emFoco.value?.pode_editar);
+const podeSalvar = computed(() => !route.params.ajusteId || !!emFoco.value?.pode_editar);
 const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
 const modoLeitura = computed(() => !podeSalvar.value && !podeCriar.value);
 
