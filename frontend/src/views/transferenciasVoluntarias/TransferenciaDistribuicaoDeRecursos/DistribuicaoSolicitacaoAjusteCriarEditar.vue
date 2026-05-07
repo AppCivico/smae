@@ -42,7 +42,7 @@ const {
 } = storeToRefs(ajusteStore);
 
 const podeCriar = computed(() => !route.params.ajusteId && ehCriador.value);
-const podeSalvar = computed(() => !!emFoco.value?.pode_editar);
+const podeSalvar = computed(() => !route.params.ajusteId && !!emFoco.value?.pode_editar);
 const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
 const modoLeitura = computed(() => !podeSalvar.value && !podeCriar.value);
 
@@ -142,7 +142,7 @@ onMounted(() => {
 
   <ErrorComponent :erro="erros.emFoco" />
 
-  <form @submit.prevent="!isSubmitting && podeSalvar ? salvar() : null">
+  <form @submit.prevent="!isSubmitting && (podeSalvar || podeCriar) ? salvar() : null">
     <fieldset :disabled="modoLeitura">
       <div class="flex g2 mb1">
         <div class="f1">
