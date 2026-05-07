@@ -481,7 +481,7 @@ export class DistribuicaoSolicitacaoAjusteService {
         if (dto.status === DistribuicaoSolicitacaoStatus.Recusada) {
             await this.enviarEmailSolicitacaoRecusada(
                 solicitacao.distribuicao_recurso_id,
-                solicitacao.orgao_gestor_id,
+                solicitacao.criado_por,
                 dto.resposta_motivo ?? null
             );
         }
@@ -592,7 +592,7 @@ export class DistribuicaoSolicitacaoAjusteService {
 
     private async enviarEmailSolicitacaoRecusada(
         distribuicao_recurso_id: number,
-        orgao_gestor_id: number,
+        criado_por: number,
         motivo: string | null
     ): Promise<void> {
         try {
@@ -608,41 +608,38 @@ export class DistribuicaoSolicitacaoAjusteService {
 
             if (!distribuicao) return;
 
-            const gestoresOrgao = await this.prisma.pessoa.findMany({
-                where: {
-                    desativado: false,
-                    PessoaPerfil: {
-                        some: {
-                            perfil_acesso: { nome: CONST_PERFIL_CASA_CIVIL },
-                        },
-                    },
-                    pessoa_fisica: { orgao_id: orgao_gestor_id },
-                },
+            const criador = await this.prisma.pessoa.findFirst({
+                where: { id: criado_por, desativado: false },
                 select: { email: true },
             });
+
+            if (!criador) {
+                this.logger.warn(
+                    `Criador (id=${criado_por}) da solicitação de ajuste não encontrado ou desativado. E-mail de recusa não enviado.`
+                );
+                return;
+            }
 
             const link = new URL(
                 ['transferencias-voluntarias', distribuicao.transferencia.id, 'resumo'].join('/'),
                 baseUrl
             ).toString();
 
-            for (const pessoa of gestoresOrgao) {
-                await this.prisma.emaildbQueue.create({
-                    data: {
-                        id: uuidv7(),
-                        config_id: 1,
-                        subject: `SMAE - Solicitação de ajuste recusada na transferência ${distribuicao.transferencia.identificador}`,
-                        template: 'solicitacao-ajuste-recusada.html',
-                        to: pessoa.email,
-                        variables: {
-                            transferencia_identificador: distribuicao.transferencia.identificador,
-                            distribuicao_nome: distribuicao.nome ?? '',
-                            motivo: motivo ?? '',
-                            link,
-                        },
+            await this.prisma.emaildbQueue.create({
+                data: {
+                    id: uuidv7(),
+                    config_id: 1,
+                    subject: `SMAE - Solicitação de ajuste recusada na transferência ${distribuicao.transferencia.identificador}`,
+                    template: 'solicitacao-ajuste-recusada.html',
+                    to: criador.email,
+                    variables: {
+                        transferencia_identificador: distribuicao.transferencia.identificador,
+                        distribuicao_nome: distribuicao.nome ?? '',
+                        motivo: motivo ?? '',
+                        link,
                     },
-                });
-            }
+                },
+            });
         } catch (err) {
             this.logger.error('Erro ao enviar e-mail de solicitação de ajuste recusada', err);
         }
