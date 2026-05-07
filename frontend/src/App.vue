@@ -118,7 +118,7 @@ onErrorCaptured((err) => {
   <SmaeAvatar
     v-if="corDaFaixa"
     class="avatar-flutuante"
-    :name="authStore.user?.nome_exibicao"
+    :name="`${authStore.user?.id}+${authStore.user?.nome_exibicao}`"
     :nome-exibicao="authStore.user?.nome_exibicao"
   />
 </template>
