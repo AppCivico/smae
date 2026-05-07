@@ -655,10 +655,10 @@ onMounted(() => {
           Motivo da decisão
         </LabelFromYup>
         <SmaeText
+          id="resposta_motivo"
           v-model="emFoco.resposta_motivo"
           as="textarea"
           rows="5"
-          id="resposta_motivo"
           name="resposta_motivo"
           class="inputtext light mb1"
           maxlength="255"
