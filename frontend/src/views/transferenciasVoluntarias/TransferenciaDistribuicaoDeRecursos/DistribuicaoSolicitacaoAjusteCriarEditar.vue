@@ -665,10 +665,10 @@ onMounted(() => {
     </fieldset>
 
     <SmaeFieldsetSubmit
-      v-if="podeSalvar || podeAprovar"
+      v-if="podeSalvar || podeAprovar || podeCriar"
       :erros="errors"
     >
-      <template v-if="podeSalvar">
+      <template v-if="podeSalvar || podeCriar">
         <button
           class="btn big"
           type="submit"
