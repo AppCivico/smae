@@ -126,6 +126,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
+          v-if="ehAprovador || linha.pode_solicitar_ajuste"
           :to="{
             name: 'DistribuicaoSolicitacaoAjuste.Lista',
             params: {
