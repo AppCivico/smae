@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
 import { computed, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
@@ -14,7 +14,6 @@ import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuica
 
 import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
 
-const router = useRouter();
 const { params } = useRoute();
 
 const formularioSujo = useIsFormDirty();
@@ -58,15 +57,6 @@ async function excluirDistribuição({ id, nome }) {
   }, 'Remover');
 }
 
-function voltarTela() {
-  router.push({
-    name: 'TransferenciasVoluntariasDetalhes',
-    params: {
-      ...params,
-    },
-  });
-}
-
 async function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
 }
@@ -85,11 +75,7 @@ onUnmounted(() => {
 
       <hr class="ml2 f1">
 
-      <CheckClose
-        :formulario-sujo="formularioSujo"
-        :apenas-emitir="true"
-        @close="voltarTela"
-      />
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
 
     <LoadingComponent v-if="chamadasPendentes.lista" />

@@ -178,6 +178,9 @@ export default {
           name: 'TransferenciaDistribuicaoDeRecursos.Lista',
           path: '',
           component: TransferenciaDistribuicaoDeRecursosLista,
+          meta: {
+            rotaDeEscape: 'TransferenciasVoluntariasDetalhes',
+          },
         },
         {
           path: '',
@@ -231,6 +234,7 @@ export default {
               component: TransferenciaDistribuicaoDeRecursosStatus,
               meta: {
                 título: 'Histórico de Status',
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',

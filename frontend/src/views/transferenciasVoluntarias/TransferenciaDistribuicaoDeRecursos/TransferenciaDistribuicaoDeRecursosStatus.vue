@@ -5,7 +5,6 @@ import {
   computed,
   ref,
 } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dateToDate from '@/helpers/dateToDate';
@@ -20,8 +19,6 @@ const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const { emFoco: distribuiçãoEmFoco, chamadasPendentes } = storeToRefs(distribuicaoRecursos);
 const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 
-const router = useRouter();
-const { params } = useRoute();
 const formularioSujo = useIsFormDirty();
 
 const statusEmFoco = ref(null);
@@ -55,15 +52,6 @@ const registroMaisRecente = computed(() => historicoStatus.value
     return 0;
   })[0]);
 
-function voltarTela() {
-  router.push({
-    name: 'TransferenciaDistribuicaoDeRecursos.Lista',
-    params: {
-      ...params,
-    },
-  });
-}
-
 function abrirModalStatus(statusItem = null) {
   statusEmFoco.value = statusItem;
   exibirModalStatus.value = true;
@@ -86,11 +74,7 @@ function fecharModalStatus(carregar = false) {
 
       <hr class="ml2 f1">
 
-      <CheckClose
-        :formulario-sujo="formularioSujo"
-        :apenas-emitir="true"
-        @close="voltarTela"
-      />
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
 
     <SmaeTable

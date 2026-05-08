@@ -85,13 +85,6 @@ const {
 
 const formularioSujo = useIsFormDirty();
 
-function voltarTela() {
-  router.push({
-    name: route.meta.rotaDeEscape,
-    params: structuredClone(route.params),
-  });
-}
-
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = nulificadorTotal({ dotacoes: [], ...controlledValues });
 
@@ -114,7 +107,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     if (r) {
       alertStore.success(msg);
 
-      voltarTela();
+      router.push({
+        name: route.meta.rotaDeEscape,
+        params: structuredClone(route.params),
+      });
     }
   } catch (error) {
     alertStore.error(error);
