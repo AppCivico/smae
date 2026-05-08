@@ -443,7 +443,7 @@ export class SeiIntegracaoService {
             take: 1000,
         });
 
-        const batchEnabled = await this.smaeConfigService.getConfigBooleanWithDefault('SEI_EMAIL_BATCH_MULTI', false);
+        const batchEnabled = await this.smaeConfigService.getConfigBooleanWithDefault('SEI_EMAIL_BATCH_MULTI', true);
         const batch: SeiBatchAccumulator | undefined = batchEnabled ? [] : undefined;
 
         for (const record of activeRecords) {
