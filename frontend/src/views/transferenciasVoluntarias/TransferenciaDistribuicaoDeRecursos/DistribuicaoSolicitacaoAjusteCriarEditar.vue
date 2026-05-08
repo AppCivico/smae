@@ -24,7 +24,11 @@ import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuica
 
 import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
 
-const { ehCriador } = useDistribuicaoSolicitacaoAjustePermissoes();
+const {
+  podeAprovarAjuste,
+  podeCriarAjuste,
+  podeSalvarAjuste,
+} = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const alertStore = useAlertStore();
 
@@ -40,11 +44,6 @@ const {
   erros,
   itemParaEdicao,
 } = storeToRefs(ajusteStore);
-
-const podeCriar = computed(() => !route.params.ajusteId && ehCriador.value);
-const podeSalvar = computed(() => !route.params.ajusteId || !!emFoco.value?.pode_editar);
-const podeAprovar = computed(() => !!emFoco.value?.pode_aprovar);
-const modoLeitura = computed(() => !podeSalvar.value && !podeCriar.value);
 
 const itemParaEdicaoInicial = computed(() => ({
   ...distribuicaoRecursosStore.itemParaEdicao,
@@ -155,8 +154,8 @@ onMounted(() => {
 
   <ErrorComponent :erro="erros.emFoco" />
 
-  <form @submit.prevent="!isSubmitting && (podeSalvar || podeCriar) ? salvar() : null">
-    <fieldset :disabled="modoLeitura">
+  <form @submit.prevent="!isSubmitting && podeSalvarAjuste({ ajuste: emFoco }) ? salvar() : null">
+    <fieldset :disabled="!podeCriarAjuste">
       <div class="flex g2 mb1">
         <div class="f1">
           <LabelFromYup
@@ -218,7 +217,7 @@ onMounted(() => {
       </div>
     </fieldset>
 
-    <fieldset :disabled="modoLeitura">
+    <fieldset :disabled="!podeCriarAjuste">
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
@@ -372,7 +371,7 @@ onMounted(() => {
           <Field
             name="data_empenho"
             type="date"
-            :disabled="!values.empenho || modoLeitura"
+            :disabled="!values.empenho || !podeCriarAjuste"
             class="inputtext light mb1"
             :class="{ error: errors.data_empenho }"
             maxlength="10"
@@ -394,7 +393,7 @@ onMounted(() => {
             class="inputtext light mb2"
             :value="values.valor_empenho"
             converter-para="string"
-            :disabled="!values.empenho || modoLeitura"
+            :disabled="!values.empenho || !podeCriarAjuste"
           />
           <ErrorMessage
             name="valor_empenho"
@@ -439,7 +438,7 @@ onMounted(() => {
       </div>
     </fieldset>
 
-    <fieldset :disabled="modoLeitura">
+    <fieldset :disabled="!podeCriarAjuste">
       <div class="mb1">
         <LabelFromYup
           name="dotacoes"
@@ -449,7 +448,7 @@ onMounted(() => {
         />
 
         <p
-          v-if="!values.dotacoes?.length && modoLeitura"
+          v-if="!values.dotacoes?.length && !podeCriarAjuste"
           class="mb1"
         >
           Não há dotações cadastradas para esta distribuição de recursos.
@@ -473,7 +472,7 @@ onMounted(() => {
             />
 
             <button
-              v-if="!modoLeitura"
+              v-if="podeCriarAjuste"
               class="like-a__text addlink"
               aria-label="excluir"
               title="excluir"
@@ -495,7 +494,7 @@ onMounted(() => {
           </div>
 
           <button
-            v-if="!modoLeitura"
+            v-if="podeCriarAjuste"
             class="like-a__text addlink mb1"
             type="button"
             @click="push('')"
@@ -678,7 +677,7 @@ onMounted(() => {
     </fieldset>
 
     <fieldset
-      v-if="podeAprovar || emFoco?.resposta_motivo"
+      v-if="podeAprovarAjuste({ ajuste: emFoco }) || emFoco?.resposta_motivo"
     >
       <div class="f1 fb10em">
         <LabelFromYup
@@ -694,17 +693,17 @@ onMounted(() => {
           name="resposta_motivo"
           class="inputtext light mb1"
           maxlength="255"
-          :readonly="!podeAprovar"
-          :aria-disabled="!podeAprovar"
+          :readonly="!podeAprovarAjuste({ ajuste: emFoco })"
+          :aria-disabled="!podeAprovarAjuste({ ajuste: emFoco })"
         />
       </div>
     </fieldset>
 
     <SmaeFieldsetSubmit
-      v-if="podeSalvar || podeAprovar || podeCriar"
+      v-if="podeSalvarAjuste({ ajuste: emFoco }) || podeAprovarAjuste({ ajuste: emFoco })"
       :erros="errors"
     >
-      <template v-if="podeSalvar || podeCriar">
+      <template v-if="podeSalvarAjuste({ ajuste: emFoco })">
         <button
           class="btn big"
           type="submit"
@@ -725,7 +724,7 @@ onMounted(() => {
         </button>
       </template>
 
-      <template v-if="podeAprovar">
+      <template v-if="podeAprovarAjuste({ ajuste: emFoco })">
         <button
           class="btn big bgnone tvermelho outline"
           type="button"

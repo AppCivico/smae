@@ -16,7 +16,9 @@ const { params } = useRoute();
 const ajusteStore = useDistribuicaoSolicitacaoAjusteStore();
 const { chamadasPendentes, erros, lista } = storeToRefs(ajusteStore);
 
-const { ehCriador } = useDistribuicaoSolicitacaoAjustePermissoes();
+const {
+  podeCriarAjuste,
+} = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const colunas = [
   {
@@ -96,7 +98,7 @@ onUnmounted(() => {
       </template>
     </SmaeTable>
 
-    <p v-if="ehCriador">
+    <p v-if="podeCriarAjuste()">
       <SmaeLink
         class="like-a__text addlink"
         :to="{
