@@ -6,6 +6,7 @@ import {
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import modulos from '@/consts/modulosDoSistema';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -314,7 +315,11 @@ nextTick(() => {
           Cargo
         </dt>
         <dd>
-          {{ parlamentar.cargo || '-' }}
+          {{
+            cargosDeParlamentar[parlamentar.cargo]?.nome
+              || parlamentar.cargo
+              || '-'
+          }}
         </dd>
       </dl>
 
