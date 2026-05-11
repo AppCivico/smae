@@ -1,7 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { fieldEncryptionExtension } from 'prisma-field-encryption';
 import { RetryPromise } from '../common/retryPromise';
+import { recordPrismaQuery } from './prisma-query-context';
 
 const logConfig = [
     {
@@ -29,6 +30,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     constructor() {
         super({ log: logConfig });
+
+        (this as unknown as PrismaClient<{ log: typeof logConfig }>).$on('query', (e: Prisma.QueryEvent) => {
+            recordPrismaQuery({
+                query: e.query,
+                params: e.params,
+                duration: e.duration,
+                timestamp: new Date(e.timestamp).toISOString(),
+                target: e.target,
+            });
+        });
+
         // Apply field encryption extension immediately
         const extended = this.$extends(fieldEncryptionExtension());
 

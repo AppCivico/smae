@@ -4,6 +4,7 @@ import { join } from 'path';
 import { AppModule } from './app.module';
 import { setupSwaggerDocumentation } from './swagger.config';
 import { Request, Response } from 'express';
+import { prismaQueryAls } from './prisma/prisma-query-context';
 
 const SMAE_HEADERS = 'smae-sistemas';
 const winston = require('winston'),
@@ -26,6 +27,11 @@ async function bootstrap() {
     });
 
     app.setGlobalPrefix('api');
+
+    // Per-request Prisma query buffer (consumed by PrismaErrorFilter)
+    app.use((_req: Request, _res: Response, next: () => void) => {
+        prismaQueryAls.run([], () => next());
+    });
 
     // Request/Response logging
     app.use(

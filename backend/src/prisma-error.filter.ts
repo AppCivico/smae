@@ -2,6 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Response } from 'express';
 import { AuthRequest } from './auth/models/AuthRequest';
+import { getRecentPrismaQueries } from './prisma/prisma-query-context';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaErrorFilter implements ExceptionFilter {
@@ -27,6 +28,9 @@ export class PrismaErrorFilter implements ExceptionFilter {
         // Try to extract the where clause from the message
         const whereMatch = exception.message.match(/where:\s*({[^}]+})/);
         const whereClause = whereMatch ? whereMatch[1] : 'conditions not available';
+
+        // Recent SQL queries captured for this request (oldest -> newest)
+        const recentQueries = getRecentPrismaQueries();
 
         if (exception.code == 'P2025') {
             response.status(404).json(
@@ -62,6 +66,7 @@ export class PrismaErrorFilter implements ExceptionFilter {
                     code: exception.code,
                     model: model,
                     location: appStackLine.trim(),
+                    recentQueries: recentQueries.slice(-5),
                 })
             );
         }
@@ -76,6 +81,7 @@ export class PrismaErrorFilter implements ExceptionFilter {
                     location: appStackLine,
                     meta: exception.meta,
                     fullStack: stackLines.filter((line) => line.includes('/src/')),
+                    recentQueries: recentQueries,
                     rawError: exception,
                 },
                 null,
