@@ -67,11 +67,16 @@ export class SysadminMigrationsController {
             ORDER BY file_name ASC
         `;
 
+        const erroredFiles = pgsqlMigrations.filter((m) => m.hash === '[Errored]').map((m) => m.file_name);
+
         const pgsqlLastFailures = await this.prisma.$queryRaw<PgsqlHistoryRow[]>`
-            SELECT id, file_name, hash, failed, error, created_at
-            FROM _migrate_pgsql_history
-            WHERE failed = TRUE
-            ORDER BY created_at DESC
+            SELECT h.id, h.file_name, h.hash, h.failed, h.error, h.created_at
+            FROM _migrate_pgsql_history h
+            WHERE h.failed = TRUE
+              AND h.file_name IN (
+                  SELECT file_name FROM _migrate_pgsql WHERE hash = '[Errored]'
+              )
+            ORDER BY h.created_at DESC
             LIMIT 20
         `;
 
@@ -83,7 +88,7 @@ export class SysadminMigrationsController {
             },
             pgsql: {
                 count: pgsqlMigrations.length,
-                errored: pgsqlMigrations.filter((m) => m.hash === '[Errored]').map((m) => m.file_name),
+                errored: erroredFiles,
                 rows: pgsqlMigrations,
                 last_failures: pgsqlLastFailures,
             },
