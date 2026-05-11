@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Inject, Logger, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Inject, Logger, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { UploadService } from '../../upload/upload.service';
 import { RestaurarDescricaoResponseDto } from '../../upload/dto/restaurar-descricao-response.dto';
+import { UploadService } from '../../upload/upload.service';
 import { ProcessarThumbnailsQueryDto } from '../dto/upload/processar-thumbnails-query.dto';
 import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from '../dto/upload/solicitar-preview.dto';
 import { SolicitarThumbnailDto, SolicitarThumbnailResponseDto } from '../dto/upload/solicitar-thumbnail.dto';
