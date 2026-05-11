@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { fieldEncryptionExtension } from 'prisma-field-encryption';
 import { RetryPromise } from '../common/retryPromise';
-import { recordPrismaQuery } from './prisma-query-context';
+import { prismaQueryAls, recordPrismaQuery } from './prisma-query-context';
 
 const logConfig = [
     {
@@ -32,6 +32,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         super({ log: logConfig });
 
         (this as unknown as PrismaClient<{ log: typeof logConfig }>).$on('query', (e: Prisma.QueryEvent) => {
+            const hasStore = prismaQueryAls.getStore() !== undefined;
+            // eslint-disable-next-line no-console
+            console.error('[prisma-query-debug] fired, hasStore=', hasStore, 'sql=', e.query.slice(0, 80));
             recordPrismaQuery({
                 query: e.query,
                 params: e.params,
