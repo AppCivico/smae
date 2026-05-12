@@ -1,5 +1,5 @@
 import { IsOptional, IsString, MaxLength } from 'class-validator';
-import { MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_HTML } from 'src/common/consts';
 
 export class EnviarEmailParlamentaresDto {
     @IsOptional()

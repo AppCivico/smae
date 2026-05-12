@@ -1,5 +1,4 @@
 import {
-    BadRequestException,
     forwardRef,
     HttpException,
     Inject,

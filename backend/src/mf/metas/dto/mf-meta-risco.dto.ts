@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
+import { MAX_LENGTH_HTML } from 'src/common/consts';
 
 export class FilterRiscoDto {
     @IsInt()

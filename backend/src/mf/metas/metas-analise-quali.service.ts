@@ -14,7 +14,6 @@ import {
     MfListAnaliseQualitativaDto,
     UpdateAnaliseQualitativaDocumentoDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 @Injectable()

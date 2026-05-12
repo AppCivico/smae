@@ -50,7 +50,7 @@ export function IsNumberStringCustom(
     maxDigitsAfterDecimal: number,
     validationOptions?: ValidationOptions
 ) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'IsNumberStringCustom',
             target: object.constructor,

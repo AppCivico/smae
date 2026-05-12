@@ -25,7 +25,6 @@ import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { FilterTransferenciaDto, FilterTransferenciaHistoricoDto } from './dto/filter-transferencia.dto';
 import {

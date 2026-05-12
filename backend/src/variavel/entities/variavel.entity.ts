@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs }
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IdSigla } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -115,7 +115,7 @@ export class FilterPeriodoDto {
     @IsOptional()
     @IsBoolean()
     @Transform((v) => v.value === 'true')
-    ate_ciclo_corrente?: Boolean;
+    ate_ciclo_corrente?: boolean;
 
     @ApiHideProperty()
     ate_ciclo_corrente_inclusive?: boolean;

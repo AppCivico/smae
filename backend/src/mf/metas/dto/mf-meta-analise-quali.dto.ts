@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { PickType } from '@nestjs/swagger';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class AnaliseQualitativaDocumentoDto {
     @IsInt()

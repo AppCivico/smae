@@ -2,7 +2,6 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { CreateTipoVinculoDto } from './dto/create-tipo-vinculo.dto';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FilterPartidoDto } from 'src/partido/dto/filter-partido.dto';
-import { UpdatePartidoDto } from 'src/partido/dto/update-partido.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 

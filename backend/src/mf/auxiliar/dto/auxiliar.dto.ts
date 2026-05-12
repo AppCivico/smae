@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsNumberString, IsOptional, ValidateIf } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, ValidateIf } from 'class-validator';
 import { IsNumberStringCustom } from '../../../common/decorators/IsNumberStringCustom';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 

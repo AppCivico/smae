@@ -12,7 +12,6 @@ import {
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from '../../configuracao/workflow.service';
 import { WorkflowAndamentoService } from '../workflow-andamento.service';
-import { config } from 'yargs';
 
 @Injectable()
 export class WorkflowAndamentoFaseService {

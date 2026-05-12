@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateWorkflowDto } from './create-workflow.dto';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
 
 export class UpdateWorkflowDto extends PartialType(CreateWorkflowDto) {
     @IsOptional()

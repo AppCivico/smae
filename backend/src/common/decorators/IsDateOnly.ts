@@ -1,7 +1,7 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 
 export function IsOnlyDate(validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'IsOnlyDate',
             target: object.constructor,

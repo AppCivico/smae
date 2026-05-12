@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';

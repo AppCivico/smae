@@ -5,7 +5,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'unused-imports'],
   extends: [
     "eslint:recommended",
     'plugin:@typescript-eslint/recommended',
@@ -26,7 +26,9 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-unsafe-assignment": "warn",
     "no-unused-vars": "off",
-    '@typescript-eslint/no-unused-vars': [
+    '@typescript-eslint/no-unused-vars': 'off',
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
       'error',
       {
         argsIgnorePattern: '^(_|user$|config$)',

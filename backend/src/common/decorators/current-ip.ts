@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import * as requestIp from 'request-ip';
 import { Request } from 'express';
-import { isIP, isIPv4, isIPv6 } from 'net';
+import { isIP } from 'net';
 
 export const IpAddress = createParamDecorator((data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();

@@ -13,7 +13,6 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
 import { AnyPageTokenJwtBody, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Html2Text } from 'src/common/Html2Text';
 import { HtmlSanitizer } from 'src/common/html-sanitizer';
 import { Object2Hash } from 'src/common/object2hash';
 import { PrismaHelpers } from 'src/common/PrismaHelpers';

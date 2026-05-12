@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Periodicidade, VariavelFase } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -6,7 +6,6 @@ import {
     IsBoolean,
     IsEnum,
     IsInt,
-    IsNumberString,
     IsOptional,
     IsString,
     MaxLength,

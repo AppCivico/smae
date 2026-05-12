@@ -5,7 +5,7 @@ import { ParseParametrosDaFonte } from '../utils/utils.service';
 import { FormatValidationErrors } from '../../common/helpers/FormatValidationErrors';
 
 export function ReportValidatorOf(property: string, validationOptions?: ValidationOptions) {
-    return function (value: Object, propertyName: string) {
+    return function (value: object, propertyName: string) {
         registerDecorator({
             name: 'ReportValidator',
             target: value.constructor,

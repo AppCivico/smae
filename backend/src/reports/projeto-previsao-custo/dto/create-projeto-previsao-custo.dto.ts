@@ -1,6 +1,6 @@
 import { OmitType } from '@nestjs/swagger';
 import { Transform, Expose } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt } from 'class-validator';
 import { SuperCreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
 import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 

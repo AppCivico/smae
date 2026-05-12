@@ -6,7 +6,6 @@ import {
     GeoInfoBaseDto,
     PdmRotuloInfo,
     MetaIniAtvLookupInfoDto,
-    DemandaSearchResultDto,
 } from '../geo-busca/dto/geo-busca.entity';
 
 import {

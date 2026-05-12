@@ -1,7 +1,6 @@
-import { Controller, Get, HttpException, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PaginatedDto, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
@@ -13,9 +12,7 @@ import {
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
     FilterDashTransferenciasPainelEstrategicoDto,
-    FilterDashTransferenciasWorkflowDto,
     ListMfDashTransferenciasDto,
-    MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
 import { DashTransferenciaService } from './transferencia.service';
 

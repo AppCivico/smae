@@ -1,6 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
@@ -20,7 +19,6 @@ import {
 } from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 @Injectable()
 export class MonitoramentoMensalService implements ReportableService {

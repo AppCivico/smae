@@ -34,7 +34,7 @@ import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { PDMGetPermissionSet } from '../pdm/pdm.service';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
-import { IsCrontabEnabled, IsCrontabDisabled } from '../common/crontab-utils';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {

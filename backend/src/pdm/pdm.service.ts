@@ -18,7 +18,6 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
 import { AddTaskRecalcVariaveis } from '../variavel/variavel.service';
 import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';

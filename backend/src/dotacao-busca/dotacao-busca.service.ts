@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, TipoProjeto } from '@prisma/client';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { TipoProjeto } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     DotacaoBuscaDto,

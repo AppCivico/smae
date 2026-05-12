@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { TribunalDeContasController } from './tribunal-de-contas.controller';
 import { TribunalDeContasService } from './tribunal-de-contas.service';

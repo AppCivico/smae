@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { THUMBNAIL_TYPES, ThumbnailTypeConfig } from '../../upload/thumbnail-config';
+import { THUMBNAIL_TYPES } from '../../upload/thumbnail-config';
 import { SmaeConfigService } from './smae-config.service';
 import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
 import { UpdateThumbnailConfigDto } from './thumbnail-config-dto/update-thumbnail-config.dto';

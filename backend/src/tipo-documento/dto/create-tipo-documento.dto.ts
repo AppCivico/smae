@@ -2,7 +2,7 @@ import { IsOptional, IsString, MaxLength, registerDecorator, ValidationOptions }
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 function CheckExt(validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'IsOnlyDate',
             target: object.constructor,

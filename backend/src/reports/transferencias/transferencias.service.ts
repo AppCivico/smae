@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { formataSEI } from 'src/common/formata-sei';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD } from '../../common/date2ymd';

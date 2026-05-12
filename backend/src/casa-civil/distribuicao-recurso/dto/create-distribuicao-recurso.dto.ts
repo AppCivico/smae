@@ -3,7 +3,6 @@ import {
     IsArray,
     IsBoolean,
     IsNumber,
-    IsNumberString,
     IsOptional,
     IsString,
     MaxLength,

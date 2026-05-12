@@ -5,7 +5,7 @@ import { ParseParams } from './task.parseParams';
 import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
 
 export function TaskValidatorOf(property: string, validationOptions?: ValidationOptions) {
-    return function (value: Object, propertyName: string) {
+    return function (value: object, propertyName: string) {
         registerDecorator({
             name: 'TaskValidator',
             target: value.constructor,

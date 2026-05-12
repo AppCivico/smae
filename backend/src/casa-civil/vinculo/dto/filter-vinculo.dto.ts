@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CampoVinculo } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsNumber, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
 import { NumberTransformOrUndef } from 'src/auth/transforms/number.transform';
 
 export class FilterVinculoDto {

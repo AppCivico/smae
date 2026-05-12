@@ -13,7 +13,6 @@ import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-c
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 import { Prisma } from '@prisma/client';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 @Injectable()
 export class CasaCivilAtividadesPendentesService implements ReportableService {

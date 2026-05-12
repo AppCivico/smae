@@ -7,7 +7,6 @@ import { DateTime } from 'luxon';
 import { Readable } from 'stream';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { Date2YMD } from '../../common/date2ymd';
 import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common/helpers/Streaming';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';

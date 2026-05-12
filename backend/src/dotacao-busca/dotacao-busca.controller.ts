@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DotacaoBuscaDto, DotacaoBuscaResponseDto } from './dto/dotacao-busca.dto';
 import { DotacaoBuscaService } from './dotacao-busca.service';
