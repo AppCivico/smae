@@ -167,6 +167,13 @@ export default {
         type="hidden"
       />
 
+<pre v-ScrollLockDebug>
+respostasof: {{ respostasof }}
+complemento: {{ complemento }}
+dotação: {{ dotação }}
+dotaçãoComComplemento: {{ dotaçãoComComplemento }}
+</pre>
+
       <CampoDeDotacao
         v-model:respostasof="respostasof"
         v-model:complemento="complemento"
