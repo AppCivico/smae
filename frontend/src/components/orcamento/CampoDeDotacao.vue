@@ -404,7 +404,7 @@ watch(valorDoComplemento, (novoValor) => {
             :key="i.codigo"
             :value="i.codigo"
           >
-            {{ i.cod_orgao + '/' + i.codigo + ' - ' + i.descricao }}
+            {{ i.codigo }} - {{ i.descricao }}
           </option>
         </select>
         <div
