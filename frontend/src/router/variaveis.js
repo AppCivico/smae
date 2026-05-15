@@ -114,6 +114,8 @@ export default {
         limitarÀsPermissões: [
           'ReferencialEm.Equipe.ProgramaDeMetas',
           'ReferencialEm.Equipe.PS',
+          'ReferencialEm.EquipeBanco.ProgramaDeMetas',
+          'ReferencialEm.EquipeBanco.PS',
         ],
       },
       children: [
