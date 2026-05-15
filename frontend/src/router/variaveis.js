@@ -111,6 +111,10 @@ export default {
       component: () => import('@/views/variaveis/CicloAtualizacao/CicloAtualizacaoLista.vue'),
       meta: {
         título: 'Ciclo de Atualização',
+        limitarÀsPermissões: [
+          'ReferencialEm.Equipe.ProgramaDeMetas',
+          'ReferencialEm.Equipe.PS',
+        ],
       },
       children: [
         {
