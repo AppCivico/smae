@@ -817,20 +817,59 @@ export class EquipeRespService {
      */
     async recalcFullDb(): Promise<{ updated: number; total: number }> {
         const result = await this.prisma.$queryRaw<{ updated: number; total: number }[]>`
-            WITH computed AS (
-                SELECT
-                    p.id AS pessoa_id,
-                    COALESCE(array_agg(DISTINCT gre.perfil) FILTER (WHERE pdm.tipo = 'PDM'), '{}') AS perfis_pdm,
-                    COALESCE(array_agg(DISTINCT gre.perfil) FILTER (WHERE pdm.tipo = 'PS'), '{}') AS perfis_ps
+            WITH pessoa_equipe AS (
+                SELECT p.id AS pessoa_id, gre.id AS equipe_id, gre.perfil
                 FROM pessoa p
                 LEFT JOIN grupo_responsavel_equipe_pessoa grep
                     ON grep.pessoa_id = p.id AND grep.removido_em IS NULL
                 LEFT JOIN grupo_responsavel_equipe gre
                     ON gre.id = grep.grupo_responsavel_equipe_id AND gre.removido_em IS NULL
-                LEFT JOIN pdm_perfil pp
-                    ON pp.equipe_id = gre.id AND pp.removido_em IS NULL
-                LEFT JOIN pdm
-                    ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
+                WHERE p.desativado = false
+            ),
+            pdm_perfil_tipos AS (
+                SELECT pe.pessoa_id, pe.perfil, pdm.tipo
+                FROM pessoa_equipe pe
+                JOIN pdm_perfil pp ON pp.equipe_id = pe.equipe_id AND pp.removido_em IS NULL
+                JOIN pdm ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
+            ),
+            variavel_tipos AS (
+                SELECT
+                    pe.pessoa_id,
+                    pe.perfil,
+                    CASE
+                        WHEN v.tipo = 'Global' THEN ARRAY['PDM','PS']
+                        ELSE ARRAY(
+                            SELECT DISTINCT pdm_v.tipo::text
+                            FROM indicador_variavel iv
+                            JOIN indicador ind ON ind.id = iv.indicador_id
+                            LEFT JOIN meta m ON m.id = ind.meta_id
+                            LEFT JOIN iniciativa ini ON ini.id = ind.iniciativa_id
+                            LEFT JOIN meta mi ON mi.id = ini.meta_id
+                            LEFT JOIN atividade ati ON ati.id = ind.atividade_id
+                            LEFT JOIN iniciativa inia ON inia.id = ati.iniciativa_id
+                            LEFT JOIN meta ma ON ma.id = inia.meta_id
+                            JOIN pdm pdm_v ON pdm_v.id = COALESCE(m.pdm_id, mi.pdm_id, ma.pdm_id)
+                                AND pdm_v.removido_em IS NULL
+                            WHERE iv.variavel_id = v.id AND iv.desativado = false
+                        )
+                    END AS tipos
+                FROM pessoa_equipe pe
+                JOIN variavel_grupo_responsavel_equipe vgre
+                    ON vgre.grupo_responsavel_equipe_id = pe.equipe_id AND vgre.removido_em IS NULL
+                JOIN variavel v ON v.id = vgre.variavel_id AND v.removido_em IS NULL
+            ),
+            combined AS (
+                SELECT pessoa_id, perfil, tipo FROM pdm_perfil_tipos
+                UNION ALL
+                SELECT pessoa_id, perfil, UNNEST(tipos) AS tipo FROM variavel_tipos
+            ),
+            computed AS (
+                SELECT
+                    p.id AS pessoa_id,
+                    COALESCE(array_agg(DISTINCT c.perfil) FILTER (WHERE c.tipo = 'PDM'), '{}') AS perfis_pdm,
+                    COALESCE(array_agg(DISTINCT c.perfil) FILTER (WHERE c.tipo = 'PS'), '{}') AS perfis_ps
+                FROM pessoa p
+                LEFT JOIN combined c ON c.pessoa_id = p.id
                 WHERE p.desativado = false
                 GROUP BY p.id
             ),

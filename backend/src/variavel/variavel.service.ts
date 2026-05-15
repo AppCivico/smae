@@ -33,6 +33,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
 import { SeriesArrayShuffle } from '../common/shuffleArray';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
@@ -772,7 +773,8 @@ export class VariavelService {
         dto: UpdateVariavelDto,
         prismaTxn: Prisma.TransactionClient,
         variavelId: number,
-        logger: LoggerWithLog
+        logger: LoggerWithLog,
+        extraEquipesParaRecalcular: number[] = []
     ) {
         if (Array.isArray(dto.medicao_grupo_ids)) {
             await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
@@ -803,6 +805,16 @@ export class VariavelService {
             });
             logger.verbose(`Grupos de liberação adicionados: ${dto.liberacao_grupo_ids.join(', ')}`);
         }
+
+        const equipesAfetadas = Array.from(
+            new Set<number>([
+                ...extraEquipesParaRecalcular,
+                ...(dto.medicao_grupo_ids ?? []),
+                ...(dto.validacao_grupo_ids ?? []),
+                ...(dto.liberacao_grupo_ids ?? []),
+            ])
+        );
+        await recalcPessoasAfetadasPorEquipes(equipesAfetadas, prismaTxn);
     }
 
     private getPeriodTuples(
@@ -1646,7 +1658,7 @@ export class VariavelService {
                 if (dto.validacao_orgao_id) validacao_orgao_id = dto.validacao_orgao_id;
                 if (dto.liberacao_orgao_id) liberacao_orgao_id = dto.liberacao_orgao_id;
 
-                await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger);
+                await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger, gruposAtuais);
             }
 
             dto.orgao_proprietario_id = dto.orgao_proprietario_id ?? selfBefUpdate.orgao_proprietario_id;
@@ -2923,10 +2935,20 @@ export class VariavelService {
                     );
                 }
 
+                const equipesVinculadas = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
+                    where: { removido_em: null, variavel_id: variavelId },
+                    select: { grupo_responsavel_equipe_id: true },
+                });
+
                 await prismaTx.variavelGrupoResponsavelEquipe.updateMany({
                     where: { removido_em: null, variavel: { id: variavelId } },
                     data: { removido_em: now },
                 });
+
+                await recalcPessoasAfetadasPorEquipes(
+                    equipesVinculadas.map((e) => e.grupo_responsavel_equipe_id),
+                    prismaTx
+                );
 
                 await prismaTx.variavel.update({
                     where: { id: variavelId },
