@@ -1565,6 +1565,7 @@ export class TransferenciaService {
                         vinculos: {
                             where: { removido_em: null, invalidado_em: null },
                             select: {
+                                demanda_id: true,
                                 projeto: {
                                     select: {
                                         tipo: true,
@@ -1692,53 +1693,60 @@ export class TransferenciaService {
 
             modulos_vinculados: row.distribuicao_recursos
                 .flatMap((dr) => dr.vinculos)
-                .reduce((uniqueModules, v) => {
-                    if (v.projeto) {
-                        switch (v.projeto.tipo) {
-                            case TipoProjeto.PP:
-                                if (!uniqueModules.includes(ModuloSistema.Projetos)) {
-                                    uniqueModules.push(ModuloSistema.Projetos);
-                                }
-                                break;
-                            case TipoProjeto.MDO:
-                                if (!uniqueModules.includes(ModuloSistema.MDO)) {
-                                    uniqueModules.push(ModuloSistema.MDO);
-                                }
-                                break;
+                .reduce(
+                    (uniqueModules, v) => {
+                        if (v.demanda_id && !uniqueModules.includes('Demandas')) {
+                            uniqueModules.push('Demandas');
                         }
-                    }
 
-                    if (
-                        (v.meta && v.meta.pdm) ||
-                        (v.iniciativa && v.iniciativa.meta && v.iniciativa.meta.pdm) ||
-                        (v.atividade &&
-                            v.atividade.iniciativa &&
-                            v.atividade.iniciativa.meta &&
-                            v.atividade.iniciativa.meta.pdm)
-                    ) {
-                        const pdmTipo =
-                            v.meta?.pdm?.tipo ??
-                            v.iniciativa?.meta?.pdm?.tipo ??
-                            v.atividade?.iniciativa?.meta?.pdm?.tipo ??
-                            null;
-                        if (!pdmTipo) throw new InternalServerErrorException('PDM tipo não encontrado');
-
-                        switch (pdmTipo) {
-                            case TipoPdm.PDM:
-                                if (!uniqueModules.includes(ModuloSistema.ProgramaDeMetas)) {
-                                    uniqueModules.push(ModuloSistema.ProgramaDeMetas);
-                                }
-                                break;
-                            case TipoPdm.PS:
-                                if (!uniqueModules.includes(ModuloSistema.PlanoSetorial)) {
-                                    uniqueModules.push(ModuloSistema.PlanoSetorial);
-                                }
-                                break;
+                        if (v.projeto) {
+                            switch (v.projeto.tipo) {
+                                case TipoProjeto.PP:
+                                    if (!uniqueModules.includes(ModuloSistema.Projetos)) {
+                                        uniqueModules.push(ModuloSistema.Projetos);
+                                    }
+                                    break;
+                                case TipoProjeto.MDO:
+                                    if (!uniqueModules.includes(ModuloSistema.MDO)) {
+                                        uniqueModules.push(ModuloSistema.MDO);
+                                    }
+                                    break;
+                            }
                         }
-                    }
 
-                    return uniqueModules;
-                }, [] as ModuloSistema[]),
+                        if (
+                            (v.meta && v.meta.pdm) ||
+                            (v.iniciativa && v.iniciativa.meta && v.iniciativa.meta.pdm) ||
+                            (v.atividade &&
+                                v.atividade.iniciativa &&
+                                v.atividade.iniciativa.meta &&
+                                v.atividade.iniciativa.meta.pdm)
+                        ) {
+                            const pdmTipo =
+                                v.meta?.pdm?.tipo ??
+                                v.iniciativa?.meta?.pdm?.tipo ??
+                                v.atividade?.iniciativa?.meta?.pdm?.tipo ??
+                                null;
+                            if (!pdmTipo) throw new InternalServerErrorException('PDM tipo não encontrado');
+
+                            switch (pdmTipo) {
+                                case TipoPdm.PDM:
+                                    if (!uniqueModules.includes(ModuloSistema.ProgramaDeMetas)) {
+                                        uniqueModules.push(ModuloSistema.ProgramaDeMetas);
+                                    }
+                                    break;
+                                case TipoPdm.PS:
+                                    if (!uniqueModules.includes(ModuloSistema.PlanoSetorial)) {
+                                        uniqueModules.push(ModuloSistema.PlanoSetorial);
+                                    }
+                                    break;
+                            }
+                        }
+
+                        return uniqueModules;
+                    },
+                    [] as (ModuloSistema | string)[]
+                ),
             pode_editar: pode_editar,
         } satisfies TransferenciaDetailDto;
     }

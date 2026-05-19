@@ -104,7 +104,13 @@ export class TransferenciaDetailDto {
     classificacao: ClassificacaoDto | null;
     classificacao_id: number | null;
 
-    modulos_vinculados: ModuloSistema[];
+    @ApiProperty({
+        description:
+            'Módulos do sistema vinculados a esta transferência via distribuições. Pode conter valores do enum ModuloSistema ou strings arbitrárias (ex: "Demandas").',
+        type: 'array',
+        items: { type: 'string' },
+    })
+    modulos_vinculados: (ModuloSistema | string)[];
 
     pode_editar: boolean;
 }
