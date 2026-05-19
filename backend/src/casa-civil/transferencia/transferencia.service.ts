@@ -712,6 +712,7 @@ export class TransferenciaService {
                                 },
                                 parlamentar_id: row.parlamentar_id,
                                 removido_em: null,
+                                valor: { gt: 0 },
                             },
                         });
                         if (parlamentarDistribuicao)

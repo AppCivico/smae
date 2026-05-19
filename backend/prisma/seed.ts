@@ -1308,6 +1308,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemanda.inserir',
             'CadastroDemanda.editar',
             'CadastroParlamentar.listar',
+            'CadastroWorkflows.listar',
 
             'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
             'SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar',
