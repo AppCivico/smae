@@ -136,6 +136,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
     GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
+    CadastroDistribuicaoStatus: ['Status de Distribuição de Recurso', 'CasaCivil'],
     SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
     CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
@@ -191,6 +192,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferenciaTipo.inserir', 'Inserir Transferência Tipo'],
         ['CadastroTransferenciaTipo.editar', 'Editar Transferência Tipo'],
         ['CadastroTransferenciaTipo.remover', 'Remover Transferência Tipo'],
+    ],
+
+    CadastroDistribuicaoStatus: [
+        ['CadastroDistribuicaoStatus.inserir', 'Inserir Status de Distribuição de Recurso'],
+        ['CadastroDistribuicaoStatus.editar', 'Editar Status de Distribuição de Recurso'],
+        ['CadastroDistribuicaoStatus.listar', 'Listar Status de Distribuição de Recurso'],
+        ['CadastroDistribuicaoStatus.remover', 'Remover Status de Distribuição de Recurso'],
     ],
 
     ModalidadeContratacao: [
@@ -1294,6 +1302,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroNota.editar',
             'CadastroNota.remover',
             'CadastroNota.listar',
+
+            'CadastroDistribuicaoStatus.inserir',
+            'CadastroDistribuicaoStatus.editar',
+            'CadastroDistribuicaoStatus.listar',
+            'CadastroDistribuicaoStatus.remover',
         ],
     },
     {
@@ -1321,6 +1334,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferencia.listar',
             'AndamentoWorkflow.listar',
             'CadastroCronogramaTransferencia.listar',
+
+            'CadastroDistribuicaoStatus.inserir',
+            'CadastroDistribuicaoStatus.editar',
+            'CadastroDistribuicaoStatus.listar',
+            'CadastroDistribuicaoStatus.remover',
         ],
     },
     {
