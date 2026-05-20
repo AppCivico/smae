@@ -240,6 +240,7 @@ export default {
                   'TransferenciasVoluntariasDetalhes',
                   'TransferenciaDistribuicaoDeRecursos.Lista',
                 ],
+                limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
               },
             },
             {

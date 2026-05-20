@@ -825,6 +825,7 @@ export default [
                 component: FluxosCriarEditar,
                 meta: {
                   título: 'Novo fluxo',
+                  limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
                 },
               },
               {
@@ -840,6 +841,7 @@ export default [
                 }),
                 meta: {
                   título: 'Editar fluxo',
+                  limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
                 },
               },
             ],
@@ -1026,6 +1028,7 @@ export default [
             meta: {
               título: 'Status de Distribuição',
               rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
             },
             children: [
               {
