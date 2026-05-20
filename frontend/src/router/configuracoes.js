@@ -831,6 +831,7 @@ export default [
                 path: ':fluxoId',
                 name: 'fluxosEditar',
                 component: FluxosCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   ...{
@@ -959,6 +960,7 @@ export default [
                 path: ':tarefasId',
                 name: 'workflow.TarefasEditar',
                 component: TarefasCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   ...{
@@ -1003,6 +1005,7 @@ export default [
                 path: ':situacaoId',
                 name: 'situacaoEditar',
                 component: SituacaoCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   ...{
@@ -1045,6 +1048,7 @@ export default [
                 path: ':statusDistribuicaoId',
                 name: 'statusDistribuicaoEditar',
                 component: StatusDistribuicaoCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   // eslint-disable-next-line max-len
