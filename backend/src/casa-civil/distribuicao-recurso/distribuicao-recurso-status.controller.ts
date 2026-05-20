@@ -17,7 +17,7 @@ export class DistribuicaoRecursoStatusController {
 
     @Get(':id/status')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.inserir'])
+    @Roles(['CadastroDistribuicaoStatus.listar'])
     async get(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -27,7 +27,7 @@ export class DistribuicaoRecursoStatusController {
 
     @Post(':id/status')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.inserir'])
+    @Roles(['CadastroDistribuicaoStatus.inserir'])
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreateDistribuicaoRecursoStatusDto,
@@ -38,7 +38,7 @@ export class DistribuicaoRecursoStatusController {
 
     @Patch(':id/status/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroDistribuicaoStatus.editar'])
     async update(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateDistribuicaoRecursoStatusDto,
@@ -49,7 +49,7 @@ export class DistribuicaoRecursoStatusController {
 
     @Delete(':id/status/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.remover'])
+    @Roles(['CadastroDistribuicaoStatus.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
