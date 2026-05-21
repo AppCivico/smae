@@ -42,7 +42,6 @@ function podeSolicitarAjuste({ distribuicao }: DistribuicaoParam = {}) {
  * - `podeEditarAjuste`   — função: o item pode ser editado por este usuário (`pode_editar`).
  * - `podeSalvarAjuste`   — função: usuário pode criar/salvar um ajuste.
  * - `podeSolicitarAjuste`— função: usuário pode solicitar ajuste para essa distribuição.
- * - `podeVerAjuste`      — função: usuário pode visualizar ajustes da distribuição.
  * - `podeCriarAjuste`    — função: usuário pode criar um novo ajuste (equivale a `ehCriador`).
  */
 export function useDistribuicaoSolicitacaoAjustePermissoes() {
@@ -60,14 +59,6 @@ export function useDistribuicaoSolicitacaoAjustePermissoes() {
     return ajusteVal ? !!ajusteVal.pode_editar : ehCriador.value;
   }
 
-  function podeVerAjuste({ ajuste, distribuicao }: Params = {}) {
-    return (
-      ehAprovador.value
-      || !!toValue(ajuste)?.pode_aprovar
-      || !!toValue(distribuicao)?.pode_solicitar_ajuste
-    );
-  }
-
   function podeCriarAjuste() {
     return ehCriador.value;
   }
@@ -79,7 +70,6 @@ export function useDistribuicaoSolicitacaoAjustePermissoes() {
     podeEditarAjuste,
     podeSalvarAjuste,
     podeSolicitarAjuste,
-    podeVerAjuste,
     podeCriarAjuste,
   };
 }

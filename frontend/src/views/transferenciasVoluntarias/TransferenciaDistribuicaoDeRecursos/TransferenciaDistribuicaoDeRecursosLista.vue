@@ -24,10 +24,6 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
 
-const {
-  podeVerAjuste,
-} = useDistribuicaoSolicitacaoAjustePermissoes();
-
 const colunas = [
   { chave: 'orgao_gestor.sigla', label: 'Gestor municipal' },
   {
@@ -113,7 +109,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
-          v-if="podeVerAjuste({ distribuicao: linha })"
+          v-if="linha.pode_ver_hist_status"
           :to="{
             name: 'DistribuicaoSolicitacaoAjuste.Lista',
             params: {
