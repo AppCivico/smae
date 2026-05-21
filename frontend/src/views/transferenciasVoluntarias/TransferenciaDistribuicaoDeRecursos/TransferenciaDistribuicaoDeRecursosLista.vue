@@ -86,6 +86,8 @@ onUnmounted(() => {
       class="mb2"
       :colunas="colunas"
       :dados="lista"
+      titulo-para-rolagem-horizontal="Tabela de distribuições de recursos"
+      rolagem-horizontal
     >
       <template #acoes="{ linha }">
         <SmaeLink
