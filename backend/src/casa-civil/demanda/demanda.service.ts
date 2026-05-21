@@ -996,6 +996,8 @@ export class DemandaService {
             updateData.dias_em_validacao = { increment: days };
         } else if (fromStatus === DemandaStatus.Publicado) {
             updateData.dias_em_publicado = { increment: days };
+        } else if (fromStatus === DemandaStatus.Encerrado) {
+            updateData.dias_em_encerrado = { increment: days };
         }
 
         // Define timestamp para novo status se for primeira vez
