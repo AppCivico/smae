@@ -59,6 +59,7 @@ export class DistribuicaoRecursoDto {
     distribuicao_banco: string | null;
     pode_editar: boolean;
     pode_solicitar_ajuste: boolean;
+    pode_ver_hist_status: boolean;
     possui_solicitacao_ajuste_pendente: boolean;
 }
 

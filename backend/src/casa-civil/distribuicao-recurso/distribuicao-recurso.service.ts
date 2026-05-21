@@ -526,6 +526,18 @@ export class DistribuicaoRecursoService {
         );
     }
 
+    private podeVerHistStatus(user: PessoaFromJwt, orgaoGestorId: number): boolean {
+        // Gestor(a) Transferências Voluntárias (e admin) sempre pode ver
+        if (user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])) {
+            return true;
+        }
+        // Gestor de Distribuição de Recurso só pode ver do próprio órgão
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
+            return orgaoGestorId === user.orgao_id;
+        }
+        return false;
+    }
+
     async findAll(
         filters: FilterDistribuicaoRecursoDto,
         user: PessoaFromJwt
@@ -752,6 +764,7 @@ export class DistribuicaoRecursoService {
 
             const pode_editar = this.podeEditar(user, r.orgao_gestor.id);
             const pode_solicitar_ajuste = this.podeSolicitarAjuste(user, r.orgao_gestor.id);
+            const pode_ver_hist_status = this.podeVerHistStatus(user, r.orgao_gestor.id);
 
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
@@ -882,6 +895,7 @@ export class DistribuicaoRecursoService {
                 distribuicao_banco: r.distribuicao_banco,
                 pode_editar: pode_editar,
                 pode_solicitar_ajuste: pode_solicitar_ajuste,
+                pode_ver_hist_status: pode_ver_hist_status,
                 possui_solicitacao_ajuste_pendente: r.solicitacoes_ajuste.length > 0,
             } satisfies DistribuicaoRecursoDto;
         });
@@ -1090,6 +1104,7 @@ export class DistribuicaoRecursoService {
 
         const pode_editar = this.podeEditar(user, row.orgao_gestor.id);
         const pode_solicitar_ajuste = this.podeSolicitarAjuste(user, row.orgao_gestor.id);
+        const pode_ver_hist_status = this.podeVerHistStatus(user, row.orgao_gestor.id);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1233,6 +1248,7 @@ export class DistribuicaoRecursoService {
             distribuicao_banco: row.distribuicao_banco,
             pode_editar: pode_editar,
             pode_solicitar_ajuste: pode_solicitar_ajuste,
+            pode_ver_hist_status: pode_ver_hist_status,
             possui_solicitacao_ajuste_pendente: row.solicitacoes_ajuste.length > 0,
         } satisfies DistribuicaoRecursoDetailDto;
     }
