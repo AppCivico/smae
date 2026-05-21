@@ -107,7 +107,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
-          v-if="linha.pode_ver_hist_status"
+          v-if="linha.pode_solicitar_ajuste"
           :to="{
             name: 'DistribuicaoSolicitacaoAjuste.Lista',
             params: {
@@ -134,7 +134,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
-          v-if="linha.pode_solicitar_ajuste"
+          v-if="linha.pode_ver_hist_status"
           :to="{
             name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
             params: {
@@ -143,7 +143,7 @@ onUnmounted(() => {
             },
           }"
         >
-          <span class="tipinfo">
+          <span class="tipinfo left">
             <svg
               width="20"
               height="20"
