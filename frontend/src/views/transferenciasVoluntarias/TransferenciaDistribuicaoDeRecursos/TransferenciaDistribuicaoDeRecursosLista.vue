@@ -12,6 +12,8 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
+import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
+
 const { params } = useRoute();
 
 const formularioSujo = useIsFormDirty();
@@ -21,6 +23,10 @@ const authStore = useAuthStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
+
+const {
+  podeVerAjuste,
+} = useDistribuicaoSolicitacaoAjustePermissoes();
 
 const colunas = [
   { chave: 'orgao_gestor.sigla', label: 'Gestor municipal' },
@@ -107,7 +113,7 @@ onUnmounted(() => {
         </SmaeLink>
 
         <SmaeLink
-          v-if="linha.pode_solicitar_ajuste"
+          v-if="podeVerAjuste({ distribuicao: linha })"
           :to="{
             name: 'DistribuicaoSolicitacaoAjuste.Lista',
             params: {
