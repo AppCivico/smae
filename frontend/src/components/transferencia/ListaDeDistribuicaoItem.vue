@@ -178,8 +178,16 @@ const registrosSei = computed(() => {
                     Dotação orçamentária
                   </dt>
 
-                  <dd>
-                    {{ distribuicao.dotacao || '-' }}
+                  <template v-if="distribuicao.dotacoes?.length">
+                    <dd
+                      v-for="(dotacao, index) in distribuicao.dotacoes"
+                      :key="`${index}-${dotacao}`"
+                    >
+                      {{ dotacao }}
+                    </dd>
+                  </template>
+                  <dd v-else>
+                    -
                   </dd>
                 </dl>
 

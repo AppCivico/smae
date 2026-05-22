@@ -2,23 +2,51 @@
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
 import { onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import SmaeLink from '@/components/SmaeLink.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
-const router = useRouter();
+import { useDistribuicaoSolicitacaoAjustePermissoes } from './useDistribuicaoSolicitacaoAjustePermissoes.composable';
+
 const { params } = useRoute();
 
 const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
+const authStore = useAuthStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const { chamadasPendentes, lista } = storeToRefs(distribuicaoRecursos);
+
+const {
+  podeVerAjuste,
+} = useDistribuicaoSolicitacaoAjustePermissoes();
+
+const colunas = [
+  { chave: 'orgao_gestor.sigla', label: 'Gestor municipal' },
+  {
+    chave: 'valor_total',
+    label: 'Valor total',
+    formatador: (v) => (v ? dinheiro(v) : '-'),
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'vigencia',
+    label: 'Data de vigência',
+    formatador: dateToField,
+    atributosDaCelula: { class: 'cell--data' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--data' },
+  },
+  { chave: 'nome', label: 'Nome' },
+  { chave: 'status_atual', label: 'Último Status' },
+];
 
 async function excluirDistribuição({ id, nome }) {
   alertStore.confirmAction(`Deseja mesmo remover o item "${nome}"?`, async () => {
@@ -28,15 +56,6 @@ async function excluirDistribuição({ id, nome }) {
       alertStore.success('Distribuição removida.');
     }
   }, 'Remover');
-}
-
-function voltarTela() {
-  router.push({
-    name: 'TransferenciasVoluntariasDetalhes',
-    params: {
-      ...params,
-    },
-  });
 }
 
 async function iniciar() {
@@ -57,138 +76,114 @@ onUnmounted(() => {
 
       <hr class="ml2 f1">
 
-      <CheckClose
-        :formulario-sujo="formularioSujo"
-        :apenas-emitir="true"
-        @close="voltarTela"
-      />
+      <CheckClose :formulario-sujo="formularioSujo" />
     </div>
 
-    <div class="mb2">
-      <div
-        role="region"
-        aria-label="Distribuições de recursos já cadastradas"
-        tabindex="0"
-        class="mb1"
-      >
-        <table class="tablemain mb1 mt1">
-          <thead>
-            <tr>
-              <th>Gestor municipal</th>
-              <th class="cell--number">
-                Valor total
-              </th>
-              <th class="cell--data">
-                Data de vigência
-              </th>
-              <th>Nome</th>
-              <th>Último Status</th>
-              <th />
-            </tr>
-          </thead>
+    <LoadingComponent v-if="chamadasPendentes.lista" />
 
-          <tbody>
-            <tr
-              v-for="item in lista"
-              :key="item.id"
+    <SmaeTable
+      v-else
+      class="mb2"
+      :colunas="colunas"
+      :dados="lista"
+      titulo-para-rolagem-horizontal="Tabela de distribuições de recursos"
+      rolagem-horizontal
+    >
+      <template #acoes="{ linha }">
+        <SmaeLink
+          v-if="linha.pode_editar"
+          class="like-a__text"
+          aria-label="editar"
+          title="editar"
+          :to="{
+            name: 'TransferenciaDistribuicaoDeRecursos.Editar',
+            params: {
+              ...$route.params,
+              recursoId: linha.id,
+            },
+          }"
+        >
+          <span class="tipinfo">
+            <svg
+              width="20"
+              height="20"
             >
-              <td>
-                {{ item.orgao_gestor.sigla }}
-              </td>
-              <td class="cell--number">
-                {{ item.valor_total ? dinheiro(item.valor_total) : '-' }}
-              </td>
-              <td class="cell--data">
-                {{ dateToField(item.vigencia) }}
-              </td>
-              <td>
-                {{ item.nome || '-' }}
-              </td>
-              <td>
-                {{ item.status_atual }}
-              </td>
-              <td class="tr">
-                <SmaeLink
-                  v-if="item.pode_editar"
-                  class="like-a__text"
-                  aria-label="editar"
-                  title="editar"
-                  :to="{
-                    name: 'TransferenciaDistribuicaoDeRecursos.Editar',
-                    params: {
-                      ...$route.params,
-                      recursoId: item.id,
-                    },
-                  }"
-                >
-                  <span class="tipinfo">
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_edit" />
-                    </svg>
-                    <div>Editar </div>
-                  </span>
-                </SmaeLink>
+              <use xlink:href="#i_edit" />
+            </svg>
+            <div>Editar</div>
+          </span>
+        </SmaeLink>
 
-                <SmaeLink
-                  class="mr1 ml1"
-                  :to="{
-                    name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
-                    params: {
-                      ...$route.params,
-                      recursoId: item.id,
-                    },
-                  }"
-                >
-                  <span class="tipinfo">
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_check" />
-                    </svg>
+        <SmaeLink
+          v-if="podeVerAjuste({ distribuicao: linha })"
+          :to="{
+            name: 'DistribuicaoSolicitacaoAjuste.Lista',
+            params: {
+              ...$route.params,
+              recursoId: linha.id,
+            },
+          }"
+        >
+          <span class="tipinfo">
+            <svg
+              width="20"
+              height="20"
+              :class="{
+                tvermelho: linha.possui_solicitacao_ajuste_pendente
+              }"
+            >
+              <use xlink:href="#i_atividade" />
+            </svg>
+            <div v-if="linha.possui_solicitacao_ajuste_pendente">
+              Há solicitações de ajuste pendentes
+            </div>
+            <div v-else>Solicitações de ajuste</div>
+          </span>
+        </SmaeLink>
 
-                    <div>Histórico de Status</div>
-                  </span>
-                </SmaeLink>
+        <SmaeLink
+          v-if="linha.pode_ver_hist_status"
+          :to="{
+            name: 'TransferenciaDistribuicaoDeRecursos.Editar.Status',
+            params: {
+              ...$route.params,
+              recursoId: linha.id,
+            },
+          }"
+        >
+          <span class="tipinfo left">
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_check" />
+            </svg>
 
-                <button
-                  class="like-a__text"
-                  aria-label="excluir"
-                  title="excluir"
-                  type="button"
-                  @click="excluirDistribuição(item)"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  >
-                    <use xlink:href="#i_waste" />
-                  </svg>
-                </button>
-              </td>
-            </tr>
+            <div>Histórico de Status</div>
+          </span>
+        </SmaeLink>
 
-            <tr v-if="chamadasPendentes.lista">
-              <td
-                colspan="6"
-                class="loading"
-              >
-                carregando
-              </td>
-            </tr>
+        <button
+          v-if="authStore.temPermissãoPara('CadastroTransferencia.remover')"
+          class="like-a__text"
+          aria-label="excluir"
+          title="excluir"
+          type="button"
+          @click="excluirDistribuição(linha)"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
+            <use xlink:href="#i_waste" />
+          </svg>
+        </button>
+      </template>
+    </SmaeTable>
 
-            <tr v-else-if="!lista.length">
-              <td colspan="6">
-                Nenhum Registro de Distribuição de Recursos encontrado.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+    <p
+      v-if="authStore.temPermissãoPara('CadastroTransferencia.inserir')"
+    >
       <SmaeLink
         class="like-a__text addlink"
         :to="{
@@ -202,6 +197,6 @@ onUnmounted(() => {
           <use xlink:href="#i_+" />
         </svg> Registrar nova distribuição de recurso
       </SmaeLink>
-    </div>
+    </p>
   </div>
 </template>

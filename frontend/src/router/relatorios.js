@@ -335,7 +335,10 @@ export default {
       meta: {
         título: 'Demandas',
         títuloParaMenu: 'Demandas',
-        limitarÀsPermissões: 'Reports.executar.CasaCivil',
+        limitarÀsPermissões: [
+          'Reports.executar.CasaCivil',
+          'Reports.executar.CasaCivil:Demandas',
+        ],
       },
       children: [
         {
@@ -354,6 +357,10 @@ export default {
           meta: {
             título: 'Novo relatório de demandas',
             tituloParaMigalhaDePao: 'Novo relatório',
+            limitarÀsPermissões: [
+              'Reports.executar.CasaCivil:Demandas',
+              'Reports.executar.CasaCivil',
+            ],
             rotaDeEscape: 'relatóriosDeDemandas',
             rotasParaMigalhasDePão: [
               'relatóriosDeDemandas',

@@ -1,5 +1,4 @@
 import {
-    BadRequestException,
     forwardRef,
     HttpException,
     Inject,
@@ -7,7 +6,13 @@ import {
     InternalServerErrorException,
     Logger,
 } from '@nestjs/common';
-import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
+import {
+    DistribuicaoSolicitacaoStatus,
+    DistribuicaoStatusTipo,
+    Prisma,
+    TarefaDependenteTipo,
+    WorkflowResponsabilidade,
+} from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -353,6 +358,8 @@ export class DistribuicaoRecursoService {
                 },
             });
 
+            const dotacoesUnicas = dto.dotacoes ? [...new Set(dto.dotacoes)] : [];
+
             const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                 data: {
                     transferencia_id: dto.transferencia_id,
@@ -368,7 +375,17 @@ export class DistribuicaoRecursoService {
                     data_empenho: dto.data_empenho,
                     programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
                     programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                    dotacao: dto.dotacao,
+                    dotacoes: dotacoesUnicas.length
+                        ? {
+                              createMany: {
+                                  data: dotacoesUnicas.map((dotacao) => ({
+                                      dotacao,
+                                      criado_em: agora,
+                                      criado_por: user.id,
+                                  })),
+                              },
+                          }
+                        : undefined,
                     proposta: dto.proposta,
                     contrato: dto.contrato,
                     convenio: dto.convenio,
@@ -447,6 +464,17 @@ export class DistribuicaoRecursoService {
                 if (workflowConfigValida) await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
             }
 
+            // Propaga as dotações para a Transferência (sem duplicar)
+            if (dotacoesUnicas.length) {
+                await this.propagaDotacoesParaTransferencia(
+                    dto.transferencia_id,
+                    dotacoesUnicas,
+                    prismaTx,
+                    user,
+                    agora
+                );
+            }
+
             return { id: distribuicaoRecurso.id };
         };
 
@@ -477,6 +505,37 @@ export class DistribuicaoRecursoService {
                 .filter((value, index, self) => self.indexOf(value) !== index);
             if (duplicateSei.length > 0) throw new HttpException('Processo SEI duplicado na distribuição.', 400);
         }
+    }
+
+    private assertGestorPodeAcessar(user: PessoaFromJwt, orgaoGestorId: number, acao: 'acessar' | 'remover'): void {
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) && orgaoGestorId !== user.orgao_id) {
+            throw new HttpException(`Você não tem permissão para ${acao} esta distribuição de recurso.`, 403);
+        }
+    }
+
+    private podeEditar(user: PessoaFromJwt, orgaoGestorId: number): boolean {
+        return (
+            user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']) &&
+            (!user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']) || orgaoGestorId === user.orgao_id)
+        );
+    }
+
+    private podeSolicitarAjuste(user: PessoaFromJwt, orgaoGestorId: number): boolean {
+        return (
+            user.hasSomeRoles(['SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir']) && orgaoGestorId === user.orgao_id
+        );
+    }
+
+    private podeVerHistStatus(user: PessoaFromJwt, orgaoGestorId: number): boolean {
+        // Gestor(a) Transferências Voluntárias (e admin) sempre pode ver
+        if (user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])) {
+            return true;
+        }
+        // Gestor de Distribuição de Recurso só pode ver do próprio órgão
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
+            return orgaoGestorId === user.orgao_id;
+        }
+        return false;
     }
 
     async findAll(
@@ -560,7 +619,10 @@ export class DistribuicaoRecursoService {
                     data_empenho: true,
                     programa_orcamentario_estadual: true,
                     programa_orcamentario_municipal: true,
-                    dotacao: true,
+                    dotacoes: {
+                        where: { removido_em: null },
+                        select: { dotacao: true },
+                    },
                     proposta: true,
                     contrato: true,
                     convenio: true,
@@ -659,6 +721,15 @@ export class DistribuicaoRecursoService {
                             valor: true,
                         },
                     },
+                    solicitacoes_ajuste: {
+                        where: {
+                            removido_em: null,
+                            status: DistribuicaoSolicitacaoStatus.Pendente,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    },
                 },
             }),
         ]);
@@ -691,14 +762,9 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
-            // Gestor de Distribuição de Recurso não pode editar distribuições,
-            // a menos que também seja Gestor de Transferências (que tem precedência)
-            const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
-            const isGestorTransferencia = user.hasSomeRoles([
-                'CadastroTransferencia.editar',
-                'CadastroTransferencia.administrador',
-            ]);
-            const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
+            const pode_editar = this.podeEditar(user, r.orgao_gestor.id);
+            const pode_solicitar_ajuste = this.podeSolicitarAjuste(user, r.orgao_gestor.id);
+            const pode_ver_hist_status = this.podeVerHistStatus(user, r.orgao_gestor.id);
 
             let pct_valor_transferencia: number = 0;
             if (r.transferencia.valor && r.valor) {
@@ -787,7 +853,7 @@ export class DistribuicaoRecursoService {
                 data_empenho: Date2YMD.toStringOrNull(r.data_empenho),
                 programa_orcamentario_estadual: r.programa_orcamentario_estadual,
                 programa_orcamentario_municipal: r.programa_orcamentario_municipal,
-                dotacao: r.dotacao,
+                dotacoes: r.dotacoes.map((d) => d.dotacao),
                 proposta: r.proposta,
                 contrato: r.contrato,
                 convenio: r.convenio,
@@ -828,6 +894,9 @@ export class DistribuicaoRecursoService {
                 distribuicao_conta: r.distribuicao_conta,
                 distribuicao_banco: r.distribuicao_banco,
                 pode_editar: pode_editar,
+                pode_solicitar_ajuste: pode_solicitar_ajuste,
+                pode_ver_hist_status: pode_ver_hist_status,
+                possui_solicitacao_ajuste_pendente: r.solicitacoes_ajuste.length > 0,
             } satisfies DistribuicaoRecursoDto;
         });
 
@@ -889,7 +958,10 @@ export class DistribuicaoRecursoService {
                 data_empenho: true,
                 programa_orcamentario_estadual: true,
                 programa_orcamentario_municipal: true,
-                dotacao: true,
+                dotacoes: {
+                    where: { removido_em: null },
+                    select: { dotacao: true },
+                },
                 proposta: true,
                 contrato: true,
                 convenio: true,
@@ -1015,18 +1087,24 @@ export class DistribuicaoRecursoService {
                         valor: true,
                     },
                 },
+                solicitacoes_ajuste: {
+                    where: {
+                        removido_em: null,
+                        status: DistribuicaoSolicitacaoStatus.Pendente,
+                    },
+                    select: {
+                        id: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso não pode editar distribuições,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
-        const isGestorTransferencia = user.hasSomeRoles([
-            'CadastroTransferencia.editar',
-            'CadastroTransferencia.administrador',
-        ]);
-        const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
+        this.assertGestorPodeAcessar(user, row.orgao_gestor.id, 'acessar');
+
+        const pode_editar = this.podeEditar(user, row.orgao_gestor.id);
+        const pode_solicitar_ajuste = this.podeSolicitarAjuste(user, row.orgao_gestor.id);
+        const pode_ver_hist_status = this.podeVerHistStatus(user, row.orgao_gestor.id);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1130,7 +1208,7 @@ export class DistribuicaoRecursoService {
             data_empenho: Date2YMD.toStringOrNull(row.data_empenho),
             programa_orcamentario_estadual: row.programa_orcamentario_estadual,
             programa_orcamentario_municipal: row.programa_orcamentario_municipal,
-            dotacao: row.dotacao,
+            dotacoes: row.dotacoes.map((d) => d.dotacao),
             proposta: row.proposta,
             contrato: row.contrato,
             convenio: row.convenio,
@@ -1169,21 +1247,21 @@ export class DistribuicaoRecursoService {
             distribuicao_conta: row.distribuicao_conta,
             distribuicao_banco: row.distribuicao_banco,
             pode_editar: pode_editar,
+            pode_solicitar_ajuste: pode_solicitar_ajuste,
+            pode_ver_hist_status: pode_ver_hist_status,
+            possui_solicitacao_ajuste_pendente: row.solicitacoes_ajuste.length > 0,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
-    async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        id: number,
+        dto: UpdateDistribuicaoRecursoDto,
+        user: PessoaFromJwt,
+        opts?: { fromSolicitacaoId?: number }
+    ): Promise<RecordWithId> {
         const self = await this.findOne(id, user);
 
-        // Gestor de Distribuição de Recurso não pode editar distribuições,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para editar distribuições.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.editar']) no controller.
         this.checkDuplicateSei(dto);
 
         if (dto.orgao_gestor_id != undefined && dto.orgao_gestor_id != self.orgao_gestor.id) {
@@ -1216,6 +1294,21 @@ export class DistribuicaoRecursoService {
                     });
                 }
                 delete dto.registros_sei;
+
+                if (dto.dotacoes !== undefined) {
+                    await this.checkDiffDotacoes(
+                        id,
+                        dto.dotacoes,
+                        self.dotacoes,
+                        self.transferencia_id,
+                        prismaTx,
+                        user,
+                        now
+                    );
+                }
+                delete (dto as any).dotacoes;
+
+                await this.verificarConflitoCamposSolicitacao(prismaTx, id, dto, opts?.fromSolicitacaoId);
 
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
                     throw new HttpException('Obrigatório quando for empenho.', 400);
@@ -1410,7 +1503,6 @@ export class DistribuicaoRecursoService {
                         data_empenho: dto.data_empenho,
                         programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
                         programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                        dotacao: dto.dotacao,
                         proposta: dto.proposta,
                         contrato: dto.contrato,
                         convenio: dto.convenio,
@@ -1669,6 +1761,8 @@ export class DistribuicaoRecursoService {
 
                 if (operations.length) await Promise.all(operations);
 
+                await this.invalidarSolicitacoesAjusteSeNecessario(prismaTx, id, dto, opts?.fromSolicitacaoId);
+
                 return { id };
             },
             {
@@ -1696,7 +1790,7 @@ export class DistribuicaoRecursoService {
     ) {
         // Verificando se a justificativa foi enviada e não é null.
         // Ela é required na tabela.
-        if (!dto.justificativa_aditamento) throw new HttpException('Deve ser enviada.', 400);
+        if (!dto.justificativa_aditamento) throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
 
         const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
@@ -1713,7 +1807,8 @@ export class DistribuicaoRecursoService {
                 orgao_gestor_id: true,
             },
         });
-        if (!dto.justificativa_aditamento || self.vigencia == null) throw new HttpException('Deve ser enviada.', 400);
+        if (!dto.justificativa_aditamento || self.vigencia == null)
+            throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
 
         await prismaTx.distribuicaoRecursoAditamento.create({
             data: {
@@ -1807,16 +1902,128 @@ export class DistribuicaoRecursoService {
         }
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover distribuições,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para remover distribuições.', 403);
-        }
+    private async verificarConflitoCamposSolicitacao(
+        prismaTx: Prisma.TransactionClient,
+        distribuicaoRecursoId: number,
+        dto: UpdateDistribuicaoRecursoDto,
+        fromSolicitacaoId?: number
+    ): Promise<void> {
+        const camposAjuste = [
+            'objeto',
+            'nome',
+            'pct_custeio',
+            'pct_investimento',
+            'empenho',
+            'data_empenho',
+            'programa_orcamentario_estadual',
+            'programa_orcamentario_municipal',
+            'proposta',
+            'contrato',
+            'convenio',
+            'assinatura_termo_aceite',
+            'assinatura_municipio',
+            'assinatura_estado',
+            'vigencia',
+            'conclusao_suspensiva',
+            'distribuicao_banco',
+            'distribuicao_agencia',
+            'distribuicao_conta',
+            'rubrica_de_receita',
+            'finalidade',
+            'gestor_contrato',
+        ];
 
+        const camposNoDto = camposAjuste.filter((c) => (dto as Record<string, unknown>)[c] !== undefined);
+        if (camposNoDto.length === 0) return;
+
+        const distribuicaoAtual = await prismaTx.distribuicaoRecurso.findFirst({
+            where: { id: distribuicaoRecursoId, removido_em: null },
+            select: Object.fromEntries(camposNoDto.map((c) => [c, true])),
+        });
+        if (!distribuicaoAtual) return;
+
+        const camposRealmenteAlterados: string[] = [];
+        for (const campo of camposNoDto) {
+            const novoValor = (dto as Record<string, unknown>)[campo];
+            const valorAtual = (distribuicaoAtual as Record<string, unknown>)[campo];
+            if (this.normalizarCampoParaComparacao(novoValor) !== this.normalizarCampoParaComparacao(valorAtual)) {
+                camposRealmenteAlterados.push(campo);
+            }
+        }
+        if (camposRealmenteAlterados.length === 0) return;
+
+        const solicitacaoPendente = await prismaTx.distribuicaoRecursoSolicitacaoAjuste.findFirst({
+            where: {
+                distribuicao_recurso_id: distribuicaoRecursoId,
+                status: DistribuicaoSolicitacaoStatus.Pendente,
+                removido_em: null,
+                ...(fromSolicitacaoId ? { id: { not: fromSolicitacaoId } } : {}),
+            },
+            select: { id: true, campos_solicitados: true },
+        });
+
+        if (solicitacaoPendente) {
+            const camposPendentes = solicitacaoPendente.campos_solicitados as Record<string, unknown> | null;
+            if (camposPendentes) {
+                const overlap = camposRealmenteAlterados.filter((c) => c in camposPendentes);
+                if (overlap.length > 0) {
+                    throw new HttpException(
+                        `Não é possível alterar os campos: ${overlap.join(', ')}. Existe uma solicitação de ajuste pendente que inclui esses campos.`,
+                        400
+                    );
+                }
+            }
+        }
+    }
+
+    private normalizarCampoParaComparacao(v: unknown): string {
+        if (v === null || v === undefined) return 'null';
+        if (v instanceof Date) return v.getTime().toString();
+        if (typeof v === 'object' && v !== null && 'toNumber' in v && typeof (v as any).toNumber === 'function')
+            return (v as any).toNumber().toString();
+        return String(v);
+    }
+
+    private async invalidarSolicitacoesAjusteSeNecessario(
+        prismaTx: Prisma.TransactionClient,
+        distribuicaoRecursoId: number,
+        dto: UpdateDistribuicaoRecursoDto,
+        fromSolicitacaoId?: number
+    ): Promise<void> {
+        const camposAlterados = Object.keys(dto).filter((k) => (dto as Record<string, unknown>)[k] !== undefined);
+        if (camposAlterados.length === 0) return;
+
+        const solicitacoes = await prismaTx.distribuicaoRecursoSolicitacaoAjuste.findMany({
+            where: {
+                distribuicao_recurso_id: distribuicaoRecursoId,
+                status: DistribuicaoSolicitacaoStatus.Pendente,
+                removido_em: null,
+                ...(fromSolicitacaoId ? { id: { not: fromSolicitacaoId } } : {}),
+            },
+            select: { id: true, campos_solicitados: true },
+        });
+
+        for (const solicitacao of solicitacoes) {
+            const campos = solicitacao.campos_solicitados as Record<string, unknown> | null;
+            if (!campos) continue;
+
+            const camposAfetados = Object.keys(campos).filter((c) => camposAlterados.includes(c));
+            if (camposAfetados.length === 0) continue;
+
+            await prismaTx.distribuicaoRecursoSolicitacaoAjuste.update({
+                where: { id: solicitacao.id },
+                data: {
+                    status: DistribuicaoSolicitacaoStatus.Recusada,
+                    resposta_motivo: `Solicitação invalidada automaticamente. Os seguintes campos foram alterados diretamente na distribuição: ${camposAfetados.join(', ')}.`,
+                    respondido_em: new Date(),
+                    atualizado_em: new Date(),
+                },
+            });
+        }
+    }
+
+    async remove(id: number, user: PessoaFromJwt) {
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.remover']) no controller.
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
                 where: {
@@ -1826,8 +2033,11 @@ export class DistribuicaoRecursoService {
                 select: {
                     id: true,
                     transferencia_id: true,
+                    orgao_gestor_id: true,
                 },
             });
+
+            this.assertGestorPodeAcessar(user, self.orgao_gestor_id, 'remover');
 
             await prismaTx.distribuicaoRecurso.updateMany({
                 where: {
@@ -1951,6 +2161,73 @@ export class DistribuicaoRecursoService {
         }
 
         await Promise.all(operations);
+    }
+
+    private async propagaDotacoesParaTransferencia(
+        transferenciaId: number,
+        dotacoes: string[],
+        prismaTx: Prisma.TransactionClient,
+        user: PessoaFromJwt,
+        agora: Date
+    ) {
+        const existentes = await prismaTx.transferenciaDotacao.findMany({
+            where: { transferencia_id: transferenciaId, removido_em: null },
+            select: { dotacao: true },
+        });
+        const existentesSet = new Set(existentes.map((e) => e.dotacao));
+        const novas = [...new Set(dotacoes)].filter((d) => !existentesSet.has(d));
+        if (novas.length) {
+            await prismaTx.transferenciaDotacao.createMany({
+                data: novas.map((dotacao) => ({
+                    transferencia_id: transferenciaId,
+                    dotacao,
+                    criado_em: agora,
+                    criado_por: user.id,
+                })),
+            });
+        }
+    }
+
+    private async checkDiffDotacoes(
+        distribuicaoRecursoId: number,
+        sentDotacoes: string[],
+        currDotacoes: string[],
+        transferenciaId: number,
+        prismaTx: Prisma.TransactionClient,
+        user: PessoaFromJwt,
+        now: Date
+    ) {
+        const sentDotacoesUnicas = [...new Set(sentDotacoes)];
+        const created = sentDotacoesUnicas.filter((d) => !currDotacoes.includes(d));
+        const deleted = currDotacoes.filter((d) => !sentDotacoesUnicas.includes(d));
+
+        if (created.length) {
+            await prismaTx.distribuicaoRecursoDotacao.createMany({
+                data: created.map((dotacao) => ({
+                    distribuicao_recurso_id: distribuicaoRecursoId,
+                    dotacao,
+                    criado_em: now,
+                    criado_por: user.id,
+                })),
+            });
+            // Propaga novas dotações para a Transferência (sem duplicar)
+            await this.propagaDotacoesParaTransferencia(transferenciaId, created, prismaTx, user, now);
+        }
+
+        if (deleted.length) {
+            await prismaTx.distribuicaoRecursoDotacao.updateMany({
+                where: {
+                    distribuicao_recurso_id: distribuicaoRecursoId,
+                    dotacao: { in: deleted },
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+            // Intencionalmente NÃO remove da TransferenciaDotacao
+        }
     }
 
     async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {

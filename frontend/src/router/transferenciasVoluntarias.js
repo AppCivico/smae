@@ -13,6 +13,8 @@ import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
+import DistribuicaoSolicitacaoAjusteCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/DistribuicaoSolicitacaoAjusteCriarEditar.vue';
+import DistribuicaoSolicitacaoAjusteLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/DistribuicaoSolicitacaoAjusteLista.vue';
 import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciaDistribuicaoDeRecursosEditarRaiz from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosEditarRaiz.vue';
 import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
@@ -161,7 +163,10 @@ export default {
       meta: {
         título: 'Distribuição de recursos',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: [
+          'CadastroTransferencia.editar',
+          'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+        ],
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
@@ -173,6 +178,9 @@ export default {
           name: 'TransferenciaDistribuicaoDeRecursos.Lista',
           path: '',
           component: TransferenciaDistribuicaoDeRecursosLista,
+          meta: {
+            rotaDeEscape: 'TransferenciasVoluntariasDetalhes',
+          },
         },
         {
           path: '',
@@ -184,6 +192,7 @@ export default {
               component: TransferenciaDistribuicaoDeRecursosCriarEditar,
               meta: {
                 título: 'Novo Recurso',
+                limitarÀsPermissões: 'CadastroTransferencia.inserir',
                 rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
@@ -225,11 +234,70 @@ export default {
               component: TransferenciaDistribuicaoDeRecursosStatus,
               meta: {
                 título: 'Histórico de Status',
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Lista',
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasDetalhes',
                   'TransferenciaDistribuicaoDeRecursos.Lista',
-                  'TransferenciaDistribuicaoDeRecursos.Editar',
+                ],
+                limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
+              },
+            },
+            {
+              path: 'solicitacoes-de-ajuste',
+              name: 'DistribuicaoSolicitacaoAjuste.Lista',
+              component: DistribuicaoSolicitacaoAjusteLista,
+              meta: {
+                título: 'Solicitações de ajuste',
+                rotaDeEscape: 'TransferenciaDistribuicaoDeRecursos.Editar',
+                limitarÀsPermissões: [
+                  'CadastroDistribuicaoSolicitacaoAjuste.',
+                  'SMAE.PerfilGestorDistribuicaoRecurso',
+                ],
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                ],
+              },
+            },
+            {
+              path: 'solicitacoes-de-ajuste/nova',
+              name: 'DistribuicaoSolicitacaoAjuste.Novo',
+              component: DistribuicaoSolicitacaoAjusteCriarEditar,
+              meta: {
+                título: 'Solicitar ajuste de Distribuição de Recursos',
+                rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
+                limitarÀsPermissões: [
+                  'SMAE.PerfilGestorDistribuicaoRecurso',
+                  'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+                ],
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'DistribuicaoSolicitacaoAjuste.Lista',
+                ],
+              },
+            },
+            {
+              path: 'solicitacoes-de-ajuste/:ajusteId',
+              name: 'DistribuicaoSolicitacaoAjuste.Editar',
+              component: DistribuicaoSolicitacaoAjusteCriarEditar,
+              props: (route) => tiparPropsDeRota(route, { ajusteId: 'number', recursoId: 'number', transferenciaId: 'number' }),
+              meta: {
+                título: 'Solicitar ajuste de Distribuição de Recursos',
+                rotaDeEscape: 'DistribuicaoSolicitacaoAjuste.Lista',
+                limitarÀsPermissões: [
+                  'SMAE.PerfilGestorDistribuicaoRecurso',
+                  'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+                  'CadastroDistribuicaoSolicitacaoAjuste.administrador',
+                ],
+                rotasParaMigalhasDePão: [
+                  'TransferenciasVoluntariasListar',
+                  'TransferenciasVoluntariasDetalhes',
+                  'TransferenciaDistribuicaoDeRecursos.Lista',
+                  'DistribuicaoSolicitacaoAjuste.Lista',
                 ],
               },
             },
@@ -360,7 +428,9 @@ export default {
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
-        limitarÀsPermissões: 'CadastroTransferencia.listar',
+        limitarÀsPermissões: [
+          'CadastroClassificacao.listar',
+        ],
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
@@ -400,6 +470,10 @@ export default {
 
               return `Resumo da transferência ${emFoco.identificador}`;
             },
+            limitarÀsPermissões: [
+              'CadastroClassificacao.listar',
+              'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+            ],
             rotasParaMenuSecundário,
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
@@ -420,6 +494,10 @@ export default {
               : 'Monitoramento de transferência'),
             títuloParaMenu: 'Monitoramento',
             rotaDeEscape: 'TransferenciasVoluntariasDetalhes',
+            limitarÀsPermissões: [
+              'CadastroClassificacao.listar',
+              'SMAE.CadastroDistribuicaoSolicitacaoAjuste.',
+            ],
           },
         },
       ],

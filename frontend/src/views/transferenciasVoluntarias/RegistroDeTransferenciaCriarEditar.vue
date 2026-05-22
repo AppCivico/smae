@@ -45,7 +45,7 @@ const props = defineProps({
 });
 
 const {
-  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
+  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm, validateField,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema,
@@ -54,8 +54,7 @@ const {
 const alertStore = useAlertStore();
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
-  // necessário por causa de 🤬
-  const cargaManipulada = nulificadorTotal(controlledValues);
+  const cargaManipulada = nulificadorTotal({ dotacoes: [], ...controlledValues });
 
   try {
     let id;
@@ -160,6 +159,17 @@ watch(itemParaEdicao, async (novosValores) => {
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
 }, { immediate: true });
+
+// Garante que erros de duplicatas em `dotacoes` sejam reavaliados quando um item é removido.
+// Sem isso, remover o último item duplicado deixa o erro de validação visível até um blur manual.
+// `validateField('dotacoes')` não funciona porque o VeeValidate usa `dotacoes[N]` como
+// nome de cada item, não o array. Validar `dotacoes[0]` aciona o validateSchema interno do
+// VeeValidate, que reavalia o schema completo e limpa os erros de duplicata obsoletos.
+watch(() => values.dotacoes?.length, (newLength) => {
+  if ((newLength ?? 0) > 0) {
+    validateField('dotacoes[0]');
+  }
+});
 </script>
 <template>
   <pre v-scrollLockDebug>
@@ -342,25 +352,6 @@ watch(itemParaEdicao, async (novosValores) => {
       </div>
       <div class="f1">
         <LabelFromYup
-          name="dotacao"
-          :schema="schema"
-        />
-        <Field
-          name="dotacao"
-          type="text"
-          class="inputtext light mb1"
-          placeholder="00.00.00.000.0000.0.000.00000000.00"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="dotacao"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
           name="valor_total"
           :schema="schema"
         />
@@ -382,6 +373,9 @@ watch(itemParaEdicao, async (novosValores) => {
           A soma dos valores não corresponde ao valor total.
         </div>
       </div>
+    </div>
+
+    <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
           name="ordenador_despesa"
@@ -397,6 +391,63 @@ watch(itemParaEdicao, async (novosValores) => {
           name="ordenador_despesa"
         />
       </div>
+    </div>
+
+    <div class="mb1">
+      <LabelFromYup
+        name="dotacoes"
+        :schema="schema"
+        as="legend"
+        class="label mb1"
+      />
+      <FieldArray
+        v-slot="{ fields, push, remove }"
+        name="dotacoes"
+      >
+        <div
+          v-for="(field, idx) in fields"
+          :key="field.key"
+          class="flex flexwrap gx2 mb1"
+        >
+          <Field
+            :name="`dotacoes[${idx}]`"
+            type="text"
+            class="inputtext light f1"
+            placeholder="00.00.00.000.0000.0.000.00000000.00"
+            maxlength="250"
+          />
+          <button
+            class="like-a__text addlink"
+            aria-label="excluir"
+            title="excluir"
+            type="button"
+            @click="remove(idx)"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_remove" />
+            </svg>
+          </button>
+          <ErrorMessage
+            class="error-msg fb100"
+            :name="`dotacoes[${idx}]`"
+          />
+        </div>
+        <button
+          class="like-a__text addlink mb1"
+          type="button"
+          @click="push('')"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
+            <use xlink:href="#i_+" />
+          </svg>Adicionar dotação
+        </button>
+      </FieldArray>
     </div>
 
     <div class="flex spacebetween center mb1">

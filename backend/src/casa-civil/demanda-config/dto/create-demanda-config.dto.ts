@@ -17,10 +17,16 @@ export class CreateDemandaConfigDto {
     data_fim_vigencia?: Date | null;
 
     @IsNumberStringCustom(13, 2)
-    valor_minimo: string;
+    valor_minimo_custeio: string;
 
     @IsNumberStringCustom(13, 2)
-    valor_maximo: string;
+    valor_maximo_custeio: string;
+
+    @IsNumberStringCustom(13, 2)
+    valor_minimo_investimento: string;
+
+    @IsNumberStringCustom(13, 2)
+    valor_maximo_investimento: string;
 
     @IsOptional()
     @IsBoolean({ message: 'bloqueio_valor_min precisa ser um booleano' })

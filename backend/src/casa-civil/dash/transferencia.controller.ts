@@ -44,7 +44,7 @@ export class DashTransferenciaController {
 
     @Get('notas')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroTransferencia.dashboard'])
     @ApiExtraModels(MfDashNotasDto)
     async notas(
         @Query() params: FilterDashNotasDto,

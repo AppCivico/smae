@@ -85,40 +85,31 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({ values: novoValor });
 });
 
-function obterObjetoVinculado() {
-  return vinculoAtual.value?.projeto
-    || vinculoAtual.value?.meta
-    || vinculoAtual.value?.iniciativa
-    || vinculoAtual.value?.atividade
-    || null;
-}
+const objetoVinculado = computed(() => vinculoAtual.value?.projeto
+  || vinculoAtual.value?.meta
+  || vinculoAtual.value?.iniciativa
+  || vinculoAtual.value?.atividade
+  || vinculoAtual.value?.demanda
+  || null);
 
-function obterPortfolioOuModulo() {
+const portfolioOuModuloOuDemanda = computed(() => {
   if (vinculoAtual.value?.projeto?.portfolio) {
     return `Portfolio: ${vinculoAtual.value.projeto.portfolio.nome}`;
   }
-  if (vinculoAtual.value?.projeto) {
-    return 'Projeto';
-  }
-  if (vinculoAtual.value?.iniciativa) {
-    return 'Iniciativa';
-  }
-  if (vinculoAtual.value?.atividade) {
-    return 'Atividade';
-  }
-  if (vinculoAtual.value?.meta) {
-    return 'PDM/Meta';
-  }
+  if (vinculoAtual.value?.projeto) return 'Projeto';
+  if (vinculoAtual.value?.iniciativa) return 'Iniciativa';
+  if (vinculoAtual.value?.atividade) return 'Atividade';
+  if (vinculoAtual.value?.meta) return 'PDM/Meta';
+  if (vinculoAtual.value?.demanda) return 'Demanda';
   return '-';
-}
+});
 
-function obterLabelCampoVinculo() {
+const labelCampoVinculo = computed(() => {
   const campo = vinculoAtual.value?.campo_vinculo;
   if (campo === 'Endereco') return 'Endereço';
   if (campo === 'Dotacao') return 'Dotação';
-  if (campo === 'Demanda') return 'Demanda';
   return '-';
-}
+});
 </script>
 
 <template>
@@ -185,13 +176,14 @@ function obterLabelCampoVinculo() {
       <h3 class="w700 tc600 t16 mb1 mt2">
         Objeto Vinculado
       </h3>
+
       <div class="flex g2 flexwrap">
         <dl class="f1">
           <dt class="t14 w700 mb05 tamarelo">
-            {{ obterPortfolioOuModulo() }}
+            {{ portfolioOuModuloOuDemanda }}
           </dt>
           <dd>
-            {{ obterObjetoVinculado()?.nome || '-' }}
+            {{ objetoVinculado?.nome || objetoVinculado?.nome_projeto || '-' }}
           </dd>
         </dl>
         <dl class="f1">
@@ -199,23 +191,40 @@ function obterLabelCampoVinculo() {
             Órgão
           </dt>
           <dd>
-            {{ obterObjetoVinculado()?.orgao?.sigla || '-' }}
+            {{ objetoVinculado?.orgao?.sigla || '-' }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl
+          v-if="objetoVinculado?.area_tematica"
+          class="f1"
+        >
+          <dt class="t14 w700 mb05 tamarelo">
+            Área temática
+          </dt>
+          <dd>
+            {{ objetoVinculado?.area_tematica?.nome || '-' }}
+          </dd>
+        </dl>
+        <dl
+          v-else
+          class="f1"
+        >
           <dt class="t14 w700 mb05 tamarelo">
             Status
           </dt>
           <dd>
-            {{ obterObjetoVinculado()?.status || '-' }}
+            {{ objetoVinculado?.status || '-' }}
           </dd>
         </dl>
       </div>
 
-      <div class="flex g2 flexwrap mt1">
+      <div
+        v-if="vinculoAtual?.campo_vinculo !== 'Demanda'"
+        class="flex g2 flexwrap mt1"
+      >
         <dl class="f1">
           <dt class="t14 w700 mb05 tamarelo">
-            {{ obterLabelCampoVinculo() }}
+            {{ labelCampoVinculo }}
           </dt>
           <dd>
             {{ vinculoAtual.valor_vinculo || '-' }}

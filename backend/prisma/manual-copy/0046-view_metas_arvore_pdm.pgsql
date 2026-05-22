@@ -1,3 +1,4 @@
+-- Trigger changes
 CREATE OR REPLACE VIEW view_metas_arvore_pdm AS
 SELECT m.id AS id,
        'meta' AS tipo,

@@ -10,11 +10,12 @@ export const CONST_COD_NOTA_DIST_RECURSO = 'Aviso de distribuição de recurso';
 export const CONST_COD_NOTA_TRANSF_GOV = 'Transfere Gov';
 export const CONST_PERFIL_PARTICIPANTE_EQUIPE = 'Participante em equipes';
 export const CONST_PERFIL_COORDENADOR_EQUIPE = 'Coordenador em equipes';
-// não mude essa string sem atualizar o seed!
-export const CONST_PERFIL_CASA_CIVIL = 'Gestor(a) Transferências Voluntárias';
 
+// não mude essas strings sem atualizar o seed pare remover!
+export const CONST_PERFIL_CASA_CIVIL = 'Gestor(a) Transferências Voluntárias';
 export const CONST_PERFIL_COLAB_OBRA_NO_ORGAO = 'Colaborador(a) de obra no órgão';
 export const CONST_PERFIL_GESTOR_OBRA = 'Gestor(a) da Obra';
+export const CONST_PERFIL_GESTOR_DIST_RECURSO = 'Gestor(a) de Distribuição de Recurso';
 
 export const CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM = '<PDM>Participante em equipes'; // deprecated
 export const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['SMAE.superadmin'];

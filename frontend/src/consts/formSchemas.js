@@ -1872,7 +1872,7 @@ export const portfolio = object({
     .label('Data de criação')
     .nullable()
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v)),
   descricao: string()
     .label('Descrição')
@@ -2117,7 +2117,7 @@ export const statusDistribuicao = object({
   data_troca: date()
     .label('Data')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .required()
     .transform((v) => (!v ? null : v)),
   orgao_responsavel_id: number()
@@ -2221,25 +2221,25 @@ export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   assinatura_municipio: date()
     .label('Data de assinatura do representante do município')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   assinatura_termo_aceite: date()
     .label('Data de assinatura do termo de aceite')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   conclusao_suspensiva: date()
     .label('Data de conclusão da suspensiva')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   contrato: string()
@@ -2265,7 +2265,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullableOuVazio(),
   distribuicao_agencia: string()
     .label('Agência Bancária')
@@ -2276,9 +2276,14 @@ export const transferenciaDistribuicaoDeRecursos = object({
   distribuicao_conta: string()
     .label('Conta Corrente')
     .nullable(),
-  dotacao: string()
-    .label('Dotacao')
-    .nullable()
+  dotacoes: array()
+    .label('Dotações')
+    .of(string()
+      .label('Dotação')
+      .trim()
+      .max(255)
+      .min(1))
+    .semDuplicatas('Dotações não podem ter valores repetidos')
     .meta({
       balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
     }),
@@ -2392,7 +2397,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   vigencia: date()
     .label('Data de vigência')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .nullable()
     .transform((v) => (!v ? null : v)),
   parlamentares: array()
@@ -2411,6 +2416,115 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .label('Valor do repasse do parlamentar')
         .nullable(),
     })),
+});
+
+export const distribuicaoSolicitacaoAjuste = object({
+  assinatura_estado: date()
+    .label('Data de assinatura do representante do estado')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  assinatura_municipio: date()
+    .label('Data de assinatura do representante do município')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  assinatura_termo_aceite: date()
+    .label('Data de assinatura do termo de aceite')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  conclusao_suspensiva: date()
+    .label('Data de conclusão da suspensiva')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  contrato: string()
+    .label('Número do contrato')
+    .nullable(),
+  convenio: string()
+    .label('Número convênio/pré-convênio')
+    .nullable(),
+  data_empenho: date()
+    .label('Data do empenho')
+    .max(dataMax)
+    .min(dataMin)
+    .nullableOuVazio(),
+  distribuicao_agencia: string()
+    .label('Agência Bancária')
+    .nullable(),
+  distribuicao_banco: string()
+    .label('Banco')
+    .nullable(),
+  distribuicao_conta: string()
+    .label('Conta Corrente')
+    .nullable(),
+  dotacoes: array()
+    .label('Dotações')
+    .of(string()
+      .label('Dotação')
+      .trim()
+      .max(255)
+      .min(1))
+    .semDuplicatas('Dotações não podem ter valores repetidos'),
+  empenho: boolean()
+    .label('Empenho')
+    .nullable(),
+  finalidade: string()
+    .label('Finalidade')
+    .nullable(),
+  gestor_contrato: string()
+    .label('Gestor do contrato')
+    .nullable(),
+  informacoes_complementares: string()
+    .label('Informações Complementares')
+    .max(255)
+    .nullable(),
+  nome: string()
+    .label('Nome')
+    .min(1)
+    .max(1024)
+    .required(),
+  objeto: string()
+    .label('Objeto/Empreendimento')
+    .max(1000)
+    .required(),
+  programa_orcamentario_estadual: string()
+    .label('Programa orçamentário estadual')
+    .nullable(),
+  programa_orcamentario_municipal: string()
+    .label('Programa orçamentário municipal')
+    .nullable(),
+  proposta: string()
+    .label('Proposta')
+    .nullable(),
+  rubrica_de_receita: string()
+    .label('Rubrica de receita')
+    .nullable(),
+  valor_empenho: number()
+    .label('Valor empenho')
+    .nullable(),
+  valor_liquidado: string()
+    .label('Liquidação/Pagamento')
+    .nullable(),
+  vigencia: date()
+    .label('Data de vigência')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  justificativa_aditamento: string()
+    .label('Justificativa para aditamento')
+    .max(250)
+    .min(1, 'Justificativa para aditamento é obrigatório após editar a data de vigência')
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica os motivos que justificam aditamento do contrato relacionado à Transferência Voluntária.',
+    }),
 });
 
 export const registroDeTransferencia = object({
@@ -2444,9 +2558,14 @@ export const registroDeTransferencia = object({
     .required(),
   percentagem_custeio: number()
     .min(0),
-  dotacao: string()
-    .label('Dotação')
-    .nullable()
+  dotacoes: array()
+    .label('Dotações')
+    .of(string()
+      .label('Dotação')
+      .trim()
+      .max(255)
+      .min(1))
+    .semDuplicatas('Dotações não podem ter valores repetidos')
     .meta({
       balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
     }),
@@ -2528,7 +2647,7 @@ export const transferenciasVoluntarias = object({
   clausula_suspensiva_vencimento: date()
     .label('data de vencimento da cláusula suspensiva')
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v))
     .meta({
       balaoInformativo: 'Indica a data de vencimento para atendimento das pendências contratuais que permitem o início da Transferência Voluntária.',
@@ -2734,12 +2853,12 @@ export const projeto = object()
       .label('Data de aprovação')
       .nullable()
       .max(dataMax)
-      .min(new Date(2003, 0, 1)),
+      .min(dataMin),
     data_revisao: date()
       .label('Data de revisão')
       .nullable()
       .max(dataMax)
-      .min(new Date(2003, 0, 1)),
+      .min(dataMin),
     equipe: array()
       .label('Equipe do Projeto')
       .nullable()
@@ -3237,13 +3356,13 @@ export const relatórioDeStatus = relatorioValidacaoBase.concat(object({
     periodo_inicio: date()
       .label('Início do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     periodo_fim: date()
       .label('Final do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     portfolio_id: number()
@@ -3262,13 +3381,13 @@ export const relatórioDeStatusObra = relatorioValidacaoBase.concat(object({
     periodo_inicio: date()
       .label('Início do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     periodo_fim: date()
       .label('Final do período')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
     portfolio_id: number()
@@ -3332,7 +3451,7 @@ export const relatórioDePortfolioObras = relatorioValidacaoBase.concat(object({
     periodo: date()
       .label('Obras que iniciam a partir de')
       .max(dataMax)
-      .min(new Date(2003, 0, 1))
+      .min(dataMin)
       .nullable()
       .transform((v) => (!v ? null : v)),
   }),
@@ -3732,7 +3851,7 @@ export const workflow = object({
     .label('Início da vigência')
     .nullable()
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v))
     .required(),
   nome: string()
@@ -3742,7 +3861,7 @@ export const workflow = object({
     .label('fim da vigência')
     .nullable()
     .max(dataMax)
-    .min(new Date(2003, 0, 1))
+    .min(dataMin)
     .transform((v) => (!v ? null : v)),
   transferencia_tipo_id: number()
     .label('Tipo de transferência')
@@ -4751,25 +4870,47 @@ export const valoresLimites = object({
         return !dataFim || !dataInicio || dataFim >= dataInicio;
       },
     ),
-  valor_minimo: string()
+  valor_minimo_custeio: string()
     .label('Valor Mínimo')
-    .required('Informe o valor mínimo')
+    .required('Informe o valor mínimo de custeio')
     .test(
-      'verificar-valor-minimo',
+      'verificar-valor-minimo-custeio',
       'O valor mínimo não pode ser maior que o valor máximo',
       (valorMinimo, { resolve }) => {
-        const valorMaximo = resolve(ref('valor_maximo'));
+        const valorMaximo = resolve(ref('valor_maximo_custeio'));
         return !valorMinimo || !valorMaximo || parseFloat(valorMinimo) <= parseFloat(valorMaximo);
       },
     ),
-  valor_maximo: string()
+  valor_maximo_custeio: string()
     .label('Valor Máximo')
-    .required('Informe o valor máximo')
+    .required('Informe o valor máximo de custeio')
     .test(
-      'verificar-valor-maximo',
+      'verificar-valor-maximo-custeio',
       'O valor máximo não pode ser menor que o valor mínimo',
       (valorMaximo, { resolve }) => {
-        const valorMinimo = resolve(ref('valor_minimo'));
+        const valorMinimo = resolve(ref('valor_minimo_custeio'));
+        return !valorMaximo || !valorMinimo || parseFloat(valorMaximo) >= parseFloat(valorMinimo);
+      },
+    ),
+  valor_minimo_investimento: string()
+    .label('Valor Mínimo')
+    .required('Informe o valor mínimo de investimento')
+    .test(
+      'verificar-valor-minimo-investimento',
+      'O valor mínimo não pode ser maior que o valor máximo',
+      (valorMinimo, { resolve }) => {
+        const valorMaximo = resolve(ref('valor_maximo_investimento'));
+        return !valorMinimo || !valorMaximo || parseFloat(valorMinimo) <= parseFloat(valorMaximo);
+      },
+    ),
+  valor_maximo_investimento: string()
+    .label('Valor Máximo')
+    .required('Informe o valor máximo de investimento')
+    .test(
+      'verificar-valor-maximo-investimento',
+      'O valor máximo não pode ser menor que o valor mínimo',
+      (valorMaximo, { resolve }) => {
+        const valorMinimo = resolve(ref('valor_minimo_investimento'));
         return !valorMaximo || !valorMinimo || parseFloat(valorMaximo) >= parseFloat(valorMinimo);
       },
     ),

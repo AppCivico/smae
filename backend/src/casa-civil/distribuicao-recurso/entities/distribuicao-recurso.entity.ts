@@ -14,7 +14,7 @@ export class DistribuicaoRecursoDto {
     transferencia_id: number;
     transferencia: DistribuicaoRecursoTransferenciaDto;
     orgao_gestor: IdSiglaDescricao;
-    objeto: String;
+    objeto: string;
     valor: Decimal;
     valor_total: Decimal;
     valor_contrapartida: Decimal;
@@ -27,15 +27,15 @@ export class DistribuicaoRecursoDto {
     pct_custeio: Decimal | null;
     investimento: Decimal;
     pct_investimento: Decimal | null;
-    empenho: Boolean | null;
+    empenho: boolean | null;
     @IsDateYMD({ nullable: true })
     data_empenho: string | null;
-    programa_orcamentario_estadual: String | null;
-    programa_orcamentario_municipal: String | null;
-    dotacao: String | null;
-    proposta: String | null;
-    contrato: String | null;
-    convenio: String | null;
+    programa_orcamentario_estadual: string | null;
+    programa_orcamentario_municipal: string | null;
+    dotacoes: string[];
+    proposta: string | null;
+    contrato: string | null;
+    convenio: string | null;
     @IsDateYMD({ nullable: true })
     assinatura_termo_aceite: string | null;
     @IsDateYMD({ nullable: true })
@@ -58,6 +58,9 @@ export class DistribuicaoRecursoDto {
     distribuicao_conta: string | null;
     distribuicao_banco: string | null;
     pode_editar: boolean;
+    pode_solicitar_ajuste: boolean;
+    pode_ver_hist_status: boolean;
+    possui_solicitacao_ajuste_pendente: boolean;
 }
 
 export class DistribuicaoRecursoTransferenciaDto {

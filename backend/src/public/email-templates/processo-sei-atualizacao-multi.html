@@ -186,7 +186,11 @@
                                 <td align="left" style="font-size: 0px; padding: 10px 25px; word-break: break-word">
                                   <div style="font-family: &quot;Arial&quot;, &quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, sans-serif; font-size: 16px; line-height: 24px; text-align: left; color: #202020">
                                     <p>Houve [% quantidade %] alteração(ões) em processos SEI nas transferências voluntárias listadas abaixo:</p>
-                                    [% lista_html %]
+                                    <ul>
+                                      [% FOREACH item IN items %]
+                                      <li>SEI [% item.processo %] &mdash; <a href="[% item.link %]">Transferência [% item.identificador %]</a></li>
+                                      [% END %]
+                                    </ul>
                                   </div>
                                 </td>
                               </tr>

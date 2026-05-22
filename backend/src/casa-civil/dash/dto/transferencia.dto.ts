@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
@@ -15,6 +15,7 @@ import { NumberTransform } from 'src/auth/transforms/number.transform';
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
     transferencia_id: number;
+    emenda: string | null;
     identificador: string;
     atividade: string;
     @IsDateYMD({ nullable: true })
@@ -120,6 +121,22 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
 }
 
 export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(FilterDashTransferenciasAnaliseDto) {
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pagina?: number = 1;
+
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
+}
+
+export class FilterDashTransferenciasWorkflowDto extends FilterDashTransferenciasDto {
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)

@@ -174,7 +174,8 @@ onUnmounted(() => {
         v-else
         :dados="dadosEndereco"
         tipo="endereco"
-        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         @excluir="excluirVinculo"
       />
     </CardEnvelope.Conteudo>
@@ -220,7 +221,8 @@ onUnmounted(() => {
         v-else
         :dados="dadosDotacao"
         tipo="dotacao"
-        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         @excluir="excluirVinculo"
       />
     </CardEnvelope.Conteudo>
@@ -262,7 +264,8 @@ onUnmounted(() => {
         v-else
         :dados="dadosDemanda"
         tipo="demanda"
-        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')"
+        :tem-permissao="!!temPermissãoPara('CadastroVinculo.editar')
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         @excluir="excluirVinculo"
       />
     </CardEnvelope.Conteudo>

@@ -47,6 +47,7 @@ const emit = defineEmits<Emits>();
     :linha-index="linhaIndex"
     :caminho="coluna.chave"
     v-bind="coluna.atributosDaCelula"
+    :permitir-valor-vazio="coluna.permitirValorVazio"
   >
     <slot
       v-if="coluna.slots?.celula && listaSlotsUsados.celula[coluna.slots.celula]"

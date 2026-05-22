@@ -150,7 +150,9 @@ function handleEditar() {
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button
-            v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])"
+            v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
+              && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')
+            "
             class="varal-de-fase-item__botao"
             type="button"
             @click="handleEditar"

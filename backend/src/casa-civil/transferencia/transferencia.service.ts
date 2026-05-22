@@ -25,7 +25,6 @@ import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { FilterTransferenciaDto, FilterTransferenciaHistoricoDto } from './dto/filter-transferencia.dto';
 import {
@@ -355,15 +354,7 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        // Gestor de Distribuição de Recurso não pode editar transferências,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para editar transferências.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.editar']) no controller.
         const agora = new Date(Date.now());
         let workflowCriado: boolean = false;
         const updated = await this.prisma.$transaction(
@@ -721,6 +712,7 @@ export class TransferenciaService {
                                 },
                                 parlamentar_id: row.parlamentar_id,
                                 removido_em: null,
+                                valor: { gt: 0 },
                             },
                         });
                         if (parlamentarDistribuicao)
@@ -808,7 +800,6 @@ export class TransferenciaService {
                         pct_custeio: dto.pct_custeio,
                         investimento: dto.investimento,
                         pct_investimento: dto.pct_investimento,
-                        dotacao: dto.dotacao,
                         ordenador_despesa: dto.ordenador_despesa,
                         gestor_contrato: dto.gestor_contrato,
                         banco_aceite: dto.banco_aceite,
@@ -840,7 +831,10 @@ export class TransferenciaService {
                         pendente_preenchimento_valores: true,
                         empenho: true,
                         objeto: true,
-                        dotacao: true,
+                        dotacoes: {
+                            where: { removido_em: null },
+                            select: { dotacao: true },
+                        },
                         parlamentar: {
                             where: { removido_em: null },
                             select: {
@@ -882,6 +876,9 @@ export class TransferenciaService {
                     },
                 });
 
+                const dotacoesParaDistribuicao =
+                    dto.dotacoes === undefined ? self.dotacoes.map((d) => d.dotacao) : [...new Set(dto.dotacoes)];
+
                 if (!jaTemDistribuicao) {
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
                         where: {
@@ -899,7 +896,7 @@ export class TransferenciaService {
                             // Para preencher o nome, extraimos os 100 primeiros caracteres do objeto.
                             nome: self.objeto.substring(0, 100),
                             transferencia_id: transferencia.id,
-                            dotacao: self.dotacao ? self.dotacao : undefined,
+                            dotacoes: dotacoesParaDistribuicao.length ? dotacoesParaDistribuicao : undefined,
                             valor: self.valor!.toNumber(),
                             valor_contrapartida: self.valor_contrapartida!.toNumber(),
                             valor_total: self.valor_total!.toNumber(),
@@ -913,6 +910,55 @@ export class TransferenciaService {
                         true,
                         prismaTxn
                     );
+                }
+
+                // Atualiza dotacoes da transferência (diff: adiciona novas, remove excluídas)
+                if (dto.dotacoes !== undefined) {
+                    const currDotacoesSet = new Set(self.dotacoes.map((d) => d.dotacao));
+                    const sentDotacoesSet = new Set(dotacoesParaDistribuicao);
+                    const novas = dotacoesParaDistribuicao.filter((d) => !currDotacoesSet.has(d));
+                    const removidas = self.dotacoes.map((d) => d.dotacao).filter((d) => !sentDotacoesSet.has(d));
+                    if (novas.length) {
+                        await prismaTxn.transferenciaDotacao.createMany({
+                            data: novas.map((dotacao) => ({
+                                transferencia_id: id,
+                                dotacao,
+                                criado_em: agora,
+                                criado_por: user.id,
+                            })),
+                        });
+                    }
+                    if (removidas.length) {
+                        // Verificando se alguma dotação removida está em uso por uma distribuição de recurso.
+                        const dotacoesEmUso = await prismaTxn.distribuicaoRecursoDotacao.findMany({
+                            where: {
+                                dotacao: { in: removidas },
+                                removido_em: null,
+                                distribuicao_recurso: {
+                                    transferencia_id: id,
+                                    removido_em: null,
+                                },
+                            },
+                            select: { dotacao: true },
+                        });
+
+                        if (dotacoesEmUso.length) {
+                            const dotacoesStr = [...new Set(dotacoesEmUso.map((d) => d.dotacao))].join(', ');
+                            throw new HttpException(
+                                `As seguintes dotações não podem ser removidas pois estão em uso por distribuição de recurso: ${dotacoesStr}`,
+                                400
+                            );
+                        }
+
+                        await prismaTxn.transferenciaDotacao.updateMany({
+                            where: {
+                                transferencia_id: id,
+                                dotacao: { in: removidas },
+                                removido_em: null,
+                            },
+                            data: { removido_em: agora, removido_por: user.id },
+                        });
+                    }
                 }
 
                 // Tratando controles de limites de valores.
@@ -1117,13 +1163,9 @@ export class TransferenciaService {
             return permissionsSet;
         }
 
-        // Gestores de Distribuição de Recurso só veem transferências
-        // que possuem pelo menos uma distribuição do seu órgão.
-        // Exceto se também forem Gestores de Transferências (que têm precedência e veem tudo).
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
+        // Usuários do perfil restrito "Gestor(a) de Distribuição de Recurso"
+        // só veem transferências que possuem pelo menos uma distribuição do seu órgão.
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
             permissionsSet.push({
@@ -1175,6 +1217,7 @@ export class TransferenciaService {
             select: {
                 id: true,
                 identificador: true,
+                emenda: true,
                 ano: true,
                 objeto: true,
                 esfera: true,
@@ -1296,6 +1339,7 @@ export class TransferenciaService {
                 id: r.id,
                 ano: r.ano,
                 identificador: r.identificador,
+                emenda: r.emenda,
                 valor: r.valor,
                 partido: r.parlamentar
                     .filter((e) => e.partido)
@@ -1396,8 +1440,10 @@ export class TransferenciaService {
             }
         }
 
-        // Adiciona busca por palavras-chave (vetores)
-        if (idsPalavrasChave !== undefined && idsPalavrasChave.length > 0) {
+        // Adiciona busca por palavras-chave (vetores).
+        // Inclui mesmo quando o array está vazio: { id: { in: [] } } não casa com nada,
+        // garantindo que a busca sem resultados não seja ignorada.
+        if (idsPalavrasChave !== undefined) {
             searchConditions.push({ id: { in: idsPalavrasChave } });
         }
 
@@ -1432,7 +1478,10 @@ export class TransferenciaService {
                 investimento: true,
                 pct_investimento: true,
                 emenda: true,
-                dotacao: true,
+                dotacoes: {
+                    where: { removido_em: null },
+                    select: { dotacao: true },
+                },
                 demanda: true,
                 banco_fim: true,
                 conta_fim: true,
@@ -1516,6 +1565,7 @@ export class TransferenciaService {
                         vinculos: {
                             where: { removido_em: null, invalidado_em: null },
                             select: {
+                                demanda_id: true,
                                 projeto: {
                                     select: {
                                         tipo: true,
@@ -1583,14 +1633,7 @@ export class TransferenciaService {
         });
         if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
-        // Gestor de Distribuição de Recurso não pode editar transferências,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
-        const isGestorTransferencia = user.hasSomeRoles([
-            'CadastroTransferencia.editar',
-            'CadastroTransferencia.administrador',
-        ]);
-        const pode_editar = !isGestorDistribuicao || isGestorTransferencia;
+        const pode_editar = user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']);
 
         return {
             id: row.id,
@@ -1613,7 +1656,7 @@ export class TransferenciaService {
             investimento: row.investimento,
             pct_investimento: row.pct_investimento,
             emenda: row.emenda,
-            dotacao: row.dotacao,
+            dotacoes: row.dotacoes.map((d) => d.dotacao),
             demanda: row.demanda,
             banco_fim: row.banco_fim,
             conta_fim: row.conta_fim,
@@ -1650,67 +1693,66 @@ export class TransferenciaService {
 
             modulos_vinculados: row.distribuicao_recursos
                 .flatMap((dr) => dr.vinculos)
-                .reduce((uniqueModules, v) => {
-                    if (v.projeto) {
-                        switch (v.projeto.tipo) {
-                            case TipoProjeto.PP:
-                                if (!uniqueModules.includes(ModuloSistema.Projetos)) {
-                                    uniqueModules.push(ModuloSistema.Projetos);
-                                }
-                                break;
-                            case TipoProjeto.MDO:
-                                if (!uniqueModules.includes(ModuloSistema.MDO)) {
-                                    uniqueModules.push(ModuloSistema.MDO);
-                                }
-                                break;
+                .reduce(
+                    (uniqueModules, v) => {
+                        if (v.demanda_id && !uniqueModules.includes('Demandas')) {
+                            uniqueModules.push('Demandas');
                         }
-                    }
 
-                    if (
-                        (v.meta && v.meta.pdm) ||
-                        (v.iniciativa && v.iniciativa.meta && v.iniciativa.meta.pdm) ||
-                        (v.atividade &&
-                            v.atividade.iniciativa &&
-                            v.atividade.iniciativa.meta &&
-                            v.atividade.iniciativa.meta.pdm)
-                    ) {
-                        const pdmTipo =
-                            v.meta?.pdm?.tipo ??
-                            v.iniciativa?.meta?.pdm?.tipo ??
-                            v.atividade?.iniciativa?.meta?.pdm?.tipo ??
-                            null;
-                        if (!pdmTipo) throw new InternalServerErrorException('PDM tipo não encontrado');
-
-                        switch (pdmTipo) {
-                            case TipoPdm.PDM:
-                                if (!uniqueModules.includes(ModuloSistema.ProgramaDeMetas)) {
-                                    uniqueModules.push(ModuloSistema.ProgramaDeMetas);
-                                }
-                                break;
-                            case TipoPdm.PS:
-                                if (!uniqueModules.includes(ModuloSistema.PlanoSetorial)) {
-                                    uniqueModules.push(ModuloSistema.PlanoSetorial);
-                                }
-                                break;
+                        if (v.projeto) {
+                            switch (v.projeto.tipo) {
+                                case TipoProjeto.PP:
+                                    if (!uniqueModules.includes(ModuloSistema.Projetos)) {
+                                        uniqueModules.push(ModuloSistema.Projetos);
+                                    }
+                                    break;
+                                case TipoProjeto.MDO:
+                                    if (!uniqueModules.includes(ModuloSistema.MDO)) {
+                                        uniqueModules.push(ModuloSistema.MDO);
+                                    }
+                                    break;
+                            }
                         }
-                    }
 
-                    return uniqueModules;
-                }, [] as ModuloSistema[]),
+                        if (
+                            (v.meta && v.meta.pdm) ||
+                            (v.iniciativa && v.iniciativa.meta && v.iniciativa.meta.pdm) ||
+                            (v.atividade &&
+                                v.atividade.iniciativa &&
+                                v.atividade.iniciativa.meta &&
+                                v.atividade.iniciativa.meta.pdm)
+                        ) {
+                            const pdmTipo =
+                                v.meta?.pdm?.tipo ??
+                                v.iniciativa?.meta?.pdm?.tipo ??
+                                v.atividade?.iniciativa?.meta?.pdm?.tipo ??
+                                null;
+                            if (!pdmTipo) throw new InternalServerErrorException('PDM tipo não encontrado');
+
+                            switch (pdmTipo) {
+                                case TipoPdm.PDM:
+                                    if (!uniqueModules.includes(ModuloSistema.ProgramaDeMetas)) {
+                                        uniqueModules.push(ModuloSistema.ProgramaDeMetas);
+                                    }
+                                    break;
+                                case TipoPdm.PS:
+                                    if (!uniqueModules.includes(ModuloSistema.PlanoSetorial)) {
+                                        uniqueModules.push(ModuloSistema.PlanoSetorial);
+                                    }
+                                    break;
+                            }
+                        }
+
+                        return uniqueModules;
+                    },
+                    [] as (ModuloSistema | string)[]
+                ),
             pode_editar: pode_editar,
         } satisfies TransferenciaDetailDto;
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover transferências,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para remover transferências.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.remover']) no controller.
         await this.prisma.transferencia.update({
             where: { id },
             data: {
@@ -1721,15 +1763,7 @@ export class TransferenciaService {
     }
 
     async append_document(transferenciaId: number, dto: CreateTransferenciaAnexoDto, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode adicionar documentos,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para adicionar documentos nesta transferência.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferenciaAnexo.inserir']) no controller.
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
 
         const documento = await this.prisma.$transaction(
@@ -1778,12 +1812,10 @@ export class TransferenciaService {
             },
         });
 
-        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']);
-        const isGestorTransferencia = user.hasSomeRoles([
+        const pode_editar: boolean = user.hasSomeRoles([
             'CadastroTransferencia.editar',
             'CadastroTransferencia.administrador',
         ]);
-        const pode_editar: boolean = !isGestorDistribuicao || isGestorTransferencia;
 
         const documentosRet: TransferenciaAnexoDto[] = documentosDB.map((d) => {
             const link = this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token;
@@ -1808,15 +1840,7 @@ export class TransferenciaService {
         dto: UpdateTransferenciaAnexoDto,
         user: PessoaFromJwt
     ) {
-        // Gestor de Distribuição de Recurso não pode atualizar documentos,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para atualizar documentos nesta transferência.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferenciaAnexo.editar']) no controller.
         this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
@@ -1843,15 +1867,7 @@ export class TransferenciaService {
     }
 
     async remove_document(transferenciaId: number, transferenciaAnexoId: number, user: PessoaFromJwt) {
-        // Gestor de Distribuição de Recurso não pode remover documentos,
-        // a menos que também seja Gestor de Transferências (que tem precedência)
-        if (
-            user.hasSomeRoles(['SMAE.gestor_distribuicao_recurso']) &&
-            !user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador'])
-        ) {
-            throw new HttpException('Você não tem permissão para remover documentos nesta transferência.', 403);
-        }
-
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferenciaAnexo.remover']) no controller.
         await this.prisma.transferenciaAnexo.updateMany({
             where: { transferencia_id: transferenciaId, removido_em: null, id: transferenciaAnexoId },
             data: {
@@ -2219,5 +2235,13 @@ export class TransferenciaService {
                 error
             );
         }
+    }
+
+    async rebuildAllVetoresBusca(): Promise<void> {
+        await this.prisma.$executeRaw`
+            UPDATE transferencia
+            SET vetores_busca = f_rebuild_transferencia_tsvector(id)
+            WHERE removido_em IS NULL;
+        `;
     }
 }

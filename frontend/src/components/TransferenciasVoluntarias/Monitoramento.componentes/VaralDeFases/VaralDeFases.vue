@@ -39,7 +39,7 @@ async function iniciarFase() {
 
   await workflowAndamentoStore.iniciarFase(
     proximaFase.value.fase.id,
-    route.params.transferenciaId,
+    Number(route.params.transferenciaId),
   );
 
   workflowAndamentoStore.buscar();
@@ -83,11 +83,12 @@ onMounted(() => {
       </template>
 
       <template
-        v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
+        v-if="inícioDeFasePermitido
+          && temPermissãoPara('CadastroWorkflows.editar')
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         #botao
       >
         <button
-
           type="button"
           class="btn"
           @click="iniciarFase"

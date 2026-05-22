@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CicloFisico, Pdm, Prisma } from '@prisma/client';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
@@ -15,7 +15,6 @@ import {
     RetMonitoramentoMensal,
 } from './entities/monitoramento-mensal.entity';
 import { CsvWriterOptions, WriteCsvToBuffer, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 class QualiCsv {

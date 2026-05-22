@@ -5,7 +5,7 @@ import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
-import { SeriePreviaValorCategoricaComposta, SeriesAgrupadas, SerieValorNomimal, VariavelItemDto } from '../../variavel/entities/variavel.entity';
+import { SeriePreviaValorCategoricaComposta, SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { ValorBaseFilhaDto, VariaveisPeriodosDto } from './create-variavel.dto';
 import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
 

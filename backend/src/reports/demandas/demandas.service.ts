@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Date2YMD } from 'src/common/date2ymd';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -56,6 +56,14 @@ export class DemandasService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
     async asJSON(dto: CreateRelDemandasDto, user: PessoaFromJwt | null = null): Promise<DemandasRelatorioDto> {
+        // Defesa em profundidade: o endpoint síncrono POST /relatorio/demandas não passa
+        // por saveReport, então a coerção de orgao_id para o perfil restrito de
+        // Gestor(a) de Distribuição de Recurso precisa ser repetida aqui.
+        if (user?.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+            dto.orgao_id = user.orgao_id;
+        }
+
         const whereCond = await this.buildFilteredWhereStr(dto, user);
         const out_demandas: RelDemandasDto[] = [];
         const out_enderecos: RelDemandasEnderecosDto[] = [];

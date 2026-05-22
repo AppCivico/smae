@@ -3,7 +3,7 @@ import { ValidationOptions, registerDecorator, ValidationArguments } from 'class
 import { valid as gjv_valid } from 'geojson-validation';
 
 export function IsGeoJSON(validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'isGeoJSON',
             target: object.constructor,

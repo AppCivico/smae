@@ -7,6 +7,7 @@ import {
 import { useRoute } from 'vue-router';
 
 import { dotação as schema } from '@/consts/formSchemas';
+import deduplicarPorChave from '@/helpers/deduplicarPorChave.ts';
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
@@ -140,6 +141,40 @@ const valorDoComplemento = computed(() => {
 const dotaçãoCheia = computed(() => (valorDoComplemento.value
   ? `${valorDaDotação.value}.${valorDoComplemento.value}`
   : valorDaDotação.value));
+
+const dadosDoAno = computed(() => {
+  const s = DotaçãoSegmentos.value?.[ano];
+  const orgaosDiponiveis = deduplicarPorChave(s?.orgaos, 'codigo');
+  const unidadesDisponiveis = deduplicarPorChave(
+    // eslint-disable-next-line eqeqeq
+    s?.unidades?.filter((x) => x.cod_orgao == órgão.value),
+    (x) => `${x.cod_orgao}/${x.codigo}`,
+  );
+
+  const codigoComDescricao = (list, codigo) => {
+    // eslint-disable-next-line eqeqeq
+    const item = list?.find((x) => x.codigo == codigo);
+    return item ? `${item.codigo} - ${item.descricao}` : '';
+  };
+
+  return {
+    atualizado_em: s?.atualizado_em,
+    orgaosDiponiveis,
+    unidadesDisponiveis,
+    funcoesDisponiveis: s?.funcoes ?? [],
+    subFuncoesDisponiveis: s?.subfuncoes ?? [],
+    programasDisponiveis: s?.programas ?? [],
+    projetosAtividadesDisponiveis: s?.projetos_atividades ?? [],
+    fontesDisponiveis: s?.fonte_recursos ?? [],
+    órgão: codigoComDescricao(orgaosDiponiveis, órgão.value),
+    unidade: codigoComDescricao(unidadesDisponiveis, unidade.value),
+    função: codigoComDescricao(s?.funcoes, função.value),
+    subFunção: codigoComDescricao(s?.subfuncoes, subFunção.value),
+    programa: codigoComDescricao(s?.programas, programa.value),
+    projetoAtividade: codigoComDescricao(s?.projetos_atividades, projetoAtividade.value?.replace('.', '')),
+    fonte: codigoComDescricao(s?.fonte_recursos, fonte.value),
+  };
+});
 
 const dotaçãoEComplemento = computed({
   get: () => props.modelValue,
@@ -316,8 +351,10 @@ watch(valorDoComplemento, (novoValor) => {
       </div>
     </div>
   </div>
-  <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
-    <label class="label mb1">Dotação orçamentária - por segmento</label>
+  <template v-if="dadosDoAno.atualizado_em">
+    <legend class="label mb1">
+      Dotação orçamentária - por segmento
+    </legend>
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <label
@@ -331,7 +368,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="inputtext light mb1"
         >
           <option
-            v-for="i in DotaçãoSegmentos[ano].orgaos"
+            v-for="i in dadosDoAno.orgaosDiponiveis"
             :key="i.codigo"
             :value="i.codigo"
           >
@@ -342,9 +379,7 @@ watch(valorDoComplemento, (novoValor) => {
           v-if="órgão"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == órgão))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.órgão }}
         </div>
       </div>
       <div class="f1">
@@ -358,30 +393,25 @@ watch(valorDoComplemento, (novoValor) => {
           name="unidade"
           class="inputtext light mb1"
         >
-          {{ (orgs = DotaçãoSegmentos[ano].unidades.filter(x => x.cod_orgao == órgão))
-            ? ''
-            : '' }}
           <option
-            v-if="!orgs.length"
+            v-if="!dadosDoAno.unidadesDisponiveis.length"
             value="00"
           >
             00 - Nenhum encontrado
           </option>
           <option
-            v-for="i in orgs"
+            v-for="i in dadosDoAno.unidadesDisponiveis"
             :key="i.codigo"
             :value="i.codigo"
           >
-            {{ i.codigo + ' - ' + i.descricao }}
+            {{ i.codigo }} - {{ i.descricao }}
           </option>
         </select>
         <div
           v-if="unidade"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == unidade))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.unidade }}
         </div>
       </div>
       <div class="f1">
@@ -396,7 +426,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="inputtext light mb1"
         >
           <option
-            v-for="i in DotaçãoSegmentos[ano].funcoes"
+            v-for="i in dadosDoAno.funcoesDisponiveis"
             :key="i.codigo"
             :value="i.codigo"
           >
@@ -407,9 +437,7 @@ watch(valorDoComplemento, (novoValor) => {
           v-if="função"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == função))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.função }}
         </div>
       </div>
       <div class="f1">
@@ -424,7 +452,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="inputtext light mb1"
         >
           <option
-            v-for="i in DotaçãoSegmentos[ano].subfuncoes"
+            v-for="i in dadosDoAno.subFuncoesDisponiveis"
             :key="i.codigo"
             :value="i.codigo"
           >
@@ -435,9 +463,7 @@ watch(valorDoComplemento, (novoValor) => {
           v-if="subFunção"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == subFunção))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.subFunção }}
         </div>
       </div>
       <div class="f1">
@@ -452,7 +478,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="inputtext light mb1"
         >
           <option
-            v-for="i in DotaçãoSegmentos[ano].programas"
+            v-for="i in dadosDoAno.programasDisponiveis"
             :key="i.codigo"
             :value="i.codigo"
           >
@@ -463,9 +489,7 @@ watch(valorDoComplemento, (novoValor) => {
           v-if="programa"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == programa))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.programa }}
         </div>
       </div>
     </div>
@@ -483,7 +507,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="inputtext light mb1"
         >
           <option
-            v-for="i in DotaçãoSegmentos[ano].projetos_atividades"
+            v-for="i in dadosDoAno.projetosAtividadesDisponiveis"
             :key="i.codigo"
             :value="i.codigo.charAt(0) + '.' + i.codigo.slice(1)"
           >
@@ -494,10 +518,7 @@ watch(valorDoComplemento, (novoValor) => {
           v-if="projetoAtividade"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].projetos_atividades
-            .find(x => x.codigo == projetoAtividade?.replace('.', '')))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.projetoAtividade }}
         </div>
       </div>
       <div class="f1">
@@ -528,7 +549,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="inputtext light mb1"
         >
           <option
-            v-for="i in DotaçãoSegmentos[ano].fonte_recursos"
+            v-for="i in dadosDoAno.fontesDisponiveis"
             :key="i.codigo"
             :value="i.codigo"
           >
@@ -539,9 +560,7 @@ watch(valorDoComplemento, (novoValor) => {
           v-if="fonte"
           class="t12 tc500"
         >
-          {{ (it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == fonte))
-            ? `${it.codigo} - ${it.descricao}`
-            : '' }}
+          {{ dadosDoAno.fonte }}
         </div>
       </div>
     </div>

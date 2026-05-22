@@ -7,10 +7,11 @@ import {
 import { useRouter } from 'vue-router';
 
 import { Alert, EditModal, SideBar } from '@/components';
+import SmaeAvatar from '@/components/SmaeAvatar.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 
-import BarraDePendência from './components/BarraDeChamadaPendente.vue';
+import BarraDeChamadaPendente from './components/BarraDeChamadaPendente.vue';
 import BotaoWiki from './components/BotaoWiki.vue';
 import useFaixaConstrucao from './composables/useEnvironmentBanner';
 import useRotaAtual from './composables/useRotaAtual';
@@ -74,7 +75,7 @@ onErrorCaptured((err) => {
     v-if="corDaFaixa"
   >
     .dev-environment:root body::after {
-    background-color: v-bind(corDaFaixa) !important;
+    background-color: {{ corDaFaixa }} !important;
     }
   </component>
 
@@ -99,7 +100,7 @@ onErrorCaptured((err) => {
       </button>
     </div>
   </ErrorComponent>
-  <BarraDePendência />
+  <BarraDeChamadaPendente />
   <!-- vamos avançar até essa chave ser desnecessária para o sistema todo -->
   <router-view v-if="$route.meta.rotaPrescindeDeChave ?? gblHabilitarBeta" />
   <router-view
@@ -114,7 +115,21 @@ onErrorCaptured((err) => {
   <div id="modais" />
 
   <BotaoWiki />
+  <SmaeAvatar
+    v-if="corDaFaixa"
+    v-ScrollLockDebug
+    class="avatar-flutuante"
+    :name="`${authStore.user?.id}+${authStore.user?.nome_exibicao}`"
+    :nome-exibicao="authStore.user?.nome_exibicao"
+  />
 </template>
 <style lang="less">
 @import url("@/_less/style.less");
+.avatar-flutuante {
+  position: fixed;
+  top: 0;
+  right: 3rem;
+  z-index: 10000;
+  width: auto;
+}
 </style>

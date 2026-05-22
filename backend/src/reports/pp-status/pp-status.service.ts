@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
@@ -8,7 +7,6 @@ import { DefaultCsvOptions, DefaultTransforms, FileOutput, Path2FileName, Report
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
 import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 type ProjetoStatusDbRow = {
     id: number;

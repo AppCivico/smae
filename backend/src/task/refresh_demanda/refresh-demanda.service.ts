@@ -77,10 +77,15 @@ export class RefreshDemandaService implements TaskableService {
                 return { results };
             }
 
+            this.logger.log('Refresh: geocamadas');
             results.geocamadas = await this.refreshGeocamadas(params.force_all || params.force_geocamadas || false);
+            this.logger.log('Refresh: geopoints');
             results.geopoints = await this.refreshGeopoints();
+            this.logger.log('Refresh: summary');
             results.summary = await this.refreshSummary();
+            this.logger.log('Refresh: full');
             results.full = await this.refreshFull();
+            this.logger.log('Refresh: individual');
             results.individual = await this.refreshAllIndividualDemandas();
 
             return { results };
@@ -196,11 +201,32 @@ export class RefreshDemandaService implements TaskableService {
 
     private async refreshAllIndividualDemandas(): Promise<RefreshResult> {
         const demandas = await this.loadPublishedDemandasWithFiles();
+        const publishedIds = new Set(demandas.map((d) => d.id));
         let count = 0;
 
         for (const demanda of demandas) {
             await this.refreshIndividualDemanda(demanda.id, demanda);
             count++;
+        }
+
+        const cachedKeys = await this.prisma.cacheKV.findMany({
+            where: { chave: { startsWith: 'demandas:' } },
+            select: { chave: true },
+        });
+
+        let removed = 0;
+        for (const { chave } of cachedKeys) {
+            const idStr = chave.substring('demandas:'.length);
+            const id = Number(idStr);
+            if (!Number.isInteger(id) || idStr !== id.toString()) continue;
+            if (!publishedIds.has(id)) {
+                await this.cacheKvService.setDeleted(chave);
+                removed++;
+            }
+        }
+
+        if (removed > 0) {
+            this.logger.log(`Removidas ${removed} entradas de cache de demandas não-publicadas`);
         }
 
         return { success: true, count };

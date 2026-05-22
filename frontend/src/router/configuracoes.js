@@ -825,12 +825,14 @@ export default [
                 component: FluxosCriarEditar,
                 meta: {
                   título: 'Novo fluxo',
+                  limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
                 },
               },
               {
                 path: ':fluxoId',
                 name: 'fluxosEditar',
                 component: FluxosCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   ...{
@@ -839,6 +841,7 @@ export default [
                 }),
                 meta: {
                   título: 'Editar fluxo',
+                  limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
                 },
               },
             ],
@@ -959,6 +962,7 @@ export default [
                 path: ':tarefasId',
                 name: 'workflow.TarefasEditar',
                 component: TarefasCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   ...{
@@ -1003,6 +1007,7 @@ export default [
                 path: ':situacaoId',
                 name: 'situacaoEditar',
                 component: SituacaoCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   ...{
@@ -1023,6 +1028,7 @@ export default [
             meta: {
               título: 'Status de Distribuição',
               rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroDistribuicaoStatus.',
             },
             children: [
               {
@@ -1045,6 +1051,7 @@ export default [
                 path: ':statusDistribuicaoId',
                 name: 'statusDistribuicaoEditar',
                 component: StatusDistribuicaoCriarEditar,
+                // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
                   // eslint-disable-next-line max-len
@@ -1201,6 +1208,15 @@ export default [
                 component: () => import('@/views/envioDeEmails/EnvioDeEmailsLista.vue'),
                 meta: {
                   título: 'Envio de E-mails',
+                },
+              },
+              {
+                name: 'envioDeEmails.detalhes',
+                path: 'detalhes',
+                component: () => import('@/views/envioDeEmails/EnvioDeEmailsDetalhes.vue'),
+                meta: {
+                  título: 'Detalhes do E-mail',
+                  rotaDeEscape: 'envioDeEmails.listar',
                 },
               },
             ],

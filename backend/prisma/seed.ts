@@ -15,6 +15,7 @@ import {
     CONST_PERFIL_CASA_CIVIL,
     CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
     CONST_PERFIL_COORDENADOR_EQUIPE,
+    CONST_PERFIL_GESTOR_DIST_RECURSO,
     CONST_PERFIL_GESTOR_OBRA,
     CONST_PERFIL_PARTICIPANTE_EQUIPE,
     CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
@@ -115,6 +116,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroBancada: ['Bancadas', 'CasaCivil'],
     CadastroParlamentar: ['Parlamentares', 'CasaCivil'],
     CadastroTransferencia: ['Transferências', 'CasaCivil'],
+    CadastroDistribuicaoSolicitacaoAjuste: ['Solicitações de Ajuste de Distribuição de Recurso', 'CasaCivil'],
     CadastroWorkflow: ['Workflows', 'CasaCivil'],
     ReportsCasaCivil: ['Relatórios de Transferências Voluntárias', 'CasaCivil'],
 
@@ -134,6 +136,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
     GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
+    CadastroDistribuicaoStatus: ['Status de Distribuição de Recurso', 'CasaCivil'],
     SMAE_BETA_FEATURES: ['Beta', ['ProgramaDeMetas']],
 
     CadastroDemandaConfig: ['Configuração de Demandas', 'CasaCivil'],
@@ -189,6 +192,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferenciaTipo.inserir', 'Inserir Transferência Tipo'],
         ['CadastroTransferenciaTipo.editar', 'Editar Transferência Tipo'],
         ['CadastroTransferenciaTipo.remover', 'Remover Transferência Tipo'],
+    ],
+
+    CadastroDistribuicaoStatus: [
+        ['CadastroDistribuicaoStatus.inserir', 'Inserir Status de Distribuição de Recurso'],
+        ['CadastroDistribuicaoStatus.editar', 'Editar Status de Distribuição de Recurso'],
+        ['CadastroDistribuicaoStatus.listar', 'Listar Status de Distribuição de Recurso'],
+        ['CadastroDistribuicaoStatus.remover', 'Remover Status de Distribuição de Recurso'],
     ],
 
     ModalidadeContratacao: [
@@ -535,7 +545,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroTransferencia: [
         ['CadastroTransferencia.administrador', 'Inserir, Listar e remover transferência de qualquer órgão'],
-        ['CadastroTransferencia.editar', 'Editar Transferência'],
+        ['CadastroTransferencia.editar', 'Editar Transferência'], // NUNCA adicione esse priv no CONST_PERFIL_GESTOR_DIST_RECURSO
         ['CadastroTransferencia.listar', 'Listar Transferência dos órgãos ao qual pertence'],
         ['CadastroTransferencia.inserir', 'Inserir Transferência'],
         ['CadastroTransferencia.remover', 'Remover Transferência'],
@@ -549,6 +559,19 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferenciaAnexo.editar', 'Editar Anexo de Transferência'],
         ['CadastroTransferenciaAnexo.listar', 'Listar Anexos de Transferência'],
         ['CadastroTransferenciaAnexo.remover', 'Remover Anexo de Transferência'],
+    ],
+    CadastroDistribuicaoSolicitacaoAjuste: [
+        [
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+            'Solicitar ajuste em distribuição de recurso do próprio órgão',
+        ],
+        ['SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar', 'Editar solicitação de ajuste pendente'],
+        ['SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar', 'Listar solicitações de ajuste'],
+        ['SMAE.CadastroDistribuicaoSolicitacaoAjuste.remover', 'Remover solicitação de ajuste pendente'],
+        [
+            'CadastroDistribuicaoSolicitacaoAjuste.administrador',
+            'Gerir (aprovar/recusar) solicitações de ajuste de distribuição',
+        ],
     ],
     CadastroWorkflow: [
         ['CadastroWorkflows.editar', 'Editar Workflows'],
@@ -587,6 +610,14 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ReportsCasaCivil: [
         ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
+        [
+            'Reports.executar.CasaCivil:Demandas',
+            'Executar relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
+        ],
+        [
+            'Reports.remover.CasaCivil:Demandas',
+            'Remover relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
+        ],
     ],
     PerfilAcesso: [['PerfilAcesso.administrador', false]],
     CadastroPainelExternoRegra: [['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo']],
@@ -597,7 +628,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
-        ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.AtualizacaoEmLote', 'Acesso a ferramenta de atualização em lote'],
         ['SMAE.gerente_de_projeto', 'Editar os responsáveis de projetos após a fase de planejamento'],
     ],
@@ -1254,6 +1284,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferenciaAnexo.listar',
             'CadastroTransferenciaAnexo.remover',
 
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar',
+            'CadastroDistribuicaoSolicitacaoAjuste.administrador',
+
             'CadastroDemandaConfig.editar',
             'CadastroDemandaConfig.inserir',
             'CadastroDemandaConfig.remover',
@@ -1269,15 +1302,17 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroNota.editar',
             'CadastroNota.remover',
             'CadastroNota.listar',
+
+            'CadastroDistribuicaoStatus.inserir',
+            'CadastroDistribuicaoStatus.editar',
+            'CadastroDistribuicaoStatus.listar',
+            'CadastroDistribuicaoStatus.remover',
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor(a) de Distribuição de Recurso', ['Gestor de Distribuição de Recurso']),
+        nome: atualizarNomePerfil(CONST_PERFIL_GESTOR_DIST_RECURSO, ['Gestor de Distribuição de Recurso']),
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
-            // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
-            'SMAE.gestor_distribuicao_recurso',
-
             'CadastroAreaTematica.listar',
             'CadastroDemandaConfig.listar',
 
@@ -1286,6 +1321,24 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemanda.inserir',
             'CadastroDemanda.editar',
             'CadastroParlamentar.listar',
+            'CadastroWorkflows.listar',
+
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.editar',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar',
+            'SMAE.CadastroDistribuicaoSolicitacaoAjuste.remover',
+
+            'Reports.executar.CasaCivil:Demandas',
+            'Reports.remover.CasaCivil:Demandas',
+
+            'CadastroTransferencia.listar',
+            'AndamentoWorkflow.listar',
+            'CadastroCronogramaTransferencia.listar',
+
+            'CadastroDistribuicaoStatus.inserir',
+            'CadastroDistribuicaoStatus.editar',
+            'CadastroDistribuicaoStatus.listar',
+            'CadastroDistribuicaoStatus.remover',
         ],
     },
     {
@@ -1425,6 +1478,7 @@ async function main() {
 
             if (!locked[0].locked) return;
 
+            await remover_feature_flags_obsoletas();
             await criar_emaildb_config();
             await criar_texto_config();
             await atualizar_modulos_e_privilegios();
@@ -1625,6 +1679,14 @@ async function criar_texto_config() {
         create: {
             bemvindo_email: 'Ao acessar o SMAE, Você está ciente e autoriza...',
             tos: '...O acesso ao SMAE indica ciência e concordância com os termos acima',
+        },
+    });
+}
+
+async function remover_feature_flags_obsoletas() {
+    await prisma.smaeConfig.deleteMany({
+        where: {
+            key: { in: ['LIBERA_SPRINT_30', 'LIBERA_SPRINT_31'] },
         },
     });
 }

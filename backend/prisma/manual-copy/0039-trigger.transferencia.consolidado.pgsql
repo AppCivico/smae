@@ -79,6 +79,8 @@ WHEN (
     (OLD.percentual_concluido IS DISTINCT FROM NEW.percentual_concluido)
     OR
     (OLD.n_filhos_imediatos IS DISTINCT FROM NEW.n_filhos_imediatos)
+    OR
+    (OLD.fase_atual_workflow IS DISTINCT FROM NEW.fase_atual_workflow)
 )
 EXECUTE FUNCTION f_tarefa_refresh_transferencia_trigger();
 

@@ -8,11 +8,12 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
+import { DemandaFinalidade, DemandaSituacao, DemandaStatus, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Date2YMD } from 'src/common/date2ymd';
 import { AnyPageTokenJwtBody, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { HtmlSanitizer } from 'src/common/html-sanitizer';
 import { Object2Hash } from 'src/common/object2hash';
 import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
@@ -88,8 +89,8 @@ export class DemandaService {
                 // Valida acesso ao órgão
                 await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
 
-                // Valida valor contra DemandaConfig
-                await this.validateValor(prismaTxn, dto.valor);
+                // Valida valor contra DemandaConfig (limites por finalidade)
+                await this.validateValor(prismaTxn, dto.valor, dto.finalidade);
 
                 // Valida se área temática existe
                 await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
@@ -255,7 +256,7 @@ export class DemandaService {
             await this.validateOrgaoAccess(prismaTxn, dto.orgao_id, user);
         }
         if (dto.valor) {
-            await this.validateValor(prismaTxn, dto.valor);
+            await this.validateValor(prismaTxn, dto.valor, dto.finalidade ?? existing.finalidade);
         }
         if (dto.area_tematica_id) {
             await this.validateAreaTematica(prismaTxn, dto.area_tematica_id);
@@ -995,6 +996,8 @@ export class DemandaService {
             updateData.dias_em_validacao = { increment: days };
         } else if (fromStatus === DemandaStatus.Publicado) {
             updateData.dias_em_publicado = { increment: days };
+        } else if (fromStatus === DemandaStatus.Encerrado) {
+            updateData.dias_em_encerrado = { increment: days };
         }
 
         // Define timestamp para novo status se for primeira vez
@@ -1115,7 +1118,11 @@ export class DemandaService {
         }
     }
 
-    private async validateValor(prisma: Prisma.TransactionClient, valor: string): Promise<void> {
+    private async validateValor(
+        prisma: Prisma.TransactionClient,
+        valor: string,
+        finalidade: DemandaFinalidade
+    ): Promise<void> {
         const config = await prisma.demandaConfig.findFirst({
             where: {
                 ativo: true,
@@ -1127,17 +1134,26 @@ export class DemandaService {
             return; // Sem config ativa, pula validação
         }
 
+        const valorMinimo =
+            finalidade === DemandaFinalidade.Investimento
+                ? config.valor_minimo_investimento
+                : config.valor_minimo_custeio;
+        const valorMaximo =
+            finalidade === DemandaFinalidade.Investimento
+                ? config.valor_maximo_investimento
+                : config.valor_maximo_custeio;
+
         const valorNum = parseFloat(valor);
 
-        if (config.bloqueio_valor_min && valorNum < parseFloat(config.valor_minimo.toString())) {
+        if (config.bloqueio_valor_min && valorNum < parseFloat(valorMinimo.toString())) {
             throw new BadRequestException(
-                `Valor não pode ser menor que o mínimo configurado: R$ ${config.valor_minimo}`
+                `Valor não pode ser menor que o mínimo configurado para ${finalidade}: R$ ${valorMinimo}`
             );
         }
 
-        if (config.bloqueio_valor_max && valorNum > parseFloat(config.valor_maximo.toString())) {
+        if (config.bloqueio_valor_max && valorNum > parseFloat(valorMaximo.toString())) {
             throw new BadRequestException(
-                `Valor não pode ser maior que o máximo configurado: R$ ${config.valor_maximo}`
+                `Valor não pode ser maior que o máximo configurado para ${finalidade}: R$ ${valorMaximo}`
             );
         }
     }
@@ -1340,7 +1356,7 @@ export class DemandaService {
         return result;
     }
 
-    private async handlePostStatusChange(
+    async handlePostStatusChange(
         demandaId: number,
         fromStatus: DemandaStatus,
         toStatus: DemandaStatus,
@@ -1369,21 +1385,29 @@ export class DemandaService {
     async enviarEmailParaParlamentares(dto: EnviarEmailParlamentaresDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const result = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // Verifica limite diário global (timezone America/Sao_Paulo)
-            const hoje = await prismaTxn.$queryRaw<[{ inicio: Date; fim: Date }]>`
-                SELECT
-                    (now() AT TIME ZONE 'America/Sao_Paulo')::date::timestamptz AS inicio,
-                    ((now() AT TIME ZONE 'America/Sao_Paulo')::date + interval '1 day')::timestamptz AS fim
-            `;
-            const envioHoje = await prismaTxn.demandaEmailParlamentar.findFirst({
-                where: {
-                    criado_em: {
-                        gte: hoje[0].inicio,
-                        lt: hoje[0].fim,
+            // Em homologação, o limite pode ser desabilitado via config
+            const limiteDesabilitado = await this.smaeConfigService.getConfigBooleanWithDefault(
+                'DISABLE_LIMITE_DIARIO_EMAIL_PARLAMENTAR',
+                false
+            );
+
+            if (!limiteDesabilitado) {
+                const hoje = await prismaTxn.$queryRaw<[{ inicio: Date; fim: Date }]>`
+                    SELECT
+                        (now() AT TIME ZONE 'America/Sao_Paulo')::date::timestamptz AS inicio,
+                        ((now() AT TIME ZONE 'America/Sao_Paulo')::date + interval '1 day')::timestamptz AS fim
+                `;
+                const envioHoje = await prismaTxn.demandaEmailParlamentar.findFirst({
+                    where: {
+                        criado_em: {
+                            gte: hoje[0].inicio,
+                            lt: hoje[0].fim,
+                        },
                     },
-                },
-            });
-            if (envioHoje) {
-                throw new HttpException('Já foi realizado um envio de e-mail para parlamentares hoje', 400);
+                });
+                if (envioHoje) {
+                    throw new HttpException('Já foi realizado um envio de e-mail para parlamentares hoje', 400);
+                }
             }
 
             // Busca todas as eleições vigentes
@@ -1448,7 +1472,8 @@ export class DemandaService {
 
             const corpoFallback = `À Sua Excelência,\n\nReafirmo o interesse da Prefeitura de São Paulo em fortalecer a parceria entre V.Exa e o nosso município através da execução de Emendas Parlamentares.\n\nAproveito para encaminhar propostas de demandas do nosso município, que poderão ensejar a formulação de Emendas Parlamentares à LOA. As propostas de demandas estão disponíveis através do site ${linkPortfolio}\n\nRessalto a possibilidade da destinação de outras Emendas de acordo com o vosso trabalho no interesse do nosso município.\n\nDestaco também que o quanto antes for apresentado interesse em indicar emendas para o município de São Paulo, maior a exequibilidade das demandas.\n\nNosso apreço e gratidão pela atenção sempre dispensada a esta municipalidade.\n\nAtenciosamente,\nSERI – ${orgao.descricao}`;
 
-            const corpoFinal = dto.corpo || corpoFallback;
+            const corpoSanitizado = HtmlSanitizer(dto.corpo);
+            const corpoFinal = corpoSanitizado || corpoFallback;
 
             // Cria registro do lote de envio
             const lote = await prismaTxn.demandaEmailParlamentar.create({
@@ -1475,7 +1500,7 @@ export class DemandaService {
                         variables: {
                             cargo_parlamentar: cargoTexto,
                             nome_parlamentar: mandato.parlamentar.nome,
-                            corpo: dto.corpo,
+                            corpo: corpoSanitizado,
                             link_portfolio: linkPortfolio,
                             orgao_nome: orgao.descricao,
                         },
@@ -1547,6 +1572,7 @@ export class DemandaService {
                     id: true,
                     assunto: true,
                     nomes_parlamentares: true,
+                    corpo: true,
                     criado_em: true,
                     criador: {
                         select: {
@@ -1573,9 +1599,10 @@ export class DemandaService {
         const paginas = Math.ceil(total_registros / ipp);
 
         return {
-            linhas: linhas.map((l) => ({
+            linhas: linhas.map((l, index) => ({
                 id: l.id,
                 assunto: l.assunto,
+                corpo: index === 0 ? l.corpo : null,
                 nomes_parlamentares: l.nomes_parlamentares,
                 criado_por: {
                     id: l.criador.id,

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaginatedDto } from '../common/dto/paginated.dto';
 import {
@@ -8,7 +8,6 @@ import {
     TransfereGovTransferenciasDto,
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
-import { TransfereGovSyncDto } from '../sysadmin/dto/transfere-gov/transfere-gov-sync.dto';
 import { TransfereGovSyncService } from './transfere-gov-sync.service';
 import { ApiPaginatedResponse } from '../auth/decorators/paginated.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';

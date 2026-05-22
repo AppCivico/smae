@@ -236,7 +236,8 @@ const colunas = computed(() => {
         </SmaeLink>
 
         <button
-          v-if="!!temPermissãoPara('CadastroVinculo.remover')"
+          v-if="!!temPermissãoPara('CadastroVinculo.remover')
+            && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
           class="like-a__text"
           type="button"
           aria-label="Remover item"
@@ -268,23 +269,25 @@ const colunas = computed(() => {
               </dd>
             </dl>
 
-            <dl class="flex column g05">
-              <dt class="t12 uc w700 tc300">
-                Órgão
-              </dt>
-              <dd>
-                {{ obterObjetoVinculado(linha)?.orgao?.sigla || '-' }}
-              </dd>
-            </dl>
+            <template v-if="obterObjetoVinculado(linha)">
+              <dl class="flex column g05">
+                <dt class="t12 uc w700 tc300">
+                  Órgão
+                </dt>
+                <dd>
+                  {{ obterObjetoVinculado(linha)?.orgao?.sigla || '-' }}
+                </dd>
+              </dl>
 
-            <dl class="flex column g05">
-              <dt class="t12 uc w700 tc300">
-                Status
-              </dt>
-              <dd>
-                {{ obterStatusTraduzido(linha) }}
-              </dd>
-            </dl>
+              <dl class="flex column g05">
+                <dt class="t12 uc w700 tc300">
+                  Status
+                </dt>
+                <dd>
+                  {{ obterStatusTraduzido(linha) }}
+                </dd>
+              </dl>
+            </template>
 
             <dl
               v-if="linha.detalhes && linha.projeto?.tipo === 'MDO'"

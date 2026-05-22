@@ -1,7 +1,6 @@
 import { DemandaFinalidade } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-    arrayMinSize,
     ArrayMinSize,
     IsArray,
     IsBoolean,

@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     forwardRef,
     HttpException,
     Inject,
@@ -9,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoPdm, TipoRelatorio } from '@prisma/client';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { fork } from 'child_process';
 import { validate } from 'class-validator';
 import * as crypto from 'crypto';
@@ -50,6 +52,90 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
+
+// Mapa de propriedade fonte → sistema. Fonte de verdade para "esta fonte pertence a qual módulo?".
+// Algumas fontes (PS*) são compartilhadas entre PlanoSetorial e ProgramaDeMetas — por isso o
+// valor é uma lista, não um único módulo.
+const FONTES_POR_SISTEMA: Record<ModuloSistema, readonly FonteRelatorio[]> = {
+    SMAE: [],
+    PDM: [
+        FonteRelatorio.Orcamento,
+        FonteRelatorio.PrevisaoCusto,
+        FonteRelatorio.Indicadores,
+        FonteRelatorio.MonitoramentoMensal,
+    ],
+    PlanoSetorial: [
+        FonteRelatorio.PSOrcamento,
+        FonteRelatorio.PSPrevisaoCusto,
+        FonteRelatorio.PSIndicadores,
+        FonteRelatorio.PSMonitoramentoMensal,
+    ],
+    ProgramaDeMetas: [
+        FonteRelatorio.PSOrcamento,
+        FonteRelatorio.PSPrevisaoCusto,
+        FonteRelatorio.PSIndicadores,
+        FonteRelatorio.PSMonitoramentoMensal,
+    ],
+    Projetos: [
+        FonteRelatorio.Projeto,
+        FonteRelatorio.Projetos,
+        FonteRelatorio.ProjetoStatus,
+        FonteRelatorio.ProjetoOrcamento,
+        FonteRelatorio.ProjetoPrevisaoCusto,
+    ],
+    MDO: [
+        FonteRelatorio.Obras,
+        FonteRelatorio.ObraStatus,
+        FonteRelatorio.ObrasOrcamento,
+        FonteRelatorio.ObrasPrevisaoCusto,
+    ],
+    CasaCivil: [
+        FonteRelatorio.Parlamentares,
+        FonteRelatorio.TribunalDeContas,
+        FonteRelatorio.Transferencias,
+        FonteRelatorio.AtvPendentes,
+        FonteRelatorio.Demandas,
+    ],
+};
+
+// Mapas de discriminador da fonte: forçam `parametros.tipo_projeto`/`tipo_pdm` antes do report
+// rodar, já que algumas fontes (Orcamento, PSOrcamento, ...) são compartilhadas entre sistemas.
+const FONTES_TIPO_PROJETO: Partial<Record<FonteRelatorio, 'MDO' | 'PP'>> = {
+    [FonteRelatorio.Obras]: 'MDO',
+    [FonteRelatorio.ObraStatus]: 'MDO',
+    [FonteRelatorio.ObrasOrcamento]: 'MDO',
+    [FonteRelatorio.ObrasPrevisaoCusto]: 'MDO',
+    [FonteRelatorio.Projeto]: 'PP',
+    [FonteRelatorio.Projetos]: 'PP',
+    [FonteRelatorio.ProjetoOrcamento]: 'PP',
+    [FonteRelatorio.ProjetoPrevisaoCusto]: 'PP',
+};
+const FONTES_TIPO_PDM_FIXO: Partial<Record<FonteRelatorio, 'PDM'>> = {
+    [FonteRelatorio.Orcamento]: 'PDM',
+    [FonteRelatorio.PrevisaoCusto]: 'PDM',
+    [FonteRelatorio.Indicadores]: 'PDM',
+};
+const FONTES_TIPO_PDM_CALC: readonly FonteRelatorio[] = [
+    FonteRelatorio.PSOrcamento,
+    FonteRelatorio.PSPrevisaoCusto,
+    FonteRelatorio.PSIndicadores,
+    FonteRelatorio.PSMonitoramentoMensal,
+];
+
+// Convenção de privilégio escopado: `Reports.{action}.{sistema}:{fonte}` libera apenas aquela
+// fonte específica; o privilégio sem `:` (ex.: `Reports.executar.CasaCivil`) libera todas as
+// fontes do sistema.
+function hasReportPriv(
+    user: PessoaFromJwt,
+    action: 'executar' | 'remover',
+    sistema: ModuloSistema,
+    fonte: FonteRelatorio
+): boolean {
+    return user.hasSomeRoles([
+        `Reports.${action}.${sistema}` as ListaDePrivilegios,
+        `Reports.${action}.${sistema}:${fonte}` as ListaDePrivilegios,
+    ]);
+}
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -116,29 +202,15 @@ export class ReportsService {
             );
         }
 
-        // Ajusta o tipo de relatório para MDO, se for de status de obra
-        if (
-            dto.fonte == 'ObraStatus' ||
-            dto.fonte === 'Obras' ||
-            dto.fonte === 'ObrasOrcamento' ||
-            dto.fonte === 'ObrasPrevisaoCusto'
-        ) {
-            parametros.tipo_projeto = 'MDO';
-        } else if (
-            dto.fonte === 'ProjetoOrcamento' ||
-            dto.fonte === 'ProjetoPrevisaoCusto' ||
-            dto.fonte === 'Projetos' ||
-            dto.fonte === 'Projeto'
-        ) {
-            parametros.tipo_projeto = 'PP';
-        } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
-            parametros.tipo_pdm = 'PDM';
-        } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
+        // Força o discriminador da fonte (tipo_projeto / tipo_pdm) — fontes que rodam em mais
+        // de um sistema (Orcamento, PSOrcamento, etc.) precisam disso para o service saber qual
+        // variante produzir.
+        if (FONTES_TIPO_PROJETO[dto.fonte]) {
+            parametros.tipo_projeto = FONTES_TIPO_PROJETO[dto.fonte];
+        } else if (FONTES_TIPO_PDM_FIXO[dto.fonte]) {
+            parametros.tipo_pdm = FONTES_TIPO_PDM_FIXO[dto.fonte];
+        } else if (FONTES_TIPO_PDM_CALC.includes(dto.fonte)) {
             parametros.tipo_pdm = await this.calcTipoPdm(ctx, parametros);
-        } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
-            parametros.tipo_pdm = await this.calcTipoPdm(ctx, parametros);
-        } else if (dto.fonte === 'Indicadores') {
-            parametros.tipo_pdm = 'PDM';
         }
 
         const parametrosOriginal = structuredClone(parametros);
@@ -394,6 +466,48 @@ export class ReportsService {
         if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             if (Array.isArray(parametros.orgaos) && parametros.orgaos.length === 0) delete parametros.orgaos;
         }
+
+        // Trava de órgão para o perfil restrito "Gestor(a) de Distribuição de Recurso":
+        // força o filtro no momento da criação para que persista na task e no JSON da relatorio.
+        if (dto.fonte === 'Demandas' && user?.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+            parametros.orgao_id = user.orgao_id;
+        }
+
+        // Garante que a fonte pertence ao sistema da requisição. Sem isso, um usuário multi-módulo
+        // poderia mandar uma fonte CasaCivil com X-Sistemas: PDM e contornar o gate por privilégio.
+        if (!FONTES_POR_SISTEMA[sistema].includes(dto.fonte)) {
+            throw new BadRequestException(`Fonte ${dto.fonte} não pertence ao sistema ${sistema}.`);
+        }
+
+        // Autorização: aceita o privilégio amplo `Reports.executar.{sistema}` ou o escopado
+        // `Reports.executar.{sistema}:{fonte}`.
+        if (user && !hasReportPriv(user, 'executar', sistema, dto.fonte)) {
+            throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
+        }
+
+        // Trava de listagem por órgão para usuários sem o privilégio amplo
+        // `Reports.executar.{sistema}` (ex.: gestor com `:Demandas` apenas). Persiste o
+        // `restrito_para.portfolio_orgao_ids` no momento da criação — assim a listagem usa o
+        // filtro JSON existente (e o índice GIN) e a restrição não muda se o usuário trocar de
+        // órgão depois. `Publico` é forçado a `Restrito` aqui pois só faz sentido como
+        // verdadeiramente público quando criado por usuário com o privilégio amplo.
+        let visibilidade: RelatorioVisibilidade = dto.eh_publico ? 'Publico' : 'Privado';
+        let restritoParaData: Prisma.InputJsonValue | undefined;
+        const temPrivAmplo =
+            !user || user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios]);
+        if (!temPrivAmplo) {
+            const orgaoIdParam = (parametros as { orgao_id?: number | string }).orgao_id;
+            const orgaoId = orgaoIdParam != null ? Number(orgaoIdParam) : user!.orgao_id;
+            if (!orgaoId) {
+                throw new BadRequestException(
+                    'Usuário sem privilégio amplo e sem órgão associado — defina parametros.orgao_id ou associe um órgão.'
+                );
+            }
+            visibilidade = 'Restrito';
+            restritoParaData = { portfolio_orgao_ids: [orgaoId] };
+        }
+
         console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
@@ -401,8 +515,8 @@ export class ReportsService {
                     pdm_id: pdmId,
                     fonte: dto.fonte,
                     sistema: sistema,
-                    /// here it's easy because the user is saying what he wants
-                    visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
+                    visibilidade: visibilidade,
+                    restrito_para: restritoParaData,
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                     parametros: parametros,
                     parametros_processados: await BuildParametrosProcessados(this.prisma, {
@@ -503,23 +617,46 @@ export class ReportsService {
             ipp = decodedPageToken.ipp;
         }
 
+        // Se o usuário não tem o privilégio amplo `Reports.executar.{sistema}`, restringe a
+        // listagem às fontes que ele tem privilégio escopado para executar. Cobre o caso do
+        // gestor (só `Reports.executar.CasaCivil:Demandas`) sem hardcodar a fonte.
+        const temPrivAmplo = user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios]);
+        let fonteFilter: Prisma.RelatorioWhereInput['fonte'] = filters.fonte;
+        if (!temPrivAmplo) {
+            const fontesEscopadas = FONTES_POR_SISTEMA[sistema].filter((f) =>
+                user.hasSomeRoles([`Reports.executar.${sistema}:${f}` as ListaDePrivilegios])
+            );
+            fonteFilter = filters.fonte
+                ? fontesEscopadas.includes(filters.fonte)
+                    ? filters.fonte
+                    : { in: [] }
+                : { in: fontesEscopadas };
+        }
+
+        // `Publico` só vale como "globalmente visível" quando criado por usuário com privilégio
+        // amplo. Para usuários escopados, omitimos o ramo Publico do OR — eles só veem seus
+        // próprios `Privado` e `Restrito` cujo `restrito_para` casa com o orgao deles.
+        const visibilidadeOR: Prisma.RelatorioWhereInput[] = [
+            {
+                visibilidade: 'Privado',
+                criado_por: user.id,
+            },
+        ];
+        if (temPrivAmplo) {
+            visibilidadeOR.push({ visibilidade: 'Publico' });
+        }
+
         const rows = await this.prisma.relatorio.findMany({
             where: {
                 id: filters.id,
-                fonte: filters.fonte,
+                fonte: fonteFilter,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
                 sistema: { in: [sistema, 'SMAE'] },
                 AND: [
                     {
                         OR: [
-                            {
-                                visibilidade: 'Privado',
-                                criado_por: user.id,
-                            },
-                            {
-                                visibilidade: 'Publico',
-                            },
+                            ...visibilidadeOR,
                             {
                                 visibilidade: 'Restrito',
                                 OR: [
@@ -583,6 +720,7 @@ export class ReportsService {
                 criado_em: true,
                 criador: { select: { nome_exibicao: true } },
                 fonte: true,
+                sistema: true,
                 visibilidade: true,
                 arquivo_id: true,
                 parametros: true,
@@ -612,11 +750,14 @@ export class ReportsService {
                 const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
 
                 const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
+                const pode_remover = hasReportPriv(user, 'remover', r.sistema, r.fonte);
+                const { sistema: _sistema, ...rest } = r;
 
                 return {
-                    ...r,
+                    ...rest,
                     progresso: progresso,
                     eh_publico: eh_publico,
+                    pode_remover: pode_remover,
                     parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
                     arquivo: r.arquivo_id
@@ -638,6 +779,17 @@ export class ReportsService {
     }
 
     async delete(id: number, user: PessoaFromJwt) {
+        const relatorio = await this.prisma.relatorio.findFirst({
+            where: { id, removido_em: null },
+            select: { fonte: true, sistema: true },
+        });
+        // Autorização pelo sistema persistido no relatório (fonte de verdade do recurso).
+        // Aceita o privilégio amplo `Reports.remover.{sistema}` ou o escopado
+        // `Reports.remover.{sistema}:{fonte}`.
+        if (relatorio && !hasReportPriv(user, 'remover', relatorio.sistema, relatorio.fonte)) {
+            throw new ForbiddenException('Usuário não tem permissão para remover este relatório.');
+        }
+
         await this.prisma.relatorio.updateMany({
             where: {
                 id: id,
@@ -727,12 +879,24 @@ export class ReportsService {
     ) {
         const obj = contexto.getRestricaoAcesso();
 
+        // Preserva `restrito_para` gravado em saveReport (escopo por órgão para usuário sem
+        // privilégio amplo) — sem o merge, o pós-processamento sobrescreveria com null e a
+        // listagem voltaria a vazar reports entre órgãos.
+        const existing = await prismaTx.relatorio.findUnique({
+            where: { id: relatorioId },
+            select: { restrito_para: true },
+        });
+        const merged =
+            existing?.restrito_para || obj
+                ? { ...((existing?.restrito_para as object) ?? {}), ...(obj ?? {}) }
+                : null;
+
         await prismaTx.relatorio.update({
             where: { id: relatorioId },
             data: {
                 arquivo_id: arquivoId,
                 processado_em: now,
-                restrito_para: obj === null ? null : (obj as any),
+                restrito_para: merged === null ? null : (merged as any),
             },
         });
     }

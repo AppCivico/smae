@@ -4,13 +4,18 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 interface EmailItem {
   id: number;
-  sigra: string;
-  descricao: string;
+  assunto: string;
+  corpo: string | null;
+  nomes_parlamentares: string;
+  criado_em: string;
+  criado_por: { id: number; nome_exibicao: string };
 }
 
 interface Estado {
   lista: EmailItem[];
   paginacao: Paginacao;
+  assuntoUltimoEmail: string;
+  corpoUltimoEmail: string;
   chamadasPendentes: {
     lista: boolean;
     disparar: boolean;
@@ -31,6 +36,8 @@ export const useEnvioDeEmailsStore = defineStore('envioDeEmails', {
       temMais: false,
       totalRegistros: 0,
     },
+    assuntoUltimoEmail: '',
+    corpoUltimoEmail: '',
     chamadasPendentes: {
       lista: false,
       disparar: false,
@@ -67,6 +74,8 @@ export const useEnvioDeEmailsStore = defineStore('envioDeEmails', {
         };
 
         this.lista = linhas;
+        this.assuntoUltimoEmail = linhas[0]?.assunto ?? '';
+        this.corpoUltimoEmail = linhas[0]?.corpo ?? '';
         this.paginacao.paginaCorrente = paginaCorrente;
         this.paginacao.paginas = paginas;
         this.paginacao.temMais = temMais;
@@ -79,12 +88,12 @@ export const useEnvioDeEmailsStore = defineStore('envioDeEmails', {
       }
     },
 
-    async dispararEmail(): Promise<boolean> {
+    async dispararEmail(assunto?: string, corpo?: string): Promise<boolean> {
       this.chamadasPendentes.disparar = true;
       this.erro.disparar = null;
 
       try {
-        await this.requestS.post(`${baseUrl}/demanda/enviar-email-parlamentares`, {});
+        await this.requestS.post(`${baseUrl}/demanda/enviar-email-parlamentares`, { assunto, corpo });
         return true;
       } catch (erro: unknown) {
         this.erro.disparar = erro;

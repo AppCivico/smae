@@ -20,6 +20,7 @@ export class TransferenciaDto {
     id: number;
     ano: number | null;
     identificador: string;
+    emenda: string | null;
     valor: Decimal | null;
     partido: IdSigla[] | null;
     parlamentar: ParlamnetarIdNomes[] | null;
@@ -71,7 +72,7 @@ export class TransferenciaDetailDto {
     investimento: Decimal | null;
     pct_investimento: Decimal | null;
     emenda: string | null;
-    dotacao: string | null;
+    dotacoes: string[];
     demanda: string | null;
     banco_fim: string | null;
     conta_fim: string | null;
@@ -103,7 +104,13 @@ export class TransferenciaDetailDto {
     classificacao: ClassificacaoDto | null;
     classificacao_id: number | null;
 
-    modulos_vinculados: ModuloSistema[];
+    @ApiProperty({
+        description:
+            'Módulos do sistema vinculados a esta transferência via distribuições. Pode conter valores do enum ModuloSistema ou strings arbitrárias (ex: "Demandas").',
+        type: 'array',
+        items: { type: 'string' },
+    })
+    modulos_vinculados: (ModuloSistema | string)[];
 
     pode_editar: boolean;
 }

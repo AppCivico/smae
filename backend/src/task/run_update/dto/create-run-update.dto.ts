@@ -168,7 +168,7 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
 }
 
 export function VerificaOpsParaTipo() {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             target: object.constructor,
             propertyName: propertyName,

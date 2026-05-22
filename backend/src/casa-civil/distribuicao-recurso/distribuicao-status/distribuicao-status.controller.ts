@@ -17,13 +17,13 @@ export class DistribuicaoStatusController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.inserir'])
+    @Roles(['CadastroDistribuicaoStatus.inserir'])
     async create(@Body() dto: CreateDistribuicaoStatusDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.distribuicaoStatusService.create(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroDistribuicaoStatus.listar'])
     @Get('')
     async findAll(): Promise<ListDistribuicaoStatusDto> {
         return await this.distribuicaoStatusService.findAllDistribuicaoStatus();
@@ -31,14 +31,14 @@ export class DistribuicaoStatusController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroDistribuicaoStatus.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DistribuicaoStatusDto> {
         return await this.distribuicaoStatusService.findOne(+params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroDistribuicaoStatus.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateDistribuicaoStatusDto,
@@ -49,7 +49,7 @@ export class DistribuicaoStatusController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.remover'])
+    @Roles(['CadastroDistribuicaoStatus.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

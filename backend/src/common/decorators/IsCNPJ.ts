@@ -2,7 +2,7 @@ import { registerDecorator, ValidationOptions } from 'class-validator';
 import { CnpjValidator } from '../../auth/validators/cnpj.validator';
 
 export function IsCNPJ(validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'IsCNPJ',
             target: object.constructor,

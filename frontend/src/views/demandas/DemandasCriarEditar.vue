@@ -55,8 +55,11 @@ const {
 
 const schema = computed(() => (
   CadastroDemandaSchema({
-    valorMinimo: valoresLimitesAtivo.value?.valor_minimo != null
-      ? Number(valoresLimitesAtivo.value.valor_minimo)
+    valorMinimoCusteio: valoresLimitesAtivo.value?.valor_minimo_custeio != null
+      ? Number(valoresLimitesAtivo.value.valor_minimo_custeio)
+      : undefined,
+    valorMinimoInvestimento: valoresLimitesAtivo.value?.valor_minimo_investimento != null
+      ? Number(valoresLimitesAtivo.value.valor_minimo_investimento)
       : undefined,
   })
 ));
@@ -102,6 +105,22 @@ const {
   setFieldValue,
 } = useForm({
   validationSchema: schema,
+});
+
+const valorMinimoAtual = computed(() => {
+  const limites = valoresLimitesAtivo.value;
+  if (!limites) return null;
+  return values.finalidade === 'Investimento'
+    ? limites.valor_minimo_investimento
+    : limites.valor_minimo_custeio;
+});
+
+const valorMaximoAtual = computed(() => {
+  const limites = valoresLimitesAtivo.value;
+  if (!limites) return null;
+  return values.finalidade === 'Investimento'
+    ? limites.valor_maximo_investimento
+    : limites.valor_maximo_custeio;
 });
 
 const listaAreasTematicasFiltradas = computed(() => {
@@ -322,33 +341,6 @@ watch(itemParaEdicao, (novosValores) => {
       <div class="flex g2 flexwrap">
         <div class="f1 fb30">
           <SmaeLabel
-            name="valor"
-            :schema="schema"
-          />
-
-          <Field
-            v-slot="{ field, handleChange, value }"
-            name="valor"
-          >
-            <MaskedFloatInput
-              class="inputtext light"
-              :class="{ error: errors.valor }"
-              :value="value"
-              :name="field.name"
-              :disabled="bloquearCampos"
-              :aria-disabled="bloquearCampos"
-              converter-para="string"
-              @update:model-value="handleChange"
-            />
-          </Field>
-          <ErrorMessage
-            name="valor"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="f1 fb30">
-          <SmaeLabel
             name="finalidade"
             :schema="schema"
           />
@@ -375,18 +367,52 @@ watch(itemParaEdicao, (novosValores) => {
             class="error-msg"
           />
         </div>
+
+        <div class="f1 fb30">
+          <SmaeLabel
+            name="valor"
+            :schema="schema"
+          >
+            <template #default="{ required }">
+              Valor
+              <template v-if="valorMinimoAtual != null">
+                (mínimo de {{ dinheiro(valorMinimoAtual, { style: 'currency' }) }})
+              </template>
+              <span
+                v-if="required"
+                class="tvermelho"
+              >&nbsp;*</span>
+            </template>
+          </SmaeLabel>
+
+          <Field
+            v-slot="{ field, handleChange, value }"
+            name="valor"
+          >
+            <MaskedFloatInput
+              class="inputtext light"
+              :class="{ error: errors.valor }"
+              :value="value"
+              :name="field.name"
+              :disabled="bloquearCampos"
+              :aria-disabled="bloquearCampos"
+              converter-para="string"
+              @update:model-value="handleChange"
+            />
+          </Field>
+          <ErrorMessage
+            name="valor"
+            class="error-msg"
+          />
+        </div>
       </div>
 
       <div
-        v-if="
-          valoresLimitesAtivo
-            && valoresLimitesAtivo.valor_maximo != null
-            && parseFloat(values.valor) > parseFloat(valoresLimitesAtivo.valor_maximo)
-        "
+        v-if="valorMaximoAtual != null && parseFloat(values.valor) > parseFloat(valorMaximoAtual)"
         class="barra-limite mt1"
       >
         Valor acima de
-        {{ dinheiro(valoresLimitesAtivo.valor_maximo, { style: 'currency' }) }}
+        {{ dinheiro(valorMaximoAtual, { style: 'currency' }) }}
         tem menor chance de ser atendido
       </div>
     </fieldset>

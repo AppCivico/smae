@@ -8,22 +8,26 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { Dashboard } from '@/components';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { localizarData } from '@/helpers/dateToDate';
 import truncate from '@/helpers/texto/truncate';
+import { useAuthStore } from '@/stores/auth.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
+import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store.ts';
 import { usePartidosStore } from '@/stores/partidos.store';
 
 const panoramaTransferenciasStore = usePanoramaTransferenciasStore();
 const partidoStore = usePartidosStore();
 const OrgaosStore = useOrgansStore();
+const authStore = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
 
-const { chamadasPendentes, erro, lista } = storeToRefs(
-  panoramaTransferenciasStore,
-);
+const {
+  chamadasPendentes, erro, lista,
+} = storeToRefs(panoramaTransferenciasStore);
 const { partidosPorId } = storeToRefs(partidoStore);
 const { órgãosPorId } = storeToRefs(OrgaosStore);
 
@@ -104,46 +108,31 @@ function atualizarUrl() {
   });
 }
 
-watch([
-  () => route.query.esfera,
-  () => route.query.partido_ids,
-  () => route.query.orgaos_ids,
-  () => route.query.palavra_chave,
-  () => route.query.atividade,
-  () => route.query.prazo,
-], async () => {
+const parametrosDeBusca = computed(() => ({
+  esfera: route.query.esfera
+    ? Object.keys(esferasDeTransferencia)
+      .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
+    : undefined,
+  partido_ids: route.query.partido_ids,
+  orgaos_ids: route.query.orgaos_ids,
+  palavra_chave: typeof route.query.palavra_chave === 'string'
+    ? route.query.palavra_chave.trim()
+    : route.query.palavra_chave,
+  atividade: route.query.atividade,
+  prazo: route.query.prazo || prazo.value,
+}));
+
+const parametrosSerializados = computed(() => JSON.stringify(parametrosDeBusca.value));
+
+watch(parametrosSerializados, async () => {
   if (!partidosDisponiveis.value.length
     && !atividadesDisponiveis.value.length
     && !orgaosDisponiveis.value.length
   ) {
     await iniciar();
-
-    panoramaTransferenciasStore.$reset();
   }
 
-  const {
-    partido_ids: partidoFiltro,
-    orgaos_ids: orgaoFiltro,
-    atividade: atividadeFiltro,
-  } = route.query;
-  let {
-    palavra_chave: palavraChaveParaBusca,
-  } = route.query;
-  if (typeof palavraChaveParaBusca === 'string') {
-    palavraChaveParaBusca = palavraChaveParaBusca.trim();
-  }
-  panoramaTransferenciasStore.$reset();
-  panoramaTransferenciasStore.buscarTudo({
-    esfera: route.query.esfera
-      ? Object.keys(esferasDeTransferencia)
-        .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
-      : undefined,
-    partido_ids: partidoFiltro,
-    orgaos_ids: orgaoFiltro,
-    palavra_chave: palavraChaveParaBusca,
-    atividade: atividadeFiltro,
-    prazo: prazo.value,
-  })
+  panoramaTransferenciasStore.buscarTudo(parametrosDeBusca.value)
     .then(() => {
       listaSemFiltro.value = cloneDeep(lista.value);
     });
@@ -340,85 +329,64 @@ onUnmounted(() => {
     </form>
 
     <div class="flex flexwrap g2 start">
-      <div
-        role="region"
-        aria-label="Panorama de transferências"
-        tabindex="0"
+      <SmaeTable
+        titulo-para-rolagem-horizontal="Panorama de transferências"
+        rolagem-horizontal
         class="mb1 f1 fb25em"
+        :dados="listaComOrgaos"
+        :colunas="[
+          {
+            chave: 'emenda',
+            label: 'Emenda',
+          },
+          {
+            chave: 'identificador',
+            label: 'Identificador',
+            ehCabecalho: true, atributosDaColuna: { class: 'col--minimum' }
+          },
+          { chave: 'objeto', label: 'Transferência' },
+          { chave: 'atividade', label: 'Atividade' },
+          { chave: 'orgaos', label: 'Responsável' },
+          { chave: 'data', label: 'Prazo', atributosDaColuna: { class: 'col--data' } },
+        ]"
       >
-        <table class="tablemain">
-          <colgroup>
-            <col class="col--minimum">
-            <col>
-            <col>
-            <col>
-            <col class="col--data">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Identificador</th>
-              <th>Transferência</th>
-              <th>Atividade</th>
-              <th>Responsável</th>
-              <th>Prazo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="item in listaComOrgaos"
-              :key="item.transferencia_id"
-            >
-              <th>
-                <router-link
-                  v-if="item?.transferencia_id"
-                  :to="{
-                    name: 'TransferenciasVoluntariasDetalhes',
-                    params: { transferenciaId: item.transferencia_id },
-                  }"
-                  class="tprimary"
-                >
-                  {{ item.identificador }}
-                </router-link>
-              </th>
-              <td>
-                {{ item.objeto ? item.objeto : " - " }}
-              </td>
-              <td>
-                {{ item.atividade }}
-              </td>
-              <td>
-                {{ item.orgaos }}
-              </td>
-              <td :style="{ color: dataColor(item.data) }">
-                {{ item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "" }}
-              </td>
-            </tr>
-            <tr v-if="chamadasPendentes.lista">
-              <td colspan="4">
-                Carregando
-              </td>
-            </tr>
-            <tr v-else-if="erro">
-              <td colspan="5">
-                Erro: {{ erro }}
-              </td>
-            </tr>
-            <tr v-else-if="!lista.length">
-              <td colspan="5">
-                Nenhum resultado encontrado.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <QuadroNotas />
+        <template #celula:identificador="{ linha }">
+          <SmaeLink
+            :to="{
+              name: 'TransferenciasVoluntariasDetalhes',
+              params: { transferenciaId: linha.transferencia_id },
+            }"
+            :desabilitar="!linha.transferencia_id"
+            class="tprimary"
+            exibir-desabilitado
+          >
+            {{ linha.identificador }}
+          </SmaeLink>
+        </template>
+
+        <template #celula:data="{ linha }">
+          <span
+            v-if="linha.data"
+            :style="{ color: dataColor(linha.data) }"
+          >{{ localizarData(linha.data) }}</span>
+          <template v-else>
+            -
+          </template>
+        </template>
+      </SmaeTable>
+
+      <LoadingComponent v-if="chamadasPendentes.lista" />
+      <ErrorComponent
+        v-else-if="erro"
+        :erro="erro"
+      />
+      <QuadroNotas v-if="!authStore.temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')" />
     </div>
   </Dashboard>
 </template>
-
 <style scoped>
-.tablemain tbody td:nth-child(2) {
-  max-width: 200px;
+:deep(.table-cell--objeto) {
+  max-width: 14em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dinheiro from '@/helpers/dinheiro';
@@ -172,181 +173,133 @@ watch([
     </button>
   </form>
 
-  <table class="tablemain mb1">
-    <colgroup>
-      <col class="col--botão-de-ação">
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-    </colgroup>
-    <thead>
-      <tr>
-        <th />
-        <th>
-          Identificador
-        </th>
-        <th>
-          Esfera
-        </th>
-        <th>
-          Tipo
-        </th>
-        <th>
-          Partido
-        </th>
-        <th>
-          Parlamentar
-        </th>
-        <th>
-          Órgão Gestor
-        </th>
-        <th>
-          Etapa
-        </th>
-        <th>
-          Fase
-        </th>
-        <th>
-          Status da Fase
-        </th>
-        <th>
-          Objeto/Empreendimento
-        </th>
-        <th class="cell--number">
-          Valor
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="item in lista"
-        :key="item.id"
+  <SmaeTable
+    class="mb1"
+    :dados="lista"
+    rolagem-horizontal
+    titulo-para-rolagem-horizontal="Lista de transferências voluntárias"
+    :colunas="[
+      {
+        chave: 'alerta',
+        label: '',
+        permitirValorVazio: true,
+        atributosDaColuna: { class: 'col--botão-de-ação' },
+      },
+      { chave: 'emenda', label: 'Emenda' },
+      { chave: 'identificador', label: 'Identificador', ehCabecalho: true },
+      { chave: 'esfera', label: 'Esfera' },
+      { chave: 'tipo.nome', label: 'Tipo' },
+      { chave: 'partido', label: 'Partido' },
+      { chave: 'parlamentar', label: 'Parlamentar' },
+      { chave: 'orgao_gestor', label: 'Órgão Gestor' },
+      { chave: 'andamento_etapa', label: 'Etapa' },
+      { chave: 'andamento_fase', label: 'Fase' },
+      { chave: 'fase_status', label: 'Status da Fase' },
+      { chave: 'objeto', label: 'Objeto/Empreendimento' },
+      {
+        chave: 'valor',
+        label: 'Valor',
+        atributosDaCelula: { class: 'cell--number' },
+        atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+      },
+    ]"
+  >
+    <template #celula:alerta="{ linha }">
+      <span
+        v-if="linha.pendente_preenchimento_valores"
+        class="tipinfo right"
       >
-        <td>
-          <span
-            v-if="item.pendente_preenchimento_valores"
-            class="tipinfo right"
-          >
-            <svg
-              width="24"
-              height="24"
-              color="#F2890D"
-            ><use xlink:href="#i_alert" /></svg><div>
-              Preenchimento incompleto
-            </div>
-          </span>
-        </td>
-        <th>
-          <router-link
-            :to="{
-              name: 'TransferenciasVoluntariasDetalhes',
-              params: { transferenciaId: item.id }
-            }"
-            class="tprimary"
-          >
-            {{ item.identificador }}
-          </router-link>
-        </th>
-        <td>
-          {{ item.esfera }}
-        </td>
-        <td>
-          {{ item.tipo.nome }}
-        </td>
-        <td>
-          {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
-        </td>
-        <td>
-          {{
-            item.parlamentar?.length
-              ? combinadorDeListas(item.parlamentar, ', ', 'nome_popular') : '-'
-          }}
-        </td>
-        <td>
-          {{ item.orgao_gestor?.length ? item.orgao_gestor?.map((e) => e.sigla).join(', ') : '-' }}
-        </td>
-        <td>
-          {{ item.andamento_etapa? item.andamento_etapa : '-' }}
-        </td>
-        <td>
-          {{ item.andamento_fase? item.andamento_fase : '-' }}
-        </td>
-        <td>
-          {{ item.fase_status? item.fase_status : '-' }}
-        </td>
-        <td
-          :title="
-            item.objeto.length > 35 ?
-              item.objeto : undefined
-          "
+        <svg
+          width="24"
+          height="24"
+          color="#F2890D"
+        ><use xlink:href="#i_alert" /></svg><div>
+          Preenchimento incompleto
+        </div>
+      </span>
+    </template>
+
+    <template #celula:identificador="{ linha }">
+      <router-link
+        :to="{
+          name: 'TransferenciasVoluntariasDetalhes',
+          params: { transferenciaId: linha.id }
+        }"
+        class="tprimary"
+      >
+        {{ linha.identificador }}
+      </router-link>
+    </template>
+
+    <template #celula:partido="{ linha }">
+      {{ combinadorDeListas(linha.partido, ', ', 'sigla') }}
+    </template>
+
+    <template #celula:parlamentar="{ linha }">
+      {{ combinadorDeListas(linha.parlamentar, ', ', 'nome_popular') }}
+    </template>
+
+    <template #celula:orgao_gestor="{ linha }">
+      {{ combinadorDeListas(linha.orgao_gestor, ', ', 'sigla') }}
+    </template>
+
+    <template #celula:andamento_fase="{ linha }">
+      <span :title="linha.andamento_fase?.length > 35 ? linha.andamento_fase : undefined">
+        {{ truncate(linha.andamento_fase, 35) }}
+      </span>
+    </template>
+
+    <template #celula:objeto="{ linha }">
+      <span :title="linha.objeto?.length > 35 ? linha.objeto : undefined">
+        {{ truncate(linha.objeto, 35) }}
+      </span>
+    </template>
+
+    <template #celula:valor="{ linha }">
+      {{ linha.valor ? `R$${dinheiro(linha.valor)}` : '-' }}
+    </template>
+
+    <template #acoes="{ linha }">
+      <router-link
+        v-if="temPermissãoPara([
+          'CadastroTransferencia.administrador',
+          'CadastroTransferencia.editar'
+        ])"
+        :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: linha.id } }"
+        class="tprimary"
+      >
+        <svg
+          width="20"
+          height="20"
         >
-          {{ truncate(item.objeto, 35) }}
-        </td>
-        <td class="cell--number">
-          {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}
-        </td>
-        <td>
-          <router-link
-            v-if="temPermissãoPara([
-              'CadastroTransferencia.administrador',
-              'CadastroTransferencia.editar'
-            ])"
-            :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_edit" />
-            </svg>
-          </router-link>
-        </td>
-        <td>
-          <button
-            v-if="temPermissãoPara([
-              'CadastroTransferencia.administrador',
-              'CadastroTransferencia.remover'
-            ])"
-            class="like-a__text"
-            aria-label="excluir"
-            title="excluir"
-            @click="excluirTransferencia(item.id)"
-          >
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_remove" />
-            </svg>
-          </button>
-        </td>
-      </tr>
-      <tr v-if="chamadasPendentes.lista">
-        <td colspan="12">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td colspan="12">
-          Erro: {{ erro }}
-        </td>
-      </tr>
-      <tr v-else-if="!lista.length">
-        <td colspan="12">
-          Nenhum resultado encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+          <use xlink:href="#i_edit" />
+        </svg>
+      </router-link>
+      <button
+        v-if="temPermissãoPara([
+          'CadastroTransferencia.administrador',
+          'CadastroTransferencia.remover'
+        ])"
+        class="like-a__text"
+        aria-label="excluir"
+        title="excluir"
+        @click="excluirTransferencia(linha.id)"
+      >
+        <svg
+          width="20"
+          height="20"
+        >
+          <use xlink:href="#i_remove" />
+        </svg>
+      </button>
+    </template>
+  </SmaeTable>
+
+  <LoadingComponent v-if="chamadasPendentes.lista" />
+  <ErrorComponent
+    v-else-if="erro"
+    :erro="erro"
+  />
 
   <button
     v-if="paginação.temMais && paginação.tokenDaPróximaPágina"

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as FormData from 'form-data';
 import got from 'got';
-import { Readable } from 'stream';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 
 export interface GotenbergConversionOptions {

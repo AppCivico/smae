@@ -1,5 +1,4 @@
 import {
-    BadRequestException,
     MiddlewareConsumer,
     Module,
     NestModule,

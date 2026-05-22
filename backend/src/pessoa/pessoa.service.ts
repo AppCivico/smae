@@ -251,6 +251,8 @@ export class PessoaService implements OnModuleInit {
         if (user.hasSomeRoles(['SMAE.superadmin']) == false) {
             await this.verificarPerfilNaoContemAdmin(createPessoaDto.perfil_acesso_ids);
         }
+
+        await this.verificarPerfisCompativeis(createPessoaDto.perfil_acesso_ids);
     }
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
@@ -284,6 +286,8 @@ export class PessoaService implements OnModuleInit {
                 await this.verificarPerfilNaoContemAdmin(updatePessoaDto.perfil_acesso_ids);
             }
         }
+
+        await this.verificarPerfisCompativeis(updatePessoaDto.perfil_acesso_ids);
 
         const pessoaCurrentOrgao = await this.prisma.pessoaFisica.findFirst({
             where: {
@@ -367,6 +371,44 @@ export class PessoaService implements OnModuleInit {
                 'O seu usuário não pode adicionar ou remover permissões de outros usuários que são administradores do sistema, ou adicionar a permissão de administrador para um usuário já existente.',
                 400
             );
+    }
+
+    /**
+     * Rejeita combinações de perfis cujos privilégios efetivos sejam conflitantes.
+     *
+     * `SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir` é exclusivo do perfil restrito
+     * "Gestor(a) de Distribuição de Recurso" (sem acesso de edição às transferências).
+     * `CadastroTransferencia.editar` só vem de perfis amplos (Gestor de TVs/Administrador).
+     * A coexistência indica combinação errada na atribuição de perfis.
+     */
+    private async verificarPerfisCompativeis(perfil_acesso_ids: number[] | undefined) {
+        if (!perfil_acesso_ids || perfil_acesso_ids.length === 0) return;
+
+        const rows = await this.prisma.perfilAcesso.findMany({
+            where: { id: { in: perfil_acesso_ids } },
+            select: {
+                perfil_privilegio: {
+                    select: { privilegio: { select: { codigo: true } } },
+                },
+            },
+        });
+
+        const privilegios = new Set<string>();
+        for (const r of rows) {
+            for (const pp of r.perfil_privilegio) {
+                privilegios.add(pp.privilegio.codigo);
+            }
+        }
+
+        if (
+            privilegios.has('SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
+            privilegios.has('CadastroTransferencia.editar')
+        ) {
+            throw new HttpException(
+                'O perfil de Gestor(a) de Distribuição de Recurso não pode ser combinado com perfis que possuem CadastroTransferencia.editar (Gestor de Transferências Voluntárias ou Administrador). Esses perfis têm escopos conflitantes.',
+                400
+            );
+        }
     }
 
     private verificarCPFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
@@ -1909,33 +1951,26 @@ export class PessoaService implements OnModuleInit {
             }
         }
 
-        const liberadoVersao30 = await this.smaeConfigService.getConfigBooleanWithDefault('LIBERA_SPRINT_30', false);
-        if (!liberadoVersao30) {
-            const priv_remover: ListaDePrivilegios[] = [
-                'CadastroTipoVinculo.editar',
-                'CadastroTipoVinculo.inserir',
-                'CadastroTipoVinculo.listar',
-                'CadastroTipoVinculo.remover',
-                'CadastroVinculo.editar',
-                'CadastroVinculo.inserir',
-                'CadastroVinculo.listar',
-                'CadastroVinculo.remover',
-            ];
-            for (const priv of priv_remover) {
-                ret.privilegios = ret.privilegios.filter((v) => v !== priv);
-            }
-        } else {
-            // só pode ter esse Menu quem tem o CadastroTransferencia.administrador
-            if (ret.privilegios.includes('CadastroTransferencia.administrador')) {
-                ret.privilegios.push('Menu.cc_consulta_geral');
-            }
+        // só pode ter esse Menu quem tem o CadastroTransferencia.administrador
+        if (ret.privilegios.includes('CadastroTransferencia.administrador')) {
+            ret.privilegios.push('Menu.cc_consulta_geral');
         }
 
-        const liberadoVersao31 = await this.smaeConfigService.getConfigWithDefault('LIBERA_SPRINT_31', false);
-        if (liberadoVersao31) {
-            if (ret.privilegios.includes('CadastroDemanda.listar')) {
-                ret.privilegios.push('Menu.demandas');
-            }
+        if (ret.privilegios.includes('CadastroDemanda.listar')) {
+            ret.privilegios.push('Menu.demandas');
+        }
+
+        // Privilégio virtual que identifica o perfil restrito "Gestor(a) de Distribuição de Recurso".
+        // A posse de SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir é exclusiva desse perfil —
+        // verificarPerfisCompativeis() rejeita combinações com CadastroTransferencia.editar
+        // (e administradores carregam .editar transitivamente). O `!administrador` cobre
+        // eventuais cadastros legados antes da validação. Frontend deve checar este priv
+        // único em vez de duplicar a regra composta.
+        if (
+            ret.privilegios.includes('SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir') &&
+            !ret.privilegios.includes('CadastroTransferencia.administrador')
+        ) {
+            ret.privilegios.push('SMAE.PerfilGestorDistribuicaoRecurso');
         }
 
         return ret;

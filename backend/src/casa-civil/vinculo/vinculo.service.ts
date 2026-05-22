@@ -80,7 +80,7 @@ export class VinculoService {
 
         const dadosExtra = this.parseDadosExtra(dto.dados_extra);
 
-        return await this.prisma.$transaction(async (prismaTx) => {
+        const row = await this.prisma.$transaction(async (prismaTx) => {
             const row = await prismaTx.distribuicaoRecursoVinculo.create({
                 data: {
                     tipo_vinculo_id: dto.tipo_vinculo_id,
@@ -109,6 +109,17 @@ export class VinculoService {
 
             return row;
         });
+
+        if (dto.demanda_id) {
+            await this.demandaService.handlePostStatusChange(
+                dto.demanda_id,
+                DemandaStatus.Publicado,
+                DemandaStatus.Encerrado,
+                user
+            );
+        }
+
+        return row;
     }
 
     async update(id: number, dto: UpdateVinculoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -551,17 +562,61 @@ export class VinculoService {
     async remove(id: number, user: PessoaFromJwt): Promise<void> {
         const self = await this.prisma.distribuicaoRecursoVinculo.findFirst({
             where: { id, removido_em: null },
-            select: { id: true },
+            select: { id: true, demanda_id: true },
         });
         if (!self) throw new HttpException('Vínculo não encontrado', 404);
 
-        await this.prisma.distribuicaoRecursoVinculo.update({
-            where: { id },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id,
-            },
+        let reverterStatusDemandaId: number | null = null;
+
+        await this.prisma.$transaction(async (prismaTx) => {
+            await prismaTx.distribuicaoRecursoVinculo.update({
+                where: { id },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id,
+                },
+            });
+
+            // Quando o vínculo removido é de uma demanda e era o último vínculo ativo,
+            // reverte o status da demanda de Encerrado para Validacao.
+            if (self.demanda_id) {
+                const demanda = await prismaTx.demanda.findUnique({
+                    where: { id: self.demanda_id },
+                    select: { id: true, status: true },
+                });
+
+                if (demanda && demanda.status === DemandaStatus.Encerrado) {
+                    const vinculosAtivos = await prismaTx.distribuicaoRecursoVinculo.count({
+                        where: {
+                            demanda_id: self.demanda_id,
+                            removido_em: null,
+                        },
+                    });
+
+                    if (vinculosAtivos === 0) {
+                        await this.demandaService.changeStatus(
+                            self.demanda_id,
+                            user,
+                            DemandaStatus.Encerrado,
+                            DemandaStatus.Validacao,
+                            'Vínculo com distribuição de recurso removido',
+                            undefined,
+                            prismaTx
+                        );
+                        reverterStatusDemandaId = self.demanda_id;
+                    }
+                }
+            }
         });
+
+        if (reverterStatusDemandaId !== null) {
+            await this.demandaService.handlePostStatusChange(
+                reverterStatusDemandaId,
+                DemandaStatus.Encerrado,
+                DemandaStatus.Validacao,
+                user
+            );
+        }
     }
 
     async invalidarVinculo(
@@ -797,6 +852,7 @@ export class VinculoService {
                     select: {
                         transferencia: {
                             select: {
+                                id: true,
                                 identificador: true,
                             },
                         },
@@ -854,6 +910,7 @@ export class VinculoService {
                     area_tematica: demanda.area_tematica.nome,
                     orgao_nome: orgao.descricao,
                     smae_url: smaeUrl,
+                    transferencia_url: `${smaeUrl}/transferencias-voluntarias/${vinculo.distribuicao.transferencia.id}/resumo`,
                 },
             },
         });

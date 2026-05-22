@@ -6,6 +6,7 @@ import {
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import modulos from '@/consts/modulosDoSistema';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -130,7 +131,8 @@ nextTick(() => {
     </h3>
     <hr class="f1">
     <SmaeLink
-      v-if="transferenciaEmFoco?.pode_editar"
+      v-if="transferenciaEmFoco?.pode_editar
+        && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
       class="btn with-icon bgnone tcprimary p0"
@@ -313,7 +315,11 @@ nextTick(() => {
           Cargo
         </dt>
         <dd>
-          {{ parlamentar.cargo || '-' }}
+          {{
+            cargosDeParlamentar[parlamentar.cargo]?.nome
+              || parlamentar.cargo
+              || '-'
+          }}
         </dd>
       </dl>
 
@@ -449,7 +455,8 @@ nextTick(() => {
       <hr class="f1">
 
       <SmaeLink
-        v-if="transferenciaEmFoco?.pode_editar"
+        v-if="transferenciaEmFoco?.pode_editar
+          && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         :to="{ name: 'RegistroDeTransferenciaEditar' }"
         title="Editar recursos financeiros"
         class="btn with-icon bgnone tcprimary p0"
@@ -508,11 +515,19 @@ nextTick(() => {
       <div class="flex column g4 p1 f1">
         <div>
           <div class="t16 w700 mb05 tamarelo">
-            Dotação
+            Dotações
           </div>
 
-          <div>
-            {{ transferenciaEmFoco?.dotacao ?? '-' }}
+          <template v-if="transferenciaEmFoco?.dotacoes?.length">
+            <div
+              v-for="(dotacao, index) in transferenciaEmFoco.dotacoes"
+              :key="`${index}-${dotacao}`"
+            >
+              {{ dotacao }}
+            </div>
+          </template>
+          <div v-else>
+            -
           </div>
         </div>
 
@@ -603,6 +618,7 @@ nextTick(() => {
     </h3>
     <hr class="f1">
     <SmaeLink
+      v-if="!temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
       :to="{ name: 'TransferenciaDistribuicaoDeRecursos.Lista' }"
       title="Editar distribuição de recursos"
       class="btn with-icon bgnone tcprimary p0"

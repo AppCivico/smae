@@ -7,7 +7,7 @@
       <mj-column>
         <mj-text>
           [% IF corpo %]
-          [% corpo %]
+          [% corpo | raw %]
           [% ELSE %]
           <p>À Sua Excelência,</p>
           

@@ -6,7 +6,7 @@ import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { DateTime } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
-import { ListWorkflowDto, WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
+import { ListWorkflowDto, WorkflowDetailDto } from './entities/workflow.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Date2YMD } from '../../../common/date2ymd';

@@ -17,7 +17,6 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import FormErrorsList from '@/components/FormErrorsList.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -86,16 +85,8 @@ const {
 
 const formularioSujo = useIsFormDirty();
 
-function voltarTela() {
-  router.push({
-    name: route.meta.rotaDeEscape,
-    params: structuredClone(route.params),
-  });
-}
-
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
-  // necessário por causa de 🤬
-  const cargaManipulada = nulificadorTotal(controlledValues);
+  const cargaManipulada = nulificadorTotal({ dotacoes: [], ...controlledValues });
 
   try {
     cargaManipulada.pct_custeio = porcentagens.value.custeio;
@@ -116,7 +107,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     if (r) {
       alertStore.success(msg);
 
-      voltarTela();
+      router.push({
+        name: route.meta.rotaDeEscape,
+        params: structuredClone(route.params),
+      });
     }
   } catch (error) {
     alertStore.error(error);
@@ -268,19 +262,29 @@ onMounted(async () => {
 <template>
   <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
-
   <div
-    v-if="erro"
-    class="error p1"
+    v-if="$route.params.recursoId"
+    class="flex mb2"
   >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
+    <SmaeLink
+      class="like-a__text addlink"
+      :to="{
+        name: 'DistribuicaoSolicitacaoAjuste.Lista',
+        params: { ...$route.params },
+      }"
+    >
+      <svg
+        width="20"
+        height="20"
+      >
+        <use xlink:href="#i_history" />
+      </svg> Solicitações de ajuste
+    </SmaeLink>
   </div>
+
+  <LoadingComponent v-if="chamadasPendentes?.emFoco" />
+
+  <ErrorComponent :erro="erro" />
 
   <form @submit.prevent="!isSubmitting ? onSubmit() : null">
     <fieldset>
@@ -885,25 +889,65 @@ onMounted(async () => {
     </fieldset>
 
     <fieldset>
-      <div class="flex g2 mb1">
-        <div class="f1">
-          <LabelFromYup
-            name="dotacao"
-            :schema="schema"
-          />
+      <div class="mb1">
+        <LabelFromYup
+          name="dotacoes"
+          :schema="schema"
+          as="legend"
+          class="label mb1"
+        />
 
-          <Field
-            name="dotacao"
-            type="text"
-            class="inputtext light mb1"
-            placeholder="00.00.00.000.0000.0.000.00000000.00"
-          />
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          name="dotacoes"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="field.key"
+            class="flex flexwrap gx2 mb1"
+          >
+            <Field
+              :name="`dotacoes[${idx}]`"
+              type="text"
+              class="inputtext light f1"
+              placeholder="00.00.00.000.0000.0.000.00000000.00"
+              maxlength="250"
+            />
 
-          <ErrorMessage
-            class="error-msg mb1"
-            name="dotacao"
-          />
-        </div>
+            <button
+              class="like-a__text addlink"
+              aria-label="excluir"
+              title="excluir"
+              type="button"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
+            </button>
+
+            <ErrorMessage
+              class="error-msg fb100"
+              :name="`dotacoes[${idx}]`"
+            />
+          </div>
+
+          <button
+            class="like-a__text addlink mb1"
+            type="button"
+            @click="push('')"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar dotação
+          </button>
+        </FieldArray>
       </div>
 
       <div class="mb1">
@@ -1188,21 +1232,9 @@ onMounted(async () => {
       </div>
     </fieldset>
 
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-
-      <button
-        class="btn big"
-        :aria-busy="isSubmitting"
-        :aria-disabled="Object.keys(errors)?.length"
-        type="submit"
-      >
-        Salvar
-      </button>
-
-      <hr class="ml2 f1">
-    </div>
+    <SmaeFieldsetSubmit
+      :esta-carregando="isSubmitting"
+      :erros="errors"
+    />
   </form>
 </template>

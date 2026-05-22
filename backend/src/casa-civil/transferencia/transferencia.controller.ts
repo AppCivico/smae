@@ -92,6 +92,15 @@ export class TransferenciaController {
         return { linhas: await this.transferenciaService.findTransferenciaHistorico(params.id, filters, user) };
     }
 
+    @Post('rebuild-vetores-busca')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    @HttpCode(HttpStatus.ACCEPTED)
+    async rebuildVetoresBusca() {
+        await this.transferenciaService.rebuildAllVetoresBusca();
+        return '';
+    }
+
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.remover'])

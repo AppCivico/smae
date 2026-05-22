@@ -248,7 +248,7 @@ export const BuildParametrosProcessados = async (
             const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em
                     FROM ${nomeTabelaCol.tabela} WHERE id IN (${joinedValues})`;
             const rowNome =
-                await prisma.$queryRawUnsafe<Array<{ id: Number; nome: string; removido_em: Date | undefined }>>(query);
+                await prisma.$queryRawUnsafe<Array<{ id: number; nome: string; removido_em: Date | undefined }>>(query);
 
             if (rowNome.length > 0) {
                 parametros_processados[nomeChave] = rowNome
