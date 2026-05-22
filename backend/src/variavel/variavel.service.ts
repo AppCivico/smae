@@ -2515,7 +2515,7 @@ export class VariavelService {
                     cycle_date::date as data_ciclo_target
                 FROM cycle_ranges cr
                 CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-                WHERE cycle_date::date < now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}'
+                WHERE cycle_date::date < (now() AT TIME ZONE '${SYSTEM_TIMEZONE}')::date
             )
             -- Filtra apenas ciclos que ainda não foram processados (ou foram removidos)
             -- E que ainda não possuem valores em serie_variavel (para evitar sobrescrever dados existentes)
@@ -2777,7 +2777,7 @@ export class VariavelService {
                     cycle_date::date as data_ciclo
                 FROM cycle_ranges cr
                 CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-                WHERE cycle_date::date < now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}'
+                WHERE cycle_date::date < (now() AT TIME ZONE '${SYSTEM_TIMEZONE}')::date
             )
             -- Filtra apenas ciclos que ainda não foram processados (não tem análise de liberação)
             SELECT
