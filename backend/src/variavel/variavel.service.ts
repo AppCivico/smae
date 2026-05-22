@@ -2463,6 +2463,28 @@ export class VariavelService {
             `Iniciando processamento${targetVariavelId ? ` para variável ${targetVariavelId}` : ' de todas as variáveis'}`
         );
 
+        // [DIAG] Snapshot da sessao no inicio da transacao - para correlacionar paradoxos como o de 2026-04-01
+        // (Tabela A continha ciclo 2026-04-01 enquanto Tabela B nao continha, mesmo com mesma WHERE)
+        try {
+            const sessionSnapshot = await prismaTx.$queryRawUnsafe<any[]>(`
+                SELECT
+                    transaction_timestamp()::text AS tx_timestamp,
+                    statement_timestamp()::text AS stmt_timestamp,
+                    clock_timestamp()::text AS clock_timestamp,
+                    current_setting('TimeZone') AS tz_session,
+                    current_setting('transaction_isolation') AS isolation,
+                    current_setting('server_version') AS server_version,
+                    pg_backend_pid() AS pid,
+                    (now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}')::text AS tz_rhs_buggy,
+                    ((now() AT TIME ZONE '${SYSTEM_TIMEZONE}')::date)::text AS tz_rhs_fixed,
+                    (CURRENT_DATE < now()::date AT TIME ZONE '${SYSTEM_TIMEZONE}') AS where_eval_buggy_today,
+                    (CURRENT_DATE < (now() AT TIME ZONE '${SYSTEM_TIMEZONE}')::date) AS where_eval_fixed_today
+            `);
+            logger.log(`[DIAG] Session snapshot: ${JSON.stringify(sessionSnapshot[0])}`);
+        } catch (e) {
+            logger.warn(`[DIAG] session snapshot falhou (ignorado): ${e?.message ?? e}`);
+        }
+
         const specificVarFilter = targetVariavelId ? Prisma.sql`AND v.id = ${targetVariavelId}` : Prisma.sql``;
 
         // 1. Identifica jobs: Variáveis suspensas com ciclos abertos
@@ -2542,6 +2564,44 @@ export class VariavelService {
                 AND ctrl.id IS NULL
                 AND sv.variavel_id IS NULL  -- Só processa ciclos sem dados existentes
         `;
+
+        // [DIAG] Dump completo de _suspend_jobs_global (Tabela A) - para diagnosticar o paradoxo
+        // Salva variavel_id, ciclo, serie, e tambem mae_id+ciclo_owner_id para cross-check com Tabela B
+        try {
+            const tableADump = await prismaTx.$queryRaw<
+                {
+                    variavel_id: number;
+                    variavel_mae_id: number | null;
+                    ciclo_owner_id: number;
+                    data_ciclo_target: Date;
+                    serie: string;
+                }[]
+            >`
+                SELECT variavel_id, variavel_mae_id, ciclo_owner_id, data_ciclo_target, serie::text AS serie
+                FROM _suspend_jobs_global
+                ORDER BY variavel_id, data_ciclo_target, serie
+            `;
+            logger.log(`[DIAG] _suspend_jobs_global tem ${tableADump.length} linha(s)`);
+            if (tableADump.length > 0) {
+                // Agrupa por variavel para log mais legivel
+                const tableABySrc = tableADump.reduce(
+                    (acc, r) => {
+                        const k = `${r.variavel_id}`;
+                        if (!acc[k]) acc[k] = { ciclo_owner_id: r.ciclo_owner_id, ciclos: new Set() };
+                        acc[k].ciclos.add(r.data_ciclo_target.toISOString().split('T')[0]);
+                        return acc;
+                    },
+                    {} as Record<string, { ciclo_owner_id: number; ciclos: Set<string> }>
+                );
+                for (const [varId, info] of Object.entries(tableABySrc)) {
+                    logger.log(
+                        `[DIAG] Tabela A var=${varId} owner=${info.ciclo_owner_id} ciclos=[${Array.from(info.ciclos).sort().join(',')}]`
+                    );
+                }
+            }
+        } catch (e) {
+            logger.warn(`[DIAG] dump de _suspend_jobs_global falhou (ignorado): ${e?.message ?? e}`);
+        }
 
         // 2. Calcula valores usando LOCF para múltiplos ciclos
         // Implementa LOCF chain - para cada ciclo target, busca o último valor anterior
@@ -2724,6 +2784,43 @@ export class VariavelService {
 
         logger.log(`autoFechaCiclo: Verificando ${cycleOwnerIds.length} variáveis mãe: [${cycleOwnerIds.join(', ')}]`);
 
+        // [DIAG] Re-snapshot da sessao - confirma que continuamos na mesma TX (mesmo tx_timestamp)
+        // que criou _suspend_jobs_global. Se divergir, o paradoxo tem explicacao.
+        try {
+            const afcSessionSnapshot = await prismaTx.$queryRawUnsafe<any[]>(`
+                SELECT
+                    transaction_timestamp()::text AS tx_timestamp,
+                    statement_timestamp()::text AS stmt_timestamp,
+                    clock_timestamp()::text AS clock_timestamp,
+                    pg_backend_pid() AS pid,
+                    txid_current() AS txid,
+                    current_setting('TimeZone') AS tz_session
+            `);
+            logger.log(`[DIAG] autoFechaCiclo session: ${JSON.stringify(afcSessionSnapshot[0])}`);
+
+            // [DIAG] Snapshot do conteudo de _suspend_jobs_global vista de DENTRO de autoFechaCiclo
+            // (mesma TX, mas momento posterior - se as linhas mudaram, eh o sinal que faltava)
+            const tableASnapshotInAfc = await prismaTx.$queryRaw<
+                { variavel_id: number; ciclos: string[]; total_rows: bigint }[]
+            >`
+                SELECT
+                    variavel_id,
+                    array_agg(DISTINCT data_ciclo_target::text ORDER BY data_ciclo_target::text) AS ciclos,
+                    COUNT(*) AS total_rows
+                FROM _suspend_jobs_global
+                WHERE ciclo_owner_id = ANY(${cycleOwnerIds})
+                GROUP BY variavel_id
+                ORDER BY variavel_id
+            `;
+            for (const row of tableASnapshotInAfc) {
+                logger.log(
+                    `[DIAG] (re-leitura Tabela A) var=${row.variavel_id} ciclos=[${row.ciclos.join(',')}] rows=${row.total_rows}`
+                );
+            }
+        } catch (e) {
+            logger.warn(`[DIAG] re-snapshot autoFechaCiclo falhou (ignorado): ${e?.message ?? e}`);
+        }
+
         // Gera todos os ciclos pendentes para fechar, similar ao _suspend_jobs_global
         await prismaTx.$executeRaw`
             CREATE TEMP TABLE _parent_close_jobs ON COMMIT DROP AS
@@ -2799,6 +2896,136 @@ export class VariavelService {
         `;
 
         logger.log(`autoFechaCiclo: Encontrados ${cyclesToClose.length} ciclo(s) para fechar automaticamente`);
+
+        // [DIAG] Forense: re-executa _parent_close_jobs em pedacos para descobrir ONDE o ciclo foi filtrado.
+        // 1) all_cycles_diag: o que passou pelo WHERE de TZ (sem o LEFT JOIN). Se variavel esta em A mas
+        //    nao aparece aqui, eh problema de WHERE/TZ. Se aparece aqui mas nao em cyclesToClose, eh
+        //    problema do LEFT JOIN com variavel_global_ciclo_analise (alguem criou Liberacao no meio da TX).
+        // 2) vgca_match_diag: linhas de Liberacao existentes para os ciclos em all_cycles_diag, com criado_em
+        //    para correlacionar com a TX atual.
+        try {
+            const allCyclesDiag = await prismaTx.$queryRaw<{ variavel_id: number; data_ciclo: Date }[]>`
+            WITH eligible_parents AS (
+                SELECT v.id, v.periodicidade
+                FROM variavel v
+                WHERE v.id IN (${Prisma.join(cycleOwnerIds)})
+                  AND (
+                      v.possui_variaveis_filhas = FALSE
+                      OR (
+                          EXISTS (SELECT 1 FROM variavel c WHERE c.variavel_mae_id = v.id AND c.removido_em IS NULL AND c.tipo = 'Global')
+                          AND NOT EXISTS (SELECT 1 FROM variavel c WHERE c.variavel_mae_id = v.id AND c.removido_em IS NULL AND c.tipo = 'Global' AND c.suspendida_em IS NULL)
+                      )
+                  )
+            ),
+            cr AS (
+                SELECT ep.id AS variavel_id, g.periodicidade, g.min AS inicio, g.max AS fim
+                FROM eligible_parents ep
+                CROSS JOIN LATERAL busca_periodos_variavel(ep.id) AS g
+            )
+            SELECT cr.variavel_id, cycle_date::date AS data_ciclo
+            FROM cr
+            CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
+            WHERE cycle_date::date < (now() AT TIME ZONE '${SYSTEM_TIMEZONE}')::date
+            ORDER BY cr.variavel_id, cycle_date
+        `;
+            const allCyclesByVar = allCyclesDiag.reduce(
+                (acc, r) => {
+                    const k = `${r.variavel_id}`;
+                    if (!acc[k]) acc[k] = [];
+                    acc[k].push(r.data_ciclo.toISOString().split('T')[0]);
+                    return acc;
+                },
+                {} as Record<string, string[]>
+            );
+            for (const [varId, ciclos] of Object.entries(allCyclesByVar)) {
+                logger.log(`[DIAG] all_cycles (pos-WHERE) var=${varId} ciclos=[${ciclos.join(',')}]`);
+            }
+
+            // [DIAG] Para cada variavel + ciclo em all_cycles, mostra se existe Liberacao bloqueando
+            const vgcaMatchDiag = await prismaTx.$queryRaw<
+                {
+                    variavel_id: number;
+                    data_ciclo: Date;
+                    vgca_id: number | null;
+                    vgca_criado_em: Date | null;
+                    vgca_criado_por: number | null;
+                    vgca_eh_liberacao_auto: boolean | null;
+                }[]
+            >`
+            WITH eligible_parents AS (
+                SELECT v.id, v.periodicidade
+                FROM variavel v
+                WHERE v.id IN (${Prisma.join(cycleOwnerIds)})
+                  AND (
+                      v.possui_variaveis_filhas = FALSE
+                      OR (
+                          EXISTS (SELECT 1 FROM variavel c WHERE c.variavel_mae_id = v.id AND c.removido_em IS NULL AND c.tipo = 'Global')
+                          AND NOT EXISTS (SELECT 1 FROM variavel c WHERE c.variavel_mae_id = v.id AND c.removido_em IS NULL AND c.tipo = 'Global' AND c.suspendida_em IS NULL)
+                      )
+                  )
+            ),
+            cr AS (
+                SELECT ep.id AS variavel_id, g.periodicidade, g.min AS inicio, g.max AS fim
+                FROM eligible_parents ep
+                CROSS JOIN LATERAL busca_periodos_variavel(ep.id) AS g
+            ),
+            ac AS (
+                SELECT cr.variavel_id, cycle_date::date AS data_ciclo
+                FROM cr
+                CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
+                WHERE cycle_date::date < (now() AT TIME ZONE '${SYSTEM_TIMEZONE}')::date
+            )
+            SELECT
+                ac.variavel_id,
+                ac.data_ciclo,
+                vgca.id AS vgca_id,
+                vgca.criado_em AS vgca_criado_em,
+                vgca.criado_por AS vgca_criado_por,
+                vgca.eh_liberacao_auto AS vgca_eh_liberacao_auto
+            FROM ac
+            LEFT JOIN variavel_global_ciclo_analise vgca
+                ON vgca.variavel_id = ac.variavel_id
+               AND vgca.referencia_data = ac.data_ciclo
+               AND vgca.fase = 'Liberacao'
+               AND vgca.removido_em IS NULL
+               AND vgca.ultima_revisao = true
+            WHERE vgca.id IS NOT NULL  -- Soh logamos as que TEM match (que sao as que serao filtradas)
+            ORDER BY ac.variavel_id, ac.data_ciclo
+        `;
+            for (const m of vgcaMatchDiag) {
+                logger.log(
+                    `[DIAG] Liberacao bloqueando var=${m.variavel_id} ciclo=${m.data_ciclo.toISOString().split('T')[0]} vgca_id=${m.vgca_id} criado_em=${m.vgca_criado_em?.toISOString()} criado_por=${m.vgca_criado_por} auto=${m.vgca_eh_liberacao_auto}`
+                );
+            }
+
+            // [DIAG] SMOKING GUN: asimetria detectada.
+            // Se Tabela A (sjg) tem ciclo X para variavel Y, e cyclesToClose nao tem ciclo X para variavel Y,
+            // entao o autoFechaCiclo nao vai fechar - exatamente o bug de 2026-04-01.
+            const sjgVarCycles = await prismaTx.$queryRaw<{ ciclo_owner_id: number; data_ciclo_target: Date }[]>`
+            SELECT DISTINCT ciclo_owner_id, data_ciclo_target
+            FROM _suspend_jobs_global
+            WHERE ciclo_owner_id = ANY(${cycleOwnerIds})
+        `;
+            const closedSet = new Set(
+                cyclesToClose.map((c) => `${c.variavel_id}|${c.data_ciclo.toISOString().split('T')[0]}`)
+            );
+            const allCyclesSet = new Set(
+                allCyclesDiag.map((c) => `${c.variavel_id}|${c.data_ciclo.toISOString().split('T')[0]}`)
+            );
+            for (const r of sjgVarCycles) {
+                const key = `${r.ciclo_owner_id}|${r.data_ciclo_target.toISOString().split('T')[0]}`;
+                if (!closedSet.has(key)) {
+                    const inAllCycles = allCyclesSet.has(key);
+                    logger.warn(
+                        `[DIAG][ASIMETRIA] var=${r.ciclo_owner_id} ciclo=${r.data_ciclo_target.toISOString().split('T')[0]} esta em _suspend_jobs_global mas NAO sera fechado. ` +
+                            `Em all_cycles (passou no WHERE TZ)? ${inAllCycles}. ` +
+                            `${inAllCycles ? 'Bloqueado por Liberacao existente no LEFT JOIN.' : 'Filtrado pela WHERE TZ - reproduz o paradoxo de 2026-04-01.'}`
+                    );
+                }
+            }
+        } catch (e) {
+            logger.warn(`[DIAG] forense de cyclesToClose falhou (ignorado): ${(e as any)?.message ?? e}`);
+        }
 
         if (cyclesToClose.length > 0) {
             // Agrupa ciclos por variável para logging
