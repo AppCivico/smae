@@ -4,7 +4,7 @@ import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 export const MESSAGE =
     '$property| Senha: Precisa ter pelo menos 6 caracteres, 1 número e um caractere em CAIXA ALTA e um dos seguintes caracteres especiais: !, @, #, $, %, ^, &, *, (, ), _, +, -, =, [, ], {, }, ;, \', :, ", , |, ,, ., <, >, /, ?';
 export const REGEXP =
-    /^((?=.*\d)|(?=.*\W+)|(?=.*[!@#$%^&*()_+\-=[\]{};':"\\\|,.<>/?]))(?![.\n])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])(?=.*[a-z]).*$/;
+    /^(?![.\n])(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/;
 export class EscreverNovaSenhaRequestBody {
     /**
      * Access Token
