@@ -1320,6 +1320,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemanda.listar',
             'CadastroDemanda.inserir',
             'CadastroDemanda.editar',
+            'CadastroDemanda.remover',
             'CadastroParlamentar.listar',
             'CadastroWorkflows.listar',
 
