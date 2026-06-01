@@ -73,6 +73,7 @@ module.exports = {
     'import/core-modules': [
       'vite',
       '@vitejs/plugin-vue',
+      '@vitejs/plugin-legacy',
     ],
   },
   overrides: [

@@ -670,18 +670,21 @@ export class ReportsService {
                                     {
                                         AND: [
                                             {
+                                                // Prisma sobre PostgreSQL usa array de chaves no `path`
+                                                // (ex.: ['roles']). A sintaxe `$.roles` é do conector
+                                                // MySQL e aqui sempre resolveria para NULL — fazendo o
+                                                // `equals: AnyNull` virar "sempre verdadeiro" e o filtro
+                                                // por órgão vazar todos os relatórios Restrito.
                                                 OR: [
-                                                    // Either roles doesn't exist in the JSON
                                                     {
                                                         restrito_para: {
-                                                            path: ['$.roles'],
+                                                            path: ['roles'],
                                                             equals: Prisma.AnyNull,
                                                         },
                                                     },
-                                                    // Or user has one of the required roles
                                                     {
                                                         restrito_para: {
-                                                            path: ['$.roles'],
+                                                            path: ['roles'],
                                                             array_contains: user.privilegios as string[],
                                                         },
                                                     },
@@ -689,18 +692,16 @@ export class ReportsService {
                                             },
                                             {
                                                 OR: [
-                                                    // Either portfolio_orgao_ids doesn't exist in the JSON
                                                     {
                                                         restrito_para: {
-                                                            path: ['$.portfolio_orgao_ids'],
+                                                            path: ['portfolio_orgao_ids'],
                                                             equals: Prisma.AnyNull,
                                                         },
                                                     },
-                                                    // Or user belongs to one of the required orgs
                                                     user.orgao_id
                                                         ? {
                                                               restrito_para: {
-                                                                  path: ['$.portfolio_orgao_ids'],
+                                                                  path: ['portfolio_orgao_ids'],
                                                                   array_contains: [user.orgao_id],
                                                               },
                                                           }

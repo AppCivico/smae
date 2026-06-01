@@ -167,6 +167,14 @@ export class AuthService {
             throw new BadRequestException('token inválido');
         }
 
+        const pessoa = await this.pessoaService.findById(result.pessoaId);
+        if (!pessoa) throw new BadRequestException('token inválido');
+
+        // não permite reutilizar a senha enviada por e-mail para desbloquear a conta:
+        // o usuário precisa definir uma senha nova diferente da recebida.
+        if (await this.pessoaService.senhaCorreta(body.senha, pessoa))
+            throw new BadRequestException('A senha enviada por e-mail precisa ser trocada por uma nova.');
+
         const updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
         if (updated) {
             return this.criarSession(result.pessoaId, ip);

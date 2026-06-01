@@ -148,7 +148,7 @@ export class GeoApiService {
         const errors = await validate(dto, { enableDebugMessages: true });
         if (errors.length) throw new Error(JSON.stringify(errors));
         dto.cep = dto.cep.replace(/\\-+/g, '');
-        if (dto.cep.length != 8) throw new Error('CEP inválido');
+        if (dto.cep.length != 8) throw new HttpException('CEP inválido', 400);
         dto.cep = dto.cep.substring(0, 5) + '-' + dto.cep.substring(5, 8);
 
         const endpoint = 'geolocalizar_cep/';

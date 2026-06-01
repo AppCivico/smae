@@ -16,18 +16,26 @@ class ReverseGeocoding:
         self.session = Session()
         self.build_query = ReverseQueryBuilder(contact_email)
         self.add_language_headers()
+        self.add_user_agent_header(contact_email)
 
     def build_base_url(self, host:str, endpoint:str)->str:
 
         return f'https://{host}/{endpoint}'
-    
+
     def add_language_headers(self):
-        
+
         #tem que colocar esse header se nao ele muda a language da
         #resposta da API com base no reverse location search do IP
         #o que faria o codigo quebrar
 
         self.session.headers.update({'Accept-Language' : 'en-US'})
+
+    def add_user_agent_header(self, contact_email:str):
+
+        #Nominatim bloqueia User-Agents genéricos de bibliotecas HTTP (retorna 403).
+        #https://operations.osmfoundation.org/policies/nominatim/
+
+        self.session.headers.update({'User-Agent': f'smae-backend-geoloc ({contact_email})'})
     
 
     @json_decode_error_handling
