@@ -58,7 +58,7 @@ Vamos clonar o projeto e criar os diretórios para os dados persistentes.
 cd /home/smae
 
 # Clone o projeto via HTTPS
-git clone https://github.com/AppCivico/smae.git
+git clone <URL_DO_REPOSITORIO>
 cd smae
 
 # Defina a variável de ambiente para o caminho dos volumes

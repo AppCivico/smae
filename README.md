@@ -1,7 +1,5 @@
 # SMAE
 
-Pasta de origem do repositório do SMAE
-
 Acesse [o README do backend](backend/README.md) para instruções de desenvolvimento do backend!
 
 Senha do usuário padrão:
@@ -31,7 +29,7 @@ Este guia cobre a implantação completa da stack, incluindo o frontend e o serv
 Clone o projeto usando HTTPS para um acesso mais simples:
 
 ```bash
-git clone https://github.com/AppCivico/smae.git
+git clone <URL_DO_REPOSITORIO>
 cd smae
 ```
 
