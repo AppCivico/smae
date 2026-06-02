@@ -44,23 +44,27 @@ const inputMaxRef = ref<HTMLInputElement | null>(null);
 const ready = ref<boolean>(false);
 
 function obterValorInicialMin(): number {
+  let valor: number;
   if (valorMin.value !== undefined && valorMin.value !== null && valorMin.value !== '') {
-    return parseFloat(String(valorMin.value));
+    valor = Number.parseFloat(String(valorMin.value));
+  } else if (props.minSelecionado !== null && props.minSelecionado !== undefined) {
+    valor = props.minSelecionado;
+  } else {
+    valor = props.min;
   }
-  if (props.minSelecionado !== null && props.minSelecionado !== undefined) {
-    return props.minSelecionado;
-  }
-  return props.min;
+  return Math.max(props.min, Math.min(props.max, valor));
 }
 
 function obterValorInicialMax(): number {
+  let valor: number;
   if (valorMax.value !== undefined && valorMax.value !== null && valorMax.value !== '') {
-    return parseFloat(String(valorMax.value));
+    valor = Number.parseFloat(String(valorMax.value));
+  } else if (props.maxSelecionado !== null && props.maxSelecionado !== undefined) {
+    valor = props.maxSelecionado;
+  } else {
+    valor = props.max;
   }
-  if (props.maxSelecionado !== null && props.maxSelecionado !== undefined) {
-    return props.maxSelecionado;
-  }
-  return props.max;
+  return Math.max(props.min, Math.min(props.max, valor));
 }
 
 const sliderMin = ref<number>(obterValorInicialMin());

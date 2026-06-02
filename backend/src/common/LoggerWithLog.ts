@@ -21,6 +21,8 @@ export function LoggerWithLog(methodName: string): LoggerWithLog {
         ...logger,
         getLogs: () => logs,
         saveLogs: async (prismaTx: Prisma.TransactionClient, logOpts: LogOpt) => {
+            if (logs.length == 0) return;
+
             await prismaTx.logGenerico.create({
                 data: {
                     contexto: methodName,

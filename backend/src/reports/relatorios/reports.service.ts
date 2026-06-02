@@ -486,27 +486,12 @@ export class ReportsService {
             throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
         }
 
-        // Trava de listagem por órgão para usuários sem o privilégio amplo
-        // `Reports.executar.{sistema}` (ex.: gestor com `:Demandas` apenas). Persiste o
-        // `restrito_para.portfolio_orgao_ids` no momento da criação — assim a listagem usa o
-        // filtro JSON existente (e o índice GIN) e a restrição não muda se o usuário trocar de
-        // órgão depois. `Publico` é forçado a `Restrito` aqui pois só faz sentido como
-        // verdadeiramente público quando criado por usuário com o privilégio amplo.
-        let visibilidade: RelatorioVisibilidade = dto.eh_publico ? 'Publico' : 'Privado';
-        let restritoParaData: Prisma.InputJsonValue | undefined;
-        const temPrivAmplo =
-            !user || user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios]);
-        if (!temPrivAmplo) {
-            const orgaoIdParam = (parametros as { orgao_id?: number | string }).orgao_id;
-            const orgaoId = orgaoIdParam != null ? Number(orgaoIdParam) : user!.orgao_id;
-            if (!orgaoId) {
-                throw new BadRequestException(
-                    'Usuário sem privilégio amplo e sem órgão associado — defina parametros.orgao_id ou associe um órgão.'
-                );
-            }
-            visibilidade = 'Restrito';
-            restritoParaData = { portfolio_orgao_ids: [orgaoId] };
-        }
+        // Visibilidade respeita o `eh_publico` enviado para todos os perfis — inclusive Gestor
+        // de Distribuição de Recurso. A restrição por órgão para esse perfil é aplicada apenas
+        // na listagem (findAll), filtrando Publico por `parametros.orgao_id` do usuário; aqui
+        // basta garantir (em [linha ~472]) que o `parametros.orgao_id` seja coerced para o
+        // órgão do Gestor antes de persistir.
+        const visibilidade: RelatorioVisibilidade = dto.eh_publico ? 'Publico' : 'Privado';
 
         console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -516,7 +501,6 @@ export class ReportsService {
                     fonte: dto.fonte,
                     sistema: sistema,
                     visibilidade: visibilidade,
-                    restrito_para: restritoParaData,
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                     parametros: parametros,
                     parametros_processados: await BuildParametrosProcessados(this.prisma, {
@@ -633,16 +617,27 @@ export class ReportsService {
                 : { in: fontesEscopadas };
         }
 
-        // `Publico` só vale como "globalmente visível" quando criado por usuário com privilégio
-        // amplo. Para usuários escopados, omitimos o ramo Publico do OR — eles só veem seus
-        // próprios `Privado` e `Restrito` cujo `restrito_para` casa com o orgao deles.
+        // Gestor de Distribuição de Recurso só vê reports do próprio órgão: enxerga `Publico`
+        // apenas quando `parametros.orgao_id` casa com o órgão dele. Demais usuários enxergam
+        // qualquer `Publico` sem filtro extra.
+        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']);
         const visibilidadeOR: Prisma.RelatorioWhereInput[] = [
             {
                 visibilidade: 'Privado',
                 criado_por: user.id,
             },
         ];
-        if (temPrivAmplo) {
+        if (isGestorDistribuicao) {
+            if (user.orgao_id) {
+                visibilidadeOR.push({
+                    visibilidade: 'Publico',
+                    parametros: {
+                        path: ['orgao_id'],
+                        equals: user.orgao_id,
+                    },
+                });
+            }
+        } else {
             visibilidadeOR.push({ visibilidade: 'Publico' });
         }
 

@@ -84,6 +84,9 @@ interface IUltimaAnaliseValor {
 
 type ReducedFiltro = Omit<FilterVariavelGlobalCicloDto, 'atividade_id' | 'iniciativa_id' | 'meta_id' | 'pdm_id'>;
 
+// Resultado de cada operação em atualizaSerieVariavel; usado para contabilizar e logar uma única vez.
+type ResultadoAtualizaSerie = 'pulado' | 'sem_alteracao' | 'criado' | 'atualizado' | 'removido';
+
 /**
  * Generates permission-based where conditions for Variavel queries
  */
@@ -410,6 +413,7 @@ export class VariavelCicloService {
         this.validaValoresVariaveis(dto, cicloCorrente);
 
         const now = new Date(Date.now());
+        const logger = LoggerWithLog('VariavelCicloService.patchVariavelCiclo');
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
             // Cria uma nova analise qualitativa, marcando primeiro a última como falsa
@@ -528,7 +532,9 @@ export class VariavelCicloService {
                         now,
                         user,
                         dto.data_referencia,
-                        conferida
+                        conferida,
+                        now, // jobTime = now
+                        logger
                     );
                 }
 
@@ -537,6 +543,8 @@ export class VariavelCicloService {
                     await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
                 }
             }
+
+            await logger.saveLogs(prismaTxn, user.getLogData());
         });
     }
 
@@ -700,8 +708,10 @@ export class VariavelCicloService {
         now: Date,
         user: { id: number },
         dataReferencia: Date,
-        conferida: boolean
-    ) {
+        conferida: boolean,
+        jobTime: Date,
+        logger: LoggerWithLog
+    ): Promise<ResultadoAtualizaSerie> {
         const valor_nominal = valor.valor_realizado === '' ? '' : valor.valor_realizado;
 
         let variavel_categorica_valor_id: number | null = null;
@@ -731,8 +741,23 @@ export class VariavelCicloService {
                 serie: 'Realizado',
                 data_valor: dataReferencia,
             },
-            select: { id: true, valor_nominal: true },
+            select: { id: true, valor_nominal: true, atualizado_em: true },
         });
+
+        const dataRef = dataReferencia.toISOString().substring(0, 10);
+
+        // Na sincronização automática (jobTime preenchido) não sobrescreve valores que o usuário
+        // alterou depois que a análise entrou na fila. Muitos registros ficam na fila, mas só
+        // devem atualizar os que ainda não foram tocados após o job. Loga cada pulado individualmente.
+        if (jobTime && existeValor && existeValor.atualizado_em > jobTime) {
+            logger.log(
+                `Variável ${variavelInfo.id} em ${dataRef}: pulado, série atualizada em ` +
+                    `${existeValor.atualizado_em.toISOString()} após o job (${jobTime.toISOString()})`
+            );
+            return 'pulado';
+        }
+
+        let resultado: ResultadoAtualizaSerie = 'sem_alteracao';
 
         if (existeValor && valor_nominal === '') {
             await prismaTxn.serieVariavel.delete({
@@ -740,6 +765,8 @@ export class VariavelCicloService {
                     id: existeValor.id,
                 },
             });
+            logger.log(`Variável ${variavelInfo.id} em ${dataRef}: valor removido (id ${existeValor.id})`);
+            resultado = 'removido';
         } else if (!existeValor && valor_nominal !== '') {
             await prismaTxn.serieVariavel.create({
                 data: {
@@ -754,6 +781,8 @@ export class VariavelCicloService {
                     variavel_categorica_valor_id: variavel_categorica_valor_id,
                 },
             });
+            logger.log(`Variável ${variavelInfo.id} em ${dataRef}: valor criado (${valor_nominal})`);
+            resultado = 'criado';
         } else if (existeValor && valor_nominal !== '') {
             if (existeValor.valor_nominal.toString() !== valor_nominal) {
                 await prismaTxn.serieVariavel.update({
@@ -767,10 +796,16 @@ export class VariavelCicloService {
                         variavel_categorica_valor_id: variavel_categorica_valor_id,
                     },
                 });
+                logger.log(
+                    `Variável ${variavelInfo.id} em ${dataRef}: valor atualizado de ` +
+                        `${existeValor.valor_nominal.toString()} para ${valor_nominal} (id ${existeValor.id})`
+                );
+                resultado = 'atualizado';
             }
         }
 
         if (!variavelInfo.acumulativa) {
+            logger.log(`Variável ${variavelInfo.id} em ${dataRef}: não acumulativa, atualizando série acumulada`);
             await this.atualizaSerieVariavelAcumulada(
                 variavelInfo,
                 prismaTxn,
@@ -781,6 +816,8 @@ export class VariavelCicloService {
                 conferida
             );
         }
+
+        return resultado;
     }
 
     private async atualizaSerieVariavelAcumulada(
@@ -1506,13 +1543,14 @@ export class VariavelCicloService {
             where: {
                 sincronizar_serie_variavel: true,
                 removido_em: null, // vai que...
-                fase: 'Preenchimento',
+                fase: 'Liberacao',
                 ultima_revisao: true,
             },
             select: {
                 variavel_id: true,
                 referencia_data: true,
                 valores: true,
+                criado_em: true, // "job time": usado para não sobrescrever edições feitas pelo usuário após enfileirar
             },
             orderBy: {
                 variavel_id: 'asc',
@@ -1533,6 +1571,9 @@ export class VariavelCicloService {
             const now = new Date(Date.now());
             const botUser = { id: CONST_BOT_USER_ID } as PessoaFromJwt;
             const variaveisIds: number[] = [];
+
+            // "sem_alteracao" é apenas contado e logado uma vez após o loop; pulados e mudanças são logados individualmente.
+            let semAlteracao = 0;
 
             for (const analise of analises) {
                 const valores = analise.valores?.valueOf() as IUltimaAnaliseValor[];
@@ -1559,7 +1600,7 @@ export class VariavelCicloService {
                     );
 
                     // Processa o valor
-                    await this.atualizaSerieVariavel(
+                    const resultado = await this.atualizaSerieVariavel(
                         variavelInfo,
                         {
                             variavel_id: valor.variavel_id,
@@ -1570,14 +1611,20 @@ export class VariavelCicloService {
                         now,
                         botUser,
                         analise.referencia_data,
-                        true // conferida = true
+                        true, // conferida = true
+                        analise.criado_em, // jobTime: não sobrescreve edições do usuário posteriores
+                        logger
                     );
 
-                    countChanges++;
+                    if (resultado === 'sem_alteracao') semAlteracao++;
+                    else if (resultado !== 'pulado') countChanges++;
                 }
 
                 await this.finalizaStatusSincronizacao(analise.variavel_id, analise.referencia_data, prismaTxn);
             }
+
+            // Loga uma única vez o total de itens sem alteração (pulados e mudanças já foram logados individualmente).
+            if (semAlteracao > 0) logger.log(`${semAlteracao} valores sem alterações`);
 
             // Processa os recálculos apenas uma vez para todas as variáveis atualizadas
             if (variaveisIds.length > 0) {
@@ -1609,7 +1656,7 @@ export class VariavelCicloService {
                 variavel_id: variavelId,
                 referencia_data: dataReferencia,
                 sincronizar_serie_variavel: true,
-                fase: 'Preenchimento',
+                fase: 'Liberacao',
                 ultima_revisao: true,
             },
             data: {

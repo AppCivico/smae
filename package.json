@@ -6,14 +6,6 @@
     "frontend": "cd ./frontend && npm run dev",
     "backend": "cd ./backend && npm run start:dev"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AppCivico/smae.git"
-  },
   "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AppCivico/smae/issues"
-  },
-  "homepage": "https://github.com/AppCivico/smae#readme"
+  "license": "AGPL-3.0-or-later"
 }

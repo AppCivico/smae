@@ -354,28 +354,26 @@ describe('SmaeRangeInput', () => {
       expect(mockSetMax).toHaveBeenCalledWith(100);
     });
 
-    it('preserva valores do VeeValidate mesmo quando estão fora do range visual', () => {
+    it('limita valores do VeeValidate ao range quando estão acima do máximo', () => {
       mockValorMinRef.value = 12312315414.18;
       mockValorMaxRef.value = 12312315414.18;
 
       const wrapper = montarComponente({ min: 0, max: 10000000 });
       const vm = wrapper.vm as any;
 
-      // Os valores reais devem ser preservados, não limitados
-      expect(vm.sliderMin).toBe(12312315414.18);
-      expect(vm.sliderMax).toBe(12312315414.18);
+      expect(vm.sliderMin).toBe(10000000);
+      expect(vm.sliderMax).toBe(10000000);
     });
 
-    it('preserva valores negativos do VeeValidate', () => {
+    it('limita valores negativos do VeeValidate ao mínimo permitido', () => {
       mockValorMinRef.value = -100;
       mockValorMaxRef.value = -50;
 
       const wrapper = montarComponente({ min: 0, max: 100 });
       const vm = wrapper.vm as any;
 
-      // Valores negativos são válidos e devem ser preservados
-      expect(vm.sliderMin).toBe(-100);
-      expect(vm.sliderMax).toBe(-50);
+      expect(vm.sliderMin).toBe(0);
+      expect(vm.sliderMax).toBe(0);
     });
   });
 
