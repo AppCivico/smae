@@ -62,6 +62,8 @@ const inputRef = useTemplateRef('inputRef');
 
 const exibirModal = ref<boolean>(false);
 const alterouArquivo = ref<boolean>(false);
+const modoEdicaoMetadados = ref<boolean>(false);
+const itemEmEdicao = ref<ArquivoDocumento | null>(null);
 const arquivosLocais = ref<ArquivoDocumento[]>([]);
 const arquivoSelecionado = ref<File | null>(null);
 const nomeArquivoSelecionado = ref<string>('');
@@ -74,6 +76,8 @@ const {
 } = useUpload();
 
 function abrirModal() {
+  modoEdicaoMetadados.value = false;
+  itemEmEdicao.value = null;
   resetForm({ values: { autoriza_divulgacao: false } });
   arquivoSelecionado.value = null;
   nomeArquivoSelecionado.value = '';
@@ -88,21 +92,20 @@ function abrirSeletorDeArquivos() {
   inputRef.value?.click();
 }
 
-async function handleEditarItem(linha) {
-  abrirModal();
+async function handleEditarMetadados(linha: ArquivoDocumento) {
+  modoEdicaoMetadados.value = true;
+  itemEmEdicao.value = linha;
+  exibirModal.value = true;
 
   await nextTick();
 
   resetForm({
     values: {
-      id: linha.id,
       autoriza_divulgacao: linha.autoriza_divulgacao,
       descricao: linha.descricao,
       arquivo: linha.arquivo,
     },
   });
-
-  nomeArquivoSelecionado.value = linha.arquivo.nome_original;
 }
 
 function handleFileChange(event: Event) {
@@ -122,9 +125,18 @@ function handleFileChange(event: Event) {
 }
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
-  const file = values.arquivo as File;
-
   try {
+    if (modoEdicaoMetadados.value) {
+      const alvo = itemEmEdicao.value;
+      if (!alvo) throw new Error('Item em edição não encontrado');
+      alvo.descricao = values.descricao as string;
+      alvo.autoriza_divulgacao = values.autoriza_divulgacao as boolean;
+      emit('update:modelValue', arquivosLocais.value);
+      fecharModal();
+      return;
+    }
+
+    const file = values.arquivo as File;
     let token;
     if (alterouArquivo.value) {
       token = await uploadArquivo(file, 'DOCUMENTO');
@@ -174,7 +186,6 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     }
 
     emit('update:modelValue', arquivosLocais.value);
-
     fecharModal();
   } catch (err) {
     console.error(err);
@@ -210,7 +221,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
     :active="exibirModal"
     @close="fecharModal"
   >
-    <h2>Adicionar arquivo</h2>
+    <h2>{{ modoEdicaoMetadados ? 'Editar informações' : 'Adicionar arquivo' }}</h2>
 
     <form @submit="onSubmit">
       <Field
@@ -259,7 +270,10 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         />
       </div>
 
-      <div class="mb1">
+      <div
+        v-if="!modoEdicaoMetadados"
+        class="mb1"
+      >
         <SmaeLabel
           name="arquivo"
           :schema="schema"
@@ -309,7 +323,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
       </div>
 
       <div
-        v-if="erro"
+        v-if="erro && !modoEdicaoMetadados"
         class="error-msg mb1"
       >
         Erro ao enviar arquivo. Tente novamente.
@@ -329,7 +343,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
           class="btn"
           :disabled="isSubmitting || carregando"
         >
-          {{ carregando ? 'Enviando...' : 'Adicionar' }}
+          {{ modoEdicaoMetadados ? 'Salvar' : (carregando ? 'Enviando...' : 'Adicionar') }}
         </button>
       </div>
     </form>
@@ -369,7 +383,9 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         :to="linha.id && obterUrlDownload(linha.arquivo.download_token)"
         class="flex center g05"
       >
-        {{ linha.arquivo.nome_original }}
+        <span style="text-overflow: ellipsis; overflow: clip; flex-basis: 0; flex-grow: 1;">
+          {{ linha.arquivo.nome_original }}
+        </span>
 
         <svg
           v-if="!linha.id"
@@ -387,7 +403,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
     >
       <button
         class="like-a__text"
-        @click="handleEditarItem(linha)"
+        @click="handleEditarMetadados(linha)"
       >
         <svg
           width="20"
