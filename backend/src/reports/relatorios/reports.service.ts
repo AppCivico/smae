@@ -486,22 +486,20 @@ export class ReportsService {
             throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
         }
 
-        // Trava de listagem por órgão para usuários sem o privilégio amplo
-        // `Reports.executar.{sistema}` (ex.: gestor com `:Demandas` apenas). Persiste o
-        // `restrito_para.portfolio_orgao_ids` no momento da criação — assim a listagem usa o
-        // filtro JSON existente (e o índice GIN) e a restrição não muda se o usuário trocar de
-        // órgão depois. `Publico` é forçado a `Restrito` aqui pois só faz sentido como
-        // verdadeiramente público quando criado por usuário com o privilégio amplo.
+        // Trava de listagem por órgão exclusiva para o perfil "Gestor(a) de Distribuição de
+        // Recurso": força `Restrito` + `restrito_para.portfolio_orgao_ids` no momento da criação,
+        // ignorando `eh_publico`. Persistir o órgão aqui garante que a restrição não muda se o
+        // usuário trocar de órgão depois e permite que a listagem use o filtro JSON (índice GIN).
+        // Demais usuários (escopados ou amplos) respeitam o `eh_publico` enviado.
         let visibilidade: RelatorioVisibilidade = dto.eh_publico ? 'Publico' : 'Privado';
         let restritoParaData: Prisma.InputJsonValue | undefined;
-        const temPrivAmplo =
-            !user || user.hasSomeRoles([`Reports.executar.${sistema}` as ListaDePrivilegios]);
-        if (!temPrivAmplo) {
+        const isGestorDistribuicao = !!user?.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']);
+        if (isGestorDistribuicao) {
             const orgaoIdParam = (parametros as { orgao_id?: number | string }).orgao_id;
             const orgaoId = orgaoIdParam != null ? Number(orgaoIdParam) : user!.orgao_id;
             if (!orgaoId) {
                 throw new BadRequestException(
-                    'Usuário sem privilégio amplo e sem órgão associado — defina parametros.orgao_id ou associe um órgão.'
+                    'Gestor de Distribuição de Recurso sem órgão associado — defina parametros.orgao_id ou associe um órgão.'
                 );
             }
             visibilidade = 'Restrito';
@@ -633,16 +631,17 @@ export class ReportsService {
                 : { in: fontesEscopadas };
         }
 
-        // `Publico` só vale como "globalmente visível" quando criado por usuário com privilégio
-        // amplo. Para usuários escopados, omitimos o ramo Publico do OR — eles só veem seus
-        // próprios `Privado` e `Restrito` cujo `restrito_para` casa com o orgao deles.
+        // Gestor de Distribuição de Recurso só vê seus próprios `Privado` e os `Restrito` cujo
+        // `restrito_para` casa com o órgão dele — `Publico` é omitido do OR para manter o
+        // isolamento por órgão. Demais usuários (incluindo escopados) enxergam `Publico`.
+        const isGestorDistribuicao = user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']);
         const visibilidadeOR: Prisma.RelatorioWhereInput[] = [
             {
                 visibilidade: 'Privado',
                 criado_por: user.id,
             },
         ];
-        if (temPrivAmplo) {
+        if (!isGestorDistribuicao) {
             visibilidadeOR.push({ visibilidade: 'Publico' });
         }
 
