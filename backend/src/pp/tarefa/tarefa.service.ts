@@ -417,6 +417,14 @@ export class TarefaService {
             // a tela do realizado não tem esse campo, portanto ainda não terminaram de configurar o cronograma
             // que pode ter sido clonado ou puxado de um workflow
 
+            // Gestor de distribuição de recurso nunca pode editar tarefas
+            if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
+                return {
+                    pode_editar: false,
+                    pode_editar_realizado: pode_editar_realizado,
+                };
+            }
+
             if (
                 user.hasSomeRoles([
                     // tudo igual para quem é de projetos, fica sempre true, e segue a regra do frontend
