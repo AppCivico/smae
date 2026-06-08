@@ -4,6 +4,7 @@ import { VinculoModule } from '../casa-civil/vinculo/vinculo.module';
 import { GeoApiModule } from '../geo-api/geo-api.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { GeoLocController } from './geo-loc.controller';
+import { GeoLocDebugController } from './geo-loc-debug.controller';
 import { GeoLocService } from './geo-loc.service';
 
 @Module({
@@ -16,7 +17,7 @@ import { GeoLocService } from './geo-loc.service';
             signOptions: { expiresIn: '1d' },
         }),
     ],
-    controllers: [GeoLocController],
+    controllers: [GeoLocController, GeoLocDebugController],
     providers: [GeoLocService],
     exports: [GeoLocService],
 })
