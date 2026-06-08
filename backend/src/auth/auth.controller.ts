@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
     ApiBearerAuth,
     ApiBody,
@@ -30,6 +31,7 @@ export class AuthController {
     @Post('login')
     @HttpCode(HttpStatus.OK)
     @IsPublic()
+    @Throttle({ default: { limit: 20, ttl: 60 * 1000 }, burst: { limit: 3, ttl: 1000 } })
     @UseGuards(LocalAuthGuard)
     @ApiBody({ type: LoginRequestBody })
     @ApiExtraModels(AccessToken, ReducedAccessToken)
@@ -57,6 +59,7 @@ export class AuthController {
     @Post('escrever-nova-senha')
     @HttpCode(HttpStatus.OK)
     @IsPublic()
+    @Throttle({ default: { limit: 20, ttl: 60 * 1000 }, burst: { limit: 3, ttl: 1000 } })
     @ApiBody({ type: EscreverNovaSenhaRequestBody })
     async escreverNovaSenha(@Body() body: EscreverNovaSenhaRequestBody, @IpAddress() ipAddress: string) {
         return this.authService.escreverNovaSenha(body, ipAddress);
@@ -66,6 +69,7 @@ export class AuthController {
     @Post('solicitar-nova-senha')
     @HttpCode(HttpStatus.ACCEPTED)
     @IsPublic()
+    @Throttle({ default: { limit: 20, ttl: 60 * 1000 }, burst: { limit: 3, ttl: 1000 } })
     @ApiBody({ type: SolicitarNovaSenhaRequestBody })
     async solicitaNovaSenha(@Body() body: SolicitarNovaSenhaRequestBody) {
         await this.authService.solicitarNovaSenha(body);
