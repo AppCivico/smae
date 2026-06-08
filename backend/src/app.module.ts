@@ -1,4 +1,5 @@
 import {
+    ExecutionContext,
     MiddlewareConsumer,
     Module,
     NestModule,
@@ -8,6 +9,7 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
 import { AllExceptionsFilter } from './any-error.filter';
 import { AppController } from './app.controller';
@@ -25,6 +27,7 @@ import { AppModuleWorkflow } from './app.module.workflow';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { SmaeThrottlerGuard } from './auth/guards/throttler.guard';
 import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
 import { ContentInterceptor } from './content.interceptor';
 import { DuckDBModule } from './common/duckdb/duckdb.module';
@@ -52,6 +55,30 @@ import { SysadminModule } from './sysadmin/sysadmin.module';
         ConfigModule.forRoot(),
         PrismaModule,
         RequestLogModule,
+        ThrottlerModule.forRoot({
+            // Limite global bem alto, aplicado a todos os endpoints.
+            // Endpoints de login / senha sobrescrevem com @Throttle (limites baixos).
+            skipIf: (context: ExecutionContext) => {
+                const request = context.switchToHttp().getRequest();
+                // Não aplica rate limit para localhost (a menos que forçado via env)
+                return (
+                    !process.env.FORCE_LOCALHOST_THROTTLER &&
+                    (request.ip === '127.0.0.1' || request.ip === '::1' || request.ip === '::ffff:127.0.0.1')
+                );
+            },
+            throttlers: [
+                {
+                    name: 'default',
+                    limit: process.env.THROTTLER_MINUTE_LIMITER ? +process.env.THROTTLER_MINUTE_LIMITER : 1500,
+                    ttl: 60 * 1000,
+                },
+                {
+                    name: 'burst',
+                    limit: process.env.THROTTLER_SECOND_LIMITER ? +process.env.THROTTLER_SECOND_LIMITER : 60,
+                    ttl: 1000,
+                },
+            ],
+        }),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
@@ -113,6 +140,10 @@ import { SysadminModule } from './sysadmin/sysadmin.module';
     controllers: [AppController],
     providers: [
         AppService,
+        {
+            provide: APP_GUARD,
+            useClass: SmaeThrottlerGuard,
+        },
         {
             provide: APP_GUARD,
             useClass: JwtAuthGuard,

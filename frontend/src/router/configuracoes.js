@@ -131,7 +131,7 @@ export default [
         'CadastroRegiao.',
         'CadastroTipoDocumento.',
         'CadastroUnidadeMedida.',
-        'CadastroWorkflows.',
+        'CadastroWorkflows.inserir',
         'Projeto.administrar_portfolios_no_orgao',
         'Projeto.administrar_portfolios',
         'ProjetoProgramaMDO.',
@@ -790,7 +790,7 @@ export default [
         meta: {
           título: 'Workflow',
           entidadeMãe: 'TransferenciasVoluntarias',
-          limitarÀsPermissões: 'CadastroWorkflows.',
+          limitarÀsPermissões: 'CadastroWorkflows.inserir',
           rotasParaMenuSecundário: [
             'fluxosListar',
             'TransferenciasVoluntarias.etapa.listar',

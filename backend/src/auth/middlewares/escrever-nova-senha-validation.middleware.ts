@@ -7,7 +7,7 @@ import { FormatValidationErrors } from '../../common/helpers/FormatValidationErr
 @Injectable()
 export class EscreverNovaSenhaValidationMiddleware implements NestMiddleware {
     async use(req: Request, res: Response, next: NextFunction) {
-        const body = req.body;
+        const body = req.body ?? {};
 
         const loginRequestBody = new EscreverNovaSenhaRequestBody();
         loginRequestBody.reduced_access_token = body.reduced_access_token;

@@ -7,7 +7,7 @@ import { FormatValidationErrors } from '../../common/helpers/FormatValidationErr
 @Injectable()
 export class SolicitarNovaSenhaValidationMiddleware implements NestMiddleware {
     async use(req: Request, res: Response, next: NextFunction) {
-        const body = req.body;
+        const body = req.body ?? {};
 
         const loginRequestBody = new SolicitarNovaSenhaRequestBody();
         loginRequestBody.email = body.email;
