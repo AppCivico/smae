@@ -67,7 +67,15 @@ class AddressParser:
         geom = feature.get('geometry')
 
         if geom is None:
-            feature['geometry'] = self.build_geometry_from_lon_lat(1, 2)
+            #resposta do reverse usa format=json: não vem geometry,
+            #mas vem lat/lon no nível raiz (strings). Constrói o Point a partir deles.
+            lon = feature.get('lon')
+            lat = feature.get('lat')
+
+            if lon is None or lat is None:
+                raise AtributeNotFound(f'Atributo não encontrado: geometry/lon/lat: {feature}')
+
+            feature['geometry'] = self.build_geometry_from_lon_lat(float(lon), float(lat))
 
         return feature['geometry']
             
