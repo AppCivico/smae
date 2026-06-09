@@ -51,11 +51,9 @@ const { seriesFilhas } = useSeriesFilhasAgrupadasParaEdicao(seriesAgrupadas);
 const modoDePreenchimento = ref('valor_nominal'); // ou `valor_acumulado`
 const valorPadrao = ref<number | ''>(0);
 const periodoSelecionado = ref<string>('');
-const mapaDeAcumulados = ref<Record<number, number>>({});
+const acumuladosEmEdicao = ref<number[]>([]);
 
-// Desabilitado por enquanto
-// const ehAcumulativa = computed(() => seriesAgrupadas.value?.variavel?.acumulativa);
-const ehAcumulativa = false;
+const ehAcumulativa = computed(() => seriesAgrupadas.value?.variavel?.acumulativa);
 
 const ehCategorica = computed(() => !!seriesAgrupadas.value?.dados_auxiliares?.categoricas);
 // eslint-disable-next-line max-len
@@ -65,6 +63,15 @@ const opcoesCategoricas = computed(() => seriesAgrupadas.value?.dados_auxiliares
 const valoresIniciais = computed(() => ({
   valores: seriesFilhas.value?.[props.tipoDeValor] || [],
 }));
+
+const listaDeAcumuladosIniciais = computed(() => (ehAcumulativa.value
+  ? seriesFilhas.value?.[`${props.tipoDeValor}Acumulado`]
+    .map((item) => Number(item.valor) || 0)
+  : []
+));
+
+const listaDeNominaisIniciais = computed(() => seriesFilhas.value?.[props.tipoDeValor]
+  .map((item) => Number(item.valor) || 0) || []);
 
 const {
   errors,
@@ -152,9 +159,40 @@ function limparFormulario() {
   });
 }
 
-function atualizarAPartirDoAcumulado(value: string, idx: number) {
-  // TODO: implement accumulated value logic
-  console.warn('atualizarAPartirDoAcumulado not yet implemented', value, idx);
+function atualizarAPartirDoAcumulado(idx: number) {
+  if (!ehAcumulativa.value) {
+    return;
+  }
+
+  const novoValorAcumulado = Number(acumuladosEmEdicao.value[idx]);
+
+  if (novoValorAcumulado === undefined || Number.isNaN(novoValorAcumulado)) {
+    return;
+  }
+
+  const valorNominalInicial = listaDeNominaisIniciais.value?.[idx] || 0;
+  const valorAcumuladoInicial = listaDeAcumuladosIniciais.value?.[idx] || 0;
+
+  const novoValorNominal = (valorNominalInicial - valorAcumuladoInicial) + novoValorAcumulado;
+
+  setFieldValue(`valores[${idx}].valor`, novoValorNominal);
+}
+
+function atualizarAcumulado(idx: number) {
+  if (!ehAcumulativa.value) {
+    return;
+  }
+
+  const novoValorNominal = Number(cargaControlada.value?.valores?.[idx]?.valor);
+
+  if (novoValorNominal === undefined || Number.isNaN(novoValorNominal)) {
+    return;
+  }
+
+  const valorNominalInicial = listaDeNominaisIniciais.value?.[idx] || 0;
+  const valorAcumuladoInicial = listaDeAcumuladosIniciais.value?.[idx] || 0;
+
+  acumuladosEmEdicao.value[idx] = (valorAcumuladoInicial - valorNominalInicial) + novoValorNominal;
 }
 
 watch(() => props.variavelId, (novoId) => {
@@ -198,6 +236,9 @@ watch(valoresIniciais, (novoValor) => {
   resetForm({
     values: novoValor,
   });
+
+  // criar uma nova referência e evitar problemas de reatividade
+  acumuladosEmEdicao.value = listaDeAcumuladosIniciais.value.slice();
 }, {
   immediate: true,
 });
@@ -469,6 +510,7 @@ onUnmounted(() => {
                   class="inputtext light tr"
                   :class="{ 'error': errors[`valores[${idx}].valor` as keyof typeof errors] }"
                   :disabled="modoDePreenchimento !== 'valor_nominal'"
+                  @update:model-value="atualizarAcumulado(idx)"
                 />
 
                 <Field
@@ -502,14 +544,14 @@ onUnmounted(() => {
               >
                 <input
                   v-if="field?.value.variavel.acumulativa"
-                  v-model="mapaDeAcumulados[idx]"
+                  v-model="acumuladosEmEdicao[idx]"
                   type="number"
                   class="inputtext light tr"
                   :step="geradorDeAtributoStep(
                     field?.value.variavel.casas_decimais
                   )"
                   :disabled="modoDePreenchimento !== 'valor_acumulado'"
-                  @input="($event) => { atualizarAPartirDoAcumulado($event.target.value, idx) }"
+                  @input="() => { atualizarAPartirDoAcumulado(idx) }"
                 >
                 <template v-else>
                   -
