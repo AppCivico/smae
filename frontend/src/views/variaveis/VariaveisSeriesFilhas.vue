@@ -4,7 +4,7 @@ import {
   ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineEmits, defineProps, onUnmounted, ref, watch,
+  computed, onUnmounted, ref, watch,
 } from 'vue';
 
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
