@@ -127,6 +127,32 @@ const onSubmit = handleSubmit(async () => {
   }
 });
 
+function atualizarAcumulado(idx: number) {
+  if (!ehAcumulativa.value) {
+    return;
+  }
+
+  const novoValorNominal = Number(cargaControlada.value?.valores?.[idx]?.valor);
+
+  if (novoValorNominal === undefined || Number.isNaN(novoValorNominal)) {
+    return;
+  }
+
+  const valorNominalInicial = listaDeNominaisIniciais.value?.[idx] || 0;
+  const valorAcumuladoInicial = listaDeAcumuladosIniciais.value?.[idx] || 0;
+
+  acumuladosEmEdicao.value[idx] = (valorAcumuladoInicial - valorNominalInicial) + novoValorNominal;
+}
+
+function sincronizarAcumuladosComNominais() {
+  if (!ehAcumulativa.value || !Array.isArray(cargaControlada.value?.valores)) {
+    return;
+  }
+  cargaControlada.value.valores.forEach((_serie, i: number) => {
+    atualizarAcumulado(i);
+  });
+}
+
 function preencherVaziosCom(valor: number | string) {
   if (!Array.isArray(cargaControlada.value?.valores)) {
     return;
@@ -147,6 +173,8 @@ function preencherVaziosCom(valor: number | string) {
       }
     }
   });
+
+  sincronizarAcumuladosComNominais();
 }
 
 function limparFormulario() {
@@ -157,6 +185,8 @@ function limparFormulario() {
   cargaControlada.value.valores.forEach((_serie, i: number) => {
     setFieldValue(`valores[${i}].valor`, null);
   });
+
+  sincronizarAcumuladosComNominais();
 }
 
 function atualizarAPartirDoAcumulado(idx: number) {
@@ -176,23 +206,6 @@ function atualizarAPartirDoAcumulado(idx: number) {
   const novoValorNominal = (valorNominalInicial - valorAcumuladoInicial) + novoValorAcumulado;
 
   setFieldValue(`valores[${idx}].valor`, novoValorNominal);
-}
-
-function atualizarAcumulado(idx: number) {
-  if (!ehAcumulativa.value) {
-    return;
-  }
-
-  const novoValorNominal = Number(cargaControlada.value?.valores?.[idx]?.valor);
-
-  if (novoValorNominal === undefined || Number.isNaN(novoValorNominal)) {
-    return;
-  }
-
-  const valorNominalInicial = listaDeNominaisIniciais.value?.[idx] || 0;
-  const valorAcumuladoInicial = listaDeAcumuladosIniciais.value?.[idx] || 0;
-
-  acumuladosEmEdicao.value[idx] = (valorAcumuladoInicial - valorNominalInicial) + novoValorNominal;
 }
 
 watch(() => props.variavelId, (novoId) => {
@@ -383,7 +396,7 @@ onUnmounted(() => {
           <button
             type="reset"
             class="f0 mb1 pl0 pr0 btn bgnone"
-            @click.prevent="resetForm()"
+            @click.prevent="resetForm(); sincronizarAcumuladosComNominais()"
           >
             &excl; restaurar
           </button>
