@@ -80,4 +80,26 @@ export class PessoaPrivilegioService {
             },
         });
     }
+
+    async removePerfilAcesso(pessoaId: number, perfil: string, prismaTx: Prisma.TransactionClient): Promise<void> {
+        const perfilAcesso = await prismaTx.perfilAcesso.findFirst({
+            where: {
+                nome: perfil,
+                removido_em: null,
+            },
+        });
+        if (!perfilAcesso) {
+            throw new InternalServerErrorException({
+                error: `Perfil de acesso não encontrado: ${perfil}, para remover da pessoa-id ${pessoaId}`,
+                stack: new Error().stack,
+            });
+        }
+
+        await prismaTx.pessoaPerfil.deleteMany({
+            where: {
+                pessoa_id: pessoaId,
+                perfil_acesso_id: perfilAcesso.id,
+            },
+        });
+    }
 }
