@@ -37,7 +37,7 @@ class RetornoRealizadoDb {
     dotacao_valor_liquidado: string;
     dotacao_mes_utilizado: string | null;
     dotacao_ano_utilizado: string | null;
-    dotacao_sincronizado_em: string;
+    dotacao_sincronizado_em: Date | null;
     meta_id: string;
     meta_codigo: string;
     meta_titulo: string;
@@ -648,7 +648,7 @@ export class OrcamentoService implements ReportableService {
             plan_dotacao_ano_utilizado: db.plan_dotacao_ano_utilizado?.toString() || null,
             plan_dotacao_mes_utilizado: db.plan_dotacao_mes_utilizado?.toString() || null,
 
-            dotacao_sincronizado_em: db.dotacao_sincronizado_em,
+            dotacao_sincronizado_em: db.dotacao_sincronizado_em ? db.dotacao_sincronizado_em.toISOString() : null,
             dotacao_valor_empenhado: db.dotacao_valor_empenhado,
             dotacao_valor_liquidado: db.dotacao_valor_liquidado,
             dotacao_ano_utilizado: db.dotacao_ano_utilizado?.toString() ?? '',

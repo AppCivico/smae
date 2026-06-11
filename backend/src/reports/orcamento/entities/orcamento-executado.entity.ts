@@ -44,7 +44,7 @@ export class OrcamentoExecutadoSaidaDto {
     /**
      * fonte: SMAE/ horário que o SMAE foi buscar a dotação
      **/
-    dotacao_sincronizado_em: string;
+    dotacao_sincronizado_em: string | null;
     /**
      * fonte: SOF/ valor de empenho até o ano/mes utilizado
      **/
