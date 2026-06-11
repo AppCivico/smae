@@ -3142,7 +3142,31 @@ export class VariavelService {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
-                    where: { variavel_id: variavelId, indicador: { removido_em: null } },
+                    where: {
+                        variavel_id: variavelId,
+                        indicador: {
+                            removido_em: null,
+                            // ignora indicadores cuja árvore (meta/iniciativa/atividade) pertence a um plano removido
+                            OR: [
+                                { meta: { removido_em: null, pdm: { removido_em: null } } },
+                                {
+                                    iniciativa: {
+                                        removido_em: null,
+                                        meta: { removido_em: null, pdm: { removido_em: null } },
+                                    },
+                                },
+                                {
+                                    atividade: {
+                                        removido_em: null,
+                                        iniciativa: {
+                                            removido_em: null,
+                                            meta: { removido_em: null, pdm: { removido_em: null } },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     select: { indicador: { select: { codigo: true, titulo: true } } },
                 });
 

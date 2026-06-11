@@ -749,6 +749,10 @@ export class PdmService {
                     removido_em: now,
                 },
             });
+
+            // variáveis globais usadas neste plano precisam recalcular o ps_dashboard_variavel,
+            // senão continuam "presas" ao plano removido (bloqueando a exclusão delas)
+            await AddTaskRecalcVariaveis(prismaTx, { pdmId: id });
         });
     }
 
