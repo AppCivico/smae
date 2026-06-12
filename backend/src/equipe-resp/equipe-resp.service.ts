@@ -897,7 +897,7 @@ export class EquipeRespService {
                 WHERE p.desativado = false
             ),
             pdm_perfil_tipos AS (
-                SELECT pe.pessoa_id, pe.perfil, pdm.tipo
+                SELECT pe.pessoa_id, pe.perfil, pdm.tipo::text AS tipo
                 FROM pessoa_equipe pe
                 JOIN pdm_perfil pp ON pp.equipe_id = pe.equipe_id AND pp.removido_em IS NULL
                 JOIN pdm ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
