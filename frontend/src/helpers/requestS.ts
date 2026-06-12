@@ -72,7 +72,17 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
   if (!response.ok) {
     if ([204].includes(response.status)) return Promise.resolve;
     const alertStore = useAlertStore();
-    const { user } = useAuthStore();
+    const authStore = useAuthStore();
+    const { user } = authStore;
+
+    // 401 = token inválido/expirado (não autenticado). Diferente de 403 (autenticado,
+    // mas sem permissão). Quando existe sessão local, encerra-a e redireciona para o
+    // login, em vez de apenas exibir um alerta preso na tela.
+    if (response.status === 401 && authStore.token) {
+      authStore.sessaoExpirada();
+      return Promise.reject('Sessão expirada. Faça login novamente.');
+    }
+
     let msgDefault;
     if ([401, 403].includes(response.status) && user) {
       msgDefault = 'Sem permissão para acessar.';
