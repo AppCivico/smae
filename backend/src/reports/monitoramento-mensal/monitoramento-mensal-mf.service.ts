@@ -196,7 +196,7 @@ export class MonitoramentoMensalMfService {
         left join serie_variavel sv on sv.variavel_id = all_sv.variavel_id and sv.data_valor = all_sv.data_valor and sv.serie = all_sv.serie
         left join status_variavel_ciclo_fisico svcf on svcf.variavel_id = all_sv.variavel_id and svcf.ciclo_fisico_id = ${cf.id}
         left join variavel_ciclo_fisico_qualitativo vcfq on vcfq.ciclo_fisico_id = ${cf.id} and vcfq.variavel_id = all_sv.variavel_id and vcfq.ultima_revisao and vcfq.removido_em is null
-        join indicador_variavel iv on iv.variavel_id = sv.variavel_id AND iv.indicador_origem_id is null
+        join indicador_variavel iv on iv.variavel_id = all_sv.variavel_id AND iv.indicador_origem_id is null
         join indicador i on i.id = iv.indicador_id AND i.removido_em is null
         left join atividade ai on ai.id = i.atividade_id
         left join iniciativa ii on  ii.id = coalesce(ai.iniciativa_id, i.iniciativa_id)

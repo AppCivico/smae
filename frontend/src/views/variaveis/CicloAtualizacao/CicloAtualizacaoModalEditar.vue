@@ -286,8 +286,8 @@ function restaurarFormulario() {
     >
       <hr>
 
-      <section :class="`formularios formularios--${fase}`">
-        <article
+      <div :class="`formularios formularios--${fase}`">
+        <div
           v-if="formulariosAExibir.liberacao.exibir"
           class="mt2 formulario formulario--liberacao"
         >
@@ -312,9 +312,9 @@ function restaurarFormulario() {
               name="analise_qualitativa_liberador"
             />
           </div>
-        </article>
+        </div>
 
-        <article
+        <div
           v-if="formulariosAExibir.aprovacao.exibir"
           class="mt2 formulario formulario--aprovacao"
         >
@@ -342,9 +342,9 @@ function restaurarFormulario() {
               name="analise_qualitativa_aprovador"
             />
           </div>
-        </article>
+        </div>
 
-        <article
+        <div
           v-if="fase !== 'cadastro'"
           class="mt2 formulario formulario--complementacao"
         >
@@ -385,9 +385,9 @@ function restaurarFormulario() {
               name="pedido_complementacao"
             />
           </div>
-        </article>
+        </div>
 
-        <article
+        <div
           v-if="formulariosAExibir.cadastro.exibir"
           class="mt2 formulario formulario--cadastro mt1"
         >
@@ -409,19 +409,19 @@ function restaurarFormulario() {
               rows="3"
             />
           </div>
-        </article>
-      </section>
+        </div>
+      </div>
 
-      <article class="upload-arquivos mt1">
+      <div class="upload-arquivos mt1">
         <UploadArquivos
           :arquivos="arquivosLocais"
           label="Adicionar documentos comprobatórios ou complementares"
           @novo-arquivo="adicionarNovoArquivo"
           @remover-arquivo="removerArquivo"
         />
-      </article>
+      </div>
 
-      <article class="valores-variaveis mt4">
+      <div class="valores-variaveis mt4">
         <h2 class="valores-variaveis__titulo">
           Valores de variáveis
         </h2>
@@ -615,7 +615,7 @@ function restaurarFormulario() {
             </tr>
           </tfoot>
         </table>
-      </article>
+      </div>
 
       <SmaeFieldsetSubmit :erros="aprovar ? errors : null">
         <button

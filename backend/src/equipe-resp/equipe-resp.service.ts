@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE, CONST_PERFIL_COORDENADOR_EQUIPE } from 'src/common/consts';
+import { CONST_PERFIL_COORDENADOR_EQUIPE, CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { PrismaService } from '../prisma/prisma.service';
 import { OrgaoService } from '../orgao/orgao.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
 import { recalculaPessoaPdmTipos } from './recalc-perfis-equipe.util';
@@ -23,8 +23,34 @@ export class EquipeRespService {
         return await this.orgaoService.getOrgaoSubtreeIds(orgao_id, prismaTx);
     }
 
+    /**
+     * Se a pessoa não tem mais nenhum vínculo ativo do tipo (participante/colaborador) em nenhuma equipe,
+     * remove o perfil de acesso correspondente (espelho do adicionaPerfilAcesso feito na entrada).
+     */
+    private async removePerfilSeSemEquipe(
+        pessoaId: number,
+        tipo: 'participante' | 'colaborador',
+        prismaTx: Prisma.TransactionClient,
+        logger: LoggerWithLog
+    ): Promise<void> {
+        const whereVinculoAtivo = {
+            pessoa_id: pessoaId,
+            removido_em: null,
+            grupo_responsavel_equipe: { removido_em: null },
+        } as const;
+
+        const restantes =
+            tipo === 'participante'
+                ? await prismaTx.grupoResponsavelEquipeParticipante.count({ where: whereVinculoAtivo })
+                : await prismaTx.grupoResponsavelEquipeResponsavel.count({ where: whereVinculoAtivo });
+        if (restantes > 0) return;
+
+        const perfil = tipo === 'participante' ? CONST_PERFIL_PARTICIPANTE_EQUIPE : CONST_PERFIL_COORDENADOR_EQUIPE;
+        logger.log(`Pessoa ${pessoaId} não está mais em nenhuma equipe como ${tipo}: removendo perfil "${perfil}"`);
+        await this.pessoaPrivService.removePerfilAcesso(pessoaId, perfil, prismaTx);
+    }
+
     async create(dto: CreateEquipeRespDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const logger = LoggerWithLog('Grupo Repensável de Variáveis: Criação');
         const orgao_id = dto.orgao_id ? dto.orgao_id : user.orgao_id;
 
         if (!orgao_id) throw new BadRequestException('Não foi possível determinar o órgão');
@@ -37,6 +63,7 @@ export class EquipeRespService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const logger = LoggerWithLog('Grupo Repensável de Variáveis: Criação');
                 logger.log(`Dados: ${JSON.stringify(dto)}`);
 
                 const exists = await prismaTx.grupoResponsavelEquipe.count({
@@ -133,7 +160,8 @@ export class EquipeRespService {
                 await logger.saveLogs(prismaTx, user.getLogData());
 
                 return { id: gp.id };
-            }
+            },
+            { isolationLevel: 'Serializable', maxWait: 5000, timeout: 60000 }
         );
 
         return { id: created.id };
@@ -331,7 +359,6 @@ export class EquipeRespService {
     }
 
     async update(id: number, dto: UpdateEquipeRespDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const logger = LoggerWithLog('Grupo Repensável de Variáveis: Atualização');
         const gp = await this.prisma.grupoResponsavelEquipe.findFirst({
             where: {
                 id,
@@ -365,232 +392,233 @@ export class EquipeRespService {
         const orgao_id = gp.orgao_id;
 
         const now = new Date(Date.now());
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
-            logger.log(`Dados: ${JSON.stringify(dto)}`);
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+                const logger = LoggerWithLog('Grupo Repensável de Variáveis: Atualização');
+                logger.log(`Dados: ${JSON.stringify(dto)}`);
 
-            // Rastreia todas as pessoas afetadas (anteriores + novas) para recalcular perfis ao final
-            const pessoasAfetadas = new Set<number>();
+                // Rastreia todas as pessoas afetadas (anteriores + novas) para recalcular perfis ao final
+                const pessoasAfetadas = new Set<number>();
 
-            // Obtém todos os IDs de órgãos permitidos (órgão base + subordinados) se estamos atualizando
-            // participantes ou colaboradores
-            let allowedOrgaoIds: number[] = [];
-            if (dto.participantes || dto.colaboradores) {
-                allowedOrgaoIds = await this.getAllowedOrgaoIds(orgao_id, prismaTx);
-            }
+                // Obtém todos os IDs de órgãos permitidos (órgão base + subordinados) se estamos atualizando
+                // participantes ou colaboradores
+                let allowedOrgaoIds: number[] = [];
+                if (dto.participantes || dto.colaboradores) {
+                    allowedOrgaoIds = await this.getAllowedOrgaoIds(orgao_id, prismaTx);
+                }
 
-            if (dto.titulo) {
-                const exists = await prismaTx.grupoResponsavelEquipe.count({
-                    where: {
-                        NOT: { id: gp.id },
-                        titulo: { mode: 'insensitive', equals: dto.titulo },
-                        removido_em: null,
-                    },
-                });
-                if (exists) throw new BadRequestException('Título já está em uso.');
-            }
-
-            if (dto.participantes) {
-                const prevVersion = await prismaTx.grupoResponsavelEquipe.findFirst({
-                    where: {
-                        id,
-                        removido_em: null,
-                    },
-                    select: {
-                        id: true,
-                        GrupoResponsavelEquipePessoa: {
-                            where: {
-                                removido_em: null,
-                            },
-                            select: { pessoa_id: true },
+                if (dto.titulo) {
+                    const exists = await prismaTx.grupoResponsavelEquipe.count({
+                        where: {
+                            NOT: { id: gp.id },
+                            titulo: { mode: 'insensitive', equals: dto.titulo },
+                            removido_em: null,
                         },
-                    },
-                });
-
-                const pEnviados = await this.pessoaPrivService.pessoasComPriv([], dto.participantes);
-                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
-                    ['SMAE.GrupoVariavel.participante'],
-                    dto.participantes
-                );
-                for (const pessoaId of dto.participantes) {
-                    const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
-                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
-                        throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
-                        );
-
-                    const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!temPriv) {
-                        await this.pessoaPrivService.adicionaPerfilAcesso(
-                            pessoaId,
-                            CONST_PERFIL_PARTICIPANTE_EQUIPE,
-                            prismaTx
-                        );
-                    }
+                    });
+                    if (exists) throw new BadRequestException('Título já está em uso.');
                 }
 
-                const keptRecord: number[] = prevVersion?.GrupoResponsavelEquipePessoa.map((r) => r.pessoa_id) ?? [];
-                // Inclui participantes anteriores E novos no conjunto de afetados
-                for (const id of keptRecord) pessoasAfetadas.add(id);
-                for (const id of dto.participantes) pessoasAfetadas.add(id);
-
-                for (const pessoaId of keptRecord) {
-                    if (!dto.participantes.includes(pessoaId)) {
-                        // O participante estava presente na versão anterior, mas não na nova versão
-                        logger.log(`participante removido: ${pessoaId}`);
-                        await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
-                            where: {
-                                pessoa_id: pessoaId,
-                                grupo_responsavel_equipe_id: gp.id,
-                                removido_em: null,
-                            },
-                            data: {
-                                removido_em: new Date(Date.now()),
-                            },
-                        });
-                        // TODO ? 2024-10-21 se remover de todos os grupos, remover o perfil de acesso as well
-                    }
-                }
-
-                for (const pessoaId of dto.participantes) {
-                    const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!pessoa)
-                        throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
-                        );
-                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
-                        throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
-                        );
-
-                    const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!temPriv) {
-                        await this.pessoaPrivService.adicionaPerfilAcesso(
-                            pessoaId,
-                            CONST_PERFIL_PARTICIPANTE_EQUIPE,
-                            prismaTx
-                        );
-                    }
-
-                    if (!keptRecord.includes(pessoaId)) {
-                        // O participante é novo, crie um novo registro
-                        logger.log(`Novo participante: ${pessoa.pessoa_id}`);
-                        await prismaTx.grupoResponsavelEquipeParticipante.create({
-                            data: {
-                                grupo_responsavel_equipe_id: gp.id,
-                                orgao_id: pessoa.orgao_id,
-                                pessoa_id: pessoa.pessoa_id,
-                            },
-                        });
-                    } else {
-                        logger.log(`participante mantido sem alterações: ${pessoaId}`);
-                    }
-                }
-            }
-
-            if (dto.colaboradores) {
-                const prevVersion = await prismaTx.grupoResponsavelEquipe.findFirst({
-                    where: {
-                        id,
-                        removido_em: null,
-                    },
-                    select: {
-                        id: true,
-                        GrupoResponsavelEquipeColaborador: {
-                            where: {
-                                removido_em: null,
-                            },
-                            select: { pessoa_id: true },
+                if (dto.participantes) {
+                    const prevVersion = await prismaTx.grupoResponsavelEquipe.findFirst({
+                        where: {
+                            id,
+                            removido_em: null,
                         },
+                        select: {
+                            id: true,
+                            GrupoResponsavelEquipePessoa: {
+                                where: {
+                                    removido_em: null,
+                                },
+                                select: { pessoa_id: true },
+                            },
+                        },
+                    });
+
+                    const pEnviados = await this.pessoaPrivService.pessoasComPriv([], dto.participantes);
+                    const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                        ['SMAE.GrupoVariavel.participante'],
+                        dto.participantes
+                    );
+                    // Valida todos os participantes antes de qualquer mutação. O perfil de acesso é
+                    // adicionado no loop de criação abaixo — fazê-lo aqui também inseriria linhas
+                    // duplicadas em pessoa_perfil (não há constraint única).
+                    for (const pessoaId of dto.participantes) {
+                        const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
+                        if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
+                        if (!allowedOrgaoIds.includes(pessoa.orgao_id))
+                            throw new BadRequestException(
+                                `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
+                            );
+                    }
+
+                    const keptRecord: number[] =
+                        prevVersion?.GrupoResponsavelEquipePessoa.map((r) => r.pessoa_id) ?? [];
+                    // Inclui participantes anteriores E novos no conjunto de afetados
+                    for (const id of keptRecord) pessoasAfetadas.add(id);
+                    for (const id of dto.participantes) pessoasAfetadas.add(id);
+
+                    for (const pessoaId of keptRecord) {
+                        if (!dto.participantes.includes(pessoaId)) {
+                            // O participante estava presente na versão anterior, mas não na nova versão
+                            logger.log(`participante removido: ${pessoaId}`);
+                            await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
+                                where: {
+                                    pessoa_id: pessoaId,
+                                    grupo_responsavel_equipe_id: gp.id,
+                                    removido_em: null,
+                                },
+                                data: {
+                                    removido_em: new Date(Date.now()),
+                                },
+                            });
+                            // Se saiu de todas as equipes, remove também o perfil de acesso
+                            await this.removePerfilSeSemEquipe(pessoaId, 'participante', prismaTx, logger);
+                        }
+                    }
+
+                    for (const pessoaId of dto.participantes) {
+                        const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
+                        if (!pessoa)
+                            throw new BadRequestException(
+                                `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
+                            );
+                        if (!allowedOrgaoIds.includes(pessoa.orgao_id))
+                            throw new BadRequestException(
+                                `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
+                            );
+
+                        const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
+                        if (!temPriv) {
+                            await this.pessoaPrivService.adicionaPerfilAcesso(
+                                pessoaId,
+                                CONST_PERFIL_PARTICIPANTE_EQUIPE,
+                                prismaTx
+                            );
+                        }
+
+                        if (!keptRecord.includes(pessoaId)) {
+                            // O participante é novo, crie um novo registro
+                            logger.log(`Novo participante: ${pessoa.pessoa_id}`);
+                            await prismaTx.grupoResponsavelEquipeParticipante.create({
+                                data: {
+                                    grupo_responsavel_equipe_id: gp.id,
+                                    orgao_id: pessoa.orgao_id,
+                                    pessoa_id: pessoa.pessoa_id,
+                                },
+                            });
+                        } else {
+                            logger.log(`participante mantido sem alterações: ${pessoaId}`);
+                        }
+                    }
+                }
+
+                if (dto.colaboradores) {
+                    const prevVersion = await prismaTx.grupoResponsavelEquipe.findFirst({
+                        where: {
+                            id,
+                            removido_em: null,
+                        },
+                        select: {
+                            id: true,
+                            GrupoResponsavelEquipeColaborador: {
+                                where: {
+                                    removido_em: null,
+                                },
+                                select: { pessoa_id: true },
+                            },
+                        },
+                    });
+
+                    // Busca todas as pessoas enviadas (para pegar orgao_id)
+                    const pEnviadosColab = await this.pessoaPrivService.pessoasComPriv([], dto.colaboradores);
+                    // Busca quem já tem o privilégio
+                    const pComPrivColab = await this.pessoaPrivService.pessoasComPriv(
+                        ['SMAE.GrupoVariavel.colaborador'],
+                        dto.colaboradores
+                    );
+
+                    const keptRecord: number[] =
+                        prevVersion?.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id) ?? [];
+
+                    for (const pessoaId of keptRecord) {
+                        if (!dto.colaboradores.includes(pessoaId)) {
+                            // O participante estava presente na versão anterior, mas não na nova versão
+                            logger.log(`colaborador removido: ${pessoaId}`);
+                            await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
+                                where: {
+                                    pessoa_id: pessoaId,
+                                    grupo_responsavel_equipe_id: gp.id,
+                                    removido_em: null,
+                                },
+                                data: {
+                                    removido_em: new Date(Date.now()),
+                                },
+                            });
+                            // Se saiu de todas as equipes, remove também o perfil de acesso
+                            await this.removePerfilSeSemEquipe(pessoaId, 'colaborador', prismaTx, logger);
+                        }
+                    }
+
+                    for (const pessoaId of dto.colaboradores) {
+                        const pessoa = pEnviadosColab.filter((r) => r.pessoa_id == pessoaId)[0];
+                        if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
+                        if (pessoa.orgao_id !== orgao_id)
+                            throw new BadRequestException(
+                                `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável (colaboradores devem estar no mesmo órgão da equipe).`
+                            );
+
+                        // Auto-adiciona o perfil de coordenador se não tiver
+                        const temPriv = pComPrivColab.filter((r) => r.pessoa_id == pessoaId)[0];
+                        if (!temPriv) {
+                            await this.pessoaPrivService.adicionaPerfilAcesso(
+                                pessoaId,
+                                CONST_PERFIL_COORDENADOR_EQUIPE,
+                                prismaTx
+                            );
+                        }
+
+                        if (!keptRecord.includes(pessoaId)) {
+                            // O colaborador é novo, crie um novo registro
+                            logger.log(`Novo colaborador: ${pessoa.pessoa_id}`);
+                            await prismaTx.grupoResponsavelEquipeResponsavel.create({
+                                data: {
+                                    grupo_responsavel_equipe_id: gp.id,
+                                    orgao_id: pessoa.orgao_id,
+                                    pessoa_id: pessoa.pessoa_id,
+                                },
+                            });
+                        } else {
+                            logger.log(`colaborador mantido sem alterações: ${pessoaId}`);
+                        }
+                    }
+                }
+
+                // Recalcula perfis de todas as pessoas afetadas (participantes anteriores + atuais)
+                for (const pessoaId of pessoasAfetadas) {
+                    await recalculaPessoaPdmTipos(pessoaId, prismaTx);
+                }
+
+                await prismaTx.grupoResponsavelEquipe.update({
+                    where: {
+                        id: gp.id,
                     },
+                    data: {
+                        titulo: dto.titulo,
+
+                        atualizado_em: now,
+                    },
+                    select: { id: true },
                 });
-
-                // Busca todas as pessoas enviadas (para pegar orgao_id)
-                const pEnviadosColab = await this.pessoaPrivService.pessoasComPriv([], dto.colaboradores);
-                // Busca quem já tem o privilégio
-                const pComPrivColab = await this.pessoaPrivService.pessoasComPriv(
-                    ['SMAE.GrupoVariavel.colaborador'],
-                    dto.colaboradores
-                );
-
-                const keptRecord: number[] =
-                    prevVersion?.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id) ?? [];
-
-                for (const pessoaId of keptRecord) {
-                    if (!dto.colaboradores.includes(pessoaId)) {
-                        // O participante estava presente na versão anterior, mas não na nova versão
-                        logger.log(`colaborador removido: ${pessoaId}`);
-                        await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
-                            where: {
-                                pessoa_id: pessoaId,
-                                grupo_responsavel_equipe_id: gp.id,
-                                removido_em: null,
-                            },
-                            data: {
-                                removido_em: new Date(Date.now()),
-                            },
-                        });
-                    }
-                }
-
-                for (const pessoaId of dto.colaboradores) {
-                    const pessoa = pEnviadosColab.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
-                    if (pessoa.orgao_id !== orgao_id)
-                        throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável (colaboradores devem estar no mesmo órgão da equipe).`
-                        );
-
-                    // Auto-adiciona o perfil de coordenador se não tiver
-                    const temPriv = pComPrivColab.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!temPriv) {
-                        await this.pessoaPrivService.adicionaPerfilAcesso(
-                            pessoaId,
-                            CONST_PERFIL_COORDENADOR_EQUIPE,
-                            prismaTx
-                        );
-                    }
-
-                    if (!keptRecord.includes(pessoaId)) {
-                        // O colaborador é novo, crie um novo registro
-                        logger.log(`Novo colaborador: ${pessoa.pessoa_id}`);
-                        await prismaTx.grupoResponsavelEquipeResponsavel.create({
-                            data: {
-                                grupo_responsavel_equipe_id: gp.id,
-                                orgao_id: pessoa.orgao_id,
-                                pessoa_id: pessoa.pessoa_id,
-                            },
-                        });
-                    } else {
-                        logger.log(`colaborador mantido sem alterações: ${pessoaId}`);
-                    }
-                }
-            }
-
-            // Recalcula perfis de todas as pessoas afetadas (participantes anteriores + atuais)
-            for (const pessoaId of pessoasAfetadas) {
-                await recalculaPessoaPdmTipos(pessoaId, prismaTx);
-            }
-
-            await prismaTx.grupoResponsavelEquipe.update({
-                where: {
-                    id: gp.id,
-                },
-                data: {
-                    titulo: dto.titulo,
-
-                    atualizado_em: now,
-                },
-                select: { id: true },
-            });
-            await logger.saveLogs(prismaTx, user.getLogData());
-        });
+                await logger.saveLogs(prismaTx, user.getLogData());
+            },
+            { isolationLevel: 'Serializable', maxWait: 5000, timeout: 60000 }
+        );
 
         return { id: gp.id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const logger = LoggerWithLog('Grupo Repensável de Variáveis: Remoção');
         const exists = await this.prisma.grupoResponsavelEquipe.findFirst({
             where: {
                 id,
@@ -600,7 +628,6 @@ export class EquipeRespService {
         });
 
         if (!exists) return;
-        logger.log(`ID: ${id}`);
 
         if (!user.hasSomeRoles(['CadastroGrupoVariavel.administrador'])) {
             if (user.orgao_id != exists.orgao_id)
@@ -611,51 +638,70 @@ export class EquipeRespService {
 
         const now = new Date(Date.now());
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
-            // Coleta pessoas afetadas ANTES de soft-delete
-            const affectedMembers = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
-                where: { grupo_responsavel_equipe_id: id, removido_em: null },
-                select: { pessoa_id: true },
-                distinct: ['pessoa_id'],
-            });
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+                const logger = LoggerWithLog('Grupo Repensável de Variáveis: Remoção');
+                logger.log(`ID: ${id}`);
 
-            await prismaTx.grupoResponsavelEquipe.updateMany({
-                where: {
-                    id,
-                    removido_em: null,
-                },
-                data: {
-                    removido_em: now,
-                },
-            });
+                // Coleta pessoas afetadas ANTES de soft-delete
+                const affectedMembers = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+                    where: { grupo_responsavel_equipe_id: id, removido_em: null },
+                    select: { pessoa_id: true },
+                    distinct: ['pessoa_id'],
+                });
+                const affectedColabs = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
+                    where: { grupo_responsavel_equipe_id: id, removido_em: null },
+                    select: { pessoa_id: true },
+                    distinct: ['pessoa_id'],
+                });
 
-            await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
-                where: {
-                    grupo_responsavel_equipe_id: id,
-                    removido_em: null,
-                },
-                data: {
-                    removido_em: now,
-                },
-            });
+                await prismaTx.grupoResponsavelEquipe.updateMany({
+                    where: {
+                        id,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                    },
+                });
 
-            await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
-                where: {
-                    grupo_responsavel_equipe_id: id,
-                    removido_em: null,
-                },
-                data: {
-                    removido_em: now,
-                },
-            });
+                await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
+                    where: {
+                        grupo_responsavel_equipe_id: id,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                    },
+                });
 
-            // Recalcula perfis das pessoas que eram membros da equipe removida
-            for (const member of affectedMembers) {
-                await recalculaPessoaPdmTipos(member.pessoa_id, prismaTx);
-            }
+                await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
+                    where: {
+                        grupo_responsavel_equipe_id: id,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: now,
+                    },
+                });
 
-            await logger.saveLogs(prismaTx, user.getLogData());
-        });
+                // Recalcula perfis das pessoas que eram membros da equipe removida
+                for (const member of affectedMembers) {
+                    await recalculaPessoaPdmTipos(member.pessoa_id, prismaTx);
+                }
+
+                // Se saíram de todas as equipes, remove também o perfil de acesso
+                for (const member of affectedMembers) {
+                    await this.removePerfilSeSemEquipe(member.pessoa_id, 'participante', prismaTx, logger);
+                }
+                for (const colab of affectedColabs) {
+                    await this.removePerfilSeSemEquipe(colab.pessoa_id, 'colaborador', prismaTx, logger);
+                }
+
+                await logger.saveLogs(prismaTx, user.getLogData());
+            },
+            { isolationLevel: 'Serializable', maxWait: 5000, timeout: 60000 }
+        );
 
         return;
     }
@@ -814,9 +860,33 @@ export class EquipeRespService {
     /**
      * Recalcula perfis_equipe_pdm e perfis_equipe_ps de TODAS as pessoas ativas
      * usando uma única query SQL com CTE.
+     *
+     * Também sincroniza os perfis de acesso "Participante em equipes" e "Coordenador em equipes"
+     * a partir dos vínculos ativos (vínculo é a fonte de verdade):
+     * - adiciona o perfil a quem tem vínculo ativo mas não tem o privilégio correspondente;
+     * - remove o perfil de quem não tem mais nenhum vínculo ativo daquele tipo.
      */
-    async recalcFullDb(): Promise<{ updated: number; total: number }> {
-        const result = await this.prisma.$queryRaw<{ updated: number; total: number }[]>`
+    async recalcFullDb(): Promise<{
+        updated: number;
+        total: number;
+        perfis_adicionados: number;
+        perfis_removidos: number;
+    }> {
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient) => {
+                const result = await this.recalcPerfisEquipeColunas(prismaTx);
+                const sync = await this.syncPerfisAcessoEquipe(prismaTx);
+
+                return { ...result, ...sync };
+            },
+            { maxWait: 15000, timeout: 120000 }
+        );
+    }
+
+    private async recalcPerfisEquipeColunas(
+        prismaTx: Prisma.TransactionClient
+    ): Promise<{ updated: number; total: number }> {
+        const result = await prismaTx.$queryRaw<{ updated: number; total: number }[]>`
             WITH pessoa_equipe AS (
                 SELECT p.id AS pessoa_id, gre.id AS equipe_id, gre.perfil
                 FROM pessoa p
@@ -827,7 +897,7 @@ export class EquipeRespService {
                 WHERE p.desativado = false
             ),
             pdm_perfil_tipos AS (
-                SELECT pe.pessoa_id, pe.perfil, pdm.tipo
+                SELECT pe.pessoa_id, pe.perfil, pdm.tipo::text AS tipo
                 FROM pessoa_equipe pe
                 JOIN pdm_perfil pp ON pp.equipe_id = pe.equipe_id AND pp.removido_em IS NULL
                 JOIN pdm ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
@@ -889,5 +959,96 @@ export class EquipeRespService {
         `;
 
         return result[0];
+    }
+
+    /**
+     * Sincroniza pessoa_perfil com os vínculos ativos de equipe (ambos os sentidos), e
+     * recalcula pessoa_acesso_pdm de cada pessoa afetada.
+     */
+    private async syncPerfisAcessoEquipe(
+        prismaTx: Prisma.TransactionClient
+    ): Promise<{ perfis_adicionados: number; perfis_removidos: number }> {
+        const rows = await prismaTx.$queryRaw<{ pessoa_id: number; acao: 'add' | 'del' }[]>`
+            WITH colab_links AS (
+                SELECT DISTINCT c.pessoa_id
+                FROM grupo_responsavel_equipe_colaborador c
+                JOIN grupo_responsavel_equipe e
+                    ON e.id = c.grupo_responsavel_equipe_id AND e.removido_em IS NULL
+                WHERE c.removido_em IS NULL
+            ),
+            part_links AS (
+                SELECT DISTINCT g.pessoa_id
+                FROM grupo_responsavel_equipe_pessoa g
+                JOIN grupo_responsavel_equipe e
+                    ON e.id = g.grupo_responsavel_equipe_id AND e.removido_em IS NULL
+                WHERE g.removido_em IS NULL
+            ),
+            perfil_colab AS (
+                SELECT id FROM perfil_acesso
+                WHERE nome = ${CONST_PERFIL_COORDENADOR_EQUIPE} AND removido_em IS NULL
+            ),
+            perfil_part AS (
+                SELECT id FROM perfil_acesso
+                WHERE nome = ${CONST_PERFIL_PARTICIPANTE_EQUIPE} AND removido_em IS NULL
+            ),
+            ins_colab AS (
+                INSERT INTO pessoa_perfil (pessoa_id, perfil_acesso_id)
+                SELECT cl.pessoa_id, pc.id
+                FROM colab_links cl, perfil_colab pc
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM pessoa_perfil pp
+                    JOIN perfil_privilegio ppr ON ppr.perfil_acesso_id = pp.perfil_acesso_id
+                    JOIN privilegio pr ON pr.id = ppr.privilegio_id
+                    WHERE pp.pessoa_id = cl.pessoa_id AND pr.codigo = 'SMAE.GrupoVariavel.colaborador'
+                )
+                RETURNING pessoa_id
+            ),
+            ins_part AS (
+                INSERT INTO pessoa_perfil (pessoa_id, perfil_acesso_id)
+                SELECT pl.pessoa_id, pp2.id
+                FROM part_links pl, perfil_part pp2
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM pessoa_perfil pp
+                    JOIN perfil_privilegio ppr ON ppr.perfil_acesso_id = pp.perfil_acesso_id
+                    JOIN privilegio pr ON pr.id = ppr.privilegio_id
+                    WHERE pp.pessoa_id = pl.pessoa_id AND pr.codigo = 'SMAE.GrupoVariavel.participante'
+                )
+                RETURNING pessoa_id
+            ),
+            del_colab AS (
+                DELETE FROM pessoa_perfil pp
+                USING perfil_colab pc
+                WHERE pp.perfil_acesso_id = pc.id
+                AND NOT EXISTS (SELECT 1 FROM colab_links cl WHERE cl.pessoa_id = pp.pessoa_id)
+                RETURNING pp.pessoa_id
+            ),
+            del_part AS (
+                DELETE FROM pessoa_perfil pp
+                USING perfil_part pp2
+                WHERE pp.perfil_acesso_id = pp2.id
+                AND NOT EXISTS (SELECT 1 FROM part_links pl WHERE pl.pessoa_id = pp.pessoa_id)
+                RETURNING pp.pessoa_id
+            )
+            SELECT pessoa_id, 'add' AS acao FROM ins_colab
+            UNION ALL SELECT pessoa_id, 'add' FROM ins_part
+            UNION ALL SELECT pessoa_id, 'del' FROM del_colab
+            UNION ALL SELECT pessoa_id, 'del' FROM del_part
+        `;
+
+        // Recalcula o acesso de quem teve perfil adicionado/removido (em uma única query)
+        const afetados = [...new Set(rows.map((r) => r.pessoa_id))];
+        if (afetados.length > 0) {
+            await prismaTx.$queryRaw`
+                SELECT pessoa_acesso_pdm(pessoa_id::int)
+                FROM unnest(${afetados}::int[]) AS t(pessoa_id)
+            `;
+        }
+
+        return {
+            perfis_adicionados: rows.filter((r) => r.acao === 'add').length,
+            perfis_removidos: rows.filter((r) => r.acao === 'del').length,
+        };
     }
 }

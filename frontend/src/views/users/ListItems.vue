@@ -168,6 +168,13 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
             <td>
               {{ user.perfil_acesso_ids?.length
                 ? filterPerfil(user.perfil_acesso_ids) : '-' }}
+              <span
+                v-if="user.is_sysadmin"
+                v-ScrollLockDebug
+                class="t12 tc500"
+              >
+                É superadmin
+              </span>
             </td>
             <td style="white-space: nowrap; text-align: right;">
               <template

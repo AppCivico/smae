@@ -47,7 +47,7 @@ export function useSeriesFilhasAgrupadasParaEdicao(
             vf.series.forEach((serie, i) => {
               const valorNominal = 'valor_nominal' in serie && serie.valor_nominal !== ''
                 ? Number(serie.valor_nominal)
-                : NaN;
+                : Number.NaN;
 
               const tipo = data.ordem_series[i];
 

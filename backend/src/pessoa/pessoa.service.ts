@@ -23,6 +23,7 @@ import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { recalculaPessoaPdmTipos } from '../equipe-resp/recalc-perfis-equipe.util';
 import { Arr } from '../mf/metas/dash/metas.service';
 import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -835,6 +836,7 @@ export class PessoaService implements OnModuleInit {
                     'SMAE.espectador_de_projeto',
                     'MDO.espectador_de_projeto',
                     'SMAE.GrupoVariavel.colaborador',
+                    'SMAE.GrupoVariavel.participante',
                     'PDM.tecnico_cp',
                     'PDM.admin_cp',
                     'PDM.ponto_focal',
@@ -1111,6 +1113,56 @@ export class PessoaService implements OnModuleInit {
                             (r) => `${r.grupo_painel_externo.titulo}`
                         )}`
                     );
+                }
+            } else if (priv == 'SMAE.GrupoVariavel.colaborador') {
+                // Remover o perfil de "Coordenador em equipes" equivale a sair de todas as equipes
+                // como colaborador (mesma semântica de enviar equipes_responsavel=[]).
+                const equipesColab = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        grupo_responsavel_equipe: { select: { titulo: true } },
+                    },
+                });
+                if (equipesColab.length) {
+                    logger.log(
+                        `Privilégio ${priv} removido: removendo automaticamente como colaborador das equipes: ${equipesColab
+                            .map((r) => r.grupo_responsavel_equipe.titulo)
+                            .join(', ')}`
+                    );
+                    await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
+                        where: { id: { in: equipesColab.map((r) => r.id) } },
+                        data: { removido_em: new Date(Date.now()) },
+                    });
+                    await recalculaPessoaPdmTipos(pessoaId, prismaTx);
+                }
+            } else if (priv == 'SMAE.GrupoVariavel.participante') {
+                // Remover o perfil de "Participante em equipes" equivale a sair de todas as equipes
+                // como participante (mesma semântica de enviar equipes=[]).
+                const equipesPart = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        grupo_responsavel_equipe: { select: { titulo: true } },
+                    },
+                });
+                if (equipesPart.length) {
+                    logger.log(
+                        `Privilégio ${priv} removido: removendo automaticamente como participante das equipes: ${equipesPart
+                            .map((r) => r.grupo_responsavel_equipe.titulo)
+                            .join(', ')}`
+                    );
+                    await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
+                        where: { id: { in: equipesPart.map((r) => r.id) } },
+                        data: { removido_em: new Date(Date.now()) },
+                    });
+                    await recalculaPessoaPdmTipos(pessoaId, prismaTx);
                 }
             }
         }
@@ -1514,8 +1566,22 @@ export class PessoaService implements OnModuleInit {
         return await this.listaPerfilAcessoIdsPorSistema(sistema);
     }
 
+    private async listaPerfilAcessoSysadminIds(): Promise<number[]> {
+        const rows = await this.prisma.perfilAcesso.findMany({
+            where: {
+                removido_em: null,
+                perfil_privilegio: {
+                    some: { privilegio: { codigo: 'SMAE.sysadmin' } },
+                },
+            },
+            select: { id: true },
+        });
+        return rows.map((r) => r.id);
+    }
+
     async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt): Promise<ListPessoa[]> {
         const visiblePriv = await this.buscaPerfisVisiveis(user);
+        const sysadminPerfilIds = new Set(await this.listaPerfilAcessoSysadminIds());
 
         this.logger.log(`buscando pessoas...`);
 
@@ -1569,6 +1635,7 @@ export class PessoaService implements OnModuleInit {
         });
 
         const listFixed: ListPessoa[] = listActive.map((p) => {
+            const pessoaPerfilIds = p.PessoaPerfil.map((e) => e.perfil_acesso_id);
             return {
                 id: p.id,
                 nome_completo: p.nome_completo,
@@ -1581,7 +1648,8 @@ export class PessoaService implements OnModuleInit {
                 orgao: p.pessoa_fisica?.orgao ? p.pessoa_fisica.orgao : { id: 0, sigla: '' },
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
-                perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) => visiblePriv.includes(e)),
+                perfil_acesso_ids: pessoaPerfilIds.filter((e) => visiblePriv.includes(e)),
+                is_sysadmin: pessoaPerfilIds.some((e) => sysadminPerfilIds.has(e)),
             };
         });
 

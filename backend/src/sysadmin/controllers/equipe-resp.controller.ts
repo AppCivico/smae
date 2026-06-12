@@ -12,7 +12,8 @@ export class SysadminEquipeRespController {
     @Post('equipe-responsavel/recalc-perfis')
     @Roles(['SMAE.superadmin'], 'Recalcula perfis de equipe de todas as pessoas')
     @ApiOperation({
-        summary: 'Recalcula perfis_equipe_pdm e perfis_equipe_ps de todas as pessoas ativas',
+        summary:
+            'Recalcula perfis_equipe_pdm e perfis_equipe_ps de todas as pessoas ativas, e sincroniza os perfis de acesso "Participante em equipes"/"Coordenador em equipes" a partir dos vínculos ativos',
     })
     @ApiResponse({ status: 201, description: 'Recálculo concluído' })
     async recalcPerfis() {
@@ -21,6 +22,8 @@ export class SysadminEquipeRespController {
             message: 'Recálculo de perfis de equipe concluído',
             updated: result.updated,
             total: result.total,
+            perfis_adicionados: result.perfis_adicionados,
+            perfis_removidos: result.perfis_removidos,
         };
     }
 }

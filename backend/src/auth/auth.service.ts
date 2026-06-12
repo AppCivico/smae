@@ -44,8 +44,8 @@ export class AuthService {
         const sessaoId = await this.pessoaService.newSessionForPessoa(pessoaId, ip);
         const payload: JwtPessoaPayload = {
             sid: sessaoId,
-            iat: Date.now(),
-            aud: 'l',
+            iat: Math.floor(Date.now() / 1000),
+            aud: 'l2',
         };
 
         return {

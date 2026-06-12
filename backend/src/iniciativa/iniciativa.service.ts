@@ -12,6 +12,7 @@ import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
 import { MetaService } from '../meta/meta.service';
 import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from '../meta/ps-perfil.util';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
 import { CreateIniciativaDto, IniciativaOrgaoParticipante } from './dto/create-iniciativa.dto';
@@ -126,7 +127,7 @@ export class IniciativaService {
                             id: true,
                             PdmPerfil: {
                                 where: { removido_em: null, relacionamento: 'PDM' },
-                                select: { equipe: { select: { id: true } }, tipo: true },
+                                select: { equipe: { select: { id: true, orgao_id: true } }, tipo: true },
                             },
                         },
                     });
@@ -157,6 +158,16 @@ export class IniciativaService {
                             pdm.id
                         );
                     }
+
+                    // persiste os órgãos participantes derivados das equipes
+                    const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
+                        ps_tecnico_cp,
+                        ps_ponto_focal,
+                        pdm.PdmPerfil
+                    );
+                    await prismaTx.iniciativaOrgao.createMany({
+                        data: await this.buildOrgaosParticipantes(iniciativa.id, orgaosParticipantes),
+                    });
                 }
 
                 await prismaTx.iniciativaTag.createMany({
@@ -221,6 +232,48 @@ export class IniciativaService {
         }
 
         return arr;
+    }
+
+    // deriva os órgãos participantes a partir dos órgãos das equipes (mesma semântica de MetaService.calculaOrgaosPelaEquipe)
+    private async calculaOrgaosPelaEquipe(
+        psTecnicoCP: CreatePSEquipeTecnicoCPDto | undefined,
+        psPontoFocal: CreatePSEquipePontoFocalDto | undefined,
+        pdmPerfis: { equipe: { id: number; orgao_id: number }; tipo: string }[]
+    ): Promise<MetaOrgaoParticipante[]> {
+        const orgaosParticipantes: MetaOrgaoParticipante[] = [];
+
+        if (psTecnicoCP) {
+            for (const equipe_id of psTecnicoCP.equipes) {
+                const perfil = pdmPerfis.find((p) => p.equipe.id === equipe_id && p.tipo === 'CP');
+                if (perfil) {
+                    orgaosParticipantes.push({
+                        orgao_id: perfil.equipe.orgao_id,
+                        responsavel: true,
+                        participantes: [],
+                    });
+                }
+            }
+        }
+
+        if (psPontoFocal) {
+            for (const equipe_id of psPontoFocal.equipes) {
+                const perfil = pdmPerfis.find((p) => p.equipe.id === equipe_id && p.tipo === 'PONTO_FOCAL');
+                if (perfil) {
+                    const existingOrgao = orgaosParticipantes.find((op) => op.orgao_id === perfil.equipe.orgao_id);
+                    if (existingOrgao) {
+                        existingOrgao.responsavel = true;
+                    } else {
+                        orgaosParticipantes.push({
+                            orgao_id: perfil.equipe.orgao_id,
+                            responsavel: true,
+                            participantes: [],
+                        });
+                    }
+                }
+            }
+        }
+
+        return orgaosParticipantes;
     }
 
     async buildIniciativaResponsaveis(
@@ -537,7 +590,7 @@ export class IniciativaService {
                         id: true,
                         PdmPerfil: {
                             where: { removido_em: null, relacionamento: 'PDM' },
-                            select: { equipe: { select: { id: true } }, tipo: true },
+                            select: { equipe: { select: { id: true, orgao_id: true } }, tipo: true },
                         },
                     },
                 });
@@ -581,6 +634,17 @@ export class IniciativaService {
                         pdm.id
                     );
                 }
+
+                // persiste os órgãos participantes derivados das equipes
+                const orgaosParticipantes = await this.calculaOrgaosPelaEquipe(
+                    ps_tecnico_cp,
+                    ps_ponto_focal,
+                    pdm.PdmPerfil
+                );
+                await prismaTx.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } });
+                await prismaTx.iniciativaOrgao.createMany({
+                    data: await this.buildOrgaosParticipantes(id, orgaosParticipantes),
+                });
             }
 
             if (Array.isArray(tags)) {

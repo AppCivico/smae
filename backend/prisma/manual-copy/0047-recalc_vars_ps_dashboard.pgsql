@@ -55,7 +55,7 @@ BEGIN
                 (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
                 (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
                 (pi.tipo = 'atividade' AND i.atividade_id = pi.id)
-            JOIN pdm p ON pi.pdm_id = p.id
+            JOIN pdm p ON pi.pdm_id = p.id AND p.removido_em IS NULL
         WHERE
             COALESCE(v.variavel_mae_id, v.id) = ANY(family_ids_to_process) -- Filtra pelas famílias alvo derivadas anteriormente
             AND v.removido_em IS NULL -- Considera apenas variáveis ativas para mapeamento de PDM

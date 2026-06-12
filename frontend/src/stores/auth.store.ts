@@ -164,6 +164,31 @@ export const useAuthStore = defineStore('auth', {
       this.router.push('/login');
     },
 
+    // Sessão inválida/expirada (token rejeitado pelo backend - HTTP 401).
+    // Diferente do logout(), NÃO chama o endpoint /sair (o token já não vale e a
+    // chamada também retornaria 401), apenas limpa o estado local e manda pro login,
+    // preservando a rota atual para retornar após autenticar novamente.
+    sessaoExpirada() {
+      const rotaAtual = this.router?.currentRoute?.value;
+      const naLogin = rotaAtual?.name === 'login' || rotaAtual?.path === '/login';
+      const returnUrl = !naLogin ? rotaAtual?.fullPath ?? null : null;
+
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('permissions');
+      localStorage.removeItem('sistemaEscolhido');
+
+      // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
+      this.resetStores();
+
+      // definido após o resetStores(), que zeraria o returnUrl
+      this.returnUrl = returnUrl;
+
+      if (!naLogin) {
+        this.router.push('/login');
+      }
+    },
+
     async carregarModulos() {
       this.chamadasPendentes.listarModulos = true;
       this.erros.listarModulos = null;

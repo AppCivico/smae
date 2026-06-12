@@ -60,8 +60,11 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Função para recalcular consolidado de uma meta
+-- Retorna TEXT (e não VOID) pois é chamada via Prisma $queryRaw, que não
+-- consegue desserializar colunas do tipo void.
+DROP FUNCTION IF EXISTS f_refresh_meta_orcamento_consolidado(INT);
 CREATE OR REPLACE FUNCTION f_refresh_meta_orcamento_consolidado(p_meta_id INT)
-RETURNS VOID AS $$
+RETURNS TEXT AS $$
 DECLARE
     v_total_previsao DECIMAL(19,2);
     v_total_empenhado DECIMAL(19,2);
@@ -190,6 +193,8 @@ BEGIN
         total_empenhado_operacao_especial = EXCLUDED.total_empenhado_operacao_especial,
         total_liquidado_operacao_especial = EXCLUDED.total_liquidado_operacao_especial,
         atualizado_em = NOW();
+
+    RETURN 'ok';
 END;
 $$ LANGUAGE plpgsql;
 

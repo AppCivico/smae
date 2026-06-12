@@ -1060,7 +1060,9 @@ export class ReportsService {
                                   .split(' ')
                                   .map((word) => word.charAt(0).toLocaleUpperCase('pt-BR') + word.slice(1))
                                   .join(' '),
-                              value: value,
+                              // O template é renderizado pelo Template Toolkit (Perl). Valores em array viram
+                              // arrayref e seriam impressos como "ARRAY(0x...)", então achatamos para string aqui.
+                              value: Array.isArray(value) ? value.join(', ') : value,
                           })) as Array<{ key: string; value: string }>)
                         : null,
                     data_criacao: relatorio.criado_em.toLocaleString('pt-BR', {
