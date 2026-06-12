@@ -1566,8 +1566,22 @@ export class PessoaService implements OnModuleInit {
         return await this.listaPerfilAcessoIdsPorSistema(sistema);
     }
 
+    private async listaPerfilAcessoSysadminIds(): Promise<number[]> {
+        const rows = await this.prisma.perfilAcesso.findMany({
+            where: {
+                removido_em: null,
+                perfil_privilegio: {
+                    some: { privilegio: { codigo: 'SMAE.sysadmin' } },
+                },
+            },
+            select: { id: true },
+        });
+        return rows.map((r) => r.id);
+    }
+
     async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt): Promise<ListPessoa[]> {
         const visiblePriv = await this.buscaPerfisVisiveis(user);
+        const sysadminPerfilIds = new Set(await this.listaPerfilAcessoSysadminIds());
 
         this.logger.log(`buscando pessoas...`);
 
@@ -1621,6 +1635,7 @@ export class PessoaService implements OnModuleInit {
         });
 
         const listFixed: ListPessoa[] = listActive.map((p) => {
+            const pessoaPerfilIds = p.PessoaPerfil.map((e) => e.perfil_acesso_id);
             return {
                 id: p.id,
                 nome_completo: p.nome_completo,
@@ -1633,7 +1648,8 @@ export class PessoaService implements OnModuleInit {
                 orgao: p.pessoa_fisica?.orgao ? p.pessoa_fisica.orgao : { id: 0, sigla: '' },
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
-                perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) => visiblePriv.includes(e)),
+                perfil_acesso_ids: pessoaPerfilIds.filter((e) => visiblePriv.includes(e)),
+                is_sysadmin: pessoaPerfilIds.some((e) => sysadminPerfilIds.has(e)),
             };
         });
 
