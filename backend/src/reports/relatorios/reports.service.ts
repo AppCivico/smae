@@ -480,6 +480,24 @@ export class ReportsService {
             throw new BadRequestException(`Fonte ${dto.fonte} não pertence ao sistema ${sistema}.`);
         }
 
+        // Garante que o pdm_id/plano_setorial_id informado pertence ao MESMO sistema da requisição
+        // (pdm.sistema é a fonte da verdade: legado=PDM, novo=ProgramaDeMetas/PlanoSetorial).
+        // Rejeitar aqui na criação evita gerar um relatório vazio/incorreto depois — ex.: um plano
+        // legado (sistema=PDM) sendo usado num relatório de ProgramaDeMetas/PlanoSetorial, ou vice-versa.
+        const pdmIdInformado =
+            pdmId ?? (parametros.plano_setorial_id !== undefined ? Number(parametros.plano_setorial_id) : null);
+        if (pdmIdInformado && (['PDM', 'PlanoSetorial', 'ProgramaDeMetas'] as ModuloSistema[]).includes(sistema)) {
+            const pdm = await this.prisma.pdm.findFirst({
+                where: { id: pdmIdInformado, removido_em: null },
+                select: { sistema: true },
+            });
+            if (!pdm) throw new BadRequestException(`PDM/Plano ${pdmIdInformado} não encontrado.`);
+            if (pdm.sistema !== sistema)
+                throw new BadRequestException(
+                    `PDM/Plano ${pdmIdInformado} pertence ao sistema ${pdm.sistema}, incompatível com o sistema ${sistema} da requisição.`
+                );
+        }
+
         // Autorização: aceita o privilégio amplo `Reports.executar.{sistema}` ou o escopado
         // `Reports.executar.{sistema}:{fonte}`.
         if (user && !hasReportPriv(user, 'executar', sistema, dto.fonte)) {
