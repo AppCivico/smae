@@ -1893,6 +1893,19 @@ async function atualizar_superadmin() {
         },
     });
 
+    const idPerfilSysadmin = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'SYSADMIN' } })).id;
+
+    // Só (re)cria o superadmin padrão quando NÃO existe nenhuma pessoa ativa com o perfil SYSADMIN.
+    // Assim, depois de configurado um admin real (renomeado, e-mail trocado, etc.), o superadmin padrão
+    // não "reaparece" a cada deploy. Ele volta a ser criado apenas como recuperação, se ninguém mais tiver acesso.
+    const sysadminCount = await prisma.pessoaPerfil.count({
+        where: {
+            perfil_acesso_id: idPerfilSysadmin,
+            pessoa: { desativado: false },
+        },
+    });
+    if (sysadminCount > 0) return;
+
     const pessoa = await prisma.pessoa.upsert({
         where: { email: 'superadmin@admin.com' },
         update: {},
@@ -1918,22 +1931,20 @@ async function atualizar_superadmin() {
         await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'Administrador(a) Geral do SMAE' } })
     ).id;
 
-    let pessoaPerfilAdmin = await prisma.pessoaPerfil.findFirst({
+    const pessoaPerfilAdmin = await prisma.pessoaPerfil.findFirst({
         where: {
             pessoa_id: pessoa.id,
             perfil_acesso_id: idPerfilAcesso,
         },
     });
     if (!pessoaPerfilAdmin) {
-        pessoaPerfilAdmin = await prisma.pessoaPerfil.create({
+        await prisma.pessoaPerfil.create({
             data: {
                 pessoa_id: pessoa.id,
                 perfil_acesso_id: idPerfilAcesso,
             },
         });
     }
-
-    const idPerfilSysadmin = (await prisma.perfilAcesso.findFirstOrThrow({ where: { nome: 'SYSADMIN' } })).id;
 
     const pessoaPerfilSysadmin = await prisma.pessoaPerfil.findFirst({
         where: { pessoa_id: pessoa.id, perfil_acesso_id: idPerfilSysadmin },
