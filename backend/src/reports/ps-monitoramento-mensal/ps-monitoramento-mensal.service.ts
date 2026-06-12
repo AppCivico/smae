@@ -315,10 +315,13 @@ export class PSMonitoramentoMensal implements ReportableService {
             `;
 
         // Fazendo replace de :metas, :mesAno e :pdm_id
+        // aceita tanto pdm_id quanto plano_setorial_id (como applyFilter/fetch já fazem),
+        // evitando 500 quando o chamador envia apenas plano_setorial_id
+        const pdmId = params.pdm_id ?? params.plano_setorial_id;
         const sqlMetas = sql
             .replace(':metas', metasArr.length ? metasArr.toString() : '0')
             .replace(/:mesAno/g, "'" + paramMesAno + "'")
-            .replace(':pdm_id', params.pdm_id!.toString());
+            .replace(':pdm_id', pdmId!.toString());
 
         const linhasMetas = (await this.prisma.$queryRawUnsafe(sqlMetas)) as any;
         return linhasMetas as RelPSMonitoramentoMensalCicloMetasDto[];
