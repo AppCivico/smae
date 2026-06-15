@@ -12,6 +12,7 @@ import {
     ValidateIf,
     IsArray,
     ArrayMaxSize,
+    ArrayMinSize,
     ValidateNested,
 } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
@@ -58,37 +59,39 @@ export class CreateContratoDto {
     @IsArray({
         message: 'Processos SEI: precisa ser uma array de strings',
     })
+    @ArrayMinSize(1, {
+        message: 'Processos SEI: precisa ter ao menos 1 item',
+    })
     @ArrayMaxSize(100, {
         message: 'Processos SEI: precisa ter no máximo 100 items',
     })
     @IsString({ each: true, message: 'Cada item precisa ser uma string' })
     processos_sei: string[];
 
-    @IsOptional()
+    @IsString()
     @MinLength(1)
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objeto Resumo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
-    objeto_resumo?: string;
+    objeto_resumo: string;
 
     @IsOptional()
     @MinLength(1)
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objeto Detalhado" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto_detalhado?: string;
 
-    @IsOptional()
+    @IsString()
     @MinLength(1)
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Contratante' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    contratante?: string;
+    contratante: string;
 
-    @IsOptional()
+    @IsString()
     @MinLength(1)
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Empresa contratada' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    empresa_contratada?: string;
+    empresa_contratada: string;
 
-    @IsOptional()
     @MinLength(14)
     @MaxLength(14)
     @IsNumberString(
@@ -97,18 +100,16 @@ export class CreateContratoDto {
             message: 'Precisa ser número de CNPJ com 14 dígitos, enviado em formato String',
         }
     )
-    @ValidateIf((object, value) => value !== null)
-    cnpj_contratada?: string;
+    cnpj_contratada: string;
 
     @IsOptional()
     @MinLength(1)
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Observacões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     observacoes?: string;
 
-    @IsOptional()
     @Transform(DateTransform)
     @IsOnlyDate()
-    data_assinatura?: Date;
+    data_assinatura: Date;
 
     @IsOptional()
     @Transform(DateTransform)
