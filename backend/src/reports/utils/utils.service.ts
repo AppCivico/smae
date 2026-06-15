@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { TipoPdmType } from '../../common/decorators/current-tipo-pdm';
 import { MetasGetPermissionSet } from '../../meta/meta.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from '../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
@@ -39,14 +40,31 @@ export class UtilsService {
 
         let whereSet: Awaited<ReturnType<typeof MetasGetPermissionSet>> | undefined = undefined;
         if (user) {
-            const sistema = user.modulo_sistema[0];
-            if (!sistema) throw new Error('Usuário sem sistema');
+            // O modo de permissão é derivado do PRÓPRIO plano informado (fonte da verdade =
+            // pdm.sistema/pdm.tipo), e não de user.modulo_sistema[0]. O relatório pode rodar em
+            // outro contexto (fila/task) e, principalmente, modulo_sistema[0] é instável dentro
+            // de uma mesma requisição — o que fazia a seção de variáveis resolver '_PDM' (0 metas)
+            // enquanto outras seções resolviam 'PDM_AS_PS'. Combinações válidas:
+            //   legado:          (tipo=PDM, sistema=PDM)             => _PDM
+            //   ProgramaDeMetas: (tipo=PDM, sistema=ProgramaDeMetas) => PDM_AS_PS
+            //   PlanoSetorial:   (tipo=PS,  sistema=PlanoSetorial)   => _PS
+            // A compatibilidade pdm_id x sistema da sessão é validada na criação (saveReport, 400).
+            let modo: TipoPdmType | undefined;
+            if (filters.pdm_id) {
+                const pdm = await this.prisma.pdm.findFirst({
+                    where: { id: filters.pdm_id },
+                    select: { tipo: true, sistema: true },
+                });
+                if (pdm) modo = pdm.tipo === 'PS' ? '_PS' : pdm.sistema === 'PDM' ? '_PDM' : 'PDM_AS_PS';
+            }
 
-            whereSet = await MetasGetPermissionSet(
-                filters?.tipo_pdm == 'PS' ? '_PS' : sistema == 'PDM' ? '_PDM' : 'PDM_AS_PS',
-                user,
-                this.prisma
-            );
+            if (!modo) {
+                const sistema = user.modulo_sistema[0];
+                if (!sistema) throw new Error('Usuário sem sistema');
+                modo = filters?.tipo_pdm == 'PS' ? '_PS' : sistema == 'PDM' ? '_PDM' : 'PDM_AS_PS';
+            }
+
+            whereSet = await MetasGetPermissionSet(modo, user, this.prisma);
         }
 
         const metas = await this.prisma.meta.findMany({
