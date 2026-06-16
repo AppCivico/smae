@@ -152,6 +152,15 @@ export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) 
     @Transform(NumberArrayTransformOrEmpty)
     projeto_etapa_id?: number[];
 
+    /**
+     * Filtra pela etapa padrão associada à etapa do projeto.
+     * As etapas padrão estão ligadas ao portfólio através das etapas configuradas no portfólio.
+     **/
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    etapa_padrao_id?: number[];
+
     @IsOptional()
     @IsString()
     @MaxLength(MAX_LENGTH_DEFAULT, {

@@ -4086,6 +4086,9 @@ export class ProjetoService {
                       }
                     : undefined,
                 projeto_etapa_id: filters.projeto_etapa_id ? { in: filters.projeto_etapa_id } : undefined,
+                projeto_etapa: filters.etapa_padrao_id
+                    ? { is: { etapa_padrao_id: { in: filters.etapa_padrao_id } } }
+                    : undefined,
                 previsao_termino:
                     filters.previsao_termino_de || filters.previsao_termino_ate
                         ? {
