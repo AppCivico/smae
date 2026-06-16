@@ -1897,6 +1897,9 @@ export const portfolio = object({
     .required(),
   modelo_clonagem: boolean()
     .label('Modelo de clonagem')
+    .meta({
+      balaoInformativo: 'Portfólios modelo servem unicamente para se criar modelos de cronograma que podem ser clonados para outros portfólios.',
+    })
     .nullable(),
   nivel_regionalizacao: number()
     .label('Nível de regionalização')
