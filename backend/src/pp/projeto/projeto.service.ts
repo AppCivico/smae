@@ -4086,6 +4086,17 @@ export class ProjetoService {
                       }
                     : undefined,
                 projeto_etapa_id: filters.projeto_etapa_id ? { in: filters.projeto_etapa_id } : undefined,
+                previsao_termino:
+                    filters.previsao_termino_de || filters.previsao_termino_ate
+                        ? {
+                              gte: filters.previsao_termino_de
+                                  ? Date2YMD.fromString(filters.previsao_termino_de)
+                                  : undefined,
+                              lte: filters.previsao_termino_ate
+                                  ? Date2YMD.fromString(filters.previsao_termino_ate)
+                                  : undefined,
+                          }
+                        : undefined,
                 orgao_origem_id: filters.orgao_origem_id ? { in: filters.orgao_origem_id } : undefined,
                 status: filters.status ? { in: filters.status } : undefined,
                 nome: filters.nome ? { in: filters.nome } : undefined,

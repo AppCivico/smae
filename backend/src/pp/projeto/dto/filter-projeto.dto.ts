@@ -183,6 +183,22 @@ export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) 
     @IsOnlyDate()
     @IsString()
     registrado_em_ate?: string;
+
+    /**
+     * Filtra por data de término (previsão de término) >= esta data
+     **/
+    @IsOptional()
+    @IsOnlyDate()
+    @IsString()
+    previsao_termino_de?: string;
+
+    /**
+     * Filtra por data de término (previsão de término) <= esta data
+     **/
+    @IsOptional()
+    @IsOnlyDate()
+    @IsString()
+    previsao_termino_ate?: string;
 }
 
 export class FilterProjetoMDODto extends IntersectionType(CoreFilterProjetoMDODto, ProjetoMDOOrderByDto) {
