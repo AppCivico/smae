@@ -374,7 +374,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .required(),
     processos_sei: array()
       .label('Processos SEI')
-      .nullable(),
+      .required(),
     modalidade_contratacao_id: number()
       .integer()
       .label('Modalidade da Contratação')
@@ -418,19 +418,19 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
       .max(2048)
-      .required()
+      .nullable()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
-      .nullable()
+      .required()
       .label('Contratante'),
     empresa_contratada: string()
-      .nullable()
+      .required()
       .label('Empresa contratada'),
     cnpj_contratada: string()
-      .nullable()
+      .required()
       .label('CNPJ contratada'),
     data_assinatura: date()
-      .nullable()
+      .required()
       .label('Data de assinatura')
       .transform((v) => (v === '' ? null : v)),
     prazo_numero: number()
@@ -459,7 +459,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Valor do contrato'),
     observacoes: string()
       .max(2048)
-      .required()
+      .nullable()
       .label('Observações'),
   });
 
