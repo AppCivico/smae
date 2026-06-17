@@ -1081,8 +1081,10 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                     || []"
                   :key="item.codigo"
                   :value="item.codigo"
+                  :title="item.descricao?.length > 36 ? item.descricao : null"
                 >
-                  {{ item.descricao }}
+                  {{ item.codigo }} -
+                  {{ truncate(item.descricao, 36) }}
                 </option>
               </Field>
               <ErrorMessage
