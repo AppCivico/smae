@@ -3695,7 +3695,8 @@ model Relatorio {
     removido_em  DateTime? @db.Timestamptz(6)
     removido_por Int?
 
-    visibilidade RelatorioVisibilidade @default(Privado)
+    visibilidade      RelatorioVisibilidade @default(Privado) // meio deprecated
+    visibilidade_tipo String?               @db.VarChar(40)
 
     restrito_para Json? @db.Json
     progresso     Int   @default(-1) @db.SmallInt

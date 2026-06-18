@@ -6,6 +6,9 @@ import { GetTempFileName } from '../reports.service';
 import { ModuloSistema } from '@prisma/client';
 
 export type RestricaoAcesso = {
+    // Restringe a um único órgão (escopo "meu_orgao"). Indexável e usado no caminho novo/quente.
+    orgao_id?: number;
+    // Legado: usado pelos relatórios gerados pelo sistema (ex.: Projeto). Mantido para compat.
     portfolio_orgao_ids?: number[];
     roles?: ListaDePrivilegios[];
 };

@@ -9,15 +9,13 @@ import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { RelatorioDto } from './entities/report.entity';
+import { ListVisibilidadeTipoDto, RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
 export class ReportsController {
-    constructor(
-        private readonly reportsService: ReportsService
-    ) {}
+    constructor(private readonly reportsService: ReportsService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -38,6 +36,22 @@ export class ReportsController {
         const sistema = user.assertOneModuloSistema('criar', 'Relatórios');
 
         return await this.reportsService.saveReport(dto, user, sistema);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('visibilidade-tipos')
+    @Roles([
+        'Reports.executar.CasaCivil',
+        'Reports.executar.CasaCivil:Demandas',
+        'Reports.executar.PDM',
+        'Reports.executar.Projetos',
+        'Reports.executar.MDO',
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.ProgramaDeMetas',
+    ])
+    @ApiOkResponse({ type: ListVisibilidadeTipoDto })
+    async visibilidadeTipos(@CurrentUser() user: PessoaFromJwt): Promise<ListVisibilidadeTipoDto> {
+        return this.reportsService.listVisibilidadeTipos(user);
     }
 
     @ApiBearerAuth('access-token')
@@ -76,5 +90,4 @@ export class ReportsController {
         await this.reportsService.delete(params.id, user);
         return null;
     }
-
 }

@@ -1,6 +1,7 @@
-import { ApiProperty, refs } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, refs } from '@nestjs/swagger';
 import { FonteRelatorio } from '@prisma/client';
-import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsOptional } from 'class-validator';
+import { VISIBILIDADE_TIPOS, VisibilidadeTipo } from '../helpers/visibilidade-templates';
 import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
 import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
@@ -57,6 +58,19 @@ export class CreateReportDto {
     })
     parametros: any;
 
+    /**
+     * Escopo de visibilidade do relatório. Define `visibilidade` + `restrito_para` via o mapa de
+     * templates. Um de: publico, privado, meu_orgao.
+     */
+    @IsOptional()
+    @IsIn(VISIBILIDADE_TIPOS)
+    visibilidade_tipo?: VisibilidadeTipo;
+
+    /**
+     * @deprecated Use `visibilidade_tipo`. Mantido como fallback para clientes antigos:
+     * true → publico, false → privado.
+     */
+    @ApiPropertyOptional({ deprecated: true })
     @IsOptional()
     @IsBoolean()
     eh_publico?: boolean;

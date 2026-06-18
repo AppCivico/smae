@@ -49,9 +49,10 @@ import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-conta
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
+import { ListVisibilidadeTipoDto, RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
+import { getTemplatesDisponiveis, montarVisibilidade, VisibilidadeTipo } from './helpers/visibilidade-templates';
 
 // Mapa de propriedade fonte → sistema. Fonte de verdade para "esta fonte pertence a qual módulo?".
 // Algumas fontes (PS*) são compartilhadas entre PlanoSetorial e ProgramaDeMetas — por isso o
@@ -504,14 +505,15 @@ export class ReportsService {
             throw new ForbiddenException('Usuário não tem permissão para executar este relatório.');
         }
 
-        // Visibilidade respeita o `eh_publico` enviado para todos os perfis — inclusive Gestor
-        // de Distribuição de Recurso. A restrição por órgão para esse perfil é aplicada apenas
-        // na listagem (findAll), filtrando Publico por `parametros.orgao_id` do usuário; aqui
-        // basta garantir (em [linha ~472]) que o `parametros.orgao_id` seja coerced para o
-        // órgão do Gestor antes de persistir.
-        const visibilidade: RelatorioVisibilidade = dto.eh_publico ? 'Publico' : 'Privado';
+        // O `visibilidade_tipo` define o escopo via mapa de templates, resolvendo a `visibilidade`
+        // (enum de trabalho do backend) e o `restrito_para`. Fallback para o booleano `eh_publico`
+        // depreciado quando o cliente antigo não envia o tipo.
+        // Obs.: a trava de órgão do perfil "Gestor de Distribuição de Recurso" continua sendo
+        // aplicada apenas na listagem (findAll), filtrando Publico por `parametros.orgao_id`.
+        const visibilidadeTipo: VisibilidadeTipo =
+            dto.visibilidade_tipo ?? (dto.eh_publico ? 'publico' : 'privado');
+        const { visibilidade, restrito_para } = montarVisibilidade(visibilidadeTipo, user, sistema, dto.fonte);
 
-        console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
                 data: {
@@ -519,6 +521,8 @@ export class ReportsService {
                     fonte: dto.fonte,
                     sistema: sistema,
                     visibilidade: visibilidade,
+                    visibilidade_tipo: visibilidadeTipo,
+                    restrito_para: restrito_para ?? undefined,
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                     parametros: parametros,
                     parametros_processados: await BuildParametrosProcessados(this.prisma, {
@@ -605,6 +609,11 @@ export class ReportsService {
         return service;
     }
 
+    listVisibilidadeTipos(user: PessoaFromJwt): ListVisibilidadeTipoDto {
+        const sistema = user.assertOneModuloSistema('buscar', 'Relatórios');
+        return { linhas: getTemplatesDisponiveis(sistema) };
+    }
+
     async findAll(filters: FilterRelatorioDto, user: PessoaFromJwt): Promise<PaginatedDto<RelatorioDto>> {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
@@ -679,7 +688,21 @@ export class ReportsService {
                                             equals: Prisma.AnyNull,
                                         },
                                     },
-                                    // Check for role-based access
+                                    // Escopo "meu_orgao": restrito_para.orgao_id casa com o órgão do
+                                    // usuário. O gate por privilégio já é aplicado acima (fonteFilter),
+                                    // então basta o match por órgão. Coberto pelo índice de expressão
+                                    // relatorio_restrito_orgao_id_idx.
+                                    ...(user.orgao_id
+                                        ? [
+                                              {
+                                                  restrito_para: {
+                                                      path: ['orgao_id'],
+                                                      equals: user.orgao_id,
+                                                  },
+                                              } satisfies Prisma.RelatorioWhereInput,
+                                          ]
+                                        : []),
+                                    // Check for role-based access (legado: portfolio_orgao_ids/roles)
                                     {
                                         AND: [
                                             {
@@ -736,6 +759,7 @@ export class ReportsService {
                 fonte: true,
                 sistema: true,
                 visibilidade: true,
+                visibilidade_tipo: true,
                 arquivo_id: true,
                 parametros: true,
                 parametros_processados: true,
@@ -765,10 +789,11 @@ export class ReportsService {
 
                 const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
                 const pode_remover = hasReportPriv(user, 'remover', r.sistema, r.fonte);
-                const { sistema: _sistema, ...rest } = r;
+                const { sistema: _sistema, visibilidade_tipo, ...rest } = r;
 
                 return {
                     ...rest,
+                    visibilidade_tipo: (visibilidade_tipo as VisibilidadeTipo | null) ?? null,
                     progresso: progresso,
                     eh_publico: eh_publico,
                     pode_remover: pode_remover,
