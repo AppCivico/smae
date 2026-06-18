@@ -12,12 +12,12 @@ import { WikiLinkDto } from './dto/wiki-link.dto';
 export class WikiLinkService {
     constructor(private readonly prisma: PrismaService) {}
 
-    private async getWikiPrefix(): Promise<string> {
+    private async getWikiPrefix(): Promise<string | null> {
         const config = await this.prisma.smaeConfig.findUnique({
             where: { key: 'WIKI_PREFIX' },
             select: { value: true },
         });
-        if (!config?.value) throw new HttpException('Wiki prefix not configured', 500);
+        if (!config?.value) return null;
 
         return config.value;
     }
@@ -29,12 +29,14 @@ export class WikiLinkService {
 
     private async validateWikiUrl(url: string): Promise<void> {
         const prefix = await this.getWikiPrefix();
+        if (!prefix) return;
+
         const normalizedUrl = this.normalizeWikiUrl(url);
         const fullUrl = `${prefix}${normalizedUrl}`;
 
         try {
             new URL(fullUrl);
-        } catch (error) {
+        } catch (_error) {
             throw new HttpException('URL da wiki inválida quando combinada com o prefixo configurado', 400);
         }
     }
@@ -83,6 +85,7 @@ export class WikiLinkService {
 
     async findAll(): Promise<ListWikiLinkDto[]> {
         const prefix = await this.getWikiPrefix();
+        if (!prefix) return [];
 
         const results = await this.prisma.wikiLink.findMany({
             where: { removido_em: null },
