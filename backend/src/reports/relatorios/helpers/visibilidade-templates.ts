@@ -57,6 +57,16 @@ export const VISIBILIDADE_TEMPLATES: Record<VisibilidadeTipo, VisibilidadeTempla
 export const VISIBILIDADE_TIPOS = Object.keys(VISIBILIDADE_TEMPLATES) as VisibilidadeTipo[];
 
 /**
+ * Label legível de um `visibilidade_tipo` para exibição (ex.: badge na listagem), evitando que o
+ * frontend precise do endpoint de tipos só para mapear tipo → label. Retorna null quando não há
+ * tipo definido (ex.: relatórios Restrito gerados pelo sistema, sem template).
+ */
+export function getVisibilidadeLabel(tipo: VisibilidadeTipo | null | undefined): string | null {
+    if (!tipo) return null;
+    return VISIBILIDADE_TEMPLATES[tipo]?.label ?? null;
+}
+
+/**
  * Resolve um `visibilidade_tipo` no concreto `{ visibilidade, restrito_para }` que será persistido
  * no relatório. `sistema`/`fonte` são recebidos para que escopos futuros possam montar restrições
  * dependentes da fonte sem mudar o ponto de chamada.

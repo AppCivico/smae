@@ -22,6 +22,8 @@ export class RelatorioDto {
     visibilidade: RelatorioVisibilidade;
     @ApiProperty({ enum: ['publico', 'privado', 'meu_orgao'], nullable: true })
     visibilidade_tipo: VisibilidadeTipo | null;
+    @ApiProperty({ nullable: true, description: 'Label legível de visibilidade_tipo (para exibição)' })
+    visibilidade_tipo_label: string | null;
     processamento: RelatorioProcessamentoDto | null;
     @ApiProperty({
         type: RelatorioParamDto,

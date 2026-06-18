@@ -52,7 +52,12 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { ListVisibilidadeTipoDto, RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
-import { getTemplatesDisponiveis, montarVisibilidade, VisibilidadeTipo } from './helpers/visibilidade-templates';
+import {
+    getTemplatesDisponiveis,
+    getVisibilidadeLabel,
+    montarVisibilidade,
+    VisibilidadeTipo,
+} from './helpers/visibilidade-templates';
 
 // Mapa de propriedade fonte → sistema. Fonte de verdade para "esta fonte pertence a qual módulo?".
 // Algumas fontes (PS*) são compartilhadas entre PlanoSetorial e ProgramaDeMetas — por isso o
@@ -790,10 +795,12 @@ export class ReportsService {
                 const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
                 const pode_remover = hasReportPriv(user, 'remover', r.sistema, r.fonte);
                 const { sistema: _sistema, visibilidade_tipo, ...rest } = r;
+                const visTipo = (visibilidade_tipo as VisibilidadeTipo | null) ?? null;
 
                 return {
                     ...rest,
-                    visibilidade_tipo: (visibilidade_tipo as VisibilidadeTipo | null) ?? null,
+                    visibilidade_tipo: visTipo,
+                    visibilidade_tipo_label: getVisibilidadeLabel(visTipo),
                     progresso: progresso,
                     eh_publico: eh_publico,
                     pode_remover: pode_remover,
