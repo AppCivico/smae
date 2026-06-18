@@ -243,18 +243,20 @@ vue/singleline-html-element-content-newline -->
   <table
     class="tabela-de-etapas"
   >
-    <col class="col--number">
-    <col class="col--data">
-    <col>
-    <col>
-    <col class="col--number">
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
-    <col
-      v-if="!permissõesDaObraEmFoco.apenas_leitura
-        || permissõesDaObraEmFoco.sou_responsavel"
-      class="col--botão-de-ação"
-    >
+    <colgroup>
+      <col class="col--number">
+      <col class="col--data">
+      <col>
+      <col>
+      <col class="col--number">
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+      <col
+        v-if="!permissõesDaObraEmFoco.apenas_leitura
+          || permissõesDaObraEmFoco.sou_responsavel"
+        class="col--botão-de-ação"
+      >
+    </colgroup>
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
