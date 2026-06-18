@@ -1,6 +1,18 @@
 {
   "dependencies": {
     "@date-fns/utc": "^2.1.0",
+    "@tiptap/core": "^2.27.2",
+    "@tiptap/extension-color": "^2.27.2",
+    "@tiptap/extension-font-family": "^2.27.2",
+    "@tiptap/extension-highlight": "^2.27.2",
+    "@tiptap/extension-link": "^2.27.2",
+    "@tiptap/extension-subscript": "^2.27.2",
+    "@tiptap/extension-superscript": "^2.27.2",
+    "@tiptap/extension-table": "^2.27.2",
+    "@tiptap/extension-table-cell": "^2.27.2",
+    "@tiptap/extension-table-header": "^2.27.2",
+    "@tiptap/extension-table-row": "^2.27.2",
+    "@tiptap/extension-text-style": "^2.27.2",
     "@tiptap/extension-underline": "^2.27.2",
     "@tiptap/starter-kit": "^2.0.0-beta.202",
     "@tiptap/vue-3": "^2.0.0-beta.202",
