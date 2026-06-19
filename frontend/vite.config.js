@@ -4,13 +4,15 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 
+function gitSpawn(args, cwd) {
+  return spawnSync('git', args, { encoding: 'utf-8', cwd });
+}
+
 function getLastCommitDate(dir) {
-  const result = spawnSync('git', ['log', '-1', '--format=%ci', '--', '.'], {
-    encoding: 'utf-8',
-    cwd: dir,
-  });
+  const prefix = gitSpawn(['rev-parse', '--show-prefix'], dir);
+  const result = gitSpawn(['log', '-1', '--format=%ci', '--', '.'], dir);
   // eslint-disable-next-line no-console
-  console.log(`[vite] git log em ${dir}: status=${result.status} stdout="${result.stdout?.trim()}" stderr="${result.stderr?.trim()}" error=${result.error?.message}`);
+  console.log(`[vite] ${dir}: prefix="${prefix.stdout?.trim()}" | log="${result.stdout?.trim()}" | status=${result.status}`);
   return (result.stdout || '').trim().slice(0, 16);
 }
 
@@ -24,10 +26,10 @@ const htmlPlugin = () => ({
   },
 });
 
+const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+const isShallow = gitSpawn(['rev-parse', '--is-shallow-repository'], repoRoot).stdout?.trim();
 // eslint-disable-next-line no-console
-console.log('[vite] import.meta.url:', import.meta.url);
-// eslint-disable-next-line no-console
-console.log('[vite] process.cwd():', process.cwd());
+console.log('[vite] shallow:', isShallow, '| cwd:', process.cwd());
 
 const frontendDir = fileURLToPath(new URL('.', import.meta.url));
 const backendDir = fileURLToPath(new URL('../backend', import.meta.url));
