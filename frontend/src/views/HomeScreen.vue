@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 
+import DataDoBuild from '@/components/DataDoBuild.vue';
 import type { ModulosDoSistema } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
 import { useAuthStore } from '@/stores/auth.store';
@@ -52,6 +53,8 @@ authStore.carregarModulos();
           >
         </div>
       </div>
+
+      <DataDoBuild class="data-do-build" />
     </div>
 
     <ul
@@ -209,5 +212,13 @@ authStore.carregarModulos();
 .logos__fgv-imagem {
   width: 18rem;
   height: 100%;
+}
+
+.data-do-build {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: @c300;
+  display: flex;
+  gap: 1rem;
 }
 </style>

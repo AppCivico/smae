@@ -1,7 +1,22 @@
 import legacy from '@vitejs/plugin-legacy';
 import vue from '@vitejs/plugin-vue';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
+
+const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+
+function getLastCommitDate(folder) {
+  try {
+    const result = spawnSync('git', ['log', '-1', '--format=%ci', '--', folder], {
+      encoding: 'utf-8',
+      cwd: repoRoot,
+    });
+    return (result.stdout || '').trim().slice(0, 16);
+  } catch {
+    return '';
+  }
+}
 
 const htmlPlugin = () => ({
   name: 'html-transform',
@@ -13,8 +28,18 @@ const htmlPlugin = () => ({
   },
 });
 
+const frontendDate = getLastCommitDate('frontend');
+const backendDate = getLastCommitDate('backend');
+
+// eslint-disable-next-line no-console
+console.log('[vite] commit dates — front:', frontendDate || '(vazio)', '| back:', backendDate || '(vazio)');
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __FRONTEND_COMMIT_DATE__: JSON.stringify(frontendDate),
+    __BACKEND_COMMIT_DATE__: JSON.stringify(backendDate),
+  },
   css: {
     preprocessorOptions: {
       less: {
