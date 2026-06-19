@@ -4,13 +4,11 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 
-const repoRoot = fileURLToPath(new URL('..', import.meta.url));
-
-function getLastCommitDate(folder) {
+function getLastCommitDate(dir) {
   try {
-    const result = spawnSync('git', ['log', '-1', '--format=%ci', '--', folder], {
+    const result = spawnSync('git', ['log', '-1', '--format=%ci', '--', '.'], {
       encoding: 'utf-8',
-      cwd: repoRoot,
+      cwd: dir,
     });
     return (result.stdout || '').trim().slice(0, 16);
   } catch {
@@ -28,8 +26,8 @@ const htmlPlugin = () => ({
   },
 });
 
-const frontendDate = getLastCommitDate('frontend');
-const backendDate = getLastCommitDate('backend');
+const frontendDate = getLastCommitDate(fileURLToPath(new URL('.', import.meta.url)));
+const backendDate = getLastCommitDate(fileURLToPath(new URL('../backend', import.meta.url)));
 
 // eslint-disable-next-line no-console
 console.log('[vite] commit dates — front:', frontendDate || '(vazio)', '| back:', backendDate || '(vazio)');
