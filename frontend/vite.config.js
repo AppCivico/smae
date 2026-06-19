@@ -9,10 +9,7 @@ function gitSpawn(args, cwd) {
 }
 
 function getLastCommitDate(dir) {
-  const prefix = gitSpawn(['rev-parse', '--show-prefix'], dir);
   const result = gitSpawn(['log', '-1', '--format=%ci', '--', '.'], dir);
-  // eslint-disable-next-line no-console
-  console.log(`[vite] ${dir}: prefix="${prefix.stdout?.trim()}" | log="${result.stdout?.trim()}" | status=${result.status}`);
   return (result.stdout || '').trim().slice(0, 16);
 }
 
@@ -28,8 +25,10 @@ const htmlPlugin = () => ({
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 const isShallow = gitSpawn(['rev-parse', '--is-shallow-repository'], repoRoot).stdout?.trim();
-// eslint-disable-next-line no-console
-console.log('[vite] shallow:', isShallow, '| cwd:', process.cwd());
+
+if (isShallow === 'true') {
+  gitSpawn(['fetch', '--unshallow'], repoRoot);
+}
 
 const frontendDir = fileURLToPath(new URL('.', import.meta.url));
 const backendDir = fileURLToPath(new URL('../backend', import.meta.url));
