@@ -5,15 +5,13 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 
 function getLastCommitDate(dir) {
-  try {
-    const result = spawnSync('git', ['log', '-1', '--format=%ci', '--', '.'], {
-      encoding: 'utf-8',
-      cwd: dir,
-    });
-    return (result.stdout || '').trim().slice(0, 16);
-  } catch {
-    return '';
-  }
+  const result = spawnSync('git', ['log', '-1', '--format=%ci', '--', '.'], {
+    encoding: 'utf-8',
+    cwd: dir,
+  });
+  // eslint-disable-next-line no-console
+  console.log(`[vite] git log em ${dir}: status=${result.status} stdout="${result.stdout?.trim()}" stderr="${result.stderr?.trim()}" error=${result.error?.message}`);
+  return (result.stdout || '').trim().slice(0, 16);
 }
 
 const htmlPlugin = () => ({
@@ -26,8 +24,16 @@ const htmlPlugin = () => ({
   },
 });
 
-const frontendDate = getLastCommitDate(fileURLToPath(new URL('.', import.meta.url)));
-const backendDate = getLastCommitDate(fileURLToPath(new URL('../backend', import.meta.url)));
+// eslint-disable-next-line no-console
+console.log('[vite] import.meta.url:', import.meta.url);
+// eslint-disable-next-line no-console
+console.log('[vite] process.cwd():', process.cwd());
+
+const frontendDir = fileURLToPath(new URL('.', import.meta.url));
+const backendDir = fileURLToPath(new URL('../backend', import.meta.url));
+
+const frontendDate = getLastCommitDate(frontendDir);
+const backendDate = getLastCommitDate(backendDir);
 
 // eslint-disable-next-line no-console
 console.log('[vite] commit dates — front:', frontendDate || '(vazio)', '| back:', backendDate || '(vazio)');
