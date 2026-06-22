@@ -42,6 +42,7 @@ module.exports = {
         'newlines-between': 'always',
       },
     ],
+    'import/no-unresolved': ['error', { ignore: [String.raw`\?raw$`, String.raw`\?url$`, String.raw`\?inline$`] }],
     'import/extensions': [
       'error', {
         ts: 'warn', // TO-DO: voltar e resolver esse valor falso
