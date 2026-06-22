@@ -1,4 +1,4 @@
-import type { RelatorioDto } from '@back/reports/relatorios/entities/report.entity';
+import type { RelatorioDto, ListVisibilidadeTipoDto, VisibilidadeTipoItemDto } from '@back/reports/relatorios/entities/report.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -12,11 +12,22 @@ type RespostaDeLista = {
   linhas: RelatorioDto[];
 };
 
+type ChamadasPendentes = {
+  tiposDeVisibilidade: boolean;
+};
+
+type Erros = {
+  tiposDeVisibilidade: null | unknown;
+};
+
 interface Estado {
   lista: Lista;
+  tiposDeVisibilidade: VisibilidadeTipoItemDto[];
   current: RelatorioDto | Record<string, never>;
   loading: boolean;
   error: null | unknown;
+  chamadasPendentes: ChamadasPendentes;
+  erros: Erros;
 
   paginação: {
     temMais: boolean;
@@ -27,9 +38,16 @@ interface Estado {
 export const useRelatoriosStore = defineStore('relatorios', {
   state: (): Estado => ({
     lista: [],
+    tiposDeVisibilidade: [],
     current: {},
     loading: false,
     error: null,
+    chamadasPendentes: {
+      tiposDeVisibilidade: false,
+    },
+    erros: {
+      tiposDeVisibilidade: null,
+    },
 
     paginação: {
       temMais: false,
@@ -58,6 +76,16 @@ export const useRelatoriosStore = defineStore('relatorios', {
         this.error = error;
       }
       this.loading = false;
+    },
+    async buscarTiposDeVisibilidade() {
+      this.chamadasPendentes.tiposDeVisibilidade = true;
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/relatorios/visibilidade-tipos`) as ListVisibilidadeTipoDto;
+        this.tiposDeVisibilidade = linhas;
+      } catch (error) {
+        this.erros.tiposDeVisibilidade = error;
+      }
+      this.chamadasPendentes.tiposDeVisibilidade = false;
     },
     async insert(params = {}) {
       if (await this.requestS.post(`${baseUrl}/relatorios`, params)) return true;

@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { relatórioDePrevisãoDeCustoPortfolio as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
@@ -16,7 +17,8 @@ const portfolioStore = usePortfolioStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
-const { current, loading } = storeToRefs(relatoriosStore);
+const authStore = useAuthStore();
+const { current, tiposDeVisibilidade } = storeToRefs(relatoriosStore);
 
 const currentYear = new Date().getFullYear();
 
@@ -27,34 +29,44 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: null,
   },
-  eh_publico: null,
+  visibilidade_tipo: null,
 }));
 
 async function onSubmit(values) {
   const carga = values;
-  try {
-    if (carga.parametros.projeto_id === null) {
-      delete carga.parametros.projeto_id;
-    }
+  if (carga.parametros.projeto_id === null) {
+    delete carga.parametros.projeto_id;
+  }
 
-    const r = await relatoriosStore.insert(carga);
-    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
-
-    if (r === true) {
-      alertStore.success(msg);
-
-      if (route.meta?.rotaDeEscape) {
-        await router.push({ name: route.meta.rotaDeEscape });
+  async function enviar() {
+    try {
+      const r = await relatoriosStore.insert(carga);
+      const msg = 'Relatório em processamento, acompanhe na tela de listagem';
+      if (r === true) {
+        alertStore.success(msg);
+        if (route.meta?.rotaDeEscape) {
+          await router.push({ name: route.meta.rotaDeEscape });
+        }
       }
+    } catch (error) {
+      alertStore.error(error);
     }
-  } catch (error) {
-    alertStore.error(error);
+  }
+
+  const tipoSelecionado = tiposDeVisibilidade.value
+    .find((item) => item.tipo === values.visibilidade_tipo);
+
+  if (tipoSelecionado?.requer_confirmacao) {
+    alertStore.confirmAction(tipoSelecionado.mensagem_confirmacao, enviar);
+  } else {
+    await enviar();
   }
 }
 
 function iniciar() {
   portfolioStore.buscarTudo();
   projetosStore.buscarTudo();
+  relatoriosStore.buscarTiposDeVisibilidade();
 }
 
 iniciar();
@@ -165,20 +177,16 @@ iniciar();
 
       <div class="f1">
         <LabelFromYup
-          name="eh_publico"
+          name="visibilidade_tipo"
           :schema="schema"
           required
         />
         <Field
-          name="eh_publico"
+          name="visibilidade_tipo"
           as="select"
-          class="inputtext light
-            mb1"
-          :class="{
-            error: errors['eh_publico'],
-            loading: projetosStore.chamadasPendentes.lista
-          }"
-          :disabled="projetosStore.chamadasPendentes.lista"
+          class="inputtext light mb1"
+          :class="{ error: errors['visibilidade_tipo'] }"
+          :aria-busy="relatoriosStore.chamadasPendentes.tiposDeVisibilidade"
         >
           <option
             value=""
@@ -186,18 +194,20 @@ iniciar();
           >
             Selecionar
           </option>
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false">
-            Não
+          <option
+            v-for="item in tiposDeVisibilidade"
+            :key="item.tipo"
+            :value="item.tipo"
+            :disabled="item.tipo === 'meu_orgao' && !authStore.user?.orgao_id"
+          >
+            {{ item.label }}
           </option>
         </Field>
         <div
-          v-if="errors['parametros.eh_publico']"
+          v-if="errors['visibilidade_tipo']"
           class="error-msg"
         >
-          {{ errors['parametros.eh_publico'] }}
+          {{ errors['visibilidade_tipo'] }}
         </div>
       </div>
     </div>

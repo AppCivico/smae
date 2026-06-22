@@ -3212,7 +3212,15 @@ const relatorioValidacaoBase = object()
     eh_publico: boolean()
       .label('Relatório Público')
       .nullable()
-      .required(),
+      .when('visibilidade_tipo', {
+        is: undefined,
+        then: (schema) => schema.required(),
+        otherwise: (schema) => schema.optional(),
+      }),
+    visibilidade_tipo: string()
+      .label('Visibilidade')
+      .nullable()
+      .optional(),
     fonte: string()
       .required(),
   });

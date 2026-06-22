@@ -52,10 +52,6 @@ function excluirRelatório(id) {
   }, 'Remover');
 }
 
-function formatarSeEPublico(publico) {
-  return publico ? 'Sim' : 'Não';
-}
-
 function redefinirIntervalo() {
   if (idDoIntervaloDeAtualizacao) {
     clearInterval(idDoIntervaloDeAtualizacao);
@@ -139,7 +135,7 @@ onBeforeRouteLeave(() => {
       { chave: 'criado_em', label: 'Gerado em', formatador: localizarDataHorario },
       { chave: 'parametros_processados', label: 'Filtros Aplicados' },
       { chave: 'resumo_saida', label: 'Resumo saída' },
-      { chave: 'eh_publico', label: 'Relatório Público', formatador: formatarSeEPublico },
+  { chave: 'visibilidade_tipo_label', label: 'Visibilidade' },
       { chave: 'acoes', label: 'Ações' },
     ]"
     @deletar="excluirRelatório"
