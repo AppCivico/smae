@@ -37,8 +37,8 @@ export const VISIBILIDADE_TEMPLATES: Record<VisibilidadeTipo, VisibilidadeTempla
         label: 'Público',
         requer_confirmacao: true,
         mensagem_confirmacao:
-            'Todas as pessoas com acesso à funcionalidade de relatórios desse módulo terão acesso ' +
-            'a esse relatório, confirma que o relatório deve ser público?',
+            'Todas as pessoas com acesso à funcionalidade de relatórios deste módulo terão acesso ' +
+            'a este relatório. Confirma que ele deve ser público?',
     },
     privado: {
         tipo: 'privado',
