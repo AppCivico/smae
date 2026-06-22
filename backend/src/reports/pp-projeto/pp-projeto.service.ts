@@ -452,7 +452,8 @@ export class PPProjetoService implements ReportableService {
             f_formata_cnpj(contrato.cnpj_contratada) AS cnpj_contratada
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
-          JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+          JOIN contrato_projeto ON contrato_projeto.projeto_id = projeto.id AND contrato_projeto.removido_em IS NULL
+          JOIN contrato ON contrato.id = contrato_projeto.contrato_id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
           LEFT JOIN LATERAL (
@@ -522,7 +523,8 @@ export class PPProjetoService implements ReportableService {
             contrato_aditivo.percentual_medido
         FROM projeto
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
-          JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
+          JOIN contrato_projeto ON contrato_projeto.projeto_id = projeto.id AND contrato_projeto.removido_em IS NULL
+          JOIN contrato ON contrato.id = contrato_projeto.contrato_id AND contrato.removido_em IS NULL
           JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
           JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
         WHERE projeto.id = $1

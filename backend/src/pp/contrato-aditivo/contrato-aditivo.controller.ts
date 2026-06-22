@@ -80,9 +80,11 @@ export class ContratoAditivoPPController {
     }
 
     private async buscaContrato(id: number): Promise<number> {
-        const projeto = await this.prisma.contrato.findFirst({
+        const vinculo = await this.prisma.contratoProjeto.findFirst({
             where: {
-                id,
+                contrato_id: id,
+                removido_em: null,
+                contrato: { removido_em: null },
                 projeto: {
                     removido_em: null,
                     tipo: 'PP',
@@ -90,8 +92,8 @@ export class ContratoAditivoPPController {
             },
             select: { projeto_id: true },
         });
-        if (!projeto) throw new Error('Contrato não encontrado');
-        return projeto.projeto_id;
+        if (!vinculo) throw new Error('Contrato não encontrado');
+        return vinculo.projeto_id;
     }
 }
 
@@ -150,9 +152,11 @@ export class ContratoAditivoMDOController {
     }
 
     private async buscaContrato(id: number): Promise<number> {
-        const projeto = await this.prisma.contrato.findFirst({
+        const vinculo = await this.prisma.contratoProjeto.findFirst({
             where: {
-                id,
+                contrato_id: id,
+                removido_em: null,
+                contrato: { removido_em: null },
                 projeto: {
                     removido_em: null,
                     tipo: 'MDO',
@@ -160,7 +164,7 @@ export class ContratoAditivoMDOController {
             },
             select: { projeto_id: true },
         });
-        if (!projeto) throw new Error('Contrato não encontrado');
-        return projeto.projeto_id;
+        if (!vinculo) throw new Error('Contrato não encontrado');
+        return vinculo.projeto_id;
     }
 }

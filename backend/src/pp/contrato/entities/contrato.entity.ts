@@ -44,6 +44,7 @@ export class ContratoDetailDto {
 export class ContratoItemDto {
     id: number;
     numero: string;
+    contrato_exclusivo: boolean;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
     objeto_resumo: string | null;
@@ -60,6 +61,21 @@ export class ContratoItemDto {
 
 export class ListContratoDto {
     linhas: ContratoItemDto[];
+}
+
+export class ContratoCompartilhadoDisponivelDto {
+    id: number;
+    numero: string;
+    contrato_exclusivo: boolean;
+    @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
+    status: StatusContrato;
+    objeto_resumo: string | null;
+    empresa_contratada: string | null;
+    valor: Decimal | null;
+}
+
+export class ListContratoCompartilhadoDisponivelDto {
+    linhas: ContratoCompartilhadoDisponivelDto[];
 }
 
 export class ContratoFonteRecursoDto {
