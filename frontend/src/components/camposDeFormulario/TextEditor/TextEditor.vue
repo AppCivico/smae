@@ -166,6 +166,13 @@ onMounted(() => {
       const content = editor.value.getText() ? editor.value.getHTML() : '';
 
       emit('update:modelValue', content);
+      emit('change', content);
+    },
+    onBlur: () => {
+      const content = editor.value.getText() ? editor.value.getHTML() : '';
+
+      emit('update:modelValue', content);
+      emit('change', content);
     },
   });
 });
@@ -175,7 +182,10 @@ onBeforeUnmount(() => {
 });
 
 watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
+  if (editor.value.isFocused) return;
+
   const value = newModelValue || newValue;
+  if (!value) return;
 
   const isSame = editor.value.getHTML() === value;
   if (!isSame) {
