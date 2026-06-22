@@ -981,6 +981,7 @@ export class ReportsService {
                     criador: {
                         select: {
                             email: true,
+                            desativado: true,
                         },
                     },
                 },
@@ -1066,7 +1067,7 @@ export class ReportsService {
     private async sendEmailNotification(
         relatorio: {
             id: number;
-            criador: { email: string } | null;
+            criador: { email: string; desativado: boolean } | null;
             fonte: FonteRelatorio;
             sistema: ModuloSistema;
             parametros_processados: any;
@@ -1076,7 +1077,7 @@ export class ReportsService {
     ) {
         const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
 
-        if (!relatorio.criador) return;
+        if (!relatorio.criador || relatorio.criador.desativado) return;
 
         const useDeepLink = await this.smaeConfigService.getConfigBooleanWithDefault(
             'RELATORIO_EMAIL_DEEP_LINK',

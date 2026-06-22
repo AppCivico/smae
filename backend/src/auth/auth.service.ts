@@ -67,7 +67,9 @@ export class AuthService {
             if (pessoa.senha_bloqueada)
                 throw new BadRequestException('Conta está bloqueada, acesse o e-mail para recuperar a conta');
 
-            await this.pessoaService.incrementarSenhaInvalida(pessoa);
+            // Não incrementa tentativas para conta desativada, pois ao atingir o limite
+            // seria disparado e-mail de "nova senha" para um usuário que não deveria receber.
+            if (!pessoa.desativado) await this.pessoaService.incrementarSenhaInvalida(pessoa);
             throw new BadRequestException('E-mail ou senha inválidos');
         }
 
@@ -186,7 +188,9 @@ export class AuthService {
     async solicitarNovaSenha(body: SolicitarNovaSenhaRequestBody) {
         const pessoa = await this.pessoaService.findByEmail(body.email);
 
-        if (!pessoa) throw new BadRequestException('E-mail não encontrado');
+        // Conta desativada não pode recuperar senha. Trata como "não encontrado"
+        // para não vazar a existência/situação da conta nem disparar e-mail.
+        if (!pessoa || pessoa.desativado) throw new BadRequestException('E-mail não encontrado');
 
         if (
             pessoa.senha_bloqueada &&

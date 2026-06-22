@@ -32,34 +32,40 @@ export class AeNotaTaskService implements TaskableService {
                 enviaParaOrgao = false;
                 this.logger.log(`Enviando e-mail apenas para o criador e cópia`);
 
-                const globalEmailQueue = await prismaTx.emaildbQueue.create({
-                    data: {
-                        id: uuidv7(),
-                        config_id: 1,
-                        subject: `Aviso para nota - ${info.objeto}`,
-                        template: 'ae-nota-aviso.html',
-                        to: nota.criador.email,
-                        variables: {
-                            ':cc': config.cc.join(','),
-                            ...info,
-                        },
-                    },
-                });
-                if (config.aviso_email_id)
-                    await prismaTx.avisoEmailDisparos.create({
+                if (nota.criador.desativado) {
+                    this.logger.log(`Criador da nota está desativado, e-mail não será enviado para ele`);
+                } else {
+                    const globalEmailQueue = await prismaTx.emaildbQueue.create({
                         data: {
-                            aviso_email_id: config.aviso_email_id,
-                            para: globalEmailQueue.to,
-                            com_copia: config.cc,
-                            emaildb_queue_id: globalEmailQueue.id,
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `Aviso para nota - ${info.objeto}`,
+                            template: 'ae-nota-aviso.html',
+                            to: nota.criador.email,
+                            variables: {
+                                ':cc': config.cc.join(','),
+                                ...info,
+                            },
                         },
                     });
+                    if (config.aviso_email_id)
+                        await prismaTx.avisoEmailDisparos.create({
+                            data: {
+                                aviso_email_id: config.aviso_email_id,
+                                para: globalEmailQueue.to,
+                                com_copia: config.cc,
+                                emaildb_queue_id: globalEmailQueue.id,
+                            },
+                        });
+                }
             }
 
             const orgaoEnviado = new Set<number>();
 
             for (const encaminhamento of nota.NotaEnderecamento) {
-                if (encaminhamento.pessoa_enderecado) {
+                if (encaminhamento.pessoa_enderecado && encaminhamento.pessoa_enderecado.desativado) {
+                    this.logger.log(`Pessoa endereçada está desativada, e-mail não será enviado para ela`);
+                } else if (encaminhamento.pessoa_enderecado) {
                     const globalEmailQueue = await prismaTx.emaildbQueue.create({
                         data: {
                             id: uuidv7(),
@@ -153,6 +159,7 @@ export class AeNotaTaskService implements TaskableService {
                 criador: {
                     select: {
                         email: true,
+                        desativado: true,
                     },
                 },
                 orgao_responsavel: { select: { id: true, email: true } },
@@ -160,7 +167,7 @@ export class AeNotaTaskService implements TaskableService {
                 NotaEnderecamento: {
                     where: { removido_em: null },
                     select: {
-                        pessoa_enderecado: { select: { email: true } },
+                        pessoa_enderecado: { select: { email: true, desativado: true } },
                         orgao_enderecado: { select: { email: true, id: true } },
                     },
                 },

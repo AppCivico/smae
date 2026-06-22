@@ -408,7 +408,7 @@ export class NotaService {
                 select: {
                     id: true,
                     pessoa_enderecado: {
-                        select: { email: true },
+                        select: { email: true, desativado: true },
                     },
                     orgao_enderecado: {
                         select: { email: true, sigla: true },
@@ -419,7 +419,9 @@ export class NotaService {
             let emailTo = '';
 
             if (encaminhamentoInfo.pessoa_enderecado?.email) {
-                emailTo = encaminhamentoInfo.pessoa_enderecado.email;
+                // não envia para pessoa desativada (não há fallback para o órgão neste caso)
+                if (!encaminhamentoInfo.pessoa_enderecado.desativado)
+                    emailTo = encaminhamentoInfo.pessoa_enderecado.email;
             } else if (encaminhamentoInfo.orgao_enderecado?.email) {
                 emailTo = encaminhamentoInfo.orgao_enderecado.email;
             }
