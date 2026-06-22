@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -12,10 +12,10 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
 import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 import SmallModal from '@/components/SmallModal.vue';
-import TextEditor from '@/components/TextEditor.vue';
 import { monitoramentoDeMetasAnalise as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';

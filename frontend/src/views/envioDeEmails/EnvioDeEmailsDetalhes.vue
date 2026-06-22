@@ -1,9 +1,9 @@
-<script setup>
+﻿<script setup>
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import TextEditor from '@/components/TextEditor.vue';
+import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEnvioDeEmailsStore } from '@/stores/envioDeEmails.store';
 

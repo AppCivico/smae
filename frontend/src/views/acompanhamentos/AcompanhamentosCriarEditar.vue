@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -11,7 +11,7 @@ import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import TextEditor from '@/components/TextEditor.vue';
+import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
