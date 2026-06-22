@@ -20,6 +20,7 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  shallowRef,
   watch,
 } from 'vue';
 
@@ -136,7 +137,7 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(['update:modelValue']);
-const editor = ref(null);
+const editor = shallowRef(null);
 
 onMounted(() => {
   editor.value = new Editor({
