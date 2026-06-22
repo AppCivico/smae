@@ -132,7 +132,7 @@ onBeforeRouteLeave(() => {
   </p>
 
   <SmaeTable
-    class="tabela-relatio mt2"
+    class="tabela-relatorio mt2"
     :dados="relatóriosStore.lista"
     :colunas="[
       { chave: 'criador.nome_exibicao', label: 'Criador' },
@@ -266,7 +266,7 @@ onBeforeRouteLeave(() => {
 </template>
 
 <style lang="less" scoped>
-.tabela-relatio :deep {
+.tabela-relatorio :deep {
   .table-cell--parametros_processados,
   .table-cell--resumo_saida {
     vertical-align: baseline;
