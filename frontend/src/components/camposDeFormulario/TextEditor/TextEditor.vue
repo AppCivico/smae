@@ -23,6 +23,16 @@ import {
   watch,
 } from 'vue';
 
+import iconExcluirTabela from './assets/flowbite--delete-table-outline.svg?raw';
+import iconCorrigirTabelas from './assets/flowbite--fix-tables-outline.svg?raw';
+import iconProximaCelula from './assets/flowbite--go-to-next-cell-outline.svg?raw';
+import iconCelulaAnterior from './assets/flowbite--go-to-prev-cell-outline.svg?raw';
+import iconDividirCelula from './assets/flowbite--split-cells-outline.svg?raw';
+import iconExcluirColuna from './assets/hugeicons--column-delete.svg?raw';
+import iconExcluirLinha from './assets/hugeicons--row-delete.svg?raw';
+import iconMesclarCelulas from './assets/material-symbols--cell-merge-rounded.svg?raw';
+import iconInserirTabela from './assets/material-symbols--table-outline.svg?raw';
+
 const FontSize = Extension.create({
   name: 'fontSize',
   addOptions: () => ({ types: ['textStyle'] }),
@@ -230,6 +240,7 @@ function setFontFamily(e) {
 }
 </script>
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <div
     v-if="editor"
     class="menueditor"
@@ -482,7 +493,7 @@ function setFontFamily(e) {
             editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
           "
         >
-          Insert table
+          <span v-html="iconInserirTabela" />
         </button>
         <button
           type="button"
@@ -521,7 +532,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().deleteColumn()"
           @click="editor.chain().focus().deleteColumn().run()"
         >
-          Delete column
+          <span v-html="iconExcluirColuna" />
         </button>
         <button
           type="button"
@@ -548,7 +559,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().deleteRow()"
           @click="editor.chain().focus().deleteRow().run()"
         >
-          Delete row
+          <span v-html="iconExcluirLinha" />
         </button>
         <button
           type="button"
@@ -557,7 +568,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().deleteTable()"
           @click="editor.chain().focus().deleteTable().run()"
         >
-          Delete table
+          <span v-html="iconExcluirTabela" />
         </button>
         <button
           type="button"
@@ -566,7 +577,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().mergeCells()"
           @click="editor.chain().focus().mergeCells().run()"
         >
-          Merge cells
+          <span v-html="iconMesclarCelulas" />
         </button>
         <button
           type="button"
@@ -575,7 +586,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().splitCell()"
           @click="editor.chain().focus().splitCell().run()"
         >
-          Split cell
+          <span v-html="iconDividirCelula" />
         </button>
         <button
           type="button"
@@ -629,7 +640,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().fixTables()"
           @click="editor.chain().focus().fixTables().run()"
         >
-          Fix tables
+          <span v-html="iconCorrigirTabelas" />
         </button>
         <button
           type="button"
@@ -638,7 +649,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().goToNextCell()"
           @click="editor.chain().focus().goToNextCell().run()"
         >
-          Go to next cell
+          <span v-html="iconProximaCelula" />
         </button>
         <button
           type="button"
@@ -647,7 +658,7 @@ function setFontFamily(e) {
           :disabled="!editor.can().goToPreviousCell()"
           @click="editor.chain().focus().goToPreviousCell().run()"
         >
-          Go to previous cell
+          <span v-html="iconCelulaAnterior" />
         </button>
       </div>
     </div>
