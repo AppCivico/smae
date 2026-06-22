@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -7,9 +7,8 @@ import {
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
-import SmaeText from '@/components/camposDeFormulario/SmaeText';
+import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import TextEditor from '@/components/TextEditor.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';

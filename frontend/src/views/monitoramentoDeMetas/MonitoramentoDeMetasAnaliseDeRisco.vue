@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -9,7 +9,7 @@ import {
 import { computed, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import TextEditor from '@/components/TextEditor.vue';
+import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';

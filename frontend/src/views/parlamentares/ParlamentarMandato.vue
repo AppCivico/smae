@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -11,7 +11,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import SmallModal from '@/components/SmallModal.vue';
-import TextEditor from '@/components/TextEditor.vue';
+import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
