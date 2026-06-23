@@ -37,7 +37,7 @@ async function excluirVariavel(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover a variável "${nome}"?`, async () => {
     if (await variaveisGlobaisStore.excluirItem(id)) {
       variaveisGlobaisStore.buscarTudo();
-      alertStore.success('Portfólio removido.');
+      alertStore.success('Variável removida.');
     }
   }, 'Remover');
 }
