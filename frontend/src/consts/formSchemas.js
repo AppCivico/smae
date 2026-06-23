@@ -4769,6 +4769,24 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   status: number().label('Status da obra').nullableOuVazio(),
   regioes: number().label('Subprefeitura').nullableOuVazio(),
   tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
+  previsao_termino_de: date()
+    .label('Previsão de término de')
+    .nullable()
+    .transform((v) => (v === '' || (v instanceof Date && Number.isNaN(v.getTime())) ? null : v)),
+  previsao_termino_ate: date()
+    .label('Previsão de término até')
+    .nullable()
+    .transform((v) => (v === '' || (v instanceof Date && Number.isNaN(v.getTime())) ? null : v))
+    .when('previsao_termino_de', (de, schema) => {
+      if (de) {
+        return schema.min(de, 'Deve ser posterior ou igual à data inicial');
+      }
+      return schema;
+    }),
+  etapa_padrao_id: number()
+    .label('Etapa Padrão')
+    .nullableOuVazio()
+    .positive(),
 });
 
 export const EdicaoTransferenciaFase = object().shape({

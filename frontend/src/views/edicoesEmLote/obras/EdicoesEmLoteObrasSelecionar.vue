@@ -11,6 +11,7 @@ import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { obras as obrasSchema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
+import limparParametros from '@/helpers/limparParametros.ts';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import { useObrasStore } from '@/stores/obras.store';
 
@@ -64,9 +65,12 @@ watch(
     route.query.ordem_coluna,
     route.query.ordem_direcao,
     route.query.ipp,
+    route.query.etapa_padrao_id,
+    route.query.previsao_termino_de,
+    route.query.previsao_termino_ate,
   ],
   () => {
-    obrasStore.buscarTudo(route.query);
+    obrasStore.buscarTudo(limparParametros(route.query));
   },
   { immediate: true },
 );

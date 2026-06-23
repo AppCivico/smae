@@ -3,16 +3,17 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import type { Formulario } from '@/components/FiltroParaPagina.vue';
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import {
-  alteracaoEmLoteNovoFiltro as schema,
   obras as obrasSchema,
+  alteracaoEmLoteNovoFiltro as schema,
 } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -26,6 +27,7 @@ const obrasStore = useObrasStore();
 const organsStore = useOrgansStore();
 const regionsStore = useRegionsStore();
 const equipamentosStore = useEquipamentosStore();
+const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 const portfolioObraStore = usePortfolioObraStore();
 const gruposTematicosStore = useGruposTematicosStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
@@ -42,6 +44,12 @@ const { lista: listaDeEquipamentos } = storeToRefs(equipamentosStore);
 const { lista: listaDeGruposTematicos } = storeToRefs(gruposTematicosStore);
 const { regions, regiõesPorNível: regioesPorNivel } = storeToRefs(regionsStore);
 const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore);
+
+const {
+  etapasPadrao: listaDeEtapasProjetos,
+  chamadasPendentes: chamadasPendentesDeEtapasProjetos,
+  erro: erroDeEtapasProjetos,
+} = storeToRefs(etapasProjetosStore);
 
 const valoresIniciais = ({
   ipp: 30,
@@ -130,6 +138,21 @@ const camposFiltro = computed<Formulario>(() => [
   },
   {
     campos: {
+      etapa_padrao_id: {
+        tipo: 'select',
+        label: 'Etapa Padrão',
+        opcoes: prepararParaSelect(listaDeEtapasProjetos.value, { id: 'id', label: 'descricao' }),
+      },
+      previsao_termino_de: {
+        tipo: 'date',
+      },
+      previsao_termino_ate: {
+        tipo: 'date',
+      },
+    },
+  },
+  {
+    campos: {
       palavra_chave: { tipo: 'search', class: 'fb33' },
       ordem_coluna: { tipo: 'select', opcoes: Object.values(colunasParaOrdenacao) },
       ordem_direcao: {
@@ -171,6 +194,11 @@ onMounted(() => {
 
   if (!Array.isArray(regions.value)) {
     regionsStore.getAll();
+  }
+
+  if (!listaDeEtapasProjetos.value.length
+    && !chamadasPendentesDeEtapasProjetos.value.etapasPadrao) {
+    etapasProjetosStore.buscarEtapasPadrao();
   }
 });
 
