@@ -136,10 +136,19 @@ const props = defineProps({
     default: '',
   },
 });
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'change']);
 const editor = shallowRef(null);
 
+const showTableMenu = ref(false);
+const tableMenuRef = ref(null);
+
+function closeTableMenu() {
+  if (showTableMenu.value) showTableMenu.value = false;
+}
+
 onMounted(() => {
+  document.addEventListener('click', closeTableMenu);
+
   editor.value = new Editor({
     extensions: [
       StarterKit,
@@ -179,6 +188,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   editor.value.destroy();
+  document.removeEventListener('click', closeTableMenu);
 });
 
 watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
@@ -493,184 +503,175 @@ function setFontFamily(e) {
           Limpar formatação
         </button>
       </div>
-    </div>
-    <div class="control-group">
       <div class="button-group">
-        <button
-          type="button"
-          class="editorbt"
-          title="Inserir tabela"
-          @click="
-            editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-          "
+        <div
+          ref="tableMenuRef"
+          class="table-menu"
+          @click.stop
         >
-          <span v-html="iconInserirTabela" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Inserir tabela HTML"
-          @click="
-            editor.chain().focus().insertContent(tableHTML, {
-              parseOptions: { preserveWhitespace: false }
-            }).run()
-          "
-        >
-          Insert HTML table
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Adicionar coluna antes"
-          :disabled="!editor.can().addColumnBefore()"
-          @click="editor.chain().focus().addColumnBefore().run()"
-        >
-          Add column before
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Adicionar coluna depois"
-          :disabled="!editor.can().addColumnAfter()"
-          @click="editor.chain().focus().addColumnAfter().run()"
-        >
-          Add column after
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Excluir coluna"
-          :disabled="!editor.can().deleteColumn()"
-          @click="editor.chain().focus().deleteColumn().run()"
-        >
-          <span v-html="iconExcluirColuna" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Adicionar linha antes"
-          :disabled="!editor.can().addRowBefore()"
-          @click="editor.chain().focus().addRowBefore().run()"
-        >
-          Add row before
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Adicionar linha depois"
-          :disabled="!editor.can().addRowAfter()"
-          @click="editor.chain().focus().addRowAfter().run()"
-        >
-          Add row after
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Excluir linha"
-          :disabled="!editor.can().deleteRow()"
-          @click="editor.chain().focus().deleteRow().run()"
-        >
-          <span v-html="iconExcluirLinha" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Excluir tabela"
-          :disabled="!editor.can().deleteTable()"
-          @click="editor.chain().focus().deleteTable().run()"
-        >
-          <span v-html="iconExcluirTabela" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Mesclar células"
-          :disabled="!editor.can().mergeCells()"
-          @click="editor.chain().focus().mergeCells().run()"
-        >
-          <span v-html="iconMesclarCelulas" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Dividir célula"
-          :disabled="!editor.can().splitCell()"
-          @click="editor.chain().focus().splitCell().run()"
-        >
-          <span v-html="iconDividirCelula" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Alternar coluna de cabeçalho"
-          :disabled="!editor.can().toggleHeaderColumn()"
-          @click="editor.chain().focus().toggleHeaderColumn().run()"
-        >
-          Toggle header column
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Alternar linha de cabeçalho"
-          :disabled="!editor.can().toggleHeaderRow()"
-          @click="editor.chain().focus().toggleHeaderRow().run()"
-        >
-          Toggle header row
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Alternar célula de cabeçalho"
-          :disabled="!editor.can().toggleHeaderCell()"
-          @click="editor.chain().focus().toggleHeaderCell().run()"
-        >
-          Toggle header cell
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Mesclar ou dividir"
-          :disabled="!editor.can().mergeOrSplit()"
-          @click="editor.chain().focus().mergeOrSplit().run()"
-        >
-          Merge or split
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Definir atributo de célula"
-          :disabled="!editor.can().setCellAttribute('backgroundColor', '#FAF594')"
-          @click="editor.chain().focus().setCellAttribute('backgroundColor', '#FAF594').run()"
-        >
-          Set cell attribute
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Corrigir tabelas"
-          :disabled="!editor.can().fixTables()"
-          @click="editor.chain().focus().fixTables().run()"
-        >
-          <span v-html="iconCorrigirTabelas" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Ir para próxima célula"
-          :disabled="!editor.can().goToNextCell()"
-          @click="editor.chain().focus().goToNextCell().run()"
-        >
-          <span v-html="iconProximaCelula" />
-        </button>
-        <button
-          type="button"
-          class="editorbt"
-          title="Ir para célula anterior"
-          :disabled="!editor.can().goToPreviousCell()"
-          @click="editor.chain().focus().goToPreviousCell().run()"
-        >
-          <span v-html="iconCelulaAnterior" />
-        </button>
+          <button
+            type="button"
+            class="editorbt"
+            :class="{ 'is-active': editor.isActive('table') || showTableMenu }"
+            title="Tabela"
+            @click="showTableMenu = !showTableMenu"
+          >
+            <span v-html="iconInserirTabela" />
+          </button>
+          <div
+            v-if="showTableMenu"
+            class="table-dropdown"
+            @click="showTableMenu = false"
+          >
+            <div class="table-dropdown__group">
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                @click="editor.chain().focus()
+                  .insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+                  "
+              >
+                <span v-html="iconInserirTabela" /> Inserir tabela
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().deleteTable()"
+                @click="editor.chain().focus().deleteTable().run()"
+              >
+                <span v-html="iconExcluirTabela" /> Excluir tabela
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().fixTables()"
+                @click="editor.chain().focus().fixTables().run()"
+              >
+                <span v-html="iconCorrigirTabelas" /> Corrigir tabelas
+              </button>
+            </div>
+            <div class="table-dropdown__group">
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().addColumnBefore()"
+                @click="editor.chain().focus().addColumnBefore().run()"
+              >
+                Adicionar coluna antes
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().addColumnAfter()"
+                @click="editor.chain().focus().addColumnAfter().run()"
+              >
+                Adicionar coluna depois
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().deleteColumn()"
+                @click="editor.chain().focus().deleteColumn().run()"
+              >
+                <span v-html="iconExcluirColuna" /> Excluir coluna
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().toggleHeaderColumn()"
+                @click="editor.chain().focus().toggleHeaderColumn().run()"
+              >
+                Alternar como cabeçalho de coluna
+              </button>
+            </div>
+            <div class="table-dropdown__group">
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().addRowBefore()"
+                @click="editor.chain().focus().addRowBefore().run()"
+              >
+                Adicionar linha antes
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().addRowAfter()"
+                @click="editor.chain().focus().addRowAfter().run()"
+              >
+                Adicionar linha depois
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().deleteRow()"
+                @click="editor.chain().focus().deleteRow().run()"
+              >
+                <span v-html="iconExcluirLinha" /> Excluir linha
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().toggleHeaderRow()"
+                @click="editor.chain().focus().toggleHeaderRow().run()"
+              >
+                Alternar como cabeçalho de linha
+              </button>
+            </div>
+            <div class="table-dropdown__group">
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().mergeCells()"
+                @click="editor.chain().focus().mergeCells().run()"
+              >
+                <span v-html="iconMesclarCelulas" /> Mesclar células
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().splitCell()"
+                @click="editor.chain().focus().splitCell().run()"
+              >
+                <span v-html="iconDividirCelula" /> Dividir célula
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().mergeOrSplit()"
+                @click="editor.chain().focus().mergeOrSplit().run()"
+              >
+                Mesclar ou dividir
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().toggleHeaderCell()"
+                @click="editor.chain().focus().toggleHeaderCell().run()"
+              >
+                Alternar como célula de cabeçalho
+              </button>
+            </div>
+            <div class="table-dropdown__group">
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().goToPreviousCell()"
+                @click="editor.chain().focus().goToPreviousCell().run()"
+              >
+                <span v-html="iconCelulaAnterior" /> Célula anterior
+              </button>
+              <button
+                type="button"
+                class="table-dropdown__bt"
+                :disabled="!editor.can().goToNextCell()"
+                @click="editor.chain().focus().goToNextCell().run()"
+              >
+                <span v-html="iconProximaCelula" /> Próxima célula
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -772,6 +773,57 @@ function setFontFamily(e) {
   &::placeholder {
     color: @c400;
     opacity: 1;
+  }
+}
+.table-menu {
+  position: relative;
+}
+
+.table-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  background: @primary;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: .25rem;
+  padding: .25rem;
+  min-width: 14rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-dropdown__group {
+  display: flex;
+  flex-direction: column;
+
+  & + & {
+    margin-top: .25rem;
+    padding-top: .25rem;
+    border-top: 1px solid rgba(255, 255, 255, .15);
+  }
+}
+
+.table-dropdown__bt {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  text-align: left;
+  padding: .375rem .5rem;
+  border: 0;
+  background: transparent;
+  color: white;
+  border-radius: .2rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, .1);
+  }
+
+  &:disabled {
+    cursor: default;
   }
 }
 </style>
