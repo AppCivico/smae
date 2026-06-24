@@ -24,15 +24,20 @@ import {
   watch,
 } from 'vue';
 
-import iconExcluirTabela from './assets/flowbite--delete-table-outline.svg?raw';
-import iconCorrigirTabelas from './assets/flowbite--fix-tables-outline.svg?raw';
-import iconProximaCelula from './assets/flowbite--go-to-next-cell-outline.svg?raw';
-import iconCelulaAnterior from './assets/flowbite--go-to-prev-cell-outline.svg?raw';
-import iconDividirCelula from './assets/flowbite--split-cells-outline.svg?raw';
-import iconExcluirColuna from './assets/hugeicons--column-delete.svg?raw';
-import iconExcluirLinha from './assets/hugeicons--row-delete.svg?raw';
-import iconMesclarCelulas from './assets/material-symbols--cell-merge-rounded.svg?raw';
+import iconDiminuirRecuo from './assets/ic--round-format-indent-decrease.svg?raw';
+import iconAumentarRecuo from './assets/ic--round-format-indent-increase.svg?raw';
+import iconCorDeFundo from './assets/jam--background-color.svg?raw';
+import iconCorDeTexto from './assets/jam--color.svg?raw';
+import iconListaComMarcadores from './assets/material-symbols--format-list-bulleted-rounded.svg?raw';
+import iconListaNumerada from './assets/material-symbols--format-list-numbered-rounded.svg?raw';
+import iconLink from './assets/material-symbols--link-rounded.svg?raw';
 import iconInserirTabela from './assets/material-symbols--table-outline.svg?raw';
+import iconFamiliaFonte from './assets/mingcute--font-line.svg?raw';
+import iconAlinharCentro from './assets/quill--text-center.svg?raw';
+import iconAlinharJustificado from './assets/quill--text-justify.svg?raw';
+import iconAlinharEsquerda from './assets/quill--text-left.svg?raw';
+import iconAlinharDireita from './assets/quill--text-right.svg?raw';
+import iconFonte from './assets/raphael--font.svg?raw';
 
 const FontSize = Extension.create({
   name: 'fontSize',
@@ -73,7 +78,7 @@ const Indent = Extension.create({
           renderHTML: ({ indent }) => (indent ? { style: `margin-left:${indent * 2}rem` } : {}),
           parseHTML: (el) => {
             const ml = el.style.marginLeft;
-            return ml ? Math.round(parseFloat(ml) / 2) : 0;
+            return ml ? Math.round(Number.parseFloat(ml) / 2) : 0;
           },
         },
       },
@@ -317,7 +322,7 @@ function setFontFamily(e) {
           :class="{ 'is-active': editor.isActive('bulletList') }"
           @click="editor.chain().focus().toggleBulletList().run()"
         >
-          &bull;
+          <span v-html="iconListaComMarcadores" />
         </button>
         <button
           type="button"
@@ -326,7 +331,7 @@ function setFontFamily(e) {
           :class="{ 'is-active': editor.isActive('orderedList') }"
           @click="editor.chain().focus().toggleOrderedList().run()"
         >
-          1.
+          <span v-html="iconListaNumerada" />
         </button>
       </div>
       <div class="button-group">
@@ -357,14 +362,16 @@ function setFontFamily(e) {
           :title="editor.isActive('link') ? 'Remover link' : 'Inserir link'"
           @click="toggleLink"
         >
-          🔗
+          <span v-html="iconLink" />
         </button>
         <input
           v-if="showLinkInput"
+          id="linkInput"
           ref="linkInputRef"
           v-model="linkUrl"
           type="url"
           class="link-input"
+          aria-label="URL do link"
           placeholder="https://..."
           @keydown.enter.prevent="applyLink"
           @keydown.escape="showLinkInput = false"
@@ -372,43 +379,56 @@ function setFontFamily(e) {
         >
       </div>
       <div class="button-group">
-        <select
-          class="editorbt"
-          :value="editor.getAttributes('textStyle').fontFamily || ''"
-          @change="setFontFamily"
+        <label
+          class="editorbt editorbt--select-group"
+          title="Família da fonte"
         >
-          <option
-            v-for="font in FONT_FACES"
-            :key="font.value"
-            :value="font.value"
-            :style="font.value ? `font-family:${font.value}` : ''"
+          <span v-html="iconFamiliaFonte" aria-hidden="true" />
+          <select
+            aria-label="Família da fonte"
+            :value="editor.getAttributes('textStyle').fontFamily || ''"
+            @change="setFontFamily"
           >
-            {{ font.label }}
-          </option>
-        </select>
-        <select
-          class="editorbt"
-          :value="editor.getAttributes('textStyle').fontSize || ''"
-          @change="setFontSize"
+            <option
+              v-for="font in FONT_FACES"
+              :key="font.value"
+              :value="font.value"
+              :style="font.value ? `font-family:${font.value}` : ''"
+            >
+              {{ font.label }}
+            </option>
+          </select>
+        </label>
+        <label
+          class="editorbt editorbt--select-group"
+          title="Tamanho da fonte"
         >
-          <option value="">
-            Tamanho
-          </option>
-          <option
-            v-for="size in FONT_SIZES"
-            :key="size"
-            :value="size + 'pt'"
+          <span v-html="iconFonte" aria-hidden="true" />
+          <select
+            aria-label="Tamanho da fonte"
+            :value="editor.getAttributes('textStyle').fontSize || ''"
+            @change="setFontSize"
           >
-            {{ size }}
-          </option>
-        </select>
+            <option value="">
+              —
+            </option>
+            <option
+              v-for="size in FONT_SIZES"
+              :key="size"
+              :value="size + 'pt'"
+            >
+              {{ size }}
+            </option>
+          </select>
+        </label>
       </div>
       <div class="button-group">
         <label
           class="editorbt editorbt--colorpicker"
           title="Cor do texto"
+          aria-label="Cor do texto"
         >
-          A
+          <span v-html="iconCorDeTexto" />
           <input
             type="color"
             :value="editor.getAttributes('textStyle').color || '#000000'"
@@ -418,8 +438,9 @@ function setFontFamily(e) {
         <label
           class="editorbt editorbt--colorpicker"
           title="Cor de fundo"
+          aria-label="Cor de fundo"
         >
-          &#9632;
+          <span v-html="iconCorDeFundo" />
           <input
             type="color"
             :value="editor.getAttributes('highlight').color || '#ffff00'"
@@ -430,39 +451,39 @@ function setFontFamily(e) {
       <div class="button-group">
         <button
           type="button"
-          class="editorbt editorbt--larger"
+          class="editorbt"
           title="Alinhar à esquerda"
           :class="{ 'is-active': editor.isActive({ textAlign: 'left' }) }"
           @click="editor.chain().focus().setTextAlign('left').run()"
         >
-          &lArr;
+          <span v-html="iconAlinharEsquerda" />
         </button>
         <button
           type="button"
-          class="editorbt editorbt--larger"
+          class="editorbt"
           title="Alinhar ao centro"
           :class="{ 'is-active': editor.isActive({ textAlign: 'center' }) }"
           @click="editor.chain().focus().setTextAlign('center').run()"
         >
-          &nhArr;
+          <span v-html="iconAlinharCentro" />
         </button>
         <button
           type="button"
-          class="editorbt editorbt--larger"
+          class="editorbt"
           title="Alinhar à direita"
           :class="{ 'is-active': editor.isActive({ textAlign: 'right' }) }"
           @click="editor.chain().focus().setTextAlign('right').run()"
         >
-          &rArr;
+          <span v-html="iconAlinharDireita" />
         </button>
         <button
           type="button"
-          class="editorbt editorbt--larger"
+          class="editorbt"
           title="Alinhar justificado"
           :class="{ 'is-active': editor.isActive({ textAlign: 'justify' }) }"
           @click="editor.chain().focus().setTextAlign('justify').run()"
         >
-          &hArr;
+          <span v-html="iconAlinharJustificado" />
         </button>
       </div>
       <div class="button-group">
@@ -472,7 +493,7 @@ function setFontFamily(e) {
           title="Aumentar recuo"
           @click="doIndent"
         >
-          &rarr;&#124;
+          <span v-html="iconAumentarRecuo" />
         </button>
         <button
           type="button"
@@ -480,7 +501,7 @@ function setFontFamily(e) {
           title="Diminuir recuo"
           @click="doOutdent"
         >
-          &#124;&larr;
+          <span v-html="iconDiminuirRecuo" />
         </button>
       </div>
       <div class="button-group">
@@ -491,16 +512,6 @@ function setFontFamily(e) {
           @click="editor.chain().focus().setHardBreak().run()"
         >
           &crarr;
-        </button>
-      </div>
-      <div class="button-group">
-        <button
-          type="button"
-          class="editorbt"
-          title="Limpar formatação"
-          @click="editor.chain().focus().unsetAllMarks().clearNodes().run()"
-        >
-          Limpar formatação
         </button>
       </div>
       <div class="button-group">
@@ -528,10 +539,9 @@ function setFontFamily(e) {
                 type="button"
                 class="table-dropdown__bt"
                 @click="editor.chain().focus()
-                  .insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-                  "
+  .insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
               >
-                <span v-html="iconInserirTabela" /> Inserir tabela
+                Inserir tabela
               </button>
               <button
                 type="button"
@@ -539,7 +549,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().deleteTable()"
                 @click="editor.chain().focus().deleteTable().run()"
               >
-                <span v-html="iconExcluirTabela" /> Excluir tabela
+                Excluir tabela
               </button>
               <button
                 type="button"
@@ -547,7 +557,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().fixTables()"
                 @click="editor.chain().focus().fixTables().run()"
               >
-                <span v-html="iconCorrigirTabelas" /> Corrigir tabelas
+                Corrigir tabelas
               </button>
             </div>
             <div class="table-dropdown__group">
@@ -573,7 +583,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().deleteColumn()"
                 @click="editor.chain().focus().deleteColumn().run()"
               >
-                <span v-html="iconExcluirColuna" /> Excluir coluna
+                Excluir coluna
               </button>
               <button
                 type="button"
@@ -607,7 +617,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().deleteRow()"
                 @click="editor.chain().focus().deleteRow().run()"
               >
-                <span v-html="iconExcluirLinha" /> Excluir linha
+                Excluir linha
               </button>
               <button
                 type="button"
@@ -625,7 +635,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().mergeCells()"
                 @click="editor.chain().focus().mergeCells().run()"
               >
-                <span v-html="iconMesclarCelulas" /> Mesclar células
+                Mesclar células
               </button>
               <button
                 type="button"
@@ -633,7 +643,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().splitCell()"
                 @click="editor.chain().focus().splitCell().run()"
               >
-                <span v-html="iconDividirCelula" /> Dividir célula
+                Dividir célula
               </button>
               <button
                 type="button"
@@ -659,7 +669,7 @@ function setFontFamily(e) {
                 :disabled="!editor.can().goToPreviousCell()"
                 @click="editor.chain().focus().goToPreviousCell().run()"
               >
-                <span v-html="iconCelulaAnterior" /> Célula anterior
+                Célula anterior
               </button>
               <button
                 type="button"
@@ -667,11 +677,21 @@ function setFontFamily(e) {
                 :disabled="!editor.can().goToNextCell()"
                 @click="editor.chain().focus().goToNextCell().run()"
               >
-                <span v-html="iconProximaCelula" /> Próxima célula
+                Próxima célula
               </button>
             </div>
           </div>
         </div>
+      </div>
+      <div class="button-group">
+        <button
+          type="button"
+          class="editorbt"
+          title="Limpar formatação"
+          @click="editor.chain().focus().unsetAllMarks().clearNodes().run()"
+        >
+          Limpar formatação
+        </button>
       </div>
     </div>
   </div>
@@ -727,6 +747,11 @@ function setFontFamily(e) {
   border: 0;
   background: transparent;
 
+:deep(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
   &:hover {
     color: @c100;
   }
@@ -749,8 +774,29 @@ function setFontFamily(e) {
     text-decoration-color: @amarelo;
   }
 
-  sup, sub {
+  sup,
+  sub {
     color: @amarelo;
+  }
+}
+
+.editorbt--select-group {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  cursor: pointer;
+
+  > span {
+    padding: .5rem .25rem .5rem .5rem;
+  }
+
+  select {
+    padding: .5rem .5rem .5rem .25rem;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font-size: inherit;
+    cursor: pointer;
   }
 }
 
@@ -938,18 +984,11 @@ function setFontFamily(e) {
 
   /* Table-specific styling */
   table {
-    //   border-collapse: collapse;
-    //   margin: 0;
-    //   overflow: hidden;
-    //   table-layout: fixed;
-    //   width: 100%;
-
     td,
     th {
       border: 1px solid @c300;
       box-sizing: border-box;
       min-width: 1em;
-      // padding: 6px 8px;
       position: relative;
       vertical-align: top;
 
