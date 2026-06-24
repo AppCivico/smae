@@ -478,6 +478,9 @@ model Pessoa {
     AditivosQAtualizei ContratoAditivo[] @relation("Atualizador")
     AditivosQRemovi    ContratoAditivo[] @relation("Removedor")
 
+    ContratoProjetoQCriei  ContratoProjeto[] @relation("Criador")
+    ContratoProjetoQRemovi ContratoProjeto[] @relation("Removedor")
+
     RelacaoParlamentarTransferenciaQCriei     TransferenciaParlamentar[] @relation("Criador")
     RelacaoParlamentarTransferenciaQAtualizei TransferenciaParlamentar[] @relation("Atualizador")
     RelacaoParlamentarTransferenciaQRemovi    TransferenciaParlamentar[] @relation("Removedor")
@@ -4080,7 +4083,7 @@ model Projeto {
     ProjetoGrupoPortfolio    ProjetoGrupoPortfolio[]
     equipe                   ProjetoEquipe[]
     GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
-    contratos                Contrato[]
+    ContratoProjeto          ContratoProjeto[]
 
     // Módulo de gestão de obras
     ProjetoRegiao  ProjetoRegiao[]
@@ -7445,8 +7448,13 @@ enum ContratoPrazoUnidade {
 model Contrato {
     id Int @id @default(autoincrement())
 
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+    /// @deprecated Origem do contrato antes do modelo N×N. NÃO usar — a fonte de verdade é `contrato_projeto` (model ContratoProjeto). Mantido apenas para histórico/migração.
+    projeto_id_deprecated Int?
+
+    /// Preenchido pela migração 20260618120000 nas cópias duplicadas que foram fundidas: aponta para o
+    /// contrato canônico no qual esta cópia foi mesclada (e, em seguida, soft-deletada com removido_por = -1).
+    /// NULL para contratos normais. Coluna de auditoria/reversão — não é relação Prisma.
+    mesclado_para_contrato_id Int?
 
     modalidade_contratacao_id Int?
     modalidade_contratacao    ModalidadeContratacao? @relation(fields: [modalidade_contratacao_id], references: [id])
@@ -7485,11 +7493,35 @@ model Contrato {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    aditivos      ContratoAditivo[]
-    processosSei  ContratoSei[]
-    fontesRecurso ContratoFonteRecurso[]
+    aditivos        ContratoAditivo[]
+    processosSei    ContratoSei[]
+    fontesRecurso   ContratoFonteRecurso[]
+    ContratoProjeto ContratoProjeto[]
 
     @@map("contrato")
+}
+
+model ContratoProjeto {
+    id Int @id @default(autoincrement())
+
+    contrato_id Int
+    contrato    Contrato @relation(fields: [contrato_id], references: [id])
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([projeto_id])
+    @@index([contrato_id])
+    @@map("contrato_projeto")
 }
 
 model ContratoSei {

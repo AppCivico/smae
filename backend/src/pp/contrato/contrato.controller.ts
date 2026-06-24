@@ -9,8 +9,13 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ProjetoService } from '../projeto/projeto.service';
 import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { CreateContratoDto } from './dto/create-contrato.dto';
-import { ContratoDetailDto, ListContratoDto } from './entities/contrato.entity';
+import {
+    ContratoDetailDto,
+    ListContratoCompartilhadoDisponivelDto,
+    ListContratoDto,
+} from './entities/contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
+import { AssociarContratoCompartilhadoDto } from './dto/associar-contrato-compartilhado.dto';
 import { ContratoService } from './contrato.service';
 
 const roles: ListaDePrivilegios[] = [
@@ -42,6 +47,31 @@ export class ContratoPPController {
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         return await this.contratoService.create(+params.id, createContratoDto, user);
+    }
+
+    @Get(':id/contrato-compartilhado-disponivel')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async listAvailableShared(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListContratoCompartilhadoDisponivelDto> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        return {
+            linhas: await this.contratoService.listAvailableShared(+params.id, user),
+        };
+    }
+
+    @Post(':id/contrato-compartilhado')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async associar(
+        @Param() params: FindOneParams,
+        @Body() dto: AssociarContratoCompartilhadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.contratoService.associar(+params.id, dto.contrato_id, user);
     }
 
     @Get(':id/contrato')
@@ -104,6 +134,31 @@ export class ContratoMDOController {
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
         return await this.contratoService.create(+params.id, createContratoDto, user);
+    }
+
+    @Get(':id/contrato-compartilhado-disponivel')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async listAvailableShared(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListContratoCompartilhadoDisponivelDto> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+        return {
+            linhas: await this.contratoService.listAvailableShared(+params.id, user),
+        };
+    }
+
+    @Post(':id/contrato-compartilhado')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async associar(
+        @Param() params: FindOneParams,
+        @Body() dto: AssociarContratoCompartilhadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.contratoService.associar(+params.id, dto.contrato_id, user);
     }
 
     @Get(':id/contrato')

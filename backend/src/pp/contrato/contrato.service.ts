@@ -1,5 +1,5 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
@@ -8,7 +8,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 
 import { CreateContratoDto } from './dto/create-contrato.dto';
-import { ContratoDetailDto, ContratoItemDto } from './entities/contrato.entity';
+import {
+    ContratoCompartilhadoDisponivelDto,
+    ContratoDetailDto,
+    ContratoItemDto,
+} from './entities/contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { Date2YMD } from '../../common/date2ymd';
 import { ContratoAditivoItemDto } from '../contrato-aditivo/entities/contrato-aditivo.entity';
@@ -22,19 +26,11 @@ export class ContratoService {
         dto.objeto_detalhado = HtmlSanitizer(dto.objeto_detalhado);
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const similarExiste = await prismaTx.contrato.count({
-                    where: {
-                        numero: { equals: dto.numero, mode: 'insensitive' },
-                        projeto_id: projeto_id,
-                        removido_em: null,
-                    },
-                });
-                if (similarExiste > 0)
-                    throw new HttpException('Número igual ou semelhante já existe em outro registro ativo', 400);
+                const ctx = await this.getProjetoCtx(prismaTx, projeto_id);
+                await this.assertNumeroUnicoNoPortfolio(prismaTx, ctx.portfolio_id, dto.numero);
 
                 const contrato = await prismaTx.contrato.create({
                     data: {
-                        projeto_id: projeto_id,
                         numero: dto.numero,
                         contrato_exclusivo: dto.contrato_exclusivo,
                         status: dto.status,
@@ -73,6 +69,13 @@ export class ContratoService {
                                 }),
                             },
                         },
+                        ContratoProjeto: {
+                            create: {
+                                projeto_id: projeto_id,
+                                criado_em: now,
+                                criado_por: user.id,
+                            },
+                        },
 
                         criado_em: now,
                         criado_por: user.id,
@@ -90,13 +93,14 @@ export class ContratoService {
     async findAll(projeto_id: number, user: PessoaFromJwt): Promise<ContratoItemDto[]> {
         const linhasContrato = await this.prisma.contrato.findMany({
             where: {
-                projeto_id: projeto_id,
                 removido_em: null,
+                ContratoProjeto: { some: { projeto_id: projeto_id, removido_em: null } },
             },
             orderBy: [{ numero: 'asc' }],
             select: {
                 id: true,
                 numero: true,
+                contrato_exclusivo: true,
                 status: true,
                 objeto_resumo: true,
                 data_inicio: true,
@@ -131,8 +135,12 @@ export class ContratoService {
 
             return {
                 id: contrato.id,
+                // projeto_id de contexto (a obra/projeto da rota). O contrato pode ser compartilhado
+                // entre vários projetos, mas o front continua operando sobre o projeto que está visualizando.
+                projeto_id: projeto_id,
                 objeto_resumo: contrato.objeto_resumo,
                 numero: contrato.numero,
+                contrato_exclusivo: contrato.contrato_exclusivo,
                 status: contrato.status,
                 valor: contrato.valor,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
@@ -147,8 +155,8 @@ export class ContratoService {
         const contrato = await this.prisma.contrato.findFirst({
             where: {
                 id,
-                projeto_id: projeto_id,
                 removido_em: null,
+                ContratoProjeto: { some: { projeto_id: projeto_id, removido_em: null } },
             },
             select: {
                 id: true,
@@ -222,6 +230,9 @@ export class ContratoService {
 
         return {
             id: contrato.id,
+            // projeto_id de contexto (a obra/projeto da rota). Mantido para o front continuar operando
+            // por projeto, mesmo que o contrato seja compartilhado entre vários projetos/obras.
+            projeto_id: projeto_id,
             orgao: contrato.orgao,
             numero: contrato.numero,
             contrato_exclusivo: contrato.contrato_exclusivo,
@@ -277,16 +288,23 @@ export class ContratoService {
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await this.findOne(projeto_id, id, user);
+                const ctx = await this.getProjetoCtx(prismaTx, projeto_id);
+
                 if (dto.numero != undefined && dto.numero != self.numero) {
-                    const similarExiste = await prismaTx.contrato.count({
-                        where: {
-                            numero: { equals: dto.numero, mode: 'insensitive' },
-                            projeto_id: projeto_id,
-                            removido_em: null,
-                        },
+                    await this.assertNumeroUnicoNoPortfolio(prismaTx, ctx.portfolio_id, dto.numero, id);
+                }
+
+                // Mudança de compartilhado -> exclusivo só é permitida se não houver outra
+                // obra/projeto associado ao contrato.
+                if (dto.contrato_exclusivo === true && self.contrato_exclusivo === false) {
+                    const vinculos = await prismaTx.contratoProjeto.count({
+                        where: { contrato_id: id, removido_em: null },
                     });
-                    if (similarExiste > 0)
-                        throw new HttpException('Número igual ou semelhante já existe em outro registro ativo', 400);
+                    if (vinculos > 1)
+                        throw new HttpException(
+                            'Não é possível tornar o contrato exclusivo: ele está associado a outras obras/projetos',
+                            400
+                        );
                 }
 
                 if (dto.processos_sei != undefined) {
@@ -327,7 +345,6 @@ export class ContratoService {
                 return await prismaTx.contrato.update({
                     where: {
                         id,
-                        projeto_id,
                     },
                     data: {
                         numero: dto.numero,
@@ -361,26 +378,191 @@ export class ContratoService {
         return updated;
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
-        await this.prisma.contrato.findFirstOrThrow({
+    /**
+     * Remove o contrato da ótica de uma obra/projeto.
+     * - Desvincula o contrato deste projeto (soft-delete do vínculo contrato_projeto).
+     * - Se não restar nenhuma associação ativa, marca o contrato como excluído.
+     *   (Contratos exclusivos têm um único vínculo, portanto são removidos por completo.)
+     */
+    async remove(projeto_id: number, id: number, user: PessoaFromJwt): Promise<void> {
+        const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            // Trava a linha do contrato até o fim da transação, serializando remoções/associações
+            // concorrentes do mesmo contrato. Sem isso, duas remoções simultâneas poderiam ambas
+            // contar "ainda há vínculos" e deixar o contrato órfão sem ser excluído (ou vice-versa).
+            await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${id} FOR UPDATE`;
+
+            const vinculo = await prismaTx.contratoProjeto.findFirst({
+                where: {
+                    contrato_id: id,
+                    projeto_id: projeto_id,
+                    removido_em: null,
+                    contrato: { removido_em: null },
+                },
+                select: { id: true },
+            });
+            if (!vinculo) throw new NotFoundException('Contrato não encontrado');
+
+            await prismaTx.contratoProjeto.update({
+                where: { id: vinculo.id },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+
+            const restantes = await prismaTx.contratoProjeto.count({
+                where: { contrato_id: id, removido_em: null },
+            });
+
+            if (restantes === 0) {
+                await prismaTx.contrato.update({
+                    where: { id },
+                    data: {
+                        removido_em: now,
+                        removido_por: user.id,
+                    },
+                });
+            }
+        });
+    }
+
+    /**
+     * Lista os contratos compartilhados do mesmo portfólio (e mesmo tipo) que ainda não estão
+     * vinculados a este projeto/obra — usados na tela de vinculação com contrato compartilhado.
+     */
+    async listAvailableShared(
+        projeto_id: number,
+        user: PessoaFromJwt
+    ): Promise<ContratoCompartilhadoDisponivelDto[]> {
+        const ctx = await this.getProjetoCtx(this.prisma, projeto_id);
+
+        const linhas = await this.prisma.contrato.findMany({
             where: {
-                id,
                 removido_em: null,
-                projeto_id: projeto_id,
+                contrato_exclusivo: false,
+                ContratoProjeto: {
+                    some: {
+                        removido_em: null,
+                        projeto: { removido_em: null, portfolio_id: ctx.portfolio_id, tipo: ctx.tipo },
+                    },
+                },
+                NOT: {
+                    ContratoProjeto: { some: { projeto_id: projeto_id, removido_em: null } },
+                },
             },
-            select: { id: true },
+            orderBy: [{ numero: 'asc' }],
+            select: {
+                id: true,
+                numero: true,
+                contrato_exclusivo: true,
+                status: true,
+                objeto_resumo: true,
+                empresa_contratada: true,
+                valor: true,
+            },
         });
 
-        return await this.prisma.contrato.updateMany({
+        return linhas.map((contrato) => {
+            return {
+                id: contrato.id,
+                numero: contrato.numero,
+                contrato_exclusivo: contrato.contrato_exclusivo,
+                status: contrato.status,
+                objeto_resumo: contrato.objeto_resumo,
+                empresa_contratada: contrato.empresa_contratada,
+                valor: contrato.valor,
+            };
+        });
+    }
+
+    /**
+     * Vincula um contrato compartilhado existente a este projeto/obra (tabela contrato_projeto).
+     * O contrato precisa ser compartilhado, ativo, do mesmo portfólio/tipo e ainda não vinculado.
+     */
+    async associar(projeto_id: number, contrato_id: number, user: PessoaFromJwt): Promise<RecordWithId> {
+        const now = new Date(Date.now());
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const ctx = await this.getProjetoCtx(prismaTx, projeto_id);
+
+                // Mesma trava usada em remove(): serializa associação x remoção do mesmo contrato,
+                // garantindo que a checagem de "já vinculado"/órfão seja consistente.
+                await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${contrato_id} FOR UPDATE`;
+
+                const contrato = await prismaTx.contrato.findFirst({
+                    where: {
+                        id: contrato_id,
+                        removido_em: null,
+                        contrato_exclusivo: false,
+                        ContratoProjeto: {
+                            some: {
+                                removido_em: null,
+                                projeto: { removido_em: null, portfolio_id: ctx.portfolio_id, tipo: ctx.tipo },
+                            },
+                        },
+                    },
+                    select: { id: true },
+                });
+                if (!contrato)
+                    throw new HttpException('Contrato compartilhado não encontrado neste portfólio', 400);
+
+                const jaVinculado = await prismaTx.contratoProjeto.count({
+                    where: { contrato_id: contrato_id, projeto_id: projeto_id, removido_em: null },
+                });
+                if (jaVinculado > 0)
+                    throw new HttpException('Contrato já está associado a esta obra/projeto', 400);
+
+                await prismaTx.contratoProjeto.create({
+                    data: {
+                        contrato_id: contrato_id,
+                        projeto_id: projeto_id,
+                        criado_em: now,
+                        criado_por: user.id,
+                    },
+                });
+
+                return { id: contrato_id };
+            }
+        );
+    }
+
+    private async getProjetoCtx(
+        prismaTx: Prisma.TransactionClient,
+        projeto_id: number
+    ): Promise<{ portfolio_id: number; tipo: TipoProjeto }> {
+        const projeto = await prismaTx.projeto.findFirst({
+            where: { id: projeto_id, removido_em: null },
+            select: { portfolio_id: true, tipo: true },
+        });
+        if (!projeto) throw new NotFoundException('Projeto não encontrado');
+        return projeto;
+    }
+
+    private async assertNumeroUnicoNoPortfolio(
+        prismaTx: Prisma.TransactionClient,
+        portfolio_id: number,
+        numero: string,
+        ignorarContratoId?: number
+    ): Promise<void> {
+        const similarExiste = await prismaTx.contrato.count({
             where: {
-                id,
-                projeto_id: projeto_id,
-            },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id,
+                id: ignorarContratoId ? { not: ignorarContratoId } : undefined,
+                numero: { equals: numero, mode: 'insensitive' },
+                removido_em: null,
+                ContratoProjeto: {
+                    some: {
+                        removido_em: null,
+                        projeto: { removido_em: null, portfolio_id: portfolio_id },
+                    },
+                },
             },
         });
+        if (similarExiste > 0)
+            throw new HttpException(
+                'Número igual ou semelhante já existe em outro contrato ativo do portfólio',
+                400
+            );
     }
 
     private calcularTotaisAditivos(

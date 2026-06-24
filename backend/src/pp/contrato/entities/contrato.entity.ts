@@ -8,6 +8,11 @@ import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class ContratoDetailDto {
     id: number;
+    /**
+     * projeto_id de contexto: a obra/projeto pela qual o contrato está sendo visualizado.
+     * Um contrato compartilhado pode pertencer a vários projetos; este é sempre o da rota.
+     */
+    projeto_id: number;
     modalidade_contratacao: IdNomeDto | null;
     orgao: IdSiglaDescricao | null;
     fontes_recurso: ContratoFonteRecursoDto[];
@@ -43,7 +48,10 @@ export class ContratoDetailDto {
 
 export class ContratoItemDto {
     id: number;
+    /** projeto_id de contexto (obra/projeto da rota). Mantido para o front operar por projeto. */
+    projeto_id: number;
     numero: string;
+    contrato_exclusivo: boolean;
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
     objeto_resumo: string | null;
@@ -60,6 +68,21 @@ export class ContratoItemDto {
 
 export class ListContratoDto {
     linhas: ContratoItemDto[];
+}
+
+export class ContratoCompartilhadoDisponivelDto {
+    id: number;
+    numero: string;
+    contrato_exclusivo: boolean;
+    @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
+    status: StatusContrato;
+    objeto_resumo: string | null;
+    empresa_contratada: string | null;
+    valor: Decimal | null;
+}
+
+export class ListContratoCompartilhadoDisponivelDto {
+    linhas: ContratoCompartilhadoDisponivelDto[];
 }
 
 export class ContratoFonteRecursoDto {
