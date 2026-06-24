@@ -738,6 +738,20 @@ function setFontFamily(e) {
   &.mono {
     font-family: 'Roboto Mono', monospace;
   }
+
+  &.u {
+    text-decoration: underline;
+    text-decoration-color: @amarelo;
+  }
+
+  &.c {
+    text-decoration: line-through;
+    text-decoration-color: @amarelo;
+  }
+
+  sup, sub {
+    color: @amarelo;
+  }
 }
 
 .editorbt--larger {
