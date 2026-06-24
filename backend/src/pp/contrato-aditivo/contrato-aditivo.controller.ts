@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { TipoProjeto } from '@prisma/client';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
@@ -43,7 +54,7 @@ export class ContratoAditivoPPController {
         @Body() createContratoAditivoDto: CreateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne('PP', await this.buscaContrato(params.id, user), user, 'ReadWriteTeam');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'PP', params.id, user, true);
         return await this.contratoAditivoService.create(+params.id, createContratoAditivoDto, user);
     }
 
@@ -51,7 +62,7 @@ export class ContratoAditivoPPController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListContratoAditivoDto> {
-        await this.projetoService.findOne('PP', await this.buscaContrato(params.id, user), user, 'ReadOnly');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'PP', params.id, user, false);
         return {
             linhas: await this.contratoAditivoService.findAll(+params.id, user),
         };
@@ -65,7 +76,7 @@ export class ContratoAditivoPPController {
         @Body() dto: UpdateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne('PP', await this.buscaContrato(params.id, user), user, 'ReadWriteTeam');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'PP', params.id, user, true);
         return await this.contratoAditivoService.update(+params.id, +params.id2, dto, user);
     }
 
@@ -75,13 +86,9 @@ export class ContratoAditivoPPController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne('PP', await this.buscaContrato(params.id, user), user, 'ReadWriteTeam');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'PP', params.id, user, true);
         await this.contratoAditivoService.remove(+params.id, +params.id2, user);
         return '';
-    }
-
-    private async buscaContrato(id: number, user: PessoaFromJwt): Promise<number> {
-        return buscaProjetoDoContrato(this.prisma, 'PP', id, user);
     }
 }
 
@@ -102,7 +109,7 @@ export class ContratoAditivoMDOController {
         @Body() createContratoAditivoDto: CreateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne('MDO', await this.buscaContrato(params.id, user), user, 'ReadWriteTeam');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'MDO', params.id, user, true);
         return await this.contratoAditivoService.create(+params.id, createContratoAditivoDto, user);
     }
 
@@ -110,7 +117,7 @@ export class ContratoAditivoMDOController {
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListContratoAditivoDto> {
-        await this.projetoService.findOne('MDO', await this.buscaContrato(params.id, user), user, 'ReadOnly');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'MDO', params.id, user, false);
         return {
             linhas: await this.contratoAditivoService.findAll(+params.id, user),
         };
@@ -124,7 +131,7 @@ export class ContratoAditivoMDOController {
         @Body() dto: UpdateContratoAditivoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne('MDO', await this.buscaContrato(params.id, user), user, 'ReadWriteTeam');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'MDO', params.id, user, true);
         return await this.contratoAditivoService.update(+params.id, +params.id2, dto, user);
     }
 
@@ -134,36 +141,35 @@ export class ContratoAditivoMDOController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne('MDO', await this.buscaContrato(params.id, user), user, 'ReadWriteTeam');
+        await assertAcessoAoContrato(this.prisma, this.projetoService, 'MDO', params.id, user, true);
         await this.contratoAditivoService.remove(+params.id, +params.id2, user);
         return '';
-    }
-
-    private async buscaContrato(id: number, user: PessoaFromJwt): Promise<number> {
-        return buscaProjetoDoContrato(this.prisma, 'MDO', id, user);
     }
 }
 
 /**
- * Resolve qual projeto/obra usar para a checagem de permissão de um contrato (possivelmente compartilhado).
+ * Gate de permissão para operar sobre um contrato (possivelmente compartilhado entre vários projetos/obras).
  *
- * Em vez de pegar um vínculo arbitrário, restringe a busca aos projetos VISÍVEIS ao usuário — usando o mesmo
- * conjunto de permissão (`ProjetoGetPermissionSet`) das listagens. Assim, para um contrato compartilhado entre
- * vários projetos, a permissão é verificada contra um projeto que o usuário realmente enxerga, e não contra um
- * projeto qualquer (que poderia negar indevidamente quem tem acesso por outro vínculo). Sem novos parâmetros.
- *
- * Observação: o conjunto reflete VISIBILIDADE; a permissão de escrita ('ReadWriteTeam') continua sendo validada
- * pelo `projetoService.findOne` no controller, sobre o projeto retornado aqui.
+ * 1. Coleta os projetos/obras VINCULADOS ao contrato que o usuário enxerga, usando o mesmo conjunto de
+ *    permissão (`ProjetoGetPermissionSet`) das listagens. Se nenhum vínculo visível existir -> "não encontrado".
+ * 2. Leitura (`precisaEscrita = false`): visibilidade já basta, retorna.
+ * 3. Escrita (`precisaEscrita = true`): exige permissão de ESCRITA em ALGUM dos projetos vinculados. Como o
+ *    cálculo de escrita do `projetoService.findOne(..., 'ReadWriteTeam')` é imperativo (não é um filtro Prisma),
+ *    tentamos cada projeto vinculado até um passar; se nenhum passar, nega. Assim, um contrato compartilhado é
+ *    editável por quem tem escrita em qualquer obra/projeto a que ele pertence — sem depender de qual vínculo
+ *    foi escolhido nem exigir parâmetro extra do front.
  */
-async function buscaProjetoDoContrato(
+async function assertAcessoAoContrato(
     prisma: PrismaService,
+    projetoService: ProjetoService,
     tipo: TipoProjeto,
     contrato_id: number,
-    user: PessoaFromJwt
-): Promise<number> {
+    user: PessoaFromJwt,
+    precisaEscrita: boolean
+): Promise<void> {
     const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
 
-    const vinculo = await prisma.contratoProjeto.findFirst({
+    const vinculos = await prisma.contratoProjeto.findMany({
         where: {
             contrato_id: contrato_id,
             removido_em: null,
@@ -171,9 +177,26 @@ async function buscaProjetoDoContrato(
             // só vínculos cujo projeto o usuário pode ver (já inclui tipo, removido_em e portfólio)
             projeto: { AND: permissionsSet },
         },
-        orderBy: { id: 'asc' },
+        orderBy: { projeto_id: 'asc' },
+        distinct: ['projeto_id'],
         select: { projeto_id: true },
     });
-    if (!vinculo) throw new Error('Contrato não encontrado');
-    return vinculo.projeto_id;
+    if (vinculos.length === 0) throw new HttpException('Contrato não encontrado', 404);
+
+    // Leitura: visibilidade sobre algum vínculo já é suficiente.
+    if (!precisaEscrita) return;
+
+    // Escrita: precisa ter permissão de escrita em ALGUM projeto/obra vinculado.
+    for (const v of vinculos) {
+        try {
+            await projetoService.findOne(tipo, v.projeto_id, user, 'ReadWriteTeam');
+            return;
+        } catch {
+            // sem escrita neste vínculo; tenta o próximo
+        }
+    }
+    throw new HttpException(
+        'Você não tem permissão de escrita em nenhuma obra/projeto vinculada a este contrato',
+        400
+    );
 }
