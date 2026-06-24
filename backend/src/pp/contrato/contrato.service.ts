@@ -135,6 +135,9 @@ export class ContratoService {
 
             return {
                 id: contrato.id,
+                // projeto_id de contexto (a obra/projeto da rota). O contrato pode ser compartilhado
+                // entre vários projetos, mas o front continua operando sobre o projeto que está visualizando.
+                projeto_id: projeto_id,
                 objeto_resumo: contrato.objeto_resumo,
                 numero: contrato.numero,
                 contrato_exclusivo: contrato.contrato_exclusivo,
@@ -227,6 +230,9 @@ export class ContratoService {
 
         return {
             id: contrato.id,
+            // projeto_id de contexto (a obra/projeto da rota). Mantido para o front continuar operando
+            // por projeto, mesmo que o contrato seja compartilhado entre vários projetos/obras.
+            projeto_id: projeto_id,
             orgao: contrato.orgao,
             numero: contrato.numero,
             contrato_exclusivo: contrato.contrato_exclusivo,
@@ -381,6 +387,11 @@ export class ContratoService {
     async remove(projeto_id: number, id: number, user: PessoaFromJwt): Promise<void> {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            // Trava a linha do contrato até o fim da transação, serializando remoções/associações
+            // concorrentes do mesmo contrato. Sem isso, duas remoções simultâneas poderiam ambas
+            // contar "ainda há vínculos" e deixar o contrato órfão sem ser excluído (ou vice-versa).
+            await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${id} FOR UPDATE`;
+
             const vinculo = await prismaTx.contratoProjeto.findFirst({
                 where: {
                     contrato_id: id,
@@ -474,6 +485,10 @@ export class ContratoService {
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const ctx = await this.getProjetoCtx(prismaTx, projeto_id);
+
+                // Mesma trava usada em remove(): serializa associação x remoção do mesmo contrato,
+                // garantindo que a checagem de "já vinculado"/órfão seja consistente.
+                await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${contrato_id} FOR UPDATE`;
 
                 const contrato = await prismaTx.contrato.findFirst({
                     where: {

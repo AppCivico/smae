@@ -29,6 +29,10 @@ ALTER TABLE "contrato_projeto" ADD CONSTRAINT "contrato_projeto_criado_por_fkey"
 -- AddForeignKey
 ALTER TABLE "contrato_projeto" ADD CONSTRAINT "contrato_projeto_removido_por_fkey" FOREIGN KEY ("removido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- AlterTable: coluna de auditoria/reversão das fusões. Nas cópias duplicadas fundidas, guarda o id do
+-- contrato canônico em que foram mescladas (preenchida no passo 2). NULL para contratos normais.
+ALTER TABLE "contrato" ADD COLUMN "mesclado_para_contrato_id" INTEGER;
+
 -- =====================================================================================
 -- Migração de dados: move o vínculo Contrato->Projeto da coluna direta `contrato.projeto_id`
 -- para a nova tabela de relacionamento `contrato_projeto`, fundindo as cópias duplicadas
@@ -75,10 +79,13 @@ BEGIN
     WHERE cp.contrato_id = f.contrato_id
       AND f.contrato_id <> f.canonico_id;
 
-    -- Soft-delete das cópias duplicadas, mantendo apenas o contrato canônico
+    -- Soft-delete das cópias duplicadas, mantendo apenas o contrato canônico.
+    -- removido_por = -1 (usuário SISTEMA, não o criador) deixa explícito que a exclusão veio da migração,
+    -- e mesclado_para_contrato_id registra em qual canônico a cópia foi fundida (auditoria/reversão).
     UPDATE contrato c
     SET removido_em = now(),
-        removido_por = c.criado_por
+        removido_por = -1,
+        mesclado_para_contrato_id = f.canonico_id
     FROM tmp_fusao_contrato f
     WHERE c.id = f.contrato_id
       AND f.contrato_id <> f.canonico_id;
