@@ -388,7 +388,10 @@ function setFontFamily(e) {
           class="editorbt editorbt--select-group"
           title="Família da fonte"
         >
-          <span v-html="iconFamiliaFonte" aria-hidden="true" />
+          <span
+            aria-hidden="true"
+            v-html="iconFamiliaFonte"
+          />
           <select
             aria-label="Família da fonte"
             :value="editor.getAttributes('textStyle').fontFamily || ''"
@@ -408,7 +411,10 @@ function setFontFamily(e) {
           class="editorbt editorbt--select-group"
           title="Tamanho da fonte"
         >
-          <span v-html="iconFonte" aria-hidden="true" />
+          <span
+            aria-hidden="true"
+            v-html="iconFonte"
+          />
           <select
             aria-label="Tamanho da fonte"
             :value="editor.getAttributes('textStyle').fontSize || ''"
