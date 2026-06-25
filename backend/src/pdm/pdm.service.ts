@@ -24,7 +24,8 @@ import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-doc
 import { CreatePdmDto, PdmPermissionLevel } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { OrcamentoConfig } from './dto/list-pdm.dto';
-import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
+import { PdmDto, PdmMonitoramentoFaseDto, PlanoSetorialDto } from './dto/pdm.dto';
+import { UpdatePdmMonitoramentoConfigDto } from './dto/update-pdm-monitoramento-config.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
@@ -174,6 +175,50 @@ export const PDMGetPermissionSet = async (
 
     return ret;
 };
+
+type MonitoramentoFaseDefault = {
+    ordem: number;
+    rotulo: string;
+    aceita_tags: boolean;
+    aceita_anexos: boolean;
+    blocos: { ordem: number; rotulo: string }[];
+};
+
+// Configuração padrão das 4 fases do monitoramento do ciclo. Espelha o backfill da migration
+// 20260625133722_pdm_monitoramento_ciclo_config — mantenha em sincronia com aquele SQL.
+const MONITORAMENTO_CONFIG_DEFAULTS: MonitoramentoFaseDefault[] = [
+    {
+        ordem: 1,
+        rotulo: 'Qualificação',
+        aceita_tags: false,
+        aceita_anexos: true,
+        blocos: [{ ordem: 1, rotulo: 'Informações complementares' }],
+    },
+    {
+        ordem: 2,
+        rotulo: 'Análise de risco',
+        aceita_tags: false,
+        aceita_anexos: false,
+        blocos: [
+            { ordem: 1, rotulo: 'Detalhamento' },
+            { ordem: 2, rotulo: 'Ponto de atenção' },
+        ],
+    },
+    {
+        ordem: 3,
+        rotulo: 'Tags de monitoramento',
+        aceita_tags: true,
+        aceita_anexos: false,
+        blocos: [],
+    },
+    {
+        ordem: 4,
+        rotulo: 'Fechamento',
+        aceita_tags: false,
+        aceita_anexos: false,
+        blocos: [{ ordem: 1, rotulo: 'Comentário' }],
+    },
+];
 
 @Injectable()
 export class PdmService {
@@ -331,6 +376,9 @@ export class PdmService {
                     user,
                     prismaTx
                 );
+
+                // PdM/PS não-legado nasce com a configuração padrão de monitoramento do ciclo
+                await this.seedMonitoramentoConfigDefaults(prismaTx, pdm.id, user);
             }
 
             await logger.saveLogs(prismaTx, user.getLogData());
@@ -598,6 +646,29 @@ export class PdmService {
         });
         const perm_level = await this.calcPermissionLevel(pdm, user);
 
+        let monitoramento_ciclo_fases: PdmMonitoramentoFaseDto[] = [];
+        if (pdm.sistema !== 'PDM') {
+            const fasesConfig = await this.prisma.pdmMonitoramentoFaseConfig.findMany({
+                where: { pdm_id: id, removido_em: null },
+                orderBy: { ordem: 'asc' },
+                include: {
+                    blocos: { where: { removido_em: null }, orderBy: { ordem: 'asc' } },
+                },
+            });
+            monitoramento_ciclo_fases = fasesConfig.map((f) => ({
+                ordem: f.ordem,
+                habilitada: f.habilitada,
+                rotulo: f.rotulo,
+                aceita_tags: f.aceita_tags,
+                aceita_anexos: f.aceita_anexos,
+                blocos: f.blocos.map((b) => ({
+                    ordem: b.ordem,
+                    habilitado: b.habilitado,
+                    rotulo: b.rotulo,
+                })),
+            }));
+        }
+
         const pdmInfo: PdmDto = {
             id: pdm.id,
             nome: pdm.nome,
@@ -627,6 +698,8 @@ export class PdmService {
             meses: pdmConfig?.meses ?? [],
             orcamento_dia_abertura: pdm.orcamento_dia_abertura,
             orcamento_dia_fechamento: pdm.orcamento_dia_fechamento,
+            monitoramento_por_blocos: pdm.monitoramento_por_blocos,
+            monitoramento_ciclo_fases: monitoramento_ciclo_fases,
             perm_level: perm_level,
             pode_editar: perm_level >= PdmPermissionLevel.CONFIG_WRITE,
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
@@ -1456,6 +1529,189 @@ export class PdmService {
 
             return await Promise.all(operations);
         });
+    }
+
+    private async seedMonitoramentoConfigDefaults(
+        prismaTx: Prisma.TransactionClient,
+        pdm_id: number,
+        user: PessoaFromJwt
+    ) {
+        const now = new Date(Date.now());
+        for (const fase of MONITORAMENTO_CONFIG_DEFAULTS) {
+            const faseCriada = await prismaTx.pdmMonitoramentoFaseConfig.create({
+                data: {
+                    pdm_id,
+                    ordem: fase.ordem,
+                    habilitada: true,
+                    rotulo: fase.rotulo,
+                    aceita_tags: fase.aceita_tags,
+                    aceita_anexos: fase.aceita_anexos,
+                    criado_por: user.id,
+                    criado_em: now,
+                },
+                select: { id: true },
+            });
+            if (fase.blocos.length > 0) {
+                await prismaTx.pdmMonitoramentoBlocoConfig.createMany({
+                    data: fase.blocos.map((b) => ({
+                        fase_id: faseCriada.id,
+                        ordem: b.ordem,
+                        habilitado: true,
+                        rotulo: b.rotulo,
+                        criado_por: user.id,
+                        criado_em: now,
+                    })),
+                });
+            }
+        }
+    }
+
+    private validarMonitoramentoConfig(dto: UpdatePdmMonitoramentoConfigDto) {
+        const ordens = dto.fases.map((f) => f.ordem);
+        if (new Set(ordens).size !== ordens.length)
+            throw new BadRequestException('Cada fase precisa ter uma ordem única');
+
+        for (const fase of dto.fases) {
+            const blocos = fase.blocos ?? [];
+            if (fase.aceita_tags) {
+                if (blocos.length > 0)
+                    throw new BadRequestException(
+                        `Fase "${fase.rotulo}" é de tags e não pode ter blocos de texto`
+                    );
+            } else if (blocos.length === 0) {
+                throw new BadRequestException(
+                    `Fase "${fase.rotulo}" é de texto e precisa de ao menos um bloco`
+                );
+            }
+
+            const ordensBloco = blocos.map((b) => b.ordem);
+            if (new Set(ordensBloco).size !== ordensBloco.length)
+                throw new BadRequestException(`Os blocos da fase "${fase.rotulo}" precisam ter ordem única`);
+        }
+    }
+
+    async updateMonitoramentoConfig(
+        tipo: TipoPdmType,
+        pdm_id: number,
+        dto: UpdatePdmMonitoramentoConfigDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId[]> {
+        await this.assertUserPermission(tipo, pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
+        const pdm = await this.loadPdm(tipo, pdm_id, user);
+
+        // mesma regra de pdm.ciclo.service.ts: monitoramento por blocos só vale para PdM/PS não-legados
+        if (pdm.sistema === 'PDM')
+            throw new BadRequestException('Operação não permitida para PDMs antigos');
+
+        this.validarMonitoramentoConfig(dto);
+
+        const now = new Date(Date.now());
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient) => {
+                const existentes = await prismaTx.pdmMonitoramentoFaseConfig.findMany({
+                    where: { pdm_id, removido_em: null },
+                    include: { blocos: { where: { removido_em: null } } },
+                });
+                const faseByOrdem = new Map(existentes.map((f) => [f.ordem, f]));
+                const ordensDto = new Set(dto.fases.map((f) => f.ordem));
+                const ret: RecordWithId[] = [];
+
+                // 1. soft-delete das fases (e seus blocos) cuja `ordem` saiu do DTO
+                for (const f of existentes) {
+                    if (!ordensDto.has(f.ordem)) {
+                        await prismaTx.pdmMonitoramentoBlocoConfig.updateMany({
+                            where: { fase_id: f.id, removido_em: null },
+                            data: { removido_em: now, removido_por: user.id },
+                        });
+                        await prismaTx.pdmMonitoramentoFaseConfig.update({
+                            where: { id: f.id },
+                            data: { removido_em: now, removido_por: user.id },
+                        });
+                    }
+                }
+
+                // 2. upsert das fases por `ordem`
+                for (const faseDto of dto.fases) {
+                    const atual = faseByOrdem.get(faseDto.ordem);
+                    let faseId: number;
+                    if (atual) {
+                        await prismaTx.pdmMonitoramentoFaseConfig.update({
+                            where: { id: atual.id },
+                            data: {
+                                habilitada: faseDto.habilitada,
+                                rotulo: faseDto.rotulo,
+                                aceita_tags: faseDto.aceita_tags,
+                                aceita_anexos: faseDto.aceita_anexos,
+                                atualizado_por: user.id,
+                                atualizado_em: now,
+                            },
+                        });
+                        faseId = atual.id;
+                    } else {
+                        const nova = await prismaTx.pdmMonitoramentoFaseConfig.create({
+                            data: {
+                                pdm_id,
+                                ordem: faseDto.ordem,
+                                habilitada: faseDto.habilitada,
+                                rotulo: faseDto.rotulo,
+                                aceita_tags: faseDto.aceita_tags,
+                                aceita_anexos: faseDto.aceita_anexos,
+                                criado_por: user.id,
+                                criado_em: now,
+                            },
+                            select: { id: true },
+                        });
+                        faseId = nova.id;
+                    }
+
+                    // 3. diff dos blocos por `ordem` (fase de tags => nenhum bloco)
+                    const blocosDto = faseDto.aceita_tags ? [] : faseDto.blocos ?? [];
+                    const blocosExistentes = atual?.blocos ?? [];
+                    const blocoByOrdem = new Map(blocosExistentes.map((b) => [b.ordem, b]));
+                    const ordensBlocoDto = new Set(blocosDto.map((b) => b.ordem));
+
+                    for (const b of blocosExistentes) {
+                        if (!ordensBlocoDto.has(b.ordem)) {
+                            await prismaTx.pdmMonitoramentoBlocoConfig.update({
+                                where: { id: b.id },
+                                data: { removido_em: now, removido_por: user.id },
+                            });
+                        }
+                    }
+
+                    for (const blocoDto of blocosDto) {
+                        const blocoAtual = blocoByOrdem.get(blocoDto.ordem);
+                        if (blocoAtual) {
+                            await prismaTx.pdmMonitoramentoBlocoConfig.update({
+                                where: { id: blocoAtual.id },
+                                data: {
+                                    habilitado: blocoDto.habilitado,
+                                    rotulo: blocoDto.rotulo,
+                                    atualizado_por: user.id,
+                                    atualizado_em: now,
+                                },
+                            });
+                        } else {
+                            await prismaTx.pdmMonitoramentoBlocoConfig.create({
+                                data: {
+                                    fase_id: faseId,
+                                    ordem: blocoDto.ordem,
+                                    habilitado: blocoDto.habilitado,
+                                    rotulo: blocoDto.rotulo,
+                                    criado_por: user.id,
+                                    criado_em: now,
+                                },
+                                select: { id: true },
+                            });
+                        }
+                    }
+
+                    ret.push({ id: faseId });
+                }
+                return ret;
+            },
+            { isolationLevel: 'Serializable', maxWait: 5000, timeout: 15000 }
+        );
     }
 
     private verificaRotulos(dto: CreatePdmDto | UpdatePdmDto) {

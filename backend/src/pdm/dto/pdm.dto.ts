@@ -4,6 +4,21 @@ import { PdmPermissionLevel, RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFoca
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { ApiProperty, PickType } from '@nestjs/swagger';
 
+export class PdmMonitoramentoBlocoDto {
+    ordem: number;
+    habilitado: boolean;
+    rotulo: string;
+}
+
+export class PdmMonitoramentoFaseDto {
+    ordem: number;
+    habilitada: boolean;
+    rotulo: string;
+    aceita_tags: boolean;
+    aceita_anexos: boolean;
+    blocos: PdmMonitoramentoBlocoDto[];
+}
+
 export class PdmDto {
     nome: string;
     descricao: string | null;
@@ -53,6 +68,10 @@ export class PdmDto {
     meses: number[];
     orcamento_dia_abertura: number;
     orcamento_dia_fechamento: number;
+    // false = monitoramento legado em tabelas fixas; true = monitoramento por blocos configuráveis (seam p/ refatoração futura).
+    monitoramento_por_blocos: boolean;
+    // Vazio quando sistema === 'PDM' (legado). Caso contrário, as fases configuradas, ordenadas por `ordem`.
+    monitoramento_ciclo_fases: PdmMonitoramentoFaseDto[];
 }
 
 export class PdmRotuloInfoDto extends PickType(PdmDto, [

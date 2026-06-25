@@ -30,6 +30,7 @@ import { DetalhePSDto, DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, ListPdmDto, OrcamentoConfig } from './dto/list-pdm.dto';
 import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
+import { UpdatePdmMonitoramentoConfigDto } from './dto/update-pdm-monitoramento-config.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
@@ -315,6 +316,18 @@ export class PlanoSetorialController {
         @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId[]> {
         return await this.pdmService.updatePdmOrcamentoConfig(tipo, +params.id, updatePdmOrcamentoConfigDto, user);
+    }
+
+    @Patch(':id/monitoramento-config')
+    @ApiBearerAuth('access-token')
+    @Roles([...PlanoSetorialController.WritePerms])
+    async updateMonitoramentoConfig(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdatePdmMonitoramentoConfigDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RecordWithId[]> {
+        return await this.pdmService.updateMonitoramentoConfig(tipo, +params.id, dto, user);
     }
 
     @Post(':id/documento')

@@ -91,6 +91,13 @@ model Pessoa {
     PDMQueAtualizei Pdm[] @relation("Atualizador")
     PDMQueRemovi    Pdm[] @relation("Removedor")
 
+    PdmMonitoramentoFaseConfigQueCriei      PdmMonitoramentoFaseConfig[]  @relation("Criador")
+    PdmMonitoramentoFaseConfigQueAtualizei  PdmMonitoramentoFaseConfig[]  @relation("Atualizador")
+    PdmMonitoramentoFaseConfigQueRemovi     PdmMonitoramentoFaseConfig[]  @relation("Removedor")
+    PdmMonitoramentoBlocoConfigQueCriei     PdmMonitoramentoBlocoConfig[] @relation("Criador")
+    PdmMonitoramentoBlocoConfigQueAtualizei PdmMonitoramentoBlocoConfig[] @relation("Atualizador")
+    PdmMonitoramentoBlocoConfigQueRemovi    PdmMonitoramentoBlocoConfig[] @relation("Removedor")
+
     FormulaCompostaQueCriei     FormulaComposta[] @relation("Criador")
     FormulaCompostaQueDesativei FormulaComposta[] @relation("Removedor")
     FormulaCompostaQueAtualizei FormulaComposta[] @relation("Atualizador")
@@ -912,6 +919,9 @@ model Pdm {
 
     monitoramento_orcamento   Boolean @default(true)
     legislacao_de_instituicao String?
+
+    // false = monitoramento legado em tabelas fixas (MetaCicloFisico*); true = monitoramento por blocos configuráveis.
+    monitoramento_por_blocos Boolean @default(false)
     pdm_anteriores            Int[]   @default([])
     orgao_admin_id            Int?
     orgao_admin               Orgao?  @relation(fields: [orgao_admin_id], references: [id])
@@ -935,6 +945,7 @@ model Pdm {
     Diretorio                          Diretorio[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
     PdmCicloConfig                     PdmCicloConfig[]
+    PdmMonitoramentoFaseConfig         PdmMonitoramentoFaseConfig[]
 
     @@index([ativo])
     @@map("pdm")
@@ -2815,6 +2826,62 @@ model CicloFasesPdmConfig {
     duracao              Int
 
     @@map("ciclo_fases_pdm_config")
+}
+
+// Configuração das fases do monitoramento do ciclo físico, por PdM/PS (apenas não-legados).
+// Aplicada quando Pdm.monitoramento_por_blocos = true (registro de dados é follow-up; hoje só armazena a config).
+model PdmMonitoramentoFaseConfig {
+    id     Int @id @default(autoincrement())
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ordem      Int     @db.SmallInt // 1..4, identidade estável entre edições + ordem de exibição
+    habilitada Boolean @default(true)
+    rotulo     String
+    // aceita_tags = true  -> fase de tags; blocos de texto NÃO são permitidos (regra no servidor).
+    // aceita_tags = false -> fase de texto; os blocos abaixo se aplicam (conteúdo do bloco é HTML).
+    aceita_tags   Boolean @default(false)
+    aceita_anexos Boolean @default(false)
+
+    blocos PdmMonitoramentoBlocoConfig[]
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([pdm_id])
+    @@map("pdm_monitoramento_fase_config")
+}
+
+model PdmMonitoramentoBlocoConfig {
+    id      Int @id @default(autoincrement())
+    fase_id Int
+    fase    PdmMonitoramentoFaseConfig @relation(fields: [fase_id], references: [id])
+
+    ordem      Int     @db.SmallInt // 1..5, identidade estável dentro da fase + ordem de exibição
+    habilitado Boolean @default(true)
+    rotulo     String
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([fase_id])
+    @@map("pdm_monitoramento_bloco_config")
 }
 
 enum TipoCicloFisico {
