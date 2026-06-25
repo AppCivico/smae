@@ -146,14 +146,39 @@ const emit = defineEmits(['update:modelValue', 'change']);
 const editor = shallowRef(null);
 
 const showTableMenu = ref(false);
-const tableMenuRef = ref(null);
+const tableButtonRef = ref(null);
+const tableDropdownFlipped = ref(false);
 
 function closeTableMenu() {
-  if (showTableMenu.value) showTableMenu.value = false;
+  if (showTableMenu.value) {
+    showTableMenu.value = false;
+  }
 }
+
+const DROPDOWN_MIN_WIDTH_REM = 14;
+
+function updateTableMenuAlignment() {
+  if (!tableButtonRef.value) {
+    return;
+  }
+
+  const { left } = tableButtonRef.value.getBoundingClientRect();
+
+  const remPx = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  tableDropdownFlipped.value = left + DROPDOWN_MIN_WIDTH_REM * remPx > window.innerWidth;
+}
+
+const dashboardObserver = new ResizeObserver(updateTableMenuAlignment);
 
 onMounted(() => {
   document.addEventListener('click', closeTableMenu);
+  const dashboard = document.querySelector('#dashboard');
+
+  if (dashboard) {
+    dashboardObserver.observe(dashboard);
+  }
+
+  updateTableMenuAlignment();
 
   editor.value = new Editor({
     extensions: [
@@ -198,6 +223,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   editor.value.destroy();
   document.removeEventListener('click', closeTableMenu);
+  dashboardObserver.disconnect();
 });
 
 watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
@@ -527,11 +553,11 @@ function setFontFamily(e) {
       </div>
       <div class="button-group">
         <div
-          ref="tableMenuRef"
           class="table-menu"
           @click.stop
         >
           <button
+            ref="tableButtonRef"
             type="button"
             class="editorbt"
             :class="{ 'is-active': editor.isActive('table') || showTableMenu }"
@@ -543,6 +569,7 @@ function setFontFamily(e) {
           <div
             v-if="showTableMenu"
             class="table-dropdown"
+            :class="{ 'table-dropdown--flipped': tableDropdownFlipped }"
             @click="showTableMenu = false"
           >
             <div class="table-dropdown__group">
@@ -550,7 +577,8 @@ function setFontFamily(e) {
                 type="button"
                 class="table-dropdown__bt"
                 @click="editor.chain().focus()
-  .insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
+                  .insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+                "
               >
                 Inserir tabela
               </button>
@@ -855,6 +883,12 @@ function setFontFamily(e) {
   top: 100%;
   left: 0;
   z-index: 100;
+
+  &--flipped {
+    left: auto;
+    right: 0;
+  }
+
   background: @primary;
   border: 1px solid rgba(255, 255, 255, .15);
   border-radius: .25rem;
