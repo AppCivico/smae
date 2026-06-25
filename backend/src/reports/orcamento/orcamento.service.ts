@@ -375,6 +375,7 @@ export class OrcamentoService implements ReportableService {
                 select
                     o.dotacao,
                     o.dotacao_complemento,
+                    o.processo as processo_raw,
                     format_proc_sei_sinproc(o.processo) as processo,
                     o.nota_empenho,
                     i.valor_empenho as smae_valor_empenhado,
@@ -442,11 +443,11 @@ export class OrcamentoService implements ReportableService {
                 left join dotacao_realizado dr ON custos.processo IS NULL
                 AND ( custos.dotacao = dr.dotacao AND custos.ano = dr.ano_referencia)
 
-                left join dotacao_processo drp ON custos.processo IS NOT NULL AND custos.nota_empenho IS NULL
-                AND ( custos.dotacao = drp.dotacao AND custos.ano = drp.ano_referencia AND custos.processo = drp.dotacao_processo)
+                left join dotacao_processo drp ON custos.processo_raw IS NOT NULL AND custos.nota_empenho IS NULL
+                AND ( custos.dotacao = drp.dotacao AND custos.ano = drp.ano_referencia AND custos.processo_raw = drp.dotacao_processo)
 
                 left join dotacao_processo_nota dn ON custos.nota_empenho IS NOT NULL
-                AND ( custos.dotacao = dn.dotacao AND cast(split_part(custos.nota_empenho, '/', 2) as bigint) = dn.ano_referencia AND custos.processo = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
+                AND ( custos.dotacao = dn.dotacao AND cast(split_part(custos.nota_empenho, '/', 2) as bigint) = dn.ano_referencia AND custos.processo_raw = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
             )
             select
                 plan_dotacao_ano_utilizado,
@@ -494,6 +495,7 @@ export class OrcamentoService implements ReportableService {
                 select
                     o.dotacao,
                     o.dotacao_complemento,
+                    o.processo as processo_raw,
                     format_proc_sei_sinproc(o.processo) as processo,
                     o.nota_empenho,
                     to_char_numeric(i.valor_empenho::numeric) as smae_valor_empenhado,
@@ -562,11 +564,11 @@ export class OrcamentoService implements ReportableService {
                 left join dotacao_realizado dr ON custos.processo IS NULL
                 AND ( custos.dotacao = dr.dotacao AND custos.ano = dr.ano_referencia)
 
-                left join dotacao_processo drp ON custos.processo IS NOT NULL AND custos.nota_empenho IS NULL
-                AND ( custos.dotacao = drp.dotacao AND custos.ano = drp.ano_referencia AND custos.processo = drp.dotacao_processo)
+                left join dotacao_processo drp ON custos.processo_raw IS NOT NULL AND custos.nota_empenho IS NULL
+                AND ( custos.dotacao = drp.dotacao AND custos.ano = drp.ano_referencia AND custos.processo_raw = drp.dotacao_processo)
 
                 left join dotacao_processo_nota dn ON custos.nota_empenho IS NOT NULL
-                AND ( custos.dotacao = dn.dotacao AND cast(split_part(custos.nota_empenho, '/', 2) as bigint) = dn.ano_referencia AND custos.processo = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
+                AND ( custos.dotacao = dn.dotacao AND cast(split_part(custos.nota_empenho, '/', 2) as bigint) = dn.ano_referencia AND custos.processo_raw = dn.dotacao_processo  AND custos.nota_empenho = dn.dotacao_processo_nota)
                 order by custos.dotacao, custos.processo, custos.nota_empenho, 1, 2
             `;
     }
