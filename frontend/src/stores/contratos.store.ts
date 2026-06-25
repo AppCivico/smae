@@ -1,13 +1,13 @@
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import formatProcesso from '@/helpers/formatProcesso';
 import type { ContratoAditivoItemDto } from '@back/pp/contrato-aditivo/entities/contrato-aditivo.entity';
-import type { ContratoDetailDto } from '@back/pp/contrato/entities/contrato.entity';
+import type { ContratoDetailDto, ContratoItemDto, ListContratoDto } from '@back/pp/contrato/entities/contrato.entity';
 import type { ListProjetoSeiDto } from '@back/pp/projeto/entities/projeto.entity';
+import type { ListModalidadeContratacaoDto } from '@back/pp/_mdo/modalidade-contratacao/dto/mod-contratacao.dto';
+
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-type Lista = ListProjetoSeiDto['linhas'];
 
 interface ChamadasPendentes {
   lista: boolean;
@@ -16,7 +16,7 @@ interface ChamadasPendentes {
 }
 
 interface Estado {
-  lista: Lista;
+  lista: ContratoItemDto[];
   emFoco: ContratoDetailDto | null;
   listaDeDependencias: {
     orgaos: any[];
@@ -101,10 +101,15 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
     },
     async buscarDependencias(mãeComId: MãeComId = undefined) {
       this.chamadasPendentes.emFoco = true;
+
       const obra = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}`);
-      const processosSei = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`);
+
+      const processosSei = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`) as ListProjetoSeiDto;
+
       const orgaos = await this.requestS.get(`${baseUrl}/orgao`);
-      const modalidadesContratacao = await this.requestS.get(`${baseUrl}/modalidade-contratacao-mdo`);
+
+      const modalidadesContratacao = await this.requestS.get(`${baseUrl}/modalidade-contratacao-mdo`) as ListModalidadeContratacaoDto;
+
       this.listaDeDependencias.processos_sei = processosSei.linhas.map((processoSei: any) => {
         const processoSeiLocal = processoSei;
         processoSeiLocal.id = processoSei.processo_sei;
@@ -122,7 +127,7 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
     async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato/${id}`, params) as ContratoDetailDto;
         if (resposta.orgao) {
           resposta.orgao_id = resposta.orgao.id;
         }
@@ -138,7 +143,7 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato`, params) as ListContratoDto;
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -240,9 +245,15 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
     }),
-    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce((acc, cur: ContratoAditivoItemDto) => {
-      acc[cur.id] = cur;
-      return acc;
-    }, {}),
+    aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce(
+      (
+        acc: Record<number, ContratoAditivoItemDto>,
+        cur: ContratoAditivoItemDto,
+      ) => {
+        acc[cur.id] = cur;
+        return acc;
+      },
+      {},
+    ),
   },
 })();
