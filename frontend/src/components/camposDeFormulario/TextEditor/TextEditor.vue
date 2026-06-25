@@ -135,11 +135,11 @@ defineOptions({ inheritAttrs: false });
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '',
+    default: null,
   },
   value: {
     type: String,
-    default: '',
+    default: null,
   },
 });
 const emit = defineEmits(['update:modelValue', 'change']);
@@ -178,7 +178,7 @@ onMounted(() => {
       TableHeader,
       TableCell,
     ],
-    content: props.modelValue || props.value,
+    content: props.modelValue ?? props.value,
     onUpdate: () => {
       // @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
       const content = editor.value.getText() ? editor.value.getHTML() : '';
@@ -203,10 +203,11 @@ onBeforeUnmount(() => {
 watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
   if (editor.value.isFocused) return;
 
-  const value = newModelValue || newValue;
-  if (!value) return;
+  const value = newModelValue ?? newValue;
+  if (value == null) return;
 
-  const isSame = editor.value.getHTML() === value;
+  const isSame = editor.value.getHTML() === value
+    || (value === '' && editor.value.getText() === '');
   if (!isSame) {
     editor.value.commands.setContent(value, false);
   }
