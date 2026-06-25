@@ -67,12 +67,9 @@ ALTER TABLE "pdm_monitoramento_bloco_config" ADD CONSTRAINT "pdm_monitoramento_b
 -- AddForeignKey
 ALTER TABLE "pdm_monitoramento_bloco_config" ADD CONSTRAINT "pdm_monitoramento_bloco_config_removido_por_fkey" FOREIGN KEY ("removido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- CreateIndex (partial unique: só vale para linhas não removidas; reuso de `ordem` após soft-delete é permitido)
-CREATE UNIQUE INDEX "pdm_monit_fase_pdm_ordem_uniq"
-    ON "pdm_monitoramento_fase_config" ("pdm_id", "ordem") WHERE "removido_em" IS NULL;
-
-CREATE UNIQUE INDEX "pdm_monit_bloco_fase_ordem_uniq"
-    ON "pdm_monitoramento_bloco_config" ("fase_id", "ordem") WHERE "removido_em" IS NULL;
+-- Obs.: a identidade de fase/bloco é o `id` (PK); `ordem` é apenas ordenação de exibição,
+-- atribuída pelo servidor (1..N) a partir da posição no array do PATCH. Por isso NÃO há índice
+-- único em `ordem` — reordenar trocaria valores de `ordem` entre linhas e colidiria.
 
 -- Backfill: habilita as 4 fases padrão do monitoramento para PdM/PS NÃO-legados existentes.
 -- Legados (sistema='PDM') ficam de fora; monitoramento_por_blocos permanece false para todos (default).

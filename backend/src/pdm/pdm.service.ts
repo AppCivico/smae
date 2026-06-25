@@ -656,12 +656,14 @@ export class PdmService {
                 },
             });
             monitoramento_ciclo_fases = fasesConfig.map((f) => ({
+                id: f.id,
                 ordem: f.ordem,
                 habilitada: f.habilitada,
                 rotulo: f.rotulo,
                 aceita_tags: f.aceita_tags,
                 aceita_anexos: f.aceita_anexos,
                 blocos: f.blocos.map((b) => ({
+                    id: b.id,
                     ordem: b.ordem,
                     habilitado: b.habilitado,
                     rotulo: b.rotulo,
@@ -1567,9 +1569,11 @@ export class PdmService {
     }
 
     private validarMonitoramentoConfig(dto: UpdatePdmMonitoramentoConfigDto) {
-        const ordens = dto.fases.map((f) => f.ordem);
-        if (new Set(ordens).size !== ordens.length)
-            throw new BadRequestException('Cada fase precisa ter uma ordem única');
+        // identidade é por `id`: cada id só pode aparecer uma vez no payload (a `ordem` é
+        // atribuída pelo servidor pela posição no array, então não há o que validar nela).
+        const faseIds = dto.fases.filter((f) => f.id != null).map((f) => f.id!);
+        if (new Set(faseIds).size !== faseIds.length)
+            throw new BadRequestException('Cada fase só pode aparecer uma vez (id repetido)');
 
         for (const fase of dto.fases) {
             const blocos = fase.blocos ?? [];
@@ -1584,9 +1588,9 @@ export class PdmService {
                 );
             }
 
-            const ordensBloco = blocos.map((b) => b.ordem);
-            if (new Set(ordensBloco).size !== ordensBloco.length)
-                throw new BadRequestException(`Os blocos da fase "${fase.rotulo}" precisam ter ordem única`);
+            const blocoIds = blocos.filter((b) => b.id != null).map((b) => b.id!);
+            if (new Set(blocoIds).size !== blocoIds.length)
+                throw new BadRequestException(`Os blocos da fase "${fase.rotulo}" têm id repetido`);
         }
     }
 
@@ -1612,13 +1616,20 @@ export class PdmService {
                     where: { pdm_id, removido_em: null },
                     include: { blocos: { where: { removido_em: null } } },
                 });
-                const faseByOrdem = new Map(existentes.map((f) => [f.ordem, f]));
-                const ordensDto = new Set(dto.fases.map((f) => f.ordem));
+                const faseById = new Map(existentes.map((f) => [f.id, f]));
+                const dtoFaseIds = new Set(dto.fases.filter((f) => f.id != null).map((f) => f.id!));
                 const ret: RecordWithId[] = [];
 
-                // 1. soft-delete das fases (e seus blocos) cuja `ordem` saiu do DTO
+                // todo id de fase enviado precisa existir e pertencer a este PdM/PS
+                // (impede ressuscitar uma fase removida ou referenciar fase de outro PdM)
+                for (const faseId of dtoFaseIds) {
+                    if (!faseById.has(faseId))
+                        throw new BadRequestException(`Fase id ${faseId} não encontrada neste PdM/PS`);
+                }
+
+                // 1. soft-delete das fases (e seus blocos) cujo id não veio no DTO
                 for (const f of existentes) {
-                    if (!ordensDto.has(f.ordem)) {
+                    if (!dtoFaseIds.has(f.id)) {
                         await prismaTx.pdmMonitoramentoBlocoConfig.updateMany({
                             where: { fase_id: f.id, removido_em: null },
                             data: { removido_em: now, removido_por: user.id },
@@ -1630,14 +1641,17 @@ export class PdmService {
                     }
                 }
 
-                // 2. upsert das fases por `ordem`
-                for (const faseDto of dto.fases) {
-                    const atual = faseByOrdem.get(faseDto.ordem);
+                // 2. upsert das fases na ordem do array (ordem = posição + 1; identidade = id)
+                for (let i = 0; i < dto.fases.length; i++) {
+                    const faseDto = dto.fases[i];
+                    const ordem = i + 1;
+                    const atual = faseDto.id != null ? faseById.get(faseDto.id) : undefined;
                     let faseId: number;
                     if (atual) {
                         await prismaTx.pdmMonitoramentoFaseConfig.update({
                             where: { id: atual.id },
                             data: {
+                                ordem,
                                 habilitada: faseDto.habilitada,
                                 rotulo: faseDto.rotulo,
                                 aceita_tags: faseDto.aceita_tags,
@@ -1651,7 +1665,7 @@ export class PdmService {
                         const nova = await prismaTx.pdmMonitoramentoFaseConfig.create({
                             data: {
                                 pdm_id,
-                                ordem: faseDto.ordem,
+                                ordem,
                                 habilitada: faseDto.habilitada,
                                 rotulo: faseDto.rotulo,
                                 aceita_tags: faseDto.aceita_tags,
@@ -1664,14 +1678,23 @@ export class PdmService {
                         faseId = nova.id;
                     }
 
-                    // 3. diff dos blocos por `ordem` (fase de tags => nenhum bloco)
+                    // 3. diff dos blocos por id (fase de tags => nenhum bloco)
                     const blocosDto = faseDto.aceita_tags ? [] : faseDto.blocos ?? [];
                     const blocosExistentes = atual?.blocos ?? [];
-                    const blocoByOrdem = new Map(blocosExistentes.map((b) => [b.ordem, b]));
-                    const ordensBlocoDto = new Set(blocosDto.map((b) => b.ordem));
+                    const blocoById = new Map(blocosExistentes.map((b) => [b.id, b]));
+                    const dtoBlocoIds = new Set(blocosDto.filter((b) => b.id != null).map((b) => b.id!));
 
+                    // bloco com id precisa pertencer a esta fase (também rejeita id em fase nova)
+                    for (const blocoId of dtoBlocoIds) {
+                        if (!blocoById.has(blocoId))
+                            throw new BadRequestException(
+                                `Bloco id ${blocoId} não pertence à fase "${faseDto.rotulo}"`
+                            );
+                    }
+
+                    // soft-delete dos blocos cujo id não veio
                     for (const b of blocosExistentes) {
-                        if (!ordensBlocoDto.has(b.ordem)) {
+                        if (!dtoBlocoIds.has(b.id)) {
                             await prismaTx.pdmMonitoramentoBlocoConfig.update({
                                 where: { id: b.id },
                                 data: { removido_em: now, removido_por: user.id },
@@ -1679,12 +1702,16 @@ export class PdmService {
                         }
                     }
 
-                    for (const blocoDto of blocosDto) {
-                        const blocoAtual = blocoByOrdem.get(blocoDto.ordem);
+                    // upsert dos blocos na ordem do array (ordem = posição + 1)
+                    for (let j = 0; j < blocosDto.length; j++) {
+                        const blocoDto = blocosDto[j];
+                        const blocoOrdem = j + 1;
+                        const blocoAtual = blocoDto.id != null ? blocoById.get(blocoDto.id) : undefined;
                         if (blocoAtual) {
                             await prismaTx.pdmMonitoramentoBlocoConfig.update({
                                 where: { id: blocoAtual.id },
                                 data: {
+                                    ordem: blocoOrdem,
                                     habilitado: blocoDto.habilitado,
                                     rotulo: blocoDto.rotulo,
                                     atualizado_por: user.id,
@@ -1695,7 +1722,7 @@ export class PdmService {
                             await prismaTx.pdmMonitoramentoBlocoConfig.create({
                                 data: {
                                     fase_id: faseId,
-                                    ordem: blocoDto.ordem,
+                                    ordem: blocoOrdem,
                                     habilitado: blocoDto.habilitado,
                                     rotulo: blocoDto.rotulo,
                                     criado_por: user.id,

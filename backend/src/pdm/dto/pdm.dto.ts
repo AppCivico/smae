@@ -5,12 +5,18 @@ import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { ApiProperty, PickType } from '@nestjs/swagger';
 
 export class PdmMonitoramentoBlocoDto {
+    // Identidade do bloco. Envie de volta no PATCH para editar; omita para criar um novo.
+    id: number;
+    // Ordem de exibição, atribuída pelo servidor (1..N).
     ordem: number;
     habilitado: boolean;
     rotulo: string;
 }
 
 export class PdmMonitoramentoFaseDto {
+    // Identidade da fase. Envie de volta no PATCH para editar; omita para criar uma nova.
+    id: number;
+    // Ordem de exibição, atribuída pelo servidor (1..N).
     ordem: number;
     habilitada: boolean;
     rotulo: string;

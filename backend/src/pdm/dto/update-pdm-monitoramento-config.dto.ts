@@ -6,22 +6,22 @@ import {
     IsBoolean,
     IsInt,
     IsOptional,
+    IsPositive,
     IsString,
-    Max,
     MaxLength,
-    Min,
     ValidateNested,
 } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class MonitoramentoBlocoConfigDto {
     /**
-     * Ordem do bloco dentro da fase (1..5). Identidade estável entre edições.
+     * Id do bloco. Envie para **editar** um bloco existente; **omita** para criar um novo.
+     * Blocos existentes cujo id não vier no payload são desabilitados (soft-delete).
      */
-    @IsInt({ message: 'ordem precisa ser um número inteiro' })
-    @Min(1, { message: 'ordem precisa ser >= 1' })
-    @Max(5, { message: 'ordem precisa ser <= 5' })
-    ordem: number;
+    @IsOptional()
+    @IsInt({ message: 'id precisa ser um número inteiro' })
+    @IsPositive({ message: 'id precisa ser positivo' })
+    id?: number;
 
     @IsBoolean({ message: 'habilitado precisa ser um booleano' })
     habilitado: boolean;
@@ -33,12 +33,13 @@ export class MonitoramentoBlocoConfigDto {
 
 export class MonitoramentoFaseConfigDto {
     /**
-     * Ordem da fase (1..4). Identidade estável entre edições.
+     * Id da fase. Envie para **editar** uma fase existente; **omita** para criar uma nova.
+     * Fases existentes cujo id não vier no payload são desabilitadas (soft-delete).
      */
-    @IsInt({ message: 'ordem precisa ser um número inteiro' })
-    @Min(1, { message: 'ordem precisa ser >= 1' })
-    @Max(4, { message: 'ordem precisa ser <= 4' })
-    ordem: number;
+    @IsOptional()
+    @IsInt({ message: 'id precisa ser um número inteiro' })
+    @IsPositive({ message: 'id precisa ser positivo' })
+    id?: number;
 
     @IsBoolean({ message: 'habilitada precisa ser um booleano' })
     habilitada: boolean;
@@ -58,7 +59,8 @@ export class MonitoramentoFaseConfigDto {
     aceita_anexos: boolean;
 
     /**
-     * Blocos de texto da fase (até 5). Obrigatório (>= 1) quando aceita_tags=false; vazio quando aceita_tags=true.
+     * Blocos de texto da fase (até 5), na ordem de exibição desejada.
+     * Obrigatório (>= 1) quando aceita_tags=false; vazio quando aceita_tags=true.
      */
     @IsOptional()
     @IsArray()
@@ -70,7 +72,8 @@ export class MonitoramentoFaseConfigDto {
 
 export class UpdatePdmMonitoramentoConfigDto {
     /**
-     * Fases do monitoramento do ciclo físico (1 a 4).
+     * Fases do monitoramento do ciclo físico (1 a 4), na ordem de exibição desejada.
+     * A `ordem` é atribuída pelo servidor a partir da posição no array (não é enviada pelo cliente).
      */
     @IsArray()
     @ArrayMinSize(1, { message: 'precisa ter pelo menos uma fase' })
