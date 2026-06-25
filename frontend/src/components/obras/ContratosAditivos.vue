@@ -84,24 +84,40 @@ const {
 });
 
 const onSubmit = handleSubmit.withControlled(async () => {
-  try {
-    const msg = aditivoId.value
-      ? 'Aditivo salvo!'
-      : 'Aditivo adicionado!';
+  async function salvar() {
+    try {
+      const msg = aditivoId.value
+        ? 'Aditivo salvo!'
+        : 'Aditivo adicionado!';
 
-    const resposta = await contratosStore.salvarAditivo(
-      carga,
-      aditivoId.value,
-      contratoEmFoco.value.id,
-    );
+      const resposta = await contratosStore.salvarAditivo(
+        carga,
+        aditivoId.value,
+        contratoEmFoco.value.id,
+      );
 
-    if (resposta) {
-      alertStore.success(msg);
-      exibirDialogo.value = false;
-      emit('salvo');
+      if (resposta) {
+        alertStore.success(msg);
+        exibirDialogo.value = false;
+        emit('salvo');
+      }
+    } catch (error) {
+      alertStore.error(error);
     }
-  } catch (error) {
-    alertStore.error(error);
+  }
+
+  if (contratoEmFoco.value.contrato_exclusivo === false) {
+    let compartilhadoCom = 'todos os outros itens associados';
+
+    if (route.meta.entidadeMãe === 'obras') {
+      compartilhadoCom = 'todas as outras obras associadas';
+    } else if (route.meta.entidadeMãe === 'projeto') {
+      compartilhadoCom = 'todos os outros projetos associados';
+    }
+
+    alertStore.confirmAction(`Esse contrato é compartilhado e as alterações serão refletidas em ${compartilhadoCom} a ele. Confirma a alteração ?`, salvar);
+  } else {
+    await salvar();
   }
 });
 
