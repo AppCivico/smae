@@ -241,14 +241,19 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
 
 const showLinkInput = ref(false);
 const linkUrl = ref('');
+const linkText = ref('');
+const linkHasSelection = ref(false);
 const linkInputRef = ref(null);
+const linkUrlRef = ref(null);
 
 function toggleLink() {
   if (editor.value.isActive('link')) {
     editor.value.chain().focus().unsetLink().run();
     return;
   }
+  linkHasSelection.value = !editor.value.state.selection.empty;
   linkUrl.value = editor.value.getAttributes('link').href || '';
+  linkText.value = '';
   showLinkInput.value = true;
   nextTick(() => linkInputRef.value?.focus());
 }
@@ -257,9 +262,18 @@ function applyLink() {
   if (!showLinkInput.value) return;
   showLinkInput.value = false;
   if (linkUrl.value) {
-    editor.value.chain().focus().setLink({ href: linkUrl.value }).run();
+    if (linkHasSelection.value) {
+      editor.value.chain().focus().setLink({ href: linkUrl.value }).run();
+    } else if (linkText.value) {
+      editor.value.chain().focus().insertContent({
+        type: 'text',
+        text: linkText.value,
+        marks: [{ type: 'link', attrs: { href: linkUrl.value } }],
+      }).run();
+    }
   }
   linkUrl.value = '';
+  linkText.value = '';
 }
 
 function setFontSize(e) {
@@ -395,19 +409,30 @@ function setFontFamily(e) {
         >
           <span v-html="iconLink" />
         </button>
-        <input
-          v-if="showLinkInput"
-          id="linkInput"
-          ref="linkInputRef"
-          v-model="linkUrl"
-          type="url"
-          class="link-input"
-          aria-label="URL do link"
-          placeholder="https://..."
-          @keydown.enter.prevent="applyLink"
-          @keydown.escape="showLinkInput = false"
-          @blur="applyLink"
-        >
+        <template v-if="showLinkInput">
+          <input
+            v-if="!linkHasSelection"
+            ref="linkInputRef"
+            v-model="linkText"
+            type="text"
+            class="link-input"
+            aria-label="Texto do link"
+            placeholder="Texto do link..."
+            @keydown.enter.prevent="linkUrlRef?.focus()"
+            @keydown.escape="showLinkInput = false"
+          >
+          <input
+            :ref="linkHasSelection ? 'linkInputRef' : 'linkUrlRef'"
+            v-model="linkUrl"
+            type="url"
+            class="link-input"
+            aria-label="URL do link"
+            placeholder="https://..."
+            @keydown.enter.prevent="applyLink"
+            @keydown.escape="showLinkInput = false"
+            @blur="applyLink"
+          >
+        </template>
       </div>
       <div class="button-group">
         <label
