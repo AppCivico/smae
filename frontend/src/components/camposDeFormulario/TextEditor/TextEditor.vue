@@ -837,6 +837,11 @@ function setFontFamily(e) {
     font-size: inherit;
     cursor: pointer;
   }
+
+  option {
+    background-color: @branco;
+    color: @escuro;
+  }
 }
 
 .editorbt--larger {
