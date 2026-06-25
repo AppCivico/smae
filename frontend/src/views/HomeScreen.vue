@@ -43,12 +43,14 @@ authStore.carregarModulos();
         <img
           class="logos__sp-imagem mr1"
           src="@/assets/sp.png"
+          alt="Prefeitura de São Paulo"
         >
         <div class="flex center">
           <span class="logos__powered-by">Realização</span>
           <img
             class="logos__fgv-imagem"
             src="@/assets/fgv-projetos.jpg"
+            alt="FGV Projetos"
           >
         </div>
       </div>
