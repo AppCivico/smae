@@ -110,12 +110,6 @@ onMounted(async () => {
   if (emFoco.value?.id) {
     fontesRecurso.value.participantes = carga.fontes_recurso.map((fonteRecurso) => fonteRecurso.id);
   }
-  if (!carga.contrato_exclusivo) {
-    carga.contrato_exclusivo = false;
-  }
-  if (!carga.prazo_unidade) {
-    carga.prazo_unidade = 'Dias';
-  }
 });
 </script>
 <template>
@@ -153,27 +147,50 @@ onMounted(async () => {
           class="error-msg"
         />
       </div>
-      <div class="f1 mt1 mb1 flex align-center">
-        <LabelFromYup
-          name="contrato_exclusivo"
-          :schema="schema"
+    </div>
+
+    <div class="mb2">
+      <SmaeLabel
+        name="contrato_exclusivo"
+        :schema="schema"
+        as="legend"
+        class="label"
+      />
+      <div class="f1 flex align-center flexwrap g1">
+        <label
+          class="fb1"
+          for="contrato-exclusivo__true"
         >
-          <template #prepend>
-            <Field
-              id="contrato_exclusivo"
-              name="contrato_exclusivo"
-              type="checkbox"
-              :value="true"
-              :unchecked-value="false"
-              class="inputcheckbox"
-            />
-          </template>
-        </LabelFromYup>
-        <ErrorMessage
-          name="contrato_exclusivo"
-          class="error-msg"
-        />
+          <Field
+            id="contrato-exclusivo__true"
+            type="radio"
+            name="contrato_exclusivo"
+            class="inputcheckbox"
+            :value="true"
+          /><span class="tc600">
+            Contrato exclusivo
+          </span>
+        </label>
+
+        <label
+          class="fb1"
+          for="contrato-exclusivo__false"
+        >
+          <Field
+            id="contrato-exclusivo__false"
+            type="radio"
+            name="contrato_exclusivo"
+            class="inputcheckbox"
+            :value="false"
+          /><span class="tc600">
+            Contrato compartilhado
+          </span>
+        </label>
       </div>
+      <ErrorMessage
+        name="contrato_exclusivo"
+        class="error-msg"
+      />
     </div>
 
     <div class="flex g2 mb1">

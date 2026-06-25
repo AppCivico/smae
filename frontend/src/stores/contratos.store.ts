@@ -232,6 +232,7 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
   getters: {
     itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
+      contrato_exclusivo: emFoco?.contrato_exclusivo ?? true,
       data_assinatura: emFoco?.data_assinatura
         ? dateTimeToDate(emFoco?.data_assinatura)
         : null,
@@ -244,6 +245,7 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
       fontes_recurso: emFoco?.fontes_recurso || [],
       modalidade_contratacao_id: emFoco?.modalidade_contratacao?.id,
       orgao_id: emFoco?.orgao?.id,
+      prazo_unidade: emFoco?.prazo_unidade ?? 'Dias',
     }),
     aditivosPorId: ({ emFoco }) => emFoco?.aditivos?.reduce(
       (
