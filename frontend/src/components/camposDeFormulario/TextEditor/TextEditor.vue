@@ -890,9 +890,6 @@ function setFontFamily(e) {
 <style lang="less">
 /* Basic editor styles */
 .tiptap {
-  outline: 10px solid fuchsia;
-  outline-offset: -10px;
-
   :first-child {
     margin-top: 0;
   }
