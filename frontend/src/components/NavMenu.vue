@@ -256,8 +256,6 @@ onBeforeRouteUpdate(() => {
         </li>
       </ul>
     </nav>
-
-    <DataDoBuild class="menu__versao" />
   </header>
 </template>
 <style lang="less" scoped>
@@ -471,43 +469,5 @@ onBeforeRouteUpdate(() => {
 
 .menu__ícone-de-abertura--aberto {
   transform: rotate(-180deg);
-}
-
-:deep(.menu__versao) {
-  display: block;
-  white-space: nowrap;
-  padding: 0.5rem 1rem;
-  font-size: 0.7rem;
-  color: fadeOut(@amarelo, 50%);
-  line-height: 1.6;
-  margin: 0;
-
-  div {
-    display: flex;
-    gap: 0.25rem;
-    align-items: center;
-  }
-
-  dt {
-    max-width: 0;
-    display: none;
-    overflow: hidden;
-  }
-
-  .data-do-build__hora {
-    display: none;
-  }
-
-  .cabeçalho:hover &,
-  .cabeçalho.aberto & {
-    dt {
-      display: block;
-      max-width: 100%;
-    }
-
-    .data-do-build__hora {
-      display: inline;
-    }
-  }
 }
 </style>
