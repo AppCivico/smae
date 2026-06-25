@@ -2648,6 +2648,19 @@ table {
 }
 
 .contentStyle {
+  // TO-DO: definir estilos padrão de link, porque esses são exclusivos do
+  // texto editado pelo WYSIWYG.
+  a {
+    color: @azul;
+    text-decoration: underline;
+    text-decoration-color: @azul;
+
+    &:hover {
+      color: @amarelo;
+      text-decoration-color: @azul;
+    }
+  }
+
   ul,
   ol {
     margin: 0 0 1rem;
