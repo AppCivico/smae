@@ -67,26 +67,42 @@ const {
 });
 
 const onSubmit = handleSubmit.withControlled(async () => {
-  try {
-    const msg = route.params.contratoId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
+  async function salvar() {
+    try {
+      const msg = route.params.contratoId
+        ? 'Dados salvos com sucesso!'
+        : 'Item adicionado com sucesso!';
 
-    const resposta = route.params?.contratoId
-      ? await contratosStore.salvarItem(carga, route.params.contratoId)
-      : await contratosStore.salvarItem(carga);
+      const resposta = route.params?.contratoId
+        ? await contratosStore.salvarItem(carga, route.params.contratoId)
+        : await contratosStore.salvarItem(carga);
 
-    if (resposta) {
-      alertStore.success(msg);
+      if (resposta) {
+        alertStore.success(msg);
 
-      const rotaDeEscape = route.meta?.rotaDeEscape;
+        const rotaDeEscape = route.meta?.rotaDeEscape;
 
-      if (rotaDeEscape) {
-        router.push({ name: rotaDeEscape });
+        if (rotaDeEscape) {
+          router.push({ name: rotaDeEscape });
+        }
       }
+    } catch (error) {
+      alertStore.error(error);
     }
-  } catch (error) {
-    alertStore.error(error);
+  }
+
+  if (!carga.contrato_exclusivo && route.params?.contratoId) {
+    let compartilhadoCom = 'todos os outros itens associados';
+
+    if (route.meta.entidadeMãe === 'obras') {
+      compartilhadoCom = 'todas as outras obras associadas';
+    } else if (route.meta.entidadeMãe === 'projeto') {
+      compartilhadoCom = 'todos os outros projetos associados';
+    }
+
+    alertStore.confirmAction(`Esse contrato é compartilhado e as alterações serão refletidas em ${compartilhadoCom} a ele. Confirma a alteração ?`, salvar);
+  } else {
+    await salvar();
   }
 });
 
