@@ -353,19 +353,14 @@ iniciar();
     </template>
   </SmaeTable>
 
-  <div
+  <LoadingComponent
     v-if="chamadasPendentes.lista"
-    class="p1"
-  >
-    Carregando...
-  </div>
+  />
 
-  <div
+  <ErrorComponent
     v-else-if="erro"
-    class="error p1"
-  >
-    Erro: {{ erro }}
-  </div>
+    :erro="erro"
+  />
 
   <div
     v-else-if="!lista.length"
