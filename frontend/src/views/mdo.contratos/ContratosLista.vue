@@ -207,7 +207,10 @@ iniciar();
     <template #titulo>
       Contratos
     </template>
-    <template #acoes>
+    <template
+      v-if="exibirColunasDeAção"
+      #acoes
+    >
       <SmaeLink
         :to="{
           ...$route,
@@ -221,7 +224,6 @@ iniciar();
         Associar contrato compartilhado
       </SmaeLink>
       <SmaeLink
-        v-if="exibirColunasDeAção"
         :to="{ name: rotas.criar }"
         class="btn"
       >
