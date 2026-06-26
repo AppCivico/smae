@@ -1,7 +1,14 @@
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import formatProcesso from '@/helpers/formatProcesso';
 import type { ContratoAditivoItemDto } from '@back/pp/contrato-aditivo/entities/contrato-aditivo.entity';
-import type { ContratoDetailDto, ContratoItemDto, ListContratoDto } from '@back/pp/contrato/entities/contrato.entity';
+import type { AssociarContratoCompartilhadoDto } from '@back/pp/contrato/dto/associar-contrato-compartilhado.dto';
+import type {
+  ContratoCompartilhadoDisponivelDto,
+  ContratoDetailDto,
+  ContratoItemDto,
+  ListContratoCompartilhadoDisponivelDto,
+  ListContratoDto,
+} from '@back/pp/contrato/entities/contrato.entity';
 import type { ListProjetoSeiDto } from '@back/pp/projeto/entities/projeto.entity';
 import type { ListModalidadeContratacaoDto } from '@back/pp/_mdo/modalidade-contratacao/dto/mod-contratacao.dto';
 
@@ -13,6 +20,8 @@ interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
   aditivo: boolean;
+  contratosCompartilhadosDisponiveis: boolean;
+  associarContratoCompartilhado: boolean;
 }
 
 interface Estado {
@@ -26,6 +35,7 @@ interface Estado {
     processos_sei: any[];
     fontes_recurso: any[];
   };
+  listaDeContratosCompartilhadosDisponiveis: ContratoCompartilhadoDisponivelDto[];
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
 }
@@ -74,11 +84,14 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
       fontes_recurso: [],
     },
     emFoco: null,
+    listaDeContratosCompartilhadosDisponiveis: [],
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
       aditivo: false,
+      contratosCompartilhadosDisponiveis: false,
+      associarContratoCompartilhado: false,
     },
     erro: null,
   }),
@@ -225,6 +238,38 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.aditivo = false;
+        return false;
+      }
+    },
+
+    async buscarContratosCompartilhadosDisponiveis(
+      params = {},
+      mãeComId: MãeComId = undefined,
+    ): Promise<void> {
+      this.chamadasPendentes.contratosCompartilhadosDisponiveis = true;
+
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato-compartilhado-disponivel`, params) as ListContratoCompartilhadoDisponivelDto;
+        this.listaDeContratosCompartilhadosDisponiveis = linhas;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.contratosCompartilhadosDisponiveis = false;
+    },
+
+    async associarContratoCompartilhado(
+      params: AssociarContratoCompartilhadoDto,
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
+      this.chamadasPendentes.associarContratoCompartilhado = true;
+
+      try {
+        await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/contrato-compartilhado`, params) as RecordWithId;
+        this.chamadasPendentes.associarContratoCompartilhado = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.associarContratoCompartilhado = false;
         return false;
       }
     },

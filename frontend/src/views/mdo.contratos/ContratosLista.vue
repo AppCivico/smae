@@ -5,6 +5,8 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import LocalFilter from '@/components/LocalFilter.vue';
+import AssociarContratos from '@/components/obras/AssociarContratos.vue';
+import SmaeDialog from '@/components/SmaeDialog.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
@@ -201,14 +203,23 @@ const rotas = computed(() => (props.obraId
 iniciar();
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina id="titulo-da-pagina">
+  <CabecalhoDePagina>
+    <template #titulo>
       Contratos
-    </TítuloDePágina>
-
-    <hr class="ml2 f1">
-
-    <div class="ml2">
+    </template>
+    <template #acoes>
+      <SmaeLink
+        :to="{
+          ...$route,
+          query: {
+            ...$route.query,
+            dialogo: 'associar-contrato',
+          },
+        }"
+        class="btn"
+      >
+        Associar contrato compartilhado
+      </SmaeLink>
       <SmaeLink
         v-if="exibirColunasDeAção"
         :to="{ name: rotas.criar }"
@@ -216,8 +227,8 @@ iniciar();
       >
         Novo contrato
       </SmaeLink>
-    </div>
-  </div>
+    </template>
+  </CabecalhoDePagina>
 
   <div class="flex center mb1 spacebetween">
     <LocalFilter
@@ -362,4 +373,13 @@ iniciar();
   >
     Nenhum resultado encontrado.
   </div>
+
+  <SmaeDialog
+    id="associar-contrato"
+    titulo="Associar contrato compartilhado"
+  >
+    <template #default="{ fecharDialogo }">
+      <AssociarContratos @bem-sucedido="fecharDialogo(); contratosStore.buscarTudo()" />
+    </template>
+  </SmaeDialog>
 </template>
