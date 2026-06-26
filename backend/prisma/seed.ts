@@ -1111,16 +1111,21 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'ProjetoMDO.administrador_no_orgao',
             // 'Reports.dashboard_mdo',
-            'ProjetoMDO.administrar_portfolios_no_orgao',
-            'CadastroGrupoPortfolioMDO.administrador_no_orgao',
             'MDO.revisar_obra',
             'ProjetoMDO.orcamento',
+            ...MDOCadastroBasico,
+            'SMAE.AtualizacaoEmLote',
+        ],
+    },
+    {
+        nome: atualizarNomePerfil('Administrador(a) de Portfólio de Obras no Órgão', []),
+        descricao: 'Gerenciar portfólios de obras no órgão',
+        privilegios: [
+            'ProjetoMDO.administrar_portfolios_no_orgao',
+            'CadastroGrupoPortfolioMDO.administrador_no_orgao',
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
-
-            ...MDOCadastroBasico,
-            'SMAE.AtualizacaoEmLote',
         ],
     },
     {
