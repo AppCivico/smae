@@ -5,7 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { BatchSimpleIds, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ProjetoService } from '../projeto/projeto.service';
 import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { CreateContratoDto } from './dto/create-contrato.dto';
@@ -69,9 +69,9 @@ export class ContratoPPController {
         @Param() params: FindOneParams,
         @Body() dto: AssociarContratoCompartilhadoDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
+    ): Promise<BatchSimpleIds> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
-        return await this.contratoService.associar(+params.id, dto.contrato_id, user);
+        return await this.contratoService.associar(+params.id, dto.contrato_ids, user);
     }
 
     @Get(':id/contrato')
@@ -156,9 +156,9 @@ export class ContratoMDOController {
         @Param() params: FindOneParams,
         @Body() dto: AssociarContratoCompartilhadoDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
+    ): Promise<BatchSimpleIds> {
         await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
-        return await this.contratoService.associar(+params.id, dto.contrato_id, user);
+        return await this.contratoService.associar(+params.id, dto.contrato_ids, user);
     }
 
     @Get(':id/contrato')

@@ -1,7 +1,7 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TipoProjeto } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { BatchSimpleIds, RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -477,52 +477,63 @@ export class ContratoService {
     }
 
     /**
-     * Vincula um contrato compartilhado existente a este projeto/obra (tabela contrato_projeto).
-     * O contrato precisa ser compartilhado, ativo, do mesmo portfólio/tipo e ainda não vinculado.
+     * Vincula um ou mais contratos compartilhados existentes a este projeto/obra (tabela contrato_projeto).
+     * Cada contrato precisa ser compartilhado, ativo, do mesmo portfólio/tipo e ainda não vinculado.
+     * A operação é atômica: se qualquer contrato falhar na validação, nenhuma associação é gravada.
      */
-    async associar(projeto_id: number, contrato_id: number, user: PessoaFromJwt): Promise<RecordWithId> {
+    async associar(projeto_id: number, contrato_ids: number[], user: PessoaFromJwt): Promise<BatchSimpleIds> {
         const now = new Date(Date.now());
+        const ids = [...new Set(contrato_ids)];
+
         return await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            async (prismaTx: Prisma.TransactionClient): Promise<BatchSimpleIds> => {
                 const ctx = await this.getProjetoCtx(prismaTx, projeto_id);
 
-                // Mesma trava usada em remove(): serializa associação x remoção do mesmo contrato,
-                // garantindo que a checagem de "já vinculado"/órfão seja consistente.
-                await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${contrato_id} FOR UPDATE`;
+                for (const contrato_id of ids) {
+                    // Mesma trava usada em remove(): serializa associação x remoção do mesmo contrato,
+                    // garantindo que a checagem de "já vinculado"/órfão seja consistente.
+                    await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${contrato_id} FOR UPDATE`;
 
-                const contrato = await prismaTx.contrato.findFirst({
-                    where: {
-                        id: contrato_id,
-                        removido_em: null,
-                        contrato_exclusivo: false,
-                        ContratoProjeto: {
-                            some: {
-                                removido_em: null,
-                                projeto: { removido_em: null, portfolio_id: ctx.portfolio_id, tipo: ctx.tipo },
+                    const contrato = await prismaTx.contrato.findFirst({
+                        where: {
+                            id: contrato_id,
+                            removido_em: null,
+                            contrato_exclusivo: false,
+                            ContratoProjeto: {
+                                some: {
+                                    removido_em: null,
+                                    projeto: { removido_em: null, portfolio_id: ctx.portfolio_id, tipo: ctx.tipo },
+                                },
                             },
                         },
-                    },
-                    select: { id: true },
-                });
-                if (!contrato)
-                    throw new HttpException('Contrato compartilhado não encontrado neste portfólio', 400);
+                        select: { id: true },
+                    });
+                    if (!contrato)
+                        throw new HttpException(
+                            `Contrato compartilhado (id ${contrato_id}) não encontrado neste portfólio`,
+                            400
+                        );
 
-                const jaVinculado = await prismaTx.contratoProjeto.count({
-                    where: { contrato_id: contrato_id, projeto_id: projeto_id, removido_em: null },
-                });
-                if (jaVinculado > 0)
-                    throw new HttpException('Contrato já está associado a esta obra/projeto', 400);
+                    const jaVinculado = await prismaTx.contratoProjeto.count({
+                        where: { contrato_id: contrato_id, projeto_id: projeto_id, removido_em: null },
+                    });
+                    if (jaVinculado > 0)
+                        throw new HttpException(
+                            `Contrato (id ${contrato_id}) já está associado a esta obra/projeto`,
+                            400
+                        );
 
-                await prismaTx.contratoProjeto.create({
-                    data: {
-                        contrato_id: contrato_id,
-                        projeto_id: projeto_id,
-                        criado_em: now,
-                        criado_por: user.id,
-                    },
-                });
+                    await prismaTx.contratoProjeto.create({
+                        data: {
+                            contrato_id: contrato_id,
+                            projeto_id: projeto_id,
+                            criado_em: now,
+                            criado_por: user.id,
+                        },
+                    });
+                }
 
-                return { id: contrato_id };
+                return { ids };
             }
         );
     }
