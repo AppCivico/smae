@@ -12,7 +12,7 @@ defineProps({
 </script>
 <template>
   <header
-    class="flex flexwrap spacebetween center g2 mb2 cabecalho"
+    class="flex flexwrap spacebetween center mb2 cabecalho"
     v-bind="$attrs"
   >
     <p
@@ -40,32 +40,36 @@ defineProps({
   </header>
 </template>
 <style scoped lang="less">
-.cabecalho > {
-  :deep(*) {
+.cabecalho {
+  gap: 1rem 2rem;
+
+  > :deep(*) {
     max-width: fit-content;
     width: fit-content;
     flex-grow: 1;
+    flex-basis: min-content;
+    margin-right: 0;
+    margin-left: auto;
   }
 
-  [role="doc-subtitle"] {
+  > [role="doc-subtitle"] {
     flex-basis: 100%;
     max-width: 100%;
     width: 100%;
     margin: 0;
   }
 
-  :deep(h1) {
-    flex-basis: min-content;
+  > :deep(h1) {
     flex-grow: 10;
   }
 
-  hr {
+  > hr {
     max-width: none;
     width: auto;
     flex-basis: 1%;
   }
 
-  :deep(.botao-de-fechamento) {
+  > :deep(.botao-de-fechamento) {
     min-width: calc(3em + 4px);
     // Por causa de código legado. Tomara que removamos um dia
     margin-left: 0 !important;

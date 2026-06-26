@@ -41,6 +41,8 @@ const título = typeof route?.meta?.título === 'function'
         class="título-da-página__ícone mr1"
         :src="`${baseUrl}/download/${ícone}?inline=true`"
         width="100"
+        aria-hidden="true"
+        alt=""
       >
     </slot>
 
@@ -63,8 +65,8 @@ const título = typeof route?.meta?.título === 'function'
   align-items: center;
   gap: 1rem;
 
-  overflow-wrap: break-word;
-  word-break: break-word;
+  hyphens: auto;
+  margin: 0;
 }
 
 .título-da-página__ícone {
