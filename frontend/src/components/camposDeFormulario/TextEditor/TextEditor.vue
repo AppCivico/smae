@@ -169,28 +169,30 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'change']);
 const editor = shallowRef(null);
 
+const TABLE_DROPDOWN_MIN_WIDTH_REM = 14;
+
+const SYMBOL_DROPDOWN_MIN_WIDTH_REM = 10;
+const LINK_DROPDOWN_MIN_WIDTH_REM = 14;
+
 const showTableMenu = ref(false);
 const tableButtonRef = ref(null);
 const tableDropdownFlipped = ref(false);
-
-function closeTableMenu() {
-  if (showTableMenu.value) {
-    showTableMenu.value = false;
-  }
-}
-
-const TABLE_DROPDOWN_MIN_WIDTH_REM = 14;
-const SYMBOL_DROPDOWN_MIN_WIDTH_REM = 10;
 
 const showSymbolMenu = ref(false);
 const symbolButtonRef = ref(null);
 const symbolDropdownFlipped = ref(false);
 
-function closeSymbolMenu() {
-  if (showSymbolMenu.value) {
-    showSymbolMenu.value = false;
-  }
-}
+const linkButtonRef = ref(null);
+const linkDropdownFlipped = ref(false);
+
+const showLinkInput = ref(false);
+const linkUrl = ref('');
+const linkText = ref('');
+const linkHasSelection = ref(false);
+const linkInputRef = ref(null);
+const linkUrlRef = ref(null);
+
+const MENUS = { table: showTableMenu, symbol: showSymbolMenu, link: showLinkInput };
 
 function updateMenuAlignments() {
   const remPx = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
@@ -204,89 +206,31 @@ function updateMenuAlignments() {
     const { left } = symbolButtonRef.value.getBoundingClientRect();
     symbolDropdownFlipped.value = left + SYMBOL_DROPDOWN_MIN_WIDTH_REM * remPx > window.innerWidth;
   }
+
+  if (linkButtonRef.value) {
+    const { left } = linkButtonRef.value.getBoundingClientRect();
+    linkDropdownFlipped.value = left + LINK_DROPDOWN_MIN_WIDTH_REM * remPx > window.innerWidth;
+  }
 }
 
 const dashboardObserver = new ResizeObserver(updateMenuAlignments);
 
-onMounted(() => {
-  document.addEventListener('click', closeTableMenu);
-  document.addEventListener('click', closeSymbolMenu);
-  const dashboard = document.querySelector('#dashboard');
+function closeMenu(name) {
+  MENUS[name].value = false;
+}
 
-  if (dashboard) {
-    dashboardObserver.observe(dashboard);
-  }
+function closeAllMenus() {
+  Object.values(MENUS).forEach((m) => { m.value = false; });
+}
 
-  updateMenuAlignments();
-
-  editor.value = new Editor({
-    extensions: [
-      StarterKit,
-      Indent,
-      TextStyle,
-      FontSize,
-      Color,
-      Highlight.configure({ multicolor: true }),
-      Link.configure({ openOnClick: false }),
-      FontFamily,
-      Underline,
-      Superscript,
-      Subscript,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      TableCell,
-    ],
-    content: props.modelValue ?? props.value,
-    onUpdate: () => {
-      // @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
-      const content = editor.value.getText() ? editor.value.getHTML() : '';
-
-      emit('update:modelValue', content);
-      emit('change', content);
-    },
-    onBlur: () => {
-      const content = editor.value.getText() ? editor.value.getHTML() : '';
-
-      emit('update:modelValue', content);
-      emit('change', content);
-    },
-  });
-});
-
-onBeforeUnmount(() => {
-  editor.value.destroy();
-  document.removeEventListener('click', closeTableMenu);
-  document.removeEventListener('click', closeSymbolMenu);
-  dashboardObserver.disconnect();
-});
-
-watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
-  if (editor.value.isFocused) return;
-
-  const value = newModelValue ?? newValue;
-  if (value == null) return;
-
-  const isSame = editor.value.getHTML() === value
-    || (value === '' && editor.value.getText() === '');
-  if (!isSame) {
-    editor.value.commands.setContent(value, false);
-  }
-});
-
-const showLinkInput = ref(false);
-const linkUrl = ref('');
-const linkText = ref('');
-const linkHasSelection = ref(false);
-const linkInputRef = ref(null);
-const linkUrlRef = ref(null);
+function toggleMenu(name) {
+  const wasOpen = MENUS[name].value;
+  closeAllMenus();
+  if (!wasOpen) MENUS[name].value = true;
+}
 
 function toggleLink() {
+  if (showLinkInput.value) { closeMenu('link'); return; }
   if (editor.value.isActive('link')) {
     editor.value.chain().focus().unsetLink().run();
     return;
@@ -294,7 +238,7 @@ function toggleLink() {
   linkHasSelection.value = !editor.value.state.selection.empty;
   linkUrl.value = editor.value.getAttributes('link').href || '';
   linkText.value = '';
-  showLinkInput.value = true;
+  toggleMenu('link');
   nextTick(() => linkInputRef.value?.focus());
 }
 
@@ -349,6 +293,75 @@ function setFontFamily(e) {
     editor.value.chain().focus().unsetFontFamily().run();
   }
 }
+
+onMounted(() => {
+  document.addEventListener('click', closeAllMenus);
+  const dashboard = document.querySelector('#dashboard');
+
+  if (dashboard) {
+    dashboardObserver.observe(dashboard);
+  }
+
+  updateMenuAlignments();
+
+  editor.value = new Editor({
+    extensions: [
+      StarterKit,
+      Indent,
+      TextStyle,
+      FontSize,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      Link.configure({ openOnClick: false }),
+      FontFamily,
+      Underline,
+      Superscript,
+      Subscript,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+    ],
+    content: props.modelValue ?? props.value,
+    onUpdate: () => {
+      // @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
+      const content = editor.value.getText() ? editor.value.getHTML() : '';
+
+      emit('update:modelValue', content);
+      emit('change', content);
+    },
+    onBlur: () => {
+      const content = editor.value.getText() ? editor.value.getHTML() : '';
+
+      emit('update:modelValue', content);
+      emit('change', content);
+    },
+  });
+});
+
+onBeforeUnmount(() => {
+  editor.value.destroy();
+  document.removeEventListener('click', closeAllMenus);
+  dashboardObserver.disconnect();
+});
+
+watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
+  if (editor.value.isFocused) return;
+
+  const value = newModelValue ?? newValue;
+  if (value == null) return;
+
+  const isSame = editor.value.getHTML() === value
+    || (value === '' && editor.value.getText() === '');
+  if (!isSame) {
+    editor.value.commands.setContent(value, false);
+  }
+});
 </script>
 <template>
   <!-- eslint-disable vue/no-v-html -->
@@ -440,39 +453,49 @@ function setFontFamily(e) {
         </button>
       </div>
       <div class="button-group">
-        <button
-          type="button"
-          class="editorbt"
-          :class="{ 'is-active': editor.isActive('link') }"
-          :title="editor.isActive('link') ? 'Remover link' : 'Inserir link'"
-          @click="toggleLink"
+        <div
+          class="link-menu"
+          @click.stop
         >
-          <span v-html="iconLink" />
-        </button>
-        <template v-if="showLinkInput">
-          <input
-            v-if="!linkHasSelection"
-            ref="linkInputRef"
-            v-model="linkText"
-            type="text"
-            class="link-input"
-            aria-label="Texto do link"
-            placeholder="Texto do link..."
-            @keydown.enter.prevent="linkUrlRef?.focus()"
-            @keydown.escape="showLinkInput = false"
+          <button
+            ref="linkButtonRef"
+            type="button"
+            class="editorbt"
+            :class="{ 'is-active': editor.isActive('link') || showLinkInput }"
+            :title="editor.isActive('link') ? 'Remover link' : 'Inserir link'"
+            @click="toggleLink"
           >
-          <input
-            :ref="linkHasSelection ? 'linkInputRef' : 'linkUrlRef'"
-            v-model="linkUrl"
-            type="url"
-            class="link-input"
-            aria-label="URL do link"
-            placeholder="https://..."
-            @keydown.enter.prevent="applyLink"
-            @keydown.escape="showLinkInput = false"
-            @blur="applyLink"
+            <span v-html="iconLink" />
+          </button>
+          <div
+            v-if="showLinkInput"
+            class="link-dropdown"
+            :class="{ 'link-dropdown--flipped': linkDropdownFlipped }"
           >
-        </template>
+            <input
+              v-if="!linkHasSelection"
+              ref="linkInputRef"
+              v-model="linkText"
+              type="text"
+              class="link-input"
+              aria-label="Texto do link"
+              placeholder="Texto do link..."
+              @keydown.enter.prevent="linkUrlRef?.focus()"
+              @keydown.escape="showLinkInput = false"
+            >
+            <input
+              :ref="linkHasSelection ? 'linkInputRef' : 'linkUrlRef'"
+              v-model="linkUrl"
+              type="url"
+              class="link-input"
+              aria-label="URL do link"
+              placeholder="https://..."
+              @keydown.enter.prevent="applyLink"
+              @keydown.escape="showLinkInput = false"
+              @blur="applyLink"
+            >
+          </div>
+        </div>
       </div>
       <div class="button-group">
         <label
@@ -627,7 +650,7 @@ function setFontFamily(e) {
             class="editorbt"
             :class="{ 'is-active': editor.isActive('table') || showTableMenu }"
             title="Tabela"
-            @click="showTableMenu = !showTableMenu"
+            @click="toggleMenu('table')"
           >
             <span v-html="iconInserirTabela" />
           </button>
@@ -798,7 +821,7 @@ function setFontFamily(e) {
             class="editorbt"
             :class="{ 'is-active': showSymbolMenu }"
             title="Inserir símbolo"
-            @click="showSymbolMenu = !showSymbolMenu"
+            @click="toggleMenu('symbol')"
           >
             Ω
           </button>
@@ -813,10 +836,7 @@ function setFontFamily(e) {
               type="button"
               class="symbol-dropdown__bt"
               :title="`${symbol.value} — ${symbol.title}`"
-              @click="
-                editor.chain().focus().insertContent(symbol.value).run();
-              showSymbolMenu = false
-                "
+              @click="editor.chain().focus().insertContent(symbol.value).run(); closeMenu('symbol')"
             >
               {{ symbol.value }}
             </button>
@@ -847,11 +867,13 @@ function setFontFamily(e) {
   background: @primary;
   color: white;
   padding: .25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
 }
 
 .control-group {
   display: flex;
-  margin-bottom: .5rem;
   flex-wrap: wrap;
 }
 
@@ -973,11 +995,34 @@ function setFontFamily(e) {
   color: inherit;
   font-size: inherit;
   padding: .25rem .5rem;
-  width: 12rem;
+  width: 100%;
 
   &::placeholder {
     color: @c400;
     opacity: 1;
+  }
+}
+.link-menu {
+  position: relative;
+}
+
+.link-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  background: @primary;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: .25rem;
+  padding: .5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 14rem;
+
+  &--flipped {
+    left: auto;
+    right: 0;
   }
 }
 .table-menu {
