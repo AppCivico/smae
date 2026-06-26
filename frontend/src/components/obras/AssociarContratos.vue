@@ -17,6 +17,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store';
 import { useObrasStore } from '@/stores/obras.store';
+import { useProjetosStore } from '@/stores/projetos.store';
 
 const emit = defineEmits(['bemSucedido']);
 
@@ -24,9 +25,11 @@ const route = useRoute();
 
 const alertStore = useAlertStore();
 const contratosStore = useContratosStore(route.meta?.entidadeMãe || '');
-const obrasStore = useObrasStore();
+const maeStore = route.meta?.entidadeMãe === 'obras'
+  ? useObrasStore()
+  : useProjetosStore();
 
-const { emFoco: obraEmFoco } = storeToRefs(obrasStore);
+const { emFoco: maeEmFoco } = storeToRefs(maeStore);
 const {
   chamadasPendentes,
   listaDeContratosCompartilhadosDisponiveis,
@@ -57,16 +60,25 @@ const {
   validationSchema: schema,
 });
 
-const nomeDeQuemRecebeOVinculo = computed(() => ((obraEmFoco.value && 'nome' in obraEmFoco.value)
-  ? (obraEmFoco.value as { nome: string }).nome
+const nomeDeQuemRecebeOVinculo = computed(() => ((maeEmFoco.value && 'nome' in maeEmFoco.value)
+  ? (maeEmFoco.value as { nome: string }).nome
   : ''));
+
+const associadoCom = computed(() => {
+  switch (route.meta.entidadeMãe) {
+    case 'obras':
+      return 'à obra';
+    case 'projeto':
+      return 'ao projeto';
+    default:
+      return '';
+  }
+});
 
 const onSubmit = handleSubmit.withControlled(async (cargaControlada) => {
   try {
-    const tituloDaObra = nomeDeQuemRecebeOVinculo.value || undefined;
-
-    const msg = tituloDaObra
-      ? `Contrato associado à obra ${tituloDaObra}!`
+    const msg = associadoCom.value && nomeDeQuemRecebeOVinculo.value
+      ? `Contrato associado ${associadoCom.value} ${nomeDeQuemRecebeOVinculo.value}!`
       : 'Contrato associado com sucesso!';
 
     const resposta = await contratosStore.associarContratoCompartilhado(
@@ -105,8 +117,13 @@ onUnmounted(() => {
     :aria-busy="chamadasPendentes.contratosCompartilhadosDisponiveis"
     @submit.prevent="isSubmitting ? null : onSubmit()"
   >
-    <p>
-      Escolha contratos para associar à obra <strong>{{ nomeDeQuemRecebeOVinculo }}</strong>.
+    <p v-if="associadoCom && nomeDeQuemRecebeOVinculo">
+      Escolha contratos para associar {{ associadoCom }}
+      <strong>{{ nomeDeQuemRecebeOVinculo }}</strong>.
+    </p>
+
+    <p v-else>
+      Escolha contratos para associar.
     </p>
 
     <div class="flex g2 mb1">
