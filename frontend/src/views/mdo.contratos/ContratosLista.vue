@@ -225,7 +225,7 @@ iniciar();
         :to="{ name: rotas.criar }"
         class="btn"
       >
-        Novo contrato
+        Novo contrato exclusivo
       </SmaeLink>
     </template>
   </CabecalhoDePagina>
