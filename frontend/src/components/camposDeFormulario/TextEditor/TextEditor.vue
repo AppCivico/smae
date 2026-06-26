@@ -130,6 +130,29 @@ const FONT_FACES = [
   { label: 'Verdana', value: 'Verdana, sans-serif' },
 ];
 
+const LISTA_DE_SIMBOLOS = [
+  { value: '✓', title: 'Ação concluída ou resultado alcançado' },
+  { value: '➜', title: 'Encaminhamento ou próxima etapa' },
+  { value: '◦', title: 'Subitem' },
+  { value: '◆', title: 'Marco importante' },
+  { value: '★', title: 'Destaque ou ação prioritária' },
+  { value: '⚠', title: 'Atenção ou risco' },
+  { value: 'ⓘ', title: 'Observação explicativa' },
+  { value: '§', title: 'Referência a seção ou normativo' },
+  { value: '—', title: 'Separação de ideias (travessão)' },
+  { value: '▲', title: 'Evolução, crescimento ou aumento' },
+  { value: '▼', title: 'Redução, queda ou diminuição' },
+  { value: '≠', title: 'Diferença ou distinção entre elementos' },
+  { value: '↔', title: 'Relação de interdependência entre ações' },
+  { value: '⇒', title: 'Resultado esperado ou consequência direta' },
+  { value: '≥', title: 'Valor maior ou igual a' },
+  { value: '≤', title: 'Valor menor ou igual a' },
+  { value: '≅', title: 'Equivalência aproximada entre valores' },
+  { value: 'Ⓧ', title: 'Ação cancelada ou não realizada' },
+  { value: '∞', title: 'Ação contínua' },
+  { value: '↺', title: 'Revisão, atualização ou replanejamento' },
+];
+
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
@@ -142,6 +165,7 @@ const props = defineProps({
     default: null,
   },
 });
+
 const emit = defineEmits(['update:modelValue', 'change']);
 const editor = shallowRef(null);
 
@@ -155,30 +179,45 @@ function closeTableMenu() {
   }
 }
 
-const DROPDOWN_MIN_WIDTH_REM = 14;
+const TABLE_DROPDOWN_MIN_WIDTH_REM = 14;
+const SYMBOL_DROPDOWN_MIN_WIDTH_REM = 10;
 
-function updateTableMenuAlignment() {
-  if (!tableButtonRef.value) {
-    return;
+const showSymbolMenu = ref(false);
+const symbolButtonRef = ref(null);
+const symbolDropdownFlipped = ref(false);
+
+function closeSymbolMenu() {
+  if (showSymbolMenu.value) {
+    showSymbolMenu.value = false;
   }
-
-  const { left } = tableButtonRef.value.getBoundingClientRect();
-
-  const remPx = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-  tableDropdownFlipped.value = left + DROPDOWN_MIN_WIDTH_REM * remPx > window.innerWidth;
 }
 
-const dashboardObserver = new ResizeObserver(updateTableMenuAlignment);
+function updateMenuAlignments() {
+  const remPx = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+  if (tableButtonRef.value) {
+    const { left } = tableButtonRef.value.getBoundingClientRect();
+    tableDropdownFlipped.value = left + TABLE_DROPDOWN_MIN_WIDTH_REM * remPx > window.innerWidth;
+  }
+
+  if (symbolButtonRef.value) {
+    const { left } = symbolButtonRef.value.getBoundingClientRect();
+    symbolDropdownFlipped.value = left + SYMBOL_DROPDOWN_MIN_WIDTH_REM * remPx > window.innerWidth;
+  }
+}
+
+const dashboardObserver = new ResizeObserver(updateMenuAlignments);
 
 onMounted(() => {
   document.addEventListener('click', closeTableMenu);
+  document.addEventListener('click', closeSymbolMenu);
   const dashboard = document.querySelector('#dashboard');
 
   if (dashboard) {
     dashboardObserver.observe(dashboard);
   }
 
-  updateTableMenuAlignment();
+  updateMenuAlignments();
 
   editor.value = new Editor({
     extensions: [
@@ -223,6 +262,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   editor.value.destroy();
   document.removeEventListener('click', closeTableMenu);
+  document.removeEventListener('click', closeSymbolMenu);
   dashboardObserver.disconnect();
 });
 
@@ -748,6 +788,42 @@ function setFontFamily(e) {
         </div>
       </div>
       <div class="button-group">
+        <div
+          class="symbol-menu"
+          @click.stop
+        >
+          <button
+            ref="symbolButtonRef"
+            type="button"
+            class="editorbt"
+            :class="{ 'is-active': showSymbolMenu }"
+            title="Inserir símbolo"
+            @click="showSymbolMenu = !showSymbolMenu"
+          >
+            Ω
+          </button>
+          <div
+            v-if="showSymbolMenu"
+            class="symbol-dropdown"
+            :class="{ 'symbol-dropdown--flipped': symbolDropdownFlipped }"
+          >
+            <button
+              v-for="symbol in LISTA_DE_SIMBOLOS"
+              :key="symbol.value"
+              type="button"
+              class="symbol-dropdown__bt"
+              :title="`${symbol.value} — ${symbol.title}`"
+              @click="
+                editor.chain().focus().insertContent(symbol.value).run();
+              showSymbolMenu = false
+                "
+            >
+              {{ symbol.value }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="button-group">
         <button
           type="button"
           class="editorbt"
@@ -959,6 +1035,45 @@ function setFontFamily(e) {
 
   &:disabled {
     cursor: default;
+  }
+}
+.symbol-menu {
+  position: relative;
+}
+
+.symbol-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  background: @primary;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: .25rem;
+  padding: .25rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  min-width: 10rem;
+
+  &--flipped {
+    left: auto;
+    right: 0;
+  }
+}
+
+.symbol-dropdown__bt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .375rem;
+  border: 0;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: .2rem;
+
+  &:hover {
+    background: rgba(255, 255, 255, .1);
   }
 }
 </style>
