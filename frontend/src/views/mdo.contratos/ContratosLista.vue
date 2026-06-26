@@ -242,11 +242,6 @@ iniciar();
     v-if="!chamadasPendentes.lista && !erro && lista.length"
     :colunas="colunas"
     :dados="listaFiltrada"
-    :rota-editar="exibirColunasDeAção
-      ? {
-        name: rotas.editar,
-      }
-      : undefined"
     parametro-da-rota-editar="contratoId"
     parametro-no-objeto-para-editar="id"
     parametro-no-objeto-para-excluir="numero"
@@ -255,7 +250,6 @@ iniciar();
     titulo="Contratos"
     rolagem-horizontal
     sub-linha-sempre-visivel
-    @deletar="(linha) => excluirProcesso(linha.id, linha.numero)"
   >
     <template #celula:numero="{ linha }">
       <SmaeLink
@@ -295,6 +289,46 @@ iniciar();
           </dd>
         </dl>
       </td>
+    </template>
+
+    <template
+      v-if="exibirColunasDeAção"
+      #acoes="{ linha }"
+    >
+      <SmaeLink
+        :to="{
+          name: rotas.editar,
+          params: {
+            ...$route.params,
+            contratoId: linha.id,
+          },
+        }"
+        class="block like-a__text tipinfo left"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_edit" /></svg>
+        <div>Editar contrato</div>
+      </SmaeLink>
+
+      <button
+        class="block like-a__text tipinfo left"
+        aria-label="excluir"
+        title="excluir"
+        @click="excluirProcesso(linha.id, linha.numero)"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use :xlink:href="linha.contrato_exclusivo ? '#i_waste' : '#i_unlink'" /></svg>
+        <div v-if="linha.contrato_exclusivo">
+          Excluir contrato
+        </div>
+        <div v-else>
+          Desassociar contrato
+        </div>
+      </button>
     </template>
 
     <template #rodape>
