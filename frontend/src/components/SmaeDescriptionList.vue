@@ -254,7 +254,10 @@ const classeContainer = computed(() => [
     <dl
       v-for="(grupo, grupoIndex) in gruposDeItens"
       :key="grupoIndex"
-      :class="classeContainer"
+      :class="[
+        classeContainer,
+        $attrs.class
+      ]"
       :style="estiloContainer"
     >
       <div
