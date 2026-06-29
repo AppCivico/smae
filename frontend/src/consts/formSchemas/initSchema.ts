@@ -15,6 +15,7 @@ import {
 
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
+
 import i18n from './config/i18n';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -96,8 +97,19 @@ addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não
 
     if (!indices.length) return true;
 
+    const props = params.apenas
+      ? ([] as (string | number)[]).concat(params.apenas)
+      : null;
+
+    const errosDuplicata = (i: number) => {
+      if (props) {
+        return props.map((prop) => createError({ path: `${path}[${i}].${prop}`, message }));
+      }
+      return [createError({ path: `${path}[${i}]`, message })];
+    };
+
     return new ValidationError(
-      indices.map((i) => createError({ path: `${path}[${i}]`, message })),
+      indices.flatMap(errosDuplicata),
       value,
       path,
     );
