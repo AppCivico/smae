@@ -321,8 +321,8 @@ iniciar();
         @click="excluirProcesso(linha.id, linha.numero)"
       >
         <svg
-          width="20"
-          height="20"
+          :width="linha.contrato_exclusivo ? 20 : 24"
+          :height="linha.contrato_exclusivo ? 20 : 24"
         ><use :xlink:href="linha.contrato_exclusivo ? '#i_waste' : '#i_unlink'" /></svg>
         <div v-if="linha.contrato_exclusivo">
           Excluir contrato
