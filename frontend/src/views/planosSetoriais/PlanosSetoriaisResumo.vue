@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  computed,
   defineOptions,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
+import ListaAninhada from '@/components/ListaAninhada.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import { mapaDeMeses } from '@/consts/months';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
@@ -162,6 +163,77 @@ usersStore.buscarPessoasSimplificadas();
         </dd>
       </dl>
     </div>
+
+    <SmaeDescriptionList
+      v-if="emFoco?.monitoramento_ciclo_fases?.length"
+      class="mb2"
+      :lista="emFoco?.monitoramento_ciclo_fases"
+      :itens-selecionandos="[
+        {
+          chave: 'habilitada',
+          titulo: 'Habilitada'
+        },
+        {
+          chave: 'aceita_tags',
+          titulo: 'Aceita Tags'
+        },
+        {
+          chave: 'aceita_anexos',
+          titulo: 'Aceita Anexos'
+        },
+        {
+          chave: 'blocos',
+          titulo: 'Blocos'
+        },
+      ]"
+    >
+      <template #termo="{ item }">
+        {{ item.rotulo }}
+      </template>
+
+      <template #descricao="{ item }">
+        <div class="contentStyle">
+          <ul>
+            <li v-if="item.habilitada">
+              Habilitada
+            </li>
+            <li v-else>
+              Desabilitada
+            </li>
+            <li v-if="item.aceita_tags">
+              Aceita tags
+            </li>
+            <li v-else>
+              Não aceita tags
+            </li>
+            <li v-if="item.aceita_anexos">
+              Aceita anexos
+            </li>
+            <li v-else>
+              Não aceita anexos
+            </li>
+          </ul>
+
+          <template
+            v-if="item.blocos?.length"
+          >
+            <p>Blocos:</p>
+
+            <ListaAninhada
+              :lista="item.blocos"
+            >
+              <template #default="{ item }">
+                {{ item.rotulo }}
+
+                <template v-if="!item.habilitado">
+                  (desabilitado)
+                </template>
+              </template>
+            </ListaAninhada>
+          </template>
+        </div>
+      </template>
+    </SmaeDescriptionList>
 
     <div class="flex flexwrap g2 mb2">
       <dl class="f1 mb1">
