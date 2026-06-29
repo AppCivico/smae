@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
+  FieldArray,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
@@ -680,39 +681,295 @@ watch(itemParaEdicao, (novoValor) => {
           <ErrorMessage name="orcamento_dia_fechamento" />
         </div>
       </div>
+    </fieldset>
 
-      <template v-if="!ehPdm">
-        <hr class="mb2">
+    <fieldset v-if="!ehPdm">
+      <LabelFromYup
+        as="legend"
+      >
+        Monitoramento físico
+      </LabelFromYup>
 
-        <div class="flex flexwrap g2 mb1">
-          <div
-            class="f1"
+      <div class="flex flexwrap center g2 mb1">
+        <div class="f0 fb15em">
+          <label
+            class="mb1"
+            for="monitoramento_por_blocos"
           >
+            <Field
+              id="monitoramento_por_blocos"
+              name="monitoramento_por_blocos"
+              class="inputcheckbox"
+              :class="{ 'error': errors.monitoramento_por_blocos }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
             <LabelFromYup
-              name="meses"
+              name="monitoramento_por_blocos"
+              as="span"
               :schema="schema"
             />
-
-            <Field
-              v-slot="{ value, handleChange }"
-              name="meses"
-            >
-              <AutocompleteField
-                name="meses"
-                :controlador="{ busca: '', participantes: value || [] }"
-                :v-model="handleChange"
-                :grupo="listaDeMeses"
-                label="nome"
-              />
-            </Field>
-          </div>
+          </label>
+          <ErrorMessage name="monitoramento_por_blocos" />
         </div>
-      </template>
+      </div>
+
+      <FieldArray
+        v-slot="{ fields: fases, push: adicionarFase, remove: removerFase, move: moverFase }"
+        name="monitoramento_ciclo_fases"
+      >
+        <div
+          v-for="(fase, idxFase) in fases"
+          :key="fase.key"
+          class="mb2 p1 pb0 vertical-numerada__item"
+          :data-numeracao="idxFase + 1"
+        >
+          <Field
+            type="hidden"
+            :name="`monitoramento_ciclo_fases[${idxFase}].id`"
+          />
+          <div class="flex mb2 g2 center">
+            <div class="f1">
+              <div class="flex flexwrap mb1 g2 center">
+                <div class="f1">
+                  <SmaeLabel
+                    :name="`monitoramento_ciclo_fases.rotulo`"
+                    :schema="schema"
+                  />
+                  <Field
+                    :name="`monitoramento_ciclo_fases[${idxFase}].rotulo`"
+                    type="text"
+                    class="inputtext light"
+                    :class="{ 'error': errors[`monitoramento_ciclo_fases[${idxFase}].rotulo`] }"
+                  />
+                  <ErrorMessage :name="`monitoramento_ciclo_fases[${idxFase}].rotulo`" />
+                </div>
+              </div>
+              <div class="flex flexwrap g2 center">
+                <div class="f0 fb10em">
+                  <label
+                    :for="`fase-${idxFase}-habilitada`"
+                  >
+                    <Field
+                      :id="`fase-${idxFase}-habilitada`"
+                      :name="`monitoramento_ciclo_fases[${idxFase}].habilitada`"
+                      class="inputcheckbox"
+                      type="checkbox"
+                      :value="true"
+                      :unchecked-value="false"
+                    />
+                    <span>Habilitada</span>
+                  </label>
+                </div>
+                <div class="f0 fb10em">
+                  <label
+                    :for="`fase-${idxFase}-aceita-tags`"
+                  >
+                    <Field
+                      :id="`fase-${idxFase}-aceita-tags`"
+                      :name="`monitoramento_ciclo_fases[${idxFase}].aceita_tags`"
+                      class="inputcheckbox"
+                      type="checkbox"
+                      :value="true"
+                      :unchecked-value="false"
+                    />
+                    <span>Aceita tags</span>
+                  </label>
+                </div>
+                <div class="f0 fb10em">
+                  <label
+                    :for="`fase-${idxFase}-aceita-anexos`"
+                  >
+                    <Field
+                      :id="`fase-${idxFase}-aceita-anexos`"
+                      :name="`monitoramento_ciclo_fases[${idxFase}].aceita_anexos`"
+                      class="inputcheckbox"
+                      type="checkbox"
+                      :value="true"
+                      :unchecked-value="false"
+                    />
+                    <span>Aceita anexos</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="like-a__text addlink tc300"
+              type="button"
+              @click="moverFase(idxFase, idxFase - 1)"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use
+                  xlink:href="#i_down"
+                  style="
+                    transform: rotate(180deg);
+                    transform-origin: center;
+                  "
+                />
+              </svg>
+            </button>
+
+            <button
+              class="like-a__text addlink tc300"
+              type="button"
+              @click="moverFase(idxFase, idxFase + 1)"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_down" />
+              </svg>
+            </button>
+
+            <button
+              class="like-a__text addlink tc300"
+              type="button"
+              @click="removerFase(idxFase)"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
+            </button>
+          </div>
+
+          <FieldArray
+            v-if="!carga.monitoramento_ciclo_fases?.[idxFase]?.aceita_tags"
+            v-slot="{ fields: blocos, push: adicionarBloco, remove: removerBloco }"
+            :name="`monitoramento_ciclo_fases[${idxFase}].blocos`"
+          >
+            <div
+              v-for="(bloco, idxBloco) in blocos"
+              :key="bloco.key"
+              class="flex g2 mb1 center"
+            >
+              <Field
+                type="hidden"
+                :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].id`"
+              />
+              <div class="f0">
+                <label
+                  :for="`fase-${idxFase}-bloco-${idxBloco}-habilitado`"
+                  class="mb1"
+                >
+                  <Field
+                    :id="`fase-${idxFase}-bloco-${idxBloco}-habilitado`"
+                    :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].habilitado`"
+                    type="checkbox"
+                    class="inputcheckbox"
+                    :value="true"
+                    :unchecked-value="false"
+                  />
+                  <span>Habilitado</span>
+                </label>
+              </div>
+              <div class="f1">
+                <SmaeLabel
+                  :name="`monitoramento_ciclo_fases.blocos.rotulo`"
+                  :schema="schema"
+                />
+                <Field
+                  :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].rotulo`"
+                  type="text"
+                  class="inputtext light mb1"
+                  :class="{
+                    error: errors[`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].rotulo`]
+                  }"
+                />
+                <ErrorMessage
+                  :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].rotulo`"
+                />
+              </div>
+              <button
+                class="like-a__text addlink tc300"
+                type="button"
+                @click="removerBloco(idxBloco)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                >
+                  <use xlink:href="#i_remove" />
+                </svg>
+              </button>
+            </div>
+
+            <button
+              v-if="!carga.monitoramento_ciclo_fases?.[idxFase]?.aceita_tags
+                && 5 > (carga.monitoramento_ciclo_fases?.[idxFase]?.blocos?.length || 0)
+              "
+              class="like-a__text addlink"
+              type="button"
+              @click="adicionarBloco({ habilitado: true, rotulo: '' })"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_+" />
+              </svg>
+              Adicionar bloco
+            </button>
+          </FieldArray>
+        </div>
+
+        <button
+          v-if="4 > (carga.monitoramento_ciclo_fases?.length || 0)"
+          class="like-a__text addlink mb2"
+          type="button"
+          @click="adicionarFase({
+            aceita_anexos: false,
+            aceita_tags: false,
+            habilitada: true,
+            rotulo: '',
+            blocos: [],
+          })"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
+            <use xlink:href="#i_+" />
+          </svg>
+          Adicionar fase
+        </button>
+      </FieldArray>
+
+      <div class="flex flexwrap g2 mb1">
+        <div
+          class="f1"
+        >
+          <LabelFromYup
+            name="meses"
+            :schema="schema"
+          />
+
+          <Field
+            v-slot="{ value, handleChange }"
+            name="meses"
+          >
+            <AutocompleteField
+              name="meses"
+              :controlador="{ busca: '', participantes: value || [] }"
+              :v-model="handleChange"
+              :grupo="listaDeMeses"
+              label="nome"
+            />
+          </Field>
+        </div>
+      </div>
     </fieldset>
 
     <fieldset>
       <LabelFromYup
-        :schema="schema"
         as="legend"
       >
         Administradores

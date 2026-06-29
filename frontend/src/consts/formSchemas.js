@@ -1724,9 +1724,56 @@ export const planoSetorial = object({
     .nullable()
     .max(50000),
   meses: array()
-    .label('Meses monitorados - ciclo físico'),
+    .label('Meses monitorados'),
+  monitoramento_ciclo_fases: array()
+    .label('Fases do ciclo de monitoramento')
+    .max(4)
+    .min(1)
+    .semDuplicatas('Rótulos das fases não podem ser repetidos', { apenas: 'rotulo' })
+    .of(
+      object({
+        aceita_anexos: boolean()
+          .label('Aceita anexos')
+          .required(),
+        aceita_tags: boolean()
+          .label('Aceita tags')
+          .required(),
+        habilitada: boolean()
+          .label('Habilitada')
+          .required(),
+        id: number()
+          .nullable(),
+        rotulo: string()
+          .label('Rótulo da fase')
+          .required()
+          .max(250),
+        blocos: array()
+          .label('Blocos')
+          .of(
+            object({
+              habilitado: boolean()
+                .label('Habilitado')
+                .required(),
+              id: number()
+                .nullable(),
+              rotulo: string()
+                .label('Rótulo do bloco')
+                .required()
+                .max(250),
+            }),
+          )
+          .max(5)
+          .semDuplicatas('Rótulos dos blocos não podem ser repetidos', { apenas: 'rotulo' })
+          .when('aceita_tags', (aceitaTags, field) => (aceitaTags
+            ? field.min(0)
+            : field.min(1))),
+      }),
+    ),
   monitoramento_orcamento: boolean()
     .label('Monitoramento de orçamento')
+    .nullable(),
+  monitoramento_por_blocos: boolean()
+    .label('Monitoramento por blocos')
     .nullable(),
   nivel_orcamento: mixed()
     .label('Nível de controle orçamentário')
