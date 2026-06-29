@@ -173,7 +173,7 @@ function deleteArquivo(pdmid, id) {
                   <span>Visualizar programa de metas ativo</span> <svg
                     width="20"
                     height="20"
-                  ><use xlink:href="#i_link" /></svg>
+                  ><use xlink:href="#i_nova-janela" /></svg>
                 </router-link>
                 <template v-if="item.possui_macro_tema">
                   <table class="tablemain mb1">

@@ -397,7 +397,7 @@ const registrosSei = computed(() => {
                       width="20"
                       height="20"
                     >
-                      <use xlink:href="#i_link" />
+                      <use xlink:href="#i_nova-janela-janela-janela" />
                     </svg>
                   </SmaeLink>
                 </span>

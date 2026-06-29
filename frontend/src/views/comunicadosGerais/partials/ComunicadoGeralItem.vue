@@ -57,7 +57,7 @@ function handleSelecionarLido(ev: Event) {
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_link" /></svg>
+        ><use xlink:href="#i_nova-janela" /></svg>
         Link TransfereGov
       </SmaeLink>
     </div>
