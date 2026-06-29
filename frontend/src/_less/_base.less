@@ -181,6 +181,13 @@ details[open] summary {
 }
 
 // Funcionais
+.vertical-numerada__lista {
+  .vertical-numerada__lista();
+}
+
+.vertical-numerada__item {
+  .vertical-numerada__item();
+}
 
 .dados-defasados {
   .dados-defasados();
@@ -2996,6 +3003,10 @@ caption {
   }
 }
 
+.genealogia__lista {
+  .vertical-numerada__lista();
+}
+
 .genealogia .valor {
   background: @c100 center no-repeat;
   display: inline-block;
@@ -3012,50 +3023,23 @@ caption {
 }
 
 .genealogia--origem {
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    .bgc300;
-  }
+  .vertical-numerada__item();
+    position: static;
 
   &::before {
-    left: -2px;
-    top: 1.5rem;
-    bottom: -0.375rem;
-    width: 4px;
+    // Redefinir a posição porque estamos dentro de uma tabela
+      left: -0.5rem;
   }
 
   &::after {
-    top: auto;
-    bottom: calc(-0.375rem - 4px);
-    height: 4px;
-    width: 16px;
-    left: -8px;
-  }
-
-  :only-child > & {
-    &::before,
-    &::after {
-      content: none;
-    }
+    // Redefinir a posição porque estamos dentro de uma tabela
+      top: 1.5rem;
+      left: calc(3rem / -2 - 0.0125rem);
   }
 }
 
 .genealogia--origem .valor {
-  .bgc300;
-  .br(200px);
-  .t20;
-  .w700;
-  color: white;
-  height: 3rem;
-  left: -3.5rem;
-  line-height: 3rem;
-  position: relative;
-  text-align: center;
-  top: 0;
-  width: 3rem;
-  padding: 0;
+    display: none;
 }
 
 .etiqueta {

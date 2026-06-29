@@ -71,6 +71,7 @@ export default {
         'genealogia--origem': linha.nivel === 1,
         'genealogia--fora-do-EAP': linha.nivel > 2
       }"
+      :data-numeracao="linha.numero"
     >
       <span class="valor">
         <small
