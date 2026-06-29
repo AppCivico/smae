@@ -25,6 +25,7 @@ import {
   watch,
 } from 'vue';
 
+import iconClearFormatting from './assets/fluent--text-clear-formatting-20-filled.svg?raw';
 import iconDiminuirRecuo from './assets/ic--round-format-indent-decrease.svg?raw';
 import iconAumentarRecuo from './assets/ic--round-format-indent-increase.svg?raw';
 import iconCorDeFundo from './assets/jam--background-color.svg?raw';
@@ -850,7 +851,7 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
           title="Limpar formatação"
           @click="editor.chain().focus().unsetAllMarks().clearNodes().run()"
         >
-          Limpar formatação
+          <span v-html="iconClearFormatting" />
         </button>
       </div>
     </div>
