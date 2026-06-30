@@ -250,5 +250,7 @@ dialog[open]::backdrop {
 .alert-message {
   max-width: 25em;
   overflow-wrap: break-word;
+  hyphens: auto;
+  white-space: pre-line;
 }
 </style>
