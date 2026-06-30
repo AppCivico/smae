@@ -21,6 +21,7 @@ import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { UpdatePdmMonitoramentoConfigDto } from './update-pdm-monitoramento-config.dto';
 
 export const PdmPermissionLevel = {
     NONE: 0, // Nenhuma permissão
@@ -399,4 +400,15 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
     @IsInt({ each: true, message: 'PDM: Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     pdm_anteriores?: number[];
+
+    /**
+     * Configuração de monitoramento do ciclo físico (fases/blocos). Apenas PdM/PS não-legado.
+     * Quando omitido no create, o PdM/PS nasce com a configuração padrão.
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => UpdatePdmMonitoramentoConfigDto)
+    @ValidateNested()
+    @IsObject()
+    monitoramento_config?: UpdatePdmMonitoramentoConfigDto;
 }

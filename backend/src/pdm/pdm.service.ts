@@ -377,8 +377,13 @@ export class PdmService {
                     prismaTx
                 );
 
-                // PdM/PS não-legado nasce com a configuração padrão de monitoramento do ciclo
-                await this.seedMonitoramentoConfigDefaults(prismaTx, pdm.id, user);
+                // PdM/PS não-legado: usa a config enviada (mesma transação) ou nasce com o padrão
+                if (dto.monitoramento_config) {
+                    this.validarMonitoramentoConfig(dto.monitoramento_config);
+                    await this.applyMonitoramentoConfig(prismaTx, pdm.id, dto.monitoramento_config, user, now);
+                } else {
+                    await this.seedMonitoramentoConfigDefaults(prismaTx, pdm.id, user);
+                }
             }
 
             await logger.saveLogs(prismaTx, user.getLogData());
@@ -393,6 +398,7 @@ export class PdmService {
         delete dto.orgao_admin_id;
         delete dto.monitoramento_orcamento;
         delete dto.pdm_anteriores;
+        delete dto.monitoramento_config;
     }
 
     async findAllIds(tipo: TipoPdmType, user: PessoaFromJwt): Promise<number[]> {
@@ -1065,6 +1071,15 @@ export class PdmService {
             if (verificarVariaveisGlobais) {
                 await AddTaskRecalcVariaveis(prismaTx, { pdmId: id });
             }
+
+            // configuração de monitoramento por blocos, aplicada na MESMA transação do update
+            if (dto.monitoramento_config) {
+                // mesma regra do endpoint dedicado: só vale para PdM/PS não-legados
+                if (pdm.sistema === 'PDM')
+                    throw new BadRequestException('Operação não permitida para PDMs antigos');
+                this.validarMonitoramentoConfig(dto.monitoramento_config);
+                await this.applyMonitoramentoConfig(prismaTx, id, dto.monitoramento_config, user, now);
+            }
         };
 
         if (prismaCtx) {
@@ -1611,134 +1626,144 @@ export class PdmService {
 
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient) => {
-                const existentes = await prismaTx.pdmMonitoramentoFaseConfig.findMany({
-                    where: { pdm_id, removido_em: null },
-                    include: { blocos: { where: { removido_em: null } } },
-                });
-                const faseById = new Map(existentes.map((f) => [f.id, f]));
-                const dtoFaseIds = new Set(dto.fases.filter((f) => f.id != null).map((f) => f.id!));
-                const ret: RecordWithId[] = [];
-
-                // todo id de fase enviado precisa existir e pertencer a este PdM/PS
-                // (impede ressuscitar uma fase removida ou referenciar fase de outro PdM)
-                for (const faseId of dtoFaseIds) {
-                    if (!faseById.has(faseId))
-                        throw new BadRequestException(`Fase id ${faseId} não encontrada neste PdM/PS`);
-                }
-
-                // 1. soft-delete das fases (e seus blocos) cujo id não veio no DTO
-                for (const f of existentes) {
-                    if (!dtoFaseIds.has(f.id)) {
-                        await prismaTx.pdmMonitoramentoBlocoConfig.updateMany({
-                            where: { fase_id: f.id, removido_em: null },
-                            data: { removido_em: now, removido_por: user.id },
-                        });
-                        await prismaTx.pdmMonitoramentoFaseConfig.update({
-                            where: { id: f.id },
-                            data: { removido_em: now, removido_por: user.id },
-                        });
-                    }
-                }
-
-                // 2. upsert das fases na ordem do array (ordem = posição + 1; identidade = id)
-                for (let i = 0; i < dto.fases.length; i++) {
-                    const faseDto = dto.fases[i];
-                    const ordem = i + 1;
-                    const atual = faseDto.id != null ? faseById.get(faseDto.id) : undefined;
-                    let faseId: number;
-                    if (atual) {
-                        await prismaTx.pdmMonitoramentoFaseConfig.update({
-                            where: { id: atual.id },
-                            data: {
-                                ordem,
-                                habilitada: faseDto.habilitada,
-                                rotulo: faseDto.rotulo,
-                                aceita_tags: faseDto.aceita_tags,
-                                aceita_anexos: faseDto.aceita_anexos,
-                                atualizado_por: user.id,
-                                atualizado_em: now,
-                            },
-                        });
-                        faseId = atual.id;
-                    } else {
-                        const nova = await prismaTx.pdmMonitoramentoFaseConfig.create({
-                            data: {
-                                pdm_id,
-                                ordem,
-                                habilitada: faseDto.habilitada,
-                                rotulo: faseDto.rotulo,
-                                aceita_tags: faseDto.aceita_tags,
-                                aceita_anexos: faseDto.aceita_anexos,
-                                criado_por: user.id,
-                                criado_em: now,
-                            },
-                            select: { id: true },
-                        });
-                        faseId = nova.id;
-                    }
-
-                    // 3. diff dos blocos por id (fase de tags => nenhum bloco)
-                    const blocosDto = faseDto.aceita_tags ? [] : faseDto.blocos ?? [];
-                    const blocosExistentes = atual?.blocos ?? [];
-                    const blocoById = new Map(blocosExistentes.map((b) => [b.id, b]));
-                    const dtoBlocoIds = new Set(blocosDto.filter((b) => b.id != null).map((b) => b.id!));
-
-                    // bloco com id precisa pertencer a esta fase (também rejeita id em fase nova)
-                    for (const blocoId of dtoBlocoIds) {
-                        if (!blocoById.has(blocoId))
-                            throw new BadRequestException(
-                                `Bloco id ${blocoId} não pertence à fase "${faseDto.rotulo}"`
-                            );
-                    }
-
-                    // soft-delete dos blocos cujo id não veio
-                    for (const b of blocosExistentes) {
-                        if (!dtoBlocoIds.has(b.id)) {
-                            await prismaTx.pdmMonitoramentoBlocoConfig.update({
-                                where: { id: b.id },
-                                data: { removido_em: now, removido_por: user.id },
-                            });
-                        }
-                    }
-
-                    // upsert dos blocos na ordem do array (ordem = posição + 1)
-                    for (let j = 0; j < blocosDto.length; j++) {
-                        const blocoDto = blocosDto[j];
-                        const blocoOrdem = j + 1;
-                        const blocoAtual = blocoDto.id != null ? blocoById.get(blocoDto.id) : undefined;
-                        if (blocoAtual) {
-                            await prismaTx.pdmMonitoramentoBlocoConfig.update({
-                                where: { id: blocoAtual.id },
-                                data: {
-                                    ordem: blocoOrdem,
-                                    habilitado: blocoDto.habilitado,
-                                    rotulo: blocoDto.rotulo,
-                                    atualizado_por: user.id,
-                                    atualizado_em: now,
-                                },
-                            });
-                        } else {
-                            await prismaTx.pdmMonitoramentoBlocoConfig.create({
-                                data: {
-                                    fase_id: faseId,
-                                    ordem: blocoOrdem,
-                                    habilitado: blocoDto.habilitado,
-                                    rotulo: blocoDto.rotulo,
-                                    criado_por: user.id,
-                                    criado_em: now,
-                                },
-                                select: { id: true },
-                            });
-                        }
-                    }
-
-                    ret.push({ id: faseId });
-                }
-                return ret;
-            },
+            (prismaTx: Prisma.TransactionClient) => this.applyMonitoramentoConfig(prismaTx, pdm_id, dto, user, now),
             { isolationLevel: 'Serializable', maxWait: 5000, timeout: 15000 }
         );
+    }
+
+    // Aplica o diff da configuração de monitoramento dentro de uma transação JÁ ABERTA.
+    // O `prismaTx` é recebido de fora para que o create/update do PdM e o endpoint dedicado
+    // façam commit/rollback como uma única unidade. Pressupõe que permissão, validação
+    // (validarMonitoramentoConfig) e a regra de legado já foram verificadas pelo chamador.
+    private async applyMonitoramentoConfig(
+        prismaTx: Prisma.TransactionClient,
+        pdm_id: number,
+        dto: UpdatePdmMonitoramentoConfigDto,
+        user: PessoaFromJwt,
+        now: Date
+    ): Promise<RecordWithId[]> {
+        const existentes = await prismaTx.pdmMonitoramentoFaseConfig.findMany({
+            where: { pdm_id, removido_em: null },
+            include: { blocos: { where: { removido_em: null } } },
+        });
+        const faseById = new Map(existentes.map((f) => [f.id, f]));
+        const dtoFaseIds = new Set(dto.fases.filter((f) => f.id != null).map((f) => f.id!));
+        const ret: RecordWithId[] = [];
+
+        // todo id de fase enviado precisa existir e pertencer a este PdM/PS
+        // (impede ressuscitar uma fase removida ou referenciar fase de outro PdM)
+        for (const faseId of dtoFaseIds) {
+            if (!faseById.has(faseId))
+                throw new BadRequestException(`Fase id ${faseId} não encontrada neste PdM/PS`);
+        }
+
+        // 1. soft-delete das fases (e seus blocos) cujo id não veio no DTO
+        for (const f of existentes) {
+            if (!dtoFaseIds.has(f.id)) {
+                await prismaTx.pdmMonitoramentoBlocoConfig.updateMany({
+                    where: { fase_id: f.id, removido_em: null },
+                    data: { removido_em: now, removido_por: user.id },
+                });
+                await prismaTx.pdmMonitoramentoFaseConfig.update({
+                    where: { id: f.id },
+                    data: { removido_em: now, removido_por: user.id },
+                });
+            }
+        }
+
+        // 2. upsert das fases na ordem do array (ordem = posição + 1; identidade = id)
+        for (let i = 0; i < dto.fases.length; i++) {
+            const faseDto = dto.fases[i];
+            const ordem = i + 1;
+            const atual = faseDto.id != null ? faseById.get(faseDto.id) : undefined;
+            let faseId: number;
+            if (atual) {
+                await prismaTx.pdmMonitoramentoFaseConfig.update({
+                    where: { id: atual.id },
+                    data: {
+                        ordem,
+                        habilitada: faseDto.habilitada,
+                        rotulo: faseDto.rotulo,
+                        aceita_tags: faseDto.aceita_tags,
+                        aceita_anexos: faseDto.aceita_anexos,
+                        atualizado_por: user.id,
+                        atualizado_em: now,
+                    },
+                });
+                faseId = atual.id;
+            } else {
+                const nova = await prismaTx.pdmMonitoramentoFaseConfig.create({
+                    data: {
+                        pdm_id,
+                        ordem,
+                        habilitada: faseDto.habilitada,
+                        rotulo: faseDto.rotulo,
+                        aceita_tags: faseDto.aceita_tags,
+                        aceita_anexos: faseDto.aceita_anexos,
+                        criado_por: user.id,
+                        criado_em: now,
+                    },
+                    select: { id: true },
+                });
+                faseId = nova.id;
+            }
+
+            // 3. diff dos blocos por id (fase de tags => nenhum bloco)
+            const blocosDto = faseDto.aceita_tags ? [] : faseDto.blocos ?? [];
+            const blocosExistentes = atual?.blocos ?? [];
+            const blocoById = new Map(blocosExistentes.map((b) => [b.id, b]));
+            const dtoBlocoIds = new Set(blocosDto.filter((b) => b.id != null).map((b) => b.id!));
+
+            // bloco com id precisa pertencer a esta fase (também rejeita id em fase nova)
+            for (const blocoId of dtoBlocoIds) {
+                if (!blocoById.has(blocoId))
+                    throw new BadRequestException(`Bloco id ${blocoId} não pertence à fase "${faseDto.rotulo}"`);
+            }
+
+            // soft-delete dos blocos cujo id não veio
+            for (const b of blocosExistentes) {
+                if (!dtoBlocoIds.has(b.id)) {
+                    await prismaTx.pdmMonitoramentoBlocoConfig.update({
+                        where: { id: b.id },
+                        data: { removido_em: now, removido_por: user.id },
+                    });
+                }
+            }
+
+            // upsert dos blocos na ordem do array (ordem = posição + 1)
+            for (let j = 0; j < blocosDto.length; j++) {
+                const blocoDto = blocosDto[j];
+                const blocoOrdem = j + 1;
+                const blocoAtual = blocoDto.id != null ? blocoById.get(blocoDto.id) : undefined;
+                if (blocoAtual) {
+                    await prismaTx.pdmMonitoramentoBlocoConfig.update({
+                        where: { id: blocoAtual.id },
+                        data: {
+                            ordem: blocoOrdem,
+                            habilitado: blocoDto.habilitado,
+                            rotulo: blocoDto.rotulo,
+                            atualizado_por: user.id,
+                            atualizado_em: now,
+                        },
+                    });
+                } else {
+                    await prismaTx.pdmMonitoramentoBlocoConfig.create({
+                        data: {
+                            fase_id: faseId,
+                            ordem: blocoOrdem,
+                            habilitado: blocoDto.habilitado,
+                            rotulo: blocoDto.rotulo,
+                            criado_por: user.id,
+                            criado_em: now,
+                        },
+                        select: { id: true },
+                    });
+                }
+            }
+
+            ret.push({ id: faseId });
+        }
+        return ret;
     }
 
     private verificaRotulos(dto: CreatePdmDto | UpdatePdmDto) {
