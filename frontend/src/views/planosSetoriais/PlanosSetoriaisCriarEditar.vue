@@ -749,7 +749,10 @@ watch(itemParaEdicao, (novoValor) => {
         Monitoramento físico
       </LabelFromYup>
 
-      <div class="flex flexwrap center g2 mb1">
+      <div
+        v-if="temPermissãoPara('Menu.MonitBloco')"
+        class="flex flexwrap center g2 mb1"
+      >
         <div class="f0 fb15em">
           <label
             class="mb1"
@@ -775,6 +778,7 @@ watch(itemParaEdicao, (novoValor) => {
       </div>
 
       <FieldArray
+        v-if="temPermissãoPara('Menu.MonitBloco')"
         v-slot="{ fields: fases, push: adicionarFase, remove: removerFase, move: moverFase }"
         name="monitoramento_ciclo_fases"
       >

@@ -1729,6 +1729,7 @@ export const planoSetorial = object({
     .label('Fases do ciclo de monitoramento')
     .max(4)
     .min(1)
+    .nullable()
     .semDuplicatas('Rótulos das fases não podem ser repetidos', { apenas: 'rotulo' })
     .of(
       object({
