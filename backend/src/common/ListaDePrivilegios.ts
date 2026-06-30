@@ -296,6 +296,7 @@ export type ListaDePrivilegios =
     | 'Menu.cc_consulta_geral'
     | 'Menu.historico_monitoramento_ps'
     | 'Menu.historico_monitoramento_pdm'
+    | 'Menu.MonitBloco'
     | 'ReferencialEm.Equipe.ProgramaDeMetas'
     | 'ReferencialEm.Equipe.PS'
     | 'ReferencialEm.EquipeBanco.ProgramaDeMetas'

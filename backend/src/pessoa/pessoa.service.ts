@@ -2028,6 +2028,16 @@ export class PessoaService implements OnModuleInit {
             ret.privilegios.push('Menu.demandas');
         }
 
+        // feature-flag: monitoramento por blocos. Default true; em prod fica false até liberar.
+        // Não bloqueia acesso no backend — apenas sinaliza ao frontend que a feature está habilitada.
+        const liberaMonitBloco = await this.smaeConfigService.getConfigBooleanWithDefault(
+            'LIBERA_FEAT_MONIT_BLOCO',
+            true
+        );
+        if (liberaMonitBloco) {
+            ret.privilegios.push('Menu.MonitBloco');
+        }
+
         // Privilégio virtual que identifica o perfil restrito "Gestor(a) de Distribuição de Recurso".
         // A posse de SMAE.CadastroDistribuicaoSolicitacaoAjuste.inserir é exclusiva desse perfil —
         // verificarPerfisCompativeis() rejeita combinações com CadastroTransferencia.editar
