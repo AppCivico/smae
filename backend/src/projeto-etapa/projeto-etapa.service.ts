@@ -174,14 +174,11 @@ export class ProjetoEtapaService {
         // Chamando findAll para verificar acesso.
         let portfoliosId = [];
 
-        if (filters?.portfolio_id) {
-            const portfolio = await this.portfolioService.findOne(tipo, filters.portfolio_id, user);
-            if (!portfolio) throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
-            portfoliosId = [filters.portfolio_id];
-        } else {
-            const portfolios = await this.portfolioService.findAll(tipo, user, true);
-            portfoliosId = portfolios.map((p) => p.id);
-        }
+        const portfolios = await this.portfolioService.findAll(tipo, user, true, filters?.portfolio_id);
+        if (filters?.portfolio_id && !portfolios.length)
+            throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
+
+        portfoliosId = portfolios.map((p) => p.id);
 
         // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
         const ehTelaAssociacao = filters.eh_padrao === true;
