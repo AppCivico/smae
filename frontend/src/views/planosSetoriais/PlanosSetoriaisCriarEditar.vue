@@ -70,7 +70,55 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+function alertaDeRemocoes(original, atual) {
+  const fasesOriginais = (original?.monitoramento_ciclo_fases ?? []).filter((f) => f.id);
+
+  if (!fasesOriginais.length) {
+    return null;
+  }
+
+  const fasesAtuais = atual.monitoramento_ciclo_fases ?? [];
+  const idsFasesAtuais = new Set(fasesAtuais.map((f) => f.id).filter(Boolean));
+
+  const fasesRemovidas = fasesOriginais.filter((f) => !idsFasesAtuais.has(f.id));
+
+  const blocosRemovidosPorFase = fasesOriginais
+    .filter((f) => idsFasesAtuais.has(f.id))
+    .reduce((acc, faseOriginal) => {
+      const faseAtual = fasesAtuais.find((f) => f.id === faseOriginal.id);
+      const idsBlocosAtuais = new Set(
+        (faseAtual?.blocos ?? []).map((b) => b.id).filter(Boolean),
+      );
+      const removidos = (faseOriginal.blocos ?? [])
+        .filter((b) => b.id && !idsBlocosAtuais.has(b.id))
+        .map((b) => b.rotulo);
+
+      if (removidos.length) {
+        acc.push({ faseRotulo: faseOriginal.rotulo, blocos: removidos });
+      }
+      return acc;
+    }, []);
+
+  if (!fasesRemovidas.length && !blocosRemovidosPorFase.length) {
+    return null;
+  }
+
+  const linhas = [];
+
+  if (fasesRemovidas.length) {
+    const fasesList = fasesRemovidas.map((f) => `"${f.rotulo}"`).join(', ');
+    linhas.push(`Fases: ${fasesList}.`);
+  }
+
+  blocosRemovidosPorFase.forEach(({ faseRotulo, blocos }) => {
+    const blocosList = blocos.map((r) => `"${r}"`).join(', ');
+    linhas.push(`Blocos em "${faseRotulo}": ${blocosList}.`);
+  });
+
+  return `Os dados registrados nos seguintes itens não serão mais acessíveis:\n\n${linhas.join('\n')}`;
+}
+
+async function salvar(valoresControlados) {
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
   const msg = props.planoSetorialId
@@ -96,6 +144,17 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   } catch (error) {
     alertStore.error(error);
   }
+}
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const aviso = alertaDeRemocoes(itemParaEdicao.value, carga);
+
+  if (aviso) {
+    alertStore.confirmAction(aviso, () => salvar(valoresControlados), 'Confirmar');
+    return;
+  }
+
+  await salvar(valoresControlados);
 });
 
 const formularioSujo = useIsFormDirty();
