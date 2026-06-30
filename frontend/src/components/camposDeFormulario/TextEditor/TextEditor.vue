@@ -121,13 +121,13 @@ const Indent = Extension.create({
 const FONT_FACES = [
   { label: 'Padrão', value: '' },
   { label: 'Arial', value: 'Arial, sans-serif' },
-  { label: 'Comic Sans MS', value: "'Comic Sans MS', cursive" },
-  { label: 'Courier New', value: "'Courier New', monospace" },
+  { label: 'Comic Sans MS', value: '"Comic Sans MS", cursive' },
+  { label: 'Courier New', value: '"Courier New", monospace' },
   { label: 'Georgia', value: 'Georgia, serif' },
   { label: 'Impact', value: 'Impact, sans-serif' },
   { label: 'Tahoma', value: 'Tahoma, sans-serif' },
-  { label: 'Times New Roman', value: "'Times New Roman', serif" },
-  { label: 'Trebuchet MS', value: "'Trebuchet MS', sans-serif" },
+  { label: 'Times New Roman', value: '"Times New Roman", serif' },
+  { label: 'Trebuchet MS', value: '"Trebuchet MS", sans-serif' },
   { label: 'Verdana', value: 'Verdana, sans-serif' },
 ];
 
@@ -286,6 +286,15 @@ function doOutdent() {
   }
 }
 
+const currentFontFamily = ref('');
+const currentFontSize = ref('');
+
+function syncToolbarState() {
+  const attrs = editor.value?.getAttributes('textStyle') ?? {};
+  currentFontFamily.value = attrs.fontFamily || '';
+  currentFontSize.value = attrs.fontSize || '';
+}
+
 function setFontFamily(e) {
   const font = e.target.value;
   if (font) {
@@ -329,7 +338,9 @@ onMounted(() => {
       TableCell,
     ],
     content: props.modelValue ?? props.value,
+    onSelectionUpdate: syncToolbarState,
     onUpdate: () => {
+      syncToolbarState();
       // @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
       const content = editor.value.getText() ? editor.value.getHTML() : '';
 
@@ -509,7 +520,7 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
           />
           <select
             aria-label="Família da fonte"
-            :value="editor.getAttributes('textStyle').fontFamily || ''"
+            :value="currentFontFamily"
             @change="setFontFamily"
           >
             <option
@@ -532,7 +543,7 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
           />
           <select
             aria-label="Tamanho da fonte"
-            :value="editor.getAttributes('textStyle').fontSize || ''"
+            :value="currentFontSize"
             @change="setFontSize"
           >
             <option value="">
