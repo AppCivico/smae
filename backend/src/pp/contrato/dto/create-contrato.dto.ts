@@ -46,6 +46,7 @@ export class CreateContratoDto {
     @IsInt()
     orgao_id?: number;
 
+    @IsOptional()
     @IsArray({
         message: 'Fontes de recurso: precisa ser uma array de strings',
     })
@@ -54,7 +55,7 @@ export class CreateContratoDto {
     })
     @ValidateNested({ each: true })
     @Type(() => CreateContratoFonteRecursoDto)
-    fontes_recurso: CreateContratoFonteRecursoDto[];
+    fontes_recurso?: CreateContratoFonteRecursoDto[];
 
     @IsArray({
         message: 'Processos SEI: precisa ser uma array de strings',

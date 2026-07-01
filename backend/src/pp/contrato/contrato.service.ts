@@ -52,7 +52,7 @@ export class ContratoService {
                         valor: dto.valor,
                         fontesRecurso: {
                             createMany: {
-                                data: dto.fontes_recurso.map((fonte_recurso) => {
+                                data: (dto.fontes_recurso ?? []).map((fonte_recurso) => {
                                     return {
                                         cod_sof: fonte_recurso.fonte_recurso_cod_sof,
                                         ano: fonte_recurso.fonte_recurso_ano,
