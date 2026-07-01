@@ -161,7 +161,7 @@ describe('SmaeDialog', () => {
 
       await botaoFechar.trigger('click');
 
-      expect(mockRouterPush).toHaveBeenCalledWith(
+      expect(mockRouterReplace).toHaveBeenCalledWith(
         expect.objectContaining({
           query: expect.not.objectContaining({
             dialogo: expect.anything(),
@@ -185,7 +185,7 @@ describe('SmaeDialog', () => {
 
       await botaoFechar.trigger('click');
 
-      const chamada = mockRouterPush.mock.calls[0][0];
+      const chamada = mockRouterReplace.mock.calls[0][0];
       expect(chamada.query.dialogo).toBeUndefined();
       expect(chamada.query.itemId).toBeUndefined();
       expect(chamada.query.modo).toBeUndefined();

@@ -77,7 +77,7 @@ function fecharDialogo() {
   const query = limparQuery();
 
   dialogRef.value?.close();
-  router.push({ query });
+  router.replace({ query });
   emit('dialogo-fechado');
 }
 
