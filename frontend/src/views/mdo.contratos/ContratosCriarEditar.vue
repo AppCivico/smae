@@ -16,6 +16,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import SmaeCNPJCampo from '@/components/camposDeFormulario/SmaeCNPJCampo/SmaeCNPJCampo.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
@@ -540,9 +541,8 @@ onMounted(async () => {
           name="cnpj_contratada"
           :schema="schema"
         />
-        <Field
+        <SmaeCNPJCampo
           name="cnpj_contratada"
-          type="text"
           class="inputtext light mb1"
           :class="{
             error: errors.cnpj_contratada,
