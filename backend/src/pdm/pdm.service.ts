@@ -1642,6 +1642,10 @@ export class PdmService {
         user: PessoaFromJwt,
         now: Date
     ): Promise<RecordWithId[]> {
+        // offset para reservar a faixa final de `ordem` (1..N) durante a reatribuição.
+        // Bem acima do domínio real (fases 1..4, blocos 1..5) e abaixo do máx de SmallInt.
+        const ORDEM_OFFSET = 1000;
+
         const existentes = await prismaTx.pdmMonitoramentoFaseConfig.findMany({
             where: { pdm_id, removido_em: null },
             include: { blocos: { where: { removido_em: null } } },
@@ -1670,6 +1674,15 @@ export class PdmService {
                 });
             }
         }
+
+        // Antes de reatribuir a ordem, tira as fases sobreviventes da faixa final (1..N).
+        // Sem isso, atualizar/inserir ordem linha-a-linha gera colisão transitória de
+        // (pdm_id, ordem) — o índice único parcial é checado por statement (não deferido).
+        // ordem é SmallInt (máx 32767) e o domínio real é 1..4, então o offset é seguro.
+        await prismaTx.pdmMonitoramentoFaseConfig.updateMany({
+            where: { pdm_id, removido_em: null },
+            data: { ordem: { increment: ORDEM_OFFSET } },
+        });
 
         // 2. upsert das fases na ordem do array (ordem = posição + 1; identidade = id)
         for (let i = 0; i < dto.fases.length; i++) {
@@ -1729,6 +1742,13 @@ export class PdmService {
                     });
                 }
             }
+
+            // mesmo motivo das fases: tira os blocos sobreviventes desta fase da faixa
+            // final antes de reatribuir, evitando colisão transitória de (fase_id, ordem).
+            await prismaTx.pdmMonitoramentoBlocoConfig.updateMany({
+                where: { fase_id: faseId, removido_em: null },
+                data: { ordem: { increment: ORDEM_OFFSET } },
+            });
 
             // upsert dos blocos na ordem do array (ordem = posição + 1)
             for (let j = 0; j < blocosDto.length; j++) {
