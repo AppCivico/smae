@@ -3028,13 +3028,15 @@ caption {
 
   &::before {
     // Redefinir a posição porque estamos dentro de uma tabela
-      left: -0.5rem;
+    left: -0.5rem;
   }
 
   &::after {
     // Redefinir a posição porque estamos dentro de uma tabela
-      top: 1.5rem;
-      left: calc(3rem / -2 - 0.0125rem);
+      top: 0.0125rem;
+      left: -3.5rem;
+      position: relative;
+      display: block;
   }
 }
 
