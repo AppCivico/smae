@@ -257,6 +257,13 @@ export const usePlanosSetoriaisStore = (prefixo = '') => defineStore(prefixo ? `
           : null,
         equipe_tecnica: emFoco?.equipe_tecnica || '',
         monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
+        monitoramento_config: emFoco?.monitoramento_ciclo_fases?.length
+          ? {
+            fases: emFoco.monitoramento_ciclo_fases
+          }
+          : {
+            fases: [],
+          },
         orcamento_dia_fechamento: emFoco?.orcamento_dia_fechamento || null,
         nome: emFoco?.nome || '',
         orgao_admin_id: emFoco?.orgao_admin?.id || null,

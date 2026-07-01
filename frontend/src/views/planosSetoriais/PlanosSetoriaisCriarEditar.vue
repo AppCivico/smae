@@ -71,13 +71,13 @@ const {
 });
 
 function alertaDeRemocoes(original, atual) {
-  const fasesOriginais = (original?.monitoramento_ciclo_fases ?? []).filter((f) => f.id);
+  const fasesOriginais = (original?.monitoramento_config?.fases ?? []).filter((f) => f.id);
 
   if (!fasesOriginais.length) {
     return null;
   }
 
-  const fasesAtuais = atual.monitoramento_ciclo_fases ?? [];
+  const fasesAtuais = atual.monitoramento_config?.fases ?? [];
   const idsFasesAtuais = new Set(fasesAtuais.map((f) => f.id).filter(Boolean));
 
   const fasesRemovidas = fasesOriginais.filter((f) => !idsFasesAtuais.has(f.id));
@@ -749,38 +749,10 @@ watch(itemParaEdicao, (novoValor) => {
         Monitoramento físico
       </LabelFromYup>
 
-      <div
-        v-if="temPermissãoPara('Menu.MonitBloco')"
-        class="flex flexwrap center g2 mb1"
-      >
-        <div class="f0 fb15em">
-          <label
-            class="mb1"
-            for="monitoramento_por_blocos"
-          >
-            <Field
-              id="monitoramento_por_blocos"
-              name="monitoramento_por_blocos"
-              class="inputcheckbox"
-              :class="{ 'error': errors.monitoramento_por_blocos }"
-              type="checkbox"
-              :value="true"
-              :unchecked-value="false"
-            />
-            <LabelFromYup
-              name="monitoramento_por_blocos"
-              as="span"
-              :schema="schema"
-            />
-          </label>
-          <ErrorMessage name="monitoramento_por_blocos" />
-        </div>
-      </div>
-
       <FieldArray
         v-if="temPermissãoPara('Menu.MonitBloco')"
         v-slot="{ fields: fases, push: adicionarFase, remove: removerFase, move: moverFase }"
-        name="monitoramento_ciclo_fases"
+        name="monitoramento_config.fases"
       >
         <div
           v-for="(fase, idxFase) in fases"
@@ -790,23 +762,23 @@ watch(itemParaEdicao, (novoValor) => {
         >
           <Field
             type="hidden"
-            :name="`monitoramento_ciclo_fases[${idxFase}].id`"
+            :name="`monitoramento_config.fases[${idxFase}].id`"
           />
           <div class="flex mb2 g2 center">
             <div class="f1">
               <div class="flex flexwrap mb1 g2 center">
                 <div class="f1">
                   <SmaeLabel
-                    :name="`monitoramento_ciclo_fases.rotulo`"
+                    :name="`monitoramento_config.fases.rotulo`"
                     :schema="schema"
                   />
                   <Field
-                    :name="`monitoramento_ciclo_fases[${idxFase}].rotulo`"
+                    :name="`monitoramento_config.fases[${idxFase}].rotulo`"
                     type="text"
                     class="inputtext light"
-                    :class="{ 'error': errors[`monitoramento_ciclo_fases[${idxFase}].rotulo`] }"
+                    :class="{ 'error': errors[`monitoramento_config.fases[${idxFase}].rotulo`] }"
                   />
-                  <ErrorMessage :name="`monitoramento_ciclo_fases[${idxFase}].rotulo`" />
+                  <ErrorMessage :name="`monitoramento_config.fases[${idxFase}].rotulo`" />
                 </div>
               </div>
               <div class="flex flexwrap g2 center">
@@ -816,7 +788,7 @@ watch(itemParaEdicao, (novoValor) => {
                   >
                     <Field
                       :id="`fase-${idxFase}-habilitada`"
-                      :name="`monitoramento_ciclo_fases[${idxFase}].habilitada`"
+                      :name="`monitoramento_config.fases[${idxFase}].habilitada`"
                       class="inputcheckbox"
                       type="checkbox"
                       :value="true"
@@ -831,7 +803,7 @@ watch(itemParaEdicao, (novoValor) => {
                   >
                     <Field
                       :id="`fase-${idxFase}-aceita-tags`"
-                      :name="`monitoramento_ciclo_fases[${idxFase}].aceita_tags`"
+                      :name="`monitoramento_config.fases[${idxFase}].aceita_tags`"
                       class="inputcheckbox"
                       type="checkbox"
                       :value="true"
@@ -846,7 +818,7 @@ watch(itemParaEdicao, (novoValor) => {
                   >
                     <Field
                       :id="`fase-${idxFase}-aceita-anexos`"
-                      :name="`monitoramento_ciclo_fases[${idxFase}].aceita_anexos`"
+                      :name="`monitoramento_config.fases[${idxFase}].aceita_anexos`"
                       class="inputcheckbox"
                       type="checkbox"
                       :value="true"
@@ -905,9 +877,9 @@ watch(itemParaEdicao, (novoValor) => {
           </div>
 
           <FieldArray
-            v-if="!carga.monitoramento_ciclo_fases?.[idxFase]?.aceita_tags"
+            v-if="!carga.monitoramento_config.fases?.[idxFase]?.aceita_tags"
             v-slot="{ fields: blocos, push: adicionarBloco, remove: removerBloco }"
-            :name="`monitoramento_ciclo_fases[${idxFase}].blocos`"
+            :name="`monitoramento_config.fases[${idxFase}].blocos`"
           >
             <div
               v-for="(bloco, idxBloco) in blocos"
@@ -916,7 +888,7 @@ watch(itemParaEdicao, (novoValor) => {
             >
               <Field
                 type="hidden"
-                :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].id`"
+                :name="`monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].id`"
               />
               <div class="f0">
                 <label
@@ -925,7 +897,7 @@ watch(itemParaEdicao, (novoValor) => {
                 >
                   <Field
                     :id="`fase-${idxFase}-bloco-${idxBloco}-habilitado`"
-                    :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].habilitado`"
+                    :name="`monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].habilitado`"
                     type="checkbox"
                     class="inputcheckbox"
                     :value="true"
@@ -936,19 +908,19 @@ watch(itemParaEdicao, (novoValor) => {
               </div>
               <div class="f1">
                 <SmaeLabel
-                  :name="`monitoramento_ciclo_fases.blocos.rotulo`"
+                  :name="`monitoramento_config.fases.blocos.rotulo`"
                   :schema="schema"
                 />
                 <Field
-                  :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].rotulo`"
+                  :name="`monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].rotulo`"
                   type="text"
                   class="inputtext light mb1"
                   :class="{
-                    error: errors[`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].rotulo`]
+                    error: errors[`monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].rotulo`]
                   }"
                 />
                 <ErrorMessage
-                  :name="`monitoramento_ciclo_fases[${idxFase}].blocos[${idxBloco}].rotulo`"
+                  :name="`monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].rotulo`"
                 />
               </div>
               <button
@@ -966,8 +938,8 @@ watch(itemParaEdicao, (novoValor) => {
             </div>
 
             <button
-              v-if="!carga.monitoramento_ciclo_fases?.[idxFase]?.aceita_tags
-                && 5 > (carga.monitoramento_ciclo_fases?.[idxFase]?.blocos?.length || 0)
+              v-if="!carga.monitoramento_config?.fases?.[idxFase]?.aceita_tags
+                && 5 > (carga.monitoramento_config?.fases?.[idxFase]?.blocos?.length || 0)
               "
               class="like-a__text addlink"
               type="button"
@@ -985,7 +957,7 @@ watch(itemParaEdicao, (novoValor) => {
         </div>
 
         <button
-          v-if="4 > (carga.monitoramento_ciclo_fases?.length || 0)"
+          v-if="4 > (carga.monitoramento_config?.fases?.length || 0)"
           class="like-a__text addlink mb2"
           type="button"
           @click="adicionarFase({
