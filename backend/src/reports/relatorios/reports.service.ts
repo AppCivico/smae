@@ -515,8 +515,7 @@ export class ReportsService {
         // depreciado quando o cliente antigo não envia o tipo.
         // Obs.: a trava de órgão do perfil "Gestor de Distribuição de Recurso" continua sendo
         // aplicada apenas na listagem (findAll), filtrando Publico por `parametros.orgao_id`.
-        const visibilidadeTipo: VisibilidadeTipo =
-            dto.visibilidade_tipo ?? (dto.eh_publico ? 'publico' : 'privado');
+        const visibilidadeTipo: VisibilidadeTipo = dto.visibilidade_tipo ?? (dto.eh_publico ? 'publico' : 'privado');
         const { visibilidade, restrito_para } = montarVisibilidade(visibilidadeTipo, user, sistema, dto.fonte);
 
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -673,8 +672,9 @@ export class ReportsService {
             visibilidadeOR.push({ visibilidade: 'Publico' });
         }
 
-        console.log({
-            AND: [
+        console.dir(
+            {
+                AND: [
                     {
                         OR: [
                             ...visibilidadeOR,
@@ -750,7 +750,9 @@ export class ReportsService {
                         ],
                     },
                 ],
-        });
+            },
+            { depth: null }
+        );
 
         const rows = await this.prisma.relatorio.findMany({
             where: {
@@ -763,69 +765,57 @@ export class ReportsService {
                     {
                         OR: [
                             ...visibilidadeOR,
+
                             {
-                                visibilidade: 'Restrito',
-                                OR: [
-                                    // If there's no restriction at all
+                                AND: [
                                     {
-                                        restrito_para: {
-                                            equals: Prisma.AnyNull,
-                                        },
-                                    },
-                                    // Escopo "meu_orgao": restrito_para.orgao_id casa com o órgão do
-                                    // usuário. O gate por privilégio já é aplicado acima (fonteFilter),
-                                    // então basta o match por órgão. Coberto pelo índice de expressão
-                                    // relatorio_restrito_orgao_id_idx.
-                                    ...(user.orgao_id
-                                        ? [
-                                              {
-                                                  restrito_para: {
-                                                      path: ['orgao_id'],
-                                                      equals: user.orgao_id,
-                                                  },
-                                              } satisfies Prisma.RelatorioWhereInput,
-                                          ]
-                                        : []),
-                                    // Check for role-based access (legado: portfolio_orgao_ids/roles)
-                                    {
-                                        AND: [
+                                        visibilidade: 'Restrito',
+                                        OR: [
+                                            // If there's no restriction at all
                                             {
-                                                // Prisma sobre PostgreSQL usa array de chaves no `path`
-                                                // (ex.: ['roles']). A sintaxe `$.roles` é do conector
-                                                // MySQL e aqui sempre resolveria para NULL — fazendo o
-                                                // `equals: AnyNull` virar "sempre verdadeiro" e o filtro
-                                                // por órgão vazar todos os relatórios Restrito.
-                                                OR: [
-                                                    {
-                                                        restrito_para: {
-                                                            path: ['roles'],
-                                                            equals: Prisma.AnyNull,
-                                                        },
-                                                    },
-                                                    {
-                                                        restrito_para: {
-                                                            path: ['roles'],
-                                                            array_contains: user.privilegios as string[],
-                                                        },
-                                                    },
-                                                ],
+                                                restrito_para: {
+                                                    equals: Prisma.AnyNull,
+                                                },
                                             },
+                                            // Escopo "meu_orgao": restrito_para.orgao_id casa com o órgão do
+                                            // usuário. O gate por privilégio já é aplicado acima (fonteFilter),
+                                            // então basta o match por órgão. Coberto pelo índice de expressão
+                                            // relatorio_restrito_orgao_id_idx.
+                                            ...(user.orgao_id
+                                                ? [
+                                                      {
+                                                          restrito_para: {
+                                                              path: ['orgao_id'],
+                                                              equals: user.orgao_id,
+                                                          },
+                                                      } satisfies Prisma.RelatorioWhereInput,
+                                                  ]
+                                                : []),
+                                            // Check for role-based access (legado: portfolio_orgao_ids/roles)
                                             {
-                                                OR: [
+                                                AND: [
                                                     {
-                                                        restrito_para: {
-                                                            path: ['portfolio_orgao_ids'],
-                                                            equals: Prisma.AnyNull,
-                                                        },
+                                                        OR: [
+                                                            {
+                                                                restrito_para: {
+                                                                    path: ['roles'],
+                                                                    array_contains: user.privilegios as string[],
+                                                                },
+                                                            },
+                                                        ],
                                                     },
-                                                    user.orgao_id
-                                                        ? {
-                                                              restrito_para: {
-                                                                  path: ['portfolio_orgao_ids'],
-                                                                  array_contains: [user.orgao_id],
-                                                              },
-                                                          }
-                                                        : {},
+                                                    {
+                                                        OR: [
+                                                            user.orgao_id
+                                                                ? {
+                                                                      restrito_para: {
+                                                                          path: ['portfolio_orgao_ids'],
+                                                                          array_contains: [user.orgao_id],
+                                                                      },
+                                                                  }
+                                                                : {},
+                                                        ],
+                                                    },
                                                 ],
                                             },
                                         ],
@@ -1012,9 +1002,7 @@ export class ReportsService {
             select: { restrito_para: true },
         });
         const merged =
-            existing?.restrito_para || obj
-                ? { ...((existing?.restrito_para as object) ?? {}), ...(obj ?? {}) }
-                : null;
+            existing?.restrito_para || obj ? { ...((existing?.restrito_para as object) ?? {}), ...(obj ?? {}) } : null;
 
         await prismaTx.relatorio.update({
             where: { id: relatorioId },
