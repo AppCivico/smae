@@ -1,4 +1,3 @@
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import type {
   DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
@@ -9,6 +8,10 @@ import type { PlanoSetorialDto } from '@back/pdm/dto/pdm.dto';
 import type { ListPdmDocument } from '@back/pdm/entities/list-pdm-document.entity';
 import type { ListPdm } from '@back/pdm/entities/list-pdm.entity';
 import { defineStore } from 'pinia';
+import { toRaw } from 'vue';
+
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+
 import type { ArvoreDeIniciativas } from './helpers/mapIniciativas';
 import mapIniciativas from './helpers/mapIniciativas';
 
@@ -259,7 +262,7 @@ export const usePlanosSetoriaisStore = (prefixo = '') => defineStore(prefixo ? `
         monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
         monitoramento_config: emFoco?.monitoramento_ciclo_fases?.length
           ? {
-            fases: emFoco.monitoramento_ciclo_fases
+            fases: structuredClone(toRaw(emFoco.monitoramento_ciclo_fases)),
           }
           : {
             fases: [],
