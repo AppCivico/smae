@@ -34,7 +34,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         (this as unknown as PrismaClient<{ log: typeof logConfig }>).$on('query', (e: Prisma.QueryEvent) => {
             const hasStore = prismaQueryAls.getStore() !== undefined;
             // eslint-disable-next-line no-console
-            console.error('[prisma-query-debug] fired, hasStore=', hasStore, 'sql=', e.query.slice(0, 80));
+            console.error('[prisma-query-debug] fired, hasStore=', hasStore, 'sql=', e.query, '\n', e.params);
             recordPrismaQuery({
                 query: e.query,
                 params: e.params,
