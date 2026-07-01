@@ -20,6 +20,7 @@ import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
@@ -66,7 +67,9 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit(async () => {
+  const cargaManipulada = nulificadorTotal(carga);
+
   async function salvar() {
     try {
       const msg = route.params.contratoId
@@ -74,8 +77,8 @@ const onSubmit = handleSubmit.withControlled(async () => {
         : 'Item adicionado com sucesso!';
 
       const resposta = route.params?.contratoId
-        ? await contratosStore.salvarItem(carga, route.params.contratoId)
-        : await contratosStore.salvarItem(carga);
+        ? await contratosStore.salvarItem(cargaManipulada, route.params.contratoId)
+        : await contratosStore.salvarItem(cargaManipulada);
 
       if (resposta) {
         alertStore.success(msg);
