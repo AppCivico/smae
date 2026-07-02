@@ -16,6 +16,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import preencherArraysAusentes from '@/components/camposDeFormulario/helpers/preencherArraysAusentes';
 import SmaeCNPJCampo from '@/components/camposDeFormulario/SmaeCNPJCampo/SmaeCNPJCampo.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
@@ -68,8 +69,8 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit(async () => {
-  const cargaManipulada = nulificadorTotal(carga);
+const onSubmit = handleSubmit.withControlled(async (cargaControlada) => {
+  const cargaManipulada = nulificadorTotal(preencherArraysAusentes(schema.value, cargaControlada));
 
   async function salvar() {
     try {

@@ -383,7 +383,6 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     fontes_recurso: array()
       .label('Fontes de recursos')
-      .nullable()
       .of(
         object()
           .shape({
