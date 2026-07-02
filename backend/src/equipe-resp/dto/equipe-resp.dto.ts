@@ -32,7 +32,7 @@ export class CreateEquipeRespDto {
 
     /**
      * lista dos responsaveis do grupo? pode ficar vazio
-     * cada pessoa precisa ter o privilégio `CadastroGrupoVariavel.colaborador_responsavel`
+     * cada pessoa precisa ter o privilégio `SMAE.GrupoVariavel.colaborador`
      * @example "[]"
      */
     @IsArray({ message: 'precisa ser um array' })

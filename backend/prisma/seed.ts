@@ -642,7 +642,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
-        ['CadastroGrupoVariavel.colaborador_responsavel', 'Gerenciar Equipes onde é responsável'],
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
@@ -1358,7 +1357,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroPessoa.editar',
             'CadastroPessoa.inativar',
             'CadastroPessoa.ativar',
-            'CadastroGrupoVariavel.colaborador_responsavel',
         ],
     },
     {
@@ -1432,13 +1430,7 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
-        descricao: 'Gerenciar as equipes onde é responsável',
-        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel'],
-    },
-
-    {
-        nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, ['Coordenador de Grupo de Variáveis']),
+        nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, ['Coordenador de Grupo de Variáveis', 'Responsável em equipes']),
         descricao: 'Participa como responsável por equipe',
         privilegios: ['SMAE.GrupoVariavel.colaborador'],
     },

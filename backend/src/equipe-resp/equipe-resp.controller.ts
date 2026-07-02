@@ -10,10 +10,7 @@ import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto'
 import { FilterEquipeRespDto, ListEquipeRespDto } from './entities/equipe-resp.entity';
 import { EquipeRespService } from './equipe-resp.service';
 
-const roles: ListaDePrivilegios[] = [
-    'CadastroGrupoVariavel.administrador',
-    'CadastroGrupoVariavel.colaborador_responsavel',
-];
+const roles: ListaDePrivilegios[] = ['CadastroGrupoVariavel.administrador', 'SMAE.GrupoVariavel.colaborador'];
 
 @ApiTags('Equipes de Responsáveis')
 @Controller('equipe-responsavel')
