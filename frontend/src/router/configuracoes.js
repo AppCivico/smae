@@ -123,6 +123,7 @@ export default [
         'CadastroAreaTematica.inserir',
         'CadastroEmpreendimentoMDO.',
         'CadastroGrupoVariavel.',
+        'SMAE.GrupoVariavel.colaborador',
         'CadastroOds.',
         'CadastroOrgao.',
         'CadastroPainelExterno.',
@@ -519,7 +520,10 @@ export default [
         meta: {
           título: 'Equipes',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'CadastroGrupoVariavel.',
+          limitarÀsPermissões: [
+            'CadastroGrupoVariavel.',
+            'SMAE.GrupoVariavel.colaborador',
+          ],
           // rotasParaMenuSecundário: [
           // ],
         },
