@@ -9,6 +9,7 @@ import {
 } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useDocumentTitle } from '@/composables/useDocumentTitle';
 import { useAlertStore } from '@/stores/alert.store';
 
 import { useDialogRegistry } from './useDialogRegistry.composable';
@@ -53,6 +54,7 @@ const props = defineProps({
 const router = useRouter();
 const alertStore = useAlertStore();
 const dialogRegistry = useDialogRegistry(props.id);
+const { registrarPrefixo, removerPrefixo } = useDocumentTitle();
 
 const dialogRef = ref<HTMLDialogElement | null>(null);
 
@@ -103,12 +105,18 @@ async function abrirDialogo() {
   }
 }
 
-// Watch para abrir o diálogo quando a rota mudar
+const idDoPrefixo = `smae-dialog-${props.id}`;
+
+// Watch para abrir o diálogo quando a rota mudar e para
+// prefixar/restaurar o título da página enquanto ele estiver aberto
 watch(
   dialogoEstaAberto,
   (estaAberto) => {
     if (estaAberto) {
       abrirDialogo();
+      registrarPrefixo(idDoPrefixo, () => props.titulo);
+    } else {
+      removerPrefixo(idDoPrefixo);
     }
   },
   { immediate: true },
@@ -128,6 +136,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // Remove o diálogo do registro
   dialogRegistry.unregister();
+  removerPrefixo(idDoPrefixo);
 });
 </script>
 <template>

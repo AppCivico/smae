@@ -3,6 +3,7 @@ import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 import $eventHub from '@/components/eventHub';
+import { useDocumentTitle } from '@/composables/useDocumentTitle';
 import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 // eslint-disable-next-line import/no-cycle
@@ -149,6 +150,8 @@ router.beforeEach(async (to, from) => {
   return undefined;
 });
 
+const { definirTituloBase } = useDocumentTitle();
+
 router.afterEach((to, from) => {
   const { título, tituloParaNavegador, classeRaiz } = to.meta;
   const { classeRaiz: classeRaizAnterior } = from.meta;
@@ -158,13 +161,13 @@ router.afterEach((to, from) => {
 
     if (typeof esteTitulo === 'function') {
       watch(() => esteTitulo(), (novoValor) => {
-        document.title = novoValor ? `${novoValor} | SMAE` : 'SMAE';
+        definirTituloBase(novoValor || '');
       }, { immediate: true });
     } else if (esteTitulo) {
-      document.title = `${esteTitulo} | SMAE`;
+      definirTituloBase(esteTitulo);
     }
-  } else if (document.title !== 'SMAE') {
-    document.title = 'SMAE';
+  } else {
+    definirTituloBase('');
   }
 
   if (classeRaizAnterior !== classeRaiz) {
