@@ -95,7 +95,7 @@ function somarCamposDeContratos(itens) {
 const totalDeContratos = computed(() => somarCamposDeContratos(lista.value));
 const totalDeContratosFiltrados = computed(() => somarCamposDeContratos(listaFiltrada.value));
 
-const exibirColunasDeAção = computed(() => !permissoesDoItemEmFoco.value.apenas_leitura
+const exibirColunasDeAcao = computed(() => !permissoesDoItemEmFoco.value.apenas_leitura
   || permissoesDoItemEmFoco.value.sou_responsavel);
 
 function excluirProcesso(id, nome) {
@@ -208,7 +208,7 @@ iniciar();
       Contratos
     </template>
     <template
-      v-if="exibirColunasDeAção"
+      v-if="exibirColunasDeAcao"
       #acoes
     >
       <SmaeLink
@@ -247,7 +247,7 @@ iniciar();
     parametro-da-rota-editar="contratoId"
     parametro-no-objeto-para-editar="id"
     parametro-no-objeto-para-excluir="numero"
-    :esconder-deletar="!exibirColunasDeAção"
+    :esconder-deletar="!exibirColunasDeAcao"
     :aria-busy="chamadasPendentes.lista"
     titulo="Contratos"
     rolagem-horizontal
@@ -281,7 +281,7 @@ iniciar();
     </template>
 
     <template #sub-linha="{ linha }">
-      <td :colspan="colunas.length + (exibirColunasDeAção ? 1 : 0)">
+      <td :colspan="colunas.length + (exibirColunasDeAcao ? 1 : 0)">
         <dl class="flex g1">
           <dt class="t12 uc w700 tc300">
             Resumo:
@@ -294,7 +294,7 @@ iniciar();
     </template>
 
     <template
-      v-if="exibirColunasDeAção"
+      v-if="exibirColunasDeAcao"
       #acoes="{ linha }"
     >
       <SmaeLink
@@ -358,7 +358,7 @@ iniciar();
         <td class="cell--number">
           {{ totalDeContratosFiltrados.quantidade_reajustes }}
         </td>
-        <td v-if="exibirColunasDeAção" />
+        <td v-if="exibirColunasDeAcao" />
       </tr>
       <tr>
         <th>Total dos contratos</th>
@@ -384,7 +384,7 @@ iniciar();
         <td class="cell--number">
           {{ totalDeContratos.quantidade_reajustes }}
         </td>
-        <td v-if="exibirColunasDeAção" />
+        <td v-if="exibirColunasDeAcao" />
       </tr>
     </template>
   </SmaeTable>
