@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils';
+import { shallowReactive } from 'vue';
 import {
   beforeEach,
   describe,
@@ -8,11 +9,18 @@ import {
 } from 'vitest';
 import SmaeDialog from './SmaeDialog.vue';
 
-const mockRouterPush = vi.fn(() => Promise.resolve());
-
-let mockCurrentRoute = {
+// mockCurrentRoute precisa ser reativo (mas apenas raso, como o vue-router
+// real) para que a computed `dialogoEstaAberto` reaja às mudanças de query
+// disparadas por mockRouterPush, sem transformar `query` num Proxy profundo
+// (o que quebraria o structuredClone usado em limparQuery)
+let mockCurrentRoute = shallowReactive({
   query: {},
-};
+});
+
+const mockRouterPush = vi.fn((to) => {
+  mockCurrentRoute.query = to?.query ?? {};
+  return Promise.resolve();
+});
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockCurrentRoute),
@@ -39,7 +47,7 @@ HTMLDialogElement.prototype.close = vi.fn();
 describe('SmaeDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCurrentRoute = { query: {} };
+    mockCurrentRoute = shallowReactive({ query: {} });
   });
 
   const TituloDaPaginaStub = {
@@ -299,7 +307,11 @@ describe('SmaeDialog', () => {
       });
     });
 
-    it('chama close ao fechar o diálogo', async () => {
+    // A chamada nativa a close() acontece no @after-leave da <Transition>,
+    // depois da animação de saída. happy-dom não implementa a detecção de
+    // duração de animação CSS que o Vue usa para disparar esse hook, então
+    // esse comportamento só pode ser verificado manualmente no navegador.
+    it('remove o dialog do DOM ao fechar', async () => {
       mockCurrentRoute.query = { dialogo: 'teste' };
 
       const wrapper = montarComponente();
@@ -307,7 +319,9 @@ describe('SmaeDialog', () => {
 
       await botaoFechar.trigger('click');
 
-      expect(HTMLDialogElement.prototype.close).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(wrapper.find('dialog').exists()).toBe(false);
+      });
     });
   });
 });

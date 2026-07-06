@@ -78,7 +78,6 @@ function limparQuery() {
 function fecharDialogo() {
   const query = limparQuery();
 
-  dialogRef.value?.close();
   router.push({ query });
   emit('dialogo-fechado');
 }
@@ -103,6 +102,11 @@ async function abrirDialogo() {
   if (dialogRef.value) {
     dialogRef.value.showModal();
   }
+}
+
+// Fecha o dialog nativo somente depois que a animação de saída termina
+function fecharDialogoNativo(el: Element) {
+  (el as HTMLDialogElement).close?.();
 }
 
 const idDoPrefixo = `smae-dialog-${props.id}`;
@@ -143,64 +147,71 @@ onBeforeUnmount(() => {
   <Teleport
     to="#modais"
   >
-    <div
-      v-if="dialogoEstaAberto"
-      class="smae-dialog-backdrop"
-      @click="acionarFechamento"
-    />
+    <Transition name="fade">
+      <div
+        v-if="dialogoEstaAberto"
+        class="smae-dialog-backdrop"
+        @click="acionarFechamento"
+      />
+    </Transition>
 
-    <dialog
-      v-if="dialogoEstaAberto"
-      :id="`smae-dialog-${props.id}`"
-      ref="dialogRef"
-      closedby="any"
-      class="editModal-dialog"
-      :class="{ 'editModal--tamanho-ajustavel': tamanhoAjustavel }"
-      v-bind="$attrs"
-      @cancel.prevent="acionarFechamento"
+    <Transition
+      name="fade"
+      @after-leave="fecharDialogoNativo"
     >
-      <header
-        class="mb2"
+      <dialog
+        v-if="dialogoEstaAberto"
+        :id="`smae-dialog-${props.id}`"
+        ref="dialogRef"
+        closedby="any"
+        class="editModal-dialog"
+        :class="{ 'editModal--tamanho-ajustavel': tamanhoAjustavel }"
+        v-bind="$attrs"
+        @cancel.prevent="acionarFechamento"
       >
-        <div class="flex spacebetween center g1">
-          <TituloDaPagina>
-            <slot name="titulo">
-              {{ titulo }}
-            </slot>
-          </TituloDaPagina>
-
-          <hr class="f1">
-
-          <slot name="acoes" />
-
-          <button
-            type="button"
-            class="btn round botao-fechar-dialogo"
-            aria-label="Fechar diálogo"
-            @click="acionarFechamento"
-          >
-            <svg
-              width="12"
-              height="12"
-            >
-              <use xlink:href="#i_x" />
-            </svg>
-          </button>
-        </div>
-
-        <p
-          v-if="!!$props.subtitulo || !!$slots.subtitulo?.()"
-          role="doc-subtitle"
-          class="t12 uc w700 tamarelo mb0"
+        <header
+          class="mb2"
         >
-          <slot name="subtitulo">
-            {{ $props.subtitulo }}
-          </slot>
-        </p>
-      </header>
+          <div class="flex spacebetween center g1">
+            <TituloDaPagina>
+              <slot name="titulo">
+                {{ titulo }}
+              </slot>
+            </TituloDaPagina>
 
-      <slot :fechar-dialogo="fecharDialogo" />
-    </dialog>
+            <hr class="f1">
+
+            <slot name="acoes" />
+
+            <button
+              type="button"
+              class="btn round botao-fechar-dialogo"
+              aria-label="Fechar diálogo"
+              @click="acionarFechamento"
+            >
+              <svg
+                width="12"
+                height="12"
+              >
+                <use xlink:href="#i_x" />
+              </svg>
+            </button>
+          </div>
+
+          <p
+            v-if="!!$props.subtitulo || !!$slots.subtitulo?.()"
+            role="doc-subtitle"
+            class="t12 uc w700 tamarelo mb0"
+          >
+            <slot name="subtitulo">
+              {{ $props.subtitulo }}
+            </slot>
+          </p>
+        </header>
+
+        <slot :fechar-dialogo="fecharDialogo" />
+      </dialog>
+    </Transition>
   </Teleport>
 </template>
 <style lang="less" scoped>
