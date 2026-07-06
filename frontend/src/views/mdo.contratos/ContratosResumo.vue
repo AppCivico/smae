@@ -1,8 +1,9 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { defineOptions, computed } from 'vue';
+import { computed, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
 
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import ContratosAditivos from '@/components/obras/ContratosAditivos.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
@@ -109,27 +110,23 @@ const dadosFinais = computed(() => [
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina>
-      Resumo de contrato
-    </TítuloDePágina>
-
-    <hr class="ml2 f1">
-
-    <SmaeLink
-      v-if="emFoco?.id
-        && (!permissoesDoItemEmFoco.apenas_leitura
-          || permissoesDoItemEmFoco.sou_responsavel)"
-      :to="{
-        name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
-        params: $route.params
-      }"
-      title="Editar contrato"
-      class="btn big ml2"
-    >
-      Editar
-    </SmaeLink>
-  </div>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        v-if="emFoco?.id
+          && (!permissoesDoItemEmFoco.apenas_leitura
+            || permissoesDoItemEmFoco.sou_responsavel)"
+        :to="{
+          name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
+          params: $route.params
+        }"
+        title="Editar contrato"
+        class="btn big ml2"
+      >
+        Editar
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <div
     v-if="emFoco"

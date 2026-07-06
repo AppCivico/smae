@@ -1,4 +1,5 @@
 <script setup>
+import { watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useContratosStore } from '@/stores/contratos.store.ts';
@@ -14,11 +15,17 @@ const props = defineProps({
   },
 });
 
-if (contratosStore.emFoco?.id !== Number(props.contratoId)) {
-  contratosStore.$reset();
+watch(
+  () => props.contratoId,
+  (contratoId) => {
+    if (contratosStore.emFoco?.id !== Number(contratoId)) {
+      contratosStore.$reset();
 
-  contratosStore.buscarItem(props.contratoId);
-}
+      contratosStore.buscarItem(contratoId);
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <router-view />
