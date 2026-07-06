@@ -9,7 +9,6 @@ import {
 import SmaeDialog from './SmaeDialog.vue';
 
 const mockRouterPush = vi.fn(() => Promise.resolve());
-const mockRouterReplace = vi.fn(() => Promise.resolve());
 
 let mockCurrentRoute = {
   query: {},
@@ -19,7 +18,6 @@ vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockCurrentRoute),
   useRouter: vi.fn(() => ({
     push: mockRouterPush,
-    replace: mockRouterReplace,
     currentRoute: {
       value: mockCurrentRoute,
     },
@@ -161,7 +159,7 @@ describe('SmaeDialog', () => {
 
       await botaoFechar.trigger('click');
 
-      expect(mockRouterReplace).toHaveBeenCalledWith(
+      expect(mockRouterPush).toHaveBeenCalledWith(
         expect.objectContaining({
           query: expect.not.objectContaining({
             dialogo: expect.anything(),
@@ -185,7 +183,7 @@ describe('SmaeDialog', () => {
 
       await botaoFechar.trigger('click');
 
-      const chamada = mockRouterReplace.mock.calls[0][0];
+      const chamada = mockRouterPush.mock.calls[0][0];
       expect(chamada.query.dialogo).toBeUndefined();
       expect(chamada.query.itemId).toBeUndefined();
       expect(chamada.query.modo).toBeUndefined();
