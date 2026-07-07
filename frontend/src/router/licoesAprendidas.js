@@ -1,9 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import dateToField from '@/helpers/dateToField';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import liçõesAprendidasCriarEditar from '@/views/licoesAprendidas/LicoesAprendidasCriarEditar.vue';
 import liçõesAprendidasItem from '@/views/licoesAprendidas/LicoesAprendidasItem.vue';
 import liçõesAprendidasLista from '@/views/licoesAprendidas/LicoesAprendidasLista.vue';
