@@ -79,6 +79,12 @@ export default {
           }),
 
           meta: {
+            limitarÀsPermissões: [
+              'Projeto.administrar_portfolios',
+              'Projeto.administrar_portfolios_no_orgao',
+              'SMAE.gestor_de_projeto',
+              'SMAE.colaborador_de_projeto',
+            ],
             títuloParaMenu: 'Editar lição',
             título: 'Editar Lição',
             tituloParaMigalhaDePao: 'Editar',

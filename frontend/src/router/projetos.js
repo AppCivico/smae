@@ -345,6 +345,12 @@ export default {
                 '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'
               ),
               meta: {
+                limitarÀsPermissões: [
+                  'Projeto.administrador',
+                  'Projeto.administrador_no_orgao',
+                  'SMAE.gestor_de_projeto',
+                  'SMAE.colaborador_de_projeto',
+                ],
                 título: 'Editar termo de encerramento',
                 tituloParaMigalhaDePao: 'Editar',
                 rotaDeEscape: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
