@@ -61,7 +61,7 @@ export class ApiLogBackupService implements TaskableService {
 
             // eslint-disable-next-line no-constant-condition
             while (true) {
-                const logs = await this.prisma.api_request_log.findMany({
+                const logs = await this.prisma.encrypted.api_request_log.findMany({
                     skip: offset,
                     take: CHUNK_SIZE,
                     where: {

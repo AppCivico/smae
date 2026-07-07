@@ -1,4 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { fieldEncryptionExtension } from 'prisma-field-encryption';
 import { RetryPromise } from '../common/retryPromise';
@@ -28,8 +29,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // Stub method - will be replaced by Proxy
     async onModuleInit() {}
 
+    /**
+     * Client com a extensão `prisma-field-encryption` aplicada. Use **somente** nas operações
+     * que leem/escrevem colunas `@encrypted` (hoje: o model `api_request_log`).
+     *
+     * O client principal (`this`) NÃO tem a extensão de propósito: ela envolve TODAS as
+     * operações e desreferencia o modelo no mapa DMMF sem null-guard, então qualquer query
+     * numa `view` (que o field-encryption não mapeia) quebraria com
+     * `Cannot read properties of undefined (reading 'fields')`. Isolando a extensão neste
+     * client derivado, as ~22 views do schema passam direto pelo client principal.
+     *
+     * O client derivado via `$extends` compartilha a mesma conexão/pool do principal.
+     */
+    declare readonly encrypted: PrismaClient;
+
     constructor() {
-        super({ log: logConfig });
+        const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+        super({ adapter, log: logConfig });
 
         (this as unknown as PrismaClient<{ log: typeof logConfig }>).$on('query', (e: Prisma.QueryEvent) => {
             const hasStore = prismaQueryAls.getStore() !== undefined;
@@ -45,16 +61,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
             });
         });
 
-        // Apply field encryption extension immediately
-        const extended = this.$extends(fieldEncryptionExtension());
+        // Client derivado com field-encryption — só usado via `this.encrypted` (compartilha a conexão).
+        const encrypted = this.$extends(fieldEncryptionExtension());
 
-        // Proxy to intercept onModuleInit and $transaction while delegating everything else
-        return new Proxy(extended, {
+        // Proxy to intercept onModuleInit and $transaction while delegating everything else.
+        // O alvo é o client BASE (sem field-encryption): tudo, inclusive queries em views, passa por ele.
+        return new Proxy(this, {
             get(target, prop, receiver) {
                 if (prop === 'onModuleInit') {
                     return async function (this: any) {
                         await target.$connect();
                     };
+                }
+                if (prop === 'encrypted') {
+                    return encrypted;
                 }
                 if (prop === '$transaction') {
                     return async function (arg: any, options?: any) {

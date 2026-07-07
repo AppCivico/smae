@@ -1,4 +1,4 @@
-import { InputJsonValue } from '@prisma/client/runtime/library';
+import { InputJsonValue } from '@prisma/client/runtime/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateReportDto } from '../dto/create-report.dto';
 import { RelatorioParamDto } from '../entities/report.entity';

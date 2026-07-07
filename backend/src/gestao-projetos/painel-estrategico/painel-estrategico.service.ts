@@ -1091,7 +1091,8 @@ export class PainelEstrategicoService {
                 gl.lat as endereco_lat,
                 gl.lon as endereco_lon,
                 gl.geom_geojson as endereco_geom_geojson,
-                array_agg(glc.geo_camada_id) as camadas,
+                -- jsonb_agg: driver adapter (Prisma 7) devolve array_agg de $queryRaw como string; JSON volta como array JS
+                jsonb_agg(glc.geo_camada_id) as camadas,
                 COALESCE(org.sigla, '') as orgao_resp_sigla,
                 COALESCE(pe.descricao, '') as projeto_etapa,
                 CASE
