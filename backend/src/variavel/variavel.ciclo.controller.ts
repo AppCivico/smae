@@ -12,6 +12,7 @@ import {
     FilterVariavelGlobalCicloDto,
     ListaDocumentosPorVariavelGlobalDto,
     ListVariavelGlobalCicloDto,
+    SyncSerieVariavelDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelCicloFaseCountDto,
 } from './dto/variavel.ciclo.dto';
@@ -71,9 +72,9 @@ export class VariavelCicloGlobalController {
     @Patch('serie-variavel-ciclo/sync')
     @ApiBearerAuth('access-token')
     @Roles(['SMAE.sysadmin'])
-    async sincronizaSerieVariavel(): Promise<string> {
+    async sincronizaSerieVariavel(@Query() dto: SyncSerieVariavelDto): Promise<string> {
         const logger = LoggerWithLog('VariavelCicloUpdateController');
-        const data = await this.variavelCicloService.sincronizaSerieVariavel(logger);
+        const data = await this.variavelCicloService.sincronizaSerieVariavel(logger, dto.analise_id);
 
         return `Sincronização de série de variáveis concluída com sucesso. ${data.message}`;
     }

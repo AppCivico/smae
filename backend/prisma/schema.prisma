@@ -7717,6 +7717,7 @@ model VariavelGlobalCicloAnalise {
 
     sincronizar_serie_variavel Boolean   @default(false)
     sv_sincronizado_em         DateTime? /// Quando foi sincronizado os valores da fase de Preenchimento com a tabela de serie_variavel
+    sv_sincronizacao_erro      String? /// Última mensagem de erro ocorrida ao sincronizar os valores para a série da variável (null quando sincronizado com sucesso)
 
     variavel        Variavel @relation(fields: [variavel_id], references: [id])
     pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
