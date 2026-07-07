@@ -1538,15 +1538,21 @@ export class VariavelCicloService {
         }
     }
 
-    async sincronizaSerieVariavel(logger: LoggerWithLog): Promise<{ message: string; count: number }> {
+    async sincronizaSerieVariavel(
+        logger: LoggerWithLog,
+        analiseId?: number
+    ): Promise<{ message: string; count: number }> {
         const analises = await this.prisma.variavelGlobalCicloAnalise.findMany({
             where: {
+                // execução manual pode restringir a uma única análise
+                id: analiseId,
                 sincronizar_serie_variavel: true,
                 removido_em: null, // vai que...
                 fase: 'Liberacao',
                 ultima_revisao: true,
             },
             select: {
+                id: true,
                 variavel_id: true,
                 referencia_data: true,
                 valores: true,
@@ -1567,72 +1573,95 @@ export class VariavelCicloService {
 
         logger.log(`Processando ${analises.length} variáveis marcadas para sincronização`);
 
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
-            const now = new Date(Date.now());
-            const botUser = { id: CONST_BOT_USER_ID } as PessoaFromJwt;
-            const variaveisIds: number[] = [];
+        const botUser = { id: CONST_BOT_USER_ID } as PessoaFromJwt;
 
-            // "sem_alteracao" é apenas contado e logado uma vez após o loop; pulados e mudanças são logados individualmente.
-            let semAlteracao = 0;
+        // "sem_alteracao" é apenas contado e logado uma vez após o loop; pulados e mudanças são logados individualmente.
+        let semAlteracao = 0;
 
-            for (const analise of analises) {
-                const valores = analise.valores?.valueOf() as IUltimaAnaliseValor[];
+        for (const analise of analises) {
+            try {
+                const resultado = await this.prisma.$transaction(
+                    async (prismaTxn: Prisma.TransactionClient): Promise<{ changes: number; semAlteracao: number }> => {
+                        const now = new Date(Date.now());
+                        const variaveisIds: number[] = [];
+                        let localChanges = 0;
+                        let localSemAlteracao = 0;
 
-                if (!Array.isArray(valores) || valores.length === 0) {
-                    // Atualiza o status mesmo se não houver valores, para evitar processamento infinito
-                    await this.finalizaStatusSincronizacao(analise.variavel_id, analise.referencia_data, prismaTxn);
-                    logger.log(`Nenhum valor encontrado para a variável ${analise.variavel_id}`);
-                    continue;
-                }
+                        const valores = analise.valores?.valueOf() as IUltimaAnaliseValor[];
 
-                for (const valor of valores) {
-                    const variavelId = valor.variavel_id ?? analise.variavel_id;
+                        if (!Array.isArray(valores) || valores.length === 0) {
+                            await this.finalizaStatusSincronizacao(
+                                analise.variavel_id,
+                                analise.referencia_data,
+                                prismaTxn
+                            );
+                            logger.log(`Nenhum valor encontrado para a variável ${analise.variavel_id}`);
+                            return { changes: 0, semAlteracao: 0 };
+                        }
 
-                    // Verifica se o ID da variável já foi processado neste lote
-                    if (!variaveisIds.includes(variavelId)) {
-                        variaveisIds.push(variavelId);
+                        for (const valor of valores) {
+                            const variavelId = valor.variavel_id ?? analise.variavel_id;
+
+                            // Verifica se o ID da variável já foi processado nesta análise
+                            if (!variaveisIds.includes(variavelId)) {
+                                variaveisIds.push(variavelId);
+                            }
+
+                            const variavelInfo = await this.variavelService.loadVariavelComCategorica(
+                                'Global',
+                                prismaTxn,
+                                variavelId
+                            );
+
+                            // Processa o valor
+                            const r = await this.atualizaSerieVariavel(
+                                variavelInfo,
+                                {
+                                    variavel_id: valor.variavel_id,
+                                    valor_realizado: valor.valor_realizado || '',
+                                    analise_qualitativa: valor.analise_qualitativa || '',
+                                },
+                                prismaTxn,
+                                now,
+                                botUser,
+                                analise.referencia_data,
+                                true, // conferida = true
+                                analise.criado_em, // jobTime: não sobrescreve edições do usuário posteriores
+                                logger
+                            );
+
+                            if (r === 'sem_alteracao') localSemAlteracao++;
+                            else if (r !== 'pulado') localChanges++;
+                        }
+
+                        await this.finalizaStatusSincronizacao(analise.variavel_id, analise.referencia_data, prismaTxn);
+
+                        // Recálculos das variáveis atualizadas nesta análise (dentro da mesma transação,
+                        // para que dados e recálculo sejam atômicos por análise)
+                        if (variaveisIds.length > 0) {
+                            logger.log(`Recalculando ${variaveisIds.length} variáveis e indicadores dependentes`);
+                            await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
+                            await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
+                        }
+
+                        return { changes: localChanges, semAlteracao: localSemAlteracao };
                     }
+                );
 
-                    const variavelInfo = await this.variavelService.loadVariavelComCategorica(
-                        'Global',
-                        prismaTxn,
-                        variavelId
-                    );
-
-                    // Processa o valor
-                    const resultado = await this.atualizaSerieVariavel(
-                        variavelInfo,
-                        {
-                            variavel_id: valor.variavel_id,
-                            valor_realizado: valor.valor_realizado || '',
-                            analise_qualitativa: valor.analise_qualitativa || '',
-                        },
-                        prismaTxn,
-                        now,
-                        botUser,
-                        analise.referencia_data,
-                        true, // conferida = true
-                        analise.criado_em, // jobTime: não sobrescreve edições do usuário posteriores
-                        logger
-                    );
-
-                    if (resultado === 'sem_alteracao') semAlteracao++;
-                    else if (resultado !== 'pulado') countChanges++;
-                }
-
-                await this.finalizaStatusSincronizacao(analise.variavel_id, analise.referencia_data, prismaTxn);
+                countChanges += resultado.changes;
+                semAlteracao += resultado.semAlteracao;
+            } catch (error) {
+                // A transação desta análise sofreu rollback; registra o erro na própria linha para diagnóstico.
+                const msg = error?.message ?? String(error);
+                logger.error(
+                    `Erro ao sincronizar série da análise ${analise.id} (variável ${analise.variavel_id}): ${msg}`
+                );
+                await this.registraErroSincronizacao(analise.id, msg);
             }
+        }
 
-            // Loga uma única vez o total de itens sem alteração (pulados e mudanças já foram logados individualmente).
-            if (semAlteracao > 0) logger.log(`${semAlteracao} valores sem alterações`);
-
-            // Processa os recálculos apenas uma vez para todas as variáveis atualizadas
-            if (variaveisIds.length > 0) {
-                logger.log(`Recalculando ${variaveisIds.length} variáveis e indicadores dependentes`);
-                await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
-                await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
-            }
-        });
+        // Loga uma única vez o total de itens sem alteração (pulados e mudanças já foram logados individualmente).
+        if (semAlteracao > 0) logger.log(`${semAlteracao} valores sem alterações`);
 
         const message =
             countChanges > 0
@@ -1662,8 +1691,26 @@ export class VariavelCicloService {
             data: {
                 sincronizar_serie_variavel: false,
                 sv_sincronizado_em: new Date(),
+                sv_sincronizacao_erro: null, // limpa erro anterior ao sincronizar com sucesso
             },
         });
+    }
+
+    /**
+     * Registra o erro de sincronização na própria linha da análise.
+     * Executa fora da transação que falhou (usa this.prisma) para que o registro não seja revertido.
+     */
+    private async registraErroSincronizacao(analiseId: number, erro: string): Promise<void> {
+        try {
+            await this.prisma.variavelGlobalCicloAnalise.update({
+                where: { id: analiseId },
+                data: { sv_sincronizacao_erro: erro.substring(0, 2000) },
+            });
+        } catch (e) {
+            // Não deixa a falha ao registrar o erro travar o processamento das demais análises
+            // eslint-disable-next-line no-console
+            console.error(`Falha ao registrar erro de sincronização na análise ${analiseId}: ${e?.message ?? e}`);
+        }
     }
 
     /**

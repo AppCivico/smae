@@ -265,7 +265,10 @@ export class VariavelAnaliseQualitativaResponseDto {
     @ApiProperty({ description: 'Ultimo pedido de complementacao' })
     pedido_complementacao: PSPedidoComplementacaoDto | null;
 
-    @ApiProperty({ description: 'Valores da variável e suas filhas (exclui filhas suspensas)', type: [VariavelValorDto] })
+    @ApiProperty({
+        description: 'Valores da variável e suas filhas (exclui filhas suspensas)',
+        type: [VariavelValorDto],
+    })
     valores: VariavelValorDto[];
 
     @ApiProperty({ description: 'Uploads associados', type: [VariavelAnaliseDocumento] })
@@ -333,4 +336,12 @@ export class FilterDocumentosPorVariavelGlobalDto {
     @IsOptional()
     @Transform(({ value }: any) => +value)
     pdm_id?: number;
+}
+
+export class SyncSerieVariavelDto {
+    @ApiProperty({ required: false, description: 'ID da análise para sincronizar apenas ela' })
+    @IsInt()
+    @IsOptional()
+    @Transform(NumberTransform)
+    analise_id?: number;
 }
