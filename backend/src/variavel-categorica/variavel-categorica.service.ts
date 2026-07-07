@@ -339,6 +339,79 @@ export class VariavelCategoricaService {
                 );
             }
 
+            // Além das séries, os valores ficam referenciados no JSON `valores` das análises de ciclo
+            // (variavel_global_ciclo_analise). Análises aprovadas são sincronizadas para serie_variavel e já
+            // são pegas pela checagem acima, mas análises em andamento e o histórico de revisões vivem apenas
+            // no JSON — por isso esta verificação é independente da checagem de serie_variavel.
+            // No JSON cada item é { variavel_id?, valor_realizado }, onde `valor_realizado` guarda o
+            // `valor_variavel` (não o id) e `variavel_id` é ausente para a variável mãe e presente para as filhas.
+            const valoresDelInfo = await prismaTx.variavelCategoricaValor.findMany({
+                where: { id: { in: deleted } },
+                select: { id: true, titulo: true, valor_variavel: true },
+            });
+
+            // Só as variáveis que usam esta categórica (mãe ou filha) fazem `valor_realizado` representar
+            // um valor_variavel desta categórica — sem esse filtro, uma variável numérica com o mesmo número
+            // geraria falso positivo.
+            const variaveisDaCategorica = await prismaTx.variavel.findMany({
+                where: { variavel_categorica_id: variavel_categorica_id, removido_em: null },
+                select: { id: true, titulo: true },
+            });
+
+            if (variaveisDaCategorica.length > 0) {
+                const varIds = variaveisDaCategorica.map((v) => v.id);
+                const valoresVar = valoresDelInfo.map((v) => v.valor_variavel);
+
+                const usoCiclo = await prismaTx.$queryRaw<
+                    { variavel_id: number; valor_realizado: number; qtd: bigint }[]
+                >`
+                    SELECT
+                        COALESCE((e->>'variavel_id')::int, a.variavel_id) AS variavel_id,
+                        (e->>'valor_realizado')::int AS valor_realizado,
+                        COUNT(*)::int AS qtd
+                    FROM variavel_global_ciclo_analise a
+                    -- valores normalmente e um array [{ variavel_id?, valor_realizado }], mas o default da
+                    -- coluna e um objeto vazio; trata qualquer nao-array como array vazio pra nao estourar
+                    -- cannot extract elements from an object no jsonb_array_elements.
+                    CROSS JOIN LATERAL jsonb_array_elements(
+                        CASE WHEN jsonb_typeof(a.valores) = 'array' THEN a.valores ELSE '[]'::jsonb END
+                    ) e
+                    WHERE a.removido_em IS NULL
+                      AND COALESCE((e->>'variavel_id')::int, a.variavel_id) IN (${Prisma.join(varIds)})
+                      AND e->>'valor_realizado' ~ '^-?[0-9]+$'
+                      AND (e->>'valor_realizado')::int IN (${Prisma.join(valoresVar)})
+                    GROUP BY 1, 2
+                `;
+
+                if (usoCiclo.length > 0) {
+                    const totalUsageCiclo = usoCiclo.reduce((sum, item) => sum + Number(item.qtd), 0);
+
+                    // agrupa variáveis por valor_variavel para montar a mensagem detalhada
+                    const varsPorValor = new Map<number, Set<number>>();
+                    for (const uso of usoCiclo) {
+                        if (!varsPorValor.has(uso.valor_realizado)) varsPorValor.set(uso.valor_realizado, new Set());
+                        varsPorValor.get(uso.valor_realizado)!.add(uso.variavel_id);
+                    }
+
+                    const usoDetalhadoCiclo = valoresDelInfo
+                        .filter((valor) => varsPorValor.has(valor.valor_variavel))
+                        .map((valor) => {
+                            const variaveis = varsPorValor.get(valor.valor_variavel) ?? new Set<number>();
+                            const variaveisUsadas = Array.from(variaveis).map((varId) => {
+                                const varInfo = variaveisDaCategorica.find((v) => v.id === varId);
+                                return varInfo ? varInfo.titulo : 'Variável desconhecida';
+                            });
+                            return `"${valor.titulo}" (usado em ${variaveis.size} variáveis: ${variaveisUsadas.join(', ')})`;
+                        })
+                        .join('\n');
+
+                    throw new BadRequestException(
+                        `Não é possível remover valores de variável categórica: em uso em ${totalUsageCiclo} análises de ciclo.\n` +
+                            `Detalhes dos valores:\n${usoDetalhadoCiclo}`
+                    );
+                }
+            }
+
             operations.push(
                 prismaTx.variavelCategoricaValor.updateMany({
                     where: {
