@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { ROLES_KEY } from './../decorators/roles.decorator';
@@ -26,7 +26,7 @@ export class RolesGuard implements CanActivate {
         const debug = `requestUrl = ${requestUrl}, controller = ${className}, smae-sistemas = ${request.headers['smae-sistemas'] ?? '-'}`;
 
         if (!user)
-            throw new UnauthorizedException(
+            throw new ForbiddenException(
                 `Usuário não encontrado, necessário para verificar os acessos:\n${requiredRoles.join(', ')}\n\n${debug}`
             );
 
@@ -35,7 +35,7 @@ export class RolesGuard implements CanActivate {
             return true;
         }
 
-        throw new UnauthorizedException(
+        throw new ForbiddenException(
             `Ao menos um dos seguintes privilégios é necessário para o acesso:\n\n${requiredRoles.join(', ')}\n\n${debug}`
         );
     }
