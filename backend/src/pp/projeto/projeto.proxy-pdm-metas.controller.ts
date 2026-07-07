@@ -32,6 +32,7 @@ export class ProjetoProxyPdmMetasController {
             'Reports.executar.PlanoSetorial',
             'Reports.executar.Projetos',
             'Reports.executar.ProgramaDeMetas',
+            'SMAE.espectador_de_projeto',
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -56,6 +57,7 @@ export class ProjetoProxyPdmMetasController {
         'Reports.executar.PlanoSetorial',
         'Reports.executar.Projetos',
         'Reports.executar.ProgramaDeMetas',
+        'SMAE.espectador_de_projeto',
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
@@ -77,6 +79,7 @@ export class ProjetoMDOProxyPdmMetasController {
         'Reports.executar.CasaCivil',
         'Reports.executar.PlanoSetorial',
         'Reports.executar.Projetos',
+        'SMAE.espectador_de_projeto',
         ...PlanoSetorialController.WritePerms, // Quem for editar o PS, precisa listar para pode fazer o vinculo
     ];
     constructor(
