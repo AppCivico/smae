@@ -1,23 +1,23 @@
-import { defineStore } from 'pinia';
-
-import type { RouteRecordNormalized } from 'vue-router';
-
 import type { AccessToken } from '@back/auth/models/AccessToken';
 import type { LoginRequestBody } from '@back/auth/models/LoginRequestBody.dto';
 import type { ReducedAccessToken } from '@back/auth/models/ReducedAccessToken';
+import { ListaDePrivilegios } from '@back/common/ListaDePrivilegios';
 import type { MinhaContaDto } from '@back/minha-conta/models/minha-conta.dto';
+import { defineStore } from 'pinia';
+import type { RouteRecordNormalized } from 'vue-router';
+
 import type {
   ModuloSistema,
   ModulosDoSistema,
 } from '@/consts/modulosDoSistema';
-
 import modulos from '@/consts/modulosDoSistema';
+import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 import { useAlertStore } from '@/stores/alert.store';
 
-import type { ParametrosDeRequisicao } from '@/helpers/requestS';
-
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+type Privilegios = Record<ModuloSistema, ListaDePrivilegios[]>;
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', {
     token: JSON.parse(localStorage.getItem('token') || 'null'),
     reducedToken: null as string | null,
     returnUrl: null as string | null,
-    permissions: JSON.parse(localStorage.getItem('permissions') || 'null'),
+    privilegiosPorModulo: JSON.parse(localStorage.getItem('smae:privilegiosPorModulo') || '{}') as Privilegios,
     sistemaEscolhido: (localStorage.getItem('sistemaEscolhido')
       ?? 'SMAE') as ModuloSistema,
     moduloDaRotaAnterior: '' as ModuloSistema | '',
@@ -53,10 +53,10 @@ export const useAuthStore = defineStore('auth', {
         if ('reduced_access_token' in token) {
           this.token = null;
           this.user = null;
-          this.permissions = null;
+          this.privilegiosPorModulo = {} as Privilegios;
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          localStorage.removeItem('permissions');
+          localStorage.removeItem('smae:privilegiosPorModulo');
 
           this.reducedToken = token.reduced_access_token;
           this.router.push('/nova-senha');
@@ -70,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
           throw new Error('Token não recebido.');
         }
 
-        await this.getDados(null, { headers: { 'smae-sistemas': '' } });
+        await this.getDados(null, '');
 
         this.router.push(this.returnUrl || '/');
       } catch (error) {
@@ -80,8 +80,16 @@ export const useAuthStore = defineStore('auth', {
     },
     async getDados(
       params: ParametrosDeRequisicao,
-      opcoes: Record<string, unknown>,
+      modulo?: ModuloSistema | '',
     ) {
+      let opcoes = {};
+
+      if (modulo !== undefined) {
+        opcoes = modulo
+          ? { headers: { 'smae-sistemas': `SMAE,${modulo}` } }
+          : { headers: { 'smae-sistemas': '' } };
+      }
+
       try {
         const user = (await this.requestS.get(
           `${baseUrl}/minha-conta`,
@@ -96,8 +104,6 @@ export const useAuthStore = defineStore('auth', {
         } else {
           throw new Error('Usuário não recebido.');
         }
-
-        this.setPermissions();
 
         return user;
       } catch (error) {
@@ -141,9 +147,8 @@ export const useAuthStore = defineStore('auth', {
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
 
-        this.setPermissions();
-
         const alertStore = useAlertStore();
+
         alertStore.success('Senha salva com sucesso. Bem-vindo!');
         this.router.push(this.returnUrl || '/');
       } catch (error) {
@@ -155,7 +160,7 @@ export const useAuthStore = defineStore('auth', {
       this.requestS.post(`${baseUrl}/sair`, null);
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      localStorage.removeItem('permissions');
+      localStorage.removeItem('smae:privilegiosPorModulo');
       localStorage.removeItem('sistemaEscolhido');
 
       // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
@@ -175,7 +180,7 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      localStorage.removeItem('permissions');
+      localStorage.removeItem('smae:privilegiosPorModulo');
       localStorage.removeItem('sistemaEscolhido');
 
       // @see https://github.com/vuejs/pinia/discussions/693#discussioncomment-1401218
@@ -229,12 +234,15 @@ export const useAuthStore = defineStore('auth', {
       }
 
       try {
-        await this.getDados(null, {
-          headers: { 'smae-sistemas': `SMAE,${sistema}` },
-        });
+        await this.getDados(null, sistema);
 
         this.sistemaEscolhido = sistema;
         localStorage.setItem('sistemaEscolhido', sistema);
+
+        this.definirPrivilegiosPorModulo(
+          sistema,
+          this.user.privilegios as ListaDePrivilegios[],
+        );
 
         if (!ignorarRotaInicial && this.dadosDoSistemaEscolhido?.rotaInicial) {
           const listaDeRotasPossiveis = !Array.isArray(
@@ -317,48 +325,10 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    setPermissions() {
-      const per: Record<string, Record<string, number>> = {};
-      if (this.user?.privilegios) {
-        this.user.privilegios.forEach((p: string) => {
-          const c = p.split('.');
-          if (c[1]) {
-            if (!per[c[0]]) {
-              per[c[0]] = {};
-            }
-            per[c[0]][c[1]] = 1;
-          }
-        });
-      }
+    definirPrivilegiosPorModulo(modulo: ModuloSistema, privilegios: ListaDePrivilegios[]) {
+      this.privilegiosPorModulo[modulo as ModuloSistema] = privilegios;
 
-      // const a = [
-      //   'CadastroCicloFisico',
-      //   'CadastroEtapa',
-      //   'CadastroGrupoPaineis',
-      //   'CadastroMacroTema',
-      //   'CadastroMeta',
-      //   'CadastroOds',
-      //   'CadastroOrgao',
-      //   'CadastroPainel',
-      //   'CadastroPdm',
-      //   'CadastroPessoa',
-      //   'CadastroRegiao',
-      //   'CadastroSubTema',
-      //   'CadastroTag',
-      //   'CadastroTema',
-      //   'CadastroTipoDocumento',
-      //   'CadastroTipoOrgao',
-      //   'CadastroUnidadeMedida',
-      //   'Projeto',
-      // ];
-
-      // if (a.some((c) => per[c] && !per[c].listar && !per[c].visualizar)) {
-      //   per.algumAdmin = 1;
-      // }
-
-      localStorage.setItem('permissions', JSON.stringify(per));
-      this.permissions = per;
-      return per;
+      localStorage.setItem('smae:privilegiosPorModulo', JSON.stringify(this.privilegiosPorModulo));
     },
   },
   getters: {
@@ -405,11 +375,9 @@ export const useAuthStore = defineStore('auth', {
       return dados;
     },
     estouAutenticada: ({ token }) => !!token,
-    temPermissãoPara:
-      ({ user }) => (permissoes: string | string[]) => {
-        const privilegios = Array.isArray(user?.privilegios)
-          ? user.privilegios
-          : [];
+    temPermissãoPara() {
+      return (permissoes: string | string[]) => {
+        const privilegios = this.privilegiosPorModulo[this.sistemaCorrente] || [];
 
         if (!privilegios.length) {
           return false;
@@ -417,11 +385,12 @@ export const useAuthStore = defineStore('auth', {
 
         return (Array.isArray(permissoes)
           ? permissoes
-          : [permissoes]).some((x) => (x.slice(-1) === '.'
+          : [permissoes]).some((x) => (x.endsWith('.')
           // se o valor termina com `.` ele tem que bater com o começo de algumas permissões
-          ? privilegios.some((y: string) => y.indexOf(x) === 0)
-          : privilegios.some((y: string) => x === y)));
-      },
+          ? privilegios.some((y: ListaDePrivilegios) => String(y).startsWith(x))
+          : privilegios.some((y: ListaDePrivilegios) => String(y) === x)));
+      };
+    },
 
     rotaEhPermitida() {
       const rotasPorNome = this.router.getRoutes().reduce(
