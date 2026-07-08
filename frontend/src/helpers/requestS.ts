@@ -80,7 +80,7 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
     // login, em vez de apenas exibir um alerta preso na tela.
     if (response.status === 401 && authStore.token) {
       authStore.sessaoExpirada();
-      return Promise.reject('Sessão expirada. Faça login novamente.');
+      return Promise.reject(new Error('Sessão rejeitada. Autentique-se novamente.'));
     }
 
     let msgDefault;
