@@ -43,7 +43,8 @@ export const usePortfolioStore = defineStore('portfolios', {
         const resposta = await this.requestS.get(
           `${baseUrl}/portfolio/${id}`,
           params,
-        );
+        ) as PortfolioOneDto;
+
         this.emFoco = {
           ...resposta,
         };
@@ -67,7 +68,7 @@ export const usePortfolioStore = defineStore('portfolios', {
         const { linhas } = await this.requestS.get(
           `${baseUrl}${rotaNaApi}`,
           params,
-        );
+        ) as ListPortfolioDto;
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -161,6 +162,7 @@ export const usePortfolioStore = defineStore('portfolios', {
 
     portfoliosPorId: ({
       lista,
+    // eslint-disable-next-line max-len
     }: Estado): { [k: number | string]: PortfolioDto } => lista.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
