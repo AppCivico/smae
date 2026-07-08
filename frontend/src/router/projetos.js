@@ -174,6 +174,7 @@ export default {
             título: 'Encerramento',
             rotas: [
               'liçõesAprendidasListar',
+              // deveria-se ter usado a `entidadeMãe`!
               `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
             ],
           };
@@ -308,6 +309,8 @@ export default {
         {
           path: 'termo-encerramento',
           meta: {
+            // não deveria estar aqui! Não se sobrescreve a `entidadeMãe`
+            // pelo nome do módulo porque um módulo pode ter várias!
             entidadeMãe: ModuloSistema.Projetos,
             limitarÀsPermissões: [
               'Projeto.administrador',
@@ -319,6 +322,7 @@ export default {
           },
           children: [
             {
+              // deveria-se ter usado a `entidadeMãe`!
               name: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
               path: '',
               props: (route) => ({
@@ -337,6 +341,7 @@ export default {
               },
             },
             {
+              // deveria-se ter usado a `entidadeMãe`!
               name: `${ModuloSistema.Projetos}.termoEncerramento.editar`,
               path: 'editar',
               props: (route) => ({
@@ -355,10 +360,12 @@ export default {
                 ],
                 título: 'Editar termo de encerramento',
                 tituloParaMigalhaDePao: 'Editar',
+                // deveria-se ter usado a `entidadeMãe`!
                 rotaDeEscape: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
                 rotasParaMigalhasDePão: [
                   'projetosListar',
                   'projetosResumo',
+                  // deveria-se ter usado a `entidadeMãe`!
                   `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
                 ],
               },

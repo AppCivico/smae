@@ -63,6 +63,8 @@ const modulos: ModulosDoSistema = {
   Projetos: {
     nome: 'Gestão de projetos',
     possiveisEntidadesMae: [
+      'Projetos', // não usar! Aqui apenas para compatibilidade com rotas de nome dinâmico errado.
+      // Use a entidade que seja dona de tudo, não o módulo!
       'projeto',
       'portfolio',
     ],
@@ -91,7 +93,7 @@ const modulos: ModulosDoSistema = {
   MDO: {
     nome: 'Monitoramento de Obras',
     possiveisEntidadesMae: [
-      'mdo',
+      'mdo', // não usar! Inconsistente! Deveria ser apenas `obras`.
       'obras',
     ],
     ícone: monitoramentoDeObras,

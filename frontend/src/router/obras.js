@@ -1,4 +1,3 @@
-import { ModuloSistema } from '@/consts/modulosDoSistema';
 import { useObrasStore } from '@/stores/obras.store';
 
 import obrasAcompanhamentos from './obras.acompanhamentos';
@@ -56,6 +55,8 @@ export default {
           'obrasListar',
         ],
         título: 'Cadastro de Obras',
+        // não deveria estar aqui! Não se sobrescreve a `entidadeMãe`
+        // pelo nome do módulo porque um módulo pode ter várias!
         entidadeMãe: 'mdo',
       },
     },
@@ -121,6 +122,8 @@ export default {
             ],
             rotaDeEscape: 'obrasResumo',
             título: 'Editar Obra',
+            // não deveria estar aqui! Não se sobrescreve a `entidadeMãe`
+            // pelo nome do módulo porque um módulo pode ter várias!
             entidadeMãe: 'mdo',
           },
         },
