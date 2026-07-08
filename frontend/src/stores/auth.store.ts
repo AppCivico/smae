@@ -67,7 +67,7 @@ export const useAuthStore = defineStore('auth', {
         if (typeof token.access_token === 'string') {
           localStorage.setItem('token', JSON.stringify(token.access_token));
         } else {
-          throw new Error('Token não recebido.');
+          throw new TypeError('Token não recebido.');
         }
 
         await this.getDados(null, '');
@@ -102,7 +102,7 @@ export const useAuthStore = defineStore('auth', {
         if (typeof user.sessao === 'object') {
           localStorage.setItem('user', JSON.stringify(user.sessao));
         } else {
-          throw new Error('Usuário não recebido.');
+          throw new TypeError('Usuário não recebido.');
         }
 
         return user;
