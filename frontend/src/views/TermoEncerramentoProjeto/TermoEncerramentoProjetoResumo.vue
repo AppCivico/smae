@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import type { PortfolioIconeDto } from '@back/pp/portfolio/entities/portfolio.entity';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted } from 'vue';
+import {
+  computed, onMounted, ref,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import type { SessaoDeDetalheLinhas } from '@/components/ResumoSessao.vue';
@@ -52,14 +55,18 @@ const classeAlinhamentoIcone = computed(() => {
   return alinhamentoIcone[emFoco.value?.posicao_logotipo as keyof typeof alinhamentoIcone] || 'justify-start';
 });
 
-const urlIcone = computed(() => {
-  if (!emFoco.value?.icone?.download_token) return null;
+const iconeDoPortfolio = ref<PortfolioIconeDto | null>(null);
 
-  if (emFoco.value.icone.download_token.includes('http')) {
-    return emFoco.value.icone.download_token;
+const urlIcone = computed(() => {
+  const icone = emFoco.value?.icone ?? iconeDoPortfolio.value;
+
+  if (!icone?.download_token) return null;
+
+  if (icone.download_token.includes('http')) {
+    return icone.download_token;
   }
 
-  return `${BASE_URL}/download/${emFoco.value.icone.download_token}`;
+  return `${BASE_URL}/download/${icone.download_token}`;
 });
 
 async function verificarIcone() {
@@ -74,17 +81,12 @@ async function verificarIcone() {
   const projeto = projetosStore.emFoco;
   if (!projeto) return;
 
-  if (portfoliosStore.emFoco?.id !== projeto.portfolio_id) {
-    await portfoliosStore.buscarItem(projeto.portfolio_id);
+  if (!portfoliosStore.portfoliosPorId[projeto.portfolio_id]) {
+    await portfoliosStore.buscarTudo();
   }
 
-  const portfolio = portfoliosStore.emFoco;
-
-  if (portfolio?.icone_impressao) {
-    if (emFoco.value) {
-      emFoco.value.icone = portfolio.icone_impressao;
-    }
-  }
+  iconeDoPortfolio.value = portfoliosStore.portfoliosPorId[projeto.portfolio_id]?.icone_impressao
+    ?? null;
 }
 
 function imprimirDocumento() {
