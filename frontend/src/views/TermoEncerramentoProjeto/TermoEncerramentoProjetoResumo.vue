@@ -238,7 +238,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
         </button>
 
         <button
-          v-if="emFoco?.id"
+          v-if="emFoco?.id && emFoco?.pode_excluir"
           type="button"
           class="btn outline bgnone tcprimary big"
           @click="excluirTermo"
