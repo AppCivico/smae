@@ -3,9 +3,7 @@ import ContratosCriarEditar from '@/views/mdo.contratos/ContratosCriarEditar.vue
 
 export default function obrasContratos(entidadeMãe) {
   function obterContratoEmFoco() {
-    const { emFoco } = useContratosStore(entidadeMãe);
-
-    return emFoco;
+    return useContratosStore(entidadeMãe).emFoco;
   }
 
   return {
@@ -58,15 +56,7 @@ export default function obrasContratos(entidadeMãe) {
 
             meta: {
               títuloParaMenu: 'Editar contrato',
-              título: () => {
-                const emFoco = obterContratoEmFoco();
-
-                if (!emFoco?.numero) {
-                  return 'Editar contrato';
-                }
-
-                return `Editar contrato ${emFoco.numero}`;
-              },
+              título: () => obterContratoEmFoco().numero || 'Editar contrato',
               rotaDeEscape: 'contratosDaObraListar',
               rotasParaMigalhasDePão: [
                 'obrasListar',
@@ -83,22 +73,8 @@ export default function obrasContratos(entidadeMãe) {
             component: () => import('@/views/mdo.contratos/ContratosResumo.vue'),
             props: true,
             meta: {
-              tituloParaMigalhaDePao: () => {
-                const emFoco = obterContratoEmFoco();
-
-                if (!emFoco?.numero) {
-                  return 'Contrato';
-                }
-
-                return emFoco.numero;
-              },
-              título: () => {
-                const emFoco = obterContratoEmFoco();
-
-                return emFoco?.numero
-                  ? `Resumo do contrato ${emFoco.numero}`
-                  : 'Resumo de contrato';
-              },
+              tituloParaMigalhaDePao: () => obterContratoEmFoco()?.numero || 'Resumo de contrato',
+              título: () => obterContratoEmFoco()?.numero || 'Resumo de contrato',
               títuloParaMenu: 'Resumo',
               rotasParaMigalhasDePão: [
                 'obrasListar',
