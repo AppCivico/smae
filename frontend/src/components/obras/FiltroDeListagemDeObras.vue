@@ -411,7 +411,7 @@ onMounted(() => {
     </div>
 
     <div class="flex g2 mb2 fb100 flexwrap">
-      <div class="f1 fb25em mb2">
+      <div class="f1 fb25em">
         <label
           class="label"
           for="palavra-chave"
