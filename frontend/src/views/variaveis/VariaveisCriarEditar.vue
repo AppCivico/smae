@@ -494,7 +494,6 @@ onUnmounted(() => {
 
             <SmaeText
               name="descricao"
-              :model-value="values.descricao"
               as="textarea"
               rows="5"
               anular-vazio
@@ -521,7 +520,6 @@ onUnmounted(() => {
 
             <SmaeText
               name="metodologia"
-              :model-value="values.metodologia"
               as="textarea"
               rows="5"
               anular-vazio
