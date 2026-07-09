@@ -104,7 +104,7 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
         alertStore.error(error);
       }
     }
-    return Promise.reject(error);
+    return Promise.reject(new Error(String(error)));
   }
 
   if (isZip) {
@@ -117,7 +117,10 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
 function userToken(url: RequestInfo | URL): HeadersInit {
   const authStore = useAuthStore();
   const isLoggedIn = !!authStore.token;
-  const isApiUrl = String(url).startsWith(import.meta.env.VITE_API_URL);
+  const urlNormalizada = url instanceof URL
+    ? url.href
+    : String(url);
+  const isApiUrl = urlNormalizada.startsWith(import.meta.env.VITE_API_URL);
 
   if (isLoggedIn && isApiUrl) {
     const headers: HeadersInit = {
@@ -137,7 +140,9 @@ function request(method: Method, upload = false) {
     params: ParametrosDeRequisicao = null,
     opcoes: { AlertarErros?: boolean; headers?: HeadersInit } = { AlertarErros: true },
   ) => {
-    let urlFinal = url;
+    let urlFinal = url instanceof URL
+      ? url.href
+      : String(url);
 
     const requestOptions: RequestInit = {
       method,
