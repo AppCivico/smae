@@ -4,15 +4,16 @@ import {
   createApp, markRaw,
 } from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
+
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
-import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
-import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
 import alternarInformacoesDepuracao from '@/diretivas/alternarInformacoesDepuracao';
 import autofocus from '@/diretivas/autofocus';
@@ -21,6 +22,7 @@ import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
+
 import App from './App.vue';
 import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
 import ResumoSessao from './components/ResumoSessao.vue';
