@@ -56,7 +56,7 @@ export default function obrasContratos(entidadeMãe) {
 
             meta: {
               títuloParaMenu: 'Editar contrato',
-              título: () => obterContratoEmFoco().numero || 'Editar contrato',
+              título: () => obterContratoEmFoco()?.numero || 'Editar contrato',
               rotaDeEscape: 'contratosDaObraListar',
               rotasParaMigalhasDePão: [
                 'obrasListar',
