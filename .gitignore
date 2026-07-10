@@ -10,4 +10,4 @@ openapitools.json
 .DS_Store
 
 .vscode/settings.json
-.claude/
+/.claude/
