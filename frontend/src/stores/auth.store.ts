@@ -36,10 +36,12 @@ export const useAuthStore = defineStore('auth', {
     chamadasPendentes: {
       listarModulos: false,
       escolherModulo: false,
+      sincronizandoPrivilegios: false,
     },
     erros: {
       listarModulos: null as unknown,
       escolherModulo: null as unknown,
+      sincronizandoPrivilegios: null as unknown,
     },
   }),
   actions: {
@@ -292,6 +294,9 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async sincronizarPrivilegiosComRota(modulo: ModuloSistema) {
+      this.chamadasPendentes.sincronizandoPrivilegios = true;
+      this.erros.sincronizandoPrivilegios = null;
+
       try {
         if (!this.modulosAcessiveis.length && !this.chamadasPendentes.listarModulos) {
           if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
@@ -316,7 +321,10 @@ export const useAuthStore = defineStore('auth', {
 
         this.definirPrivilegiosPorModulo(modulo, privilegios);
       } catch (error_) {
+        this.erros.sincronizandoPrivilegios = error_;
         throw new Error(`Não foi possível sincronizar os privilégios com a rota atual: ${error_}`);
+      } finally {
+        this.chamadasPendentes.sincronizandoPrivilegios = false;
       }
     },
 

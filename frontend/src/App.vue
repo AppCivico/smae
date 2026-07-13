@@ -128,8 +128,15 @@ onErrorCaptured((err) => {
     </div>
   </ErrorComponent>
   <BarraDeChamadaPendente />
+  <LoadingComponent
+    v-if="authStore.chamadasPendentes.sincronizandoPrivilegios"
+    class="sincronizando-privilegios"
+  >
+    Sincronizando privilégios com a rota atual...
+  </LoadingComponent>
   <!-- vamos avançar até essa chave ser desnecessária para o sistema todo -->
-  <router-view v-if="$route.meta.rotaPrescindeDeChave ?? gblHabilitarBeta" />
+  <router-view v-else-if="$route.meta.rotaPrescindeDeChave ?? gblHabilitarBeta" />
+
   <router-view
     v-else
     :key="$route.path"
@@ -158,5 +165,13 @@ onErrorCaptured((err) => {
   right: 3rem;
   z-index: 10000;
   width: auto;
+}
+.sincronizando-privilegios {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  max-width: 80%;
 }
 </style>
