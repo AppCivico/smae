@@ -30,7 +30,7 @@ const filtrarRota = (
 
 const resolverRota = (nome) => router.resolve({ name: nome, params: rotaCorrente.params });
 
-const menuFiltrado = rotasDoMenu
+const menuFiltrado = computed(() => rotasDoMenu
   .map((x) => resolverRota(x.name))
   .filter((x) => filtrarRota(x))
   .map((x) => ({
@@ -40,7 +40,7 @@ const menuFiltrado = rotasDoMenu
         .map(resolverRota)
         .filter((y) => filtrarRota(y, false))
       : [],
-  }));
+  })));
 
 const rotaInicial = computed(() => (Array.isArray(dadosDoSistemaEscolhido.value?.rotaInicial)
   ? dadosDoSistemaEscolhido.value?.rotaInicial
