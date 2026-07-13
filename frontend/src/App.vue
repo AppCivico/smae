@@ -4,10 +4,11 @@ import {
   provide,
   ref,
 } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { Alert, EditModal, SideBar } from '@/components';
 import SmaeAvatar from '@/components/SmaeAvatar.vue';
+import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -30,18 +31,44 @@ provide('gblLimiteDeSeleçãoSimultânea', gblLimiteDeSeleçãoSimultânea);
 const alertStore = useAlertStore();
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
+
+function conferirPrivilegiosDisponiveisParaRota() {
+  router.isReady().then(async () => {
+    const moduloDaRota = route.meta?.entidadeMãe
+      && retornarModuloAPartirDeEntidadeMae(route.meta?.entidadeMãe);
+
+    if (!authStore.privilegiosPorModulo[moduloDaRota]?.length) {
+      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+        console.log('Sincronizando privilégios com a rota atual...');
+      }
+
+      try {
+        await authStore.sincronizarPrivilegiosComRota(moduloDaRota);
+      } catch (error) {
+        if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+          console.error('Erro ao sincronizar privilégios com módulo:', error);
+        }
+      }
+    }
+  });
+}
 
 if (authStore.estouAutenticada) {
   authStore.getDados();
 
-  router.isReady().then(async () => {
-    if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
-      console.warn('Sincronizando módulo com a rota atual...');
-    }
+  if (import.meta.env.VITE_TROCA_AUTOMATICA_MODULO === 'true') {
+    conferirPrivilegiosDisponiveisParaRota();
+  } else {
+    router.isReady().then(async () => {
+      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+        console.log('Sincronizando módulo com a rota atual...');
+      }
 
-    await authStore.sincronizarModuloComRota();
-  });
+      await authStore.sincronizarModuloComRota();
+    });
+  }
 }
 
 const erro = ref(null);

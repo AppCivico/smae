@@ -53,7 +53,9 @@ export const useAuthStore = defineStore('auth', {
         if ('reduced_access_token' in token) {
           this.token = null;
           this.user = null;
-          this.privilegiosPorModulo = {} as Privilegios;
+          Object.keys(this.privilegiosPorModulo).forEach((modulo) => {
+            delete this.privilegiosPorModulo[modulo as ModuloSistema];
+          });
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           localStorage.removeItem('smae:privilegiosPorModulo');
@@ -81,7 +83,7 @@ export const useAuthStore = defineStore('auth', {
     async getDados(
       params: ParametrosDeRequisicao,
       modulo?: ModuloSistema | '',
-    ) {
+    ): Promise<MinhaContaDto | undefined> {
       let opcoes = {};
 
       if (modulo !== undefined) {
@@ -112,6 +114,7 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+
     async passwordRecover(username: string) {
       try {
         await this.requestS.post(`${baseUrl}/solicitar-nova-senha`, {
@@ -223,6 +226,11 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    salvarModulo(modulo: ModuloSistema) {
+      this.sistemaEscolhido = modulo;
+      localStorage.setItem('sistemaEscolhido', modulo);
+    },
+
     async escolherModulo(sistema: ModuloSistema, ignorarRotaInicial = false) {
       this.chamadasPendentes.escolherModulo = true;
       this.erros.escolherModulo = null;
@@ -234,15 +242,11 @@ export const useAuthStore = defineStore('auth', {
       }
 
       try {
-        await this.getDados(null, sistema);
+        const { sessao: { privilegios } } = await this.getDados(null, sistema);
 
-        this.sistemaEscolhido = sistema;
-        localStorage.setItem('sistemaEscolhido', sistema);
+        this.salvarModulo(sistema);
 
-        this.definirPrivilegiosPorModulo(
-          sistema,
-          this.user.privilegios as ListaDePrivilegios[],
-        );
+        this.definirPrivilegiosPorModulo(sistema, privilegios);
 
         if (!ignorarRotaInicial && this.dadosDoSistemaEscolhido?.rotaInicial) {
           const listaDeRotasPossiveis = !Array.isArray(
@@ -285,6 +289,35 @@ export const useAuthStore = defineStore('auth', {
       }
 
       return Promise.resolve();
+    },
+
+    async sincronizarPrivilegiosComRota(modulo: ModuloSistema) {
+      try {
+        if (!this.modulosAcessiveis.length && !this.chamadasPendentes.listarModulos) {
+          if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+            console.log('Carregando módulos para a rota atual...');
+          }
+          await this.carregarModulos();
+        }
+
+        if (!this.modulosAcessiveis.includes(modulo)) {
+          throw new Error('Você não tem acesso a este módulo.');
+        }
+
+        const { sessao: { privilegios } } = await this.getDados(null, modulo);
+
+        if (!privilegios) {
+          throw new Error('Privilégios não encontrados para a rota atual.');
+        }
+
+        if (!this.sistemaEscolhido) {
+          this.salvarModulo(modulo);
+        }
+
+        this.definirPrivilegiosPorModulo(modulo, privilegios);
+      } catch (error_) {
+        throw new Error(`Não foi possível sincronizar os privilégios com a rota atual: ${error_}`);
+      }
     },
 
     async sincronizarModuloComRota(): Promise<void> {
