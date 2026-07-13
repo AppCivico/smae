@@ -1,4 +1,5 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import { computed, defineOptions } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
@@ -8,9 +9,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const authStore = useAuthStore();
-
-const { temPermissãoPara } = authStore;
+const { temPermissãoPara } = storeToRefs(useAuthStore());
 
 const rotaCorrente = useRoute();
 
