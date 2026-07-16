@@ -169,6 +169,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       if (route.params.variavelId) {
         escaparDaRota(router);
+        variaveisGlobaisStore.$reset();
       } else {
         escaparDaRota(router, {
           query: {
