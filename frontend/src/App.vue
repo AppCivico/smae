@@ -39,7 +39,7 @@ function conferirPrivilegiosDisponiveisParaRota() {
     const moduloDaRota = route.meta?.entidadeMãe
       && retornarModuloAPartirDeEntidadeMae(route.meta?.entidadeMãe);
 
-    if (!authStore.privilegiosPorModulo[moduloDaRota]?.length) {
+    if (moduloDaRota && !authStore.privilegiosPorModulo[moduloDaRota]?.length) {
       if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
         console.log('Sincronizando privilégios com a rota atual...');
       }

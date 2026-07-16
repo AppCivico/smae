@@ -238,7 +238,7 @@ export const useAuthStore = defineStore('auth', {
       this.erros.escolherModulo = null;
 
       if (!this.modulosAcessiveis.includes(sistema)) {
-        this.erros.escolherModulo = 'Você não tem acesso a este módulo.';
+        this.erros.escolherModulo = `Você não tem acesso a este módulo: ${sistema}`;
         this.chamadasPendentes.escolherModulo = false;
         return Promise.reject(new Error(this.erros.escolherModulo as string));
       }
@@ -294,6 +294,10 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async sincronizarPrivilegiosComRota(modulo: ModuloSistema) {
+      if (!modulo) {
+        throw new Error('Módulo não informado para sincronizar privilégios com a rota atual.');
+      }
+
       this.chamadasPendentes.sincronizandoPrivilegios = true;
       this.erros.sincronizandoPrivilegios = null;
 
@@ -302,11 +306,16 @@ export const useAuthStore = defineStore('auth', {
           if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
             console.log('Carregando módulos para a rota atual...');
           }
+
           await this.carregarModulos();
+
+          if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+            console.dir(this.modulosAcessiveis);
+          }
         }
 
         if (!this.modulosAcessiveis.includes(modulo)) {
-          throw new Error('Você não tem acesso a este módulo.');
+          throw new Error(`Você não tem acesso a este módulo: ${modulo}`);
         }
 
         const { sessao: { privilegios } } = await this.getDados(null, modulo);
