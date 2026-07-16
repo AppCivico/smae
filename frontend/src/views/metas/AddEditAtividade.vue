@@ -125,10 +125,14 @@ async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
     values.orgaos_participantes = unref(orgaosParticipantes);
-    values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
-      if (x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
-      return x.orgao_id;
-    });
+    if (route.meta.entidadeMãe === 'pdm') {
+      values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
+        if (x.orgao_id && !x.participantes.length) {
+          er.push('Selecione pelo menos um responsável para o órgão.');
+        }
+        return x.orgao_id;
+      });
+    }
 
     if (route.meta.entidadeMãe === 'pdm') {
       values.coordenadores_cp = coordenadoresCp.value.participantes;

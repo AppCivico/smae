@@ -172,7 +172,9 @@ async function onSubmit(_, { controlledValues: values }) {
     if (route.meta.entidadeMãe === 'pdm') {
       values.orgaos_participantes = unref(orgaos_participantes);
       values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
-        if (x.orgao_id && !x.participantes.length) er.push('Selecione pelo menos um responsável para o órgão.');
+        if (x.orgao_id && !x.participantes.length) {
+          er.push('Selecione pelo menos um responsável para o órgão.');
+        }
         return x.orgao_id;
       });
     }
