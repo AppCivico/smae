@@ -38,9 +38,9 @@ const {
 } = storeToRefs(AtividadesStore);
 
 async function iniciar() {
-  if (singleAtividade.value.id !== atividadeId) {
-    await AtividadesStore.getByIdReal(atividadeId);
-  }
+  // sempre baixar a meta, mesmo que já esteja no store,
+  // para garantir que os dados estejam atualizados
+  await AtividadesStore.getByIdReal(atividadeId);
 }
 
 iniciar();

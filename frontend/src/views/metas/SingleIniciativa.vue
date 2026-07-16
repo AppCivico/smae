@@ -58,11 +58,10 @@ const orgaosEquipeIniciativa = computed(() => {
 async function iniciar() {
   const promessas = [];
 
-  // eslint-disable-next-line eqeqeq
-  if (singleIniciativa.value.id != iniciativaId) {
-    promessas.push(IniciativasStore.getByIdReal(iniciativaId));
-    promessas.push(EquipesStore.buscarTudo());
-  }
+  // sempre baixar a meta, mesmo que já esteja no store,
+  // para garantir que os dados estejam atualizados
+  promessas.push(IniciativasStore.getByIdReal(iniciativaId), EquipesStore.buscarTudo());
+
   if (!Atividades.value[iniciativaId]) {
     promessas.push(AtividadesStore.getAll(iniciativaId));
   }

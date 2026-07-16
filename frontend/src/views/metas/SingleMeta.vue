@@ -69,11 +69,10 @@ const orgaosEquipeMetaMonitoramento = computed(() => {
 async function iniciar() {
   const promessas = [];
 
-  // eslint-disable-next-line eqeqeq
-  if (metaId && singleMeta.value.id != metaId) {
-    promessas.push(MetasStore.getById(metaId));
-    promessas.push(EquipesStore.buscarTudo());
-  }
+  // sempre baixar a meta, mesmo que já esteja no store,
+  // para garantir que os dados estejam atualizados
+  promessas.push(MetasStore.getById(metaId), EquipesStore.buscarTudo());
+
   if (metaId && !activePdm.value.id) {
     promessas.push(MetasStore.getPdM());
   }
