@@ -445,16 +445,16 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label(),
     data_inicio: date()
-      .nullable()
+      .required()
       .label('Data de início')
       .transform((v) => (v === '' ? null : v)),
     data_termino: date()
-      .nullable()
+      .required()
       .min(ref('data_inicio'), 'Data de término deve ser posterior à data de início')
       .label('Data de término previsto do contrato')
       .transform((v) => (v === '' ? null : v)),
     valor: string()
-      .nullable()
+      .required()
       .label('Valor do contrato'),
     observacoes: string()
       .max(2048)
