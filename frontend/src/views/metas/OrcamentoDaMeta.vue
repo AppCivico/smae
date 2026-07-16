@@ -61,9 +61,9 @@ const dadosTabela = computed(() => [
       <thead>
         <tr>
           <th />
-          <th>Total da previsão de custo</th>
-          <th>Total empenho</th>
-          <th>Total liquidado</th>
+          <th class="tr">Total da previsão de custo</th>
+          <th class="tr">Total empenho</th>
+          <th class="tr">Total liquidado</th>
         </tr>
       </thead>
 
@@ -73,9 +73,15 @@ const dadosTabela = computed(() => [
           :key="`id--${dadosItem.id}`"
         >
           <th>{{ dadosItem.id }}</th>
-          <td>{{ dinheiro(dadosItem.total_previsao_custo, { style: 'currency' }) || '-' }}</td>
-          <td>{{ dinheiro(dadosItem.total_empenho, { style: 'currency' }) || '-' }}</td>
-          <td>{{ dinheiro(dadosItem.total_liquidado, { style: 'currency' }) || '-' }}</td>
+          <td class="cell--number t13">
+            {{ dinheiro(dadosItem.total_previsao_custo, { style: 'currency' }) || '-' }}
+          </td>
+          <td class="cell--number t13">
+            {{ dinheiro(dadosItem.total_empenho, { style: 'currency' }) || '-' }}
+          </td>
+          <td class="cell--number t13">
+            {{ dinheiro(dadosItem.total_liquidado, { style: 'currency' }) || '-' }}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -127,7 +133,6 @@ const dadosTabela = computed(() => [
 
       color: #152741;
       font-weight: 400;
-      font-size: 0.745rem;
     }
   }
 }
