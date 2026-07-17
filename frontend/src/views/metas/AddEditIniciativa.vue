@@ -133,15 +133,19 @@ const schema = Yup.object().shape({
 async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
-    values.orgaos_participantes = unref(orgaos_participantes);
-
     if (route.meta.entidadeMãe === 'pdm') {
+      values.orgaos_participantes = unref(orgaos_participantes);
+
       values.orgaos_participantes = values.orgaos_participantes.filter((x) => {
         if (x.orgao_id && !x.participantes.length) {
           er.push('Selecione pelo menos um responsável para o órgão.');
         }
         return x.orgao_id;
       });
+    } else {
+      // remove orgaos_participantes de plano setorial pois a api
+      // gera sozinha esse valor agora
+      values.orgaos_participantes = [];
     }
 
     if (route.meta.entidadeMãe === 'pdm') {
