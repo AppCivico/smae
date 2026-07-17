@@ -13,7 +13,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeDialog from '@/components/SmaeDialog.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import { useAlertStore } from '@/stores/alert.store';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -114,6 +114,8 @@ const onSubmit = handleSubmit(async (valoresControlados) => {
         fecharDialogo.value();
         // Limpa emFoco após fechar o diálogo
         variaveisGlobaisStore.emFoco = null;
+        // Recarrega a variável filha após a edição
+        variaveisGlobaisStore.buscarFilhas(variavelMaeId.value);
       }
       emit('edicao-bem-sucedida');
     }
