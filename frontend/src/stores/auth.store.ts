@@ -25,6 +25,10 @@ export const useAuthStore = defineStore('auth', {
     token: JSON.parse(localStorage.getItem('token') || 'null'),
     reducedToken: null as string | null,
     returnUrl: null as string | null,
+
+    // código legado. Não usar!
+    permissions: JSON.parse(localStorage.getItem('permissions') || 'null'),
+
     privilegiosPorModulo: JSON.parse(localStorage.getItem('smae:privilegiosPorModulo') || '{}') as Privilegios,
     sistemaEscolhido: (localStorage.getItem('sistemaEscolhido')
       ?? 'SMAE') as ModuloSistema,
@@ -55,12 +59,19 @@ export const useAuthStore = defineStore('auth', {
         if ('reduced_access_token' in token) {
           this.token = null;
           this.user = null;
+
+          // código legado. Não usar!
+          this.permissions = null;
+
           Object.keys(this.privilegiosPorModulo).forEach((modulo) => {
             delete this.privilegiosPorModulo[modulo as ModuloSistema];
           });
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           localStorage.removeItem('smae:privilegiosPorModulo');
+
+          // código legado. Não usar!
+          localStorage.removeItem('permissions');
 
           this.reducedToken = token.reduced_access_token;
           this.router.push('/nova-senha');
@@ -109,6 +120,9 @@ export const useAuthStore = defineStore('auth', {
           throw new TypeError('Usuário não recebido.');
         }
 
+        // código legado. Não usar!
+        this.setPermissions();
+
         return user;
       } catch (error) {
         const alertStore = useAlertStore();
@@ -152,6 +166,9 @@ export const useAuthStore = defineStore('auth', {
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
 
+        // código legado. Não usar!
+        this.setPermissions();
+
         const alertStore = useAlertStore();
 
         alertStore.success('Senha salva com sucesso. Bem-vindo!');
@@ -165,6 +182,10 @@ export const useAuthStore = defineStore('auth', {
       this.requestS.post(`${baseUrl}/sair`, null);
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+
+      // código legado. Não usar!
+      localStorage.removeItem('permissions');
+
       localStorage.removeItem('smae:privilegiosPorModulo');
       localStorage.removeItem('sistemaEscolhido');
 
@@ -185,6 +206,10 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+
+      // código legado. Não usar!
+      localStorage.removeItem('permissions');
+
       localStorage.removeItem('smae:privilegiosPorModulo');
       localStorage.removeItem('sistemaEscolhido');
 
@@ -373,6 +398,51 @@ export const useAuthStore = defineStore('auth', {
 
         this.router.push({ name: 'home' });
       }
+    },
+
+    // código legado. Não usar!
+    setPermissions() {
+      const per: Record<string, Record<string, number>> = {};
+      if (this.user?.privilegios) {
+        this.user.privilegios.forEach((p: string) => {
+          const c = p.split('.');
+          if (c[1]) {
+            if (!per[c[0]]) {
+              per[c[0]] = {};
+            }
+            per[c[0]][c[1]] = 1;
+          }
+        });
+      }
+
+      // const a = [
+      //   'CadastroCicloFisico',
+      //   'CadastroEtapa',
+      //   'CadastroGrupoPaineis',
+      //   'CadastroMacroTema',
+      //   'CadastroMeta',
+      //   'CadastroOds',
+      //   'CadastroOrgao',
+      //   'CadastroPainel',
+      //   'CadastroPdm',
+      //   'CadastroPessoa',
+      //   'CadastroRegiao',
+      //   'CadastroSubTema',
+      //   'CadastroTag',
+      //   'CadastroTema',
+      //   'CadastroTipoDocumento',
+      //   'CadastroTipoOrgao',
+      //   'CadastroUnidadeMedida',
+      //   'Projeto',
+      // ];
+
+      // if (a.some((c) => per[c] && !per[c].listar && !per[c].visualizar)) {
+      //   per.algumAdmin = 1;
+      // }
+
+      localStorage.setItem('permissions', JSON.stringify(per));
+      this.permissions = per;
+      return per;
     },
 
     definirPrivilegiosPorModulo(modulo: ModuloSistema, privilegios: ListaDePrivilegios[]) {
