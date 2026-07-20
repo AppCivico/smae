@@ -487,6 +487,7 @@ export default [
               ],
               título: 'Novo painel externo',
               rotasParaMigalhasDePão: ['paineisExternos.listar'],
+              rotaDeEscape: 'paineisExternos.listar',
             },
           },
           {
@@ -496,7 +497,7 @@ export default [
             props: ({ params }) => ({
               ...params,
               ...{
-                paineilId: Number.parseInt(params.paineilId, 10) || undefined,
+                painelId: Number.parseInt(params.painelId, 10) || undefined,
               },
             }),
 
@@ -510,6 +511,7 @@ export default [
                 return emFoco?.titulo || 'Editar painel externo';
               },
               rotasParaMigalhasDePão: ['paineisExternos.listar'],
+              rotaDeEscape: 'paineisExternos.listar',
             },
           },
         ],

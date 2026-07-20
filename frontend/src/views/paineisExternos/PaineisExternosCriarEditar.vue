@@ -2,10 +2,11 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { defineOptions } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { painelExterno as schema } from '@/consts/formSchemas';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
@@ -20,7 +21,6 @@ const {
 } = storeToRefs(GruposPaineisExternos);
 
 const router = useRouter();
-const route = useRoute();
 const props = defineProps({
   painelId: {
     type: Number,
@@ -47,7 +47,7 @@ async function onSubmit(values) {
     if (r) {
       alertStore.success(msg);
       paineisStore.$reset();
-      router.push({ name: 'paineisExternosListar' });
+      escaparDaRota(router);
     }
   } catch (error) {
     alertStore.error(error);
