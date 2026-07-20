@@ -9,7 +9,6 @@ import {
     IsEnum,
     IsInt,
     IsNumberString,
-    ValidateIf,
     IsArray,
     ArrayMaxSize,
     ArrayMinSize,
@@ -112,15 +111,13 @@ export class CreateContratoDto {
     @IsOnlyDate()
     data_assinatura: Date;
 
-    @IsOptional()
     @Transform(DateTransform)
     @IsOnlyDate()
-    data_inicio?: Date;
+    data_inicio: Date;
 
-    @IsOptional()
     @Transform(DateTransform)
     @IsOnlyDate()
-    data_termino?: Date;
+    data_termino: Date;
 
     @IsOptional()
     @IsInt()
@@ -143,10 +140,8 @@ export class CreateContratoDto {
     @IsInt()
     data_base_ano?: number;
 
-    @IsOptional()
     @IsNumberStringCustom(35, 30)
-    @ValidateIf((object, value) => value !== null)
-    valor?: string;
+    valor: string;
 }
 
 export class CreateContratoFonteRecursoDto {
