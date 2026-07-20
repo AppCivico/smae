@@ -146,12 +146,24 @@ export class PainelExternoService {
     async remove(id: number, user: PessoaFromJwt): Promise<void> {
         const sistema = user.assertOneModuloSistema('remover', 'painel externo');
 
-        await this.prisma.painelExterno.updateMany({
-            where: { id: id, removido_em: null, modulo_sistema: sistema },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            await prismaTx.painelExterno.updateMany({
+                where: { id: id, removido_em: null, modulo_sistema: sistema },
+                data: {
+                    removido_por: user.id,
+                    removido_em: now,
+                },
+            });
+
+            // remove os relacionamentos com os grupos, para não aparecerem mais na formação do grupo
+            await prismaTx.painelExternoGrupoPainelExterno.updateMany({
+                where: { painel_externo_id: id, removido_em: null },
+                data: {
+                    removido_por: user.id,
+                    removido_em: now,
+                },
+            });
         });
 
         return;
