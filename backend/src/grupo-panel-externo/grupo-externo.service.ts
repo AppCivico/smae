@@ -123,6 +123,9 @@ export class GrupoPainelExternoService {
                     ? {
                           where: {
                               removido_em: null,
+                              PainelExterno: {
+                                  removido_em: null,
+                              },
                           },
                           include: {
                               PainelExterno: {
