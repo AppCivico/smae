@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciclo de variáveis globais — guia com exemplos</title>
+<style>
+:root{
+  --bg:#f7f6f2; --card:#ffffff; --ink:#26251f; --muted:#6b6a62; --line:#e2e0d8;
+  --preench:#185fa5; --preench-bg:#e6f1fb; --preench-line:#b5d4f4;
+  --valid:#854f0b;  --valid-bg:#faeeda;  --valid-line:#fac775;
+  --liber:#0f6e56;  --liber-bg:#e1f5ee;  --liber-line:#9fe1cb;
+  --erro:#a32d2d;   --erro-bg:#fcebeb;   --erro-line:#f7c1c1;
+  --neutro:#5f5e5a; --neutro-bg:#f1efe8; --neutro-line:#d3d1c7;
+  --mono:ui-monospace,'Cascadia Code','JetBrains Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1c1b18; --card:#26251f; --ink:#eceade; --muted:#a3a196; --line:#3a3934;
+    --preench:#b5d4f4; --preench-bg:#0c447c; --preench-line:#378add;
+    --valid:#fac775;  --valid-bg:#633806;  --valid-line:#ba7517;
+    --liber:#9fe1cb;  --liber-bg:#085041;  --liber-line:#1d9e75;
+    --erro:#f7c1c1;   --erro-bg:#791f1f;   --erro-line:#e24b4a;
+    --neutro:#d3d1c7; --neutro-bg:#35342e; --neutro-line:#5f5e5a;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  padding:0 20px 90px;
+}
+.wrap{max-width:880px;margin:0 auto}
+header{padding:56px 0 28px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:30px;font-weight:600;line-height:1.25;margin:10px 0 8px}
+header p{color:var(--muted);max-width:680px}
+h2{font-size:22px;font-weight:600;margin:56px 0 6px;display:flex;align-items:baseline;gap:12px}
+h2 .n{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:400}
+h3{font-size:16px;font-weight:600;margin-top:2px}
+.sub{color:var(--muted);margin-bottom:20px;font-size:15px}
+p{margin-top:12px}
+code{font-family:var(--mono);font-size:.86em;background:var(--neutro-bg);border:1px solid var(--line);border-radius:5px;padding:1px 6px;white-space:nowrap}
+strong{font-weight:600;color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid}
+.pill i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.p-preench{background:var(--preench-bg);border-color:var(--preench-line);color:var(--preench)} .p-preench i{background:var(--preench)}
+.p-valid{background:var(--valid-bg);border-color:var(--valid-line);color:var(--valid)} .p-valid i{background:var(--valid)}
+.p-liber{background:var(--liber-bg);border-color:var(--liber-line);color:var(--liber)} .p-liber i{background:var(--liber)}
+
+/* cards genéricos */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-top:18px}
+.card.tight{padding:18px 20px}
+
+/* analogia */
+.analogy{background:var(--preench-bg);border:1px solid var(--preench-line);border-radius:14px;padding:22px 24px;margin-top:22px;color:var(--ink)}
+.analogy h3{color:var(--preench)}
+.analogy .roles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px}
+.analogy .role{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.analogy .role .t{font-weight:600;font-size:14px}
+.analogy .role .d{font-size:13px;color:var(--muted);margin-top:4px}
+@media (max-width:640px){.analogy .roles{grid-template-columns:1fr}}
+
+/* timeline concreta com dias */
+.cal{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:18px;overflow-x:auto}
+.cal-bar{display:flex;min-width:520px;height:52px;border-radius:8px;overflow:hidden;font-size:13px;font-weight:600}
+.cal-bar div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+.cal-bar .d{font-size:11px;font-weight:400;opacity:.85}
+.cal-p{flex:10;background:var(--preench-bg);color:var(--preench);border-right:2px solid var(--bg)}
+.cal-v{flex:7;background:var(--valid-bg);color:var(--valid);border-right:2px solid var(--bg)}
+.cal-l{flex:6;background:var(--liber-bg);color:var(--liber)}
+.cal-note{font-size:13.5px;color:var(--muted);margin-top:14px}
+
+/* tabelas */
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14.5px;margin-top:16px}
+th,td{padding:11px 15px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:none}
+td:first-child{white-space:nowrap}
+td code{white-space:normal}
+
+/* exemplo passo-a-passo */
+.example{border:1px solid var(--line);border-radius:14px;margin-top:22px;overflow:hidden;background:var(--card)}
+.example-head{padding:16px 22px;border-bottom:1px solid var(--line);background:var(--neutro-bg)}
+.example-head .lbl{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.example-head h3{margin-top:4px;font-size:17px}
+.example-body{padding:8px 22px 20px}
+.evt{display:flex;gap:14px;padding:14px 0;border-bottom:1px dashed var(--line)}
+.evt:last-child{border-bottom:none}
+.evt .when{flex:0 0 88px;font-family:var(--mono);font-size:12.5px;color:var(--muted);padding-top:2px}
+.evt .what{flex:1}
+.evt .what .h{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.evt .what p{margin-top:5px;font-size:14px;color:var(--muted)}
+.tag{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid}
+.t-preench{background:var(--preench-bg);border-color:var(--preench-line);color:var(--preench)}
+.t-valid{background:var(--valid-bg);border-color:var(--valid-line);color:var(--valid)}
+.t-liber{background:var(--liber-bg);border-color:var(--liber-line);color:var(--liber)}
+.t-erro{background:var(--erro-bg);border-color:var(--erro-line);color:var(--erro)}
+.t-neutro{background:var(--neutro-bg);border-color:var(--neutro-line);color:var(--neutro)}
+.t-auto{background:var(--valid-bg);border-color:var(--valid-line);color:var(--valid)}
+
+.note{border-radius:10px;padding:13px 16px;font-size:14px;margin-top:16px;border:1px solid}
+.note.info{background:var(--preench-bg);border-color:var(--preench-line);color:var(--preench)}
+.note.warn{background:var(--valid-bg);border-color:var(--valid-line);color:var(--valid)}
+.note.ok{background:var(--liber-bg);border-color:var(--liber-line);color:var(--liber)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.two{grid-template-columns:1fr}}
+.mini{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.mini h4{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.mini p{font-size:13.5px;color:var(--muted);margin-top:0}
+.mini .calc{font-family:var(--mono);font-size:12.5px;background:var(--neutro-bg);border:1px solid var(--line);border-radius:7px;padding:9px 11px;margin-top:10px;display:block;white-space:normal;line-height:1.5}
+
+ul{margin:12px 0 2px 22px}li{margin:6px 0}
+.foot{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.kbd{font-family:var(--mono);font-size:.85em;background:var(--neutro-bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">SMAE · Ciclo de variáveis globais · guia prático</div>
+  <h1>Como uma variável “anda sozinha” pelo mês</h1>
+  <p>A função <code>f_atualiza_variavel_ciclo_corrente</code> é o “relógio” de cada variável global. Ela responde a uma pergunta simples — <strong>“hoje, em que pé está essa variável?”</strong> — e, se ninguém mexeu no prazo, avança a variável de fase sozinha. Este guia explica a ideia com exemplos de datas reais; o documento técnico linha-a-linha continua sendo o outro arquivo.</p>
+  <div class="legend">
+    <span class="pill p-preench"><i></i>1 · Preenchimento — alguém digita o valor</span>
+    <span class="pill p-valid"><i></i>2 · Conferência — alguém confere</span>
+    <span class="pill p-liber"><i></i>3 · Liberação — alguém publica</span>
+  </div>
+</header>
+
+<!-- ============ A IDEIA ============ -->
+<h2>A ideia em uma frase <span class="n">mental model</span></h2>
+<p class="sub">Todo mês, o valor de uma variável precisa passar por três mãos, em ordem, dentro de prazos. A função mantém uma “ficha de status” dizendo em qual mão está e até quando.</p>
+
+<div class="analogy">
+  <h3>Analogia: um documento que passa por três mesas</h3>
+  <p style="color:var(--muted)">Pense num relatório mensal que precisa ser <strong>digitado</strong>, depois <strong>conferido</strong>, depois <strong>publicado</strong>. Cada mesa tem um prazo. Se a pessoa não faz no prazo, a função “carimba automaticamente” e empurra pra próxima mesa — para o fluxo nunca travar.</p>
+  <div class="roles">
+    <div class="role"><div class="t" style="color:var(--preench)">Preenchimento</div><div class="d">Quem coleta digita o valor do mês.</div></div>
+    <div class="role"><div class="t" style="color:var(--valid)">Conferência</div><div class="d">Um segundo par de olhos valida o número. <em>(no código a fase se chama <code>Validacao</code>)</em></div></div>
+    <div class="role"><div class="t" style="color:var(--liber)">Liberação</div><div class="d">O responsável publica — o valor entra oficialmente na série histórica.</div></div>
+  </div>
+</div>
+
+<div class="note info">A função <strong>não</strong> recebe cliques de tela. Ela só lê o que já aconteceu (registros em <code>variavel_global_ciclo_analise</code>) e recalcula a ficha de status (<code>variavel_ciclo_corrente</code>). Quem “faz o trabalho” é o usuário na interface — ou o relógio, quando o prazo estoura.</p></div>
+
+<!-- ============ AS PEÇAS ============ -->
+<h2>As peças do jogo <span class="n">glossário</span></h2>
+<p class="sub">Sete conceitos explicam 90% da função. Guarde estes nomes.</p>
+<table>
+  <tr><th>Peça</th><th>O que é</th></tr>
+  <tr><td><strong>Ciclo</strong></td><td>Um mês de referência do dado (ex.: “o valor de <strong>junho/2026</strong>”). Cada ciclo percorre as 3 fases.</td></tr>
+  <tr><td><code>atraso_meses</code></td><td>Quantos meses depois o dado é trabalhado. Com <code>= 1</code>, o valor de <strong>junho</strong> é preenchido em <strong>julho</strong>. É o desencontro entre “mês do dado” e “mês do trabalho”.</td></tr>
+  <tr><td><code>periodo_*[1..2]</code></td><td>A janela de dias do mês de cada fase. Ex.: preenchimento nos dias <strong>1–10</strong>, conferência <strong>11–17</strong>, liberação <strong>18–23</strong>. <code>[1]</code> abre, <code>[2]</code> fecha.</td></tr>
+  <tr><td><strong>Fase atual</strong></td><td>Em qual das 3 mãos o ciclo está agora: <code>Preenchimento</code> → <code>Validacao</code> → <code>Liberacao</code>.</td></tr>
+  <tr><td><code>prazo</code></td><td>A data-limite da fase atual. Se hoje passou dela e ninguém agiu, a função carimba sozinha.</td></tr>
+  <tr><td><code>atrasos[]</code></td><td>Lista de ciclos <strong>antigos</strong> que nunca chegaram na Liberação. Ficam na fila para serem resolvidos primeiro.</td></tr>
+  <tr><td><code>ultimo_periodo_valido</code></td><td>O ciclo que a função está tratando “como o corrente” nesta rodada — pode ser o mês atual ou o atraso mais antigo da fila.</td></tr>
+</table>
+
+<!-- ============ O CALENDÁRIO ============ -->
+<h2>Um mês concreto <span class="n">exemplo base</span></h2>
+<p class="sub">Vamos fixar uma variável <strong>mensal</strong>, com <code>atraso_meses = 1</code> e estas janelas. Todos os exemplos abaixo usam ela.</p>
+<div class="cal">
+  <div class="cal-bar">
+    <div class="cal-p">Preenchimento<span class="d">dias 1 → 10</span></div>
+    <div class="cal-v">Conferência<span class="d">dias 11 → 17</span></div>
+    <div class="cal-l">Liberação<span class="d">dias 18 → 23</span></div>
+  </div>
+  <div class="cal-note">
+    Ciclo em foco: <strong>junho/2026</strong> (o dado de junho). Como <code>atraso_meses = 1</code>, o trabalho abre em <strong>julho/2026</strong>:
+    preencher até <strong>10/jul</strong>, conferir até <strong>17/jul</strong>, liberar até <strong>23/jul</strong>.
+    <br>As <em>durações</em> saem da conta <code>[2] − [1] + 1</code>: preenchimento = 10 dias, conferência = 7 dias, liberação = 6 dias.
+  </div>
+</div>
+
+<!-- ============ EXEMPLO 1 ============ -->
+<h2>Exemplo 1 — tudo no prazo <span class="n">o caminho feliz</span></h2>
+<p class="sub">Cada pessoa faz sua parte dentro da janela. A função só observa e atualiza a ficha; <strong>ninguém precisa do carimbo automático</strong>.</p>
+<div class="example">
+  <div class="example-head"><div class="lbl">Ciclo junho/2026 · trabalhado em julho</div><h3>Três humanos, três carimbos, zero automação</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">05/jul</div><div class="what">
+      <div class="h"><span class="tag t-preench">Preenchimento</span> Analista digita o valor de junho</div>
+      <p>Grava um registro de Preenchimento aprovado. A função roda, vê que a fase cumpriu, e move a ficha para <strong>Conferência</strong> com prazo <strong>18/jul</strong>.</p>
+    </div></div>
+    <div class="evt"><div class="when">14/jul</div><div class="what">
+      <div class="h"><span class="tag t-valid">Conferência</span> Revisor confere e aprova</div>
+      <p>Novo registro (fase <code>Validacao</code>, aprovada). Ficha avança para <strong>Liberação</strong>, prazo <strong>24/jul</strong>.</p>
+    </div></div>
+    <div class="evt"><div class="when">20/jul</div><div class="what">
+      <div class="h"><span class="tag t-liber">Liberação</span> Responsável publica</div>
+      <p>Registro de Liberação. A função chama <code>f_marca_serie_variavel_conferida()</code> — o valor entra na série oficial — e zera o <code>prazo</code> (ciclo encerrado, sem atrasos).</p>
+    </div></div>
+  </div>
+</div>
+<div class="note ok">Resultado da ficha ao final: <code>fase = Liberacao</code>, <code>liberacao_enviada = true</code>, <code>prazo = NULL</code>, <code>atrasos = []</code>. O ciclo de junho está fechado. Em agosto, o de julho começa do zero.</div>
+
+<!-- ============ EXEMPLO 2 ============ -->
+<h2>Exemplo 2 — ninguém faz nada <span class="n">o carimbo automático</span></h2>
+<p class="sub">Aqui aparece o coração da função: <strong>avanço por decurso de prazo</strong>. Quando o prazo de uma fase estoura sem ação humana, a função se auto-aprova e <strong>chama a si mesma</strong> para avaliar a próxima fase — tudo numa única execução.</p>
+
+<div class="note info"><strong>Por que a recursão?</strong> Cada carimbo automático faz <em>uma só</em> transição e delega o resto a uma nova execução limpa. Assim um ciclo muito atrasado pode atravessar Preenchimento → Conferência → Liberação em cadeia, na mesma rodada, até esbarrar num prazo que ainda está no futuro (ou no limite de 10 níveis de profundidade, uma trava contra loop infinito).</div>
+
+<div class="example">
+  <div class="example-head"><div class="lbl">Ciclo junho/2026 · o preenchimento foi feito, mas mais ninguém agiu</div><h3>A função roda no dia 25/jul e resolve o mês inteiro sozinha</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">03/jul</div><div class="what">
+      <div class="h"><span class="tag t-preench">Preenchimento</span> Analista digitou (única ação humana)</div>
+      <p>Existe um Preenchimento aprovado para junho. Depois disso, o revisor e o responsável esquecem.</p>
+    </div></div>
+    <div class="evt"><div class="when">25/jul<br>nível 1</div><div class="what">
+      <div class="h"><span class="tag t-auto">auto</span> Conferência vencida → carimbo automático</div>
+      <p>Fase = Conferência, prazo era <strong>18/jul</strong> — já passou. Existe Preenchimento aprovado. A função copia os valores do preenchimento (para a tela não ficar vazia), insere uma Conferência automática (<code>eh_liberacao_auto = true</code>, <code>criado_por = −1</code>, texto “Aprovação automática de Conferência por decurso de prazo”), move a ficha para <strong>Liberação</strong> e <strong>chama a si mesma (nível 2)</strong>.</p>
+    </div></div>
+    <div class="evt"><div class="when">25/jul<br>nível 2</div><div class="what">
+      <div class="h"><span class="tag t-auto">auto</span> Liberação vencida → carimbo automático</div>
+      <p>Agora a fase é Liberação, prazo <strong>24/jul</strong> — vencido, e existe Conferência aprovada (a que acabou de ser criada). A função insere uma Liberação automática (“Liberação automática por decurso de prazo”), marca <code>liberacao_enviada = true</code>, oficializa o valor na série e <strong>chama a si mesma (nível 3)</strong>.</p>
+    </div></div>
+    <div class="evt"><div class="when">25/jul<br>nível 3</div><div class="what">
+      <div class="h"><span class="tag t-neutro">fim</span> Nada mais a fazer</div>
+      <p>O ciclo de junho está liberado e não há atrasos anteriores. A função apenas grava a ficha final e retorna. A recursão para naturalmente.</p>
+    </div></div>
+  </div>
+</div>
+<div class="note warn">Repare: o valor liberado automaticamente é o <strong>mesmo que o analista digitou</strong> (copiado fase a fase — técnica “LOCF”, <em>last observation carried forward</em>). O carimbo automático nunca inventa números; ele só evita que o fluxo trave por falta de cliques.</div>
+
+<!-- ============ EXEMPLO 3 ============ -->
+<h2>Exemplo 3 — um mês ficou para trás <span class="n">atrasos</span></h2>
+<p class="sub">O caso realista: chega agosto, o ciclo de <strong>julho</strong> já deveria começar, mas o de <strong>junho</strong> nunca foi liberado. A função <strong>prioriza o atraso mais antigo</strong> antes de olhar o mês novo.</p>
+
+<div class="example">
+  <div class="example-head"><div class="lbl">Hoje é 20/ago/2026 · junho ficou pendente</div><h3>Fila de atrasos: resolve junho primeiro, depois julho</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">varredura</div><div class="what">
+      <div class="h"><span class="tag t-neutro">passo</span> A função lista todos os ciclos, do mais novo ao mais antigo</div>
+      <p>Encontra <strong>julho</strong> (o mais recente, vira candidato a “corrente”) e <strong>junho</strong> sem registro de Liberação. Junho entra em <code>atrasos = [junho]</code>.</p>
+    </div></div>
+    <div class="evt"><div class="when">decisão</div><div class="what">
+      <div class="h"><span class="tag t-erro">atraso</span> Existe atraso antigo? → trata junho primeiro</div>
+      <p>Como há um atraso e ele não é o ciclo já em andamento, o “ciclo de trabalho” vira <strong>junho</strong>. O <code>prazo</code> vira <em>início de junho + duração da fase</em> — ou seja, uma data já no passado (“estouradão”). Isso liga automaticamente a <strong>lógica relativa</strong> (ver seção seguinte), que avança rápido.</p>
+    </div></div>
+    <div class="evt"><div class="when">cascata</div><div class="what">
+      <div class="h"><span class="tag t-auto">auto</span> Junho é empurrado fase a fase, via recursão</div>
+      <p>Como todos os prazos de junho estão vencidos, a função carimba Conferência, depois Liberação (igual ao Exemplo 2), cada uma disparando um novo nível. Junho é liberado.</p>
+    </div></div>
+    <div class="evt"><div class="when">próximo nível</div><div class="what">
+      <div class="h"><span class="tag t-preench">Preenchimento</span> Agora sim, julho vira o corrente</div>
+      <p>Junho saiu da fila de atrasos. Na rodada seguinte, o ciclo de trabalho passa a ser <strong>julho</strong>, na fase em que ele realmente está. Se o prazo de julho ainda está no futuro, a função para e aguarda ação humana.</p>
+    </div></div>
+  </div>
+</div>
+<div class="note info">Regra de ouro dos atrasos: <strong>o mês novo só “aparece” depois que a fila de atrasos esvazia.</strong> Isso evita começar julho enquanto junho ainda está pendente.</div>
+
+<!-- ============ OS DOIS RELÓGIOS ============ -->
+<h2>Os dois relógios de prazo <span class="n">absoluto × relativo</span></h2>
+<p class="sub">Esta é a sutileza que mais confunde. A função decide o prazo de avanço de duas maneiras diferentes, dependendo da situação.</p>
+<div class="two">
+  <div class="mini">
+    <h4><span class="tag t-preench">relógio absoluto</span></h4>
+    <p>Usado no <strong>ciclo corrente, dentro do prazo</strong>. O prazo é simplesmente o <strong>dia final da janela configurada</strong> naquele mês.</p>
+    <span class="calc">prazo = início do mês de trabalho<br>&nbsp;&nbsp;&nbsp;&nbsp;+ periodo_&lt;fase&gt;[2] dias<br><br>Ex. conferência de junho:<br>1/jul + 17 dias = <strong>18/jul</strong></span>
+  </div>
+  <div class="mini">
+    <h4><span class="tag t-valid">relógio relativo</span></h4>
+    <p>Usado quando é um <strong>atraso</strong>, ou quando o corrente <strong>já passou</strong> do prazo absoluto. O prazo é a <strong>data em que a fase anterior terminou + a duração desta fase</strong>.</p>
+    <span class="calc">prazo = conclusão da fase anterior<br>&nbsp;&nbsp;&nbsp;&nbsp;+ duração desta fase<br><br>Ex. preencheu em 14/jul,<br>conferência dura 7 dias:<br>14/jul + 7 = <strong>21/jul</strong></span>
+  </div>
+</div>
+<div class="note warn"><strong>Por que dois?</strong> O <em>absoluto</em> respeita o calendário oficial enquanto há tempo. O <em>relativo</em> serve para <strong>desatolar</strong>: um ciclo muito atrasado não deve esperar “o dia 17 do mês” — ele avança assim que a duração de cada fase se esgota, encadeando as fases rapidamente até alcançar o presente. <strong>Atenção:</strong> o relógio relativo só existe para <strong>Conferência e Liberação</strong> — as duas fases que têm bloco de auto-aprovação. Para o Preenchimento, a flag até liga, mas nenhum código a lê.</div>
+
+<!-- ============ DEVOLUÇÕES ============ -->
+<h2>Devoluções e reenvios <span class="n">pedido de complementação</span></h2>
+<p class="sub">Até aqui o fluxo só andou para frente. Mas a Conferência e a Liberação podem <strong>devolver</strong> o ciclo (pedido de complementação). O que cada ação faz em cada fase — segundo <code>patchVariavelCiclo</code> no backend:</p>
+
+<table>
+  <tr><th>Na fase…</th><th>Aprovar</th><th>Pedir complementação</th><th>Salvar sem aprovar</th></tr>
+  <tr>
+    <td><span class="tag t-preench">Preenchimento</span></td>
+    <td>Avança para <strong>Conferência</strong>.</td>
+    <td><strong>Proibido</strong> — erro <em>“Não é possível pedir complementação nesta fase”</em> (não há fase anterior para devolver).</td>
+    <td>Grava análise (<code>aprovada = false</code>); a fase não muda.</td>
+  </tr>
+  <tr>
+    <td><span class="tag t-valid">Conferência</span></td>
+    <td>Avança para <strong>Liberação</strong>.</td>
+    <td>Volta para <strong>Preenchimento</strong> + registra o pedido. Os registros de Conferência da rodada são invalidados (<code>ultima_revisao = false</code>) e <strong>nenhuma análise nova é criada</strong>.</td>
+    <td>Grava análise; a fase não muda.</td>
+  </tr>
+  <tr>
+    <td><span class="tag t-liber">Liberação</span></td>
+    <td>Marca <code>liberacao_enviada</code> e oficializa o valor na série.</td>
+    <td>Volta para <strong>Conferência</strong> + registra o pedido. O registro de Conferência aprovado anterior é mantido como cópia de trabalho; o <strong>pedido em aberto suspende o decurso de prazo</strong> até ser atendido (Exemplo 7).</td>
+    <td>Grava análise <code>fase = Liberacao, aprovada = false</code> — <strong>⚠️ esse registro bloqueia a liberação automática</strong> (o gate exige que não exista <em>nenhum</em> registro de Liberação, aprovado ou não).</td>
+  </tr>
+</table>
+<div class="note info">Regras gerais: aprovar e pedir complementação <strong>ao mesmo tempo</strong> é erro. Toda troca de fase (<code>moveFase</code>) marca os pedidos pendentes como atendidos, zera <code>liberacao_enviada</code> e <strong>chama a função SQL na mesma transação</strong> — ou seja, o <code>prazo</code> é recalculado imediatamente a cada devolução ou reenvio.</div>
+
+<!-- ============ EXEMPLO 4 ============ -->
+<h2>Exemplo 4 — devolvido e reenviado no prazo <span class="n">a âncora não se move</span></h2>
+<p class="sub">Intuição errada comum: “voltou de fase, então ganha uma janela nova”. Não ganha. Enquanto o prazo absoluto não venceu, ele é uma <strong>data fixa do calendário</strong> — cada ida-e-volta só <em>consome</em> a janela.</p>
+<div class="example">
+  <div class="example-head"><div class="lbl">Ciclo junho/2026 · devolução dentro do prazo</div><h3>Enviado dia 5, devolvido dia 8, reenviado dia 13</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">05/jul</div><div class="what">
+      <div class="h"><span class="tag t-preench">Preenchimento</span> Analista envia</div>
+      <p>Ficha vai para <strong>Conferência</strong>, prazo = <code>1/jul + 17 dias</code> = <strong>18/jul</strong> (relógio absoluto).</p>
+    </div></div>
+    <div class="evt"><div class="when">08/jul</div><div class="what">
+      <div class="h"><span class="tag t-erro">devolução</span> Conferência pede complementação</div>
+      <p>Ficha volta para <strong>Preenchimento</strong>. O prazo recalculado é o <em>mesmo de sempre</em>: <strong>11/jul</strong> (<code>1/jul + 10</code>). Restam <strong>3 dias</strong> — não uma janela nova de 10.</p>
+    </div></div>
+    <div class="evt"><div class="when">13/jul</div><div class="what">
+      <div class="h"><span class="tag t-preench">Preenchimento</span> Analista reenvia</div>
+      <p>Ficha volta para <strong>Conferência</strong>. Prazo recalculado: de novo <strong>18/jul</strong> — a mesma data de calendário, independente de quando o reenvio aconteceu. O revisor tem <strong>5 dias</strong> desta vez (na primeira rodada tinha 7).</p>
+    </div></div>
+  </div>
+</div>
+<div class="note ok">Regra: <strong>antes do prazo absoluto vencer, nada nunca “ganha dias”.</strong> A fórmula <code>date_trunc('month', mês) + periodo_&lt;fase&gt;[2] dias</code> só depende do mês — não de quantas devoluções houve nem de quando cada reenvio ocorreu.</div>
+
+<!-- ============ EXEMPLO 5 ============ -->
+<h2>Exemplo 5 — reenviado depois do prazo <span class="n">o relógio invisível</span></h2>
+<p class="sub">Quando o reenvio acontece <strong>depois</strong> do prazo absoluto, o relógio relativo assume o avanço automático — mas o campo <code>prazo</code> gravado na ficha <strong>não acompanha</strong>. É a pegadinha mais confusa do sistema.</p>
+<div class="example">
+  <div class="example-head"><div class="lbl">Ciclo junho/2026 · reenvio tardio para a Conferência</div><h3>Devolvido, e o analista só reenvia no dia 20</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">20/jul</div><div class="what">
+      <div class="h"><span class="tag t-preench">Preenchimento</span> Analista reenvia (atrasado)</div>
+      <p>Ficha vai para <strong>Conferência</strong>. O prazo absoluto (18/jul) <em>já passou</em>, então a flag de lógica relativa liga (<code>hoje &gt; prazo</code>).</p>
+    </div></div>
+    <div class="evt"><div class="when">interno</div><div class="what">
+      <div class="h"><span class="tag t-auto">relógio real</span> Deadline de auto-aprovação = conclusão do Preenchimento + duração</div>
+      <p><code>20/jul + 7 dias = <strong>27/jul</strong></code>. Se ninguém conferir até lá, o carimbo automático dispara. Esse é o prazo que <em>de fato</em> governa o avanço.</p>
+    </div></div>
+    <div class="evt"><div class="when">na ficha</div><div class="what">
+      <div class="h"><span class="tag t-erro">relógio visível</span> Mas o campo <code>prazo</code> gravado continua <strong>18/jul</strong></div>
+      <p>O deadline relativo (27/jul) é uma variável local da função — <strong>nunca é persistido</strong>. A ficha guarda a data absoluta perdida, então a interface mostra o ciclo como <strong>“atrasado” o tempo todo</strong>, mesmo com o relógio real correndo silenciosamente até o dia 27. Não existe campo visível com a data verdadeira.</p>
+    </div></div>
+    <div class="evt"><div class="when">27/jul</div><div class="what">
+      <div class="h"><span class="tag t-auto">auto</span> Ninguém conferiu → carimbo automático</div>
+      <p>Conferência auto-aprovada por decurso de prazo (7 dias corridos desde o reenvio), e o fluxo segue para a Liberação.</p>
+    </div></div>
+  </div>
+</div>
+<div class="note warn"><strong>Resumo do contraste:</strong> reenvio <em>antes</em> do prazo → âncora fixa, janela encurta (Ex. 4). Reenvio <em>depois</em> do prazo → o avanço automático passa a contar da data do reenvio (duração cheia da fase), mas o <code>prazo</code> exibido congela na data absoluta perdida.</div>
+
+<!-- ============ EXEMPLO 6 ============ -->
+<h2>Exemplo 6 — devolvido para o Preenchimento já atrasado <span class="n">sem relógio nenhum</span></h2>
+<p class="sub">E se a devolução acontece quando a janela do Preenchimento já fechou? Resposta curta: <strong>não existe relógio relativo para o Preenchimento</strong> — ele nunca avança sozinho, em nenhuma circunstância.</p>
+<div class="example">
+  <div class="example-head"><div class="lbl">Ciclo junho/2026 · devolução tardia</div><h3>Conferência devolve no dia 13 — a janela do Preenchimento fechou dia 11</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">13/jul</div><div class="what">
+      <div class="h"><span class="tag t-erro">devolução</span> Pedido de complementação → fase volta a Preenchimento</div>
+      <p>O prazo recalculado é o absoluto de sempre: <strong>11/jul</strong> — já no passado. O ciclo aparece <strong>imediatamente como atrasado</strong>.</p>
+    </div></div>
+    <div class="evt"><div class="when">interno</div><div class="what">
+      <div class="h"><span class="tag t-neutro">no-op</span> A flag relativa até liga… e não faz nada</div>
+      <p><code>hoje &gt; prazo</code> liga a lógica relativa, mas ela só é <em>lida</em> nos blocos de auto-aprovação de Conferência e Liberação. <strong>Não existe bloco de auto-avanço para o Preenchimento</strong> — nem variável de deadline para ele.</p>
+    </div></div>
+    <div class="evt"><div class="when">…para sempre</div><div class="what">
+      <div class="h"><span class="tag t-erro">travado</span> Fica atrasado até um humano reenviar</div>
+      <p>Nenhum decurso de prazo socorre esta fase: sem valor digitado não há o que carimbar. A única saída é o analista atender o pedido e reenviar.</p>
+    </div></div>
+  </div>
+</div>
+
+<!-- ============ EXEMPLO 7 ============ -->
+<h2>Exemplo 7 — pedido de complementação trava o decurso de prazo <span class="n">a trava intencional</span></h2>
+<p class="sub">Enquanto houver um <strong>pedido de complementação em aberto</strong> para o ciclo, o carimbo automático fica <strong>suspenso</strong> — em qualquer fase. Isso garante que uma ressalva humana nunca seja atropelada pelo relógio. A trava é levantada quando o pedido é atendido (o que só acontece quando alguém troca de fase manualmente).</p>
+<div class="example">
+  <div class="example-head"><div class="lbl">Ciclo junho/2026 · pedido de complementação na Liberação</div><h3>Conferência aprovou dia 14; a Liberação devolve dia 16</h3></div>
+  <div class="example-body">
+    <div class="evt"><div class="when">14/jul</div><div class="what">
+      <div class="h"><span class="tag t-valid">Conferência</span> Revisor aprova</div>
+      <p>Cria-se o registro <code>fase = Validacao, aprovada = true, ultima_revisao = true</code>. Ficha avança para Liberação.</p>
+    </div></div>
+    <div class="evt"><div class="when">16/jul</div><div class="what">
+      <div class="h"><span class="tag t-erro">devolução</span> Responsável pela Liberação pede complementação</div>
+      <p>Ficha volta para <strong>Conferência</strong> e é criado um registro em <code>variavel_global_pedido_complementacao</code> com <code>atendido = false</code>. A invalidação de análises só mira a fase corrente do momento (Liberação), então o registro de Conferência do dia 14 permanece — ele é a “cópia de trabalho” que o revisor verá ao reabrir a tela.</p>
+    </div></div>
+    <div class="evt"><div class="when">interno</div><div class="what">
+      <div class="h"><span class="tag t-liber">gate suspenso</span> O decurso de prazo fica em espera</div>
+      <p>Os dois blocos de auto-aprovação (Conferência e Liberação) agora exigem também <code>NOT EXISTS</code> pedido em aberto para o ciclo. Com o pedido do dia 16 pendente, nenhum carimbo automático dispara — <strong>independente</strong> de o registro do dia 14 ainda existir ou de alguém salvar sem aprovar.</p>
+    </div></div>
+    <div class="evt"><div class="when">saída</div><div class="what">
+      <div class="h"><span class="tag t-valid">humano</span> Atender o pedido religa o relógio</div>
+      <p>Quando o revisor aprova de novo na Conferência, <code>moveFase</code> marca o pedido como <code>atendido = true</code> e a fase avança. A trava cai e, daí em diante, o decurso de prazo volta a valer normalmente (inclusive a auto-liberação, no estilo do Exemplo 5).</p>
+    </div></div>
+  </div>
+</div>
+<div class="note ok"><strong>Regra:</strong> pedido de complementação em aberto = decurso de prazo pausado para o ciclo. O robô nunca resolve por cima de uma ressalva; só um humano atendendo o pedido (via troca de fase) reabre o avanço automático.</div>
+<div class="note info"><strong>Histórico:</strong> antes desta trava, esta devolução criava um estado <em>permanentemente</em> preso — o registro de Conferência aprovado bloqueava o gate para sempre, e um simples “salvar sem aprovar” podia até fazer o robô atropelar o pedido. A checagem de <code>variavel_global_pedido_complementacao</code> nos dois gates corrige os dois casos.</div>
+
+<!-- ============ PEGADINHAS ============ -->
+<h2>Pegadinhas e regras finas <span class="n">para quem depura</span></h2>
+<div class="card">
+  <ul>
+    <li><strong>Preenchimento nunca auto-avança.</strong> Só existem blocos de decurso de prazo para Conferência e Liberação. Ciclo parado no Preenchimento fica parado até alguém enviar.</li>
+    <li><strong>O relógio relativo só governa o avanço automático</strong> — ele nunca é gravado. O campo <code>prazo</code> da ficha é sempre o absoluto; depois de vencido, ele congela na data perdida e a UI mostra “atrasado” mesmo quando o relógio real ainda está correndo (Ex. 5).</li>
+    <li><strong>Off-by-one do prazo:</strong> a fórmula soma <code>periodo_*[2]</code> dias ao dia 1º do mês — então <code>periodo_validacao[2] = 17</code> produz prazo <strong>18/jul</strong>, um dia depois do dia configurado. O valor configurado é “quantos dias somar”, não “o dia do calendário”.</li>
+    <li><strong>Duração de fase</strong> = <code>[2] − [1] + 1</code> (janela 11–17 → 7 dias), usada nos deadlines relativos.</li>
+    <li><strong>Pedido de complementação em aberto suspende o decurso de prazo</strong> nas duas fases automáticas — os gates checam <code>NOT EXISTS</code> em <code>variavel_global_pedido_complementacao</code> (<code>atendido = false</code>). Só é rearmado quando <code>moveFase</code> marca o pedido como atendido (Ex. 7).</li>
+    <li><strong>Qualquer registro de Liberação bloqueia a liberação automática</strong> — o gate não filtra por <code>aprovada</code>. Salvar uma análise na fase de Liberação <em>sem aprovar</em> já cria esse registro e desarma o decurso de prazo.</li>
+    <li><strong>Devolução Liberação → Conferência não invalida a Conferência aprovada anterior</strong> — a invalidação de registros só mira a fase corrente do momento da ação (é intencional: vira a cópia de trabalho). Já a devolução Conferência → Preenchimento invalida corretamente os registros de Conferência. A correção de comportamento vem da trava de pedido, não da invalidação.</li>
+    <li><strong>O <code>RAISE WARNING</code> de “inconsistência” na lógica relativa da Conferência é código morto:</strong> a query que preencheria a data usa exatamente o mesmo predicado do <code>IF EXISTS</code> que a protege — se um acha a linha, o outro também acha. Se esse warning aparecer no log, algo muito estranho aconteceu no meio da transação.</li>
+    <li><strong>O ciclo mais recente nunca entra em <code>atrasos[]</code></strong>, qualquer que seja a fase dele — a fila de atrasos é só para meses anteriores sem Liberação.</li>
+  </ul>
+</div>
+
+<!-- ============ SELF-HEALING ============ -->
+<h2>Quando a realidade e a ficha discordam <span class="n">auto-correção</span></h2>
+<p class="sub">A ficha de status (<code>variavel_ciclo_corrente</code>) é um <strong>cache</strong> derivado dos registros reais. Se alguém apagou dados por fora, a função conserta a ficha antes de seguir — sem destruir o histórico.</p>
+<table>
+  <tr><th>Situação encontrada</th><th>O que a função faz</th></tr>
+  <tr>
+    <td>Ficha diz <strong>Conferência</strong>, mas não há nenhum Preenchimento para o ciclo.</td>
+    <td>Volta a ficha para <strong>Preenchimento</strong> (<code>prazo = NULL</code>). Correção <strong>não destrutiva</strong>: o registro órfão de conferência não é apagado.</td>
+  </tr>
+  <tr>
+    <td>Ficha diz <strong>Liberação</strong>, mas os valores do ciclo sumiram.</td>
+    <td>Volta para <strong>Preenchimento</strong> — presume-se que os valores foram apagados depois de uma liberação anterior.</td>
+  </tr>
+  <tr>
+    <td>Já existe registro de <strong>Liberação</strong> para o ciclo, mas a ficha está numa fase anterior.</td>
+    <td>Avança a ficha para <strong>Liberação</strong> (marcando <code>liberacao_enviada</code> se foi automática). Evita “criar” liberação do nada — apenas reconhece o que já existe.</td>
+  </tr>
+  <tr>
+    <td>Nenhum período foi encontrado para a variável.</td>
+    <td>Apaga a linha da ficha e encerra.</td>
+  </tr>
+</table>
+
+<!-- ============ QUEM CHAMA ============ -->
+<h2>Quem aperta o botão <span class="n">gatilhos</span></h2>
+<p class="sub">A função sozinha não faz nada — algo precisa chamá-la. São três portas de entrada.</p>
+<table>
+  <tr><th>Gatilho</th><th>Quando dispara</th></tr>
+  <tr><td><code>f_atualiza_todas_variaveis()</code></td><td>Job/cron em lote — percorre todas as variáveis globais. Erros de uma variável são engolidos para não parar o lote.</td></tr>
+  <tr><td><code>tgr_insert_variavel_ciclo_corrente</code></td><td>Toda variável nova (<code>AFTER INSERT</code>) já nasce com a ficha calculada.</td></tr>
+  <tr><td><code>tgr_update_variavel_ciclo_corrente</code></td><td>Só quando muda <code>fim_medicao</code>, uma das janelas <code>periodo_*</code> ou <code>atraso_meses</code> (<code>AFTER UPDATE</code>).</td></tr>
+</table>
+<div class="note info">A porta pública é <code>f_atualiza_variavel_ciclo_corrente(id)</code>, um invólucro fino que chama a versão recursiva com profundidade&nbsp;1: <code>..._recursion(id, 1)</code>. Todo o raciocínio deste guia acontece dentro da versão recursiva.</div>
+
+<!-- ============ RESUMO ============ -->
+<h2>Resumo de bolso <span class="n">TL;DR</span></h2>
+<div class="card">
+  <ul>
+    <li><strong>O que é:</strong> um recalculador de status que diz em que fase cada variável está e até quando.</li>
+    <li><strong>3 fases em ordem:</strong> Preenchimento → Conferência (<code>Validacao</code>) → Liberação.</li>
+    <li><strong>Se o prazo estoura</strong> sem ação humana, a função <strong>carimba sozinha</strong> e se chama de novo para a próxima fase (recursão, máx. 10 níveis).</li>
+    <li><strong>Atrasos primeiro:</strong> o mês novo só aparece depois que os ciclos antigos pendentes são resolvidos.</li>
+    <li><strong>Dois relógios:</strong> absoluto (calendário) enquanto há tempo; relativo (duração da fase) para desatolar atrasos — mas o relativo só existe para Conferência e Liberação, e nunca aparece no campo <code>prazo</code>.</li>
+    <li><strong>Preenchimento nunca auto-avança</strong> — parado ali, só sai com ação humana.</li>
+    <li><strong>Devoluções não resetam prazos:</strong> antes do vencimento a âncora é fixa no calendário; depois, o avanço automático conta da data do reenvio (mas a UI continua mostrando o prazo antigo vencido).</li>
+    <li><strong>Pedido de complementação pausa o decurso de prazo</strong> — o robô nunca atropela uma ressalva; a auto-aprovação só volta quando um humano atende o pedido (via troca de fase).</li>
+    <li><strong>Auto-correção:</strong> se a ficha discordar dos dados reais, ela conserta a ficha sem apagar histórico.</li>
+    <li><strong>Nunca inventa valores:</strong> o carimbo automático copia o último valor conhecido (LOCF).</li>
+  </ul>
+</div>
+
+<div class="foot">
+  Baseado em <code>f_atualiza_variavel_ciclo_corrente_recursion</code> e funções vizinhas (<code>busca_periodos_variavel</code>, <code>periodicidade_intervalo</code>, <code>f_marca_serie_variavel_conferida</code>) · PL/pgSQL · fuso <code>America/Sao_Paulo</code> — e, para as devoluções e trocas manuais de fase, em <code>patchVariavelCiclo</code>/<code>moveFase</code> de <code>src/variavel/variavel.ciclo.service.ts</code>. As datas dos exemplos são ilustrativas (variável mensal, atraso 1 mês, janelas 1–10 / 11–17 / 18–23). Documento autocontido.
+</div>
+
+</div>
+</body>
+</html>

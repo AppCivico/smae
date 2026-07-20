@@ -298,6 +298,15 @@ BEGIN
                    SELECT 1 FROM variavel_global_ciclo_analise
                    WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
                      AND fase = 'Validacao' AND ultima_revisao = true AND aprovada = true AND removido_em IS NULL
+               )
+               -- Não avança por decurso de prazo se há um pedido de complementação em aberto para o ciclo.
+               -- O pedido "trava" a fase até que um humano o atenda (o que acontece via moveFase, que marca
+               -- atendido = true). Sem esta trava, um pedido feito após o prazo seria atropelado pelo robô,
+               -- que re-aprovaria a Conferência com os mesmos valores contestados (LOCF do Preenchimento).
+               AND NOT EXISTS (
+                   SELECT 1 FROM variavel_global_pedido_complementacao
+                   WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                     AND ultima_revisao = true AND atendido = false AND removido_em IS NULL
                ) THEN
                 --RAISE NOTICE '[%] Auto-aprovando Validacao para var %, ciclo %. Deadline: %, Relativa: %', clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_validacao, v_aplicar_logica_relativa_para_avanco;
 
@@ -371,7 +380,14 @@ BEGIN
                    SELECT 1 FROM variavel_global_ciclo_analise
                    WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
                      AND fase = 'Liberacao' AND ultima_revisao = true AND removido_em IS NULL -- Aprovada=true or eh_liberacao_auto=true
-           ) THEN
+           )
+               -- Mesma trava da Validação: um pedido de complementação em aberto suspende o decurso de prazo
+               -- desta fase até que seja atendido por uma ação humana.
+               AND NOT EXISTS (
+                   SELECT 1 FROM variavel_global_pedido_complementacao
+                   WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                     AND ultima_revisao = true AND atendido = false AND removido_em IS NULL
+               ) THEN
                 --RAISE NOTICE '[%] Auto-aprovando Liberacao para var %, ciclo %. Deadline: %, Relativa: %',clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_liberacao, v_aplicar_logica_relativa_para_avanco;
 
                 SELECT valores INTO v_valores_anterior
