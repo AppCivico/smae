@@ -38,12 +38,15 @@ export class RelPSMonitoramentoMensalCicloMetasDto {
     meta_codigo: string;
     meta_titulo: string;
     analise_qualitativa: string | null;
+    analise_qualitativa_texto: string | null;
     analise_qualitativa_data: string | null;
     analise_id: number | null;
     analise_criado_em: string | null;
     analise_criador: string | null;
     risco_detalhamento: string | null;
+    risco_detalhamento_texto: string | null;
     risco_ponto_atencao: string | null;
+    risco_ponto_atencao_texto: string | null;
     risco_id: number | null;
     risco_criado_em: string | null;
     risco_criador: string | null;

@@ -211,7 +211,8 @@ export class PSMonitoramentoMensal implements ReportableService {
                     LEFT JOIN orgao variavel_orgao_proprietario ON variavel_orgao_proprietario.id = v.orgao_proprietario_id
                     LEFT JOIN orgao variavel_orgao_coleta ON variavel_orgao_coleta.id = v.medicao_orgao_id
                     LEFT JOIN regiao r ON v.regiao_id = r.id
-                    INNER JOIN serie_variavel sv ON sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
+                    INNER JOIN serie_variavel sv ON sv.variavel_id = v.id
+                        and sv.data_valor = (:mesAno ::date - (v.atraso_meses || ' months')::interval)::date
                         AND conferida = ${conferida}::boolean
                     LEFT JOIN variavel_global_ciclo_analise vgcaP ON vgcaP.variavel_id = coalesce(v.variavel_mae_id, v.id)
                         and vgcaP.referencia_data = sv.data_valor
@@ -323,8 +324,16 @@ export class PSMonitoramentoMensal implements ReportableService {
             .replace(/:mesAno/g, "'" + paramMesAno + "'")
             .replace(':pdm_id', pdmId!.toString());
 
-        const linhasMetas = (await this.prisma.$queryRawUnsafe(sqlMetas)) as any;
-        return linhasMetas as RelPSMonitoramentoMensalCicloMetasDto[];
+        const linhasMetas = (await this.prisma.$queryRawUnsafe(sqlMetas)) as RelPSMonitoramentoMensalCicloMetasDto[];
+
+        // Além da versão HTML, expõe a versão em texto limpo dos campos HTML,
+        // igualando o que já é gerado nos CSVs (colunas "(Texto)") do relatório em Excel.
+        return linhasMetas.map((row) => ({
+            ...row,
+            analise_qualitativa_texto: Html2Text(row.analise_qualitativa),
+            risco_detalhamento_texto: Html2Text(row.risco_detalhamento),
+            risco_ponto_atencao_texto: Html2Text(row.risco_ponto_atencao),
+        }));
     }
 
     //TODO implementar paginação para evitar memory overflow
