@@ -144,14 +144,22 @@ export async function getVariavelPermissionsWhere(
         ],
     });
 
-    if (!isRoot && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
-        const orgao_id = user.orgao_id;
-        if (!orgao_id) throw new BadRequestException('Usuário sem órgão associado');
+    if (!isRoot) {
+        const orConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
 
-        whereConditions.push({
-            OR: [{ medicao_orgao_id: orgao_id }, { validacao_orgao_id: orgao_id }, { liberacao_orgao_id: orgao_id }],
-        });
-    } else if (!isRoot) {
+        if (user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+            const orgao_id = user.orgao_id;
+            if (!orgao_id) throw new BadRequestException('Usuário sem órgão associado');
+
+            orConditions.push({
+                OR: [
+                    { medicao_orgao_id: orgao_id },
+                    { validacao_orgao_id: orgao_id },
+                    { liberacao_orgao_id: orgao_id },
+                ],
+            });
+        }
+
         const equipes = await prisma.grupoResponsavelEquipe.findMany({
             where: {
                 removido_em: null,
@@ -168,18 +176,23 @@ export async function getVariavelPermissionsWhere(
         });
         const equipeIds = equipes.map((e) => e.id);
 
-        whereConditions.push({
-            VariavelGrupoResponsavelEquipe: {
-                some: {
-                    grupo_responsavel_equipe: {
-                        removido_em: null,
-                        id: {
-                            in: equipeIds,
+        if (equipeIds.length > 0) {
+            orConditions.push({
+                VariavelGrupoResponsavelEquipe: {
+                    some: {
+                        grupo_responsavel_equipe: {
+                            removido_em: null,
+                            id: {
+                                in: equipeIds,
+                            },
                         },
                     },
                 },
-            },
-        });
+            });
+        }
+
+        // sem nenhuma condição aplicável, o usuário não pode ver nenhuma variável (deny-all)
+        whereConditions.push(orConditions.length > 0 ? { OR: orConditions } : { id: { in: [] } });
     }
 
     return { AND: whereConditions };
