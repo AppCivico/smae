@@ -5,7 +5,7 @@ import {
   computed,
   ref, unref, watch,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
@@ -18,7 +18,6 @@ import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vu
 import SmallModal from '@/components/SmallModal.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
-import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -40,6 +39,8 @@ defineOptions({
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
+const router = useRouter();
+
 const {
   meta_id: metaId,
   iniciativa_id: iniciativaId,
