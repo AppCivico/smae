@@ -84,23 +84,35 @@ const sessaoPrincipal = computed<SessaoDeDetalheLinhas>(() => {
     return [];
   }
 
-  return [
+  const itens: SessaoDeDetalheLinhas = [
     [
       { label: 'Órgão proprietário', valor: emFoco.value.orgao_proprietario?.sigla },
       { label: 'Fonte', valor: emFoco.value.fonte?.nome },
       { label: 'Código', valor: emFoco.value.codigo },
     ],
-    [
+  ];
+
+  if (temVariavelCategorica.value) {
+    itens.push([
       { label: 'Tipo de variável', valor: obterTipo.value.tipo },
-      { label: 'Nome', valor: obterTipo.value.nome },
-    ],
+      { label: 'Nome da categoria', valor: obterTipo.value.nome },
+    ]);
+  } else {
+    itens.push([
+      { label: 'Tipo de variável', valor: obterTipo.value.tipo },
+    ]);
+  }
+
+  itens.push(
     [
       { label: 'Descrição', valor: emFoco.value.descricao, col: 3 },
     ],
     [
       { label: 'Metodologia', valor: emFoco.value.metodologia, col: 3 },
     ],
-  ];
+  );
+
+  return itens;
 });
 
 const sessoes = computed<SessaoDeDetalhe | null>(() => {
