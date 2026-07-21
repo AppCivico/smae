@@ -813,7 +813,10 @@ watch(() => props.group, () => {
       <div
         v-if="indicadorId && !Variaveis[indicadorId]?.loading"
         v-show="values.indicador_tipo === 'Numerico'"
-        class="flex column start"
+        :class="{
+          flex: values.indicador_tipo === 'Numerico'
+        }"
+        class="column start"
       >
         <EditorDeFormula
           v-model="formula"
