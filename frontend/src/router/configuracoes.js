@@ -192,10 +192,8 @@ export default [
             component: PortfoliosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{
-                portfolioId:
-                  Number.parseInt(params.portfolioId, 10) || undefined,
-              },
+              portfolioId:
+                Number.parseInt(params.portfolioId, 10) || undefined,
             }),
 
             meta: {
@@ -250,9 +248,7 @@ export default [
             component: EtapasCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{
-                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
-              },
+              etapaId: Number.parseInt(params.etapaId, 10) || undefined,
             }),
             meta: {
               título: 'Editar etapa do projeto',
@@ -313,10 +309,8 @@ export default [
                 component: () => import('@/views/mdo.portfolios/PortfoliosCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    portfolioId:
-                      Number.parseInt(params.portfolioId, 10) || undefined,
-                  },
+                  portfolioId:
+                    Number.parseInt(params.portfolioId, 10) || undefined,
                   rotaDeEscape: 'mdo.portfolio.listar',
                 }),
 
@@ -370,11 +364,9 @@ export default [
                 component: GruposDeObservadoresCriarEditar,
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    grupoDeObservadoresId:
-                      Number.parseInt(params.grupoDeObservadoresId, 10)
-                      || undefined,
-                  },
+                  grupoDeObservadoresId:
+                    Number.parseInt(params.grupoDeObservadoresId, 10)
+                    || undefined,
                 }),
 
                 meta: {
@@ -496,9 +488,7 @@ export default [
             component: PaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{
-                painelId: Number.parseInt(params.painelId, 10) || undefined,
-              },
+              painelId: Number.parseInt(params.painelId, 10) || undefined,
             }),
 
             meta: {
@@ -554,9 +544,7 @@ export default [
             component: () => import('@/views/equipes/EquipesCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
-              ...{
-                equipeId: Number.parseInt(params.equipeId, 10) || undefined,
-              },
+              equipeId: Number.parseInt(params.equipeId, 10) || undefined,
             }),
             meta: {
               título: () => useEquipesStore().itemParaEdicao.titulo,
@@ -656,9 +644,7 @@ export default [
             component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
-              ...{
-                etiquetaId: Number.parseInt(params.etiquetaId, 10) || undefined,
-              },
+              etiquetaId: Number.parseInt(params.etiquetaId, 10) || undefined,
             }),
 
             meta: {
@@ -715,10 +701,8 @@ export default [
             ),
             props: ({ params }) => ({
               ...params,
-              ...{
-                empreendimentoId:
-                  Number.parseInt(params.empreendimentoId, 10) || undefined,
-              },
+              empreendimentoId:
+                Number.parseInt(params.empreendimentoId, 10) || undefined,
             }),
             meta: {
               título: () => {
@@ -770,11 +754,9 @@ export default [
             ),
             props: ({ params }) => ({
               ...params,
-              ...{
-                programaHabitacionalId:
-                  Number.parseInt(params.programaHabitacionalId, 10)
-                  || undefined,
-              },
+              programaHabitacionalId:
+                Number.parseInt(params.programaHabitacionalId, 10)
+                || undefined,
             }),
 
             meta: {
@@ -841,9 +823,7 @@ export default [
                 // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    fluxoId: Number.parseInt(params.fluxoId, 10) || undefined,
-                  },
+                  fluxoId: Number.parseInt(params.fluxoId, 10) || undefined,
                 }),
                 meta: {
                   título: 'Editar fluxo',
@@ -884,9 +864,7 @@ export default [
                 component: EtapasCriarEditar,
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    etapaId: Number.parseInt(params.etapaId, 10) || undefined,
-                  },
+                  etapaId: Number.parseInt(params.etapaId, 10) || undefined,
                 }),
 
                 meta: {
@@ -927,9 +905,7 @@ export default [
                 component: FasesCriarEditar,
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    fasesId: Number.parseInt(params.fasesId, 10) || undefined,
-                  },
+                  fasesId: Number.parseInt(params.fasesId, 10) || undefined,
                 }),
 
                 meta: {
@@ -971,10 +947,8 @@ export default [
                 // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    tarefasId:
-                      Number.parseInt(params.tarefasId, 10) || undefined,
-                  },
+                  tarefasId:
+                    Number.parseInt(params.tarefasId, 10) || undefined,
                 }),
 
                 meta: {
@@ -1016,10 +990,8 @@ export default [
                 // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    situacaoId:
-                      Number.parseInt(params.situacaoId, 10) || undefined,
-                  },
+                  situacaoId:
+                    Number.parseInt(params.situacaoId, 10) || undefined,
                 }),
 
                 meta: {
@@ -1060,12 +1032,9 @@ export default [
                 // PRA-FAZER: considerar o uso de tiparPropsDeRota aqui, para evitar repetição
                 props: ({ params }) => ({
                   ...params,
-                  // eslint-disable-next-line max-len
-                  ...{
-                    statusDistribuicaoId:
-                      Number.parseInt(params.statusDistribuicaoId, 10)
-                      || undefined,
-                  },
+                  statusDistribuicaoId:
+                    Number.parseInt(params.statusDistribuicaoId, 10)
+                    || undefined,
                 }),
 
                 meta: {
@@ -1266,11 +1235,9 @@ export default [
             component: GruposDePaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{
-                gruposPaineisExternosId:
-                  Number.parseInt(params.gruposPaineisExternosId, 10)
-                  || undefined,
-              },
+              gruposPaineisExternosId:
+                Number.parseInt(params.gruposPaineisExternosId, 10)
+                || undefined,
             }),
             meta: {
               título: () => {
@@ -1333,11 +1300,9 @@ export default [
             component: GruposDeObservadoresCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{
-                grupoDeObservadoresId:
-                  Number.parseInt(params.grupoDeObservadoresId, 10)
-                  || undefined,
-              },
+              grupoDeObservadoresId:
+                Number.parseInt(params.grupoDeObservadoresId, 10)
+                || undefined,
             }),
 
             meta: {
