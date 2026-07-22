@@ -869,8 +869,8 @@ export class EquipeRespService {
             }
         }
 
-        // Recalcula os perfis de PDM da pessoa (igual ao participante)
-        await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+        // Não recalcula perfis_equipe_pdm/ps: a derivação (recalculaPessoaPdmTipos / recalcPerfisEquipeColunas)
+        // lê apenas vínculos de participante. Colaborador afeta somente o perfil de acesso "Coordenador em equipes".
     }
 
     /**

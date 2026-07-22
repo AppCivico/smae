@@ -678,7 +678,9 @@ O vínculo de equipe e o privilégio de acesso são acoplados nos dois sentidos:
 - Remover o privilégio `SMAE.GrupoVariavel.participante`/`.colaborador` (em `pessoa.update` →
   `removeAcessoOuAbortaTx`) **remove** a pessoa de todas as equipes daquele tipo + recalcula.
 - **Só `participante` alimenta `perfis_equipe_pdm/ps`.** `colaborador` (responsável) só concede o perfil
-  de Coordenador — não entra no recálculo de perfis.
+  de Coordenador — não entra no recálculo de perfis. Verificado nas duas derivações: `recalculaPessoaPdmTipos`
+  e o SQL `recalcPerfisEquipeColunas` leem **apenas** a tabela de participante. Por isso `atualizaEquipeColaborador`
+  **não** chama `recalculaPessoaPdmTipos` (seria no-op) — ao mexer só em colaborador, não há perfil derivado a recalcular.
 
 Transições fail-safe (bloqueiam em vez de driftar):
 - **Troca de órgão**: lança se a pessoa é colaboradora em qualquer equipe, ou se o novo órgão
