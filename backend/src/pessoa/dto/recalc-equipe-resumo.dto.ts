@@ -15,7 +15,7 @@ export class RecalcEquipePessoaAfetadaDto {
 }
 
 export class RecalcEquipeResumoDto {
-    @ApiProperty({ description: 'Total de pessoas ativas consideradas no recálculo' })
+    @ApiProperty({ description: 'Total de pessoas consideradas no recálculo (inclusive desativadas)' })
     total_pessoas: number;
 
     @ApiProperty({ description: 'Total de pessoas efetivamente processadas (com órgão)' })

@@ -572,6 +572,23 @@ export class PessoaService implements OnModuleInit {
         const equipesAntes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
         const equipesResponsavelAntes = await this.equipeRespService.findIdsPorColaborador(pessoaId);
 
+        // Bloqueia a desativação enquanto a pessoa ainda pertence a equipes. Os vínculos
+        // (participante/colaborador), os privilégios derivados e os perfis_equipe_pdm/ps precisam ser
+        // removidos antes — caso contrário a pessoa desativada continuaria aparecendo como membro ativo
+        // de equipes (mesma lógica fail-safe da troca de órgão). Remova das equipes primeiro, depois desative.
+        if (updatePessoaDto.desativado === true && (equipesAntes.length > 0 || equipesResponsavelAntes.length > 0)) {
+            const equipeIds = [...new Set([...equipesAntes, ...equipesResponsavelAntes])];
+            const equipes = await prisma.grupoResponsavelEquipe.findMany({
+                where: { id: { in: equipeIds } },
+                select: { titulo: true },
+            });
+            throw new BadRequestException(
+                `Não é possível desativar a pessoa, pois ainda pertence às equipes: ${equipes
+                    .map((e) => e.titulo)
+                    .join(', ')}. Remova a pessoa dessas equipes antes de desativar.`
+            );
+        }
+
         const targetUserPrivileges = new Set(
             self.PessoaPerfil.flatMap((pp) => pp.perfil_acesso.perfil_privilegio.map((priv) => priv.privilegio.codigo))
         ) as Set<ListaDePrivilegios>;

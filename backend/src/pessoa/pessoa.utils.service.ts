@@ -17,10 +17,13 @@ export class PessoaUtilsService {
 
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecalcEquipeResumoDto> => {
-                // Get all active pessoas with their current teams
+                // Processa TODAS as pessoas (inclusive desativadas): pessoas desativadas mantêm vínculos
+                // ativos de equipe (removido_em: null) e seus perfis_equipe_pdm/ps continuam sendo
+                // recalculados pelos caminhos orientados a evento (recalcPessoasAfetadasPorEquipes). Se o
+                // reconciliador as ignorasse, drift em pessoas desativadas ficaria invisível — exatamente
+                // o ponto cego que este endpoint deveria detectar.
                 const pessoas = await prismaTx.pessoa.findMany({
                     where: {
-                        desativado: false,
                         pessoa_fisica: { isNot: null },
                     },
                     select: {

@@ -668,12 +668,34 @@ Para updates de membership: recalcular a união *(anterior ∪ novo)* (exemplo: 
 `GrupoResponsavelEquipePessoa` **não é uma tabela** — é apenas o nome da *relation* Prisma para
 `GrupoResponsavelEquipeParticipante` no model `Pessoa`. Não procure escritas nela.
 
+### Ciclo de vida da pessoa & cascata equipe⟷privilégio
+
+O vínculo de equipe e o privilégio de acesso são acoplados nos dois sentidos:
+
+- Entrar como participante/colaborador **adiciona** o perfil (`CONST_PERFIL_PARTICIPANTE_EQUIPE` /
+  `CONST_PERFIL_COORDENADOR_EQUIPE`) via `adicionaPerfilAcesso`.
+- Sair de **todas** as equipes do tipo **remove** o perfil via `removePerfilSeSemEquipe`.
+- Remover o privilégio `SMAE.GrupoVariavel.participante`/`.colaborador` (em `pessoa.update` →
+  `removeAcessoOuAbortaTx`) **remove** a pessoa de todas as equipes daquele tipo + recalcula.
+- **Só `participante` alimenta `perfis_equipe_pdm/ps`.** `colaborador` (responsável) só concede o perfil
+  de Coordenador — não entra no recálculo de perfis.
+
+Transições fail-safe (bloqueiam em vez de driftar):
+- **Troca de órgão**: lança se a pessoa é colaboradora em qualquer equipe, ou se o novo órgão
+  invalidaria uma participação (`verificaValidadeEquipesNovoOrgao`).
+- **Desativação** (`desativado: true`): **bloqueada** enquanto a pessoa pertencer a qualquer equipe
+  (participante ou colaborador) — remova das equipes primeiro. Isso garante que uma pessoa desativada
+  nunca fique como membro ativo com perfis derivados pendurados. Não há delete físico de pessoa.
+
 ### Verificação / reconciliação
 
-- `PATCH /api/pessoa/recalc-equipe` (SMAE.superadmin) recalcula todo mundo e retorna um resumo
-  (`RecalcEquipeResumoDto`): `pessoas_com_correcao` deve ser **0** em regime estável. Não-zero após os
-  fixes de jul/2026 = algum write path novo esqueceu o recálculo → use `pessoas_afetadas` + logs de
-  auditoria da janela para achar o culpado.
+- `PATCH /api/pessoa/recalc-equipe` (SMAE.superadmin) recalcula **todo mundo, inclusive desativados**, e
+  retorna um resumo (`RecalcEquipeResumoDto`): `pessoas_com_correcao` deve ser **0** em regime estável.
+  Não-zero após os fixes de jul/2026 = algum write path novo esqueceu o recálculo → use
+  `pessoas_afetadas` + logs de auditoria da janela para achar o culpado.
+  - **Inclui desativados de propósito:** pessoas desativadas mantêm vínculos ativos de equipe e seus
+    perfis são mantidos pelos caminhos orientados a evento; se o reconciliador as ignorasse, drift nelas
+    seria invisível (ponto cego). Detecção precisa cobrir o mesmo conjunto que a manutenção.
 - O recálculo é idempotente: rodar duas vezes seguidas deve zerar na segunda.
 - Limitação estrutural conhecida: qualquer solução "enumere os pontos de escrita" (service calls,
   triggers, eventos) pode esquecer um input transitivo novo. O backstop é a reconciliação periódica +
