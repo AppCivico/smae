@@ -224,7 +224,6 @@ iniciar();
             type="number"
             class="inputtext light mb1"
             min="1"
-            max="1000"
             step="1"
             @update:model-value="values.duracao = Number(values.duracao)"
           />
