@@ -7,6 +7,7 @@ import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { IndicadorTokenData, SerieCompactToken } from '../common/SerieCompactToken';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaItem } from '../variavel-categorica/dto/variavel-categorica.dto';
@@ -775,7 +776,21 @@ export class IndicadorService {
             });
             if (cronoEmUso > 0) throw new HttpException('Indicador possui variáveis de cronograma em uso.', 400);
 
-            prismaTx.variavel.updateMany({
+            // Coleta as equipes que respondem pelas variáveis deste indicador ANTES do soft-delete,
+            // para recalcular os perfis das pessoas afetadas (recalculaPessoaPdmTipos ignora variáveis
+            // removidas, então elas ficariam "presas" ao indicador removido até o recalc-equipe rodar).
+            const vinculosVar = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
+                where: {
+                    removido_em: null,
+                    variavel: {
+                        removido_em: null,
+                        indicador_variavel: { some: { indicador_id: id } },
+                    },
+                },
+                select: { grupo_responsavel_equipe_id: true },
+            });
+
+            await prismaTx.variavel.updateMany({
                 where: {
                     indicador_variavel: {
                         some: {
@@ -788,6 +803,11 @@ export class IndicadorService {
                     removido_por: user.id,
                 },
             });
+
+            await recalcPessoasAfetadasPorEquipes(
+                vinculosVar.map((v) => v.grupo_responsavel_equipe_id),
+                prismaTx
+            );
 
             return await prismaTx.indicador.updateMany({
                 where: { id: id },
@@ -1347,6 +1367,17 @@ export class IndicadorService {
 
             await AddTaskRecalcVariaveis(prismaTx, { variavelIds: variableIdsToLink });
             await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
+
+            // O vínculo variável↔indicador resolve o tipo (PDM/PS) das variáveis não-Global no cálculo
+            // de perfis; recalcula as pessoas das equipes responsáveis por essas variáveis.
+            const vinculosVar = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
+                where: { removido_em: null, variavel_id: { in: variableIdsToLink } },
+                select: { grupo_responsavel_equipe_id: true },
+            });
+            await recalcPessoasAfetadasPorEquipes(
+                vinculosVar.map((v) => v.grupo_responsavel_equipe_id),
+                prismaTx
+            );
         });
 
         return;
@@ -1408,6 +1439,12 @@ export class IndicadorService {
             await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [dto.variavel_id] });
             await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
 
+            // Equipes responsáveis pela variável, coletadas antes de remover o vínculo com o indicador
+            const vinculosVar = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
+                where: { removido_em: null, variavel_id: dto.variavel_id },
+                select: { grupo_responsavel_equipe_id: true },
+            });
+
             await prismaTx.indicadorVariavel.deleteMany({
                 where: {
                     variavel_id: dto.variavel_id,
@@ -1416,6 +1453,13 @@ export class IndicadorService {
                     indicador_origem_id: null,
                 },
             });
+
+            // O tipo (PDM/PS) das variáveis não-Global depende do vínculo variável↔indicador; recalcula
+            // após remover o vínculo para refletir a nova resolução (ou a ausência dela).
+            await recalcPessoasAfetadasPorEquipes(
+                vinculosVar.map((v) => v.grupo_responsavel_equipe_id),
+                prismaTx
+            );
         });
 
         return;

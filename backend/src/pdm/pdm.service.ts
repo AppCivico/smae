@@ -16,6 +16,7 @@ import { Date2YMD } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
@@ -823,6 +824,42 @@ export class PdmService {
                 );
             }
 
+            // Coleta as equipes vinculadas a este PDM (via PdmPerfil) e as equipes que respondem
+            // por variáveis dos indicadores deste PDM ANTES do soft-delete, para recalcular os
+            // perfis das pessoas afetadas — caso contrário elas ficam com perfis_equipe_pdm/ps
+            // "presos" ao plano removido até o recalc-equipe rodar.
+            const equipesAfetadas = new Set<number>();
+
+            const perfisPdm = await prismaTx.pdmPerfil.findMany({
+                where: { pdm_id: id, removido_em: null },
+                select: { equipe_id: true },
+            });
+            for (const p of perfisPdm) equipesAfetadas.add(p.equipe_id);
+
+            const vinculosVar = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
+                where: {
+                    removido_em: null,
+                    variavel: {
+                        removido_em: null,
+                        indicador_variavel: {
+                            some: {
+                                desativado: false,
+                                indicador: {
+                                    removido_em: null,
+                                    OR: [
+                                        { meta: { pdm_id: id } },
+                                        { iniciativa: { meta: { pdm_id: id } } },
+                                        { atividade: { iniciativa: { meta: { pdm_id: id } } } },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+                select: { grupo_responsavel_equipe_id: true },
+            });
+            for (const v of vinculosVar) equipesAfetadas.add(v.grupo_responsavel_equipe_id);
+
             await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
@@ -830,6 +867,8 @@ export class PdmService {
                     removido_em: now,
                 },
             });
+
+            await recalcPessoasAfetadasPorEquipes(Array.from(equipesAfetadas), prismaTx);
 
             // variáveis globais usadas neste plano precisam recalcular o ps_dashboard_variavel,
             // senão continuam "presas" ao plano removido (bloqueando a exclusão delas)
@@ -1223,7 +1262,7 @@ export class PdmService {
             }
         }
 
-        const promessas: Promise<void>[] = [];
+        const promessas: Promise<unknown>[] = [];
         for (const pessoaId of pessoasAfetadas) {
             promessas.push(this.equipeRespService.recalculaPessoaPdmTipos(pessoaId, prismaTx));
         }
