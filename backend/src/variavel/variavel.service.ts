@@ -149,7 +149,10 @@ export function GetVariavelPalavraChave(input: string | undefined, prisma: Prism
     return PrismaHelpers.buscaIdsPalavraChave(prisma, 'variavel', input);
 }
 
-export function GetVariavelWhereSet(filters: FilterVariavelDto) {
+export function GetVariavelWhereSet(
+    filters: FilterVariavelDto,
+    opts?: { regionalizacaoViaFilhas?: boolean }
+) {
     const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
     if (filters.remover_desativados || filters.remover_desativados === undefined) {
         // não acredito que sirva de nada, mas vou manter pois já estava assim
@@ -205,7 +208,21 @@ export function GetVariavelWhereSet(filters: FilterVariavelDto) {
     ];
 
     if (filters.nivel_regionalizacao && !filters.regiao_id) {
-        firstSet.push({ regiao: { nivel: filters.nivel_regionalizacao } });
+        if (opts?.regionalizacaoViaFilhas) {
+            // As variáveis "mãe" (globais) não possuem região própria (regiao_id = null): o nível de
+            // regionalização vive nas variáveis filhas, criadas uma por região. Portanto, ao filtrar a
+            // listagem de globais (que só retorna as mães, veja variavel_mae_id em findAllGlobal), o filtro
+            // precisa olhar as filhas. Mantemos também a condição direta para variáveis que porventura
+            // tenham região própria naquele nível.
+            firstSet.push({
+                OR: [
+                    { regiao: { nivel: filters.nivel_regionalizacao } },
+                    { variaveis_filhas: { some: { regiao: { nivel: filters.nivel_regionalizacao } } } },
+                ],
+            });
+        } else {
+            firstSet.push({ regiao: { nivel: filters.nivel_regionalizacao } });
+        }
     }
 
     return permissionsBaseSet;
@@ -1330,8 +1347,8 @@ export class VariavelService {
         return tmp;
     }
 
-    getVariavelWhereSet(filters: FilterVariavelDto) {
-        return GetVariavelWhereSet(filters);
+    getVariavelWhereSet(filters: FilterVariavelDto, opts?: { regionalizacaoViaFilhas?: boolean }) {
+        return GetVariavelWhereSet(filters, opts);
     }
 
     private getVariavelGlobalWhereSet(filters: FilterVariavelGlobalDto, ids: number[] | undefined) {
@@ -1344,7 +1361,7 @@ export class VariavelService {
             tipo: { in: ['Calculada', 'Global'] },
 
             variavel: {
-                AND: this.getVariavelWhereSet(filters),
+                AND: this.getVariavelWhereSet(filters, { regionalizacaoViaFilhas: true }),
 
                 NOT: filters.not_indicador_id
                     ? {
