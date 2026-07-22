@@ -1,4 +1,10 @@
+import { Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+
+/** Aceita tanto o Logger padrão do Nest quanto o LoggerWithLog (que persiste em log_generico). */
+type MinimalLogger = { verbose: (message: string, ...args: any[]) => void };
+
+const fallbackLogger = new Logger('recalcPerfisEquipeColunas');
 
 /**
  * Recálculo dos campos pessoa.perfis_equipe_pdm e pessoa.perfis_equipe_ps,
@@ -35,12 +41,14 @@ export type RecalcPerfisEquipeResult = {
  */
 export async function recalcPerfisEquipeColunas(
     prismaTx: Prisma.TransactionClient,
-    pessoaIds?: number[]
+    pessoaIds?: number[],
+    logger?: MinimalLogger
 ): Promise<RecalcPerfisEquipeResult> {
     if (pessoaIds && pessoaIds.length === 0) return { updated: 0, total: 0 };
 
     const filtroPessoa = pessoaIds ? Prisma.sql`p.id = ANY(${pessoaIds}::int[])` : Prisma.sql`p.desativado = false`;
 
+    const startedAt = Date.now();
     const result = await prismaTx.$queryRaw<{ updated: number; total: number }[]>`
         WITH pessoa_equipe AS (
             SELECT p.id AS pessoa_id, gre.id AS equipe_id, gre.perfil
@@ -113,6 +121,12 @@ export async function recalcPerfisEquipeColunas(
             (SELECT count(*)::int FROM computed) AS total
     `;
 
+    const tookMs = Date.now() - startedAt;
+    const escopo = pessoaIds ? `${pessoaIds.length} pessoa(s) no escopo` : 'todas as pessoas ativas';
+    (logger ?? fallbackLogger).verbose(
+        `Recalc perfis de equipe (${escopo}): ${result[0].updated}/${result[0].total} pessoa(s) alterada(s), took ${tookMs}ms`
+    );
+
     return result[0];
 }
 
@@ -128,7 +142,11 @@ export async function recalculaPessoaPdmTipos(
  * Encontra todas as pessoas participantes ativas das equipes informadas
  * e recalcula seus perfis_equipe_pdm/perfis_equipe_ps.
  */
-export async function recalcPessoasAfetadasPorEquipes(equipeIds: number[], prismaTx: Prisma.TransactionClient) {
+export async function recalcPessoasAfetadasPorEquipes(
+    equipeIds: number[],
+    prismaTx: Prisma.TransactionClient,
+    logger?: MinimalLogger
+) {
     if (equipeIds.length === 0) return;
 
     const participantes = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
@@ -142,6 +160,7 @@ export async function recalcPessoasAfetadasPorEquipes(equipeIds: number[], prism
 
     await recalcPerfisEquipeColunas(
         prismaTx,
-        participantes.map((p) => p.pessoa_id)
+        participantes.map((p) => p.pessoa_id),
+        logger
     );
 }

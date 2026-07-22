@@ -152,10 +152,7 @@ export function GetVariavelPalavraChave(input: string | undefined, prisma: Prism
     return PrismaHelpers.buscaIdsPalavraChave(prisma, 'variavel', input, /[\s./]+/);
 }
 
-export function GetVariavelWhereSet(
-    filters: FilterVariavelDto,
-    opts?: { regionalizacaoViaFilhas?: boolean }
-) {
+export function GetVariavelWhereSet(filters: FilterVariavelDto, opts?: { regionalizacaoViaFilhas?: boolean }) {
     const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
     if (filters.remover_desativados || filters.remover_desativados === undefined) {
         // não acredito que sirva de nada, mas vou manter pois já estava assim
@@ -283,6 +280,23 @@ export class VariavelService {
 
         if (v.length == 0) throw new HttpException('Variável não encontrada', 400);
         return v[0];
+    }
+
+    /**
+     * Loga a diferença entre a lista anterior e a nova (adicionados/removidos/mantidos),
+     * para deixar claro no log o que realmente mudou em vez de despejar a lista inteira.
+     */
+    private logAlteracaoLista(logger: LoggerWithLog, label: string, antes: number[], depois: number[]) {
+        const antesSet = new Set(antes);
+        const depoisSet = new Set(depois);
+        const adicionados = depois.filter((id) => !antesSet.has(id));
+        const removidos = antes.filter((id) => !depoisSet.has(id));
+        const mantidos = depois.filter((id) => antesSet.has(id));
+
+        logger.verbose(
+            `${label}: adicionados [${adicionados.join(', ') || '-'}], ` +
+                `removidos [${removidos.join(', ') || '-'}], mantidos ${mantidos.length}`
+        );
     }
 
     async buildVarResponsaveis(
@@ -772,7 +786,7 @@ export class VariavelService {
         await prismaTxn.variavelResponsavel.createMany({
             data: await this.buildVarResponsaveis(variavel.id, responsaveis),
         });
-        logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
+        this.logAlteracaoLista(logger, 'Responsáveis', [], responsaveis);
 
         const variavelId = variavel.id;
 
@@ -794,7 +808,12 @@ export class VariavelService {
         prismaTxn: Prisma.TransactionClient,
         variavelId: number,
         logger: LoggerWithLog,
-        extraEquipesParaRecalcular: number[] = []
+        extraEquipesParaRecalcular: number[] = [],
+        antesPorPerfil: { Medicao: number[]; Validacao: number[]; Liberacao: number[] } = {
+            Medicao: [],
+            Validacao: [],
+            Liberacao: [],
+        }
     ) {
         if (Array.isArray(dto.medicao_grupo_ids)) {
             await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
@@ -803,7 +822,7 @@ export class VariavelService {
                     grupo_responsavel_equipe_id: grupo_id,
                 })),
             });
-            logger.verbose(`Grupos de medição adicionados: ${dto.medicao_grupo_ids.join(', ')}`);
+            this.logAlteracaoLista(logger, 'Grupos de medição', antesPorPerfil.Medicao, dto.medicao_grupo_ids);
         }
 
         if (Array.isArray(dto.validacao_grupo_ids)) {
@@ -813,7 +832,7 @@ export class VariavelService {
                     grupo_responsavel_equipe_id: grupo_id,
                 })),
             });
-            logger.verbose(`Grupos de validação adicionados: ${dto.validacao_grupo_ids.join(', ')}`);
+            this.logAlteracaoLista(logger, 'Grupos de validação', antesPorPerfil.Validacao, dto.validacao_grupo_ids);
         }
 
         if (Array.isArray(dto.liberacao_grupo_ids)) {
@@ -823,7 +842,7 @@ export class VariavelService {
                     grupo_responsavel_equipe_id: grupo_id,
                 })),
             });
-            logger.verbose(`Grupos de liberação adicionados: ${dto.liberacao_grupo_ids.join(', ')}`);
+            this.logAlteracaoLista(logger, 'Grupos de liberação', antesPorPerfil.Liberacao, dto.liberacao_grupo_ids);
         }
 
         const equipesAfetadas = Array.from(
@@ -834,7 +853,7 @@ export class VariavelService {
                 ...(dto.liberacao_grupo_ids ?? []),
             ])
         );
-        await recalcPessoasAfetadasPorEquipes(equipesAfetadas, prismaTxn);
+        await recalcPessoasAfetadasPorEquipes(equipesAfetadas, prismaTxn, logger);
     }
 
     private getPeriodTuples(
@@ -1516,7 +1535,13 @@ export class VariavelService {
                     VariavelAssuntoVariavel: { select: { assunto_variavel_id: true } },
                     VariavelGrupoResponsavelEquipe: {
                         where: { removido_em: null },
-                        select: { grupo_responsavel_equipe_id: true },
+                        select: {
+                            grupo_responsavel_equipe_id: true,
+                            grupo_responsavel_equipe: { select: { perfil: true } },
+                        },
+                    },
+                    variavel_responsavel: {
+                        select: { pessoa_id: true },
                     },
                 },
             });
@@ -1678,7 +1703,26 @@ export class VariavelService {
                 if (dto.validacao_orgao_id) validacao_orgao_id = dto.validacao_orgao_id;
                 if (dto.liberacao_orgao_id) liberacao_orgao_id = dto.liberacao_orgao_id;
 
-                await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger, gruposAtuais);
+                const gruposAntesPorPerfil = {
+                    Medicao: self.VariavelGrupoResponsavelEquipe.filter(
+                        (v) => v.grupo_responsavel_equipe.perfil === 'Medicao'
+                    ).map((v) => v.grupo_responsavel_equipe_id),
+                    Validacao: self.VariavelGrupoResponsavelEquipe.filter(
+                        (v) => v.grupo_responsavel_equipe.perfil === 'Validacao'
+                    ).map((v) => v.grupo_responsavel_equipe_id),
+                    Liberacao: self.VariavelGrupoResponsavelEquipe.filter(
+                        (v) => v.grupo_responsavel_equipe.perfil === 'Liberacao'
+                    ).map((v) => v.grupo_responsavel_equipe_id),
+                };
+
+                await this.insertEquipeResponsavel(
+                    dto,
+                    prismaTxn,
+                    variavelId,
+                    logger,
+                    gruposAtuais,
+                    gruposAntesPorPerfil
+                );
             }
 
             dto.orgao_proprietario_id = dto.orgao_proprietario_id ?? selfBefUpdate.orgao_proprietario_id;
@@ -1824,12 +1868,14 @@ export class VariavelService {
                     await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
                 }
 
+                const responsaveisAntes = self.variavel_responsavel.map((r) => r.pessoa_id);
+
                 await prismaTxn.variavelResponsavel.deleteMany({ where: { variavel_id: variavelId } });
 
                 await prismaTxn.variavelResponsavel.createMany({
                     data: await this.buildVarResponsaveis(variavelId, responsaveis),
                 });
-                logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
+                this.logAlteracaoLista(logger, 'Responsáveis', responsaveisAntes, responsaveis);
             }
 
             let recalc = Number(self.valor_base).toString() !== Number(updated.valor_base).toString();

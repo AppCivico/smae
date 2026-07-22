@@ -612,7 +612,7 @@ export class EquipeRespService {
 
                 // Recalcula perfis de todas as pessoas afetadas (participantes anteriores + atuais)
                 // em uma única query set-based, para não segurar row locks de pessoa em loop.
-                await recalcPerfisEquipeColunas(prismaTx, Array.from(pessoasAfetadas));
+                await recalcPerfisEquipeColunas(prismaTx, Array.from(pessoasAfetadas), logger);
 
                 await prismaTx.grupoResponsavelEquipe.update({
                     where: {
@@ -703,7 +703,8 @@ export class EquipeRespService {
                 // Recalcula perfis das pessoas que eram membros da equipe removida
                 await recalcPerfisEquipeColunas(
                     prismaTx,
-                    affectedMembers.map((m) => m.pessoa_id)
+                    affectedMembers.map((m) => m.pessoa_id),
+                    logger
                 );
 
                 // Se saíram de todas as equipes, remove também o perfil de acesso
