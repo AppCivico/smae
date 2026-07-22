@@ -37,7 +37,10 @@ export class CreatePsMonitoramentoMensalFilterDto {
 
     @IsOptional()
     @IsBoolean()
-    @Transform(({ value }: any) => value === 'true')
+    // O corpo é JSON, então `conferida` chega como booleano de verdade. Comparar direto com a
+    // string 'true' transformava `true` em `false` e o relatório filtrava as séries pelo valor
+    // invertido. Só converte quando vier como string (query string), preservando o booleano.
+    @Transform(({ value }: any) => (value === 'true' ? true : value === 'false' ? false : value))
     @Expose()
     conferida?: boolean;
 
