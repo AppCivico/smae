@@ -4,7 +4,7 @@ import { join } from 'path';
 import { AppModule } from './app.module';
 import { setupSwaggerDocumentation } from './swagger.config';
 import { Request, Response } from 'express';
-import { prismaQueryAls } from './prisma/prisma-query-context';
+import { currentPrismaQuerySeq, prismaQueryAls } from './prisma/prisma-query-context';
 
 const SMAE_HEADERS = 'smae-sistemas';
 const winston = require('winston'),
@@ -30,7 +30,7 @@ async function bootstrap() {
 
     // Per-request Prisma query buffer (consumed by PrismaErrorFilter)
     app.use((_req: Request, _res: Response, next: () => void) => {
-        prismaQueryAls.run([], () => next());
+        prismaQueryAls.run({ startSeq: currentPrismaQuerySeq(), entries: [] }, () => next());
     });
 
     // Request/Response logging
