@@ -11,6 +11,7 @@ This document contains patterns and conventions learned from implementing featur
 - [Permission Builder Pattern](#permission-builder-pattern)
 - [Workflow Permission System](#workflow-permission-system)
 - [Geolocation Integration](#geolocation-integration)
+- [Equipes & Perfis Derivados (perfis_equipe_pdm/ps)](#equipes--perfis-derivados-perfis_equipe_pdmps)
 - [Migration Workflow](#migration-workflow)
 - [Seed File Structure](#seed-file-structure)
 
@@ -612,6 +613,71 @@ export class CreateDemandaLocalizacaoDto {
     geolocalizacao_token: string;  // Token from frontend
 }
 ```
+
+---
+
+## Equipes & Perfis Derivados (perfis_equipe_pdm/ps)
+
+> **⚠️ Dados derivados/cacheados.** `pessoa.perfis_equipe_pdm` e `pessoa.perfis_equipe_ps` são um cache
+> recalculado por `recalculaPessoaPdmTipos()` (`src/equipe-resp/recalc-perfis-equipe.util.ts`).
+> Qualquer escrita que altere um *input* da derivação **DEVE** chamar o recálculo na **mesma transação**,
+> senão os perfis ficam obsoletos (drift) até alguém rodar `PATCH /api/pessoa/recalc-equipe`.
+
+### A cadeia de derivação (inputs)
+
+O recálculo lê, para cada pessoa:
+
+```
+grupo_responsavel_equipe_participante (removido_em)      ← em quais equipes a pessoa está
+  └─ grupo_responsavel_equipe (perfil, removido_em)
+       ├─ pdm_perfil (removido_em) ─→ pdm (tipo, removido_em)   ← vínculo equipe↔PDM/PS
+       └─ variavel_grupo_responsavel_equipe (removido_em)       ← vínculo equipe↔variável
+            └─ variavel (tipo, removido_em)
+                 └─ [se tipo != Global] indicador_variavel (desativado)
+                      └─ indicador ─→ meta/iniciativa/atividade ─→ pdm (tipo)
+```
+
+- Variável `Global`: perfil entra em **ambos** os conjuntos (PDM e PS) — a cadeia do indicador é ignorada.
+- Variável não-Global: o tipo (PDM vs PS) é resolvido pelo indicador → meta → pdm. Hoje `Calculada` é
+  sempre filha de uma `Global` e variáveis `PDM` (antigo) usam `variavel_responsavel` (pessoas, não
+  equipes) — mas o código trata o caso mesmo assim, por segurança.
+
+**Regra prática: se sua escrita toca qualquer tabela/coluna do diagrama acima (incluindo soft-delete via
+`removido_em`!), recalcule os afetados.** Os esquecimentos históricos foram justamente os inputs a 2-3
+saltos de distância: `pdm.removido_em` (delete do PDM) e `indicador_variavel` (associar/desassociar
+variável, remoção de indicador).
+
+### Como recalcular
+
+```typescript
+import { recalculaPessoaPdmTipos, recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
+
+// Uma pessoa específica (retorna { changed: boolean }; só escreve se houve diff — idempotente):
+await recalculaPessoaPdmTipos(pessoaId, prismaTx);
+
+// Todas as pessoas participantes de um conjunto de equipes (colete os IDs ANTES do soft-delete!):
+await recalcPessoasAfetadasPorEquipes(equipeIds, prismaTx);
+```
+
+Padrão para deletes: **coletar as equipes afetadas antes** do `updateMany({ data: { removido_em } })`,
+depois recalcular (exemplos: `PdmService.delete`, `IndicadorService.remove`, `VariavelService` delete).
+Para updates de membership: recalcular a união *(anterior ∪ novo)* (exemplo: `EquipeRespService.update`).
+
+### Tabela espelho
+
+`GrupoResponsavelEquipePessoa` **não é uma tabela** — é apenas o nome da *relation* Prisma para
+`GrupoResponsavelEquipeParticipante` no model `Pessoa`. Não procure escritas nela.
+
+### Verificação / reconciliação
+
+- `PATCH /api/pessoa/recalc-equipe` (SMAE.superadmin) recalcula todo mundo e retorna um resumo
+  (`RecalcEquipeResumoDto`): `pessoas_com_correcao` deve ser **0** em regime estável. Não-zero após os
+  fixes de jul/2026 = algum write path novo esqueceu o recálculo → use `pessoas_afetadas` + logs de
+  auditoria da janela para achar o culpado.
+- O recálculo é idempotente: rodar duas vezes seguidas deve zerar na segunda.
+- Limitação estrutural conhecida: qualquer solução "enumere os pontos de escrita" (service calls,
+  triggers, eventos) pode esquecer um input transitivo novo. O backstop é a reconciliação periódica +
+  alerta em drift > 0, não a disciplina.
 
 ---
 
