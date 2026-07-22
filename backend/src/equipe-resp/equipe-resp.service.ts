@@ -11,6 +11,15 @@ import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto'
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
 import { recalculaPessoaPdmTipos } from './recalc-perfis-equipe.util';
 
+export type AtualizaEquipeResult = {
+    /** quantidade de vínculos de equipe (participante) adicionados */
+    teamsAdded: number;
+    /** quantidade de vínculos de equipe (participante) removidos */
+    teamsRemoved: number;
+    /** true quando os perfis_equipe_pdm/perfis_equipe_ps da pessoa foram alterados */
+    perfisChanged: boolean;
+};
+
 @Injectable()
 export class EquipeRespService {
     constructor(
@@ -191,7 +200,10 @@ export class EquipeRespService {
         equipes: number[],
         prismaTx: Prisma.TransactionClient,
         orgao_id: number
-    ): Promise<void> {
+    ): Promise<AtualizaEquipeResult> {
+        let teamsAdded = 0;
+        let teamsRemoved = 0;
+
         const equipesAtuais = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
             where: {
                 pessoa_id: pessoaId,
@@ -218,6 +230,7 @@ export class EquipeRespService {
                         removido_em: new Date(Date.now()),
                     },
                 });
+                teamsRemoved++;
             }
         }
 
@@ -249,13 +262,16 @@ export class EquipeRespService {
                         orgao_id: orgao_id,
                     },
                 });
+                teamsAdded++;
             }
         }
-        await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+        const { changed: perfisChanged } = await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+
+        return { teamsAdded, teamsRemoved, perfisChanged };
     }
 
     async recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma.TransactionClient) {
-        await recalculaPessoaPdmTipos(pessoaId, prismaTx);
+        return await recalculaPessoaPdmTipos(pessoaId, prismaTx);
     }
 
     async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {

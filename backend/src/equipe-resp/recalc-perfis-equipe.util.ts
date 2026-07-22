@@ -8,7 +8,26 @@ import { PerfilResponsavelEquipe, Prisma } from '@prisma/client';
  *    Para variáveis Global (sem vínculo com PDM/PS), o perfil é adicionado em ambos os conjuntos.
  *    Para demais variáveis, o tipo (PDM ou PS) é resolvido pelo indicador → meta → pdm.
  */
-export async function recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma.TransactionClient) {
+export type RecalculaPessoaPdmTiposResult = {
+    /** true quando os perfis (PDM e/ou PS) da pessoa foram efetivamente alterados */
+    changed: boolean;
+};
+
+function perfisSaoIguais(a: PerfilResponsavelEquipe[], b: PerfilResponsavelEquipe[]): boolean {
+    if (a.length !== b.length) return false;
+    const setB = new Set(b);
+    return a.every((p) => setB.has(p));
+}
+
+export async function recalculaPessoaPdmTipos(
+    pessoaId: number,
+    prismaTx: Prisma.TransactionClient
+): Promise<RecalculaPessoaPdmTiposResult> {
+    const pessoaAtual = await prismaTx.pessoa.findUniqueOrThrow({
+        where: { id: pessoaId },
+        select: { perfis_equipe_pdm: true, perfis_equipe_ps: true },
+    });
+
     const equipes = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
         where: {
             pessoa_id: pessoaId,
@@ -22,11 +41,16 @@ export async function recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma
     const perfisPs = new Set<PerfilResponsavelEquipe>();
 
     if (equipeIds.length === 0) {
-        await prismaTx.pessoa.update({
-            where: { id: pessoaId },
-            data: { perfis_equipe_pdm: [], perfis_equipe_ps: [] },
-        });
-        return;
+        const changed =
+            !perfisSaoIguais(pessoaAtual.perfis_equipe_pdm, []) ||
+            !perfisSaoIguais(pessoaAtual.perfis_equipe_ps, []);
+        if (changed) {
+            await prismaTx.pessoa.update({
+                where: { id: pessoaId },
+                data: { perfis_equipe_pdm: [], perfis_equipe_ps: [] },
+            });
+        }
+        return { changed };
     }
 
     const pdmTiposEPerfis = await prismaTx.pdm.findMany({
@@ -118,13 +142,24 @@ export async function recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma
         }
     }
 
-    await prismaTx.pessoa.update({
-        where: { id: pessoaId },
-        data: {
-            perfis_equipe_pdm: Array.from(perfisPdm),
-            perfis_equipe_ps: Array.from(perfisPs),
-        },
-    });
+    const novosPerfisPdm = Array.from(perfisPdm);
+    const novosPerfisPs = Array.from(perfisPs);
+
+    const changed =
+        !perfisSaoIguais(pessoaAtual.perfis_equipe_pdm, novosPerfisPdm) ||
+        !perfisSaoIguais(pessoaAtual.perfis_equipe_ps, novosPerfisPs);
+
+    if (changed) {
+        await prismaTx.pessoa.update({
+            where: { id: pessoaId },
+            data: {
+                perfis_equipe_pdm: novosPerfisPdm,
+                perfis_equipe_ps: novosPerfisPs,
+            },
+        });
+    }
+
+    return { changed };
 }
 
 /**

@@ -9,6 +9,7 @@ import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
 import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { ListPessoaDto, ListPessoaReducedDto } from './dto/list-pessoa.dto';
+import { RecalcEquipeResumoDto } from './dto/recalc-equipe-resumo.dto';
 import {
     BuscaResponsabilidades,
     DetalheResponsabilidadeDto,
@@ -63,9 +64,8 @@ export class PessoaController {
     @ApiBearerAuth('access-token')
     @Patch('recalc-equipe')
     @Roles(['SMAE.superadmin'])
-    async recalculaEquipeTodasPessoas(): Promise<string> {
-        await this.pessoaUtilsService.recalculaEquipeTodasPessoas();
-        return 'OK';
+    async recalculaEquipeTodasPessoas(): Promise<RecalcEquipeResumoDto> {
+        return await this.pessoaUtilsService.recalculaEquipeTodasPessoas();
     }
 
     @ApiBearerAuth('access-token')
