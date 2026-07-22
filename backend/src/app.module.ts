@@ -30,6 +30,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { SmaeThrottlerGuard } from './auth/guards/throttler.guard';
 import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
 import { ContentInterceptor } from './content.interceptor';
+import { QueryDebugInterceptor } from './query-debug.interceptor';
 import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
@@ -167,6 +168,10 @@ import { SysadminModule } from './sysadmin/sysadmin.module';
         {
             provide: APP_INTERCEPTOR,
             useClass: ContentInterceptor,
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: QueryDebugInterceptor,
         },
         {
             provide: APP_PIPE,
