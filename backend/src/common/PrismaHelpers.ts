@@ -34,7 +34,12 @@ export class PrismaHelpers {
     static async buscaIdsPalavraChave(
         prisma: PrismaClient,
         tableName: string,
-        input: string | undefined
+        input: string | undefined,
+        // separadores usados para quebrar a busca em termos. Por padrão só espaços.
+        // Para tabelas cujo vetor de busca também indexa o código quebrado em partes
+        // (ex.: variavel usa REPLACE de '.' e '/' por espaço), passe /[\s./]+/ para que
+        // uma busca por trecho do meio do código (ex.: "06.00719/2024") case com as partes.
+        splitRegex: RegExp = /\s+/
     ): Promise<number[] | undefined> {
         let palavrasChave: number[] | undefined = undefined;
         if (input) {
@@ -46,7 +51,7 @@ export class PrismaHelpers {
             };
 
             const words = trimmedInput
-                .split(/\s+/i)
+                .split(splitRegex)
                 .filter((word) => word.length > 0)
                 .map((word) => `${escapeSpecialChars(word)}:*`)
                 .join(' & ');

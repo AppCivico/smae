@@ -146,7 +146,10 @@ function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
 }
 
 export function GetVariavelPalavraChave(input: string | undefined, prisma: PrismaClient) {
-    return PrismaHelpers.buscaIdsPalavraChave(prisma, 'variavel', input);
+    // Além de espaço, quebra também em '.' e '/', pois o vetor de busca de variavel indexa
+    // o código tanto inteiro quanto quebrado nessas separações (ver migration do vetores_busca).
+    // Assim uma busca por trecho do meio do código (ex.: "06.00719/2024") casa com as partes.
+    return PrismaHelpers.buscaIdsPalavraChave(prisma, 'variavel', input, /[\s./]+/);
 }
 
 export function GetVariavelWhereSet(
