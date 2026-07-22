@@ -9,7 +9,7 @@ import { OrgaoService } from '../orgao/orgao.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
-import { recalculaPessoaPdmTipos } from './recalc-perfis-equipe.util';
+import { recalcPerfisEquipeColunas, recalculaPessoaPdmTipos } from './recalc-perfis-equipe.util';
 
 export type AtualizaEquipeResult = {
     /** quantidade de vínculos de equipe (participante) adicionados */
@@ -611,9 +611,8 @@ export class EquipeRespService {
                 }
 
                 // Recalcula perfis de todas as pessoas afetadas (participantes anteriores + atuais)
-                for (const pessoaId of pessoasAfetadas) {
-                    await recalculaPessoaPdmTipos(pessoaId, prismaTx);
-                }
+                // em uma única query set-based, para não segurar row locks de pessoa em loop.
+                await recalcPerfisEquipeColunas(prismaTx, Array.from(pessoasAfetadas));
 
                 await prismaTx.grupoResponsavelEquipe.update({
                     where: {
@@ -702,9 +701,10 @@ export class EquipeRespService {
                 });
 
                 // Recalcula perfis das pessoas que eram membros da equipe removida
-                for (const member of affectedMembers) {
-                    await recalculaPessoaPdmTipos(member.pessoa_id, prismaTx);
-                }
+                await recalcPerfisEquipeColunas(
+                    prismaTx,
+                    affectedMembers.map((m) => m.pessoa_id)
+                );
 
                 // Se saíram de todas as equipes, remove também o perfil de acesso
                 for (const member of affectedMembers) {
@@ -890,91 +890,13 @@ export class EquipeRespService {
     }> {
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
-                const result = await this.recalcPerfisEquipeColunas(prismaTx);
+                const result = await recalcPerfisEquipeColunas(prismaTx);
                 const sync = await this.syncPerfisAcessoEquipe(prismaTx);
 
                 return { ...result, ...sync };
             },
             { maxWait: 15000, timeout: 120000 }
         );
-    }
-
-    private async recalcPerfisEquipeColunas(
-        prismaTx: Prisma.TransactionClient
-    ): Promise<{ updated: number; total: number }> {
-        const result = await prismaTx.$queryRaw<{ updated: number; total: number }[]>`
-            WITH pessoa_equipe AS (
-                SELECT p.id AS pessoa_id, gre.id AS equipe_id, gre.perfil
-                FROM pessoa p
-                LEFT JOIN grupo_responsavel_equipe_pessoa grep
-                    ON grep.pessoa_id = p.id AND grep.removido_em IS NULL
-                LEFT JOIN grupo_responsavel_equipe gre
-                    ON gre.id = grep.grupo_responsavel_equipe_id AND gre.removido_em IS NULL
-                WHERE p.desativado = false
-            ),
-            pdm_perfil_tipos AS (
-                SELECT pe.pessoa_id, pe.perfil, pdm.tipo::text AS tipo
-                FROM pessoa_equipe pe
-                JOIN pdm_perfil pp ON pp.equipe_id = pe.equipe_id AND pp.removido_em IS NULL
-                JOIN pdm ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
-            ),
-            variavel_tipos AS (
-                SELECT
-                    pe.pessoa_id,
-                    pe.perfil,
-                    CASE
-                        WHEN v.tipo = 'Global' THEN ARRAY['PDM','PS']
-                        ELSE ARRAY(
-                            SELECT DISTINCT pdm_v.tipo::text
-                            FROM indicador_variavel iv
-                            JOIN indicador ind ON ind.id = iv.indicador_id
-                            LEFT JOIN meta m ON m.id = ind.meta_id
-                            LEFT JOIN iniciativa ini ON ini.id = ind.iniciativa_id
-                            LEFT JOIN meta mi ON mi.id = ini.meta_id
-                            LEFT JOIN atividade ati ON ati.id = ind.atividade_id
-                            LEFT JOIN iniciativa inia ON inia.id = ati.iniciativa_id
-                            LEFT JOIN meta ma ON ma.id = inia.meta_id
-                            JOIN pdm pdm_v ON pdm_v.id = COALESCE(m.pdm_id, mi.pdm_id, ma.pdm_id)
-                                AND pdm_v.removido_em IS NULL
-                            WHERE iv.variavel_id = v.id AND iv.desativado = false
-                        )
-                    END AS tipos
-                FROM pessoa_equipe pe
-                JOIN variavel_grupo_responsavel_equipe vgre
-                    ON vgre.grupo_responsavel_equipe_id = pe.equipe_id AND vgre.removido_em IS NULL
-                JOIN variavel v ON v.id = vgre.variavel_id AND v.removido_em IS NULL
-            ),
-            combined AS (
-                SELECT pessoa_id, perfil, tipo FROM pdm_perfil_tipos
-                UNION ALL
-                SELECT pessoa_id, perfil, UNNEST(tipos) AS tipo FROM variavel_tipos
-            ),
-            computed AS (
-                SELECT
-                    p.id AS pessoa_id,
-                    COALESCE(array_agg(DISTINCT c.perfil) FILTER (WHERE c.tipo = 'PDM'), '{}') AS perfis_pdm,
-                    COALESCE(array_agg(DISTINCT c.perfil) FILTER (WHERE c.tipo = 'PS'), '{}') AS perfis_ps
-                FROM pessoa p
-                LEFT JOIN combined c ON c.pessoa_id = p.id
-                WHERE p.desativado = false
-                GROUP BY p.id
-            ),
-            do_update AS (
-                UPDATE pessoa SET
-                    perfis_equipe_pdm = computed.perfis_pdm::"PerfilResponsavelEquipe"[],
-                    perfis_equipe_ps = computed.perfis_ps::"PerfilResponsavelEquipe"[]
-                FROM computed
-                WHERE pessoa.id = computed.pessoa_id
-                AND (pessoa.perfis_equipe_pdm IS DISTINCT FROM computed.perfis_pdm::"PerfilResponsavelEquipe"[]
-                     OR pessoa.perfis_equipe_ps IS DISTINCT FROM computed.perfis_ps::"PerfilResponsavelEquipe"[])
-                RETURNING 1
-            )
-            SELECT
-                (SELECT count(*)::int FROM do_update) AS updated,
-                (SELECT count(*)::int FROM computed) AS total
-        `;
-
-        return result[0];
     }
 
     /**

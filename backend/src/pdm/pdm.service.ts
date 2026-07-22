@@ -15,7 +15,6 @@ import { LoggerWithLog } from '../common/LoggerWithLog';
 import { Date2YMD } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
 import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -228,8 +227,6 @@ export class PdmService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => UploadService))
         private readonly uploadService: UploadService,
-        @Inject(forwardRef(() => EquipeRespService))
-        private readonly equipeRespService: EquipeRespService,
         private readonly pdmCicloService: PdmCicloService,
         private readonly featureFlagService: FeatureFlagService
     ) {}
@@ -1247,26 +1244,9 @@ export class PdmService {
             }
         }
 
-        // Depois te todos os updates, pega todas as pessoas afetadas
-        const pessoasAfetadas = new Set<number>();
-        for (const equipe_id of [...keptRecord, ...data.equipes]) {
-            const membros = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
-                where: {
-                    grupo_responsavel_equipe_id: equipe_id,
-                    removido_em: null,
-                },
-                select: { pessoa_id: true },
-            });
-            for (const r of membros) {
-                pessoasAfetadas.add(r.pessoa_id);
-            }
-        }
-
-        const promessas: Promise<unknown>[] = [];
-        for (const pessoaId of pessoasAfetadas) {
-            promessas.push(this.equipeRespService.recalculaPessoaPdmTipos(pessoaId, prismaTx));
-        }
-        await Promise.all(promessas);
+        // Depois de todos os updates, recalcula os perfis de todas as pessoas afetadas
+        // (participantes das equipes anteriores e novas) em uma única query set-based.
+        await recalcPessoasAfetadasPorEquipes([...keptRecord, ...data.equipes], prismaTx);
 
         return cpItens;
     }
