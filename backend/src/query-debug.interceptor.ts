@@ -1,8 +1,9 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import { AuthRequest } from './auth/models/AuthRequest';
-import { getRecentPrismaQueries } from './prisma/prisma-query-context';
+import { PrismaService } from './prisma/prisma.service';
+import { getRecentPrismaQueries, PrismaQueryLogEntry } from './prisma/prisma-query-context';
 
 /**
  * Loga as queries do Prisma capturadas durante a requisição quando o cliente pede debug,
@@ -14,13 +15,19 @@ import { getRecentPrismaQueries } from './prisma/prisma-query-context';
  *
  * As queries já são coletadas globalmente pelo $on('query') em PrismaService -> prisma-query-context;
  * aqui apenas expomos o que foi coletado nesta requisição (com fallback no ring buffer global).
+ *
+ * Além do log via Logger, persiste as queries em `log_generico` e devolve o id da linha no header
+ * `x-debug-log-id`, para consulta posterior (ex.: Metabase).
  */
 @Injectable()
 export class QueryDebugInterceptor implements NestInterceptor {
     private readonly logger = new Logger('QueryDebug');
 
+    constructor(private readonly prisma: PrismaService) {}
+
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const req = context.switchToHttp().getRequest<AuthRequest>();
+        const res = context.switchToHttp().getResponse();
 
         const pediuDebug = req.header('x-debug') !== undefined || req.query?.debug === '1';
         const ehAdmin = !!req.user && req.user.hasSomeRoles(['SMAE.superadmin']);
@@ -30,23 +37,48 @@ export class QueryDebugInterceptor implements NestInterceptor {
         if (!ativo) return next.handle();
 
         return next.handle().pipe(
-            tap({
-                next: () => this.dump(req),
-                error: () => this.dump(req),
-            })
+            // Persiste antes de emitir a resposta, para conseguir setar o header com o id.
+            mergeMap((body) => from(this.persist(req, res).then(() => body))),
+            // Se a persistência falhar, não derruba a requisição.
+            // (o erro já é logado dentro de persist)
         );
     }
 
-    private dump(req: AuthRequest): void {
+    private async persist(req: AuthRequest, res: any): Promise<void> {
         const queries = getRecentPrismaQueries();
-        this.logger.log(
+        const texto = this.montarTexto(req, queries);
+
+        this.logger.log(texto);
+
+        try {
+            const logData = req.user?.getLogData();
+            const ip = logData?.ip || req.ip || '0.0.0.0';
+            const pessoa_sessao_id =
+                logData?.pessoa_sessao_id && logData.pessoa_sessao_id > 0 ? logData.pessoa_sessao_id : null;
+
+            const row = await this.prisma.logGenerico.create({
+                data: {
+                    contexto: `QueryDebug ${req.method} ${req.url}`,
+                    ip,
+                    log: texto,
+                    pessoa_id: logData?.pessoa_id ?? null,
+                    pessoa_sessao_id,
+                },
+                select: { id: true },
+            });
+
+            if (!res.headersSent) res.setHeader('x-debug-log-id', String(row.id));
+        } catch (e) {
+            this.logger.error(`Falha ao persistir log de debug: ${e}`);
+        }
+    }
+
+    private montarTexto(req: AuthRequest, queries: PrismaQueryLogEntry[]): string {
+        return (
             `${req.method} ${req.url} — ${queries.length} query(s):\n` +
-                queries
-                    .map(
-                        (q, i) =>
-                            `#${i + 1} (${q.duration}ms) ${q.query}` + (q.params ? `\n     params: ${q.params}` : '')
-                    )
-                    .join('\n')
+            queries
+                .map((q, i) => `#${i + 1} (${q.duration}ms) ${q.query}` + (q.params ? `\n     params: ${q.params}` : ''))
+                .join('\n')
         );
     }
 }
