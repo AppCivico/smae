@@ -176,6 +176,7 @@ onMounted(async () => {
         :schema="schema"
         as="legend"
         class="label"
+        required
       />
       <div class="f1 flex align-center flexwrap g1">
         <label

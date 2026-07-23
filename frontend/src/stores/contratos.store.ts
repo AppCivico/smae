@@ -277,7 +277,6 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
   getters: {
     itemParaEdicao: ({ emFoco }) => ({
       ...emFoco,
-      contrato_exclusivo: emFoco?.contrato_exclusivo ?? true,
       data_assinatura: emFoco?.data_assinatura
         ? dateTimeToDate(emFoco?.data_assinatura)
         : null,

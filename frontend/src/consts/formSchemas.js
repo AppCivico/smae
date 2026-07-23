@@ -367,7 +367,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .max(1024)
       .required(),
     contrato_exclusivo: boolean()
-      .nullable()
+      .required()
       .label(`Contrato exclusivo ${tela === 'projeto' ? 'desse Projeto' : 'dessa Obra'}`),
     status: string()
       .label('Status')
