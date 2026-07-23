@@ -62,7 +62,7 @@ export class ApiLogRestoreService implements TaskableService {
                 created_pessoa_id: row.created_pessoa_id ?? null,
             }));
 
-            await this.prisma.api_request_log.createMany({
+            await this.prisma.encrypted.api_request_log.createMany({
                 data: logsToInsert,
                 skipDuplicates: true,
             });

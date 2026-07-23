@@ -58,7 +58,7 @@ export class LoggerMiddleware implements NestMiddleware {
                 let created_pessoa_id: number | null = null;
                 if (request.user && request.user instanceof PessoaFromJwt) created_pessoa_id = request.user.id;
 
-                this.prisma.api_request_log
+                this.prisma.encrypted.api_request_log
                     .create({
                         data: {
                             request_num: request_num++,

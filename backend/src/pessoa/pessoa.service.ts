@@ -1893,7 +1893,9 @@ export class PessoaService implements OnModuleInit {
 
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             WITH filter_modulos AS (
-                SELECT ARRAY[${filterModulosJson}]::"ModuloSistema"[] AS modulos
+                -- driver adapter (Prisma 7): o pg serializa array JS como literal '{a,b}' num único
+                -- parâmetro; ARRAY[$1] criaria um array aninhado — cast direto do parâmetro resolve.
+                SELECT ${filterModulosJson}::"ModuloSistema"[] AS modulos
             ),
             filtered_pessoa_perfil AS (
                 SELECT pp.perfil_acesso_id
@@ -1925,10 +1927,13 @@ export class PessoaService implements OnModuleInit {
                 WHERE id = ${pessoaId}
             )
             SELECT
-                array_agg(DISTINCT cod_priv) AS privilegios,
-                array_agg(DISTINCT modulo_sistema) AS sistemas,
-                (SELECT perfis_equipe_pdm FROM _pessoa) as perfis_equipe_pdm,
-                (SELECT perfis_equipe_ps FROM _pessoa) as perfis_equipe_ps
+                -- jsonb_agg/to_jsonb: com driver adapter (Prisma 7) arrays de $queryRaw voltam como
+                -- string '{a,b}'; JSON volta como array JS. jsonb_agg retorna NULL em conjunto vazio,
+                -- preservando o comportamento do array_agg usado na verificação de "sem permissões".
+                jsonb_agg(DISTINCT cod_priv) AS privilegios,
+                jsonb_agg(DISTINCT modulo_sistema) AS sistemas,
+                (SELECT to_jsonb(perfis_equipe_pdm) FROM _pessoa) as perfis_equipe_pdm,
+                (SELECT to_jsonb(perfis_equipe_ps) FROM _pessoa) as perfis_equipe_ps
             FROM perms;
         `;
         if (!dados[0] || dados[0].sistemas === null || !Array.isArray(dados[0].sistemas)) {

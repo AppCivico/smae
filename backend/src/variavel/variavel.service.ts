@@ -2483,7 +2483,8 @@ export class VariavelService {
                 SELECT variavel_id FROM insert_control
             )
             SELECT
-                array_agg(DISTINCT variavel_id) as variaveis
+                -- jsonb_agg: driver adapter (Prisma 7) devolve arrays de $queryRaw como string; JSON volta como array JS
+                jsonb_agg(DISTINCT variavel_id) as variaveis
             FROM must_update_indicators
         `;
 
@@ -2871,7 +2872,8 @@ export class VariavelService {
             >`
                 SELECT
                     variavel_id,
-                    array_agg(DISTINCT data_ciclo_target::text ORDER BY data_ciclo_target::text) AS ciclos,
+                    -- jsonb_agg: driver adapter (Prisma 7) devolve array_agg de $queryRaw como string; JSON volta como array JS
+                    jsonb_agg(DISTINCT data_ciclo_target::text ORDER BY data_ciclo_target::text) AS ciclos,
                     COUNT(*) AS total_rows
                 FROM _suspend_jobs_global
                 WHERE ciclo_owner_id = ANY(${cycleOwnerIds})
