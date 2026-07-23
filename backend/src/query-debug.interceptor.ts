@@ -30,7 +30,8 @@ export class QueryDebugInterceptor implements NestInterceptor {
         const res = context.switchToHttp().getResponse();
 
         const pediuDebug = req.header('x-debug') !== undefined || req.query?.debug === '1';
-        const ehAdmin = !!req.user && req.user.hasSomeRoles(['SMAE.superadmin']);
+        const ehAdmin =
+            !!req.user && typeof req.user.hasSomeRoles === 'function' && req.user.hasSomeRoles(['SMAE.superadmin']);
         const liberadoPorEnv = process.env.QUERY_DEBUG_ALLOW_ALL === '1';
         const ativo = pediuDebug && (ehAdmin || liberadoPorEnv);
 
