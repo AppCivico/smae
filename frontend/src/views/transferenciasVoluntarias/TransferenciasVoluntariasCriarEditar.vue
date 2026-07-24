@@ -12,7 +12,7 @@ import { useRoute, useRouter } from 'vue-router';
 import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/transferenciasVoluntarias';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
