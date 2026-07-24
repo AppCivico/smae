@@ -85,6 +85,11 @@ export class TransferenciaDetailDto {
     gestor_contrato: string | null;
     ordenador_despesa: string | null;
     numero_identificacao: string | null;
+    @ApiProperty({
+        description: 'Indica o código do detalhamento do uso dos repasses parlamentares nas transferências especiais',
+        nullable: true,
+    })
+    plano_de_acao: string | null;
     tipo: IdNomeDto | null;
 
     workflow_id: number | null;

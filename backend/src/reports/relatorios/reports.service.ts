@@ -42,6 +42,9 @@ import { PPObrasService } from '../pp-obras/pp-obras.service';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
+import { RelatorioModeloConfigDto } from '../post-process/dto/relatorio-modelo.dto';
+import { ReportPostProcessService } from '../post-process/report-post-process.service';
+import { isSchemaAware, ReportFileSchema } from '../post-process/report-schema';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { TransferenciasService } from '../transferencias/transferencias.service';
@@ -187,7 +190,8 @@ export class ReportsService {
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
         @Inject(forwardRef(() => DemandasService))
         private readonly demandasService: DemandasService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly postProcess: ReportPostProcessService
     ) {}
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
@@ -221,7 +225,13 @@ export class ReportsService {
 
         const parametrosOriginal = structuredClone(parametros);
 
-        const files = await service.toFileOutput(parametros, ctx, user);
+        let files = await service.toFileOutput(parametros, ctx, user);
+
+        // Pós-processamento (seleção/renome/filtro/ordem + XLSX tipado) roda entre a extração e
+        // a injeção do info.json, para que o info.json descreva a execução e não seja tocado
+        // pelo modelo.
+        files = await this.aplicarPosProcessamento(service, parametros, files, dto, ctx);
+
         let hasInfo = false;
         for (const file of files) {
             ctx.addFile(file);
@@ -245,6 +255,111 @@ export class ReportsService {
                 buffer: Buffer.from(infoJson, 'utf8'),
             });
         }
+    }
+
+    /**
+     * Aplica o modelo de apresentação sobre os arquivos brutos, quando tudo se alinha:
+     * flag `REPORT_POST_PROCESS` ligada, service com `describeSchema` e um `modelo_id`
+     * apontando para uma config existente.
+     *
+     * **Falha segura**: qualquer erro aqui devolve os arquivos originais. Uma extração pode
+     * levar minutos/horas; perder o relatório inteiro por um problema de formatação seria
+     * um péssimo negócio. O resultado (ok/erro/motivo do skip) vai para o `resumo_saida`.
+     */
+    private async aplicarPosProcessamento(
+        service: ReportableService,
+        parametros: any,
+        files: FileOutput[],
+        dto: CreateReportDto,
+        ctx: ReportContext
+    ): Promise<FileOutput[]> {
+        const habilitado = await this.smaeConfigService.getConfigBooleanWithDefault('REPORT_POST_PROCESS', false);
+        // Config ausente = comportamento legado, sem nem tocar no resumo_saida.
+        if (!habilitado) return files;
+
+        const modeloId = dto.modelo_id ?? null;
+        if (!modeloId) {
+            await ctx.resumoSaida('pos_processamento', { aplicado: false, motivo: 'sem modelo_id' });
+            return files;
+        }
+
+        if (!isSchemaAware(service)) {
+            await ctx.resumoSaida('pos_processamento', {
+                aplicado: false,
+                modelo_id: modeloId,
+                motivo: 'fonte sem schema declarado',
+            });
+            return files;
+        }
+
+        try {
+            const config = await this.carregarModeloConfig(modeloId, dto.fonte);
+            if (!config) {
+                await ctx.resumoSaida('pos_processamento', {
+                    aplicado: false,
+                    modelo_id: modeloId,
+                    motivo: 'modelo não encontrado',
+                });
+                return files;
+            }
+
+            const schemas: ReportFileSchema[] = await service.describeSchema(parametros);
+            if (!schemas?.length) {
+                await ctx.resumoSaida('pos_processamento', {
+                    aplicado: false,
+                    modelo_id: modeloId,
+                    motivo: 'schema vazio',
+                });
+                return files;
+            }
+
+            const processados = await this.postProcess.aplicarModelo(files, schemas, config);
+            await ctx.resumoSaida('pos_processamento', {
+                aplicado: true,
+                modelo_id: modeloId,
+                arquivos: processados.map((f) => f.name),
+            });
+            return processados;
+        } catch (error) {
+            this.logger.error(
+                `Falha no pós-processamento do modelo ${modeloId}, seguindo com os arquivos brutos: ${error}`
+            );
+            await ctx.resumoSaida('pos_processamento', {
+                aplicado: false,
+                modelo_id: modeloId,
+                motivo: 'erro no pós-processamento',
+                erro: `${error?.message ?? error}`,
+            });
+            return files;
+        }
+    }
+
+    /**
+     * Carrega a coluna `config` de `relatorio_modelo`.
+     *
+     * Revalida remoção e fonte: `saveReport` já barrou o modelo inválido na criação, mas a task
+     * roda depois e o modelo pode ter sido removido nesse intervalo.
+     */
+    private async carregarModeloConfig(
+        modeloId: number,
+        fonte: FonteRelatorio
+    ): Promise<RelatorioModeloConfigDto | null> {
+        const row = await this.prisma.relatorioModelo.findFirst({
+            where: { id: modeloId, removido_em: null },
+            select: { config: true, fonte: true },
+        });
+        if (!row) return null;
+
+        // Modelo de outra fonte não tem como casar com o schema deste relatório.
+        if (row.fonte !== fonte) {
+            this.logger.warn(`Modelo ${modeloId} é da fonte ${row.fonte}, incompatível com ${fonte}.`);
+            return null;
+        }
+
+        const config = row.config?.valueOf() as RelatorioModeloConfigDto | undefined;
+        if (!config || !Array.isArray(config.arquivos)) return null;
+
+        return config;
     }
 
     private async calcTipoPdm(ctx: ReportContext, parametros: any) {
@@ -412,14 +527,25 @@ export class ReportsService {
     async zipFiles(files: FileOutput[]) {
         const zip = new AdmZip();
 
+        // Basenames que já chegam como XLSX pronto (caminho do pós-processamento, que emite
+        // `x.csv` + `x.xlsx` a partir da mesma tabela tipada). Reconverter o CSV com
+        // `read_csv_auto` desfaria os tipos e exigiria o remendo do `="valor"`.
+        const xlsxJaPresentes = new Set(
+            files.filter((f) => f.name.endsWith('.xlsx')).map((f) => f.name.slice(0, -'.xlsx'.length))
+        );
+
         for (const file of files) {
             try {
                 let csvContent: string | undefined = undefined;
+                // Só lê o conteúdo do CSV quando ele realmente vai ser convertido — arquivos
+                // grandes já pós-processados não precisam ser carregados em memória.
+                const precisaConverter =
+                    file.name.endsWith('.csv') && !xlsxJaPresentes.has(file.name.slice(0, -'.csv'.length));
 
                 if (file.buffer) {
                     zip.addFile(file.name, file.buffer);
 
-                    if (file.name.endsWith('.csv')) {
+                    if (precisaConverter) {
                         csvContent = file.buffer.toString('utf-8');
                     }
                 } else if (file.localFile) {
@@ -431,7 +557,7 @@ export class ReportsService {
                     fs.renameSync(file.localFile, tmpFilePath);
                     zip.addLocalFile(tmpFilePath);
 
-                    if (file.name.endsWith('.csv')) {
+                    if (precisaConverter) {
                         csvContent = fs.readFileSync(tmpFilePath, 'utf-8');
                     }
 
@@ -441,7 +567,7 @@ export class ReportsService {
                     throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
                 }
 
-                if (file.name.endsWith('.csv') && csvContent) {
+                if (precisaConverter && csvContent) {
                     try {
                         const xlsxBuffer = await this.convertCsvToXlsx(csvContent);
                         const xlsxName = file.name.replace('.csv', '.xlsx');
@@ -504,6 +630,20 @@ export class ReportsService {
                 );
         }
 
+        // Valida o modelo escolhido na tela de novo relatório já na criação: barrar aqui evita
+        // descobrir o problema só depois da extração inteira ter rodado na task.
+        if (dto.modelo_id) {
+            const modelo = await this.prisma.relatorioModelo.findFirst({
+                where: { id: dto.modelo_id, removido_em: null },
+                select: { fonte: true },
+            });
+            if (!modelo) throw new BadRequestException(`Modelo de relatório ${dto.modelo_id} não encontrado.`);
+            if (modelo.fonte !== dto.fonte)
+                throw new BadRequestException(
+                    `Modelo de relatório ${dto.modelo_id} é da fonte ${modelo.fonte}, incompatível com a fonte ${dto.fonte} do relatório.`
+                );
+        }
+
         // Autorização: aceita o privilégio amplo `Reports.executar.{sistema}` ou o escopado
         // `Reports.executar.{sistema}:{fonte}`.
         if (user && !hasReportPriv(user, 'executar', sistema, dto.fonte)) {
@@ -528,6 +668,7 @@ export class ReportsService {
                     visibilidade_tipo: visibilidadeTipo,
                     restrito_para: restrito_para ?? undefined,
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
+                    modelo_id: dto.modelo_id ?? null,
                     parametros: parametros,
                     parametros_processados: await BuildParametrosProcessados(this.prisma, {
                         ...dto,
@@ -965,6 +1106,7 @@ export class ReportsService {
                     fonte: true,
                     parametros: true,
                     parametros_processados: true,
+                    modelo_id: true,
                     sistema: true,
                     criado_em: true,
                     criado_por: true,
@@ -999,6 +1141,7 @@ export class ReportsService {
                 {
                     fonte: relatorio.fonte,
                     parametros: relatorio.parametros,
+                    modelo_id: relatorio.modelo_id ?? undefined,
                 },
                 pessoaJwt,
                 contexto

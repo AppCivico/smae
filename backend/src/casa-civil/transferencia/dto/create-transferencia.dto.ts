@@ -153,6 +153,17 @@ export class CreateTransferenciaDto {
     numero_identificacao?: string;
 
     @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Plano de Ação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    @ApiProperty({
+        description: 'Indica o código do detalhamento do uso dos repasses parlamentares nas transferências especiais',
+    })
+    plano_de_acao?: string;
+
+    @IsOptional()
     @IsInt()
     workflow_orgao_responsavel_id?: number;
 

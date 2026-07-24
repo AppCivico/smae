@@ -236,6 +236,9 @@ model Pessoa {
     OrcamentoRealizadoItem                   OrcamentoRealizadoItem[]          @relation("sobrescritor")
     RelatorioQueFiz                          Relatorio[]                       @relation("criador")
     RelatorioQueRemovi                       Relatorio[]                       @relation("removedor")
+    RelatorioModeloQueCriei                  RelatorioModelo[]                 @relation("Criador")
+    RelatorioModeloQueAtualizei              RelatorioModelo[]                 @relation("Atualizador")
+    RelatorioModeloQueRemovi                 RelatorioModelo[]                 @relation("Removedor")
 
     ProjetoLicoesAprendidasQCriei  ProjetoLicaoAprendida[] @relation("criador")
     ProjetoLicoesAprendidasQRemovi ProjetoLicaoAprendida[] @relation("removedor")
@@ -686,6 +689,7 @@ model Orgao {
     AtualizacaoEmLote                 AtualizacaoEmLote[]
     demandas                          Demanda[]
     solicitacoes_ajuste_distribuicao  DistribuicaoRecursoSolicitacaoAjuste[]
+    RelatorioModelo                   RelatorioModelo[]
 
     @@map("orgao")
 }
@@ -3783,17 +3787,63 @@ model Relatorio {
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte FonteRelatorio
 
-    criador       Pessoa?        @relation("criador", fields: [criado_por], references: [id])
-    removedor     Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
-    arquivo       Arquivo?       @relation(fields: [arquivo_id], references: [id])
-    pdm           Pdm?           @relation(fields: [pdm_id], references: [id])
+    // Modelo (customização de colunas/filtros) usado nesta execução. NULL = saída padrão do relatório.
+    modelo_id Int?
+
+    criador       Pessoa?          @relation("criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?          @relation("removedor", fields: [removido_por], references: [id])
+    arquivo       Arquivo?         @relation(fields: [arquivo_id], references: [id])
+    pdm           Pdm?             @relation(fields: [pdm_id], references: [id])
+    modelo        RelatorioModelo? @relation(fields: [modelo_id], references: [id])
     //ProjetoRelatorioFila ProjetoRelatorioFila[]
     //processamento        RelatorioFila?
-    RelatorioFila RelatorioFila? @ignore
+    RelatorioFila RelatorioFila?   @ignore
 
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])
     @@map("relatorio")
+}
+
+/// Modelo (template) de saída de relatório definido pelo usuário: quais colunas, em que
+/// ordem, com quais labels, além de filtros e ordenação aplicados no pós-processamento.
+///
+/// Obs.: a unicidade de `nome` por `fonte` entre as linhas ativas é garantida por um índice
+/// único **parcial** criado à mão na migration (`relatorio_modelo_nome_fonte_unico`, com
+/// `WHERE removido_em IS NULL`) — o Prisma não sabe expressar unique parcial no schema.
+model RelatorioModelo {
+    id Int @id @default(autoincrement())
+
+    nome      String  @db.VarChar(250)
+    descricao String? @db.VarChar(1000)
+
+    fonte   FonteRelatorio
+    sistema ModuloSistema
+
+    /// Payload no formato `RelatorioModeloConfigDto` (src/reports/post-process/dto).
+    config Json @db.Json
+
+    // Visibilidade: mesmo modelo do `Relatorio` — valores de `VisibilidadeTipo`
+    // ('publico' | 'privado' | 'meu_orgao'). `orgao_id` guarda o órgão do criador no momento
+    // da criação, para que o escopo 'meu_orgao' possa ser aplicado na listagem.
+    visibilidade_tipo String? @db.VarChar(40)
+    orgao_id          Int?
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    orgao       Orgao?  @relation(fields: [orgao_id], references: [id])
+
+    relatorios Relatorio[]
+
+    @@index([fonte, removido_em])
+    @@map("relatorio_modelo")
 }
 
 model RelatorioFila {
@@ -6132,6 +6182,8 @@ model Transferencia {
     gestor_contrato      String?
     ordenador_despesa    String?
     numero_identificacao String?
+    // Indica o código do detalhamento do uso dos repasses parlamentares nas transferências especiais
+    plano_de_acao        String?
     vetores_busca        Unsupported("tsvector")?
 
     nivel_maximo_tarefa Int @default(5) @db.SmallInt

@@ -3,6 +3,8 @@ import { CampoVinculo } from '@prisma/client';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
@@ -12,9 +14,10 @@ import {
     ReportableService,
 } from '../utils/utils.service';
 import { CreateRelTribunalDeContasDto } from './dto/create-tribunal-de-contas.dto';
+import { RelTribunalDeContasCsvRow } from './entities/tribunal-de-contas-csv.entity';
 import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities/tribunal-de-contas.entity';
 @Injectable()
-export class TribunalDeContasService implements ReportableService {
+export class TribunalDeContasService implements ReportableService, SchemaAwareReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
     async asJSON(dto: CreateRelTribunalDeContasDto): Promise<RelatorioTribunalDeContasDto> {
@@ -116,25 +119,40 @@ export class TribunalDeContasService implements ReportableService {
 
             return {
                 ano: distribuicao.transferencia.ano,
-                emenda: distribuicao.transferencia.emenda,
-                programa: distribuicao.transferencia.programa,
+                // Apenas os dígitos: é limpeza de dado exigida pelo Tribunal (não formatação),
+                // por isso continua na extração e não no pós-processamento.
+                emenda: distribuicao.transferencia.emenda
+                    ? String(distribuicao.transferencia.emenda).replace(/\D/g, '')
+                    : null,
+                programa: distribuicao.transferencia.programa
+                    ? String(distribuicao.transferencia.programa).replace(/\D/g, '')
+                    : null,
                 parlamentar: distribuicao.parlamentares.map((p) => p.parlamentar.nome_popular).join('|'),
                 status: statusReport ?? null,
+                // Valores monetários saem como string para não perder precisão do Decimal do
+                // Prisma: `toNumber()` passaria por double. O DuckDB relê a coluna já como
+                // DECIMAL(18,2), então a conversão é exata.
                 valor_repasse: distribuicao.valor?.toString() ?? null,
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
-                prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
-                dotacao_orcamentaria: dotacaoStr ? `="${dotacaoStr}"` : ' - ',
+                prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia) ?? null,
+                // Sem o hack `="..."`: o guard de texto do Excel é aplicado no pós-processamento.
+                // Vazio virou `null` (antes era a string ' - ') para o DuckDB ler como NULL.
+                dotacao_orcamentaria: dotacaoStr ? dotacaoStr : null,
                 rubrica_de_receita: distribuicao.rubrica_de_receita ?? '',
                 finalidade: distribuicao.finalidade ?? '',
-                valor_empenho: distribuicao.valor_empenho?.toNumber() ?? null,
-                liquidacao_pagamento: distribuicao.valor_liquidado?.toNumber() ?? null,
+                valor_empenho: distribuicao.valor_empenho?.toString() ?? null,
+                liquidacao_pagamento: distribuicao.valor_liquidado?.toString() ?? null,
             };
         });
 
         return {
             linhas: out,
         };
+    }
+
+    async describeSchema(_params: any): Promise<ReportFileSchema[]> {
+        return [getReportRowSchema(RelTribunalDeContasCsvRow)];
     }
 
     async toFileOutput(params: any, ctx: ReportContext): Promise<FileOutput[]> {
@@ -145,56 +163,26 @@ export class TribunalDeContasService implements ReportableService {
         if (dados.linhas?.length) {
             const tmp = ctx.getTmpFile('tribunal-de-contas.csv');
 
+            // CSV bruto: nomes de coluna "de máquina", sem rótulos e sem lambdas de
+            // formatação. Rótulos, moeda, data pt-BR e o guard do Excel vêm do schema
+            // declarado em RelTribunalDeContasCsvRow, aplicado no pós-processamento.
             const csvOpts: CsvWriterOptions<RelTribunalDeContasDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: [
-                    {
-                        value: (row: any) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),
-                        label: 'Emenda',
-                    },
-                    {
-                        value: (row: any) => (row.programa ? `="${String(row.programa).replace(/\D/g, '')}"` : ''),
-                        label: 'Programa',
-                    },
-                    { value: 'ano', label: 'Ano' },
-                    { value: 'parlamentar', label: 'Parlamentar' },
-                    {
-                        value: (row: any) =>
-                            row.valor_repasse != null
-                                ? new Intl.NumberFormat('pt-BR', {
-                                      style: 'currency',
-                                      currency: 'BRL',
-                                  }).format(Number(row.valor_repasse))
-                                : '',
-                        label: 'Valor de Repasse',
-                    },
-                    { value: 'acao', label: 'Ação' },
-                    { value: 'gestor_municipal', label: 'Gestor Municipal' },
-                    { value: 'prazo_vigencia', label: 'Prazo de Vigência' },
-                    { value: 'dotacao_orcamentaria', label: 'Dotação Orçamentaria' },
-                    { value: 'rubrica_de_receita', label: 'Rubrica de Receita' },
-                    { value: 'finalidade', label: 'Política pública' },
-                    {
-                        value: (row: any) =>
-                            row.valor_empenho != null
-                                ? new Intl.NumberFormat('pt-BR', {
-                                      style: 'currency',
-                                      currency: 'BRL',
-                                  }).format(Number(row.valor_empenho))
-                                : '',
-                        label: 'Empenho',
-                    },
-                    {
-                        value: (row: any) =>
-                            row.liquidacao_pagamento != null
-                                ? new Intl.NumberFormat('pt-BR', {
-                                      style: 'currency',
-                                      currency: 'BRL',
-                                  }).format(Number(row.liquidacao_pagamento))
-                                : '',
-                        label: 'Liquidação/Pagamento',
-                    },
+                    'emenda',
+                    'programa',
+                    'ano',
+                    'parlamentar',
+                    'valor_repasse',
+                    'acao',
+                    'gestor_municipal',
+                    'prazo_vigencia',
+                    'dotacao_orcamentaria',
+                    'rubrica_de_receita',
+                    'finalidade',
+                    'valor_empenho',
+                    'liquidacao_pagamento',
                 ],
             };
 
