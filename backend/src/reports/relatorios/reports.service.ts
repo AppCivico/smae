@@ -210,6 +210,11 @@ export class ReportsService {
      * Fonte sem schema segue no caminho legado: lá a extração ainda formata, e não há schema
      * para montar modelo nenhum.
      *
+     * `REPORT_POST_PROCESS` **não** condiciona o modelo padrão — só os modelos salvos pelo
+     * usuário. Desligar a flag não restauraria a saída antiga (a extração não formata mais),
+     * apenas entregaria CSV cru; então ela virou um controle da customização, não do pipeline.
+     * O papel de escape hatch fica com o `catch` de falha segura abaixo.
+     *
      * **Falha segura**: qualquer erro aqui devolve os arquivos originais. Uma extração pode
      * levar minutos/horas; perder o relatório inteiro por um problema de formatação seria
      * um péssimo negócio. O resultado (ok/erro/motivo do skip) vai para o `resumo_saida`.
@@ -234,20 +239,7 @@ export class ReportsService {
             return files;
         }
 
-        const habilitado = await this.smaeConfigService.getConfigBooleanWithDefault('REPORT_POST_PROCESS', false);
-        if (!habilitado) {
-            // Não é um no-op silencioso: com a flag desligada esta fonte entrega o CSV cru
-            // (cabeçalho técnico, sem máscara), porque a formatação saiu da extração.
-            this.logger.warn(
-                `REPORT_POST_PROCESS desligada: ${dto.fonte} vai sair com o CSV bruto, sem labels nem formatação.`
-            );
-            await ctx.resumoSaida('pos_processamento', {
-                aplicado: false,
-                motivo: 'REPORT_POST_PROCESS desligada',
-                saida: 'csv bruto, sem labels/formatação',
-            });
-            return files;
-        }
+        const customizavel = await this.smaeConfigService.getConfigBooleanWithDefault('REPORT_POST_PROCESS', false);
 
         try {
             const schemas: ReportFileSchema[] = await service.describeSchema(parametros);
@@ -260,10 +252,10 @@ export class ReportsService {
                 return files;
             }
 
-            // Modelo salvo quando houver; senão (ou se ele sumiu no meio do caminho) o padrão do
-            // schema — degradar para "sem formatação" seria pior que degradar para "sem
-            // customização".
-            const salvo = modeloId ? await this.carregarModeloConfig(modeloId, dto.fonte) : null;
+            // Modelo salvo só entra com a flag ligada. Sem ele — flag desligada, sem `modelo_id`,
+            // ou `modelo_id` que não carrega mais — vai o padrão do schema: degradar para "sem
+            // customização" é aceitável, degradar para "sem formatação" não.
+            const salvo = modeloId && customizavel ? await this.carregarModeloConfig(modeloId, dto.fonte) : null;
             const config = salvo ?? modeloPadraoDeSchemas(schemas);
 
             const { arquivos, ignoradas } = await this.postProcess.aplicarModelo(files, schemas, config);
@@ -271,7 +263,8 @@ export class ReportsService {
                 aplicado: true,
                 modelo: salvo ? 'salvo' : 'padrao',
                 ...(modeloId ? { modelo_id: modeloId } : {}),
-                ...(modeloId && !salvo ? { motivo_padrao: 'modelo não encontrado' } : {}),
+                ...(modeloId && !customizavel ? { motivo_padrao: 'REPORT_POST_PROCESS desligada' } : {}),
+                ...(modeloId && customizavel && !salvo ? { motivo_padrao: 'modelo não encontrado' } : {}),
                 arquivos: arquivos.map((f) => f.name),
                 // Colunas/filtros do modelo que o schema atual não tem mais. O relatório sai
                 // (coluna ausente vira NULL), mas fica registrado para quem for investigar
@@ -281,12 +274,15 @@ export class ReportsService {
             return arquivos;
         } catch (error) {
             this.logger.error(
-                `Falha no pós-processamento do modelo ${modeloId}, seguindo com os arquivos brutos: ${error}`
+                `Falha no pós-processamento de ${dto.fonte} (${modeloId ? `modelo ${modeloId}` : 'modelo padrão'}), ` +
+                    `seguindo com os arquivos brutos: ${error}`
             );
             await ctx.resumoSaida('pos_processamento', {
                 aplicado: false,
-                modelo_id: modeloId,
+                ...(modeloId ? { modelo_id: modeloId } : { modelo: 'padrao' }),
                 motivo: 'erro no pós-processamento',
+                // Sem formatação a saída fica crua; registrar para não parecer sucesso silencioso.
+                saida: 'csv bruto, sem labels/formatação',
                 erro: `${error?.message ?? error}`,
             });
             return files;
