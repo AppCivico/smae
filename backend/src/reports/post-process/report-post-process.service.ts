@@ -55,6 +55,21 @@ function dateFormatSeguro(fmt: string): string {
     return fmt.replace(/'/g, "''");
 }
 
+/**
+ * Modelo implícito: todas as colunas de cada arquivo, na ordem declarada, com os labels e a
+ * formatação que o próprio schema já descreve. Sem seleção, sem filtro, sem ordenação.
+ *
+ * Existe porque a extração dos serviços com schema deixou de formatar — agora emite "compute
+ * store" (número como número, data ISO, sem máscara de moeda e sem o guard `="..."`). Sem passar
+ * pelo pós-processamento, esses relatórios sairiam com cabeçalho técnico (`valor_contrapartida`
+ * em vez de "Contrapartida") e valores crus, ou seja *pior* que antes do schema existir. Como os
+ * decoradores `@ReportColumn` foram escritos a partir da formatação antiga, aplicar o schema
+ * inteiro é justamente o que reproduz a saída de antes.
+ */
+export function modeloPadraoDeSchemas(schemas: ReportFileSchema[]): RelatorioModeloConfigDto {
+    return { arquivos: schemas.map((s) => ({ arquivo: s.arquivo })) };
+}
+
 /** Referência do modelo que o schema atual não tem mais. */
 export type ModeloReferenciaIgnorada = {
     arquivo: string;

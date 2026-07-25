@@ -9,7 +9,7 @@ import * as path from 'path';
 import { CreateRelatorioModeloDto } from '../relatorio-modelo/dto/create-relatorio-modelo.dto';
 import { RelatorioModeloConfigDto, RelatorioModeloDirecao, RelatorioModeloFiltroOp } from './dto/relatorio-modelo.dto';
 import { compilarFiltros } from './filtro-compiler';
-import { ReportPostProcessService } from './report-post-process.service';
+import { modeloPadraoDeSchemas, ReportPostProcessService } from './report-post-process.service';
 import { ReportFileSchema } from './report-schema';
 
 /**
@@ -187,6 +187,26 @@ describe('ReportPostProcessService', () => {
         const linhas = await lerXlsx(xlsxPath);
 
         expect(String(linhas[0]['Valor'])).toContain('1.234,56');
+    });
+
+    /**
+     * O modelo padrão é o que segura a saída dos relatórios sem `modelo_id`: como a extração
+     * dessas fontes passou a emitir CSV cru, sem ele o usuário receberia cabeçalho técnico e
+     * valores sem máscara — pior que antes do schema existir.
+     */
+    it('modelo padrão reproduz labels e formatação do schema', async () => {
+        const padrao = modeloPadraoDeSchemas([SCHEMA]);
+
+        expect(padrao).toEqual({ arquivos: [{ arquivo: 'exemplo.csv' }] });
+
+        const { csvTexto } = await aplicar(padrao);
+        const linhas = csvTexto.trim().split('\n');
+
+        // Cabeçalho humano (não `id;valor;vigencia;...`) e formatação pt-BR completa.
+        expect(linhas[0]).toBe('ID;Valor;Vigência;Dotação;Órgão');
+        expect(linhas[1]).toContain('1.234,56');
+        expect(linhas[1]).toContain('15/10/2024');
+        expect(csvTexto).toContain('"=""2024.10.15.3350"""');
     });
 
     it('ordena por vários campos, na ordem declarada', async () => {

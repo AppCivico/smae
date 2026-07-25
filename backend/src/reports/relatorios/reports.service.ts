@@ -43,7 +43,7 @@ import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
 import { RelatorioModeloConfigDto } from '../post-process/dto/relatorio-modelo.dto';
-import { ReportPostProcessService } from '../post-process/report-post-process.service';
+import { modeloPadraoDeSchemas, ReportPostProcessService } from '../post-process/report-post-process.service';
 import { isSchemaAware, ReportFileSchema } from '../post-process/report-schema';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
@@ -199,9 +199,16 @@ export class ReportsService {
     }
 
     /**
-     * Aplica o modelo de apresentação sobre os arquivos brutos, quando tudo se alinha:
-     * flag `REPORT_POST_PROCESS` ligada, service com `describeSchema` e um `modelo_id`
-     * apontando para uma config existente.
+     * Aplica o modelo de apresentação sobre os arquivos brutos.
+     *
+     * Para fonte **com schema declarado** o pós-processamento não é opcional: a extração dessas
+     * fontes deixou de formatar (emite "compute store" cru), então é aqui que labels, moeda,
+     * `dd/mm/aaaa` e o guard do Excel voltam. Sem `modelo_id` — ou com um `modelo_id` que não
+     * carrega mais — usa-se o modelo padrão derivado do próprio schema, que reproduz a saída
+     * anterior. Antes isto devolvia o CSV cru, com cabeçalho técnico e valores sem máscara.
+     *
+     * Fonte sem schema segue no caminho legado: lá a extração ainda formata, e não há schema
+     * para montar modelo nenhum.
      *
      * **Falha segura**: qualquer erro aqui devolve os arquivos originais. Uma extração pode
      * levar minutos/horas; perder o relatório inteiro por um problema de formatação seria
@@ -214,50 +221,57 @@ export class ReportsService {
         dto: CreateReportDto,
         ctx: ReportContext
     ): Promise<FileOutput[]> {
-        const habilitado = await this.smaeConfigService.getConfigBooleanWithDefault('REPORT_POST_PROCESS', false);
-        // Config ausente = comportamento legado, sem nem tocar no resumo_saida.
-        if (!habilitado) return files;
-
         const modeloId = dto.modelo_id ?? null;
-        if (!modeloId) {
-            await ctx.resumoSaida('pos_processamento', { aplicado: false, motivo: 'sem modelo_id' });
+
+        // Fonte sem schema: nada a fazer, a extração dela já entrega formatado.
+        if (!isSchemaAware(service)) {
+            if (modeloId)
+                await ctx.resumoSaida('pos_processamento', {
+                    aplicado: false,
+                    modelo_id: modeloId,
+                    motivo: 'fonte sem schema declarado',
+                });
             return files;
         }
 
-        if (!isSchemaAware(service)) {
+        const habilitado = await this.smaeConfigService.getConfigBooleanWithDefault('REPORT_POST_PROCESS', false);
+        if (!habilitado) {
+            // Não é um no-op silencioso: com a flag desligada esta fonte entrega o CSV cru
+            // (cabeçalho técnico, sem máscara), porque a formatação saiu da extração.
+            this.logger.warn(
+                `REPORT_POST_PROCESS desligada: ${dto.fonte} vai sair com o CSV bruto, sem labels nem formatação.`
+            );
             await ctx.resumoSaida('pos_processamento', {
                 aplicado: false,
-                modelo_id: modeloId,
-                motivo: 'fonte sem schema declarado',
+                motivo: 'REPORT_POST_PROCESS desligada',
+                saida: 'csv bruto, sem labels/formatação',
             });
             return files;
         }
 
         try {
-            const config = await this.carregarModeloConfig(modeloId, dto.fonte);
-            if (!config) {
-                await ctx.resumoSaida('pos_processamento', {
-                    aplicado: false,
-                    modelo_id: modeloId,
-                    motivo: 'modelo não encontrado',
-                });
-                return files;
-            }
-
             const schemas: ReportFileSchema[] = await service.describeSchema(parametros);
             if (!schemas?.length) {
                 await ctx.resumoSaida('pos_processamento', {
                     aplicado: false,
-                    modelo_id: modeloId,
+                    ...(modeloId ? { modelo_id: modeloId } : {}),
                     motivo: 'schema vazio',
                 });
                 return files;
             }
 
+            // Modelo salvo quando houver; senão (ou se ele sumiu no meio do caminho) o padrão do
+            // schema — degradar para "sem formatação" seria pior que degradar para "sem
+            // customização".
+            const salvo = modeloId ? await this.carregarModeloConfig(modeloId, dto.fonte) : null;
+            const config = salvo ?? modeloPadraoDeSchemas(schemas);
+
             const { arquivos, ignoradas } = await this.postProcess.aplicarModelo(files, schemas, config);
             await ctx.resumoSaida('pos_processamento', {
                 aplicado: true,
-                modelo_id: modeloId,
+                modelo: salvo ? 'salvo' : 'padrao',
+                ...(modeloId ? { modelo_id: modeloId } : {}),
+                ...(modeloId && !salvo ? { motivo_padrao: 'modelo não encontrado' } : {}),
                 arquivos: arquivos.map((f) => f.name),
                 // Colunas/filtros do modelo que o schema atual não tem mais. O relatório sai
                 // (coluna ausente vira NULL), mas fica registrado para quem for investigar
