@@ -53,13 +53,29 @@ function literalPara(tipo: ReportColumnType, valor: unknown, coluna: string): st
  * Compila filtros estruturados em condições SQL.
  *
  * A coluna precisa existir no schema — nomes não são interpolados sem verificação.
+ *
+ * `onColunaAusente` escolhe o comportamento para coluna que não existe no schema:
+ *   - **ausente (padrão)** → `BadRequestException`. É o modo da validação de criação/edição
+ *     do modelo, onde coluna inexistente é erro de digitação e deve falhar na cara do usuário.
+ *   - **presente** → o filtro é descartado e a coluna reportada. É o modo do runtime, onde a
+ *     causa provável é o schema ter mudado depois de o modelo ser salvo, e derrubar o
+ *     relatório sairia muito mais caro do que devolver as linhas sem aquele recorte.
  */
-export function compilarFiltros(filtros: RelatorioModeloFiltroDto[], colunas: ReportColumnDef[]): string[] {
+export function compilarFiltros(
+    filtros: RelatorioModeloFiltroDto[],
+    colunas: ReportColumnDef[],
+    onColunaAusente?: (coluna: string) => void
+): string[] {
     const porNome = new Map(colunas.map((c) => [c.name, c]));
 
-    return filtros.map((f) => {
+    return filtros.flatMap((f) => {
         const def = porNome.get(f.coluna);
-        if (!def) throw new BadRequestException(`Filtro inválido: coluna "${f.coluna}" não existe neste relatório.`);
+        if (!def) {
+            if (!onColunaAusente)
+                throw new BadRequestException(`Filtro inválido: coluna "${f.coluna}" não existe neste relatório.`);
+            onColunaAusente(f.coluna);
+            return [];
+        }
 
         const id = quoteIdent(def.name);
 

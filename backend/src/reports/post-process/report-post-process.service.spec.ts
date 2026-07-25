@@ -71,12 +71,16 @@ describe('ReportPostProcessService', () => {
 
     async function aplicar(modelo: RelatorioModeloConfigDto) {
         const bruto = escreverCsvBruto();
-        const out = await service.aplicarModelo([{ name: 'exemplo.csv', localFile: bruto }], [SCHEMA], modelo);
+        const { arquivos: out, ignoradas } = await service.aplicarModelo(
+            [{ name: 'exemplo.csv', localFile: bruto }],
+            [SCHEMA],
+            modelo
+        );
         for (const f of out) if (f.localFile) criados.push(f.localFile);
 
         const csv = out.find((f) => f.name.endsWith('.csv'))!;
         const xlsx = out.find((f) => f.name.endsWith('.xlsx'))!;
-        return { out, csvTexto: fs.readFileSync(csv.localFile!, 'utf-8'), xlsxPath: xlsx.localFile! };
+        return { out, ignoradas, csvTexto: fs.readFileSync(csv.localFile!, 'utf-8'), xlsxPath: xlsx.localFile! };
     }
 
     it('emite CSV e XLSX a partir do mesmo CSV bruto', async () => {
@@ -158,7 +162,7 @@ describe('ReportPostProcessService', () => {
         criados.push(bruto);
         fs.writeFileSync(bruto, 'id,valor,vigencia,dotacao,orgao__sigla\n1,0.10,2024-01-01,x,Y\n');
 
-        const out = await service.aplicarModelo([{ name: 'exemplo.csv', localFile: bruto }], [SCHEMA], {
+        const { arquivos: out } = await service.aplicarModelo([{ name: 'exemplo.csv', localFile: bruto }], [SCHEMA], {
             arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'valor' }] }],
         });
         for (const f of out) if (f.localFile) criados.push(f.localFile);
@@ -171,7 +175,7 @@ describe('ReportPostProcessService', () => {
         const bruto = escreverCsvBruto();
         criados.push(bruto);
 
-        const out = await service.aplicarModelo([{ name: 'outro.csv', localFile: bruto }], [SCHEMA], {
+        const { arquivos: out } = await service.aplicarModelo([{ name: 'outro.csv', localFile: bruto }], [SCHEMA], {
             arquivos: [{ arquivo: 'exemplo.csv' }],
         });
 
@@ -185,41 +189,134 @@ describe('ReportPostProcessService', () => {
         expect(String(linhas[0]['Valor'])).toContain('1.234,56');
     });
 
-    it('rejeita coluna inexistente na seleção com 400 (não 500)', async () => {
-        await expect(
-            aplicar({ arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'nao_existe' }] }] })
-        ).rejects.toThrow(BadRequestException);
+    it('ordena por vários campos, na ordem declarada', async () => {
+        const { csvTexto } = await aplicar({
+            arquivos: [
+                {
+                    arquivo: 'exemplo.csv',
+                    colunas: [{ coluna: 'orgao__sigla' }, { coluna: 'id' }],
+                    order_by: [
+                        { coluna: 'orgao__sigla', direcao: RelatorioModeloDirecao.ASC },
+                        { coluna: 'id', direcao: RelatorioModeloDirecao.DESC },
+                    ],
+                },
+            ],
+        });
+
+        // SEHAB antes de SMUL; dentro de SMUL, id decrescente (3 antes de 1).
+        expect(csvTexto.trim().split('\n')).toEqual(['Órgão;ID', 'SEHAB;2', 'SMUL;3', 'SMUL;1']);
     });
 
-    it('rejeita coluna inexistente em order_by', async () => {
-        await expect(
-            aplicar({
+    describe('tolerância a schema que mudou depois do modelo salvo', () => {
+        it('coluna que não existe mais sai como NULL, sem derrubar o relatório', async () => {
+            const { csvTexto, ignoradas } = await aplicar({
                 arquivos: [
                     {
                         arquivo: 'exemplo.csv',
-                        order_by: [{ coluna: 'nao_existe', direcao: RelatorioModeloDirecao.ASC }],
+                        colunas: [{ coluna: 'id' }, { coluna: 'coluna_removida' }, { coluna: 'orgao__sigla' }],
                     },
                 ],
-            })
-        ).rejects.toThrow(BadRequestException);
+            });
+
+            const linhas = csvTexto.trim().split('\n');
+            // A coluna continua na posição pedida, com o nome como cabeçalho, e vazia.
+            expect(linhas[0]).toBe('ID;coluna_removida;Órgão');
+            expect(linhas[1]).toBe('1;;SMUL');
+            expect(ignoradas).toEqual([{ arquivo: 'exemplo.csv', onde: 'colunas', coluna: 'coluna_removida' }]);
+        });
+
+        it('respeita o label do modelo na coluna ausente', async () => {
+            const { csvTexto } = await aplicar({
+                arquivos: [
+                    { arquivo: 'exemplo.csv', colunas: [{ coluna: 'sumiu', label: 'Campo Antigo' }, { coluna: 'id' }] },
+                ],
+            });
+
+            expect(csvTexto.trim().split('\n')[0]).toBe('Campo Antigo;ID');
+        });
+
+        it('descarta filtro sobre coluna ausente em vez de zerar o relatório', async () => {
+            const { csvTexto, ignoradas } = await aplicar({
+                arquivos: [
+                    {
+                        arquivo: 'exemplo.csv',
+                        colunas: [{ coluna: 'id' }],
+                        filtros: [{ coluna: 'sumiu', op: RelatorioModeloFiltroOp.eq, valor: 'x' }],
+                    },
+                ],
+            });
+
+            // As 3 linhas seguem: filtrar por NULL devolveria zero linhas.
+            expect(csvTexto.trim().split('\n')).toHaveLength(4);
+            expect(ignoradas).toEqual([{ arquivo: 'exemplo.csv', onde: 'filtros', coluna: 'sumiu' }]);
+        });
+
+        it('descarta order_by sobre coluna ausente', async () => {
+            const { ignoradas } = await aplicar({
+                arquivos: [
+                    {
+                        arquivo: 'exemplo.csv',
+                        order_by: [{ coluna: 'sumiu', direcao: RelatorioModeloDirecao.ASC }],
+                    },
+                ],
+            });
+
+            expect(ignoradas).toEqual([{ arquivo: 'exemplo.csv', onde: 'order_by', coluna: 'sumiu' }]);
+        });
     });
 
     /**
-     * `quoteIdentifier` da lib envolve o nome em `"` mas não escapa `"` interno, então um nome
-     * arbitrário em `ORDER BY` escaparia do identificador. A validação contra o schema é o que
-     * impede o SQL de ser montado — sem ela isto viraria injeção.
+     * O `quoteIdentifier`/`strftime` da lib não escapam o que recebem, então tudo que vem do
+     * modelo e chega perto de SQL é conferido ou escapado do nosso lado. Estes testes existem
+     * para essas três portas não reabrirem silenciosamente.
      */
-    it('não deixa order_by escapar do identificador SQL', async () => {
-        await expect(
-            aplicar({
+    describe('nada vindo do modelo escapa para SQL', () => {
+        it('order_by não escapa do identificador (é descartado, não interpolado)', async () => {
+            const { csvTexto, ignoradas } = await aplicar({
                 arquivos: [
                     {
                         arquivo: 'exemplo.csv',
-                        order_by: [{ coluna: 'id" , (SELECT 1) --', direcao: RelatorioModeloDirecao.ASC }],
+                        colunas: [{ coluna: 'id' }],
+                        order_by: [{ coluna: 'id" DESC, (SELECT 1) --', direcao: RelatorioModeloDirecao.ASC }],
                     },
                 ],
-            })
-        ).rejects.toThrow(BadRequestException);
+            });
+
+            expect(ignoradas.map((i) => i.onde)).toEqual(['order_by']);
+            expect(csvTexto.trim().split('\n')).toEqual(['ID', '1', '2', '3']);
+        });
+
+        it('label não cria coluna extra via rename', async () => {
+            const { csvTexto } = await aplicar({
+                arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'id', label: 'X" , 999 AS "PWNED' }] }],
+            });
+
+            const linhas = csvTexto.trim().split('\n');
+
+            // O label virou UM cabeçalho só, escapado — não uma segunda coluna com SQL.
+            // (o `999` aparece dentro do texto do label, e isso é inofensivo: é só rótulo)
+            expect(linhas[0]).toBe('"X"" , 999 AS ""PWNED"');
+            // O que provaria injeção seria a expressão ter sido avaliada numa coluna extra:
+            // as linhas de dados têm um único campo, com o valor real de `id`.
+            expect(linhas.slice(1)).toEqual(['1', '2', '3']);
+        });
+
+        it('formato_data não escapa do literal de strftime', async () => {
+            const { csvTexto } = await aplicar({
+                arquivos: [
+                    {
+                        arquivo: 'exemplo.csv',
+                        colunas: [{ coluna: 'vigencia', formato_data: "%Y') || 'VAZOU' || strftime(vigencia, '%m" }],
+                    },
+                ],
+            });
+
+            // Se o `'` tivesse escapado do literal, o `||` seria avaliado e sairia `2024VAZOU10`.
+            // Escapado, o formato inteiro é tratado como texto: `%Y`/`%m` expandem e o resto
+            // sai literal. Feio, mas é o formato que o usuário pediu — e nenhum SQL rodou.
+            expect(csvTexto).not.toContain('2024VAZOU10');
+            expect(csvTexto).toContain("2024') || 'VAZOU'");
+        });
     });
 });
 
@@ -266,6 +363,23 @@ describe('compilarFiltros', () => {
         expect(() => compilarFiltros([{ coluna: 'id', op: RelatorioModeloFiltroOp.in, valores: [] }], colunas)).toThrow(
             BadRequestException
         );
+    });
+
+    /**
+     * A tolerância é opt-in para que a validação de criação/edição do modelo continue estrita:
+     * lá, coluna inexistente é erro de digitação e tem que aparecer como 400.
+     */
+    it('só ignora coluna ausente quando o callback é passado', () => {
+        const filtros = [
+            { coluna: 'sumiu', op: RelatorioModeloFiltroOp.eq, valor: 'x' },
+            { coluna: 'id', op: RelatorioModeloFiltroOp.eq, valor: 1 },
+        ];
+
+        expect(() => compilarFiltros(filtros, colunas)).toThrow(BadRequestException);
+
+        const ausentes: string[] = [];
+        expect(compilarFiltros(filtros, colunas, (c) => ausentes.push(c))).toEqual(['"id" = 1']);
+        expect(ausentes).toEqual(['sumiu']);
     });
 });
 

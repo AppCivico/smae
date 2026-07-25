@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { ColumnFormatConfig, FormatConfig, ReportWithContext } from 'duckdb-report-builder';
 import * as fs from 'fs';
@@ -33,6 +33,44 @@ function sqlLit(value: string): string {
     return "'" + value.replace(/'/g, "''") + "'";
 }
 
+/**
+ * Pré-escapa `"` para o `quoteIdentifier` do duckdb-report-builder.
+ *
+ * A lib envolve o nome em aspas mas **não** dobra as internas (`cte-builder.js`), então um
+ * label cru vindo do modelo escaparia do identificador: `X" , 999 AS "PWNED` virava uma
+ * coluna extra com SQL arbitrário. Dobrando aqui, o `"a""b"` que a lib emite é um
+ * identificador válido que significa `a"b` — o label continua sendo exibido como escrito.
+ */
+function renameSeguro(label: string): string {
+    return label.replace(/"/g, '""');
+}
+
+/**
+ * Pré-escapa `'` para o `strftime(col, '<fmt>')` que a lib monta por interpolação, sem
+ * escapar (`format-generator.js`). Sem isto, `%Y') || 'VAZOU' || strftime(d, '%m` saía do
+ * literal e executava SQL arbitrário. O DTO ainda restringe o formato por regex; este
+ * escape é a segunda barreira, para o caso de a validação mudar.
+ */
+function dateFormatSeguro(fmt: string): string {
+    return fmt.replace(/'/g, "''");
+}
+
+/** Referência do modelo que o schema atual não tem mais. */
+export type ModeloReferenciaIgnorada = {
+    arquivo: string;
+    onde: 'colunas' | 'filtros' | 'order_by';
+    coluna: string;
+};
+
+export type AplicarModeloResultado = {
+    arquivos: FileOutput[];
+    /**
+     * O que foi degradado por não existir no schema atual. Vai para o `resumo_saida` do
+     * relatório: o modelo não falha, mas a perda não pode ser silenciosa.
+     */
+    ignoradas: ModeloReferenciaIgnorada[];
+};
+
 @Injectable()
 export class ReportPostProcessService {
     private readonly logger = new Logger(ReportPostProcessService.name);
@@ -56,8 +94,9 @@ export class ReportPostProcessService {
         files: FileOutput[],
         schemas: ReportFileSchema[],
         modelo: RelatorioModeloConfigDto
-    ): Promise<FileOutput[]> {
+    ): Promise<AplicarModeloResultado> {
         const out: FileOutput[] = [];
+        const ignoradas: ModeloReferenciaIgnorada[] = [];
 
         for (const file of files) {
             const schema = findFileSchema(schemas, file.name);
@@ -68,14 +107,25 @@ export class ReportPostProcessService {
                 continue;
             }
 
-            const colunas = this.resolverColunas(schema, cfg);
-            const filtros = compilarFiltros(cfg.filtros ?? [], schema.colunas);
+            const registrar = (onde: ModeloReferenciaIgnorada['onde'], coluna: string) => {
+                ignoradas.push({ arquivo: file.name, onde, coluna });
+                this.logger.warn(
+                    `Modelo referencia "${coluna}" em ${onde} de ${file.name}, que não existe no schema atual.`
+                );
+            };
+
+            const colunas = this.resolverColunas(schema, cfg, registrar);
+            // Filtro sobre coluna ausente é descartado, não convertido para NULL: `col = 'x'`
+            // com col NULL nunca é verdadeiro e devolveria um relatório vazio — pior que
+            // devolver as linhas sem aquele recorte.
+            const filtros = compilarFiltros(cfg.filtros ?? [], schema.colunas, (c) => registrar('filtros', c));
+            const ordens = this.resolverOrdenacao(schema, cfg, registrar);
 
             const csvOut = tmpFile('pp-csv', '.csv');
-            await this.executar(file.localFile, schema, cfg, colunas, filtros, csvOut, 'csv');
+            await this.executar(file.localFile, schema, colunas, filtros, ordens, csvOut, 'csv');
             out.push({ name: file.name, localFile: csvOut });
 
-            const xlsxOut = await this.gerarXlsx(file.localFile, schema, cfg, colunas, filtros, modelo);
+            const xlsxOut = await this.gerarXlsx(file.localFile, schema, colunas, filtros, ordens, modelo);
             out.push({ name: file.name.replace(/\.csv$/, '.xlsx'), localFile: xlsxOut });
 
             try {
@@ -85,23 +135,44 @@ export class ReportPostProcessService {
             }
         }
 
-        return out;
+        return { arquivos: out, ignoradas };
     }
 
     /**
      * Resolve a lista final de colunas: a seleção do modelo (na ordem escolhida) ou,
      * na ausência dela, todas as colunas do schema na ordem declarada. Labels e
      * formatação do modelo sobrescrevem os padrões do schema.
+     *
+     * Coluna que o schema atual não tem mais **não** derruba o relatório: ela sai como NULL,
+     * na posição pedida, com o nome como cabeçalho. Um modelo salvo hoje precisa continuar
+     * rodando depois de uma coluna ser removida do relatório — falhar aqui significaria
+     * perder a extração inteira (que pode levar horas) por uma coluna cosmética.
+     * A validação estrita segue valendo na criação/edição do modelo (`validaConfig`), onde
+     * uma coluna inexistente é erro de digitação e não deriva de mudança de schema.
      */
-    private resolverColunas(schema: ReportFileSchema, cfg: RelatorioModeloArquivoDto): ReportColumnDef[] {
+    private resolverColunas(
+        schema: ReportFileSchema,
+        cfg: RelatorioModeloArquivoDto,
+        registrar: (onde: ModeloReferenciaIgnorada['onde'], coluna: string) => void
+    ): ReportColumnDef[] {
         if (!cfg.colunas?.length) return schema.colunas;
 
         const porNome = new Map(schema.colunas.map((c) => [c.name, c]));
 
-        return cfg.colunas.map((sel) => {
+        return cfg.colunas.map((sel, i) => {
             const def = porNome.get(sel.coluna);
-            if (!def)
-                throw new BadRequestException(`Coluna "${sel.coluna}" não existe no relatório ${schema.arquivo}.`);
+
+            if (!def) {
+                registrar('colunas', sel.coluna);
+                return {
+                    // Identificador gerado: o nome vindo do modelo nunca vira identificador SQL.
+                    name: `coluna_ausente_${i}`,
+                    type: 'VARCHAR' as const,
+                    label: sel.label ?? sel.coluna,
+                    format: { raw: true },
+                    ausente: true,
+                };
+            }
 
             return {
                 ...def,
@@ -116,28 +187,30 @@ export class ReportPostProcessService {
     }
 
     /**
-     * Valida `order_by` contra o schema antes de o nome virar identificador de `ORDER BY`.
+     * Resolve `order_by`, mantendo a ordem declarada — a lista inteira vira
+     * `ORDER BY a ASC, b DESC, ...`, então ordenação por vários campos é o caso normal.
      *
-     * Não é redundante com a validação de `validaConfig`: `quoteIdent` do lado da lib
-     * (`quoteIdentifier`) envolve o nome em `"` mas **não** escapa `"` interno, então um nome
-     * arbitrário escaparia do identificador. A config só entra no banco pelo CRUD, que valida,
-     * mas aqui é o único ponto do runtime que ainda confiava no nome sem conferir — `colunas` e
-     * `filtros` já checam. Fecha a assimetria e protege contra config antiga/schema alterado.
+     * Cada nome é conferido contra o schema **antes** de virar identificador de `ORDER BY`:
+     * o `quoteIdentifier` da lib envolve em `"` mas não escapa `"` interno, então um nome não
+     * validado escaparia do identificador. Coluna que não existe mais é descartada (e
+     * registrada), pelo mesmo motivo de `resolverColunas`: não vale perder a extração inteira.
+     * Ordenar por coluna ausente não teria efeito de qualquer forma — seria tudo NULL.
      */
-    private resolverOrdenacao(schema: ReportFileSchema, cfg: RelatorioModeloArquivoDto): RelatorioModeloOrdemDto[] {
+    private resolverOrdenacao(
+        schema: ReportFileSchema,
+        cfg: RelatorioModeloArquivoDto,
+        registrar: (onde: ModeloReferenciaIgnorada['onde'], coluna: string) => void
+    ): RelatorioModeloOrdemDto[] {
         const ordens = cfg.order_by ?? [];
         if (!ordens.length) return [];
 
         const validas = new Set(schema.colunas.map((c) => c.name));
 
-        for (const o of ordens) {
-            if (!validas.has(o.coluna))
-                throw new BadRequestException(
-                    `Ordenação inválida: coluna "${o.coluna}" não existe no relatório ${schema.arquivo}.`
-                );
-        }
-
-        return ordens;
+        return ordens.filter((o) => {
+            if (validas.has(o.coluna)) return true;
+            registrar('order_by', o.coluna);
+            return false;
+        });
     }
 
     /**
@@ -151,9 +224,9 @@ export class ReportPostProcessService {
     private async executar(
         csvPath: string,
         schema: ReportFileSchema,
-        cfg: RelatorioModeloArquivoDto,
         colunas: ReportColumnDef[],
         filtros: string[],
+        ordens: RelatorioModeloOrdemDto[],
         destino: string,
         saida: 'csv' | 'parquet'
     ): Promise<number> {
@@ -168,6 +241,9 @@ export class ReportPostProcessService {
         // `="..."`. No parquet/XLSX a coluna segue com o tipo nativo.
         report.select(
             colunas.map((c) => {
+                // Coluna que o schema não tem mais: NULL tipado, para o parquet/XLSX ter tipo.
+                if (c.ausente) return [`CAST(NULL AS VARCHAR)`, c.name] as [string, string];
+
                 if (saida === 'csv' && c.format?.excelTextGuard) {
                     const id = quoteIdent(c.name);
                     return [
@@ -180,7 +256,8 @@ export class ReportPostProcessService {
         );
 
         for (const f of filtros) report.filter(f);
-        for (const o of this.resolverOrdenacao(schema, cfg)) report.orderBy(o.coluna, o.direcao);
+        // A lib acumula (`outputOrderBy.push`) e emite `ORDER BY a, b, ...` na ordem recebida.
+        for (const o of ordens) report.orderBy(o.coluna, o.direcao);
 
         report.format(this.montarFormatConfig(colunas, saida));
 
@@ -203,19 +280,19 @@ export class ReportPostProcessService {
 
         for (const c of colunas) {
             if (saida === 'parquet') {
-                columns[c.name] = { rename: c.label };
+                columns[c.name] = { rename: renameSeguro(c.label) };
                 continue;
             }
 
             const fmt = c.format ?? {};
             columns[c.name] = {
-                rename: c.label,
+                rename: renameSeguro(c.label),
                 // O guard já produziu VARCHAR no SELECT; formatar de novo corromperia o valor.
                 ...(fmt.excelTextGuard || fmt.raw ? { raw: true } : {}),
                 ...(fmt.decimalPlaces !== undefined ? { decimalPlaces: fmt.decimalPlaces } : {}),
                 ...(fmt.currency ? { currency: fmt.currency } : {}),
                 ...(fmt.unit ? { unit: fmt.unit } : {}),
-                ...(fmt.dateFormat ? { dateFormat: fmt.dateFormat } : {}),
+                ...(fmt.dateFormat ? { dateFormat: dateFormatSeguro(fmt.dateFormat) } : {}),
             };
         }
 
@@ -233,9 +310,9 @@ export class ReportPostProcessService {
     private async gerarXlsx(
         csvPath: string,
         schema: ReportFileSchema,
-        cfg: RelatorioModeloArquivoDto,
         colunas: ReportColumnDef[],
         filtros: string[],
+        ordens: RelatorioModeloOrdemDto[],
         modelo: RelatorioModeloConfigDto
     ): Promise<string> {
         const tipado = modelo.xlsx_tipado !== false;
@@ -244,7 +321,7 @@ export class ReportPostProcessService {
         // Etapa intermediária: parquet quando tipado (preserva DECIMAL/DATE), CSV quando
         // o modelo pede o XLSX espelhando a apresentação do CSV.
         const ponte = tipado ? tmpFile('pp-ponte', '.parquet') : tmpFile('pp-ponte', '.csv');
-        await this.executar(csvPath, schema, cfg, colunas, filtros, ponte, tipado ? 'parquet' : 'csv');
+        await this.executar(csvPath, schema, colunas, filtros, ordens, ponte, tipado ? 'parquet' : 'csv');
 
         const instance = await DuckDBInstance.create(':memory:', DUCKDB_SETTINGS);
         const con = await instance.connect();

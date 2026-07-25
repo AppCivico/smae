@@ -58,6 +58,15 @@ export class ReportColumnDef {
     label: string;
     /** Regras de apresentação padrão (podem ser sobrescritas pelo modelo). */
     format?: ReportColumnFormat;
+    /**
+     * Coluna que o modelo pede mas que o schema atual não tem mais — sai como NULL.
+     *
+     * Não vem de `@ReportColumn`: é sintetizada no pós-processamento para que um modelo
+     * salvo antes de a coluna ser removida continue gerando relatório. `name` nesse caso é
+     * um identificador gerado (nunca o nome vindo do modelo), justamente para não colocar
+     * entrada de usuário na posição de identificador SQL.
+     */
+    ausente?: boolean;
 }
 
 export class ReportFileSchema {

@@ -9,6 +9,7 @@ import {
     IsInt,
     IsOptional,
     IsString,
+    Matches,
     MaxLength,
     ValidateIf,
     ValidateNested,
@@ -62,10 +63,20 @@ export class RelatorioModeloColunaDto {
     @IsInt()
     decimais?: number;
 
-    /** Formato strftime (sobrescreve o schema). */
+    /**
+     * Formato strftime (sobrescreve o schema).
+     *
+     * Restrito a especificadores strftime e separadores porque a lib monta
+     * `strftime(col, '<fmt>')` por interpolação, sem escapar o literal — texto livre aqui
+     * escapa da string e executa SQL. O serviço também dobra `'` antes de repassar; esta
+     * regex é a barreira de entrada.
+     */
     @IsOptional()
     @IsString()
     @MaxLength(50)
+    @Matches(/^[%A-Za-z0-9\-/.:\s]*$/, {
+        message: 'formato_data aceita apenas especificadores strftime (ex.: %d/%m/%Y)',
+    })
     formato_data?: string;
 }
 

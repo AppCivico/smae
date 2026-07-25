@@ -254,13 +254,17 @@ export class ReportsService {
                 return files;
             }
 
-            const processados = await this.postProcess.aplicarModelo(files, schemas, config);
+            const { arquivos, ignoradas } = await this.postProcess.aplicarModelo(files, schemas, config);
             await ctx.resumoSaida('pos_processamento', {
                 aplicado: true,
                 modelo_id: modeloId,
-                arquivos: processados.map((f) => f.name),
+                arquivos: arquivos.map((f) => f.name),
+                // Colunas/filtros do modelo que o schema atual não tem mais. O relatório sai
+                // (coluna ausente vira NULL), mas fica registrado para quem for investigar
+                // "por que essa coluna está vazia?" não precisar adivinhar.
+                ...(ignoradas.length ? { referencias_ignoradas: ignoradas } : {}),
             });
-            return processados;
+            return arquivos;
         } catch (error) {
             this.logger.error(
                 `Falha no pós-processamento do modelo ${modeloId}, seguindo com os arquivos brutos: ${error}`
