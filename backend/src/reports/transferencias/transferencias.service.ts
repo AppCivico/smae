@@ -9,10 +9,7 @@ import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto } from './dto/create-transferencias.dto';
-import {
-    RelTransferenciaCronogramaCsvRow,
-    RelTransferenciasCsvRow,
-} from './entities/transferencias-csv.entity';
+import { RelTransferenciaCronogramaCsvRow, RelTransferenciasCsvRow } from './entities/transferencias-csv.entity';
 import {
     RelTransferenciaCronogramaDto,
     RelTransferenciasDto,
@@ -326,7 +323,7 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
             tarefasRows.linhas.map((e) => {
                 tarefasOut.push({
                     transferencia_id: tarefaCronoId.transferencia_id!,
-                    hirearquia: tarefasHierarquia[e.id] ?? null,
+                    hierarquia: tarefasHierarquia[e.id] ?? null,
                     tarefa: e.tarefa,
                     inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
                     termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
@@ -459,9 +456,12 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
                 nome_programa: db.nome_programa,
                 empenho: this.formatEmpenho(db.empenho),
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
-                valor: db.valor ? db.valor : null,
-                valor_total: db.valor_total ? db.valor_total : null,
-                valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
+                // Sem ternário: `0` é valor legítimo (ex.: sem contrapartida exigida) e o
+                // falsy-check antigo o transformava em null. Com o XLSX tipado isso deixou de ser
+                // cosmético — a célula viraria vazia em vez de 0 e SUM/AVG no Excel mudariam.
+                valor: db.valor,
+                valor_total: db.valor_total,
+                valor_contrapartida: db.valor_contrapartida,
                 emenda: db.emenda,
                 emenda_unitaria: db.emenda_unitaria,
                 dotacao: db.dotacao,
@@ -527,7 +527,7 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
                           assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
                           vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
                           conclusao_suspensiva: Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva),
-                          registro_sei: db.distribuicao_recurso_sei ? db.distribuicao_recurso_sei : null,
+                          registro_sei: db.distribuicao_recurso_sei,
                           nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
                           status_nome_base: db.distribuicao_recurso_status_nome_base,
                           pct_custeio: db.distribuicao_recurso_pct_custeio,

@@ -1,13 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+    ArrayNotEmpty,
     IsArray,
     IsBoolean,
+    IsDefined,
     IsEnum,
     IsInt,
     IsOptional,
     IsString,
     MaxLength,
+    ValidateIf,
     ValidateNested,
 } from 'class-validator';
 
@@ -24,6 +27,18 @@ export enum RelatorioModeloFiltroOp {
     is_null = 'is_null',
     is_not_null = 'is_not_null',
 }
+
+/** Operadores que consomem `valor` (escalar único). */
+const OPS_ESCALARES: readonly RelatorioModeloFiltroOp[] = [
+    RelatorioModeloFiltroOp.eq,
+    RelatorioModeloFiltroOp.ne,
+    RelatorioModeloFiltroOp.gt,
+    RelatorioModeloFiltroOp.gte,
+    RelatorioModeloFiltroOp.lt,
+    RelatorioModeloFiltroOp.lte,
+    RelatorioModeloFiltroOp.contains,
+    RelatorioModeloFiltroOp.starts_with,
+];
 
 export enum RelatorioModeloDirecao {
     ASC = 'ASC',
@@ -72,13 +87,21 @@ export class RelatorioModeloFiltroDto {
     @IsEnum(RelatorioModeloFiltroOp)
     op: RelatorioModeloFiltroOp;
 
-    /** Valor único, para os operadores escalares. */
-    @IsOptional()
-    valor?: string | number | boolean | null;
+    /**
+     * Valor único, obrigatório para os operadores escalares.
+     *
+     * Exigido (e não-nulo) porque `literalPara` mapeia ausência para o literal SQL `NULL`, e
+     * `coluna = NULL` nunca é verdadeiro em SQL — um `eq` sem valor filtraria silenciosamente
+     * todas as linhas em vez de falhar. Para comparar com nulo existem `is_null`/`is_not_null`.
+     */
+    @ValidateIf((o: RelatorioModeloFiltroDto) => OPS_ESCALARES.includes(o.op))
+    @IsDefined({ message: 'valor é obrigatório para este operador de filtro' })
+    valor?: string | number | boolean;
 
-    /** Lista de valores, para o operador `in`. */
-    @IsOptional()
+    /** Lista de valores, obrigatória para o operador `in`. */
+    @ValidateIf((o: RelatorioModeloFiltroDto) => o.op === RelatorioModeloFiltroOp.in)
     @IsArray()
+    @ArrayNotEmpty({ message: 'valores não pode ser uma lista vazia para o operador in' })
     valores?: (string | number)[];
 }
 

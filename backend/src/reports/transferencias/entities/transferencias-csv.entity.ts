@@ -275,7 +275,7 @@ export class RelTransferenciaCronogramaCsvRow {
     transferencia_id: number;
 
     @ReportColumn({ type: 'VARCHAR', label: 'Hierarquia', format: { excelTextGuard: true } })
-    hirearquia: string | null;
+    hierarquia: string | null;
 
     @ReportColumn({ type: 'VARCHAR', label: 'Tarefa' })
     tarefa: string;

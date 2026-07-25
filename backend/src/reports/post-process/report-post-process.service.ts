@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { ColumnFormatConfig, FormatConfig, ReportWithContext } from 'duckdb-report-builder';
 import * as fs from 'fs';
@@ -6,7 +6,11 @@ import * as os from 'os';
 import * as path from 'path';
 import { FileOutput } from '../utils/utils.service';
 import { CsvSchemaProvider, quoteIdent } from './csv-schema.provider';
-import { RelatorioModeloArquivoDto, RelatorioModeloConfigDto } from './dto/relatorio-modelo.dto';
+import {
+    RelatorioModeloArquivoDto,
+    RelatorioModeloConfigDto,
+    RelatorioModeloOrdemDto,
+} from './dto/relatorio-modelo.dto';
 import { compilarFiltros } from './filtro-compiler';
 import { ReportColumnDef, ReportFileSchema, findFileSchema } from './report-schema';
 
@@ -96,7 +100,8 @@ export class ReportPostProcessService {
 
         return cfg.colunas.map((sel) => {
             const def = porNome.get(sel.coluna);
-            if (!def) throw new Error(`Coluna "${sel.coluna}" não existe no relatório ${schema.arquivo}.`);
+            if (!def)
+                throw new BadRequestException(`Coluna "${sel.coluna}" não existe no relatório ${schema.arquivo}.`);
 
             return {
                 ...def,
@@ -108,6 +113,31 @@ export class ReportPostProcessService {
                 },
             };
         });
+    }
+
+    /**
+     * Valida `order_by` contra o schema antes de o nome virar identificador de `ORDER BY`.
+     *
+     * Não é redundante com a validação de `validaConfig`: `quoteIdent` do lado da lib
+     * (`quoteIdentifier`) envolve o nome em `"` mas **não** escapa `"` interno, então um nome
+     * arbitrário escaparia do identificador. A config só entra no banco pelo CRUD, que valida,
+     * mas aqui é o único ponto do runtime que ainda confiava no nome sem conferir — `colunas` e
+     * `filtros` já checam. Fecha a assimetria e protege contra config antiga/schema alterado.
+     */
+    private resolverOrdenacao(schema: ReportFileSchema, cfg: RelatorioModeloArquivoDto): RelatorioModeloOrdemDto[] {
+        const ordens = cfg.order_by ?? [];
+        if (!ordens.length) return [];
+
+        const validas = new Set(schema.colunas.map((c) => c.name));
+
+        for (const o of ordens) {
+            if (!validas.has(o.coluna))
+                throw new BadRequestException(
+                    `Ordenação inválida: coluna "${o.coluna}" não existe no relatório ${schema.arquivo}.`
+                );
+        }
+
+        return ordens;
     }
 
     /**
@@ -150,7 +180,7 @@ export class ReportPostProcessService {
         );
 
         for (const f of filtros) report.filter(f);
-        for (const o of cfg.order_by ?? []) report.orderBy(o.coluna, o.direcao);
+        for (const o of this.resolverOrdenacao(schema, cfg)) report.orderBy(o.coluna, o.direcao);
 
         report.format(this.montarFormatConfig(colunas, saida));
 

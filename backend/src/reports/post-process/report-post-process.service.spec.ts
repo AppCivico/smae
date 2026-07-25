@@ -1,8 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { DuckDBInstance } from '@duckdb/node-api';
+import { FonteRelatorio } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
+import { validate, ValidationError } from 'class-validator';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { CreateRelatorioModeloDto } from '../relatorio-modelo/dto/create-relatorio-modelo.dto';
 import { RelatorioModeloConfigDto, RelatorioModeloDirecao, RelatorioModeloFiltroOp } from './dto/relatorio-modelo.dto';
 import { compilarFiltros } from './filtro-compiler';
 import { ReportPostProcessService } from './report-post-process.service';
@@ -154,11 +158,9 @@ describe('ReportPostProcessService', () => {
         criados.push(bruto);
         fs.writeFileSync(bruto, 'id,valor,vigencia,dotacao,orgao__sigla\n1,0.10,2024-01-01,x,Y\n');
 
-        const out = await service.aplicarModelo(
-            [{ name: 'exemplo.csv', localFile: bruto }],
-            [SCHEMA],
-            { arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'valor' }] }] }
-        );
+        const out = await service.aplicarModelo([{ name: 'exemplo.csv', localFile: bruto }], [SCHEMA], {
+            arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'valor' }] }],
+        });
         for (const f of out) if (f.localFile) criados.push(f.localFile);
 
         const linhas = await lerXlsx(out.find((f) => f.name.endsWith('.xlsx'))!.localFile!);
@@ -182,6 +184,43 @@ describe('ReportPostProcessService', () => {
 
         expect(String(linhas[0]['Valor'])).toContain('1.234,56');
     });
+
+    it('rejeita coluna inexistente na seleção com 400 (não 500)', async () => {
+        await expect(
+            aplicar({ arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'nao_existe' }] }] })
+        ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejeita coluna inexistente em order_by', async () => {
+        await expect(
+            aplicar({
+                arquivos: [
+                    {
+                        arquivo: 'exemplo.csv',
+                        order_by: [{ coluna: 'nao_existe', direcao: RelatorioModeloDirecao.ASC }],
+                    },
+                ],
+            })
+        ).rejects.toThrow(BadRequestException);
+    });
+
+    /**
+     * `quoteIdentifier` da lib envolve o nome em `"` mas não escapa `"` interno, então um nome
+     * arbitrário em `ORDER BY` escaparia do identificador. A validação contra o schema é o que
+     * impede o SQL de ser montado — sem ela isto viraria injeção.
+     */
+    it('não deixa order_by escapar do identificador SQL', async () => {
+        await expect(
+            aplicar({
+                arquivos: [
+                    {
+                        arquivo: 'exemplo.csv',
+                        order_by: [{ coluna: 'id" , (SELECT 1) --', direcao: RelatorioModeloDirecao.ASC }],
+                    },
+                ],
+            })
+        ).rejects.toThrow(BadRequestException);
+    });
 });
 
 describe('compilarFiltros', () => {
@@ -203,9 +242,9 @@ describe('compilarFiltros', () => {
     });
 
     it('valida tipo numérico', () => {
-        expect(() => compilarFiltros([{ coluna: 'id', op: RelatorioModeloFiltroOp.eq, valor: 'abc' }], colunas)).toThrow(
-            BadRequestException
-        );
+        expect(() =>
+            compilarFiltros([{ coluna: 'id', op: RelatorioModeloFiltroOp.eq, valor: 'abc' }], colunas)
+        ).toThrow(BadRequestException);
     });
 
     it('valida data ISO', () => {
@@ -224,8 +263,97 @@ describe('compilarFiltros', () => {
     });
 
     it('rejeita lista vazia no operador in', () => {
-        expect(() =>
-            compilarFiltros([{ coluna: 'id', op: RelatorioModeloFiltroOp.in, valores: [] }], colunas)
-        ).toThrow(BadRequestException);
+        expect(() => compilarFiltros([{ coluna: 'id', op: RelatorioModeloFiltroOp.in, valores: [] }], colunas)).toThrow(
+            BadRequestException
+        );
+    });
+});
+
+/**
+ * Validação de DTO, não de SQL: o objetivo é o pedido malformado morrer no 400 do
+ * ValidationPipe, antes de `validaConfig`/`compilarFiltros` verem qualquer coisa.
+ */
+describe('validação dos DTOs de modelo', () => {
+    async function erros(dto: object): Promise<string[]> {
+        const instancia = plainToInstance(CreateRelatorioModeloDto, dto);
+        const falhas = await validate(instancia, { whitelist: true });
+        // Achata as falhas aninhadas (config -> arquivos -> filtros) numa lista de propriedades.
+        const nomes: string[] = [];
+        const visita = (fs: ValidationError[]) => {
+            for (const f of fs) {
+                if (f.constraints) nomes.push(f.property);
+                if (f.children?.length) visita(f.children);
+            }
+        };
+        visita(falhas);
+        return nomes;
+    }
+
+    const base = {
+        fonte: FonteRelatorio.Transferencias,
+        config: { arquivos: [{ arquivo: 'transferencias.csv' }] },
+    };
+
+    it('aceita um DTO mínimo válido', async () => {
+        expect(await erros({ ...base, nome: 'Modelo' })).toEqual([]);
+    });
+
+    it('rejeita nome vazio ou só de espaços', async () => {
+        expect(await erros({ ...base, nome: '' })).toContain('nome');
+        expect(await erros({ ...base, nome: '   ' })).toContain('nome');
+    });
+
+    it('rejeita config ausente em vez de estourar no service', async () => {
+        expect(await erros({ nome: 'Modelo', fonte: FonteRelatorio.Transferencias })).toContain('config');
+    });
+
+    it('exige valor nos operadores escalares', async () => {
+        const dto = {
+            ...base,
+            nome: 'Modelo',
+            config: {
+                arquivos: [
+                    {
+                        arquivo: 'transferencias.csv',
+                        filtros: [{ coluna: 'valor', op: RelatorioModeloFiltroOp.eq }],
+                    },
+                ],
+            },
+        };
+
+        expect(await erros(dto)).toContain('valor');
+    });
+
+    it('não exige valor em is_null / is_not_null', async () => {
+        for (const op of [RelatorioModeloFiltroOp.is_null, RelatorioModeloFiltroOp.is_not_null]) {
+            const dto = {
+                ...base,
+                nome: 'Modelo',
+                config: {
+                    arquivos: [{ arquivo: 'transferencias.csv', filtros: [{ coluna: 'valor', op }] }],
+                },
+            };
+
+            expect(await erros(dto)).toEqual([]);
+        }
+    });
+
+    it('exige valores não-vazio no operador in', async () => {
+        const comLista = (valores: unknown[] | undefined) => ({
+            ...base,
+            nome: 'Modelo',
+            config: {
+                arquivos: [
+                    {
+                        arquivo: 'transferencias.csv',
+                        filtros: [{ coluna: 'id', op: RelatorioModeloFiltroOp.in, valores }],
+                    },
+                ],
+            },
+        });
+
+        expect(await erros(comLista([]))).toContain('valores');
+        expect(await erros(comLista(undefined))).toContain('valores');
+        expect(await erros(comLista([1, 2]))).toEqual([]);
     });
 });

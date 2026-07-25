@@ -21,7 +21,12 @@ import {
     RelatorioModeloDetailDto,
     RelatorioModeloItemDto,
 } from './entities/relatorio-modelo.entity';
-import { fonteEhDoSistema, fontesPermitidas, hasReportPriv } from './helpers/report-priv.helper';
+import {
+    fonteEhDoSistema,
+    fontesPermitidas,
+    hasReportPriv,
+    modeloVisibilidadeWhere,
+} from '../helpers/report-priv.helper';
 
 /** Schema de um arquivo da fonte, já achatado a partir dos decoradores. */
 type ArquivoDaFonte = {
@@ -79,21 +84,23 @@ export class RelatorioModeloService {
             async (prismaTx: Prisma.TransactionClient) => {
                 await this.assertNomeDisponivel(prismaTx, dto.nome, dto.fonte, null);
 
-                const criado = await prismaTx.relatorioModelo.create({
-                    data: {
-                        nome: dto.nome,
-                        descricao: dto.descricao ?? null,
-                        fonte: dto.fonte,
-                        sistema: sistema,
-                        config: dto.config as unknown as Prisma.InputJsonObject,
-                        visibilidade_tipo: visibilidadeTipo,
-                        // Órgão do criador no momento da criação — é o que o escopo 'meu_orgao' compara.
-                        orgao_id: user.orgao_id ?? null,
-                        criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-                    },
-                    select: { id: true },
-                });
+                const criado = await prismaTx.relatorioModelo
+                    .create({
+                        data: {
+                            nome: dto.nome,
+                            descricao: dto.descricao ?? null,
+                            fonte: dto.fonte,
+                            sistema: sistema,
+                            config: dto.config as unknown as Prisma.InputJsonObject,
+                            visibilidade_tipo: visibilidadeTipo,
+                            // Órgão do criador no momento da criação — é o que o escopo 'meu_orgao' compara.
+                            orgao_id: user.orgao_id ?? null,
+                            criado_por: user.id,
+                            criado_em: new Date(Date.now()),
+                        },
+                        select: { id: true },
+                    })
+                    .catch((e) => this.traduzNomeDuplicado(e, dto.nome, dto.fonte));
 
                 return { id: criado.id };
             },
@@ -126,8 +133,8 @@ export class RelatorioModeloService {
                 if (dto.nome !== undefined && dto.nome !== modelo.nome)
                     await this.assertNomeDisponivel(prismaTx, dto.nome, modelo.fonte, id);
 
-                // UncheckedUpdateInput para poder escrever os escalares de FK (atualizado_por/orgao_id).
-                const data: Prisma.RelatorioModeloUncheckedUpdateInput = {
+                // UncheckedUpdateManyInput para poder escrever os escalares de FK (atualizado_por/orgao_id).
+                const data: Prisma.RelatorioModeloUncheckedUpdateManyInput = {
                     atualizado_por: user.id,
                     atualizado_em: new Date(Date.now()),
                 };
@@ -141,7 +148,13 @@ export class RelatorioModeloService {
                     if (dto.visibilidade_tipo === 'meu_orgao') data.orgao_id = user.orgao_id ?? null;
                 }
 
-                await prismaTx.relatorioModelo.update({ where: { id }, data });
+                // `removido_em: null` também no write: a checagem de existência acima roda fora da
+                // transação, e um `remove()` concorrente no intervalo deixaria o modelo removido
+                // *e* atualizado. Sem a linha, o P2025 vira 404 em vez de escrita silenciosa.
+                const atualizados = await prismaTx.relatorioModelo
+                    .updateMany({ where: { id, removido_em: null }, data })
+                    .catch((e) => this.traduzNomeDuplicado(e, dto.nome ?? modelo.nome, modelo.fonte));
+                if (atualizados.count === 0) throw new HttpException('Modelo de relatório não encontrado', 404);
 
                 return { id };
             },
@@ -156,7 +169,7 @@ export class RelatorioModeloService {
             where: {
                 removido_em: null,
                 fonte: this.filtroDeFonte(filters.fonte, user, sistema),
-                OR: this.filtroDeVisibilidade(user),
+                OR: modeloVisibilidadeWhere(user),
             },
             select: SELECT_MODELO,
             orderBy: [{ nome: 'asc' }],
@@ -173,7 +186,7 @@ export class RelatorioModeloService {
                 id,
                 removido_em: null,
                 fonte: this.filtroDeFonte(undefined, user, sistema),
-                OR: this.filtroDeVisibilidade(user),
+                OR: modeloVisibilidadeWhere(user),
             },
             select: { ...SELECT_MODELO, config: true },
         });
@@ -273,23 +286,6 @@ export class RelatorioModeloService {
         return { in: permitidas };
     }
 
-    /**
-     * Escopos de visibilidade (mesma semântica do `Relatorio`):
-     * - `publico`   → todos que já passaram pelo filtro de fonte/privilégio;
-     * - `privado`   → somente o criador;
-     * - `meu_orgao` → pessoas do órgão gravado no modelo.
-     *
-     * Linhas sem `visibilidade_tipo` (não deveriam existir, mas o campo é anulável para espelhar
-     * o `Relatorio`) caem no caso restritivo: só o criador vê.
-     */
-    private filtroDeVisibilidade(user: PessoaFromJwt): Prisma.RelatorioModeloWhereInput[] {
-        const or: Prisma.RelatorioModeloWhereInput[] = [{ visibilidade_tipo: 'publico' }, { criado_por: user.id }];
-
-        if (user.orgao_id) or.push({ visibilidade_tipo: 'meu_orgao', orgao_id: user.orgao_id });
-
-        return or;
-    }
-
     private renderItem(row: RowModelo, sistema: ModuloSistema, user: PessoaFromJwt): RelatorioModeloItemDto {
         const visTipo = (row.visibilidade_tipo as VisibilidadeTipo | null) ?? null;
         const podeEditar = this.podeEditar(row.criado_por, row.fonte, sistema, user);
@@ -307,6 +303,19 @@ export class RelatorioModeloService {
             pode_editar: podeEditar,
             pode_remover: podeEditar,
         };
+    }
+
+    /**
+     * Converte a violação do índice único parcial em 400 legível.
+     *
+     * `assertNomeDisponivel` é check-then-write: dois pedidos simultâneos com o mesmo nome veem o
+     * nome livre e o segundo bate na constraint. Sem esta tradução o P2002 sobe como 500, perdendo
+     * justamente a mensagem que a pré-checagem existe para dar.
+     */
+    private traduzNomeDuplicado(e: unknown, nome: string, fonte: FonteRelatorio): never {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')
+            throw new HttpException(`Já existe um modelo com o nome "${nome}" para a fonte ${fonte}.`, 400);
+        throw e;
     }
 
     private async assertNomeDisponivel(

@@ -13,7 +13,7 @@ Colunas do CSV bruto de `cronograma.csv`.
 | Coluna | Tipo | Rótulo | Customizável | Formatação | Descrição |
 | --- | --- | --- | --- | --- | --- |
 | `transferencia_id` | `BIGINT` | ID da Transferência | não | sem formatação | — |
-| `hirearquia` | `VARCHAR` | Hierarquia | sim | guard Excel | — |
+| `hierarquia` | `VARCHAR` | Hierarquia | sim | guard Excel | — |
 | `tarefa` | `VARCHAR` | Tarefa | sim | — | — |
 | `inicio_planejado` | `DATE` | Início Planejado | sim | — | — |
 | `termino_planejado` | `DATE` | Término Planejado | sim | — | — |

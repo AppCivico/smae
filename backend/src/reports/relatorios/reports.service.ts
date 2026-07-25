@@ -61,51 +61,7 @@ import {
     montarVisibilidade,
     VisibilidadeTipo,
 } from './helpers/visibilidade-templates';
-
-// Mapa de propriedade fonte → sistema. Fonte de verdade para "esta fonte pertence a qual módulo?".
-// Algumas fontes (PS*) são compartilhadas entre PlanoSetorial e ProgramaDeMetas — por isso o
-// valor é uma lista, não um único módulo.
-const FONTES_POR_SISTEMA: Record<ModuloSistema, readonly FonteRelatorio[]> = {
-    SMAE: [],
-    PDM: [
-        FonteRelatorio.Orcamento,
-        FonteRelatorio.PrevisaoCusto,
-        FonteRelatorio.Indicadores,
-        FonteRelatorio.MonitoramentoMensal,
-    ],
-    PlanoSetorial: [
-        FonteRelatorio.PSOrcamento,
-        FonteRelatorio.PSPrevisaoCusto,
-        FonteRelatorio.PSIndicadores,
-        FonteRelatorio.PSMonitoramentoMensal,
-    ],
-    ProgramaDeMetas: [
-        FonteRelatorio.PSOrcamento,
-        FonteRelatorio.PSPrevisaoCusto,
-        FonteRelatorio.PSIndicadores,
-        FonteRelatorio.PSMonitoramentoMensal,
-    ],
-    Projetos: [
-        FonteRelatorio.Projeto,
-        FonteRelatorio.Projetos,
-        FonteRelatorio.ProjetoStatus,
-        FonteRelatorio.ProjetoOrcamento,
-        FonteRelatorio.ProjetoPrevisaoCusto,
-    ],
-    MDO: [
-        FonteRelatorio.Obras,
-        FonteRelatorio.ObraStatus,
-        FonteRelatorio.ObrasOrcamento,
-        FonteRelatorio.ObrasPrevisaoCusto,
-    ],
-    CasaCivil: [
-        FonteRelatorio.Parlamentares,
-        FonteRelatorio.TribunalDeContas,
-        FonteRelatorio.Transferencias,
-        FonteRelatorio.AtvPendentes,
-        FonteRelatorio.Demandas,
-    ],
-};
+import { FONTES_POR_SISTEMA, hasReportPriv, modeloVisibilidadeWhere } from '../helpers/report-priv.helper';
 
 // Mapas de discriminador da fonte: forçam `parametros.tipo_projeto`/`tipo_pdm` antes do report
 // rodar, já que algumas fontes (Orcamento, PSOrcamento, ...) são compartilhadas entre sistemas.
@@ -130,21 +86,6 @@ const FONTES_TIPO_PDM_CALC: readonly FonteRelatorio[] = [
     FonteRelatorio.PSIndicadores,
     FonteRelatorio.PSMonitoramentoMensal,
 ];
-
-// Convenção de privilégio escopado: `Reports.{action}.{sistema}:{fonte}` libera apenas aquela
-// fonte específica; o privilégio sem `:` (ex.: `Reports.executar.CasaCivil`) libera todas as
-// fontes do sistema.
-function hasReportPriv(
-    user: PessoaFromJwt,
-    action: 'executar' | 'remover',
-    sistema: ModuloSistema,
-    fonte: FonteRelatorio
-): boolean {
-    return user.hasSomeRoles([
-        `Reports.${action}.${sistema}` as ListaDePrivilegios,
-        `Reports.${action}.${sistema}:${fonte}` as ListaDePrivilegios,
-    ]);
-}
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -339,6 +280,12 @@ export class ReportsService {
      *
      * Revalida remoção e fonte: `saveReport` já barrou o modelo inválido na criação, mas a task
      * roda depois e o modelo pode ter sido removido nesse intervalo.
+     *
+     * **Visibilidade não é rechecada aqui, de propósito.** A autorização acontece em `saveReport`,
+     * com o usuário autenticado em mão; a task roda desacoplada (fork) e sem `PessoaFromJwt`.
+     * Além disso, o modelo ficar mais restrito *depois* da criação não deveria quebrar um
+     * relatório já autorizado — o efeito seria perder a formatação no meio de uma extração que
+     * pode levar horas. Remoção é diferente: aí a config deixou de existir.
      */
     private async carregarModeloConfig(
         modeloId: number,
@@ -633,8 +580,17 @@ export class ReportsService {
         // Valida o modelo escolhido na tela de novo relatório já na criação: barrar aqui evita
         // descobrir o problema só depois da extração inteira ter rodado na task.
         if (dto.modelo_id) {
+            // A visibilidade entra no `where`, não numa checagem posterior: usar um modelo é uma
+            // forma de ler o modelo, então um modelo que o usuário não pode ver tem que responder
+            // "não encontrado" — sem isso, quem executa a fonte poderia aplicar o modelo `privado`
+            // de outra pessoa (ou de outro órgão) e inferir a config dela pelo resultado.
+            // `user` nulo = relatório disparado pelo próprio sistema, que não tem escopo a checar.
             const modelo = await this.prisma.relatorioModelo.findFirst({
-                where: { id: dto.modelo_id, removido_em: null },
+                where: {
+                    id: dto.modelo_id,
+                    removido_em: null,
+                    ...(user ? { OR: modeloVisibilidadeWhere(user) } : {}),
+                },
                 select: { fonte: true },
             });
             if (!modelo) throw new BadRequestException(`Modelo de relatório ${dto.modelo_id} não encontrado.`);

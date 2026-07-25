@@ -87,7 +87,7 @@ export class TransferenciasRelatorioDto {
 
 export class RelTransferenciaCronogramaDto {
     transferencia_id: number;
-    hirearquia: string | null;
+    hierarquia: string | null;
     tarefa: string;
     inicio_planejado: string | null;
     termino_planejado: string | null;
