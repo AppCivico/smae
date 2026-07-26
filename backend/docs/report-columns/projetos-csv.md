@@ -24,8 +24,8 @@ máscara de moeda são aplicados na etapa de pós-processamento.
 Vários campos vinham de objetos aninhados do DTO e apareciam no `fields` como
 `orgao_responsavel.id`, `fonte_recurso.valor_nominal`, `premissa.id`... O builder DuckDB
 trata `.` como referência qualificada por fonte, então o `flatten()` do json2csv passou a
-usar `__` como separador (veja `PPProjetosFlattenTransforms` no service) e os nomes de
-máquina abaixo acompanham. O rótulo entregue ao usuário não mudou.
+usar `__` como separador (veja `ppProjetosTransforms`, declarada junto com estas classes) e os
+nomes de máquina abaixo acompanham. O rótulo entregue ao usuário não mudou.
 
 O `flatten` roda com `arrays: false` (padrão do json2csv): campo array vira **uma** célula
 serializada, nunca N colunas. É isso que mantém o conjunto de colunas fixo mesmo com a

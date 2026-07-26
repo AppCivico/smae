@@ -1,4 +1,8 @@
+import { flatten } from '@json2csv/transforms';
+import { Date2YMD } from '../../../common/date2ymd';
 import { ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { ReportFileSchema } from '../../post-process/report-schema';
+import { CsvTransforms } from '../../shared/csv-file-handler';
 
 /**
  * Colunas dos CSVs **brutos** do relatório de portfólio (fonte `Projetos`).
@@ -17,8 +21,8 @@ import { ReportColumn, ReportRows } from '../../post-process/report-column.decor
  * Vários campos vinham de objetos aninhados do DTO e apareciam no `fields` como
  * `orgao_responsavel.id`, `fonte_recurso.valor_nominal`, `premissa.id`... O builder DuckDB
  * trata `.` como referência qualificada por fonte, então o `flatten()` do json2csv passou a
- * usar `__` como separador (veja `PPProjetosFlattenTransforms` no service) e os nomes de
- * máquina abaixo acompanham. O rótulo entregue ao usuário não mudou.
+ * usar `__` como separador (veja `ppProjetosTransforms`, declarada junto com estas classes) e os
+ * nomes de máquina abaixo acompanham. O rótulo entregue ao usuário não mudou.
  *
  * O `flatten` roda com `arrays: false` (padrão do json2csv): campo array vira **uma** célula
  * serializada, nunca N colunas. É isso que mantém o conjunto de colunas fixo mesmo com a
@@ -885,4 +889,49 @@ export class RelProjetosTermoEncerramentoCsvRow {
 
     @ReportColumn({ type: 'DATE', label: 'Data de Encerramento' })
     data_encerramento: string;
+}
+
+const PPProjetosFlatten = flatten({ objects: true, arrays: false, separator: '__' });
+
+/**
+ * Normaliza `Date` para ISO `YYYY-MM-DD` nas colunas declaradas como `DATE`.
+ *
+ * Parte da extração devolve o `Date` do Prisma direto (contratos, aditivos, riscos, aprovação
+ * e revisão do projeto), e o json2csv serializa `Date` via `JSON.stringify` — sai
+ * `2024-03-05T00:00:00.000Z`. O `read_csv` tipado do DuckDB hoje aceita esse formato numa coluna
+ * `DATE` (truncando a hora), mas depender disso é frágil: o contrato do CSV bruto é data em ISO
+ * curto, então é aqui que ele é cumprido.
+ *
+ * Feito no caminho do CSV, guiado pelo tipo do schema, e **não** nos conversores: os DTOs de
+ * `asJSON` são resposta da API (`POST /relatorio/projetos`) e trocar `Date` por `string` lá
+ * mudaria o contrato para outros consumidores.
+ *
+ * Colunas `TIMESTAMP` (só `arquivos.criado_em`) ficam como estão — ali a hora é o dado.
+ */
+function normalizarDatasDoSchema(schema: ReportFileSchema) {
+    const colunasData = new Set(schema.colunas.filter((c) => c.type === 'DATE').map((c) => c.name));
+
+    return (row: Record<string, any>): Record<string, any> => {
+        for (const nome of colunasData) {
+            const valor = row[nome];
+            if (valor instanceof Date) row[nome] = Date2YMD.toString(valor);
+        }
+        return row;
+    };
+}
+
+/**
+ * O CSV bruto usa `__` como separador do aninhamento (`orgao_responsavel`, `fonte_recurso`,
+ * `premissa`, `modalidade_licitacao`, ...) porque o builder DuckDB trata `.` como referência
+ * qualificada por fonte — `fonte_recurso.id` seria lido como "coluna id da fonte fonte_recurso".
+ *
+ * `arrays: false` (padrão do json2csv) é deliberado: com `arrays: true` um campo de lista viraria
+ * N colunas, e o conjunto de colunas do arquivo deixaria de ser fixo. Nenhum DTO deste relatório
+ * expõe array hoje, mas o schema declarado precisa continuar valendo se algum passar a expor.
+ *
+ * A normalização de datas roda **depois** do flatten, porque só aí as chaves aninhadas existem
+ * com o nome que o schema declara.
+ */
+export function ppProjetosTransforms(schema: ReportFileSchema): CsvTransforms {
+    return [PPProjetosFlatten, normalizarDatasDoSchema(schema)];
 }

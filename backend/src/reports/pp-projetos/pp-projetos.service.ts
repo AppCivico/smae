@@ -6,7 +6,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { Readable } from 'stream';
 
 import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
-import { flatten } from '@json2csv/transforms';
 import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
@@ -16,7 +15,7 @@ import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { getReportRowSchema } from '../post-process/report-column.decorator';
 import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { CsvFileHandler, CsvTransforms } from '../shared/csv-file-handler';
+import { CsvFileHandler } from '../shared/csv-file-handler';
 import { StreamBatchHandler } from '../shared/stream-handlers';
 import { FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
@@ -35,6 +34,7 @@ import {
     RelProjetosPlanoAcaoMonitoramentoCsvRow,
     RelProjetosRiscosCsvRow,
     RelProjetosTermoEncerramentoCsvRow,
+    ppProjetosTransforms,
 } from './entities/pp-projetos-csv.entity';
 import {
     PPProjetosRelatorioDto,
@@ -59,19 +59,6 @@ type WhereCond = {
     queryParams: any[];
     count: number;
 };
-
-/**
- * O CSV bruto usa `__` como separador do aninhamento (`orgao_responsavel`, `fonte_recurso`,
- * `premissa`, `modalidade_licitacao`, ...) porque o builder DuckDB trata `.` como referência
- * qualificada por fonte — `fonte_recurso.id` seria lido como "coluna id da fonte fonte_recurso".
- *
- * `arrays: false` (padrão do json2csv) é deliberado: com `arrays: true` um campo de lista viraria
- * N colunas, e o conjunto de colunas do arquivo deixaria de ser fixo. Nenhum DTO deste relatório
- * expõe array hoje, mas o schema declarado precisa continuar valendo se algum passar a expor.
- */
-const PPProjetosFlattenTransforms = [
-    flatten({ objects: true, arrays: false, separator: '__' }),
-] satisfies CsvTransforms;
 
 class RetornoDbProjeto {
     id: number;
@@ -610,7 +597,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
         const tipo = schema.arquivo.replace(/\.csv$/, '');
         const nomes = schema.colunas.map((c) => c.name);
 
-        const handler = new CsvFileHandler(nomes, nomes, PPProjetosFlattenTransforms);
+        const handler = new CsvFileHandler(nomes, nomes, ppProjetosTransforms(schema));
         try {
             const tmpFile = await this.processDataInBatches(tipo, projectIds, handler, PPProjetosService.BATCH_SIZE);
             if (tmpFile) {
