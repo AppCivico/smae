@@ -34,25 +34,18 @@ function sqlLit(value: string): string {
 }
 
 /**
- * Pré-escapa `"` para o `quoteIdentifier` do duckdb-report-builder.
+ * Nome da aba do XLSX, a partir do nome do arquivo do relatório — sem isto toda aba sai
+ * como o "Sheet1" do DuckDB, o que é ruim quando o usuário abre vários relatórios juntos.
  *
- * A lib envolve o nome em aspas mas **não** dobra as internas (`cte-builder.js`), então um
- * label cru vindo do modelo escaparia do identificador: `X" , 999 AS "PWNED` virava uma
- * coluna extra com SQL arbitrário. Dobrando aqui, o `"a""b"` que a lib emite é um
- * identificador válido que significa `a"b` — o label continua sendo exibido como escrito.
+ * O Excel limita a aba a 31 caracteres e proíbe `: \ / ? * [ ]`; o DuckDB não valida nada
+ * disso, então é aqui ou é arquivo corrompido.
  */
-function renameSeguro(label: string): string {
-    return label.replace(/"/g, '""');
-}
-
-/**
- * Pré-escapa `'` para o `strftime(col, '<fmt>')` que a lib monta por interpolação, sem
- * escapar (`format-generator.js`). Sem isto, `%Y') || 'VAZOU' || strftime(d, '%m` saía do
- * literal e executava SQL arbitrário. O DTO ainda restringe o formato por regex; este
- * escape é a segunda barreira, para o caso de a validação mudar.
- */
-function dateFormatSeguro(fmt: string): string {
-    return fmt.replace(/'/g, "''");
+function nomeAba(arquivo: string): string {
+    const base = arquivo
+        .replace(/\.csv$/i, '')
+        .replace(/[:\\/?*[\]]/g, '-')
+        .slice(0, 31);
+    return base || 'Dados';
 }
 
 /**
@@ -99,8 +92,8 @@ export class ReportPostProcessService {
      *   - **CSV**: formatação pt-BR completa (moeda, datas dd/mm/aaaa) + labels + o
      *     `excelTextGuard` onde declarado, porque o CSV não carrega schema.
      *   - **XLSX**: apenas renomeação, tipos nativos preservados — células somáveis no
-     *     Excel. Nunca recebe o guard `="..."`, então `fixFormulaStringsInXlsx` deixa de
-     *     ser necessário neste caminho.
+     *     Excel, escritas direto pelo sink `xlsx` da lib. Nunca recebe o guard `="..."`,
+     *     então `fixFormulaStringsInXlsx` deixa de ser necessário neste caminho.
      *
      * Arquivos sem schema (ou sem entrada no modelo) são devolvidos intactos, para o
      * caminho legado de `zipFiles`.
@@ -140,7 +133,16 @@ export class ReportPostProcessService {
             await this.executar(file.localFile, schema, colunas, filtros, ordens, csvOut, 'csv');
             out.push({ name: file.name, localFile: csvOut });
 
-            const xlsxOut = await this.gerarXlsx(file.localFile, schema, colunas, filtros, ordens, modelo);
+            const aba = nomeAba(file.name);
+            const xlsxOut = tmpFile('pp-xlsx', '.xlsx');
+            if (modelo.xlsx_tipado !== false) {
+                // Tipado (padrão): o plano roda direto no sink xlsx, preservando DECIMAL/DATE.
+                await this.executar(file.localFile, schema, colunas, filtros, ordens, xlsxOut, 'xlsx', aba);
+            } else {
+                // Espelhar o CSV é reler o CSV: mesma apresentação por construção, e o plano
+                // não roda uma segunda vez só para virar texto.
+                await this.csvParaXlsx(csvOut, xlsxOut, aba);
+            }
             out.push({ name: file.name.replace(/\.csv$/, '.xlsx'), localFile: xlsxOut });
 
             try {
@@ -233,8 +235,8 @@ export class ReportPostProcessService {
      * é materializada no heap do Node).
      *
      * `saida` controla a semântica de formatação:
-     *   - `csv`   → formatação completa + labels + guard de texto
-     *   - `parquet` → apenas renomeação, tipos nativos (etapa intermediária do XLSX)
+     *   - `csv`  → formatação completa + labels + guard de texto
+     *   - `xlsx` → apenas renomeação, tipos nativos (a lib trata xlsx como parquet)
      */
     private async executar(
         csvPath: string,
@@ -243,7 +245,8 @@ export class ReportPostProcessService {
         filtros: string[],
         ordens: RelatorioModeloOrdemDto[],
         destino: string,
-        saida: 'csv' | 'parquet'
+        saida: 'csv' | 'xlsx',
+        aba?: string
     ): Promise<number> {
         const report = new ReportWithContext()
             .duckdb({ settings: DUCKDB_SETTINGS })
@@ -253,10 +256,10 @@ export class ReportPostProcessService {
             .load('raw', new CsvSchemaProvider(csvPath, schema));
 
         // No CSV, colunas com excelTextGuard viram expressão VARCHAR já envolvida em
-        // `="..."`. No parquet/XLSX a coluna segue com o tipo nativo.
+        // `="..."`. No XLSX a coluna segue com o tipo nativo.
         report.select(
             colunas.map((c) => {
-                // Coluna que o schema não tem mais: NULL tipado, para o parquet/XLSX ter tipo.
+                // Coluna que o schema não tem mais: NULL tipado, para o XLSX ter tipo.
                 if (c.ausente) return [`CAST(NULL AS VARCHAR)`, c.name] as [string, string];
 
                 if (saida === 'csv' && c.format?.excelTextGuard) {
@@ -277,7 +280,11 @@ export class ReportPostProcessService {
         report.format(this.montarFormatConfig(colunas, saida));
 
         try {
-            const res = await report.buildToFile(destino, { format: saida, delimiter: ';', header: true });
+            const res = await report.buildToFile(destino, {
+                format: saida,
+                header: true,
+                ...(saida === 'csv' ? { delimiter: ';' } : { sheet: aba }),
+            });
             return res.rowCount;
         } finally {
             await report.close();
@@ -287,27 +294,31 @@ export class ReportPostProcessService {
     /**
      * Traduz o schema + modelo para o `FormatConfig` da lib.
      *
-     * Para parquet (base do XLSX) só o `rename` é emitido — a lib já ignora casting de
-     * tipo nesse formato, mas manter a config enxuta deixa a intenção explícita.
+     * Para XLSX só o `rename` é emitido — a lib já ignora casting de tipo nesse formato,
+     * mas manter a config enxuta deixa a intenção explícita.
+     *
+     * `label` e `dateFormat` vão **crus**: desde a 0.4.0 a lib escapa os dois (`"` dobrado
+     * em `quoteIdentifier`, `'` em `escapeStringLiteral`). Escapar aqui também dobraria o
+     * escape e o usuário veria `X""` onde escreveu `X"`.
      */
-    private montarFormatConfig(colunas: ReportColumnDef[], saida: 'csv' | 'parquet'): FormatConfig {
+    private montarFormatConfig(colunas: ReportColumnDef[], saida: 'csv' | 'xlsx'): FormatConfig {
         const columns: Record<string, ColumnFormatConfig> = {};
 
         for (const c of colunas) {
-            if (saida === 'parquet') {
-                columns[c.name] = { rename: renameSeguro(c.label) };
+            if (saida === 'xlsx') {
+                columns[c.name] = { rename: c.label };
                 continue;
             }
 
             const fmt = c.format ?? {};
             columns[c.name] = {
-                rename: renameSeguro(c.label),
+                rename: c.label,
                 // O guard já produziu VARCHAR no SELECT; formatar de novo corromperia o valor.
                 ...(fmt.excelTextGuard || fmt.raw ? { raw: true } : {}),
                 ...(fmt.decimalPlaces !== undefined ? { decimalPlaces: fmt.decimalPlaces } : {}),
                 ...(fmt.currency ? { currency: fmt.currency } : {}),
                 ...(fmt.unit ? { unit: fmt.unit } : {}),
-                ...(fmt.dateFormat ? { dateFormat: dateFormatSeguro(fmt.dateFormat) } : {}),
+                ...(fmt.dateFormat ? { dateFormat: fmt.dateFormat } : {}),
             };
         }
 
@@ -315,46 +326,28 @@ export class ReportPostProcessService {
     }
 
     /**
-     * Gera o XLSX em duas etapas: parquet tipado (renomeação apenas) e depois
-     * `COPY ... TO ... (FORMAT xlsx)`.
+     * Converte um CSV **já formatado** em XLSX, tudo como texto (`all_varchar`) — é isso
+     * que faz o XLSX de `xlsx_tipado: false` espelhar a apresentação do CSV.
      *
-     * O parquet intermediário existe porque a lib ainda não tem sink XLSX; usá-lo como
-     * ponte preserva DECIMAL/DATE de ponta a ponta, ao contrário do caminho antigo, que
-     * relia um CSV já formatado com `read_csv_auto`.
+     * Fora do caminho da lib porque aqui a fonte é um arquivo pronto, não um plano: não há
+     * schema para declarar nem formatação para aplicar, só um `COPY`.
      */
-    private async gerarXlsx(
-        csvPath: string,
-        schema: ReportFileSchema,
-        colunas: ReportColumnDef[],
-        filtros: string[],
-        ordens: RelatorioModeloOrdemDto[],
-        modelo: RelatorioModeloConfigDto
-    ): Promise<string> {
-        const tipado = modelo.xlsx_tipado !== false;
-        const xlsx = tmpFile('pp-xlsx', '.xlsx');
-
-        // Etapa intermediária: parquet quando tipado (preserva DECIMAL/DATE), CSV quando
-        // o modelo pede o XLSX espelhando a apresentação do CSV.
-        const ponte = tipado ? tmpFile('pp-ponte', '.parquet') : tmpFile('pp-ponte', '.csv');
-        await this.executar(csvPath, schema, colunas, filtros, ordens, ponte, tipado ? 'parquet' : 'csv');
-
+    private async csvParaXlsx(csv: string, destino: string, aba: string): Promise<void> {
         const instance = await DuckDBInstance.create(':memory:', DUCKDB_SETTINGS);
         const con = await instance.connect();
         try {
+            // `INSTALL` antes do `LOAD` pelo mesmo motivo que a lib faz (0.5.0): o cache de
+            // extensão é por versão do DuckDB (`~/.duckdb/extensions/v<versão>/`), então um
+            // `LOAD` solto só funciona se aquela versão já tiver sido populada — falha em
+            // máquina nova e a cada upgrade do DuckDB. `INSTALL` é idempotente e lê do cache.
+            await con.run('INSTALL excel');
             await con.run('LOAD excel');
-            const fonte = tipado
-                ? `read_parquet(${sqlLit(ponte)})`
-                : `read_csv(${sqlLit(ponte)}, delim = ';', header = true, all_varchar = true)`;
-            await con.run(`COPY (SELECT * FROM ${fonte}) TO ${sqlLit(xlsx)} (FORMAT xlsx, HEADER true)`);
+            await con.run(
+                `COPY (SELECT * FROM read_csv(${sqlLit(csv)}, delim = ';', header = true, all_varchar = true)) ` +
+                    `TO ${sqlLit(destino)} (FORMAT xlsx, HEADER true, SHEET ${sqlLit(aba)})`
+            );
         } finally {
             con.disconnectSync();
-            try {
-                fs.unlinkSync(ponte);
-            } catch {
-                /* arquivo temporário */
-            }
         }
-
-        return xlsx;
     }
 }

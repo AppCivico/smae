@@ -30,7 +30,13 @@ RUN npm ci
 
 COPY tools/install-duckdb-extensions.js ./tools/
 
+# `USER node` para o cache de extensões do DuckDB cair em /home/node/.duckdb, e não em
+# /root/.duckdb: a API roda como `node` (USER node, mais abaixo) e o DuckDB resolve o cache
+# por $HOME. Instalado como root, o cache existe na imagem mas é invisível para a aplicação —
+# aí cada export XLSX baixa a extensão em runtime, ou falha, se o container não tiver egress.
+USER node
 RUN node tools/install-duckdb-extensions.js
+USER root
 
 # layer própria do prisma generate: só invalida quando schema/config mudam (não em mudanças de código)
 COPY prisma/schema.prisma ./prisma/

@@ -43,12 +43,16 @@ function escreverCsvBruto(): string {
     return p;
 }
 
-async function lerXlsx(arquivo: string): Promise<Record<string, unknown>[]> {
+async function lerXlsx(arquivo: string, aba?: string): Promise<Record<string, unknown>[]> {
     const instance = await DuckDBInstance.create(':memory:');
     const con = await instance.connect();
     try {
+        // INSTALL + LOAD: sem o INSTALL o teste só passa em máquina cujo cache de extensão
+        // já foi populado para esta versão exata do DuckDB.
+        await con.run('INSTALL excel');
         await con.run('LOAD excel');
-        const r = await con.run(`SELECT * FROM read_xlsx('${arquivo}', all_varchar = false)`);
+        const sheet = aba ? `, sheet = '${aba}'` : '';
+        const r = await con.run(`SELECT * FROM read_xlsx('${arquivo}', all_varchar = false${sheet})`);
         return (await r.getRowObjectsJson()) as Record<string, unknown>[];
     } finally {
         con.disconnectSync();
@@ -98,10 +102,12 @@ describe('ReportPostProcessService', () => {
         expect(linhas[1]).toContain('1.234,56');
         expect(linhas[1]).toContain('15/10/2024');
 
-        // Comportamento atual da lib (duckdb-report-builder 0.3.1): CONCAT ignora NULL,
-        // então valor nulo com prefixo de moeda sai como "R$ " em vez de vazio.
-        // TODO: corrigir na lib (currency/unit null-safe) e inverter esta asserção.
-        expect(linhas[3]).toContain('R$ ;');
+        // Célula numérica vazia com prefixo de moeda sai vazia, não como a string "R$ ".
+        // (a lib usava CONCAT, que ignora NULL; desde a 0.4.0 usa `||`, que propaga)
+        // O `""` é a Dotação: o guard devolve string vazia para NULL, e o writer de CSV
+        // do DuckDB a escreve entre aspas para distingui-la de NULL (que sai como nada).
+        expect(linhas[3]).toBe('3;;;"";SMUL');
+        expect(linhas[3]).not.toContain('R$');
     });
 
     it('protege texto no CSV com o guard e NÃO no XLSX', async () => {
@@ -127,6 +133,14 @@ describe('ReportPostProcessService', () => {
         expect(linhas[0]['Valor']).toBe(1234.56);
         expect(typeof linhas[0]['Valor']).toBe('number');
         expect(String(linhas[0]['Vigência'])).toContain('2024-10-15');
+    });
+
+    it('nomeia a aba do XLSX com o nome do relatório', async () => {
+        const { xlsxPath } = await aplicar({ arquivos: [{ arquivo: 'exemplo.csv' }] });
+
+        // Ler pelo nome só funciona se o SHEET foi aplicado — o default do DuckDB é 'Sheet1'.
+        expect(await lerXlsx(xlsxPath, 'exemplo')).toHaveLength(3);
+        await expect(lerXlsx(xlsxPath, 'Sheet1')).rejects.toThrow();
     });
 
     it('seleciona, reordena e renomeia colunas conforme o modelo', async () => {
