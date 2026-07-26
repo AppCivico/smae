@@ -1,3 +1,4 @@
+import '../casa-civil-atividades-pendentes/entities/casa-civil-atividades-pendentes-csv.entity';
 import '../transferencias/entities/transferencias-csv.entity';
 import '../tribunal-de-contas/entities/tribunal-de-contas-csv.entity';
 

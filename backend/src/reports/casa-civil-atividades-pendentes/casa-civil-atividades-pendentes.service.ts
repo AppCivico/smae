@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
@@ -10,12 +12,26 @@ import {
     ReportableService,
 } from '../utils/utils.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
+import { RelCasaCivilAtividadesPendentesCsvRow } from './entities/casa-civil-atividades-pendentes-csv.entity';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 import { Prisma } from '@prisma/client';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 
+/** Formato cru devolvido pelo `$queryRaw`, antes da normalização feita no `asJSON`. */
+type RetornoDbAtvPendentes = {
+    identificador: string;
+    parlamentares: string | null;
+    valor: Prisma.Decimal | null;
+    atividade: string;
+    inicio_planejado: Date | null;
+    termino_planejado: Date | null;
+    inicio_real: Date | null;
+    orgao_responsavel: string | null;
+    responsavel_atividade: string;
+};
+
 @Injectable()
-export class CasaCivilAtividadesPendentesService implements ReportableService {
+export class CasaCivilAtividadesPendentesService implements ReportableService, SchemaAwareReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
     async asJSON(params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<RelCasaCivilAtividadesPendentes[]> {
@@ -47,7 +63,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         if (params.orgao_id && params.orgao_id.length > 0)
             whereConditions = Prisma.sql`${whereConditions} AND tf.orgao_id = ANY(${params.orgao_id})`;
 
-        const linhas = await this.prisma.$queryRaw`
+        const linhas = await this.prisma.$queryRaw<RetornoDbAtvPendentes[]>`
         SELECT
             t.identificador,
             (
@@ -70,56 +86,46 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         WHERE ${whereConditions}
     `;
 
-        return linhas as RelCasaCivilAtividadesPendentes[];
+        // Normaliza para o "compute store": datas em ISO `YYYY-MM-DD` e o Decimal do Prisma
+        // como string (ver comentário em RelCasaCivilAtividadesPendentesCsvRow.valor).
+        // Nenhuma máscara de moeda/locale aqui — isso é do pós-processamento.
+        return linhas.map((r) => {
+            return {
+                identificador: r.identificador,
+                parlamentares: r.parlamentares,
+                valor: r.valor != null ? r.valor.toString() : null,
+                atividade: r.atividade,
+                inicio_planejado: Date2YMD.toStringOrNull(r.inicio_planejado),
+                termino_planejado: Date2YMD.toStringOrNull(r.termino_planejado),
+                inicio_real: Date2YMD.toStringOrNull(r.inicio_real),
+                orgao_responsavel: r.orgao_responsavel,
+                responsavel_atividade: r.responsavel_atividade,
+            } satisfies RelCasaCivilAtividadesPendentes;
+        });
+    }
+
+    async describeSchema(_params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<ReportFileSchema[]> {
+        return [getReportRowSchema(RelCasaCivilAtividadesPendentesCsvRow)];
     }
 
     async toFileOutput(params: CreateCasaCivilAtividadesPendentesFilterDto, ctx: ReportContext): Promise<FileOutput[]> {
         const rows = await this.asJSON(params);
         await ctx.progress(40);
-        //Cabeçalho Arquivo
-        const fieldsCSV = [
-            { value: 'identificador', label: 'Identificador' },
-            { value: 'parlamentares', label: 'Parlamentares' },
-            {
-                value: (row: { valor: number | null }) =>
-                    row.valor != null
-                        ? new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL',
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                          }).format(row.valor)
-                        : '',
-                label: 'Valor do Repasse',
-            },
-            { value: 'atividade', label: 'Atividade' },
-            {
-                value: (row: any) =>
-                    row.inicio_planejado ? `="${new Date(row.inicio_planejado).toLocaleDateString('pt-BR')}"` : '',
-                label: 'Previsão de Início',
-            },
-            {
-                value: (row: any) =>
-                    row.termino_planejado ? `="${new Date(row.termino_planejado).toLocaleDateString('pt-BR')}"` : '',
-                label: 'Previsão de Término',
-            },
-            {
-                value: (row: any) =>
-                    row.inicio_real ? `="${new Date(row.inicio_real).toLocaleDateString('pt-BR')}"` : '',
-                label: 'Início Real',
-            },
-            { value: 'orgao_responsavel', label: 'Orgão Responsável' },
-            { value: 'responsavel_atividade', label: 'Responsável pela Atividade' },
-        ];
+
+        const [schema] = await this.describeSchema(params);
 
         const out: FileOutput[] = [];
         if (rows.length) {
             const tmp = ctx.getTmpFile('atividades-pendentes.csv');
 
+            // CSV bruto: cabeçalho com os nomes de máquina das colunas, sem rótulos e sem
+            // lambdas de formatação. Rótulos, moeda, data pt-BR e o guard do Excel vêm do
+            // schema declarado em RelCasaCivilAtividadesPendentesCsvRow, aplicado no
+            // pós-processamento.
             const csvOpts: CsvWriterOptions<RelCasaCivilAtividadesPendentes> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: fieldsCSV,
+                fields: schema.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(rows, tmp.stream, csvOpts);
             out.push({
