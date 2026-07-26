@@ -107,14 +107,36 @@ export class RelPsMonitoramentoMensalVariaveisCsvRow {
     valor_categorica: string | null;
 
     /**
-     * Booleano exibido como `Sim`/`Não` — tradução de domínio, por isso `VARCHAR`.
+     * Booleano que sairia como `Sim`/`Não` — tradução de domínio, por isso `VARCHAR`.
      *
-     * ATENÇÃO: a consulta desta fonte **não** seleciona `eh_previa` (o campo existe só no
-     * relatório de Indicadores), então esta coluna sempre saiu vazia. Mantida no schema
-     * porque o cabeçalho 'É Prévia' faz parte do layout entregue hoje; preenchê-la seria
-     * mudança de produto, não desta refatoração.
+     * ATENÇÃO: esta coluna **sempre sai vazia**, e isso não é um erro de nome/seleção que
+     * dê para consertar aqui: o conceito de "prévia" não existe no nível de variável.
+     *
+     * Levantamento feito no modelo de dados:
+     * - `eh_previa` existe **apenas** em `SerieIndicador` (`serie_indicador.eh_previa`,
+     *   `prisma/schema.prisma`), com o sentido "este valor de *indicador* foi preenchido a
+     *   partir de uma `Serie = 'Previa'`" (ver o fallback em
+     *   `prisma/manual-copy/0021-monta_serie_indicador.pgsql`).
+     * - `SerieVariavel` (`serie_variavel`), que é a tabela desta consulta, não tem o campo —
+     *   e a função `valor_variavel_em_json` (`prisma/manual-copy/0041-valor_em.pgsql`) não
+     *   emite `eh_previa`, ao contrário da irmã `valor_indicador_em_json`. O próprio DTO
+     *   registra isso: `SerieValorNomimal.eh_previa` em `src/variavel/entities/variavel.entity.ts`
+     *   está anotado como "apenas em indicadores no momento".
+     * - O `IndicadoresService` obtém o campo do `valor_json` produzido por
+     *   `valor_indicador_em_json`, e só no arquivo `indicadores.csv` (nível indicador);
+     *   o `regioes.csv` (nível variável) do mesmo relatório também não tem a coluna.
+     *
+     * Preencher exigiria escolher entre candidatos com semânticas diferentes (o `eh_previa`
+     * do indicador da linha, replicado em todas as variáveis dele; ou `serie_variavel.conferida`
+     * lido como "valor ainda preliminar"), o que é decisão de produto — ver o PR.
      */
-    @ReportColumn({ type: 'VARCHAR', label: 'É Prévia' })
+    @ReportColumn({
+        type: 'VARCHAR',
+        label: 'É Prévia',
+        descricao:
+            'Sempre vazia nesta fonte: `eh_previa` só existe em `serie_indicador` (nível indicador), ' +
+            'e esta consulta lê `serie_variavel`. Mantida pelo layout histórico.',
+    })
     eh_previa: string | null;
 
     /** `serie_variavel.atualizado_em` (timestamptz, gravado em UTC). */

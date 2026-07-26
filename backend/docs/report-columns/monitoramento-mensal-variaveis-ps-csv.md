@@ -31,7 +31,7 @@ mês/ano do filtro.
 | `data_referencia` | `DATE` | Data de Referencia | sim | — | — |
 | `valor_nominal` | `DECIMAL(18,4)` | Valor Nominal | sim | 4 casas | — |
 | `valor_categorica` | `VARCHAR` | Valor Categórica | sim | — | — |
-| `eh_previa` | `VARCHAR` | É Prévia | sim | — | — |
+| `eh_previa` | `VARCHAR` | É Prévia | sim | — | Sempre vazia nesta fonte: `eh_previa` só existe em `serie_indicador` (nível indicador), e esta consulta lê `serie_variavel`. Mantida pelo layout histórico. |
 | `data_preenchimento` | `TIMESTAMP` | Data da Coleta | sim | — | — |
 | `analise_qualitativa_coleta` | `VARCHAR` | Analise Qualitativa Coleta | sim | — | — |
 | `analise_qualitativa_aprovador` | `VARCHAR` | Analise Qualitativa Conferidor | sim | — | — |

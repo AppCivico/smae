@@ -451,8 +451,9 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
                 data_referencia: csvData(row.data_referencia),
                 valor_nominal: csvDecimal(row.valor_nominal),
                 valor_categorica: row.valor_categorica,
-                // A consulta desta fonte não seleciona `eh_previa`; a coluna sempre saiu
-                // vazia e continua saindo — ver nota na entidade.
+                // `eh_previa` só existe em `serie_indicador` (nível indicador); esta consulta
+                // lê `serie_variavel`, onde o conceito não existe. A coluna sempre saiu vazia
+                // e continua saindo — o levantamento completo está na nota da entidade.
                 eh_previa: null,
                 data_preenchimento: csvTimestamp(row.data_preenchimento),
                 analise_qualitativa_coleta: csvTexto(row.analise_qualitativa_coleta),
