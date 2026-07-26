@@ -36,7 +36,7 @@ Mesmo cabeçalho base do `indicadores.csv`, acrescido do recorte de variável/ó
 | `variavel__codigo` | `VARCHAR` | Código da Variável | sim | — | — |
 | `variavel__titulo` | `VARCHAR` | Título da Variável | sim | — | — |
 | `variavel__id` | `BIGINT` | ID da Variável | não | sem formatação | — |
-| `regiao_id` | `BIGINT` | ID da região | não | sem formatação | — |
+| `regiao_id` | `BIGINT` | ID da Região da Variável | não | sem formatação | — |
 | `regiao_nivel_4__id` | `BIGINT` | ID do Distrito | não | sem formatação | — |
 | `regiao_nivel_4__codigo` | `VARCHAR` | Código do Distrito | sim | — | — |
 | `regiao_nivel_4__descricao` | `VARCHAR` | Descrição do Distrito | sim | — | — |
@@ -49,7 +49,7 @@ Mesmo cabeçalho base do `indicadores.csv`, acrescido do recorte de variável/ó
 | `data_referencia` | `DATE` | Data de Referência | sim | — | — |
 | `serie` | `VARCHAR` | Serie | sim | — | — |
 | `data` | `VARCHAR` | Data | sim | — | — |
-| `valor` | `DOUBLE` | Valor | sim | — | — |
+| `valor` | `VARCHAR` | Valor | sim | — | — |
 | `valores_categorica` | `VARCHAR` | Valor Categórica | sim | — | — |
 
 [← todos os arquivos](../report-columns.md)

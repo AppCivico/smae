@@ -143,18 +143,24 @@ export class RelIndicadoresCsvRow extends RelIndicadoresBaseCsvRow {
 
     /**
      * `valor_nominal` de `valor_indicador_em_json`, já arredondado no banco pelas casas
-     * decimais do indicador. DOUBLE sem `decimalPlaces`: a quantidade de casas varia por
-     * indicador (`variavel.casas_decimais`), então fixar uma máscara distorceria uns ou
-     * outros — o pós-processamento deixa o valor passar. O efeito colateral é o cast
-     * DOUBLE→VARCHAR do DuckDB, que escreve `12.0` onde o json2csv escrevia `12`; o tipo
-     * numérico vale a diferença, porque é ele que dá filtro/ordenação por faixa no modelo
-     * e célula somável no XLSX.
+     * decimais do indicador (`variavel.casas_decimais`) e emitido como número pela extração.
+     *
+     * **VARCHAR de propósito.** A precisão é variável por indicador, e a única formatação
+     * numérica que o pós-processamento sabe fazer exige `decimalPlaces` fixo
+     * (`format('{:t..Nf}', ...)`): com N fixo, `0` de um indicador inteiro viraria `0,0000`.
+     * Sem `decimalPlaces` a coluna numérica cai no pass-through do cast DOUBLE→VARCHAR do
+     * DuckDB, que escreve `12.0` — ponto decimal dentro de um arquivo que formata todo o
+     * resto em pt-BR, ou seja duas convenções no mesmo CSV. Entre distorcer a precisão e
+     * misturar convenções, mantive o valor **exatamente** como o relatório sempre entregou.
+     *
+     * O custo é conhecido e aceito: no modelo de relatório esta coluna filtra/ordena como
+     * texto, não por faixa numérica, e no XLSX a célula nasce texto.
      *
      * `null` (e não `''`) quando não há valor no período, e também quando o indicador é
      * `Categorica` — nesse caso o valor útil está em `valores_categorica`, regra de domínio
      * que continua na extração.
      */
-    @ReportColumn({ type: 'DOUBLE', label: 'Valor' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Valor' })
     valor: number | null;
 
     /** Booleano traduzido na extração (`Sim`/`Não`): tradução de domínio, não de locale. */
@@ -195,14 +201,22 @@ export class RelIndicadoresRegioesCsvRow extends RelIndicadoresBaseCsvRow {
     variavel__id: number | null;
 
     /**
-     * Região da própria variável — pode ser de qualquer nível da hierarquia.
+     * Região à qual a variável está amarrada (`v.regiao_id`) — pode ser de qualquer nível da
+     * hierarquia. As colunas seguintes são os ancestrais dela, resolvidos por nível.
      *
-     * O rótulo 'ID da região' difere de 'ID da Região' (`regiao_nivel_2__id`) só pela caixa.
-     * O DuckDB compara identificadores sem diferenciar maiúsculas, então na saída ele
-     * desambigua a **segunda** ocorrência para `ID da Região_1`. Preservei os dois rótulos
-     * como estão: renomear um deles é decisão de negócio, e o sufixo está registrado no PR.
+     * **Rótulo alterado** (era 'ID da região'): ele diferia de 'ID da Região'
+     * (`regiao_nivel_2__id`) só pela caixa, e o DuckDB compara identificadores sem diferenciar
+     * maiúsculas — a saída vinha com a segunda coluna desambiguada para `ID da Região_1`. Como
+     * o cabeçalho ia mudar de qualquer jeito, mudou para algo deliberado. Renomeei esta e não
+     * a de nível 2 porque lá o rótulo faz parte do trio consistente
+     * 'ID/Código/Descrição da Região', igual aos trios de Distrito e Subprefeitura.
      */
-    @ReportColumn({ type: 'BIGINT', label: 'ID da região', format: { raw: true }, customizavel: false })
+    @ReportColumn({
+        type: 'BIGINT',
+        label: 'ID da Região da Variável',
+        format: { raw: true },
+        customizavel: false,
+    })
     regiao_id: number | null;
 
     @ReportColumn({ type: 'BIGINT', label: 'ID do Distrito', format: { raw: true }, customizavel: false })
@@ -247,8 +261,12 @@ export class RelIndicadoresRegioesCsvRow extends RelIndicadoresBaseCsvRow {
     @ReportColumn({ type: 'VARCHAR', label: 'Data' })
     data: string | null;
 
-    /** `valor_nominal` de `valor_variavel_em_json` — ver `RelIndicadoresCsvRow.valor`. */
-    @ReportColumn({ type: 'DOUBLE', label: 'Valor' })
+    /**
+     * `valor_nominal` de `valor_variavel_em_json`. VARCHAR pelo mesmo motivo de
+     * `RelIndicadoresCsvRow.valor`: precisão variável por variável, e a formatação numérica
+     * do pós-processamento exige casas decimais fixas.
+     */
+    @ReportColumn({ type: 'VARCHAR', label: 'Valor' })
     valor: number | null;
 
     /**

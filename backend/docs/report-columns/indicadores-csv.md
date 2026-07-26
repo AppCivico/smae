@@ -32,7 +32,7 @@ Classe de linha: `RelIndicadoresCsvRow`
 | `data_referencia` | `DATE` | Data de Referência | sim | — | — |
 | `serie` | `VARCHAR` | Serie | sim | — | — |
 | `data` | `VARCHAR` | Data | sim | — | — |
-| `valor` | `DOUBLE` | Valor | sim | — | — |
+| `valor` | `VARCHAR` | Valor | sim | — | — |
 | `eh_previa` | `VARCHAR` | É Prévia | sim | — | — |
 | `valores_categorica` | `VARCHAR` | Valores Categórica | sim | — | — |
 
