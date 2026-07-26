@@ -28,7 +28,7 @@ o `'Código da ' + pdm.rotulo_iniciativa` que a extração montava antes.
 | `atividade__titulo` | `VARCHAR` | Título da Atividade | sim | — | — |
 | `atividade__id` | `BIGINT` | ID da Atividade | não | sem formatação | — |
 | `id` | `BIGINT` | id | não | sem formatação | — |
-| `id_versao_anterior` | `BIGINT` | id_versao_anterior | não | sem formatação | — |
+| `versao_anterior_id` | `BIGINT` | id_versao_anterior | não | sem formatação | ID da revisão anterior deste orçamento previsto (vazio na primeira versão). |
 | `projeto_atividade` | `VARCHAR` | projeto_atividade | sim | — | — |
 | `criado_em` | `TIMESTAMP` | criado_em | sim | — | — |
 | `ano_referencia` | `INTEGER` | ano_referencia | sim | sem formatação | — |
@@ -47,7 +47,7 @@ Projeto. As demais são idênticas às da variante de PDM.
 | `projeto__nome` | `VARCHAR` | Nome do Projeto | sim | — | — |
 | `projeto__id` | `BIGINT` | ID do Projeto | não | sem formatação | — |
 | `id` | `BIGINT` | id | não | sem formatação | — |
-| `id_versao_anterior` | `BIGINT` | id_versao_anterior | não | sem formatação | — |
+| `versao_anterior_id` | `BIGINT` | id_versao_anterior | não | sem formatação | ID da revisão anterior deste orçamento previsto (vazio na primeira versão). |
 | `projeto_atividade` | `VARCHAR` | projeto_atividade | sim | — | — |
 | `criado_em` | `TIMESTAMP` | criado_em | sim | — | — |
 | `ano_referencia` | `INTEGER` | ano_referencia | sim | sem formatação | — |

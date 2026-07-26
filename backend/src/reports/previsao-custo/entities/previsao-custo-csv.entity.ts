@@ -21,6 +21,11 @@ import { ReportColumn, ReportRows } from '../../post-process/report-column.decor
  * json2csv, que usa o próprio nome como cabeçalho. Traduzi-los para rótulos humanos mudaria o
  * arquivo entregue ao usuário — decisão de negócio, não desta refatoração.
  *
+ * A única exceção é `versao_anterior_id`, cujo rótulo permanece `id_versao_anterior`: era esse o
+ * cabeçalho emitido (por um `fields` que apontava para um campo inexistente) e ele é preservado,
+ * enquanto o nome de máquina passa a ser o do campo que realmente existe. Ver o comentário na
+ * própria coluna.
+ *
  * Nenhuma coluna leva `excelTextGuard`: o relatório nunca emitiu o hack `="valor"`, e
  * acrescentá-lo agora mudaria o conteúdo das células.
  *
@@ -81,12 +86,26 @@ export class RelPrevisaoCustoPdmCsvRow {
     id: number;
 
     /**
-     * Sempre vazia: a extração seleciona `versao_anterior_id`, mas o relatório sempre pediu a
-     * coluna `id_versao_anterior`, que não existe na linha. Mantida como está para não mudar o
-     * arquivo entregue — preencher a coluna seria mudança de conteúdo, não desta refatoração.
+     * Correção de bug histórico: a coluna sempre saiu **vazia** porque o `fields` do json2csv
+     * pedia `id_versao_anterior`, nome que nunca existiu na linha — a extração seleciona
+     * `versao_anterior_id` (nome do campo em `OrcamentoPrevisto`, único candidato no modelo).
+     *
+     * O nome de máquina passa a ser `versao_anterior_id`, igual ao do banco e ao que a extração
+     * já produz: assim a coluna carrega o dado real sem precisar de apelido na extração. O
+     * **rótulo** continua sendo `id_versao_anterior` e a **posição** é a mesma, então o cabeçalho
+     * do arquivo entregue não muda — só as células, que deixam de ser vazias.
+     *
+     * Motivo de corrigir em vez de preservar: no pós-processamento cada coluna também vira filtro
+     * e critério de ordenação; uma coluna eternamente `NULL` ofereceria um filtro que nunca casa.
      */
-    @ReportColumn({ type: 'BIGINT', label: 'id_versao_anterior', format: { raw: true }, customizavel: false })
-    id_versao_anterior: number | null;
+    @ReportColumn({
+        type: 'BIGINT',
+        label: 'id_versao_anterior',
+        format: { raw: true },
+        customizavel: false,
+        descricao: 'ID da revisão anterior deste orçamento previsto (vazio na primeira versão).',
+    })
+    versao_anterior_id: number | null;
 
     /** Descrição do projeto/atividade da dotação, resolvida via SOF na extração. */
     @ReportColumn({ type: 'VARCHAR', label: 'projeto_atividade' })
@@ -147,9 +166,15 @@ export class RelPrevisaoCustoProjetoCsvRow {
     @ReportColumn({ type: 'BIGINT', label: 'id', format: { raw: true }, customizavel: false })
     id: number;
 
-    /** Ver `RelPrevisaoCustoPdmCsvRow.id_versao_anterior`: sempre vazia, mantida como está. */
-    @ReportColumn({ type: 'BIGINT', label: 'id_versao_anterior', format: { raw: true }, customizavel: false })
-    id_versao_anterior: number | null;
+    /** Ver `RelPrevisaoCustoPdmCsvRow.versao_anterior_id`: rótulo/posição antigos, valor agora preenchido. */
+    @ReportColumn({
+        type: 'BIGINT',
+        label: 'id_versao_anterior',
+        format: { raw: true },
+        customizavel: false,
+        descricao: 'ID da revisão anterior deste orçamento previsto (vazio na primeira versão).',
+    })
+    versao_anterior_id: number | null;
 
     @ReportColumn({ type: 'VARCHAR', label: 'projeto_atividade' })
     projeto_atividade: string | null;

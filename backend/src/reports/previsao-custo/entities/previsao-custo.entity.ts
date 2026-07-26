@@ -12,6 +12,11 @@ export class RelPrevisaoCustoDto {
     parte_dotacao: string;
     ano_referencia: number;
     id: number;
+    /**
+     * Já vinha no `select` da extração (e no JSON devolvido pela API); só não estava declarado
+     * aqui. Agora é usado pela coluna `id_versao_anterior` do CSV, que antes saía sempre vazia.
+     */
+    versao_anterior_id: number | null;
     criado_em: Date;
     atualizado_em: Date;
 }
