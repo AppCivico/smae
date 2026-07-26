@@ -1,12 +1,24 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { flatten } from '@json2csv/transforms';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, DefaultTransforms, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
+import { RelObraStatusCsvRow, RelProjetoStatusCsvRow } from './entities/pp-status-csv.entity';
 import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+
+/**
+ * O CSV bruto usa `__` como separador de aninhamento porque o builder DuckDB trata `.`
+ * como referência qualificada por fonte. Hoje `RelProjetoStatusRelatorioDto` é plano e o
+ * transform não muda nada — ele existe para que um campo aninhado adicionado depois não
+ * gere silenciosamente um cabeçalho `a.b` incompatível com o schema.
+ */
+const PPStatusFlattenTransforms = [flatten({ objects: true, arrays: true, separator: '__' })];
 
 type ProjetoStatusDbRow = {
     id: number;
@@ -29,7 +41,7 @@ type ProjetoStatusDbRow = {
 };
 
 @Injectable()
-export class PPStatusService implements ReportableService {
+export class PPStatusService implements ReportableService, SchemaAwareReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
     async asJSON(dto: CreateRelProjetoStatusDto, user: PessoaFromJwt | null): Promise<PPProjetoStatusRelatorioDto> {
@@ -175,6 +187,20 @@ export class PPStatusService implements ReportableService {
         if (!dto.tipo_pdm) dto.tipo_pdm = 'PP';
     }
 
+    /**
+     * O relatório emite um único arquivo, mas o nome dele depende de `params.tipo_pdm`
+     * (`projeto-status.csv` para `PP`, `obra-status.csv` para obras/MDO). Como
+     * `@ReportRows.arquivo` é estático, há uma classe por arquivo e aqui devolvemos só a
+     * que corresponde ao tipo pedido — o `findFileSchema` do pós-processamento casa pelo
+     * nome do arquivo, então devolver as duas faria o schema errado ficar órfão.
+     *
+     * O `?? 'PP'` espelha o default de `verificaParams`/`CreateRelProjetoStatusDto`.
+     */
+    async describeSchema(params: CreateRelProjetoStatusDto): Promise<ReportFileSchema[]> {
+        const tipo = params.tipo_pdm ?? 'PP';
+        return [getReportRowSchema(tipo === 'PP' ? RelProjetoStatusCsvRow : RelObraStatusCsvRow)];
+    }
+
     async toFileOutput(
         params: CreateRelProjetoStatusDto,
         ctx: ReportContext,
@@ -188,12 +214,17 @@ export class PPStatusService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        const fileName = params.tipo_pdm === 'PP' ? 'projeto-status.csv' : 'obra-status.csv';
+        const [schema] = await this.describeSchema(params);
+        const fileName = schema.arquivo;
         const tmp = ctx.getTmpFile(fileName);
 
+        // CSV bruto: cabeçalho com os nomes "de máquina" das colunas e valores crus.
+        // Rótulos, moeda e separador decimal pt-BR vêm do schema declarado em
+        // `pp-status-csv.entity.ts`, aplicado no pós-processamento.
         const csvOpts: CsvWriterOptions<RelProjetoStatusRelatorioDto> = {
             csvOptions: DefaultCsvOptions,
-            transforms: DefaultTransforms,
+            transforms: PPStatusFlattenTransforms,
+            fields: schema.colunas.map((c) => c.name),
         };
 
         await WriteCsvToFile(dados.linhas, tmp.stream, csvOpts);
