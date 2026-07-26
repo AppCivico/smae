@@ -2,8 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { Parser } from '@json2csv/plainjs';
-import { flatten, Transform } from '@json2csv/transforms';
+import { flatten } from '@json2csv/transforms';
 import { StreamBatchHandler } from './stream-handlers';
+
+/** O `transforms` do json2csv é uma tupla, não um array qualquer — mesma forma que o `Parser` exige. */
+export type CsvTransforms = NonNullable<ConstructorParameters<typeof Parser<any, any>>[0]>['transforms'];
 
 export const DefaultCsvTransforms = [
     flatten({
@@ -11,7 +14,7 @@ export const DefaultCsvTransforms = [
         objects: true,
         separator: '.',
     }),
-] satisfies [Transform<any, any>, ...Transform<any, any>[]];
+] satisfies CsvTransforms;
 
 export class CsvFileHandler implements StreamBatchHandler<any> {
     private parser: Parser<any, any>;
@@ -19,14 +22,22 @@ export class CsvFileHandler implements StreamBatchHandler<any> {
     private fileHandle: fs.promises.FileHandle | null = null;
     private fileWritten = false;
 
+    /**
+     * @param fields chaves lidas de cada linha, na ordem das colunas
+     * @param fieldNames cabeçalho escrito no arquivo (uma entrada por `fields`)
+     * @param transforms transforms do json2csv. O padrão achata objetos **e** arrays com `.`;
+     *   relatórios com schema declarado passam um flatten com separador `__`, porque o builder
+     *   DuckDB trata `.` como referência qualificada por fonte.
+     */
     constructor(
         private fields: string[],
-        private fieldNames: string[]
+        private fieldNames: string[],
+        transforms: CsvTransforms = DefaultCsvTransforms
     ) {
         this.parser = new Parser<any, any>({
             fields: this.fields,
             header: false,
-            transforms: DefaultCsvTransforms,
+            transforms,
         });
 
         // Cria um caminho para o arquivo temporário

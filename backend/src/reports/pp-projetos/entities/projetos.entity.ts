@@ -96,6 +96,8 @@ export class RelProjetosRiscosDto {
 export class RelProjetosPlanoAcaoDto {
     projeto_id: number;
     projeto_codigo: string;
+    /** Já era produzido pela extração (e sai no CSV), só não estava declarado aqui. */
+    plano_acao_id: number;
     risco_codigo: string;
     contramedida: string;
     medidas_de_contingencia: string;
