@@ -509,12 +509,24 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
     }
 
     /**
-     * Converte a linha do banco no "compute store" que o CSV bruto carrega.
+     * Serializa a linha do banco no texto que o CSV bruto carrega, guiada pelo tipo
+     * declarado em cada coluna do schema.
      *
-     * Não há formatação de apresentação aqui — só a serialização mínima para que o
-     * `read_csv(..., columns={...})` do pós-processamento consiga reconstruir o tipo
-     * declarado. Sem isto, um `Date` sairia como `2024-03-05T00:00:00.000Z` (o
-     * `JSON.stringify` do json2csv), que o DuckDB não aceita numa coluna `DATE`.
+     * **Isto é defensivo, não um conserto.** Foi medido que, sem esta etapa, o caminho
+     * `json2csv` → `read_csv(..., columns={...})` já funciona para todos os tipos usados
+     * aqui: o DuckDB aceita `2024-03-05T00:00:00.000Z` numa coluna `DATE` (trunca a hora) e
+     * numa `TIMESTAMP`, o `Decimal` do Prisma é serializado pelo `toJSON()` como a string
+     * exata (não passa por `double`) e `bigint` sai íntegro. Nenhuma falha foi reproduzida.
+     *
+     * O que a normalização compra é **independência da serialização default do json2csv**:
+     * o valor entregue ao parser já está na forma que o tipo declarado espera, em vez de
+     * depender do `JSON.stringify` que o formatter `object` aplica em qualquer objeto. Isso
+     * importa porque o schema é o contrato do arquivo, e a extração passa por um driver
+     * (`@prisma/adapter-pg`) que decide sozinho se um `date`/`numeric` volta como objeto ou
+     * como string. Se um dia a resposta mudar, o CSV bruto continua igual.
+     *
+     * Nada aqui é formatação de apresentação — moeda, `dd/mm/aaaa` e separador pt-BR são do
+     * pós-processamento.
      */
     private normalizarLinha(row: any, schema: ReportFileSchema): Record<string, any> {
         const out: Record<string, any> = {};
@@ -525,18 +537,18 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
     private normalizarValor(valor: any, tipo: ReportColumnType): any {
         if (valor === null || valor === undefined) return null;
 
+        // ISO curto. O driver também pode já devolver a string 'YYYY-MM-DD', daí o passa-adiante.
         if (tipo === 'DATE') return valor instanceof Date ? Date2YMD.toString(valor) : valor;
 
-        // `YYYY-MM-DD HH:MM:SS` em UTC — mesmo instante que o ISO emitido antes, sem o
-        // sufixo `Z` (que o DuckDB não aceita ao ler uma coluna TIMESTAMP).
+        // `YYYY-MM-DD HH:MM:SS` em UTC — mesmo instante que o ISO, e é assim que o DuckDB
+        // interpreta o ISO com `Z` de qualquer forma (o sufixo é descartado).
         if (tipo === 'TIMESTAMP')
             return valor instanceof Date ? valor.toISOString().replace('T', ' ').substring(0, 19) : valor;
 
-        // `Decimal` do Prisma vira string: `toNumber()` passaria por `double` e perderia
-        // precisão justamente nas colunas monetárias.
+        // String explícita: é o que preserva a precisão do `numeric`. O `toJSON()` do
+        // `Decimal` do Prisma já faz isso hoje; aqui a garantia não depende dele.
         if (tipo.startsWith('DECIMAL')) return typeof valor === 'object' ? valor.toString() : String(valor);
 
-        // `bigint` do driver não sobrevive ao `JSON.stringify` do json2csv.
         if (typeof valor === 'bigint') return valor.toString();
 
         return valor;
