@@ -1,7 +1,8 @@
+import { flatten } from '@json2csv/transforms';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { ContratoPrazoUnidade, StatusContrato } from '@prisma/client';
 import { DateTime } from 'luxon';
-import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
@@ -14,20 +15,30 @@ import { Html2Text } from '../../common/Html2Text';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService, findFileSchema } from '../post-process/report-schema';
 import {
     RelProjetosAditivosDto,
     RelProjetosContratosDto,
     RelProjetosTermoEncerramentoDto,
 } from '../pp-projetos/entities/projetos.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import {
-    DefaultCsvOptions,
-    DefaultTransforms,
-    FileOutput,
-    Path2FileName,
-    ReportableService,
-} from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
+import {
+    RelProjetoAcompanhamentoCsvRow,
+    RelProjetoAditivoCsvRow,
+    RelProjetoArquivoCsvRow,
+    RelProjetoContratoCsvRow,
+    RelProjetoCronogramaCsvRow,
+    RelProjetoDetalheCsvRow,
+    RelProjetoEncaminhamentoCsvRow,
+    RelProjetoEnderecoCsvRow,
+    RelProjetoOrigemCsvRow,
+    RelProjetoPlanoAcaoCsvRow,
+    RelProjetoRiscoCsvRow,
+    RelProjetoTermoEncerramentoCsvRow,
+} from './entities/pp-projeto-csv.entity';
 import {
     PPProjetoRelatorioDto,
     RelProjetoAcompanhamentoDto,
@@ -39,6 +50,42 @@ import {
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
+
+/**
+ * O CSV bruto usa `__` como separador do aninhamento (`meta`, `projeto_etapa`,
+ * `modalidade_licitacao`, `area_gestora`, `tipo`, `arquivo`, `criador`) porque o builder
+ * DuckDB trata `.` como referência qualificada por fonte — `meta.id` seria lido como
+ * "coluna id da fonte meta".
+ *
+ * `arrays: false` (o padrão do json2csv) é deliberado: campo array vira **uma** célula
+ * serializada, e é isso que mantém o conjunto de colunas fixo. Ligar `arrays: true` criaria
+ * colunas que aparecem/somem conforme os dados.
+ */
+const PPProjetoFlattenTransforms = [flatten({ objects: true, arrays: false, separator: '__' })];
+
+/**
+ * Data vinda do banco → `YYYY-MM-DD` (ou `null`).
+ *
+ * Tolera string porque parte dos campos já chega em ISO das conversões anteriores;
+ * `Date2YMD.toString` lança exceção para não-Date, e derrubar o relatório inteiro por causa
+ * de uma célula de data não é aceitável aqui.
+ */
+function DataParaYMD(d: Date | string | null | undefined): string | null {
+    if (d === null || d === undefined) return null;
+    if (d instanceof Date) return Date2YMD.toString(d);
+    return String(d).substring(0, 10);
+}
+
+/**
+ * Numérico do banco → string, preservando a precisão.
+ *
+ * Colunas `numeric` voltam como `Decimal` do Prisma; `toNumber()` passaria por `double` e
+ * perderia centavos em valores grandes. O DuckDB relê a string como `DECIMAL(18,x)`.
+ */
+function NumeroParaString(v: unknown): string | null {
+    if (v === null || v === undefined) return null;
+    return String(v);
+}
 
 class RetornoDbAditivos {
     aditivo_id: number;
@@ -142,7 +189,7 @@ class RetornoDbTermoEncerramento {
 }
 
 @Injectable()
-export class PPProjetoService implements ReportableService {
+export class PPProjetoService implements ReportableService, SchemaAwareReportableService {
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
@@ -302,12 +349,15 @@ export class PPProjetoService implements ReportableService {
                 tarefa_id: e.id,
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
-                inicio_planejado: e.inicio_planejado ? Date2YMD.toString(e.inicio_planejado) : '',
-                termino_planejado: e.termino_planejado ? Date2YMD.toString(e.termino_planejado) : '',
+                // Ausência de data é `null`, nunca `''`: o CSV bruto é relido com tipo DATE
+                // no pós-processamento, e string vazia entre aspas não é NULL em toda
+                // configuração de leitura.
+                inicio_planejado: DataParaYMD(e.inicio_planejado),
+                termino_planejado: DataParaYMD(e.termino_planejado),
                 custo_estimado: custo_estimado,
                 duracao_planejado: e.duracao_planejado,
-                inicio_real: e.inicio_real ? Date2YMD.toString(e.inicio_real) : '',
-                termino_real: e.termino_real ? Date2YMD.toString(e.termino_real) : '',
+                inicio_real: DataParaYMD(e.inicio_real),
+                termino_real: DataParaYMD(e.termino_real),
                 duracao_real: e.duracao_real,
                 percentual_concluido: e.percentual_concluido,
                 custo_real: custo_real,
@@ -592,6 +642,100 @@ export class PPProjetoService implements ReportableService {
         });
     }
 
+    /**
+     * `RelProjetosContratosDto` → linha do CSV bruto.
+     *
+     * O DTO é compartilhado com o relatório `Projetos` (e é resposta de API), por isso a
+     * adaptação para o "compute store" acontece aqui e não na extração: datas viram ISO
+     * `YYYY-MM-DD`, `Decimal` do Prisma vira string (sem passar por `double`) e os objetos
+     * aninhados viram colunas `__`.
+     */
+    private toCsvRowsContratos(rows: RelProjetosContratosDto[]): RelProjetoContratoCsvRow[] {
+        return rows.map((r) => {
+            return {
+                contrato_id: r.contrato_id,
+                projeto_id: r.projeto_id,
+                numero: r.numero,
+                exclusivo: r.exclusivo,
+                status: r.status,
+                objeto: r.objeto,
+                descricao_detalhada: r.descricao_detalhada,
+                contratante: r.contratante,
+                empresa_contratada: r.empresa_contratada,
+                prazo: r.prazo,
+                unidade_prazo: r.unidade_prazo,
+                data_base: r.data_base,
+                data_inicio: DataParaYMD(r.data_inicio),
+                data_termino: DataParaYMD(r.data_termino),
+                data_termino_atualizada: DataParaYMD(r.data_termino_atualizada),
+                valor: NumeroParaString(r.valor),
+                observacoes: r.observacoes,
+                valor_contrato_atualizado: NumeroParaString(r.valor_contrato_atualizado),
+                total_aditivos: NumeroParaString(r.total_aditivos),
+                total_reajustes: NumeroParaString(r.total_reajustes),
+                modalidade_licitacao__id: r.modalidade_licitacao?.id ?? null,
+                modalidade_licitacao__nome: r.modalidade_licitacao?.nome ?? null,
+                area_gestora__id: r.area_gestora?.id ?? null,
+                area_gestora__sigla: r.area_gestora?.sigla ?? null,
+                area_gestora__descricao: r.area_gestora?.descricao ?? null,
+                percentual_medido: NumeroParaString(r.percentual_medido),
+                processos_sei: r.processos_sei,
+                fontes_recurso: r.fontes_recurso,
+                cnpj_contratada: r.cnpj_contratada,
+            };
+        });
+    }
+
+    /** Idem `toCsvRowsContratos`, para `RelProjetosAditivosDto`. */
+    private toCsvRowsAditivos(rows: RelProjetosAditivosDto[]): RelProjetoAditivoCsvRow[] {
+        return rows.map((r) => {
+            return {
+                aditivo_id: r.aditivo_id,
+                contrato_id: r.contrato_id,
+                tipo_categoria: r.tipo_categoria,
+                tipo__id: r.tipo?.id ?? null,
+                tipo__nome: r.tipo?.nome ?? null,
+                data: DataParaYMD(r.data),
+                valor: NumeroParaString(r.valor),
+                percentual_medido: NumeroParaString(r.percentual_medido),
+                data_termino_atual: DataParaYMD(r.data_termino_atual),
+            };
+        });
+    }
+
+    /**
+     * Schema dos CSVs brutos — habilita o pós-processamento (seleção/filtro/ordenação de
+     * colunas e geração de CSV pt-BR + XLSX tipado a partir do mesmo arquivo).
+     *
+     * A lista segue a mesma ordem em que `toFileOutput` emite os arquivos. Nenhum arquivo
+     * depende de `params` (a fonte tem um único parâmetro, `projeto_id`), então o conjunto
+     * de schemas é sempre o mesmo — arquivos sem linha simplesmente não são escritos, e
+     * `findFileSchema` só é consultado para os arquivos que existirem.
+     *
+     * `eap.svg` não entra: não é CSV e é repassado intacto pelo pós-processamento.
+     */
+    async describeSchema(_params: CreateRelProjetoDto): Promise<ReportFileSchema[]> {
+        return [
+            getReportRowSchema(RelProjetoDetalheCsvRow),
+            getReportRowSchema(RelProjetoCronogramaCsvRow),
+            getReportRowSchema(RelProjetoAcompanhamentoCsvRow),
+            getReportRowSchema(RelProjetoEncaminhamentoCsvRow),
+            getReportRowSchema(RelProjetoPlanoAcaoCsvRow),
+            getReportRowSchema(RelProjetoRiscoCsvRow),
+            getReportRowSchema(RelProjetoArquivoCsvRow),
+            getReportRowSchema(RelProjetoContratoCsvRow),
+            getReportRowSchema(RelProjetoAditivoCsvRow),
+            getReportRowSchema(RelProjetoOrigemCsvRow),
+            getReportRowSchema(RelProjetoTermoEncerramentoCsvRow),
+            getReportRowSchema(RelProjetoEnderecoCsvRow),
+        ];
+    }
+
+    /**
+     * Escreve os CSVs **brutos**: cabeçalho com as chaves de máquina (nomes das colunas do
+     * schema) e valores crus. Rótulos, moeda, `dd/mm/aaaa` e o guard do Excel voltam na
+     * etapa de pós-processamento, a partir do próprio schema.
+     */
     async toFileOutput(
         params: CreateRelProjetoDto,
         ctx: ReportContext,
@@ -623,35 +767,53 @@ export class PPProjetoService implements ReportableService {
         await ctx.progress(40);
 
         const out: FileOutput[] = [];
+        const schemas = await this.describeSchema(params);
 
-        const toCsvOut = <T>(name: string, rows: T[], fields?: any[]) => {
+        /**
+         * Escreve um CSV bruto em arquivo temporário, com as colunas (nome e ordem) vindas
+         * do schema declarado.
+         *
+         * Precisa ser `localFile` (e não `buffer`): o pós-processamento só reprocessa
+         * arquivos com caminho local — é ele que aplica rótulos e formatação.
+         */
+        const toCsvOut = async <T>(name: string, rows: T[]): Promise<void> => {
             if (!rows?.length) return;
-            const opts: CsvWriterOptions<T> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms, fields };
-            const buffer = WriteCsvToBuffer(rows, opts);
-            out.push({ name, buffer });
+
+            const schema = findFileSchema(schemas, name);
+            if (!schema) throw new Error(`Schema de colunas não declarado para ${name}.`);
+
+            const tmp = ctx.getTmpFile(name);
+            const opts: CsvWriterOptions<T> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: PPProjetoFlattenTransforms,
+                fields: schema.colunas.map((c) => c.name),
+            };
+            await WriteCsvToFile(rows, tmp.stream, opts);
+            out.push({ name, localFile: tmp.path });
         };
 
+        // Tradução de domínio (não é formatação de locale), por isso segue na extração.
+        // A chave usa `_` para virar um nome de coluna válido no schema; o rótulo entregue
+        // continua sendo `status-traduzido`.
         if (dados.detail.status)
-            (dados.detail as any)['status-traduzido'] = ProjetoStatusParaExibicao[dados.detail.status];
-        toCsvOut('detalhes-do-projeto.csv', [dados.detail]);
+            (dados.detail as any)['status_traduzido'] = ProjetoStatusParaExibicao[dados.detail.status];
+        await toCsvOut('detalhes-do-projeto.csv', [dados.detail]);
         await ctx.resumoSaida(`Detalhes do Projeto - ${dados.detail.nome}`, 1);
         await ctx.progress(50);
 
-        toCsvOut('cronograma.csv', dados.cronograma);
+        await toCsvOut('cronograma.csv', dados.cronograma satisfies RelProjetoCronogramaCsvRow[]);
         await ctx.progress(55);
 
-        toCsvOut('acompanhamentos.csv', dados.acompanhamentos);
+        await toCsvOut('acompanhamentos.csv', dados.acompanhamentos satisfies RelProjetoAcompanhamentoCsvRow[]);
         await ctx.progress(60);
 
-        toCsvOut('encaminhamentos.csv', dados.encaminhamentos);
+        await toCsvOut('encaminhamentos.csv', dados.encaminhamentos satisfies RelProjetoEncaminhamentoCsvRow[]);
         await ctx.progress(65);
 
-        if (dados.planos_acao.length) {
-            toCsvOut('planos-acao.csv', dados.planos_acao);
-        }
+        await toCsvOut('planos-acao.csv', dados.planos_acao satisfies RelProjetoPlanoAcaoCsvRow[]);
         await ctx.progress(70);
 
-        toCsvOut('riscos.csv', dados.riscos);
+        await toCsvOut('riscos.csv', dados.riscos satisfies RelProjetoRiscoCsvRow[]);
         await ctx.progress(80);
 
         const uploads = await this.prisma.projetoDocumento.findMany({
@@ -670,22 +832,20 @@ export class PPProjetoService implements ReportableService {
             orderBy: { criado_em: 'asc' },
         });
 
-        if (uploads.length) {
-            toCsvOut('arquivos.csv', uploads as any, [
-                { value: 'arquivo.nome_original', label: 'Nome Original' },
-                {
-                    label: 'Criado em',
-                    value: (r: (typeof uploads)[0]) => {
-                        return r.criado_em.toISOString();
-                    },
-                },
-                { value: 'criador.id', label: 'Criador (ID)' },
-                { value: 'criador.nome_exibicao', label: 'Criador (Nome de Exibição)' },
-                { value: 'arquivo.caminho', label: 'Caminho no Object Storage' },
-                { value: 'descricao', label: 'descricao do Documento' },
-                { value: 'arquivo.id', label: 'ID do arquivo' },
-            ]);
-        }
+        // Achatado à mão (e não pelo `flatten`) por causa do `criado_em`: um `Date` cru sairia
+        // como JSON e o `Z` do ISO impede o DuckDB de reler a coluna como TIMESTAMP.
+        const arquivosOut: RelProjetoArquivoCsvRow[] = uploads.map((r) => {
+            return {
+                arquivo__nome_original: r.arquivo.nome_original,
+                criado_em: r.criado_em.toISOString().replace('Z', ''),
+                criador__id: r.criador?.id ?? null,
+                criador__nome_exibicao: r.criador?.nome_exibicao ?? null,
+                arquivo__caminho: r.arquivo.caminho,
+                descricao: r.descricao,
+                arquivo__id: r.arquivo.id,
+            };
+        });
+        await toCsvOut('arquivos.csv', arquivosOut);
         await ctx.progress(90);
 
         if (dados.detail && dados.detail.projeto_id) {
@@ -712,32 +872,17 @@ export class PPProjetoService implements ReportableService {
         }
         await ctx.progress(95);
 
-        toCsvOut('contratos.csv', dados.contratos);
-        toCsvOut('aditivos.csv', dados.aditivos);
-        toCsvOut('origens.csv', dados.origens);
-        toCsvOut('termos-encerramento.csv', dados.termos_encerramento);
-        toCsvOut('enderecos.csv', dados.enderecos, [
-            { value: 'projeto_id', label: 'projeto_id' },
-            { value: 'endereco', label: 'endereco' },
-            { value: 'zona', label: 'zona' },
-            { value: 'distrito', label: 'distrito' },
-            { value: 'subprefeitura', label: 'subprefeitura' },
-            { value: 'coordinates', label: 'geojson.geometry.coordinates' },
-            { value: 'geojson_type', label: 'geojson.type' },
-            { value: 'geometry_type', label: 'geojson.geometry.type' },
-            { value: 'cep', label: 'geojson.properties.cep' },
-            { value: 'rua', label: 'geojson.properties.rua' },
-            { value: 'pais', label: 'geojson.properties.pais' },
-            { value: 'bairro', label: 'geojson.properties.bairro' },
-            { value: 'cidade', label: 'geojson.properties.cidade' },
-            { value: 'estado', label: 'geojson.properties.estado' },
-            { value: 'rotulo', label: 'geojson.properties.rotulo' },
-            { value: 'osm_type', label: 'geojson.properties.osm_type' },
-            { value: 'codigo_pais', label: 'geojson.properties.codigo_pais' },
-            { value: 'string_endereco', label: 'geojson.properties.string_endereco' },
-            { value: 'geometry_name', label: 'geojson.geometry_name' },
-            { value: 'bbox', label: 'geojson.bbox' },
-        ]);
+        await toCsvOut('contratos.csv', this.toCsvRowsContratos(dados.contratos));
+        await toCsvOut('aditivos.csv', this.toCsvRowsAditivos(dados.aditivos));
+        // `origens`, `termos-encerramento` e `enderecos` já saem no formato do CSV bruto
+        // (escalares, datas em ISO), então vão direto — os nomes das colunas do schema são
+        // os próprios nomes das propriedades do DTO.
+        await toCsvOut('origens.csv', dados.origens satisfies RelProjetoOrigemCsvRow[]);
+        await toCsvOut(
+            'termos-encerramento.csv',
+            dados.termos_encerramento satisfies RelProjetoTermoEncerramentoCsvRow[]
+        );
+        await toCsvOut('enderecos.csv', dados.enderecos satisfies RelProjetoEnderecoCsvRow[]);
 
         await ctx.progress(99);
 
