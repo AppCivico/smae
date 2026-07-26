@@ -3,7 +3,8 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { getReportRowSchema } from '../post-process/report-column.decorator';
-import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
+import { isSchemaAware, ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
+import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
@@ -125,15 +126,7 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
     async asJSON(params: CreatePsMonitoramentoMensalFilterDto, user: PessoaFromJwt | null): Promise<RelPsMonitRetorno> {
         const monitoramento = await this.fetchPsMonitoramentoMensalData(params, user);
 
-        const indicadores = await this.indicadoresService.asJSON(
-            {
-                ...params,
-                pdm_id: params.pdm_id ?? params.plano_setorial_id,
-                periodo: 'Geral',
-                tipo: 'Mensal',
-            },
-            user
-        );
+        const indicadores = await this.indicadoresService.asJSON(this.paramsIndicadores(params), user);
 
         // Query para extrair dados de arquivo de metas do ciclo.
         const ciclo_metas = await this.buscaMetasCiclo(params, user);
@@ -392,22 +385,54 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
     }
 
     /**
+     * Params repassados ao `IndicadoresService`.
+     *
+     * Ponto único de verdade: `describeSchema` e `toFileOutput` **precisam** montar isto do
+     * mesmo jeito, senão o schema descrito não corresponde ao arquivo emitido (o schema de
+     * indicadores depende de `pdm_id` e `tipo_pdm` — é dele que saem os rótulos configuráveis
+     * do PDM e a presença da coluna `pdm_nome`).
+     */
+    private paramsIndicadores(params: CreatePsMonitoramentoMensalFilterDto): CreateRelIndicadorDto {
+        return {
+            ...params,
+            pdm_id: params.pdm_id ?? params.plano_setorial_id,
+            periodo: 'Geral',
+            tipo: 'Mensal',
+        };
+    }
+
+    /**
      * Schemas dos CSVs brutos, na mesma ordem em que `toFileOutput` os emite.
      *
-     * Todos os cinco arquivos são condicionais (só saem quando há linhas); declarar todos
-     * aqui é o correto — o `aplicarModelo` casa schema com arquivo pelo nome e ignora, sem
-     * ruído, os schemas cujo arquivo não foi produzido.
+     * Todos os cinco arquivos próprios são condicionais (só saem quando há linhas); declarar
+     * todos aqui é o correto — o `aplicarModelo` casa schema com arquivo pelo nome e ignora,
+     * sem ruído, os schemas cujo arquivo não foi produzido.
      *
-     * Os arquivos vindos do `IndicadoresService` (anexados no fim de `toFileOutput`) não
-     * têm schema declarado e seguem no caminho legado, intactos.
+     * No fim vêm os schemas do `IndicadoresService`, porque `toFileOutput` anexa os arquivos
+     * dele (`indicadores.csv` e `regioes.csv`) à saída deste relatório. Sem isso o
+     * pós-processamento não acha schema para esses dois e os repassa **crus** — cabeçalho
+     * técnico (`meta__codigo`), sem formatação pt-BR, sem XLSX e sem os rótulos configuráveis
+     * do PDM. Nenhum dos dois nomes colide com os cinco arquivos próprios, então o
+     * `findFileSchema` (que casa pelo primeiro schema com aquele nome) não fica ambíguo.
+     *
+     * O `isSchemaAware` é um teste em **runtime de propósito**, não um import das classes de
+     * linha do relatório de indicadores: a migração daquele serviço vive em outro PR, e este
+     * branch não tem as entidades dele. Assim o código compila e roda sozinho (o guard dá
+     * `false` e a saída é a de hoje) e passa a formatar os dois arquivos automaticamente
+     * assim que o serviço de indicadores ganhar `describeSchema`.
      */
-    async describeSchema(_params: CreatePsMonitoramentoMensalFilterDto): Promise<ReportFileSchema[]> {
+    async describeSchema(params: CreatePsMonitoramentoMensalFilterDto): Promise<ReportFileSchema[]> {
+        const doIndicador = isSchemaAware(this.indicadoresService)
+            ? await this.indicadoresService.describeSchema(this.paramsIndicadores(params))
+            : [];
+
         return [
             getReportRowSchema(RelPsMonitoramentoMensalVariaveisCsvRow),
             getReportRowSchema(RelPsMonitoramentoMensalMetasCicloCsvRow),
             getReportRowSchema(RelPsMonitoramentoMensalAnaliseQualitativaCsvRow),
             getReportRowSchema(RelPsMonitoramentoMensalRiscoCsvRow),
             getReportRowSchema(RelPsMonitoramentoMensalFechamentoCsvRow),
+            ...doIndicador,
         ];
     }
 
@@ -419,12 +444,17 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
     ): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
 
-        const [schemaVariaveis, schemaMetasCiclo, schemaQuali, schemaRisco, schemaFechamento] =
-            await this.describeSchema(params);
-
         const rows = await this.fetchPsMonitoramentoMensalData(params, user);
         ctx.resumoSaida('Monitoramento Mensal Variáveis PS/PDMv2', rows.length);
         await ctx.progress(40);
+
+        // Depois do `fetch`: ele é quem valida `pdm_id`/`plano_setorial_id` e devolve 400 quando
+        // faltam. O `describeSchema` agora consulta o PDM (para os rótulos do relatório de
+        // indicadores), então chamá-lo antes trocaria esse 400 por um erro de Prisma.
+        // Os schemas de indicadores vêm depois dos cinco daqui e não são usados neste método —
+        // quem os consome é o pós-processamento, sobre os arquivos anexados no fim.
+        const [schemaVariaveis, schemaMetasCiclo, schemaQuali, schemaRisco, schemaFechamento] =
+            await this.describeSchema(params);
 
         if (rows.length) {
             const reportTmpVars = ctx.getTmpFile('monitoramento-mensal-variaveis-ps.csv');
@@ -578,16 +608,10 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
             out.push({ name: 'fechamentos-ps.csv', localFile: tmp.path });
         }
 
-        const indicadores = await this.indicadoresService.toFileOutput(
-            {
-                ...params,
-                pdm_id: params.pdm_id ?? params.plano_setorial_id,
-                periodo: 'Geral',
-                tipo: 'Mensal',
-            },
-            ctx,
-            user
-        );
+        // `indicadores.csv` e `regioes.csv`. O schema deles é declarado no `describeSchema`
+        // acima, com estes mesmos params — é o que faz o pós-processamento formatá-los junto
+        // com os cinco arquivos daqui.
+        const indicadores = await this.indicadoresService.toFileOutput(this.paramsIndicadores(params), ctx, user);
         for (const indicador of indicadores) {
             out.push(indicador);
         }

@@ -1,6 +1,6 @@
-import 'reflect-metadata';
-import * as fs from 'fs';
-import * as path from 'path';
+import '../ps-monitoramento-mensal/entities/ps-monitoramento-mensal-csv.entity';
+import '../transferencias/entities/transferencias-csv.entity';
+import '../tribunal-de-contas/entities/tribunal-de-contas-csv.entity';
 
 import {
     getReportRowColumns,
@@ -8,39 +8,6 @@ import {
     getReportRowsOptions,
     listReportRowClasses,
 } from './report-column.decorator';
-
-/**
- * Carrega as classes de linha varrendo `src/reports/**\/entities/*.ts` e importando só os
- * arquivos que citam `@ReportRows` — a mesma descoberta que `bin/report-columns-gen.ts` faz.
- *
- * Antes esta lista era um bloco de `import` mantido à mão. Isso tinha dois defeitos: uma
- * entidade nova entrava sem invariante nenhuma rodando sobre ela (falha silenciosa, que é
- * justamente o que este arquivo existe para evitar), e todo PR que declarava um relatório
- * novo tocava as mesmas linhas — conflito garantido entre PRs irmãos.
- */
-function arquivosDeEntidade(dir: string): string[] {
-    const out: string[] = [];
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-            out.push(...arquivosDeEntidade(full));
-        } else if (
-            path.basename(dir) === 'entities' &&
-            entry.name.endsWith('.ts') &&
-            !entry.name.endsWith('.d.ts') &&
-            !entry.name.endsWith('.spec.ts')
-        ) {
-            out.push(full);
-        }
-    }
-    return out;
-}
-
-for (const arquivo of arquivosDeEntidade(path.resolve(__dirname, '..'))) {
-    if (!fs.readFileSync(arquivo, 'utf8').includes('@ReportRows')) continue;
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    require(arquivo);
-}
 
 /**
  * Invariantes que valem para QUALQUER schema declarado.
