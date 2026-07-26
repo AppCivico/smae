@@ -53,7 +53,7 @@ listagem porque está sendo descontinuada e não deve aparecer como customizáve
 | `dotacao_mes_utilizado` | `INTEGER` | dotacao_mes_utilizado | sim | sem formatação | — |
 | `smae_valor_empenhado` | `DECIMAL(18,2)` | smae_valor_empenhado | sim | — | — |
 | `smae_valor_liquidado` | `DECIMAL(18,2)` | smae_valor_liquidado | sim | — | — |
-| `smae_percentual_empenhado` | `VARCHAR` | smae_percentual_empenhado | sim | — | Sempre vazia: o nome do campo divergiu do DTO (smae_percentual_empenho) desde a origem. |
+| `smae_percentual_empenhado` | `VARCHAR` | smae_percentual_empenhado | sim | — | Percentual empenhado apurado pelo SMAE (`smae_percentual_empenho` no DTO). |
 | `smae_percentual_liquidado` | `VARCHAR` | smae_percentual_liquidado | sim | — | — |
 | `logs` | `VARCHAR` | logs | sim | — | — |
 

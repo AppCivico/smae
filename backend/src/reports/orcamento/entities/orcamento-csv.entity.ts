@@ -12,7 +12,7 @@ import { ReportFileSchema } from '../../post-process/report-schema';
  *   1. **Plano x Projeto** — com `pdm` saem as colunas de meta/iniciativa/atividade; sem `pdm`
  *      (Projeto/Obras) saem as de projeto. Nunca as duas.
  *   2. **Analítico x Consolidado** — só o Analítico emite as colunas de ano/mês
- *      (`mes`, `ano`, `mes_corrente` no executado; `mes` no planejado).
+ *      (`mes`, `ano`, `mes_corrente` no executado; `ano` no planejado).
  *
  * Como `@ReportRows.arquivo` e a lista de colunas são estáticos, as classes abaixo declaram o
  * **superconjunto** e o `describeSchema(params)` do service devolve só o recorte da execução,
@@ -294,15 +294,23 @@ export class RelOrcamentoExecutadoCsvRow {
     smae_valor_liquidado: string | null;
 
     /**
-     * **Coluna sempre vazia.** O `fields` do relatório sempre pediu `smae_percentual_empenhado`,
-     * mas o DTO expõe `smae_percentual_empenho` — o campo nunca casou e a célula sai em branco
-     * desde a origem. Mantida como está (nome, posição e conteúdo vazio) porque corrigir muda o
-     * arquivo entregue ao usuário, e isso é decisão de negócio, não desta refatoração.
+     * **Coluna corrigida: saía sempre vazia.** O `fields` do relatório sempre pediu
+     * `smae_percentual_empenhado`, mas o DTO expõe `smae_percentual_empenho` — o nome nunca casou
+     * e a célula saía em branco desde a origem. O nome e a posição da coluna são preservados; a
+     * extração passa a preencher o valor (ver `toFileOutput`).
+     *
+     * A correção é intencional e não cosmética: no pós-processamento cada coluna do schema também
+     * vira filtro e critério de ordenação do modelo de relatório, e uma coluna eternamente `NULL`
+     * entregaria um filtro que nunca casa.
+     *
+     * `VARCHAR` pelo mesmo motivo de {@link smae_percentual_liquidado}: a extração é inconsistente
+     * entre os modos (Analítico passa por `to_char_numeric()`, Consolidado devolve o `Decimal(7,4)`
+     * cru), então nenhuma escala única é fiel aos dois.
      */
     @ReportColumn({
         type: 'VARCHAR',
         label: 'smae_percentual_empenhado',
-        descricao: 'Sempre vazia: o nome do campo divergiu do DTO (smae_percentual_empenho) desde a origem.',
+        descricao: 'Percentual empenhado apurado pelo SMAE (`smae_percentual_empenho` no DTO).',
     })
     smae_percentual_empenhado: string | null;
 
@@ -341,19 +349,26 @@ export class RelOrcamentoExecutadoCsvRow {
 })
 export class RelOrcamentoPlanejadoCsvRow {
     /**
-     * **Coluna sempre vazia**, presente apenas no Analítico.
+     * **Coluna corrigida: saía sempre vazia.** Presente apenas no Analítico.
      *
-     * O `toFileOutput` reaproveita a primeira definição do bloco de ano/mês do executado
+     * O `toFileOutput` reaproveitava a primeira definição do bloco de ano/mês do executado
      * (`camposAno[0] = camposAnoMes[0]`), que aponta para `mes` — campo que
-     * `OrcamentoPlanejadoSaidaDto` não possui (o planejado é anual). O resultado é uma coluna
-     * `mês` em branco no início do arquivo. Preservada por ser o cabeçalho entregue hoje.
+     * `OrcamentoPlanejadoSaidaDto` não possui, porque o planejado é **anual**
+     * (`op.ano_referencia as ano` nas duas queries de planejado). O resultado era uma coluna `mês`
+     * em branco no início do arquivo.
+     *
+     * A variável se chama `camposAno` e o único campo de período do planejado é `ano`, então o
+     * campo pretendido é inequívoco. A posição (primeira coluna, só no Analítico) é preservada e o
+     * rótulo passa a ser `ano` — manter `mês` sobre um valor anual seria incoerente. Mesmo tipo e
+     * mesmo `raw` da coluna `ano` do executado, para não sair como `2.024`.
      */
     @ReportColumn({
-        type: 'VARCHAR',
-        label: 'mês',
-        descricao: 'Sempre vazia: o planejado é anual e o DTO não expõe mês.',
+        type: 'INTEGER',
+        label: 'ano',
+        format: { raw: true },
+        descricao: 'Ano de referência do orçamento planejado.',
     })
-    mes: string | null;
+    ano: number | null;
 
     @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
     meta__codigo: string | null;

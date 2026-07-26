@@ -757,10 +757,10 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
                     logs: r.logs.join('\r\n'),
                     // Tradução de domínio (não formatação de locale), então continua na extração.
                     mes_corrente: r.mes_corrente ? 'Sim' : 'Não',
-                    // A coluna sempre saiu vazia porque o nome pedido no `fields` nunca casou com
-                    // o `smae_percentual_empenho` do DTO. Explicitado aqui para que o vazio seja
-                    // intencional e não um efeito colateral de chave ausente.
-                    smae_percentual_empenhado: null,
+                    // Correção: a coluna saía sempre vazia porque o nome pedido no `fields`
+                    // (`smae_percentual_empenhado`) nunca casou com o `smae_percentual_empenho`
+                    // do DTO. O rótulo e a posição continuam os mesmos; só o valor passa a sair.
+                    smae_percentual_empenhado: r.smae_percentual_empenho,
                 })),
                 reportTmpExec.stream,
                 execCsvOptions
@@ -797,6 +797,9 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
             await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
             const reportTmpPlan = ctx.getTmpFile('planejado.csv');
 
+            // A primeira coluna do Analítico agora é `ano` (e não mais `mes`, que o DTO do
+            // planejado não possui e que fazia a coluna sair sempre vazia). O campo já existe em
+            // `OrcamentoPlanejadoSaidaDto`, então basta o schema pedi-lo pelo nome certo.
             const planCsvOptions: CsvWriterOptions<OrcamentoPlanejadoSaidaDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: OrcamentoFlattenTransforms,

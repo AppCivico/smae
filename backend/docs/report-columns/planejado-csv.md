@@ -15,7 +15,7 @@ Ver o comentário de `fontes` em {@link RelOrcamentoExecutadoCsvRow}.
 
 | Coluna | Tipo | Rótulo | Customizável | Formatação | Descrição |
 | --- | --- | --- | --- | --- | --- |
-| `mes` | `VARCHAR` | mês | sim | — | Sempre vazia: o planejado é anual e o DTO não expõe mês. |
+| `ano` | `INTEGER` | ano | sim | sem formatação | Ano de referência do orçamento planejado. |
 | `meta__codigo` | `VARCHAR` | Código da Meta | sim | — | — |
 | `meta__titulo` | `VARCHAR` | Título da Meta | sim | — | — |
 | `meta__id` | `INTEGER` | ID da Meta | não | sem formatação | — |
