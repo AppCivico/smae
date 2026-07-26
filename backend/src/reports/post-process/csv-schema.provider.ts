@@ -25,6 +25,10 @@ function quoteLiteral(value: string): string {
  * Usa `read_csv(..., columns={...})` em vez de `read_csv_auto`, o que garante que
  * DECIMAL não seja inferido como DOUBLE (perda de precisão em valores monetários) e
  * que identificadores como `0001.02` permaneçam VARCHAR em vez de virarem número.
+ *
+ * Além dos tipos, o **dialeto** (aspa, escape, quebra de linha) também é declarado — ver o
+ * comentário em `load()`. Tipo declarado com dialeto adivinhado ainda deixava o conteúdo das
+ * células à mercê de uma amostragem do arquivo.
  */
 export class CsvSchemaProvider extends BaseDataSourceProvider {
     readonly name = 'csv-schema';
@@ -53,6 +57,19 @@ export class CsvSchemaProvider extends BaseDataSourceProvider {
             .map((c) => `${quoteLiteral(c.name)}: ${quoteLiteral(c.type)}`)
             .join(', ');
 
+        // Dialeto declarado por inteiro, não inferido.
+        //
+        // Mesmo com `columns` explícito, o DuckDB ainda deduz aspas/escape/quebra de linha a
+        // partir de uma amostra do arquivo — e amostra é função dos dados. Um CSV cujo texto
+        // contenha muitos apóstrofos pode levar o detector a eleger `'` como aspa, e aí um
+        // campo perfeitamente válido passa a ser lido torto. Como quem escreve estes arquivos
+        // é o próprio SMAE (json2csv com `DefaultCsvOptions`, ou o `CsvFileHandler`), o
+        // dialeto é conhecido de antemão: não há motivo para adivinhar.
+        //
+        // O que isto NÃO resolve — medido, para não virar falsa sensação de segurança: arquivo
+        // com terminador de registro **misto** (cabeçalho `\r\n` e linhas `\n`) continua sendo
+        // aceito ou rejeitado conforme os dados, porque `new_line` é conferido no cabeçalho.
+        // Contra isso o que vale é o writer emitir EOL consistente.
         const sql = `CREATE OR REPLACE TABLE ${quoteIdent(table)} AS
             SELECT * FROM read_csv(
                 ${quoteLiteral(this.csvPath)},
@@ -60,7 +77,10 @@ export class CsvSchemaProvider extends BaseDataSourceProvider {
                 header = true,
                 columns = {${columns}},
                 nullstr = '',
-                all_varchar = false
+                all_varchar = false,
+                new_line = '\\r\\n',
+                quote = '"',
+                escape = '"'
             )`;
 
         await context.connection.run(sql);

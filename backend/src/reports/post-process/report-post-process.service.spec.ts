@@ -29,17 +29,19 @@ const SCHEMA: ReportFileSchema = {
     ],
 };
 
-// CSV bruto usa vírgula (delimitador padrão do json2csv); ';' é só na saída.
+// CSV bruto usa vírgula (delimitador padrão do json2csv) e CRLF (o `eol` de
+// `DefaultCsvOptions`); ';' é só na saída. As fixtures reproduzem os bytes que os
+// writers do SMAE realmente emitem — o leitor declara o dialeto e não o adivinha.
 const CSV_BRUTO = [
     'id,valor,vigencia,dotacao,orgao__sigla',
     '1,1234.56,2024-10-15,2024.10.15.3350,SMUL',
     '2,99.90,2024-01-02,0001.02,SEHAB',
     '3,,,,SMUL',
-].join('\n');
+].join('\r\n');
 
 function escreverCsvBruto(): string {
     const p = path.join(os.tmpdir(), `spec-raw-${process.pid}-${Math.random().toString(36).slice(2)}.csv`);
-    fs.writeFileSync(p, CSV_BRUTO + '\n');
+    fs.writeFileSync(p, CSV_BRUTO + '\r\n');
     return p;
 }
 
@@ -86,6 +88,34 @@ describe('ReportPostProcessService', () => {
         const xlsx = out.find((f) => f.name.endsWith('.xlsx'))!;
         return { out, ignoradas, csvTexto: fs.readFileSync(csv.localFile!, 'utf-8'), xlsxPath: xlsx.localFile! };
     }
+
+    it('não deixa o apóstrofo do texto virar aspa de campo', async () => {
+        // Regressão: sem `quote`/`escape` declarados, o detector de dialeto do DuckDB elege a
+        // aspa a partir de uma amostra do arquivo. Num CSV cujos valores estejam entre
+        // apóstrofos — `'0001.02'` numa dotação, uma citação numa descrição — ele conclui que
+        // a aspa é `'` e **remove os apóstrofos do dado**, silenciosamente. Medido: o mesmo
+        // arquivo lê `0001.02` com o detector e `'0001.02'` com o dialeto declarado.
+        const bruto = path.join(os.tmpdir(), `spec-apos-${process.pid}-${Math.random().toString(36).slice(2)}.csv`);
+        criados.push(bruto);
+        fs.writeFileSync(
+            bruto,
+            'id,valor,vigencia,dotacao,orgao__sigla\r\n' +
+                "1,1.00,2024-01-01,'0001.02','SMUL'\r\n" +
+                "2,2.00,2024-01-02,'0002.03','SEHAB'\r\n"
+        );
+
+        const { arquivos: out } = await service.aplicarModelo([{ name: 'exemplo.csv', localFile: bruto }], [SCHEMA], {
+            arquivos: [{ arquivo: 'exemplo.csv' }],
+        });
+        for (const f of out) if (f.localFile) criados.push(f.localFile);
+
+        const csvTexto = fs.readFileSync(out.find((f) => f.name.endsWith('.csv'))!.localFile!, 'utf-8');
+        expect(csvTexto).toContain("'SMUL'");
+        expect(csvTexto).toContain("'SEHAB'");
+        // A dotação tem o guard do Excel, então vem como `="'0001.02'"` com as aspas dobradas.
+        expect(csvTexto).toContain('0001.02');
+        expect(csvTexto).not.toMatch(/;SMUL;|;SMUL$|;SMUL\r/m);
+    });
 
     it('emite CSV e XLSX a partir do mesmo CSV bruto', async () => {
         const { out } = await aplicar({ arquivos: [{ arquivo: 'exemplo.csv' }] });
@@ -174,7 +204,7 @@ describe('ReportPostProcessService', () => {
     it('preserva a precisão de DECIMAL (read_csv_auto inferiria DOUBLE)', async () => {
         const bruto = path.join(os.tmpdir(), `spec-dec-${process.pid}.csv`);
         criados.push(bruto);
-        fs.writeFileSync(bruto, 'id,valor,vigencia,dotacao,orgao__sigla\n1,0.10,2024-01-01,x,Y\n');
+        fs.writeFileSync(bruto, 'id,valor,vigencia,dotacao,orgao__sigla\r\n1,0.10,2024-01-01,x,Y\r\n');
 
         const { arquivos: out } = await service.aplicarModelo([{ name: 'exemplo.csv', localFile: bruto }], [SCHEMA], {
             arquivos: [{ arquivo: 'exemplo.csv', colunas: [{ coluna: 'valor' }] }],
