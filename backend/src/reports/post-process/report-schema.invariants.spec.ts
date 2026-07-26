@@ -1,3 +1,4 @@
+import '../ps-monitoramento-mensal/entities/ps-monitoramento-mensal-csv.entity';
 import '../transferencias/entities/transferencias-csv.entity';
 import '../tribunal-de-contas/entities/tribunal-de-contas-csv.entity';
 
