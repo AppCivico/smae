@@ -56,9 +56,6 @@ export class WorkflowAndamentoService {
 
         const workflow = await this.workflowService.findOne(transferencia.workflow_id, user);
 
-        // Processando booleans de controle de etapa.
-        let possui_proxima_etapa: boolean;
-
         // Descobrindo a fase atual para buscar a etapa atual.
         const faseAtualAndamento = transferencia.andamentoWorkflow
             .filter((e) => e.data_inicio != null)
@@ -73,80 +70,19 @@ export class WorkflowAndamentoService {
         const etapaAtual = workflow.fluxo.find((e) => {
             return e.workflow_etapa_de!.id == faseAtualAndamento.workflow_etapa_id;
         });
-        const proxEtapa = etapaAtual!.workflow_etapa_para;
 
-        // Caso a prox etapa não possua fases. É o fim do workflow
-        if (proxEtapa) {
-            const fluxoProxEtapa = await this.prisma.fluxo.findFirst({
-                where: {
-                    workflow_id: transferencia.workflow_id,
-                    fluxo_etapa_de_id: proxEtapa.id,
-                    removido_em: null,
-                },
-                select: {
-                    id: true,
+        // Processando booleans de controle de etapa.
+        const possui_proxima_etapa = await this.resolvePossuiProximaEtapa(
+            transferencia,
+            etapaAtual!.workflow_etapa_para
+        );
 
-                    fases: {
-                        where: { removido_em: null },
-                        select: {
-                            fase_id: true,
-                        },
-                    },
-                },
-            });
-
-            possui_proxima_etapa = fluxoProxEtapa && fluxoProxEtapa.fases.length ? true : false;
-        } else {
-            possui_proxima_etapa = false;
-
-            // Verificando se precisa ajustar col de controle.
-            if (transferencia.workflow_finalizado == false) {
-                await this.prisma.transferencia.update({
-                    where: { id: transferencia.id },
-                    data: {
-                        workflow_finalizado: true,
-                    },
-                });
-            }
-        }
-
-        const fasesNaoConcluidas = await this.prisma.transferenciaAndamento.count({
-            where: {
-                removido_em: null,
-                data_termino: null,
-                transferencia_id: transferencia.id,
-                workflow_etapa_id: etapaAtual!.workflow_etapa_de!.id,
-            },
-        });
-
-        const fasesConcluidas = await this.prisma.transferenciaAndamento.count({
-            where: {
-                removido_em: null,
-                data_termino: { not: null },
-                transferencia_id: transferencia.id,
-            },
-        });
-
-        // Transferência cancelada não permite nenhuma movimentação do workflow.
-        const naoCancelada = !transferencia.cancelada;
-        const pode_passar_para_proxima_etapa: boolean =
-            naoCancelada && fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
-        const pode_reabrir_fase: boolean = naoCancelada && fasesConcluidas ? true : false;
-
-        // O reinício só é possível se houver workflow ativo para o tipo da transferência,
-        // pois é ele que será associado à transferência.
-        const workflowAtivoDoTipo = await this.prisma.workflow.findFirst({
-            where: {
-                transferencia_tipo_id: transferencia.tipo_id,
-                removido_em: null,
-                ativo: true,
-            },
-            select: { id: true },
-        });
-        const pode_reiniciar_workflow: boolean = naoCancelada && workflowAtivoDoTipo != null;
-        // Indica que o fluxo ativo do tipo mudou (ex.: decreto alterou o fluxo retroativamente).
-        const workflow_desatualizado: boolean =
-            workflowAtivoDoTipo != null && workflowAtivoDoTipo.id != transferencia.workflow_id;
+        const { pode_passar_para_proxima_etapa, pode_reabrir_fase, pode_reiniciar_workflow, workflow_desatualizado } =
+            await this.computeWorkflowActionFlags(
+                transferencia,
+                etapaAtual!.workflow_etapa_de!.id,
+                possui_proxima_etapa
+            );
 
         // Buscando tarefas que são do cronograma.
         const tarefasCronograma = await this.prisma.tarefa.findMany({
@@ -286,6 +222,90 @@ export class WorkflowAndamentoService {
                 })
             ),
         };
+    }
+
+    private async resolvePossuiProximaEtapa(
+        transferencia: { id: number; workflow_id: number | null; workflow_finalizado: boolean },
+        proxEtapa: { id: number } | null | undefined
+    ): Promise<boolean> {
+        // Caso a prox etapa não possua fases. É o fim do workflow
+        if (!proxEtapa) {
+            // Verificando se precisa ajustar col de controle.
+            if (transferencia.workflow_finalizado == false) {
+                await this.prisma.transferencia.update({
+                    where: { id: transferencia.id },
+                    data: { workflow_finalizado: true },
+                });
+            }
+            return false;
+        }
+
+        const fluxoProxEtapa = await this.prisma.fluxo.findFirst({
+            where: {
+                workflow_id: transferencia.workflow_id!,
+                fluxo_etapa_de_id: proxEtapa.id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                fases: {
+                    where: { removido_em: null },
+                    select: { fase_id: true },
+                },
+            },
+        });
+
+        return fluxoProxEtapa != null && fluxoProxEtapa.fases.length > 0;
+    }
+
+    private async computeWorkflowActionFlags(
+        transferencia: { id: number; tipo_id: number; workflow_id: number | null; cancelada: boolean },
+        etapaAtualId: number,
+        possui_proxima_etapa: boolean
+    ): Promise<{
+        pode_passar_para_proxima_etapa: boolean;
+        pode_reabrir_fase: boolean;
+        pode_reiniciar_workflow: boolean;
+        workflow_desatualizado: boolean;
+    }> {
+        const fasesNaoConcluidas = await this.prisma.transferenciaAndamento.count({
+            where: {
+                removido_em: null,
+                data_termino: null,
+                transferencia_id: transferencia.id,
+                workflow_etapa_id: etapaAtualId,
+            },
+        });
+
+        const fasesConcluidas = await this.prisma.transferenciaAndamento.count({
+            where: {
+                removido_em: null,
+                data_termino: { not: null },
+                transferencia_id: transferencia.id,
+            },
+        });
+
+        // Transferência cancelada não permite nenhuma movimentação do workflow.
+        const naoCancelada = !transferencia.cancelada;
+        const pode_passar_para_proxima_etapa = naoCancelada && fasesNaoConcluidas == 0 && possui_proxima_etapa;
+        const pode_reabrir_fase = naoCancelada && fasesConcluidas > 0;
+
+        // O reinício só é possível se houver workflow ativo para o tipo da transferência,
+        // pois é ele que será associado à transferência.
+        const workflowAtivoDoTipo = await this.prisma.workflow.findFirst({
+            where: {
+                transferencia_tipo_id: transferencia.tipo_id,
+                removido_em: null,
+                ativo: true,
+            },
+            select: { id: true },
+        });
+        const pode_reiniciar_workflow = naoCancelada && workflowAtivoDoTipo != null;
+        // Indica que o fluxo ativo do tipo mudou (ex.: decreto alterou o fluxo retroativamente).
+        const workflow_desatualizado =
+            workflowAtivoDoTipo != null && workflowAtivoDoTipo.id != transferencia.workflow_id;
+
+        return { pode_passar_para_proxima_etapa, pode_reabrir_fase, pode_reiniciar_workflow, workflow_desatualizado };
     }
 
     private async getAndamentoFaseRet(

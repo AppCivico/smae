@@ -11,6 +11,7 @@ import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { PartidoDto } from 'src/partido/entities/partido.entity';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { NumberTransform } from 'src/auth/transforms/number.transform';
+import { OptionalBooleanTransform } from 'src/auth/transforms/boolean.transform';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -93,9 +94,7 @@ export class FilterDashTransferenciasDto {
     @IsOptional()
     @IsBoolean()
     @ApiProperty({ description: 'Inclui transferências canceladas', required: false })
-    @Transform((a: TransformFnParams) =>
-        a.value === true || a.value === 'true' ? true : a.value === false || a.value === 'false' ? false : a.value
-    )
+    @Transform(OptionalBooleanTransform)
     cancelada?: boolean;
 }
 

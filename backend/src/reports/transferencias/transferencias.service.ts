@@ -426,8 +426,8 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
         // Por padrão, não apresenta transferências canceladas nem distribuições
         // canceladas/declinadas/impedidas tecnicamente/redirecionadas. O filtro "cancelada" inclui-as.
         if (!filters.cancelada) {
-            whereConditions.push(`t.cancelada = false`);
             whereConditions.push(
+                `t.cancelada = false`,
                 `(dr.id IS NULL
                   OR COALESCE(dsb.tipo::text, ds.tipo::text) IS NULL
                   OR COALESCE(dsb.tipo::text, ds.tipo::text) NOT IN ('Cancelada', 'Declinada', 'ImpedidaTecnicamente', 'Redirecionada'))`

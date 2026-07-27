@@ -3,6 +3,7 @@ import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client'
 import { Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { OptionalBooleanTransform } from 'src/auth/transforms/boolean.transform';
 
 export enum TipoRelatorioTransferencia {
     'Geral' = 'Geral',
@@ -75,9 +76,7 @@ export class CreateRelTransferenciasDto {
      */
     @IsOptional()
     @IsBoolean()
-    @Transform(({ value }: any) =>
-        value === true || value === 'true' ? true : value === false || value === 'false' ? false : value
-    )
+    @Transform(OptionalBooleanTransform)
     @Expose()
     cancelada?: boolean;
 

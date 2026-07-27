@@ -3,6 +3,7 @@ import { TransferenciaHistoricoAcao, TransferenciaTipoEsfera } from '@prisma/cli
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsOptional, IsString, MaxLength, IsInt, Max, Min, IsEnum, IsBoolean } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { OptionalBooleanTransform } from 'src/auth/transforms/boolean.transform';
 
 export class FilterTransferenciaDto {
     @IsOptional()
@@ -54,9 +55,7 @@ export class FilterTransferenciaDto {
      */
     @IsOptional()
     @IsBoolean()
-    @Transform(({ value }: any) =>
-        value === true || value === 'true' ? true : value === false || value === 'false' ? false : value
-    )
+    @Transform(OptionalBooleanTransform)
     cancelada?: boolean;
 }
 
