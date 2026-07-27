@@ -64,6 +64,8 @@ export class DashTransferenciaService {
                 data: filter.prazo ? { lte: new Date(Date.now() + filter.prazo * 24 * 60 * 60 * 1000) } : undefined,
                 transferencia: {
                     AND: this.transferenciaService.permissionSet(user),
+                    // Por padrão não apresenta canceladas; o filtro "cancelada" as inclui.
+                    cancelada: filter.cancelada ? undefined : false,
                     esfera: filter.esfera ? { in: filter.esfera } : undefined,
                     // Busca combinada por identificador e palavras-chave
                     ...(searchConditions ? { OR: searchConditions } : {}),
@@ -149,6 +151,8 @@ export class DashTransferenciaService {
                 transferencia: {
                     AND: this.transferenciaService.permissionSet(user),
                     removido_em: null,
+                    // Notas de transferências canceladas não devem aparecer no Quadro de Atividades.
+                    cancelada: false,
                     esfera: filters.esfera ? { in: filters.esfera } : undefined,
                     // Busca combinada por identificador e palavras-chave
                     ...(searchConditions ? { OR: searchConditions } : {}),
@@ -212,6 +216,8 @@ export class DashTransferenciaService {
                 ano: filter.anos ? { in: filter.anos } : undefined,
                 partido_id: filter.partido_ids ? { hasSome: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+                // Por padrão não apresenta canceladas; o filtro "cancelada" as inclui.
+                transferencia: filter.cancelada ? undefined : { cancelada: false },
             },
             include: {
                 transferencia: {
@@ -855,6 +861,8 @@ export class DashTransferenciaService {
                 ano: filter.anos ? { in: filter.anos } : undefined,
                 partido_id: filter.partido_ids ? { hasSome: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+                // Por padrão não apresenta canceladas; o filtro "cancelada" as inclui.
+                transferencia: filter.cancelada ? undefined : { cancelada: false },
             },
             distinct: ['transferencia_id'],
             select: {
@@ -1016,6 +1024,8 @@ export class DashTransferenciaService {
                 ano: filter.anos ? { in: filter.anos } : undefined,
                 partido_id: filter.partido_ids ? { hasSome: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+                // Por padrão não apresenta canceladas; o filtro "cancelada" as inclui.
+                transferencia: filter.cancelada ? undefined : { cancelada: false },
             },
         });
         const nroRows = rows.length;

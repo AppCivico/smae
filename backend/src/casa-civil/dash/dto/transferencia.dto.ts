@@ -85,6 +85,15 @@ export class FilterDashTransferenciasDto {
     @IsNumber()
     @Type(() => Number)
     prazo?: number;
+
+    /**
+     * Quando `true`, inclui também as transferências canceladas. Padrão (`false`/ausente):
+     * não apresenta transferências canceladas.
+     */
+    @IsOptional()
+    @ApiProperty({ description: 'Inclui transferências canceladas', required: false })
+    @Transform((a: TransformFnParams) => a.value === 'true' || a.value === true)
+    cancelada?: boolean;
 }
 
 function ValidateTransferenciaTipoEsfera(item: any) {

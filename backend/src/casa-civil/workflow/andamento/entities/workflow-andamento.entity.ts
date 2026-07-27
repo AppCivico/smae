@@ -27,6 +27,11 @@ export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto
      * fluxo retroativamente). Útil para destacar a opção de reinício.
      */
     workflow_desatualizado: boolean;
+    /**
+     * A transferência está cancelada. Quando `true`, nenhuma movimentação do workflow é permitida
+     * (iniciar/finalizar/reabrir fase, avançar etapa, reiniciar workflow).
+     */
+    transferencia_cancelada: boolean;
 }
 
 export class WorkflowAndamentoFluxoDto extends DetailWorkflowFluxoDto {

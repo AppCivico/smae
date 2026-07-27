@@ -113,6 +113,13 @@ export class TransferenciaDetailDto {
     modulos_vinculados: (ModuloSistema | string)[];
 
     pode_editar: boolean;
+
+    /**
+     * Transferência cancelada (terminal). Quando `true`, não permite movimentação do workflow.
+     */
+    cancelada: boolean;
+    cancelada_em: Date | null;
+    cancelada_por: IdNomeExibicaoDto | null;
 }
 
 export class ParlamentarTransferenciaDto {

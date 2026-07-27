@@ -30,6 +30,7 @@ export class WorkflowAndamentoService {
                 tipo_id: true,
                 workflow_id: true,
                 workflow_finalizado: true,
+                cancelada: true,
                 andamentoWorkflow: {
                     where: {
                         removido_em: null,
@@ -181,6 +182,7 @@ export class WorkflowAndamentoService {
             pode_reabrir_fase: pode_reabrir_fase,
             pode_reiniciar_workflow: pode_reiniciar_workflow,
             workflow_desatualizado: workflow_desatualizado,
+            transferencia_cancelada: transferencia.cancelada,
             fluxo: await Promise.all(
                 workflow.fluxo.map(async (fluxo) => {
                     const ehEtapaAtual = fluxo.workflow_etapa_de!.id == faseAtualAndamento!.workflow_etapa_id;
@@ -503,6 +505,7 @@ export class WorkflowAndamentoService {
             select: {
                 id: true,
                 workflow_id: true,
+                cancelada: true,
 
                 andamentoWorkflow: {
                     orderBy: { id: 'desc' },
@@ -523,6 +526,9 @@ export class WorkflowAndamentoService {
             },
         });
         if (!transferencia) throw new HttpException('Transferência com workflow, não encontrada.', 400);
+
+        if (transferencia.cancelada)
+            throw new HttpException('Transferência cancelada não permite movimentação do workflow.', 400);
 
         if (!transferencia.andamentoWorkflow.length)
             throw new HttpException('Transferência sem linhas de andamento', 400);

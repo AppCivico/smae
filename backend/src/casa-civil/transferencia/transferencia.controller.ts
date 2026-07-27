@@ -94,6 +94,19 @@ export class TransferenciaController {
         return await this.transferenciaService.reiniciarWorkflow(+params.id, user);
     }
 
+    @Post(':id/cancelar')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.editar'])
+    @ApiOperation({
+        summary: 'Cancela a transferência',
+        description:
+            'Finaliza a transferência como cancelada. AÇÃO IRREVERSÍVEL — a transferência cancelada não permite ' +
+            'movimentação do workflow e some, por padrão, de relatórios, panorama e do Quadro de Atividades.',
+    })
+    async cancelar(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.transferenciaService.cancelarTransferencia(+params.id, user);
+    }
+
     @Get(':id/historico')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.listar'])

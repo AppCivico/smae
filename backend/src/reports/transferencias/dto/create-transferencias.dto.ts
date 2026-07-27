@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
-import { Expose, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Expose, Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export enum TipoRelatorioTransferencia {
@@ -13,8 +13,7 @@ export class CreateRelTransferenciasDto {
     @IsOptional()
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, {
-        message:
-            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     @Expose()
     esfera?: TransferenciaTipoEsfera;
@@ -71,12 +70,21 @@ export class CreateRelTransferenciasDto {
     parlamentar_id?: number;
 
     /**
+     * Quando `true`, inclui transferências canceladas e distribuições canceladas/declinadas/
+     * impedidas tecnicamente/redirecionadas. Padrão (`false`/ausente): não apresenta essas linhas.
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === true || value === 'true')
+    @Expose()
+    cancelada?: boolean;
+
+    /**
      * @example "Analitico"
      */
     @ApiProperty({ enum: TipoRelatorioTransferencia, enumName: 'TipoRelatorioTransferencia' })
     @IsEnum(TipoRelatorioTransferencia, {
-        message:
-            'Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorioTransferencia).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorioTransferencia).join(', '),
     })
     @Expose()
     tipo: TipoRelatorioTransferencia;

@@ -1055,6 +1055,8 @@ export class TransferenciaService {
             where: {
                 removido_em: null,
                 AND: this.permissionSet(user),
+                // Por padrão não apresenta canceladas; o filtro "cancelada" as inclui.
+                cancelada: filters.cancelada ? undefined : false,
                 esfera: filters.esfera,
                 pendente_preenchimento_valores:
                     filters.preenchimento_completo != undefined ? !filters.preenchimento_completo : undefined,
@@ -1349,6 +1351,15 @@ export class TransferenciaService {
                 esfera: true,
                 secretaria_concedente_str: true,
                 workflow_id: true,
+                cancelada: true,
+                cancelada_em: true,
+                cancelada_por: true,
+                canceladora: {
+                    select: {
+                        id: true,
+                        nome_exibicao: true,
+                    },
+                },
                 parlamentar: {
                     where: { removido_em: null },
                     select: {
@@ -1599,6 +1610,11 @@ export class TransferenciaService {
                     [] as (ModuloSistema | string)[]
                 ),
             pode_editar: pode_editar,
+            cancelada: row.cancelada,
+            cancelada_em: row.cancelada_em,
+            cancelada_por: row.canceladora
+                ? { id: row.canceladora.id, nome_exibicao: row.canceladora.nome_exibicao }
+                : null,
         } satisfies TransferenciaDetailDto;
     }
 
@@ -1798,9 +1814,11 @@ export class TransferenciaService {
 
         const self = await this.prisma.transferencia.findFirst({
             where: { id: transferencia_id, removido_em: null, AND: this.permissionSet(user) },
-            select: { id: true, tipo_id: true, workflow_id: true },
+            select: { id: true, tipo_id: true, workflow_id: true, cancelada: true },
         });
         if (!self) throw new HttpException('Transferência não encontrada', 404);
+        if (self.cancelada)
+            throw new HttpException('Transferência cancelada não permite movimentação do workflow.', 400);
 
         // O novo fluxo associado à transferência deve ser o ativo para o tipo dela.
         const workflowAtivo = await this.prisma.workflow.findFirst({
@@ -1859,6 +1877,42 @@ export class TransferenciaService {
 
         this.updateVetoresBusca(transferencia_id).catch((err) => {
             console.error(`Background task updateVetoresBusca failed for transferencia ${transferencia_id}`, err);
+        });
+
+        return { id: transferencia_id };
+    }
+
+    async cancelarTransferencia(transferencia_id: number, user: PessoaFromJwt): Promise<RecordWithId> {
+        // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.editar']) no controller.
+        const agora = new Date(Date.now());
+
+        const self = await this.prisma.transferencia.findFirst({
+            where: { id: transferencia_id, removido_em: null, AND: this.permissionSet(user) },
+            select: { id: true, cancelada: true },
+        });
+        if (!self) throw new HttpException('Transferência não encontrada', 404);
+        if (self.cancelada) throw new HttpException('Transferência já está cancelada.', 400);
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.transferencia.update({
+                where: { id: transferencia_id },
+                data: {
+                    cancelada: true,
+                    cancelada_em: agora,
+                    cancelada_por: user.id,
+                    atualizado_por: user.id,
+                    atualizado_em: agora,
+                },
+            });
+
+            await prismaTxn.transferenciaHistorico.create({
+                data: {
+                    transferencia_id: transferencia_id,
+                    acao: TransferenciaHistoricoAcao.Cancelamento,
+                    criado_por: user.id,
+                    criado_em: agora,
+                },
+            });
         });
 
         return { id: transferencia_id };

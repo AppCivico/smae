@@ -23,9 +23,21 @@ export class WorkflowAndamentoFaseService {
         private readonly workflowAndamentoService: WorkflowAndamentoService
     ) {}
 
+    // Uma transferência cancelada não permite movimentação do workflow.
+    private async assertNaoCancelada(prismaTxn: Prisma.TransactionClient, transferencia_id: number): Promise<void> {
+        const transferencia = await prismaTxn.transferencia.findFirst({
+            where: { id: transferencia_id, removido_em: null },
+            select: { cancelada: true },
+        });
+        if (transferencia?.cancelada)
+            throw new HttpException('Transferência cancelada não permite movimentação do workflow.', 400);
+    }
+
     async update(dto: UpdateWorkflowAndamentoFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                await this.assertNaoCancelada(prismaTxn, dto.transferencia_id);
+
                 // Encontrando row na table transferencia_andamento
                 const self = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
@@ -356,6 +368,7 @@ export class WorkflowAndamentoFaseService {
     async finalizarFase(dto: WorkflowFinalizarIniciarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                await this.assertNaoCancelada(prismaTxn, dto.transferencia_id);
                 // Encontrando row na table transferencia_andamento
                 const self = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
@@ -474,8 +487,12 @@ export class WorkflowAndamentoFaseService {
                         workflow_id: true,
                         workflow_etapa_atual_id: true,
                         workflow_fase_atual_id: true,
+                        cancelada: true,
                     },
                 });
+
+                if (transferencia.cancelada)
+                    throw new HttpException('Transferência cancelada não permite movimentação do workflow.', 400);
 
                 // Buscando fase atual.
                 const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
@@ -623,8 +640,12 @@ export class WorkflowAndamentoFaseService {
                     select: {
                         workflow_etapa_atual_id: true,
                         workflow_fase_atual_id: true,
+                        cancelada: true,
                     },
                 });
+
+                if (transferencia.cancelada)
+                    throw new HttpException('Transferência cancelada não permite movimentação do workflow.', 400);
 
                 if (!transferencia.workflow_etapa_atual_id || !transferencia.workflow_fase_atual_id) {
                     throw new HttpException('Transferência não possui etapa ou fase atual', 400);
