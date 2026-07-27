@@ -280,6 +280,8 @@ export class TransferenciasService implements ReportableService {
                 NOT: [{ transferencia_id: null }],
                 removido_em: null,
                 transferencia: {
+                    // Mesmo default do relatório: não apresenta canceladas salvo se dto.cancelada.
+                    cancelada: dto.cancelada ? undefined : false,
                     esfera: dto.esfera ?? undefined,
                     interface: dto.interface ?? undefined,
                     ano: dto.ano ?? undefined,

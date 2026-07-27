@@ -124,8 +124,11 @@ export class WorkflowAndamentoService {
             },
         });
 
-        const pode_passar_para_proxima_etapa: boolean = fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
-        const pode_reabrir_fase: boolean = fasesConcluidas ? true : false;
+        // Transferência cancelada não permite nenhuma movimentação do workflow.
+        const naoCancelada = !transferencia.cancelada;
+        const pode_passar_para_proxima_etapa: boolean =
+            naoCancelada && fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
+        const pode_reabrir_fase: boolean = naoCancelada && fasesConcluidas ? true : false;
 
         // O reinício só é possível se houver workflow ativo para o tipo da transferência,
         // pois é ele que será associado à transferência.
@@ -137,7 +140,7 @@ export class WorkflowAndamentoService {
             },
             select: { id: true },
         });
-        const pode_reiniciar_workflow: boolean = workflowAtivoDoTipo != null;
+        const pode_reiniciar_workflow: boolean = naoCancelada && workflowAtivoDoTipo != null;
         // Indica que o fluxo ativo do tipo mudou (ex.: decreto alterou o fluxo retroativamente).
         const workflow_desatualizado: boolean =
             workflowAtivoDoTipo != null && workflowAtivoDoTipo.id != transferencia.workflow_id;

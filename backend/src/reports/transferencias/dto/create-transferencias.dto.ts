@@ -75,7 +75,9 @@ export class CreateRelTransferenciasDto {
      */
     @IsOptional()
     @IsBoolean()
-    @Transform(({ value }: any) => value === true || value === 'true')
+    @Transform(({ value }: any) =>
+        value === true || value === 'true' ? true : value === false || value === 'false' ? false : value
+    )
     @Expose()
     cancelada?: boolean;
 

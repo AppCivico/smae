@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsArray, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
@@ -91,8 +91,11 @@ export class FilterDashTransferenciasDto {
      * não apresenta transferências canceladas.
      */
     @IsOptional()
+    @IsBoolean()
     @ApiProperty({ description: 'Inclui transferências canceladas', required: false })
-    @Transform((a: TransformFnParams) => a.value === 'true' || a.value === true)
+    @Transform((a: TransformFnParams) =>
+        a.value === true || a.value === 'true' ? true : a.value === false || a.value === 'false' ? false : a.value
+    )
     cancelada?: boolean;
 }
 
