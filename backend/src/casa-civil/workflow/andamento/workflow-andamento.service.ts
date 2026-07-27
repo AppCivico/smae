@@ -48,6 +48,9 @@ export class WorkflowAndamentoService {
         if (!transferencia) throw new NotFoundException('Transferência não configurada');
 
         if (!transferencia.andamentoWorkflow.length || !transferencia.workflow_id) {
+            // Mesmo sem workflow/andamento, uma transferência cancelada precisa expor o status
+            // para o front-end não oferecer ações de workflow.
+            if (transferencia.cancelada) return { transferencia_cancelada: true } as WorkflowAndamentoDto;
             return;
         }
 
@@ -489,6 +492,13 @@ export class WorkflowAndamentoService {
         return await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId | void> => {
                 return await this.iniciarProximaEtapaInternal(dto, user, prismaTxn);
+            },
+            {
+                // Serializable para impedir corrida entre a checagem de `cancelada` e um
+                // cancelamento concorrente da transferência.
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
             }
         );
     }

@@ -598,6 +598,13 @@ export class TransferenciaService {
                 if (operations.length) await Promise.all(operations);
 
                 return transferencia;
+            },
+            {
+                // Serializable para impedir que um cancelamento concorrente (que também roda em
+                // transação) escape da checagem de `self.cancelada` feita no início desta transação.
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
             }
         );
 
@@ -2267,9 +2274,6 @@ export class TransferenciaService {
     ) {
         const agora = new Date(Date.now());
 
-        // Transferência cancelada não pode ter o workflow limpo/reconstruído.
-        await this.assertTransferenciaNaoCancelada(transferencia_id, prismaTx);
-
         // Quem chama pode gravar sua própria ação no histórico (ex.: ReinicioWorkflow),
         // evitando duas linhas para a mesma operação.
         const registrarHistorico = opts?.registrarHistorico ?? true;
@@ -2278,6 +2282,10 @@ export class TransferenciaService {
         // Para essa func ser chamada no update.
 
         const update = async (prismaTxn: Prisma.TransactionClient) => {
+            // Checagem dentro da transação (Serializable, quando standalone) para impedir corrida
+            // com um cancelamento concorrente entre a checagem e a limpeza do workflow.
+            await this.assertTransferenciaNaoCancelada(transferencia_id, prismaTxn);
+
             await prismaTxn.transferenciaAndamento.updateMany({
                 where: { transferencia_id: transferencia_id },
                 data: {

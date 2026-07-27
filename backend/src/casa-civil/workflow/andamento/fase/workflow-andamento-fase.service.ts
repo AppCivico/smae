@@ -192,6 +192,13 @@ export class WorkflowAndamentoFaseService {
                 }
 
                 return { id: updated.id };
+            },
+            {
+                // Serializable para impedir corrida entre a checagem de `cancelada` e um
+                // cancelamento concorrente da transferência.
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
             }
         );
 
@@ -468,6 +475,13 @@ export class WorkflowAndamentoFaseService {
                 }
 
                 return { id: finalizedFase.id };
+            },
+            {
+                // Serializable para impedir corrida entre a checagem de `cancelada` e um
+                // cancelamento concorrente da transferência.
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
             }
         );
 
@@ -626,6 +640,13 @@ export class WorkflowAndamentoFaseService {
                 });
 
                 return { id: andamentoNovaFase.id };
+            },
+            {
+                // Serializable para impedir corrida entre a checagem de `cancelada` e um
+                // cancelamento concorrente da transferência.
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
             }
         );
 
@@ -896,6 +917,13 @@ export class WorkflowAndamentoFaseService {
                 });
 
                 return { id: faseParaReabrir.id };
+            },
+            {
+                // Serializable para impedir corrida entre a checagem de `cancelada` e um
+                // cancelamento concorrente da transferência.
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
             }
         );
 
