@@ -17,7 +17,10 @@ ALTER TEXT SEARCH CONFIGURATION simple_unaccent
 
 -- projeto e variavel possuem vetores_busca como coluna GENERATED ALWAYS, então a
 -- expressão não pode ser alterada in-place: é preciso remover e recriar a coluna
--- (o ADD COLUMN GENERATED recomputa todas as linhas existentes).
+-- (o ADD COLUMN GENERATED recomputa todas as linhas existentes). Nenhuma das duas
+-- colunas tem índice dependente (confirmado: sem GIN em projeto/variavel.vetores_busca),
+-- mas o DROP+ADD ainda adquire ACCESS EXCLUSIVE e reescreve a tabela — rodar em janela
+-- de baixo tráfego se o volume de linhas for grande em produção.
 ALTER TABLE "projeto" DROP COLUMN "vetores_busca";
 ALTER TABLE "projeto" ADD COLUMN "vetores_busca" tsvector GENERATED ALWAYS AS (
     to_tsvector('simple_unaccent',

@@ -1362,20 +1362,33 @@ export class TransferenciaService {
             return token.replace(/\.(?=\d{3}(?:\D|$))/g, '');
         };
 
-        // Prefixo "R$" explícito
-        const comPrefixo = palavraChave.match(/R\$\s*([\d.,]+)/i)?.[1];
-        if (comPrefixo) return normalizaValorMonetario(comPrefixo);
+        const candidato = (() => {
+            // Prefixo "R$" explícito
+            const comPrefixo = palavraChave.match(/R\$\s*([\d.,]+)/i)?.[1];
+            if (comPrefixo) return normalizaValorMonetario(comPrefixo);
 
-        // Formato BR com separador de milhar e/ou decimal por vírgula
-        // (ex: "150.000", "150.000,00", "150000,00")
-        const comSeparadorOuVirgula = palavraChave.match(
-            /\b\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?\b|\b\d+,\d{1,2}\b/
-        )?.[0];
-        if (comSeparadorOuVirgula) return normalizaValorMonetario(comSeparadorOuVirgula);
+            // Formato BR com separador de milhar e/ou decimal por vírgula
+            // (ex: "150.000", "150.000,00", "150000,00")
+            const comSeparadorOuVirgula = palavraChave.match(
+                /\b\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?\b|\b\d+,\d{1,2}\b/
+            )?.[0];
+            if (comSeparadorOuVirgula) return normalizaValorMonetario(comSeparadorOuVirgula);
 
-        // Formato "simples": decimal com ponto (ex: "150000.55") ou número inteiro solto,
-        // exigindo ao menos 3 dígitos (ex: busca só "150000").
-        return palavraChave.match(/\b\d{3,}(?:\.\d{1,2})?\b/)?.[0];
+            // Formato "simples": decimal com ponto (ex: "150000.55") ou número inteiro solto,
+            // exigindo ao menos 3 dígitos (ex: busca só "150000"). Exige que o token não esteja
+            // colado em '.', '/' ou '-' para não capturar um trecho de Processo SEI formatado
+            // (ex: "00000000.000000/0000-00" não deve virar valor = 0).
+            return palavraChave.match(/(?:^|[^\d./-])(\d{3,}(?:\.\d{1,2})?)(?=$|[^\d./-])/)?.[1];
+        })();
+        if (candidato === undefined) return undefined;
+
+        // transferencia.valor é Decimal(15,2): no máximo 13 dígitos na parte inteira.
+        // Um candidato maior (ex: um número de SEI de 16 dígitos sem pontuação) estouraria
+        // a coluna e derrubaria a query inteira com "numeric field overflow".
+        const parteInteira = candidato.split('.')[0];
+        if (parteInteira.length > 13) return undefined;
+
+        return candidato;
     }
 
     /**
