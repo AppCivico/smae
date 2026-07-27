@@ -1357,20 +1357,20 @@ export class TransferenciaService {
         const normalizaValorMonetario = (token: string): string => {
             if (token.includes(',')) {
                 // Formato BR: '.' é separador de milhar, ',' é separador decimal.
-                return token.replace(/\./g, '').replace(',', '.');
+                return token.replaceAll('.', '').replace(',', '.');
             }
             return token.replace(/\.(?=\d{3}(?:\D|$))/g, '');
         };
 
         const candidato = (() => {
             // Prefixo "R$" explícito
-            const comPrefixo = palavraChave.match(/R\$\s*([\d.,]+)/i)?.[1];
+            const comPrefixo = /R\$\s*([\d.,]+)/i.exec(palavraChave)?.[1];
             if (comPrefixo) return normalizaValorMonetario(comPrefixo);
 
             // Formato BR com separador de milhar e/ou decimal por vírgula
             // (ex: "150.000", "150.000,00", "150000,00")
-            const comSeparadorOuVirgula = palavraChave.match(
-                /\b\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?\b|\b\d+,\d{1,2}\b/
+            const comSeparadorOuVirgula = /\b\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?\b|\b\d+,\d{1,2}\b/.exec(
+                palavraChave
             )?.[0];
             if (comSeparadorOuVirgula) return normalizaValorMonetario(comSeparadorOuVirgula);
 
@@ -1378,7 +1378,7 @@ export class TransferenciaService {
             // exigindo ao menos 3 dígitos (ex: busca só "150000"). Exige que o token não esteja
             // colado em '.', '/' ou '-' para não capturar um trecho de Processo SEI formatado
             // (ex: "00000000.000000/0000-00" não deve virar valor = 0).
-            return palavraChave.match(/(?:^|[^\d./-])(\d{3,}(?:\.\d{1,2})?)(?=$|[^\d./-])/)?.[1];
+            return /(?:^|[^\d./-])(\d{3,}(?:\.\d{1,2})?)(?=$|[^\d./-])/.exec(palavraChave)?.[1];
         })();
         if (candidato === undefined) return undefined;
 
