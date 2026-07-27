@@ -1654,7 +1654,8 @@ export class TarefaService {
           )
           SELECT
             max(nivel) - min(nivel) + 1 as numero_de_niveis,
-            array_agg(id) as filhas
+            -- jsonb_agg: driver adapter (Prisma 7) devolve array_agg de $queryRaw como string; JSON volta como array JS
+            jsonb_agg(id) as filhas
           FROM tarefa_path;`;
         const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
 
@@ -1779,7 +1780,8 @@ export class TarefaService {
             JOIN tarefa_path tp ON tp.tarefa_pai_id = t.id
             and t.removido_em is null
           )
-          SELECT array_agg(tp.id) as parents
+          -- jsonb_agg: driver adapter (Prisma 7) devolve array_agg de $queryRaw como string; JSON volta como array JS
+          SELECT jsonb_agg(tp.id) as parents
           FROM tarefa_path tp;
         `;
 

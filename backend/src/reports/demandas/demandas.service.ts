@@ -3,6 +3,8 @@ import { Date2YMD } from 'src/common/date2ymd';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
@@ -12,6 +14,7 @@ import {
     ReportableService,
 } from '../utils/utils.service';
 import { CreateRelDemandasDto } from './dto/create-demandas.dto';
+import { RelDemandasCsvRow, RelDemandasEnderecosCsvRow } from './entities/demandas-csv.entity';
 import { DemandasRelatorioDto, RelDemandasDto, RelDemandasEnderecosDto } from './entities/demandas.entity';
 
 type WhereCond = {
@@ -23,7 +26,7 @@ class RetornoDbDemandas {
     id: number;
     versao: number;
     status: string;
-    data_registro: Date;
+    data_registro: Date | null;
     data_publicado: Date | null;
     orgao_nome_exibicao: string;
     unidade_responsavel: string;
@@ -34,7 +37,8 @@ class RetornoDbDemandas {
     nome_projeto: string;
     descricao: string;
     justificativa: string;
-    valor: number;
+    /** `numeric::text` no SQL — string decimal exata, sem passar por double. */
+    valor: string | null;
     finalidade: string;
     observacao: string | null;
     area_tematica_nome: string;
@@ -52,7 +56,7 @@ class RetornoDbEnderecos {
 }
 
 @Injectable()
-export class DemandasService implements ReportableService {
+export class DemandasService implements ReportableService, SchemaAwareReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
     async asJSON(dto: CreateRelDemandasDto, user: PessoaFromJwt | null = null): Promise<DemandasRelatorioDto> {
@@ -93,7 +97,9 @@ export class DemandasService implements ReportableService {
                 d.nome_projeto,
                 d.descricao,
                 d.justificativa,
-                d.valor,
+                -- ::text preserva a precisão do numeric(15,2); ler como number no Node
+                -- passaria por double. O DuckDB relê esta coluna como DECIMAL(18,2).
+                d.valor::text AS valor,
                 d.finalidade::text AS finalidade,
                 d.observacao,
                 at.nome AS area_tematica_nome,
@@ -215,37 +221,32 @@ export class DemandasService implements ReportableService {
         return { whereString, queryParams };
     }
 
-    private formatExcelString(value: string | null | undefined): string {
-        return value !== null && value !== undefined ? `="${String(value).replace(/"/g, '""')}"` : '';
-    }
-
-    private formatCurrency(value: number | null): string {
-        return value != null
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-            : '';
-    }
-
+    /**
+     * Extração "compute store": datas em ISO, `null` para ausência de valor e nenhuma
+     * máscara. O hack `="valor"` do Excel, a moeda e o `dd/mm/aaaa` são declarados em
+     * `RelDemandasCsvRow` e aplicados no pós-processamento.
+     */
     private convertRowsDemandasInto(input: RetornoDbDemandas[], out: RelDemandasDto[]) {
         for (const db of input) {
             out.push({
                 id: db.id,
                 status: db.status as any,
-                data_registro: Date2YMD.toStringOrNull(db.data_registro) ?? '',
+                data_registro: Date2YMD.toStringOrNull(db.data_registro),
                 data_publicado: Date2YMD.toStringOrNull(db.data_publicado),
-                orgao_gestor: this.formatExcelString(db.orgao_nome_exibicao),
-                unidade_responsavel: this.formatExcelString(db.unidade_responsavel),
-                nome_responsavel: this.formatExcelString(db.nome_responsavel),
-                cargo_responsavel: this.formatExcelString(db.cargo_responsavel),
-                email_responsavel: this.formatExcelString(db.email_responsavel),
-                telefone_responsavel: this.formatExcelString(db.telefone_responsavel),
-                nome_projeto: this.formatExcelString(db.nome_projeto),
-                descricao: this.formatExcelString(db.descricao),
-                justificativa: this.formatExcelString(db.justificativa),
+                orgao_gestor: db.orgao_nome_exibicao,
+                unidade_responsavel: db.unidade_responsavel,
+                nome_responsavel: db.nome_responsavel,
+                cargo_responsavel: db.cargo_responsavel,
+                email_responsavel: db.email_responsavel,
+                telefone_responsavel: db.telefone_responsavel,
+                nome_projeto: db.nome_projeto,
+                descricao: db.descricao,
+                justificativa: db.justificativa,
                 valor: db.valor,
                 finalidade: db.finalidade as any,
-                observacao: this.formatExcelString(db.observacao),
-                area_tematica: this.formatExcelString(db.area_tematica_nome),
-                acoes: this.formatExcelString(db.acoes_concatenadas),
+                observacao: db.observacao,
+                area_tematica: db.area_tematica_nome,
+                acoes: db.acoes_concatenadas,
             });
         }
     }
@@ -254,14 +255,23 @@ export class DemandasService implements ReportableService {
         for (const db of input) {
             out.push({
                 demanda_id: db.demanda_id,
-                nome_projeto: this.formatExcelString(db.nome_projeto),
-                cep: this.formatExcelString(db.cep),
-                endereco: this.formatExcelString(db.endereco),
-                bairro: this.formatExcelString(db.bairro),
-                subprefeitura: this.formatExcelString(db.subprefeitura),
-                distrito: this.formatExcelString(db.distrito),
+                nome_projeto: db.nome_projeto,
+                cep: db.cep,
+                endereco: db.endereco,
+                bairro: db.bairro,
+                subprefeitura: db.subprefeitura,
+                distrito: db.distrito,
             });
         }
+    }
+
+    /**
+     * `enderecos.csv` é condicional (só sai quando há linhas), mas o schema dele é sempre
+     * declarado: um modelo salvo precisa poder referenciar o arquivo mesmo numa execução
+     * em que ele não foi emitido.
+     */
+    async describeSchema(_params: CreateRelDemandasDto): Promise<ReportFileSchema[]> {
+        return [getReportRowSchema(RelDemandasCsvRow), getReportRowSchema(RelDemandasEnderecosCsvRow)];
     }
 
     async toFileOutput(
@@ -274,56 +284,27 @@ export class DemandasService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        const fields = [
-            { value: 'id', label: 'ID' },
-            { value: 'status', label: 'Status' },
-            { value: 'data_registro', label: 'Data de Registro' },
-            { value: 'data_publicado', label: 'Data de Publicação' },
-            { value: 'orgao_gestor', label: 'Gestor Municipal' },
-            { value: 'unidade_responsavel', label: 'Unidade Responsável' },
-            { value: 'nome_responsavel', label: 'Nome do Responsável' },
-            { value: 'cargo_responsavel', label: 'Cargo do Responsável' },
-            { value: 'email_responsavel', label: 'E-mail do Responsável' },
-            { value: 'telefone_responsavel', label: 'Telefone do Responsável' },
-            { value: 'nome_projeto', label: 'Nome do Projeto' },
-            { value: 'descricao', label: 'Descrição' },
-            { value: 'justificativa', label: 'Justificativa' },
-            {
-                value: (row: RelDemandasDto) => this.formatCurrency(row.valor),
-                label: 'Valor',
-            },
-            { value: 'finalidade', label: 'Finalidade' },
-            { value: 'observacao', label: 'Observação' },
-            { value: 'area_tematica', label: 'Área Temática' },
-            { value: 'acoes', label: 'Ação' },
-        ];
+        // CSV bruto: cabeçalho com as chaves de máquina (nomes das colunas do schema),
+        // valores crus e sem lambdas de formatação. Rótulos, moeda, data pt-BR e o guard
+        // do Excel vêm do schema declarado em `demandas-csv.entity.ts`.
+        const [schemaDemandas, schemaEnderecos] = await this.describeSchema(params);
 
         const tmpFile = _ctx.getTmpFile('demandas.csv');
         const csvOpts: CsvWriterOptions<RelDemandasDto> = {
             csvOptions: DefaultCsvOptions,
             transforms: DefaultTransforms,
-            fields,
+            fields: schemaDemandas.colunas.map((c) => c.name),
         };
         await WriteCsvToFile(dados.linhas, tmpFile.stream, csvOpts);
         out.push({ name: 'demandas.csv', localFile: tmpFile.path });
 
         // Gerar planilha de endereços
         if (dados.enderecos.length > 0) {
-            const fieldsEnderecos = [
-                { value: 'demanda_id', label: 'ID da Demanda' },
-                { value: 'nome_projeto', label: 'Nome do Projeto' },
-                { value: 'cep', label: 'CEP' },
-                { value: 'endereco', label: 'Endereço' },
-                { value: 'bairro', label: 'Bairro' },
-                { value: 'subprefeitura', label: 'Subprefeitura' },
-                { value: 'distrito', label: 'Distrito' },
-            ];
-
             const tmpFileEnderecos = _ctx.getTmpFile('enderecos.csv');
             const csvOptsEnderecos: CsvWriterOptions<RelDemandasEnderecosDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: fieldsEnderecos,
+                fields: schemaEnderecos.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(dados.enderecos, tmpFileEnderecos.stream, csvOptsEnderecos);
             out.push({ name: 'enderecos.csv', localFile: tmpFileEnderecos.path });

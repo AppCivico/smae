@@ -126,7 +126,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     /**
      * acumulado_valor_base para ser usado quando o acumulado_usa_formula=false
      * Para não perder precisão no JSON, usar em formato string, mesmo sendo um número
-     * Se nulo, a séria acumulada não será calculada quando acumulado_usa_formula for false.
+     * Se nulo, a série acumulada é calculada normalmente com base 0 (equivalente a enviar "0").
      * @example "0.0"
      */
     @IsNumberStringCustom(13, 2)

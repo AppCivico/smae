@@ -42,6 +42,11 @@ let marcadorNoMapa = null;
 const poligonosNoMapa = [];
 const geoJsonsNoMapa = [];
 
+// elemento do painel flutuante atualmente aberto, usado para reposicioná-lo
+// e evitar que ele sangre a margem do mapa (@see limitarPainelFlutuanteAosLimitesDoMapa)
+let elementoDoPainelFlutuanteAberto = null;
+const MARGEM_DO_PAINEL_FLUTUANTE = 8;
+
 const grupoDeElementosNoMapa = () => L.featureGroup(
   []
     .concat(poligonosNoMapa)
@@ -237,6 +242,41 @@ async function enquadrarElementosNoMapa() {
   }
 }
 
+// o Leaflet reposiciona o painel flutuante via `transform` inline (recalculado a
+// cada pan/zoom/`mousemove`, já que os painéis são `sticky`), sem considerar as
+// bordas do mapa. Por isso corrigimos por cima, com a propriedade `translate`
+// (que compõe com o `transform` do Leaflet, sem sobrescrevê-lo), deslocando o
+// painel de volta para dentro dos limites do elemento do mapa quando ele sangrar.
+function limitarPainelFlutuanteAosLimitesDoMapa() {
+  if (!elementoDoPainelFlutuanteAberto || !mapa) {
+    return;
+  }
+
+  elementoDoPainelFlutuanteAberto.style.translate = '0px 0px';
+
+  const limitesMapa = mapa.getContainer().getBoundingClientRect();
+  const limitesPainel = elementoDoPainelFlutuanteAberto.getBoundingClientRect();
+
+  let deltaX = 0;
+  let deltaY = 0;
+
+  if (limitesPainel.left < limitesMapa.left + MARGEM_DO_PAINEL_FLUTUANTE) {
+    deltaX = (limitesMapa.left + MARGEM_DO_PAINEL_FLUTUANTE) - limitesPainel.left;
+  } else if (limitesPainel.right > limitesMapa.right - MARGEM_DO_PAINEL_FLUTUANTE) {
+    deltaX = (limitesMapa.right - MARGEM_DO_PAINEL_FLUTUANTE) - limitesPainel.right;
+  }
+
+  if (limitesPainel.top < limitesMapa.top + MARGEM_DO_PAINEL_FLUTUANTE) {
+    deltaY = (limitesMapa.top + MARGEM_DO_PAINEL_FLUTUANTE) - limitesPainel.top;
+  } else if (limitesPainel.bottom > limitesMapa.bottom - MARGEM_DO_PAINEL_FLUTUANTE) {
+    deltaY = (limitesMapa.bottom - MARGEM_DO_PAINEL_FLUTUANTE) - limitesPainel.bottom;
+  }
+
+  if (deltaX || deltaY) {
+    elementoDoPainelFlutuanteAberto.style.translate = `${deltaX}px ${deltaY}px`;
+  }
+}
+
 function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
   let conteudo;
   switch (true) {
@@ -279,6 +319,21 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
       ...props.opcoesDoPainelFlutuante,
       ...opcoes,
     });
+
+    item.on('tooltipopen', () => {
+      elementoDoPainelFlutuanteAberto = item.getTooltip()?.getElement() || null;
+      limitarPainelFlutuanteAosLimitesDoMapa();
+    });
+
+    item.on('tooltipclose', () => {
+      if (elementoDoPainelFlutuanteAberto) {
+        elementoDoPainelFlutuanteAberto.style.translate = '';
+      }
+      elementoDoPainelFlutuanteAberto = null;
+    });
+
+    // reajustar continuamente enquanto o painel `sticky` acompanha o cursor
+    item.on('mousemove', limitarPainelFlutuanteAosLimitesDoMapa);
   }
 }
 
@@ -348,11 +403,19 @@ function criarGeoJson(dados) {
       iconSize: [48, 48],
     });
 
+    let marcadorDoPonto;
     geoJson = L.geoJSON(dados, {
-      pointToLayer: (_geoJsonPoint, latlng) => L.marker(latlng, { icon: ícone }),
+      pointToLayer: (_geoJsonPoint, latlng) => {
+        marcadorDoPonto = L.marker(latlng, { icon: ícone });
+        return marcadorDoPonto;
+      },
     });
 
-    atribuirPainelFlutuante(geoJson, dados?.properties);
+    // o painel flutuante precisa ser vinculado ao marcador em si, e não ao
+    // `geoJson` que o envolve: ao entrar num `grupoDeMarcadores`, o plug-in
+    // `leaflet.markercluster` descarta o wrapper e usa só o marcador interno,
+    // então um tooltip preso ao wrapper nunca mais é exibido
+    atribuirPainelFlutuante(marcadorDoPonto, dados?.properties);
 
     const chave = dados.geometry.coordinates?.join(',');
     const deveAgrupar = props.agruparMarcadores === true
@@ -492,6 +555,10 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
+  // reajustar o painel flutuante aberto quando o mapa se move/aproxima sem
+  // que o mouse se mexa (ex.: zoom por scroll, teclado)
+  mapa.on('zoom move', limitarPainelFlutuanteAosLimitesDoMapa);
+
   const svgMarcadorPadrão = gerarSvgMarcador('padrao');
   L.Marker.prototype.options.icon = L.icon({
     iconUrl: svgParaDataUrl(svgMarcadorPadrão),
@@ -563,6 +630,10 @@ useResizeObserver(elementoMapa, debounce(async (entries) => {
 
   alturaCorrente.value = `${height}px`;
 
+  if (mapa) {
+    mapa.invalidateSize();
+  }
+
   enquadrarElementosNoMapa();
 }, 400));
 
@@ -633,6 +704,9 @@ watch(() => props.poligonos, (valorNovo) => {
 <style lang="less">
 .mapa {
   flex-grow: 1;
+  // referência de tamanho para os painéis flutuantes (`cqw`), em vez da
+  // viewport inteira — @see _painel-flutuante.less
+  container-type: inline-size;
 
   &:focus {
     outline: 1px solid @c400;

@@ -12,12 +12,30 @@ import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { CsvFileHandler } from '../shared/csv-file-handler';
 import { StreamBatchHandler } from '../shared/stream-handlers';
 import { FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import { PPProjetosStreamingDto } from './dto/streaming-projetos.dto';
+import {
+    RelProjetosAcompanhamentosCsvRow,
+    RelProjetosAditivosCsvRow,
+    RelProjetosArquivosCsvRow,
+    RelProjetosContratosCsvRow,
+    RelProjetosCronogramaCsvRow,
+    RelProjetosCsvRow,
+    RelProjetosGeolocCsvRow,
+    RelProjetosLicoesAprendidasCsvRow,
+    RelProjetosOrigensCsvRow,
+    RelProjetosPlanoAcaoCsvRow,
+    RelProjetosPlanoAcaoMonitoramentoCsvRow,
+    RelProjetosRiscosCsvRow,
+    RelProjetosTermoEncerramentoCsvRow,
+    ppProjetosTransforms,
+} from './entities/pp-projetos-csv.entity';
 import {
     PPProjetosRelatorioDto,
     RelProjetosAcompanhamentosDto,
@@ -311,7 +329,7 @@ class RetornoDbTermoEncerramento {
 }
 
 @Injectable()
-export class PPProjetosService implements ReportableService {
+export class PPProjetosService implements ReportableService, SchemaAwareReportableService {
     private tipo: TipoProjeto = 'PP';
     private logger: Logger = new Logger(PPProjetosService.name);
     private static readonly BATCH_SIZE = 100;
@@ -560,20 +578,30 @@ export class PPProjetosService implements ReportableService {
         }
     }
 
+    /**
+     * Escreve o CSV **bruto** de um bloco: cabeçalho com os nomes de máquina do schema, na ordem
+     * do schema, e valores crus (números como números, datas em ISO, `null` para ausência).
+     *
+     * Rótulos, moeda, `dd/mm/aaaa` e o guard do Excel voltam no pós-processamento
+     * (`ReportPostProcessService`), a partir do mesmo schema devolvido por `describeSchema`.
+     */
     private async gerarCsv(
-        tipo: string,
-        fields: string[],
-        fieldNames: string[],
+        schema: ReportFileSchema,
         projectIds: number[],
         out: FileOutput[],
         ctx: ReportContext,
         progress: number
     ) {
-        const handler = new CsvFileHandler(fields, fieldNames);
+        // `tipo` é a chave do `switch` de `querySpecificDataByTable`; o nome do arquivo é o mesmo
+        // com `.csv`, então derivar um do outro mantém schema e extração sempre em sincronia.
+        const tipo = schema.arquivo.replace(/\.csv$/, '');
+        const nomes = schema.colunas.map((c) => c.name);
+
+        const handler = new CsvFileHandler(nomes, nomes, ppProjetosTransforms(schema));
         try {
             const tmpFile = await this.processDataInBatches(tipo, projectIds, handler, PPProjetosService.BATCH_SIZE);
             if (tmpFile) {
-                out.push({ name: `${tipo}.csv`, localFile: tmpFile });
+                out.push({ name: schema.arquivo, localFile: tmpFile });
             } else {
                 Logger.warn(`Nenhum dado encontrado para "${tipo}", CSV não gerado.`);
             }
@@ -584,6 +612,39 @@ export class PPProjetosService implements ReportableService {
         await ctx.progress(progress);
     }
 
+    /**
+     * Schemas dos treze arquivos do relatório, na mesma ordem em que `toFileOutput` os emite.
+     *
+     * O conjunto de colunas não depende de `params`: o recorte por portfólio/status/órgão filtra
+     * **linhas**, nunca colunas. Um arquivo pode não sair (bloco sem nenhuma linha), e isso é
+     * tratado no pós-processamento, que casa schema por nome de arquivo dentro desta lista.
+     */
+    async describeSchema(_params: CreateRelProjetosDto): Promise<ReportFileSchema[]> {
+        return [
+            getReportRowSchema(RelProjetosCsvRow),
+            getReportRowSchema(RelProjetosCronogramaCsvRow),
+            getReportRowSchema(RelProjetosRiscosCsvRow),
+            getReportRowSchema(RelProjetosPlanoAcaoCsvRow),
+            getReportRowSchema(RelProjetosPlanoAcaoMonitoramentoCsvRow),
+            getReportRowSchema(RelProjetosLicoesAprendidasCsvRow),
+            getReportRowSchema(RelProjetosAcompanhamentosCsvRow),
+            getReportRowSchema(RelProjetosContratosCsvRow),
+            getReportRowSchema(RelProjetosAditivosCsvRow),
+            getReportRowSchema(RelProjetosOrigensCsvRow),
+            getReportRowSchema(RelProjetosArquivosCsvRow),
+            getReportRowSchema(RelProjetosGeolocCsvRow),
+            getReportRowSchema(RelProjetosTermoEncerramentoCsvRow),
+        ];
+    }
+
+    /**
+     * Escreve os treze CSVs **brutos** do relatório.
+     *
+     * As listas `<bloco>Fields`/`<bloco>FieldNames` que existiam aqui viraram schema declarado
+     * (`entities/pp-projetos-csv.entity.ts`): o cabeçalho passa a ser o nome de máquina de cada
+     * coluna e a ordem é a ordem do schema — as mesmas colunas, na mesma posição, com o rótulo
+     * reaplicado no pós-processamento.
+     */
     async toFileOutput(
         params: CreateRelProjetosDto,
         ctx: ReportContext,
@@ -593,559 +654,61 @@ export class PPProjetosService implements ReportableService {
         const projetosIds = await this.getProjetosIds(whereCond);
         const out: FileOutput[] = [];
 
-        // 1. Processar Projetos
-        const projetosFields = [
-            'id',
-            'codigo',
-            'portfolio_id',
-            'nome',
-            'portfolio_titulo',
-            'etiquetas',
-            'status',
-            'projeto_etapa',
-            'previsao_inicio',
-            'previsao_termino',
-            'previsao_duracao',
-            'previsao_custo',
-            'objeto',
-            'objetivo',
-            'escopo',
-            'nao_escopo',
-            'orgao_responsavel.id',
-            'orgao_responsavel.sigla',
-            'orgao_responsavel.descricao',
-            'responsavel.id',
-            'responsavel.nome_exibicao',
-            'orgao_gestor.id',
-            'orgao_gestor.sigla',
-            'orgao_gestor.descricao',
-            'orgao_participante.id',
-            'orgao_participante.sigla',
-            'orgao_participante.descricao',
-            'meta_id',
-            'gestores',
-            'fonte_recurso.valor_percentual',
-            'fonte_recurso.valor_nominal',
-            'portfolios_compartilhados_titulos',
-            'secretario_responsavel',
-            'secretario_executivo',
-            'coordenador_ue',
-            'data_aprovacao',
-            'data_revisao',
-            'versao',
-            'iniciativa_id',
-            'atividade_id',
-            'publico_alvo',
-            'status-traduzido',
-            'premissa.id',
-            'premissa.premissa',
-            'restricao.id',
-            'restricao.restricao',
-            'fonte_recurso.id',
-            'fonte_recurso.nome',
-            'fonte_recurso.fonte_recurso_cod_sof',
-            'fonte_recurso.fonte_recurso_ano',
-        ];
+        const [
+            schemaProjetos,
+            schemaCronograma,
+            schemaRiscos,
+            schemaPlanosAcao,
+            schemaPlanosMonitor,
+            schemaLicoes,
+            schemaAcompanhamentos,
+            schemaContratos,
+            schemaAditivos,
+            schemaOrigens,
+            schemaArquivos,
+            schemaGeoloc,
+            schemaTermos,
+        ] = await this.describeSchema(params);
 
-        const projetosFieldNames = [
-            'ID Projeto',
-            'Código',
-            'ID Portfólio',
-            'Nome do Projeto',
-            'Título do Portfólio',
-            'Etiquetas',
-            'Status (Banco)',
-            'Projeto Etapa',
-            'Previsão de Início',
-            'Previsão de Término',
-            'Previsão de Duração',
-            'Previsão de Custo',
-            'Objeto',
-            'Objetivo',
-            'Escopo',
-            'Não Escopo',
-            'ID Órgão Responsável',
-            'Sigla Órgão Responsável',
-            'Descrição Órgão Responsável',
-            'ID Responsável',
-            'Nome do Responsável',
-            'ID Órgão Gestor',
-            'Sigla Órgão Gestor',
-            'Descrição Órgão Gestor',
-            'ID Órgão Participante',
-            'Sigla Órgão Participante',
-            'Descrição Órgão Participante',
-            'ID Meta',
-            'Gestores do Projeto',
-            'Valor Percentual da Fonte',
-            'Valor Nominal da Fonte',
-            'Portfólios Compartilhados',
-            'Secretário Responsável',
-            'Secretário Executivo',
-            'Coordenador UE',
-            'Data de Aprovação',
-            'Data de Revisão',
-            'Versão',
-            'ID Iniciativa',
-            'ID Atividade',
-            'Público-Alvo',
-            'Status',
-            'ID Premissa',
-            'Descrição da Premissa',
-            'ID Restrição',
-            'Descrição da Restrição',
-            'ID Fonte de Recurso',
-            'Nome da Fonte de Recurso',
-            'Código SOF da Fonte',
-            'Ano da Fonte',
-        ];
-        await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
+        // 1. Processar Projetos
+        await this.gerarCsv(schemaProjetos, projetosIds, out, ctx, 20);
         await ctx.resumoSaida('Projetos', projetosIds.length);
 
         // 2. Processar Cronograma
-        const cronogramaFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'tarefa_id',
-            'hierarquia',
-            'numero',
-            'nivel',
-            'tarefa',
-            'inicio_planejado',
-            'termino_planejado',
-            'custo_estimado',
-            'inicio_real',
-            'termino_real',
-            'duracao_real',
-            'percentual_concluido',
-            'custo_real',
-            'dependencias',
-            'atraso',
-            'responsavel.id',
-            'responsavel.nome_exibicao',
-        ];
-        const cronogramaFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'ID da Tarefa',
-            'Hierarquia',
-            'Número',
-            'Nível',
-            'Tarefa',
-            'Início Planejado',
-            'Término Planejado',
-            'Custo Estimado',
-            'Início Real',
-            'Término Real',
-            'Duração Real (dias)',
-            '% Concluído',
-            'Custo Real',
-            'Dependências',
-            'Atraso (dias)',
-            'ID do Responsável',
-            'Nome do Responsável',
-        ];
-        await this.gerarCsv('cronograma', cronogramaFields, cronogramaFieldNames, projetosIds, out, ctx, 40);
+        await this.gerarCsv(schemaCronograma, projetosIds, out, ctx, 40);
 
         // 3. Processar Riscos
-        const riscosFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'codigo',
-            'titulo',
-            'data_registro',
-            'status_risco',
-            'descricao',
-            'causa',
-            'consequencia',
-            'probabilidade',
-            'probabilidade_descricao',
-            'impacto',
-            'impacto_descricao',
-            'nivel',
-            'grau',
-            'grau_descricao',
-            'resposta',
-            'tarefas_afetadas',
-        ];
-        const riscosFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'Código',
-            'Título',
-            'Data de Registro',
-            'Status do Risco',
-            'Descrição',
-            'Causa',
-            'Consequência',
-            'Probabilidade',
-            'Descrição da Probabilidade',
-            'Impacto',
-            'Descrição do Impacto',
-            'Nível',
-            'Grau',
-            'Descrição do Grau',
-            'Resposta',
-            'Tarefas Afetadas',
-        ];
-        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, projetosIds, out, ctx, 50);
+        await this.gerarCsv(schemaRiscos, projetosIds, out, ctx, 50);
 
         // 4. Processar Plano de Ação
-        const planosAcaoFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'plano_acao_id',
-            'risco_codigo',
-            'contramedida',
-            'contramedida_texto',
-            'medidas_de_contingencia',
-            'medidas_de_contingencia_texto',
-            'prazo_contramedida',
-            'custo',
-            'custo_percentual',
-            'responsavel',
-            'data_termino',
-        ];
-        const planosAcaoFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'ID do Plano de Ação',
-            'Código do Risco',
-            'Contramedida',
-            'Contramedida Texto',
-            'Medidas de Contingência',
-            'Medidas de Contingência Texto',
-            'Prazo da Contramedida',
-            'Custo (R$)',
-            'Custo (%)',
-            'Responsável',
-            'Data de Término',
-        ];
-        await this.gerarCsv('planos_de_acao', planosAcaoFields, planosAcaoFieldNames, projetosIds, out, ctx, 55);
+        await this.gerarCsv(schemaPlanosAcao, projetosIds, out, ctx, 55);
 
         // 5. Processar Plano de Ação Monitoramentos
-        const planosMonitorFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'risco_codigo',
-            'plano_acao_id',
-            'data_afericao',
-            'descricao',
-        ];
-        const planosMonitorFieldNames = [
-            'ID Projeto',
-            'Código Projeto',
-            'Código Risco',
-            'ID Plano de Ação',
-            'Data de aferição',
-            'Descrição',
-        ];
-        await this.gerarCsv(
-            'monitoramento_planos_de_acao',
-            planosMonitorFields,
-            planosMonitorFieldNames,
-            projetosIds,
-            out,
-            ctx,
-            60
-        );
+        await this.gerarCsv(schemaPlanosMonitor, projetosIds, out, ctx, 60);
 
         // 6. Processar Licoes de Aprendidas
-        const licoesFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'sequencial',
-            'data_registro',
-            'responsavel',
-            'descricao',
-            'observacao',
-            'contexto',
-            'resultado',
-        ];
-        const licoesFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'Sequencial',
-            'Data de Registro',
-            'Responsável',
-            'Descrição',
-            'Observação',
-            'Contexto',
-            'Resultado',
-        ];
-        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, projetosIds, out, ctx, 65);
+        await this.gerarCsv(schemaLicoes, projetosIds, out, ctx, 65);
 
         // 7. Processar acompanhamentos
-        const acompFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'data_registro',
-            'participantes',
-            'cronograma_paralizado',
-            'prazo_encaminhamento',
-            'pauta',
-            'pauta_texto',
-            'prazo_realizado',
-            'detalhamento',
-            'detalhamento_texto',
-            'encaminhamento',
-            'responsavel',
-            'observacao',
-            'detalhamento_status',
-            'pontos_atencao',
-            'pontos_atencao_texto',
-            'riscos',
-        ];
-        const acompFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'Data do Registro',
-            'Participantes',
-            'Cronograma Paralisado',
-            'Prazo de Encaminhamento',
-            'Pauta',
-            'Pauta Texto',
-            'Prazo Realizado',
-            'Detalhamento',
-            'Detalhamento Texto',
-            'Encaminhamento',
-            'Responsável',
-            'Observação',
-            'Status Detalhado',
-            'Pontos de Atenção',
-            'Pontos de Atenção Texto',
-            'Códigos dos Riscos',
-        ];
-        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, projetosIds, out, ctx, 70);
+        await this.gerarCsv(schemaAcompanhamentos, projetosIds, out, ctx, 70);
 
         // 8. Processar contratos
-        const contratosFields = [
-            'contrato_id',
-            'projeto_id',
-            'numero',
-            'exclusivo',
-            'status',
-            'objeto',
-            'descricao_detalhada',
-            'contratante',
-            'empresa_contratada',
-            'prazo',
-            'unidade_prazo',
-            'data_base',
-            'data_inicio',
-            'data_termino',
-            'data_termino_atualizada',
-            'valor',
-            'observacoes',
-            'valor_contrato_atualizado',
-            'total_aditivos',
-            'total_reajustes',
-            'modalidade_licitacao.id',
-            'modalidade_licitacao.nome',
-            'area_gestora.id',
-            'area_gestora.sigla',
-            'area_gestora.descricao',
-            'percentual_medido',
-            'processos_sei',
-            'fontes_recurso',
-            'cnpj_contratada',
-        ];
-
-        const contratosFieldNames = [
-            'contrato_id',
-            'ID Projeto',
-            'Número',
-            'Exclusivo',
-            'Status',
-            'Objeto',
-            'Descrição Detalhada',
-            'Contratante',
-            'Empresa Contratada',
-            'Prazo',
-            'Unidade Prazo',
-            'Data-base',
-            'Data Início',
-            'Data Término',
-            'Data Término Atualizada',
-            'Valor',
-            'Observações',
-            'Valor Contrato Atualizado',
-            'Total Aditivos',
-            'Total Reajustes',
-            'Modalidade de Licitação - ID',
-            'Modalidade de Licitação - Nome',
-            'Área Gestora - ID',
-            'Área Gestora - Sigla',
-            'Área Gestora - Descrição',
-            'Máximo % Execução',
-            'Processos SEI',
-            'Fontes de Recurso',
-            'CNPJ Contratada',
-        ];
-        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, projetosIds, out, ctx, 75);
+        await this.gerarCsv(schemaContratos, projetosIds, out, ctx, 75);
 
         // 9. Processar Aditivos
-        const aditivosFields = [
-            'aditivo_id',
-            'contrato_id',
-            'tipo_categoria',
-            'tipo.nome',
-            'data',
-            'valor',
-            'percentual_medido',
-            'data_termino_atual',
-        ];
-        const aditivosFieldNames = [
-            'ID Aditivo',
-            'ID Contrato',
-            'Categoria',
-            'Tipo Aditivo',
-            'Data',
-            'Valor',
-            '% Execução',
-            'Data Término Atual',
-        ];
-        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, projetosIds, out, ctx, 80);
+        await this.gerarCsv(schemaAditivos, projetosIds, out, ctx, 80);
 
         // 10. Processar Origens
-        const origensFields = [
-            'projeto_id',
-            'pdm_id',
-            'pdm_titulo',
-            'meta_id',
-            'meta_titulo',
-            'iniciativa_id',
-            'iniciativa_titulo',
-            'atividade_id',
-            'atividade_titulo',
-        ];
-        const origensFieldNames = [
-            'ID Projeto',
-            'ID PDM',
-            'Título do PDM',
-            'ID Meta',
-            'Título da Meta',
-            'ID Iniciativa',
-            'Título da Iniciativa',
-            'ID Atividade',
-            'Título da Atividade',
-        ];
-        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 88);
+        await this.gerarCsv(schemaOrigens, projetosIds, out, ctx, 88);
 
         // 11. Processar Arquivos
-        const arquivosFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'nome_original',
-            'criado_em',
-            'criador_id',
-            'criador_nome_exibicao',
-            'caminho',
-            'descricao',
-            'arquivo_id',
-        ];
-        const arquivosFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'Nome Original',
-            'Criado em',
-            'Criador (ID)',
-            'Criador (Nome de Exibição)',
-            'Caminho no Object Storage',
-            'Descrição do Documento',
-            'ID do Arquivo',
-        ];
-        await this.gerarCsv('arquivos', arquivosFields, arquivosFieldNames, projetosIds, out, ctx, 94);
+        await this.gerarCsv(schemaArquivos, projetosIds, out, ctx, 94);
 
         // 12. Processar Geolocalização
-        const geolocFields = [
-            'projeto_id',
-            'endereco',
-            'zona',
-            'distrito',
-            'subprefeitura',
-            'coordinates',
-            'geojson_type',
-            'geometry_type',
-            'cep',
-            'rua',
-            'pais',
-            'bairro',
-            'cidade',
-            'estado',
-            'rotulo',
-            'osm_type',
-            'codigo_pais',
-            'string_endereco',
-            'geometry_name',
-            'bbox',
-        ];
-        const geolocFieldNames = [
-            'ID Projeto',
-            'Endereço',
-            'Zona',
-            'Distrito',
-            'Subprefeitura',
-            'geojson.geometry.coordinates',
-            'geojson.type',
-            'geojson.geometry.type',
-            'geojson.properties.cep',
-            'geojson.properties.rua',
-            'geojson.properties.pais',
-            'geojson.properties.bairro',
-            'geojson.properties.cidade',
-            'geojson.properties.estado',
-            'geojson.properties.rotulo',
-            'geojson.properties.osm_type',
-            'geojson.properties.codigo_pais',
-            'geojson.properties.string_endereco',
-            'geojson.geometry_name',
-            'geojson.bbox',
-        ];
-        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 95);
+        await this.gerarCsv(schemaGeoloc, projetosIds, out, ctx, 95);
 
-        // 12. Processar Termos de Encerramento
-        const termoFields = [
-            'projeto_id',
-            'projeto_codigo',
-            'nome_projeto',
-            'orgao_responsavel_nome',
-            'portfolios_nomes',
-            'objeto',
-            'previsao_inicio',
-            'previsao_termino',
-            'data_inicio_real',
-            'data_termino_real',
-            'previsao_custo',
-            'valor_executado_total',
-            'status_final',
-            'etapa_nome',
-            'justificativa',
-            'justificativa_complemento',
-            'responsavel_encerramento_nome',
-            'data_encerramento',
-        ];
-        const termoFieldNames = [
-            'ID Projeto',
-            'Código do Projeto',
-            'Nome do Projeto',
-            'Órgão Responsável',
-            'Portfólios',
-            'Objeto',
-            'Previsão de Início',
-            'Previsão de Término',
-            'Data de Início Real',
-            'Data de Término Real',
-            'Previsão de Custo',
-            'Valor Executado Total',
-            'Status Final',
-            'Etapa',
-            'Justificativa',
-            'Justificativa Complemento',
-            'Responsável pelo Encerramento',
-            'Data de Encerramento',
-        ];
-        await this.gerarCsv('termos_encerramento', termoFields, termoFieldNames, projetosIds, out, ctx, 100);
+        // 13. Processar Termos de Encerramento
+        await this.gerarCsv(schemaTermos, projetosIds, out, ctx, 100);
 
         return [...out];
     }
@@ -2176,9 +1739,12 @@ export class PPProjetosService implements ReportableService {
             const batchData = await this.querySpecificDataByTable(tableName, batchIds);
 
             if (tableName == 'projetos') {
+                // `status_traduzido` (era `status-traduzido`): o hífen não serve como nome de
+                // máquina, porque a coluna vira identificador SQL no pós-processamento. O rótulo
+                // entregue continua sendo `Status`.
                 batchData.forEach((row) => {
                     if (row.status)
-                        (row as any)['status-traduzido'] = ProjetoStatusParaExibicao[row.status as ProjetoStatus];
+                        (row as any)['status_traduzido'] = ProjetoStatusParaExibicao[row.status as ProjetoStatus];
                 });
             }
             await handler.onBatch(batchData, Math.floor(i / batchSize), totalBatches);

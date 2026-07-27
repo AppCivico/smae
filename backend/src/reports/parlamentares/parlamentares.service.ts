@@ -3,14 +3,17 @@ import { Prisma } from '@prisma/client';
 import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
 import { CsvWriterOptions, WriteCsvToFile } from '../../common/helpers/CsvWriter';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
+import { RelParlamentaresCsvRow } from './entities/parlamentares-csv.entity';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
 import { RemoveNullFields } from '../../common/RemoveNullFields';
 
 @Injectable()
-export class ParlamentaresService implements ReportableService {
+export class ParlamentaresService implements ReportableService, SchemaAwareReportableService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly parlamentarService: ParlamentarService
@@ -75,6 +78,10 @@ export class ParlamentaresService implements ReportableService {
         if (dto.eleicao_id == 0) dto.eleicao_id = undefined;
     }
 
+    async describeSchema(_params: CreateRelParlamentaresDto): Promise<ReportFileSchema[]> {
+        return [getReportRowSchema(RelParlamentaresCsvRow)];
+    }
+
     async toFileOutput(params: CreateRelParlamentaresDto, ctx: ReportContext): Promise<FileOutput[]> {
         this.ajustaParams(params);
 
@@ -88,29 +95,14 @@ export class ParlamentaresService implements ReportableService {
         if (linhas.length) {
             const file = ctx.getTmpFile('parlamentares');
 
-            // Define CSV writer options
+            // CSV bruto: nomes de coluna "de máquina", sem rótulos e sem lambdas de
+            // formatação. Rótulos e o guard de texto do Excel (que antes era o prefixo
+            // U+200C no telefone) vêm do schema declarado em RelParlamentaresCsvRow,
+            // aplicado no pós-processamento.
+            const schema = getReportRowSchema(RelParlamentaresCsvRow);
             const csvWriterOptions: CsvWriterOptions<RelParlamentaresDto> = {
                 csvOptions: DefaultCsvOptions,
-                fields: [
-                    { value: 'id', label: 'ID do Parlamentar' },
-                    { value: 'nome_civil', label: 'Nome Civil' },
-                    { value: 'nome_parlamentar', label: 'Nome Parlamentar' },
-                    { value: 'partido_sigla', label: 'Sigla do Partido' },
-                    { value: 'ano_eleicao', label: 'Ano da Eleição' },
-                    { value: 'cargo', label: 'Cargo' },
-                    { value: 'uf', label: 'UF' },
-                    { value: 'titular_suplente', label: 'Titular/Suplente/Efetivado' },
-                    { value: 'endereco', label: 'Endereço' },
-                    { value: 'gabinete', label: 'Gabinete' },
-                    {
-                        value: (row: any) => (row.telefone ? `\u200C${row.telefone}` : ''),
-                        label: 'Telefone',
-                    },
-                    { value: 'dia_aniversario', label: 'Dia Aniversário' },
-                    { value: 'mes_aniversario', label: 'Mês Aniversário' },
-                    { value: 'email', label: 'E-mail' },
-                    { value: 'zona_atuacao', label: 'Zona de atuação' },
-                ],
+                fields: schema.colunas.map((c) => c.name),
             };
 
             await WriteCsvToFile(linhas, file.stream, csvWriterOptions);

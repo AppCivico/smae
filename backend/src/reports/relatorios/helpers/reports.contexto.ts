@@ -111,6 +111,9 @@ export class ReportContext {
             try {
                 unlinkSync(filePath);
             } catch (error) {
+                // ENOENT é esperado: arquivos passados como localFile são movidos (renameSync)
+                // para a pasta de staging do zip e removidos lá antes deste cleanup rodar.
+                if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') continue;
                 console.error(`Erro ao remover arquivo temporário ${filePath}:`, error);
             }
         }

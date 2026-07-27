@@ -1,24 +1,31 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { flatten } from '@json2csv/transforms';
 import { DateTime } from 'luxon';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import {
-    DefaultCsvOptions,
-    DefaultTransforms,
-    FileOutput,
-    Path2FileName,
-    ReportableService,
-    UtilsService,
-} from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService, UtilsService } from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
+import {
+    RelPrevisaoCustoPdmCsvRow,
+    RelPrevisaoCustoProjetoCsvRow,
+    rotulosPdmPrevisaoCusto,
+} from './entities/previsao-custo-csv.entity';
 import { ListPrevisaoCustoDto, RelPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
+/**
+ * `__` em vez do `.` do `DefaultTransforms`: o CSV bruto precisa de nomes de coluna que o
+ * builder DuckDB não interprete como referência qualificada por fonte.
+ */
+const PrevisaoCustoFlattenTransforms = [flatten({ objects: true, arrays: true, separator: '__' })];
+
 @Injectable()
-export class PrevisaoCustoService implements ReportableService {
+export class PrevisaoCustoService implements ReportableService, SchemaAwareReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
@@ -113,6 +120,43 @@ export class PrevisaoCustoService implements ReportableService {
         return partes.join('.');
     }
 
+    /**
+     * Schema do CSV bruto — habilita o pós-processamento (rótulos, formatação pt-BR,
+     * seleção/filtro/ordenação de colunas e XLSX tipado).
+     *
+     * O conjunto de colunas depende dos parâmetros: com `pdm_id` o arquivo começa por
+     * Meta/Iniciativa/Atividade, sem ele começa por Projeto — a mesma decisão que o
+     * `toFileOutput` tomava para montar o `fields`, agora tomada uma vez só aqui.
+     *
+     * Os rótulos de iniciativa/atividade vêm do PDM (`rotulo_iniciativa`/`rotulo_atividade`),
+     * então são aplicados sobre os labels estáticos declarados na classe de linha.
+     */
+    async describeSchema(params: SuperCreateRelPrevisaoCustoDto): Promise<ReportFileSchema[]> {
+        const pdm = await this.buscaPdmDoRelatorio(params);
+        if (!pdm) return [getReportRowSchema(RelPrevisaoCustoProjetoCsvRow)];
+
+        const schema = getReportRowSchema(RelPrevisaoCustoPdmCsvRow);
+        const rotulos = rotulosPdmPrevisaoCusto(pdm.rotulo_iniciativa, pdm.rotulo_atividade);
+
+        return [
+            {
+                ...schema,
+                colunas: schema.colunas.map((c) => (rotulos[c.name] ? { ...c, label: rotulos[c.name]! } : c)),
+            },
+        ];
+    }
+
+    /** `null` quando o relatório não é de PDM (Portfólio de Projetos / Obras). */
+    private async buscaPdmDoRelatorio(
+        params: SuperCreateRelPrevisaoCustoDto
+    ): Promise<{ rotulo_iniciativa: string; rotulo_atividade: string } | null> {
+        if (!params.pdm_id) return null;
+        return await this.prisma.pdm.findUnique({
+            where: { id: params.pdm_id },
+            select: { rotulo_iniciativa: true, rotulo_atividade: true },
+        });
+    }
+
     async toFileOutput(
         params: SuperCreateRelPrevisaoCustoDto,
         ctx: ReportContext,
@@ -123,47 +167,20 @@ export class PrevisaoCustoService implements ReportableService {
         await ctx.resumoSaida('Previsão de Custo', dados.linhas.length);
         await ctx.progress(50);
 
-        const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
-
         const out: FileOutput[] = [];
-
-        const camposProjeto = [
-            { value: 'projeto.codigo', label: 'Código Projeto' },
-            { value: 'projeto.nome', label: 'Nome do Projeto' },
-            { value: 'projeto.id', label: 'ID do Projeto' },
-        ];
-
-        const campos = pdm
-            ? [
-                  { value: 'meta.codigo', label: 'Código da Meta' },
-                  { value: 'meta.titulo', label: 'Título da Meta' },
-                  { value: 'meta.id', label: 'ID da Meta' },
-                  { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-                  { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-                  { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-                  { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-                  { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-                  { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-              ]
-            : camposProjeto;
 
         if (dados.linhas.length) {
             const reportTmp = ctx.getTmpFile('previsao-custo.csv');
 
+            // CSV bruto: cabeçalho com os nomes de máquina das colunas do schema, valores crus
+            // e nenhuma lambda de formatação. Rótulos (inclusive os do PDM), separador decimal
+            // pt-BR e `dd/mm/aaaa` vêm do schema, aplicados no pós-processamento.
+            const [schema] = await this.describeSchema(params);
+
             const csvOptions: CsvWriterOptions<RelPrevisaoCustoDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: [
-                    ...campos,
-                    'id',
-                    'id_versao_anterior',
-                    'projeto_atividade',
-                    'criado_em',
-                    'ano_referencia',
-                    'custo_previsto',
-                    'parte_dotacao',
-                    'atualizado_em',
-                ],
+                transforms: PrevisaoCustoFlattenTransforms,
+                fields: schema.colunas.map((c) => c.name),
             };
 
             await WriteCsvToFile(dados.linhas, reportTmp.stream, csvOptions);

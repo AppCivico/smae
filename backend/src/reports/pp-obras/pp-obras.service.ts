@@ -8,6 +8,7 @@ import {
     StatusContrato,
     TipoProjeto,
 } from '@prisma/client';
+import { WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -15,6 +16,8 @@ import { Date2YMD } from '../../common/date2ymd';
 import { Html2Text } from '../../common/Html2Text';
 import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportColumnType, ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelObrasDto } from './dto/create-obras.dto';
 import {
@@ -29,17 +32,31 @@ import {
     RelObrasOrigemDto,
     RelObrasSeiDto,
 } from './entities/obras.entity';
+import {
+    RelObrasAcompanhamentosCsvRow,
+    RelObrasAditivosCsvRow,
+    RelObrasArquivosCsvRow,
+    RelObrasContratosCsvRow,
+    RelObrasCronogramaCsvRow,
+    RelObrasCsvRow,
+    RelObrasEnderecosCsvRow,
+    RelObrasFontesRecursoCsvRow,
+    RelObrasOrigensCsvRow,
+    RelObrasProcessosSeiCsvRow,
+} from './entities/pp-obras-csv.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-
-import { Parser } from '@json2csv/plainjs';
-import { flatten, Transform } from '@json2csv/transforms';
 
 type WhereCond = {
     whereString: string;
     queryParams: any[];
 };
 
-const defaultTransform = [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]];
+/**
+ * Mantém o BOM do CSV bruto: o DuckDB o ignora ao reler o arquivo (o `header = true` já
+ * descarta a primeira linha inteira), e ele continua útil no caminho de falha segura do
+ * pós-processamento, em que o arquivo bruto é o que chega ao usuário.
+ */
+const ObrasCsvOptions = { ...DefaultCsvOptions, withBOM: true };
 
 class RetornoDbProjeto {
     obra_id: number;
@@ -262,7 +279,7 @@ class RetornoDbLoc {
 }
 
 @Injectable()
-export class PPObrasService implements ReportableService {
+export class PPObrasService implements ReportableService, SchemaAwareReportableService {
     private tipo: TipoProjeto = 'MDO';
 
     constructor(
@@ -308,6 +325,29 @@ export class PPObrasService implements ReportableService {
         };
     }
 
+    /**
+     * Schema dos CSVs brutos — habilita o pós-processamento (rótulos, moeda, `dd/mm/aaaa`,
+     * guard do Excel, XLSX tipado e modelos de coluna).
+     *
+     * A ordem é a mesma em que `toFileOutput` emite os arquivos. Este relatório não tem
+     * variação de colunas por parâmetro: os dez arquivos saem sempre, com o mesmo conjunto
+     * de colunas.
+     */
+    async describeSchema(_params: CreateRelObrasDto): Promise<ReportFileSchema[]> {
+        return [
+            getReportRowSchema(RelObrasCsvRow),
+            getReportRowSchema(RelObrasCronogramaCsvRow),
+            getReportRowSchema(RelObrasAcompanhamentosCsvRow),
+            getReportRowSchema(RelObrasFontesRecursoCsvRow),
+            getReportRowSchema(RelObrasContratosCsvRow),
+            getReportRowSchema(RelObrasAditivosCsvRow),
+            getReportRowSchema(RelObrasOrigensCsvRow),
+            getReportRowSchema(RelObrasProcessosSeiCsvRow),
+            getReportRowSchema(RelObrasEnderecosCsvRow),
+            getReportRowSchema(RelObrasArquivosCsvRow),
+        ];
+    }
+
     async toFileOutput(dto: CreateRelObrasDto, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
         ctx.progress(50);
@@ -321,73 +361,47 @@ export class PPObrasService implements ReportableService {
 
         await ctx.resumoSaida('Obras', countProjetos[0].count);
 
+        // O array de fields de cada arquivo virou o schema declarado: a lista de colunas e a
+        // ordem passam a sair de `schema.colunas`, e não mais de literais espalhados aqui.
+        const [
+            schemaObras,
+            schemaCronograma,
+            schemaAcompanhamentos,
+            schemaFontesRecurso,
+            schemaContratos,
+            schemaAditivos,
+            schemaOrigens,
+            schemaProcessosSei,
+            schemaEnderecos,
+            schemaArquivos,
+        ] = await this.describeSchema(dto);
+
         out.push(
             await this.streamQueryToCSV(
                 `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'obras.csv'
+                schemaObras,
+                ctx
             )
         );
-
-        const cronogramaFields = [
-            'obra_id',
-            'obra_codigo',
-            'tarefa_id',
-            'hierarquia',
-            'numero',
-            'nivel',
-            'tarefa',
-            'inicio_planejado',
-            'termino_planejado',
-            'custo_estimado',
-            'inicio_real',
-            'termino_real',
-            'duracao_real',
-            'percentual_concluido',
-            'custo_real',
-            'dependencias',
-            'atraso',
-            'responsavel_id',
-            'responsavel_nome_exibicao',
-        ];
 
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataCronograma()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'cronograma.csv',
-                cronogramaFields
+                schemaCronograma,
+                ctx
             )
         );
 
-        const acompanhamentosFields = [
-            'obra_id',
-            'obra_codigo',
-            'data_registro',
-            'participantes',
-            'cronograma_paralizado',
-            'prazo_encaminhamento',
-            'pauta',
-            'pauta_texto',
-            'prazo_realizado',
-            'detalhamento',
-            'detalhamento_texto',
-            'encaminhamento',
-            'responsavel',
-            'observacao',
-            'detalhamento_status',
-            'pontos_atencao',
-            'pontos_atencao_texto',
-            'riscos',
-        ];
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataAcompanhamentos()}
                 ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
-                'acompanhamentos.csv',
-                acompanhamentosFields
+                schemaAcompanhamentos,
+                ctx
             )
         );
 
@@ -395,47 +409,17 @@ export class PPObrasService implements ReportableService {
             await this.streamQueryToCSV(
                 `${this._queryDataFontesRecurso()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'fontes_recurso.csv'
+                schemaFontesRecurso,
+                ctx
             )
         );
 
-        const contratosFields = [
-            'contrato_id',
-            'obra_id',
-            'numero',
-            'exclusivo',
-            'status',
-            'objeto',
-            'descricao_detalhada',
-            'contratante',
-            'empresa_contratada',
-            'cnpj_contratada',
-            'prazo',
-            'unidade_prazo',
-            'data_base',
-            'data_inicio',
-            'data_termino',
-            'data_termino_atualizada',
-            'valor',
-            'observacoes',
-            'valor_contrato_atualizado',
-            'total_aditivos',
-            'total_reajustes',
-            'modalidade_contratacao_id',
-            'modalidade_contratacao_nome',
-            'orgao_id',
-            'orgao_sigla',
-            'orgao_descricao',
-            'percentual_medido',
-            'processos_sei',
-            'fontes_recurso',
-        ];
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataContratos()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'contratos.csv',
-                contratosFields
+                schemaContratos,
+                ctx
             )
         );
 
@@ -443,7 +427,8 @@ export class PPObrasService implements ReportableService {
             await this.streamQueryToCSV(
                 `${this._queryDataAditivos()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'aditivos.csv'
+                schemaAditivos,
+                ctx
             )
         );
 
@@ -452,7 +437,8 @@ export class PPObrasService implements ReportableService {
                 `${this._queryDataOrigens()} ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
-                'origens.csv'
+                schemaOrigens,
+                ctx
             )
         );
 
@@ -460,7 +446,8 @@ export class PPObrasService implements ReportableService {
             await this.streamQueryToCSV(
                 `${this._queryDataObrasSei()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'processos_sei.csv'
+                schemaProcessosSei,
+                ctx
             )
         );
 
@@ -468,29 +455,8 @@ export class PPObrasService implements ReportableService {
             await this.streamQueryToCSV(
                 `${this._queryDataObrasGeoLoc()} ${whereCond.whereString} ${this._queryDataObrasGeoLocFilter()}`,
                 whereCond.queryParams,
-                'enderecos.csv',
-                [
-                    { value: 'obra_id', label: 'obra_id' },
-                    { value: 'endereco', label: 'endereco' },
-                    { value: 'zona', label: 'zona' },
-                    { value: 'distrito', label: 'distrito' },
-                    { value: 'subprefeitura', label: 'subprefeitura' },
-                    { value: 'coordinates', label: 'geojson.geometry.coordinates' },
-                    { value: 'geojson_type', label: 'geojson.type' },
-                    { value: 'geometry_type', label: 'geojson.geometry.type' },
-                    { value: 'cep', label: 'geojson.properties.cep' },
-                    { value: 'rua', label: 'geojson.properties.rua' },
-                    { value: 'pais', label: 'geojson.properties.pais' },
-                    { value: 'bairro', label: 'geojson.properties.bairro' },
-                    { value: 'cidade', label: 'geojson.properties.cidade' },
-                    { value: 'estado', label: 'geojson.properties.estado' },
-                    { value: 'rotulo', label: 'geojson.properties.rotulo' },
-                    { value: 'osm_type', label: 'geojson.properties.osm_type' },
-                    { value: 'codigo_pais', label: 'geojson.properties.codigo_pais' },
-                    { value: 'string_endereco', label: 'geojson.properties.string_endereco' },
-                    { value: 'geometry_name', label: 'geojson.geometry_name' },
-                    { value: 'bbox', label: 'geojson.bbox' },
-                ]
+                schemaEnderecos,
+                ctx
             )
         );
 
@@ -498,40 +464,94 @@ export class PPObrasService implements ReportableService {
             await this.streamQueryToCSV(
                 `${this._queryDataArquivos()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'arquivos.csv'
+                schemaArquivos,
+                ctx
             )
         );
 
         return out;
     }
 
+    /**
+     * Executa a consulta e escreve o CSV **bruto** do arquivo descrito por `schema`.
+     *
+     * O arquivo vai para disco (`localFile`) em vez de um `Buffer` porque o
+     * pós-processamento lê o CSV pelo caminho — com `buffer` o relatório seguiria pelo
+     * caminho legado e sairia sem rótulos nem formatação.
+     *
+     * As colunas e a ordem vêm de `schema.colunas`; os valores saem crus, apenas
+     * normalizados para o texto que o DuckDB relê com o tipo declarado.
+     */
     private async streamQueryToCSV(
         query: string,
         params: any[],
-        filename: string,
-        fields?: (string | { value: string; label: string })[]
+        schema: ReportFileSchema,
+        ctx: ReportContext
     ): Promise<FileOutput> {
-        const parser = new Parser({
-            ...DefaultCsvOptions,
-            transforms: defaultTransform,
-            withBOM: true,
-            ...(fields ? { fields } : {}),
+        const results = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
+        const linhas = (results ?? []).map((row) => this.normalizarLinha(row, schema));
+
+        // Com `fields` sempre presente, o parser emite CSV só com cabeçalho quando não há
+        // linhas — o que o DuckDB relê como tabela vazia, em vez de quebrar num arquivo de
+        // zero byte.
+        const csv = WriteCsvToBuffer(linhas, {
+            csvOptions: ObrasCsvOptions,
+            fields: schema.colunas.map((c) => c.name),
         });
 
-        const results = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
+        const tmp = ctx.getTmpFile(schema.arquivo);
+        await new Promise<void>((resolve, reject) => {
+            tmp.stream.on('error', reject);
+            tmp.stream.end(csv, () => resolve());
+        });
 
-        if (!results || results.length === 0) {
-            // When fields are provided the parser can emit a header-only CSV;
-            // without fields it would throw, so return an empty buffer instead.
-            if (fields) {
-                const csv = parser.parse([]);
-                return { name: filename, buffer: Buffer.from(csv, 'utf8') };
-            }
-            return { name: filename, buffer: Buffer.from('') };
-        }
+        return { name: schema.arquivo, localFile: tmp.path };
+    }
 
-        const csv = parser.parse(results);
-        return { name: filename, buffer: Buffer.from(csv, 'utf8') };
+    /**
+     * Serializa a linha do banco no texto que o CSV bruto carrega, guiada pelo tipo
+     * declarado em cada coluna do schema.
+     *
+     * **Isto é defensivo, não um conserto.** Foi medido que, sem esta etapa, o caminho
+     * `json2csv` → `read_csv(..., columns={...})` já funciona para todos os tipos usados
+     * aqui: o DuckDB aceita `2024-03-05T00:00:00.000Z` numa coluna `DATE` (trunca a hora) e
+     * numa `TIMESTAMP`, o `Decimal` do Prisma é serializado pelo `toJSON()` como a string
+     * exata (não passa por `double`) e `bigint` sai íntegro. Nenhuma falha foi reproduzida.
+     *
+     * O que a normalização compra é **independência da serialização default do json2csv**:
+     * o valor entregue ao parser já está na forma que o tipo declarado espera, em vez de
+     * depender do `JSON.stringify` que o formatter `object` aplica em qualquer objeto. Isso
+     * importa porque o schema é o contrato do arquivo, e a extração passa por um driver
+     * (`@prisma/adapter-pg`) que decide sozinho se um `date`/`numeric` volta como objeto ou
+     * como string. Se um dia a resposta mudar, o CSV bruto continua igual.
+     *
+     * Nada aqui é formatação de apresentação — moeda, `dd/mm/aaaa` e separador pt-BR são do
+     * pós-processamento.
+     */
+    private normalizarLinha(row: any, schema: ReportFileSchema): Record<string, any> {
+        const out: Record<string, any> = {};
+        for (const coluna of schema.colunas) out[coluna.name] = this.normalizarValor(row[coluna.name], coluna.type);
+        return out;
+    }
+
+    private normalizarValor(valor: any, tipo: ReportColumnType): any {
+        if (valor === null || valor === undefined) return null;
+
+        // ISO curto. O driver também pode já devolver a string 'YYYY-MM-DD', daí o passa-adiante.
+        if (tipo === 'DATE') return valor instanceof Date ? Date2YMD.toString(valor) : valor;
+
+        // `YYYY-MM-DD HH:MM:SS` em UTC — mesmo instante que o ISO, e é assim que o DuckDB
+        // interpreta o ISO com `Z` de qualquer forma (o sufixo é descartado).
+        if (tipo === 'TIMESTAMP')
+            return valor instanceof Date ? valor.toISOString().replace('T', ' ').substring(0, 19) : valor;
+
+        // String explícita: é o que preserva a precisão do `numeric`. O `toJSON()` do
+        // `Decimal` do Prisma já faz isso hoje; aqui a garantia não depende dele.
+        if (tipo.startsWith('DECIMAL')) return typeof valor === 'object' ? valor.toString() : String(valor);
+
+        if (typeof valor === 'bigint') return valor.toString();
+
+        return valor;
     }
 
     private async buildFilteredWhereStr(
@@ -1200,7 +1220,10 @@ export class PPObrasService implements ReportableService {
                 projeto.codigo AS obra_codigo,
                 projeto_acompanhamento.data_registro,
                 projeto_acompanhamento.participantes,
-                projeto_acompanhamento.cronograma_paralisado,
+                -- Apelidado com 'z': tanto o CSV quanto o DTO (RelObrasAcompanhamentosDto)
+                -- sempre pediram 'cronograma_paralizado', enquanto a coluna do banco é
+                -- 'cronograma_paralisado'. Sem o alias, a coluna saía vazia em ambos.
+                projeto_acompanhamento.cronograma_paralisado AS cronograma_paralizado,
                 projeto_acompanhamento_item.prazo_encaminhamento,
                 projeto_acompanhamento.pauta,
                 projeto_acompanhamento_item.prazo_realizado,

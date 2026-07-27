@@ -13,6 +13,7 @@ import { PrevisaoCustoModule } from './reports/previsao-custo/previsao-custo.mod
 import { ProjetoOrcamentoModule } from './reports/projeto-orcamento/projeto-orcamento.module';
 import { ReportProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
 import { PsMonitoramentoMensalModule } from './reports/ps-monitoramento-mensal/ps-monitoramento-mensal.module';
+import { RelatorioModeloModule } from './reports/relatorio-modelo/relatorio-modelo.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { TransferenciasModule } from './reports/transferencias/transferencias.module';
 import { TribunalDeContasModule } from './reports/tribunal-de-contas/tribunal-de-contas.module';
@@ -29,6 +30,7 @@ import { TribunalDeContasModule } from './reports/tribunal-de-contas/tribunal-de
 @Module({
     imports: [
         ReportsModule,
+        RelatorioModeloModule,
         IndicadoresModule,
         MonitoramentoMensalModule,
         OrcamentoModule,

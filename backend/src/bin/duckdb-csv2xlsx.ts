@@ -1,4 +1,4 @@
-import { Database } from 'duckdb-async';
+import { DuckDBInstance } from '@duckdb/node-api';
 import * as fs from 'fs';
 
 async function bootstrap() {
@@ -38,19 +38,27 @@ function LogMemoryUsage(ctx: string) {
 
 async function processCsvToXlsx(csvFile: string, outputXlsx: string) {
     LogMemoryUsage('before loading duckdb');
-    const db = await Database.create(':memory:');
+    const instance = await DuckDBInstance.create(':memory:');
+    const db = await instance.connect();
 
-    await db.all(`LOAD excel;`);
+    try {
+        // `INSTALL` antes do `LOAD` porque o cache de extensão é por versão do DuckDB
+        // (`~/.duckdb/extensions/v<versão>/`): um `LOAD` solto falha em máquina onde aquela
+        // versão ainda não foi populada. `INSTALL` é idempotente e lê do cache.
+        await db.run(`INSTALL excel`);
+        await db.run(`LOAD excel`);
 
-    LogMemoryUsage('after loading spatial extension');
-    console.log(`Loading CSV file: ${csvFile}`);
-    await db.all(`CREATE TABLE tbl AS SELECT * FROM read_csv_auto('${csvFile}')`);
-    LogMemoryUsage('after importing CSV file');
+        LogMemoryUsage('after loading excel extension');
+        console.log(`Loading CSV file: ${csvFile}`);
+        await db.run(`CREATE TABLE tbl AS SELECT * FROM read_csv_auto('${csvFile}')`);
+        LogMemoryUsage('after importing CSV file');
 
-    console.log(`Exporting to XLSX file: ${outputXlsx}`);
-    await db.all(`COPY tbl TO '${outputXlsx}' (FORMAT xlsx, HEADER true)`);
-    LogMemoryUsage('after processing');
-    await db.close();
+        console.log(`Exporting to XLSX file: ${outputXlsx}`);
+        await db.run(`COPY tbl TO '${outputXlsx}' (FORMAT xlsx, HEADER true)`);
+        LogMemoryUsage('after processing');
+    } finally {
+        db.disconnectSync();
+    }
 }
 
 bootstrap();

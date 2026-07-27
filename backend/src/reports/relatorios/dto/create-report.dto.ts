@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional, refs } from '@nestjs/swagger';
 import { FonteRelatorio } from '@prisma/client';
-import { IsBoolean, IsEnum, IsIn, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional } from 'class-validator';
 import { VISIBILIDADE_TIPOS, VisibilidadeTipo } from '../helpers/visibilidade-templates';
 import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
@@ -57,6 +58,20 @@ export class CreateReportDto {
         ),
     })
     parametros: any;
+
+    /**
+     * Modelo (template) de saída escolhido pelo usuário na tela de novo relatório: define
+     * colunas, labels, filtros e ordenação aplicados no pós-processamento.
+     *
+     * Fica no envelope, e **não** dentro de `parametros`: o `ParseParametrosDaFonte` roda com
+     * `excludeExtraneousValues`, então uma chave não declarada no DTO da fonte seria descartada.
+     *
+     * Ausente = layout padrão (comportamento legado).
+     */
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    modelo_id?: number;
 
     /**
      * Escopo de visibilidade do relatório. Define `visibilidade` + `restrito_para` via o mapa de

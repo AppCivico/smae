@@ -54,7 +54,11 @@ BEGIN
             when eh_serie_realizado then 'Realizado'::"Serie" else 'Previsto'::"Serie"
             end as tipo_serie,
             i.acumulado_usa_formula,
-            i.acumulado_valor_base,
+            -- acumulado_valor_base NULL é tratado como 0: a série acumulada continua sendo
+            -- calculada (rebaseada em 0) em vez de ficar vazia. Sem o coalesce, a aritmética
+            -- NULL (vIndicadorBase + sum = NULL) zeraria todas as linhas via o filtro
+            -- WHERE valor_acc IS NOT NULL. Consistente com a view do metabase.
+            coalesce(i.acumulado_valor_base, 0),
             coalesce(i.casas_decimais, 0)
         INTO vPeriodicidade,
         vInicio,

@@ -52,6 +52,25 @@
 - **Quando NÃO é emitido:**
   - Quando o usuário cancela a confirmação de fechamento
 
+### `@dialogo-aberto`
+
+- **Descrição:** Emitido quando o diálogo passa a estar visível (`$route.query.dialogo` corresponde ao `id`). Útil para disparar uma busca de dados no momento em que o diálogo abre, sem precisar duplicar no componente pai a lógica de comparação com a query.
+- **Quando é emitido:**
+  - Ao montar o componente já com `?dialogo=<id>` presente na URL
+  - Quando a navegação muda a query de forma que `dialogo` passa a corresponder ao `id`
+
+**Exemplo de uso:**
+
+```vue
+<SmaeDialog
+  id="configurar-workflow"
+  titulo="Configurar Workflow"
+  @dialogo-aberto="buscarHistorico"
+>
+  <!-- Conteúdo do diálogo -->
+</SmaeDialog>
+```
+
 ## Slots
 
 ### `default`

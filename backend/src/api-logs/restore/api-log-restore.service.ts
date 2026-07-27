@@ -37,12 +37,16 @@ export class ApiLogRestoreService implements TaskableService {
             const s3Path = control.backup_location;
 
             // Carregar os dados do Parquet para DuckDB
-            await duckDB.run(`
+            await duckDB.con.run(`
                 CREATE TABLE logs_to_restore AS
                 SELECT * FROM read_parquet('${s3Path}');
             `);
 
-            const rows = await duckDB.all('SELECT * FROM logs_to_restore');
+            // `getRowObjectsJS` devolve valores JS nativos (TIMESTAMP vira `Date`, INT vira
+            // `number`), que é o formato que o mapeamento abaixo espera.
+            const rows = (
+                await duckDB.con.runAndReadAll('SELECT * FROM logs_to_restore')
+            ).getRowObjectsJS() as Record<string, any>[];
 
             const logsToInsert = rows.map((row) => ({
                 created_at: new Date(row.created_at),
@@ -62,7 +66,7 @@ export class ApiLogRestoreService implements TaskableService {
                 created_pessoa_id: row.created_pessoa_id ?? null,
             }));
 
-            await this.prisma.api_request_log.createMany({
+            await this.prisma.encrypted.api_request_log.createMany({
                 data: logsToInsert,
                 skipDuplicates: true,
             });
@@ -75,7 +79,7 @@ export class ApiLogRestoreService implements TaskableService {
                 },
             });
 
-            await duckDB.close();
+            duckDB.close();
 
             return {
                 date: params.date,

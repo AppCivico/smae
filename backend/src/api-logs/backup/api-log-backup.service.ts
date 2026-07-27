@@ -37,7 +37,7 @@ export class ApiLogBackupService implements TaskableService {
             const fileName = `api_log_${Date2YMD.toString(payload.date)}.parquet`;
             const s3Path = `s3://${bucket}/api_request_logs/${fileName}`;
 
-            await duckDB.run(`
+            await duckDB.con.run(`
                 CREATE TABLE logs_for_backup (
                     created_at TIMESTAMP,
                     cf_ray VARCHAR,
@@ -61,7 +61,7 @@ export class ApiLogBackupService implements TaskableService {
 
             // eslint-disable-next-line no-constant-condition
             while (true) {
-                const logs = await this.prisma.api_request_log.findMany({
+                const logs = await this.prisma.encrypted.api_request_log.findMany({
                     skip: offset,
                     take: CHUNK_SIZE,
                     where: {
@@ -114,7 +114,7 @@ export class ApiLogBackupService implements TaskableService {
 
                 const placeholders = batchData.map(() => '(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').join(',');
                 const flatData = batchData.flat();
-                await duckDB.run(`INSERT INTO logs_for_backup VALUES ${placeholders}`, ...flatData);
+                await duckDB.con.run(`INSERT INTO logs_for_backup VALUES ${placeholders}`, flatData);
 
                 totalRecords += logs.length;
                 offset += CHUNK_SIZE;
@@ -124,7 +124,7 @@ export class ApiLogBackupService implements TaskableService {
                 return { status: 'no_data', date: payload.date };
             }
 
-            await duckDB.run(`COPY logs_for_backup TO '${s3Path}' (FORMAT PARQUET, COMPRESSION 'ZSTD');`);
+            await duckDB.con.run(`COPY logs_for_backup TO '${s3Path}' (FORMAT PARQUET, COMPRESSION 'ZSTD');`);
 
             await this.prisma.$transaction(async (tx) => {
                 await tx.api_request_log.deleteMany({
@@ -149,7 +149,7 @@ export class ApiLogBackupService implements TaskableService {
                 });
             });
 
-            await duckDB.close();
+            duckDB.close();
 
             return {
                 date: payload.date,
@@ -158,7 +158,7 @@ export class ApiLogBackupService implements TaskableService {
                 recordsBackedUp: totalRecords,
             };
         } catch (error) {
-            await duckDB.close();
+            duckDB.close();
             await this.prisma.apiRequestLogControl.update({
                 where: { log_date: logDateUTC },
                 data: {

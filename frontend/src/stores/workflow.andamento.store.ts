@@ -131,6 +131,21 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
+    async reiniciarWorkflow(transferênciaId?: number): Promise<boolean> {
+      const id = transferênciaId || Number(this.route.params.transferenciaId);
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/transferencia/${id}/reiniciar-workflow`, {
+          id,
+        });
+
+        this.erro = null;
+        return !!resposta;
+      } catch (erro) {
+        this.erro = erro;
+        return false;
+      }
+    },
+
     async iniciarFase(faseId: number, transferênciaId: number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 

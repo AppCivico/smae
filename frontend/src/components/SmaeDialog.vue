@@ -20,6 +20,7 @@ defineOptions({
 
 type Emits = {
   (event: 'dialogo-fechado'): void;
+  (event: 'dialogo-aberto'): void;
 };
 
 const emit = defineEmits<Emits>();
@@ -119,6 +120,7 @@ watch(
     if (estaAberto) {
       abrirDialogo();
       registrarPrefixo(idDoPrefixo, () => props.titulo);
+      emit('dialogo-aberto');
     } else {
       removerPrefixo(idDoPrefixo);
     }

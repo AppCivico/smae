@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Database } from 'duckdb-async';
+import { DuckDBInstance } from '@duckdb/node-api';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { TaskableService } from '../entities/task.entity';
@@ -24,10 +24,15 @@ export class ImportacaoParlamentarService implements TaskableService {
 
         this.storageService.saveAsFile(inputParams.upload_token, '/tmp/import-parlamentar');
 
-        const db = await Database.create(this.getTmpFilePath('db-at-' + Date.now() + '.duckdb', taskId));
+        const instance = await DuckDBInstance.create(this.getTmpFilePath('db-at-' + Date.now() + '.duckdb', taskId));
+        const db = await instance.connect();
 
-        await db.all('INSTALL https; INSTALL postgres; INSTALL sqlite;');
-        await db.all('LOAD https; LOAD postgres; LOAD sqlite;');
+        // Um `run` por statement: o `@duckdb/node-api` prepara o SQL recebido, e prepared
+        // statement aceita só um comando por chamada.
+        for (const extension of ['https', 'postgres', 'sqlite']) {
+            await db.run(`INSTALL ${extension}`);
+            await db.run(`LOAD ${extension}`);
+        }
 
         await db.run(`ATTACH '/tmp/import-parlamentar' AS importacao (TYPE SQLITE);`);
 
@@ -113,7 +118,9 @@ export class ImportacaoParlamentarService implements TaskableService {
             WHERE EXISTS (SELECT 1 FROM smae.parlamentar WHERE nome = dp.nome);
         `);
 
-        await db.close();
+        // fecha também a instância porque aqui o banco é um arquivo em /tmp, não `:memory:`
+        db.disconnectSync();
+        instance.closeSync();
 
         return {
             _taskId: taskId,

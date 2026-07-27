@@ -4,7 +4,8 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Pool } from 'pg';
-const prisma = new PrismaClient();
+import { PrismaPg } from '@prisma/adapter-pg';
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const logger = new Logger('PgsqlMigrate');
 
 let is_watch_mode = false;

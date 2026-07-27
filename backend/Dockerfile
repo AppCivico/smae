@@ -21,13 +21,26 @@ RUN npm --loglevel=error install -g npm@11.4.2
 COPY package.json ./
 COPY package-lock.json ./
 
+# scripts/ precisa existir antes do `npm ci`: o postinstall roda `prisma generate`. Como
+# prisma/ ainda não foi copiado, o postinstall PULA o generate — mantendo esta layer de
+# deps cacheada independente do schema. O generate roda numa layer própria logo abaixo.
+COPY scripts/ ./scripts/
+
 RUN npm ci
 
 COPY tools/install-duckdb-extensions.js ./tools/
 
+# `USER node` para o cache de extensões do DuckDB cair em /home/node/.duckdb, e não em
+# /root/.duckdb: a API roda como `node` (USER node, mais abaixo) e o DuckDB resolve o cache
+# por $HOME. Instalado como root, o cache existe na imagem mas é invisível para a aplicação —
+# aí cada export XLSX baixa a extensão em runtime, ou falha, se o container não tiver egress.
+USER node
 RUN node tools/install-duckdb-extensions.js
+USER root
 
+# layer própria do prisma generate: só invalida quando schema/config mudam (não em mudanças de código)
 COPY prisma/schema.prisma ./prisma/
+COPY prisma.config.ts ./
 
 RUN npx prisma generate
 

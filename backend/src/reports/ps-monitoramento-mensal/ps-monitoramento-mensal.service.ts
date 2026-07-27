@@ -2,6 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { isSchemaAware, ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
+import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
@@ -13,53 +16,107 @@ import {
 } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import {
+    RelPsMonitoramentoMensalAnaliseQualitativaCsvRow,
+    RelPsMonitoramentoMensalFechamentoCsvRow,
+    RelPsMonitoramentoMensalMetasCicloCsvRow,
+    RelPsMonitoramentoMensalRiscoCsvRow,
+    RelPsMonitoramentoMensalVariaveisCsvRow,
+} from './entities/ps-monitoramento-mensal-csv.entity';
+import {
     RelPSMonitoramentoMensalCicloMetasDto,
     RelPsMonitoramentoMensalVariaveis,
     RelPsMonitRetorno,
 } from './entities/ps-monitoramento-mensal.entity';
 
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { Date2YMD } from '../../common/date2ymd';
 import { Html2Text } from '../../common/Html2Text';
 
+/**
+ * Helpers de normalização para o CSV **bruto**.
+ *
+ * As linhas vêm de `$queryRawUnsafe`, então o adapter do Prisma devolve `Date` para
+ * `date`/`timestamptz` e `Decimal` para `numeric`. O json2csv serializaria esses objetos
+ * pelo `toJSON()` (data vira ISO completo com `Z`, mesmo em coluna que é só data), e o
+ * DuckDB precisa de ISO limpo por tipo declarado — daí a conversão explícita aqui.
+ *
+ * Ausência de valor sempre vira `null` (nunca `''`): o `read_csv` do pós-processamento usa
+ * `nullstr = ''`, e é o `null` que faz a coluna tipada aceitar a linha.
+ */
+
+/** `Date` (ou string ISO) → `YYYY-MM-DD`, para colunas declaradas como `DATE`. */
+function csvData(valor: Date | string | null | undefined): string | null {
+    if (valor == null) return null;
+    if (valor instanceof Date) return Date2YMD.toString(valor);
+    return String(valor).substring(0, 10);
+}
+
+/** `Date` (ou string ISO) → ISO completo em UTC, para colunas declaradas como `TIMESTAMP`. */
+function csvTimestamp(valor: Date | string | null | undefined): string | null {
+    if (valor == null) return null;
+    if (valor instanceof Date) return valor.toISOString();
+    return String(valor);
+}
+
+/**
+ * Texto que já pode vir vazio do `coalesce(..., '')` do SQL: vazio é ausência de valor.
+ * Não altero o `coalesce` porque a mesma consulta alimenta o `asJSON` (contrato da API).
+ */
+function csvTexto(valor: string | null | undefined): string | null {
+    if (valor == null) return null;
+    return valor === '' ? null : valor;
+}
+
+/**
+ * `Decimal` do Prisma → string, para colunas declaradas como `DECIMAL`.
+ *
+ * `toNumber()` passaria por `double` e perderia precisão; o DuckDB relê a coluna já como
+ * `DECIMAL(18,4)`, então a string é convertida de forma exata.
+ */
+function csvDecimal(valor: unknown): string | null {
+    if (valor == null) return null;
+    return String(valor);
+}
+
 class PSQualiCsv {
-    id: string;
-    criador_nome_exibicao: string;
-    criado_em: string;
-    informacoes_complementares: string;
-    informacoes_complementares_texto: string;
-    referencia_data: string;
-    meta_id: string;
-    meta_titulo: string;
-    meta_codigo: string;
+    id: number;
+    criador_nome_exibicao: string | null;
+    criado_em: string | null;
+    informacoes_complementares: string | null;
+    informacoes_complementares_texto: string | null;
+    referencia_data: string | null;
+    meta_id: number;
+    meta_titulo: string | null;
+    meta_codigo: string | null;
 }
 
 class PSRiscoCsv {
-    id: string;
-    criador_nome_exibicao: string;
-    criado_em: string;
-    detalhamento: string;
-    detalhamento_texto: string;
-    ponto_de_atencao: string;
-    ponto_de_atencao_texto: string;
-    referencia_data: string;
-    meta_id: string;
-    meta_titulo: string;
-    meta_codigo: string;
+    id: number;
+    criador_nome_exibicao: string | null;
+    criado_em: string | null;
+    detalhamento: string | null;
+    detalhamento_texto: string | null;
+    ponto_de_atencao: string | null;
+    ponto_de_atencao_texto: string | null;
+    referencia_data: string | null;
+    meta_id: number;
+    meta_titulo: string | null;
+    meta_codigo: string | null;
 }
 
 class PSFechamentoCsv {
-    id: string;
-    criador_nome_exibicao: string;
-    criado_em: string;
-    comentario: string;
-    referencia_data: string;
-    meta_id: string;
-    meta_titulo: string;
-    meta_codigo: string;
+    id: number;
+    criador_nome_exibicao: string | null;
+    criado_em: string | null;
+    comentario: string | null;
+    referencia_data: string | null;
+    meta_id: number;
+    meta_titulo: string | null;
+    meta_codigo: string | null;
 }
 
 @Injectable()
-export class PSMonitoramentoMensal implements ReportableService {
+export class PSMonitoramentoMensal implements ReportableService, SchemaAwareReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
@@ -69,15 +126,7 @@ export class PSMonitoramentoMensal implements ReportableService {
     async asJSON(params: CreatePsMonitoramentoMensalFilterDto, user: PessoaFromJwt | null): Promise<RelPsMonitRetorno> {
         const monitoramento = await this.fetchPsMonitoramentoMensalData(params, user);
 
-        const indicadores = await this.indicadoresService.asJSON(
-            {
-                ...params,
-                pdm_id: params.pdm_id ?? params.plano_setorial_id,
-                periodo: 'Geral',
-                tipo: 'Mensal',
-            },
-            user
-        );
+        const indicadores = await this.indicadoresService.asJSON(this.paramsIndicadores(params), user);
 
         // Query para extrair dados de arquivo de metas do ciclo.
         const ciclo_metas = await this.buscaMetasCiclo(params, user);
@@ -335,6 +384,58 @@ export class PSMonitoramentoMensal implements ReportableService {
         }));
     }
 
+    /**
+     * Params repassados ao `IndicadoresService`.
+     *
+     * Ponto único de verdade: `describeSchema` e `toFileOutput` **precisam** montar isto do
+     * mesmo jeito, senão o schema descrito não corresponde ao arquivo emitido (o schema de
+     * indicadores depende de `pdm_id` e `tipo_pdm` — é dele que saem os rótulos configuráveis
+     * do PDM e a presença da coluna `pdm_nome`).
+     */
+    private paramsIndicadores(params: CreatePsMonitoramentoMensalFilterDto): CreateRelIndicadorDto {
+        return {
+            ...params,
+            pdm_id: params.pdm_id ?? params.plano_setorial_id,
+            periodo: 'Geral',
+            tipo: 'Mensal',
+        };
+    }
+
+    /**
+     * Schemas dos CSVs brutos, na mesma ordem em que `toFileOutput` os emite.
+     *
+     * Todos os cinco arquivos próprios são condicionais (só saem quando há linhas); declarar
+     * todos aqui é o correto — o `aplicarModelo` casa schema com arquivo pelo nome e ignora,
+     * sem ruído, os schemas cujo arquivo não foi produzido.
+     *
+     * No fim vêm os schemas do `IndicadoresService`, porque `toFileOutput` anexa os arquivos
+     * dele (`indicadores.csv` e `regioes.csv`) à saída deste relatório. Sem isso o
+     * pós-processamento não acha schema para esses dois e os repassa **crus** — cabeçalho
+     * técnico (`meta__codigo`), sem formatação pt-BR, sem XLSX e sem os rótulos configuráveis
+     * do PDM. Nenhum dos dois nomes colide com os cinco arquivos próprios, então o
+     * `findFileSchema` (que casa pelo primeiro schema com aquele nome) não fica ambíguo.
+     *
+     * O `isSchemaAware` é um teste em **runtime de propósito**, não um import das classes de
+     * linha do relatório de indicadores: a migração daquele serviço vive em outro PR, e este
+     * branch não tem as entidades dele. Assim o código compila e roda sozinho (o guard dá
+     * `false` e a saída é a de hoje) e passa a formatar os dois arquivos automaticamente
+     * assim que o serviço de indicadores ganhar `describeSchema`.
+     */
+    async describeSchema(params: CreatePsMonitoramentoMensalFilterDto): Promise<ReportFileSchema[]> {
+        const doIndicador = isSchemaAware(this.indicadoresService)
+            ? await this.indicadoresService.describeSchema(this.paramsIndicadores(params))
+            : [];
+
+        return [
+            getReportRowSchema(RelPsMonitoramentoMensalVariaveisCsvRow),
+            getReportRowSchema(RelPsMonitoramentoMensalMetasCicloCsvRow),
+            getReportRowSchema(RelPsMonitoramentoMensalAnaliseQualitativaCsvRow),
+            getReportRowSchema(RelPsMonitoramentoMensalRiscoCsvRow),
+            getReportRowSchema(RelPsMonitoramentoMensalFechamentoCsvRow),
+            ...doIndicador,
+        ];
+    }
+
     //TODO implementar paginação para evitar memory overflow
     async toFileOutput(
         params: CreatePsMonitoramentoMensalFilterDto,
@@ -346,41 +447,56 @@ export class PSMonitoramentoMensal implements ReportableService {
         const rows = await this.fetchPsMonitoramentoMensalData(params, user);
         ctx.resumoSaida('Monitoramento Mensal Variáveis PS/PDMv2', rows.length);
         await ctx.progress(40);
-        //Cabeçalho Arquivo
-        const fieldsCSV = [
-            { value: 'codigo_indicador', label: 'Código do Indicador' },
-            { value: 'titulo_indicador', label: 'Título do Indicador' },
-            { value: 'indicador_id', label: 'ID do Indicador' },
-            { value: 'codigo_variavel', label: 'Código da Variável' },
-            { value: 'titulo_variavel', label: 'Título da Variável' },
-            { value: 'variavel_id', label: 'ID da Variável' },
-            { value: 'municipio', label: 'Município' },
-            { value: 'municipio_id', label: 'Código do Município' },
-            { value: 'regiao', label: 'Região' },
-            { value: 'regiao_id', label: 'ID da Região' },
-            { value: 'subprefeitura', label: 'Subprefeitura' },
-            { value: 'subprefeitura_id', label: 'ID da Subprefeitura' },
-            { value: 'distrito', label: 'Distrito' },
-            { value: 'distrito_id', label: 'ID do Distrito' },
-            { value: 'serie', label: 'Serie' },
-            { value: 'data_referencia', label: 'Data de Referencia' },
-            { value: 'valor_nominal', label: 'Valor Nominal' },
-            { value: 'valor_categorica', label: 'Valor Categórica' },
-            { value: 'eh_previa', label: 'É Prévia' },
-            { value: 'data_preenchimento', label: 'Data da Coleta' },
-            { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
-            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Conferidor' },
-            { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
-        ];
+
+        // Depois do `fetch`: ele é quem valida `pdm_id`/`plano_setorial_id` e devolve 400 quando
+        // faltam. O `describeSchema` agora consulta o PDM (para os rótulos do relatório de
+        // indicadores), então chamá-lo antes trocaria esse 400 por um erro de Prisma.
+        // Os schemas de indicadores vêm depois dos cinco daqui e não são usados neste método —
+        // quem os consome é o pós-processamento, sobre os arquivos anexados no fim.
+        const [schemaVariaveis, schemaMetasCiclo, schemaQuali, schemaRisco, schemaFechamento] =
+            await this.describeSchema(params);
 
         if (rows.length) {
             const reportTmpVars = ctx.getTmpFile('monitoramento-mensal-variaveis-ps.csv');
-            const varsCsvOptions: CsvWriterOptions<RelPsMonitoramentoMensalVariaveis> = {
+
+            // CSV bruto: só o "compute store". Rótulos, `dd/mm/aaaa` e separador decimal
+            // pt-BR vêm do schema em `ps-monitoramento-mensal-csv.entity.ts`, aplicados no
+            // pós-processamento.
+            const varsRows: RelPsMonitoramentoMensalVariaveisCsvRow[] = rows.map((row) => ({
+                codigo_indicador: row.codigo_indicador,
+                titulo_indicador: row.titulo_indicador,
+                indicador_id: row.indicador_id,
+                codigo_variavel: row.codigo_variavel,
+                titulo_variavel: row.titulo_variavel,
+                variavel_id: row.variavel_id,
+                municipio: row.municipio,
+                municipio_id: row.municipio_id,
+                regiao: row.regiao,
+                regiao_id: row.regiao_id,
+                subprefeitura: row.subprefeitura,
+                subprefeitura_id: row.subprefeitura_id,
+                distrito: row.distrito,
+                distrito_id: row.distrito_id,
+                serie: row.serie,
+                data_referencia: csvData(row.data_referencia),
+                valor_nominal: csvDecimal(row.valor_nominal),
+                valor_categorica: row.valor_categorica,
+                // `eh_previa` só existe em `serie_indicador` (nível indicador); esta consulta
+                // lê `serie_variavel`, onde o conceito não existe. A coluna sempre saiu vazia
+                // e continua saindo — o levantamento completo está na nota da entidade.
+                eh_previa: null,
+                data_preenchimento: csvTimestamp(row.data_preenchimento),
+                analise_qualitativa_coleta: csvTexto(row.analise_qualitativa_coleta),
+                analise_qualitativa_aprovador: csvTexto(row.analise_qualitativa_aprovador),
+                analise_qualitativa_liberador: csvTexto(row.analise_qualitativa_liberador),
+            }));
+
+            const varsCsvOptions: CsvWriterOptions<RelPsMonitoramentoMensalVariaveisCsvRow> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: fieldsCSV,
+                fields: schemaVariaveis.colunas.map((c) => c.name),
             };
-            await WriteCsvToFile(rows, reportTmpVars.stream, varsCsvOptions);
+            await WriteCsvToFile(varsRows, reportTmpVars.stream, varsCsvOptions);
             out.push({ name: 'monitoramento-mensal-variaveis-ps.csv', localFile: reportTmpVars.path });
         }
 
@@ -389,24 +505,21 @@ export class PSMonitoramentoMensal implements ReportableService {
 
         if (cicloMetasRows.length) {
             const reportTmpMetas = ctx.getTmpFile('monitoramento-mensal-metas-ciclo-ps.csv');
-            const mainCsvRows = cicloMetasRows.map((row) => ({
-                ...row,
-                analise_qualitativa: Html2Text(row.analise_qualitativa),
-                risco_detalhamento: Html2Text(row.risco_detalhamento),
-                risco_ponto_atencao: Html2Text(row.risco_ponto_atencao),
+            // `Html2Text` continua na extração: é limpeza de conteúdo (o campo é HTML no
+            // banco), não formatação de locale.
+            const mainCsvRows: RelPsMonitoramentoMensalMetasCicloCsvRow[] = cicloMetasRows.map((row) => ({
+                meta_id: row.meta_id,
+                meta_codigo: row.meta_codigo,
+                analise_qualitativa: csvTexto(Html2Text(row.analise_qualitativa)),
+                analise_qualitativa_data: csvData(row.analise_qualitativa_data),
+                risco_detalhamento: csvTexto(Html2Text(row.risco_detalhamento)),
+                risco_ponto_atencao: csvTexto(Html2Text(row.risco_ponto_atencao)),
+                fechamento_comentario: csvTexto(row.fechamento_comentario),
             }));
-            const metasCsvOptions: CsvWriterOptions<(typeof mainCsvRows)[0]> = {
+            const metasCsvOptions: CsvWriterOptions<RelPsMonitoramentoMensalMetasCicloCsvRow> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: [
-                    { value: 'meta_id', label: 'ID da Meta' },
-                    { value: 'meta_codigo', label: 'Código da Meta' },
-                    { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
-                    { value: 'analise_qualitativa_data', label: 'Data da Analise Qualitativa' },
-                    { value: 'risco_detalhamento', label: 'Detalhamento do Risco' },
-                    { value: 'risco_ponto_atencao', label: 'Ponto de Atenção do Risco' },
-                    { value: 'fechamento_comentario', label: 'Comentário de Fechamento' },
-                ],
+                fields: schemaMetasCiclo.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(mainCsvRows, reportTmpMetas.stream, metasCsvOptions);
             out.push({
@@ -422,40 +535,40 @@ export class PSMonitoramentoMensal implements ReportableService {
         for (const row of cicloMetasRows) {
             if (row.analise_id) {
                 qualiRows.push({
-                    id: row.analise_id.toString(),
-                    criador_nome_exibicao: row.analise_criador ?? '',
-                    criado_em: row.analise_criado_em ?? '',
-                    informacoes_complementares: row.analise_qualitativa ?? '',
-                    informacoes_complementares_texto: Html2Text(row.analise_qualitativa) ?? '',
-                    referencia_data: row.analise_qualitativa_data ?? '',
-                    meta_id: row.meta_id.toString(),
+                    id: row.analise_id,
+                    criador_nome_exibicao: csvTexto(row.analise_criador),
+                    criado_em: csvTimestamp(row.analise_criado_em),
+                    informacoes_complementares: csvTexto(row.analise_qualitativa),
+                    informacoes_complementares_texto: csvTexto(Html2Text(row.analise_qualitativa)),
+                    referencia_data: csvData(row.analise_qualitativa_data),
+                    meta_id: row.meta_id,
                     meta_titulo: row.meta_titulo,
                     meta_codigo: row.meta_codigo,
                 });
             }
             if (row.risco_id) {
                 riscoRows.push({
-                    id: row.risco_id.toString(),
-                    criador_nome_exibicao: row.risco_criador ?? '',
-                    criado_em: row.risco_criado_em ?? '',
-                    detalhamento: row.risco_detalhamento ?? '',
-                    detalhamento_texto: Html2Text(row.risco_detalhamento) ?? '',
-                    ponto_de_atencao: row.risco_ponto_atencao ?? '',
-                    ponto_de_atencao_texto: Html2Text(row.risco_ponto_atencao) ?? '',
-                    referencia_data: row.risco_referencia_data ?? '',
-                    meta_id: row.meta_id.toString(),
+                    id: row.risco_id,
+                    criador_nome_exibicao: csvTexto(row.risco_criador),
+                    criado_em: csvTimestamp(row.risco_criado_em),
+                    detalhamento: csvTexto(row.risco_detalhamento),
+                    detalhamento_texto: csvTexto(Html2Text(row.risco_detalhamento)),
+                    ponto_de_atencao: csvTexto(row.risco_ponto_atencao),
+                    ponto_de_atencao_texto: csvTexto(Html2Text(row.risco_ponto_atencao)),
+                    referencia_data: csvData(row.risco_referencia_data),
+                    meta_id: row.meta_id,
                     meta_titulo: row.meta_titulo,
                     meta_codigo: row.meta_codigo,
                 });
             }
             if (row.fechamento_id) {
                 fechamentoRows.push({
-                    id: row.fechamento_id.toString(),
-                    criador_nome_exibicao: row.fechamento_criador ?? '',
-                    criado_em: row.fechamento_criado_em ?? '',
-                    comentario: row.fechamento_comentario ?? '',
-                    referencia_data: row.fechamento_referencia_data ?? '',
-                    meta_id: row.meta_id.toString(),
+                    id: row.fechamento_id,
+                    criador_nome_exibicao: csvTexto(row.fechamento_criador),
+                    criado_em: csvTimestamp(row.fechamento_criado_em),
+                    comentario: csvTexto(row.fechamento_comentario),
+                    referencia_data: csvData(row.fechamento_referencia_data),
+                    meta_id: row.meta_id,
                     meta_titulo: row.meta_titulo,
                     meta_codigo: row.meta_codigo,
                 });
@@ -467,17 +580,7 @@ export class PSMonitoramentoMensal implements ReportableService {
             const opts: CsvWriterOptions<PSQualiCsv> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: [
-                    { value: 'id', label: 'ID' },
-                    { value: 'criador_nome_exibicao', label: 'Criador' },
-                    { value: 'criado_em', label: 'Criado Em' },
-                    { value: 'informacoes_complementares', label: 'Informações Complementares' },
-                    { value: 'informacoes_complementares_texto', label: 'Informações Complementares (Texto)' },
-                    { value: 'referencia_data', label: 'Data de Referência' },
-                    { value: 'meta_id', label: 'ID da Meta' },
-                    { value: 'meta_titulo', label: 'Título da Meta' },
-                    { value: 'meta_codigo', label: 'Código da Meta' },
-                ],
+                fields: schemaQuali.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(qualiRows, tmp.stream, opts);
             out.push({ name: 'analises-qualitativas-ps.csv', localFile: tmp.path });
@@ -488,19 +591,7 @@ export class PSMonitoramentoMensal implements ReportableService {
             const opts: CsvWriterOptions<PSRiscoCsv> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: [
-                    { value: 'id', label: 'ID' },
-                    { value: 'criador_nome_exibicao', label: 'Criador' },
-                    { value: 'criado_em', label: 'Criado Em' },
-                    { value: 'detalhamento', label: 'Detalhamento' },
-                    { value: 'detalhamento_texto', label: 'Detalhamento (Texto)' },
-                    { value: 'ponto_de_atencao', label: 'Ponto de Atenção' },
-                    { value: 'ponto_de_atencao_texto', label: 'Ponto de Atenção (Texto)' },
-                    { value: 'referencia_data', label: 'Data de Referência' },
-                    { value: 'meta_id', label: 'ID da Meta' },
-                    { value: 'meta_titulo', label: 'Título da Meta' },
-                    { value: 'meta_codigo', label: 'Código da Meta' },
-                ],
+                fields: schemaRisco.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(riscoRows, tmp.stream, opts);
             out.push({ name: 'analises-de-risco-ps.csv', localFile: tmp.path });
@@ -511,31 +602,16 @@ export class PSMonitoramentoMensal implements ReportableService {
             const opts: CsvWriterOptions<PSFechamentoCsv> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: [
-                    { value: 'id', label: 'ID' },
-                    { value: 'criador_nome_exibicao', label: 'Criador' },
-                    { value: 'criado_em', label: 'Criado Em' },
-                    { value: 'comentario', label: 'Comentário' },
-                    { value: 'referencia_data', label: 'Data de Referência' },
-                    { value: 'meta_id', label: 'ID da Meta' },
-                    { value: 'meta_titulo', label: 'Título da Meta' },
-                    { value: 'meta_codigo', label: 'Código da Meta' },
-                ],
+                fields: schemaFechamento.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(fechamentoRows, tmp.stream, opts);
             out.push({ name: 'fechamentos-ps.csv', localFile: tmp.path });
         }
 
-        const indicadores = await this.indicadoresService.toFileOutput(
-            {
-                ...params,
-                pdm_id: params.pdm_id ?? params.plano_setorial_id,
-                periodo: 'Geral',
-                tipo: 'Mensal',
-            },
-            ctx,
-            user
-        );
+        // `indicadores.csv` e `regioes.csv`. O schema deles é declarado no `describeSchema`
+        // acima, com estes mesmos params — é o que faz o pós-processamento formatá-los junto
+        // com os cinco arquivos daqui.
+        const indicadores = await this.indicadoresService.toFileOutput(this.paramsIndicadores(params), ctx, user);
         for (const indicador of indicadores) {
             out.push(indicador);
         }

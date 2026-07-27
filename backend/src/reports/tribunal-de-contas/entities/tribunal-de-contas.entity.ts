@@ -8,13 +8,13 @@ export class RelTribunalDeContasDto {
     prazo_vigencia: string | null;
     emenda: string | null;
     programa: string | null;
-    // Estes dois campos serão preenchidos com string vazia.
-    // Pois serão preenchidos manualmente.
-    dotacao_orcamentaria: string;
+    dotacao_orcamentaria: string | null;
+    // Preenchido com string vazia quando ausente: o campo é completado manualmente.
     rubrica_de_receita: string;
     finalidade: string | null;
-    valor_empenho: number | null;
-    liquidacao_pagamento: number | null;
+    // Monetários trafegam como string para preservar a precisão do Decimal do Prisma.
+    valor_empenho: string | null;
+    liquidacao_pagamento: string | null;
 }
 
 export class RelatorioTribunalDeContasDto {

@@ -2,38 +2,42 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TipoRelatorioTransferencia } from '../dto/create-transferencias.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
+// Os campos textuais voltaram a ser anuláveis: a extração agora emite o valor cru do banco
+// (`null` quando ausente), sem `''` nem o hack `="valor"` — a apresentação é responsabilidade
+// da etapa de pós-processamento.
 export class RelTransferenciasDto {
     id: number;
     identificador: string;
     ano: number | null;
-    objeto: string;
-    detalhamento: string; // Changed from string | null
-    clausula_suspensiva: string;
-    @IsDateYMD({ nullable: true }) // Decorator kept as is, type changed
-    clausula_suspensiva_vencimento: string; // Changed from string | null
-    normativa: string; // Changed from string | null
-    observacoes: string; // Changed from string | null
-    programa: string; // Changed from string | null
-    empenho: string; // Changed from string | null
+    objeto: string | null;
+    detalhamento: string | null;
+    clausula_suspensiva: string | null;
+    @IsDateYMD({ nullable: true })
+    clausula_suspensiva_vencimento: string | null;
+    normativa: string | null;
+    observacoes: string | null;
+    programa: string | null;
+    empenho: string | null;
     pendente_preenchimento_valores: string;
     valor: number | null;
     valor_total: number | null;
     valor_contrapartida: number | null;
-    emenda: string; // Changed from string | null
-    dotacao: string; // Changed from string | null
-    demanda: string; // Changed from string | null
-    banco_fim: string; // Changed from string | null
-    conta_fim: string; // Changed from string | null
-    agencia_fim: string; // Changed from string | null
-    banco_aceite: string; // Changed from string | null
-    conta_aceite: string; // Changed from string | null
-    nome_programa: string; // Changed from string | null
-    agencia_aceite: string; // Changed from string | null
-    emenda_unitaria: string; // Changed from string | null
-    gestor_contrato: string; // Changed from string | null
-    ordenador_despesa: string; // Changed from string | null
-    numero_identificacao: string; // Changed from string | null
-    secretaria_concedente: string; // Changed from string | null
+    emenda: string | null;
+    dotacao: string | null;
+    demanda: string | null;
+    banco_fim: string | null;
+    conta_fim: string | null;
+    agencia_fim: string | null;
+    banco_aceite: string | null;
+    conta_aceite: string | null;
+    nome_programa: string | null;
+    agencia_aceite: string | null;
+    emenda_unitaria: string | null;
+    gestor_contrato: string | null;
+    ordenador_despesa: string | null;
+    numero_identificacao: string | null;
+    plano_de_acao: string | null;
+    secretaria_concedente: string | null;
     interface: string;
     esfera: string;
     orgao_concedente: IdSiglaDescricao;
@@ -42,35 +46,36 @@ export class RelTransferenciasDto {
         id: number;
         transferencia_id: number;
         orgao_gestor_id: number;
-        orgao_gestor_descricao: string;
-        objeto: string;
-        valor: number;
-        valor_total: number;
-        valor_contrapartida: number;
-        empenho: string; // Changed from string | null
-        programa_orcamentario_estadual: string; // Changed from string | null
-        programa_orcamentario_municipal: string; // Changed from string | null
-        dotacao: string; // Changed from string | null
-        proposta: string; // Changed from string | null
-        contrato: string; // Changed from string | null
-        convenio: string; // Changed from string | null
-        assinatura_termo_aceite: string; // Changed from string | null
-        assinatura_municipio: string; // Changed from string | null
-        assinatura_estado: string; // Changed from string | null
-        vigencia: string; // Changed from string | null
-        conclusao_suspensiva: string; // Changed from string | null
-        registro_sei: string; // Changed from string | null
-        nome_responsavel: string; // Changed from string | null
-        status_nome_base: string; // Changed from string | null, non-optional
-        pct_custeio: string | null; // Changed from string | null, non-optional
-        pct_investimento: string | null; // Changed from string | null, non-optional
-        conta: string;
-        banco: string;
-        agencia: string;
-        gestor_conta: string;
+        orgao_gestor_descricao: string | null;
+        objeto: string | null;
+        valor: number | null;
+        valor_total: number | null;
+        valor_contrapartida: number | null;
+        empenho: string | null;
+        programa_orcamentario_estadual: string | null;
+        programa_orcamentario_municipal: string | null;
+        dotacao: string | null;
+        proposta: string | null;
+        contrato: string | null;
+        convenio: string | null;
+        assinatura_termo_aceite: string | null;
+        assinatura_municipio: string | null;
+        assinatura_estado: string | null;
+        vigencia: string | null;
+        conclusao_suspensiva: string | null;
+        registro_sei: string | null;
+        nome_responsavel: string | null;
+        status_nome_base: string | null;
+        // Percentuais crus (número), formatados apenas na apresentação.
+        pct_custeio: number | null;
+        pct_investimento: number | null;
+        conta: string | null;
+        banco: string | null;
+        agencia: string | null;
+        gestor_conta: string | null;
     } | null;
-    tipo_transferencia: string;
-    classificacao: string; // Changed from string | null
+    tipo_transferencia: string | null;
+    classificacao: string | null;
     parlamentares_info: string | null;
 }
 
@@ -82,7 +87,7 @@ export class TransferenciasRelatorioDto {
 
 export class RelTransferenciaCronogramaDto {
     transferencia_id: number;
-    hirearquia: string;
+    hierarquia: string | null;
     tarefa: string;
     inicio_planejado: string | null;
     termino_planejado: string | null;

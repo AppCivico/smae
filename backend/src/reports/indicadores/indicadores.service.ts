@@ -10,9 +10,16 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common/helpers/Streaming';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportColumnDef, ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
+import {
+    RelIndicadoresCsvRow,
+    RelIndicadoresRegioesCsvRow,
+    rotulosPdmIndicadores,
+} from './entities/indicadores-csv.entity';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 
 const BATCH_SIZE = 500;
@@ -89,7 +96,7 @@ class RetornoDbRegiao extends RetornoDb {
 }
 
 @Injectable()
-export class IndicadoresService implements ReportableService {
+export class IndicadoresService implements ReportableService, SchemaAwareReportableService {
     private readonly logger = new Logger(IndicadoresService.name);
     private invalidatePreparedStatement: number = 0;
 
@@ -542,22 +549,41 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private createCsvParser(fields: { value: string; label: string }[]): Parser<any, any> {
+    /**
+     * Parser de lote do CSV **bruto**.
+     *
+     * `fields` são os nomes de máquina do schema — o cabeçalho humano volta no
+     * pós-processamento. O `flatten` usa `__` em vez do `.` padrão porque o builder DuckDB
+     * interpreta ponto como referência qualificada por fonte; `arrays: false` é o default e
+     * é o que mantém o conjunto de colunas fixo (um array vira uma célula, não N colunas).
+     */
+    private createCsvParser(colunas: ReportColumnDef[]): Parser<any, any> {
         return new Parser({
-            fields: fields.map((f) => f.value),
+            fields: colunas.map((c) => c.name),
             header: false,
             ...DefaultCsvOptions,
-            transforms: [flatten()] satisfies [Transform<any, any>, ...Transform<any, any>[]],
+            transforms: [flatten({ objects: true, arrays: false, separator: '__' })] satisfies [
+                Transform<any, any>,
+                ...Transform<any, any>[],
+            ],
         });
     }
 
-    private writeCsvHeader(fileStream: ReturnType<typeof createWriteStream>, fields: { value: string; label: string }[]) {
-        const header = fields.map((f) => '"' + f.label + '"').join(',');
+    /** Cabeçalho do CSV bruto: nomes de máquina do schema, na ordem do schema. */
+    private writeCsvHeader(fileStream: ReturnType<typeof createWriteStream>, colunas: ReportColumnDef[]) {
+        const header = colunas.map((c) => '"' + c.name + '"').join(',');
         fileStream.write(header + '\r\n');
     }
 
-    private formatMetaTags(meta_tags: { id: number; descricao: string }[] | null | undefined) {
+    private formatMetaTags(meta_tags: { id: number; descricao: string }[] | null | undefined): {
+        descricao: string | null;
+        ids: string | null;
+    } {
         const arr = meta_tags && Array.isArray(meta_tags) ? meta_tags : [];
+        // Meta sem tag vira `null` e não `''`: no CSV bruto ausência de valor precisa chegar
+        // NULL ao DuckDB, senão o filtro "está vazio" do modelo não casaria com essas linhas.
+        if (arr.length == 0) return { descricao: null, ids: null };
+
         return {
             descricao: arr.map((t) => t.descricao).join(';'),
             ids: arr.map((t) => t.id).join(';'),
@@ -588,69 +614,59 @@ export class IndicadoresService implements ReportableService {
         };
     }
 
-    private buildBaseCsvFields(pdm: any, params: any): { value: string; label: string }[] {
-        const fields: { value: string; label: string }[] = [];
+    /**
+     * Schema dos CSVs brutos — habilita o pós-processamento (rótulos, formatação pt-BR,
+     * seleção/filtro/ordenação de colunas e XLSX tipado).
+     *
+     * Devolve `indicadores.csv` e `regioes.csv` na mesma ordem em que `toFileOutput` os
+     * emite. Os dois arquivos sempre são descritos, mesmo quando um deles acaba sem linhas
+     * e não é entregue: o pós-processamento casa schema com arquivo pelo nome.
+     *
+     * Duas coisas dependem dos parâmetros/do PDM e por isso são resolvidas aqui, e não nos
+     * decoradores:
+     *
+     *   - `pdm_nome` só existe na variante Plano Setorial (`tipo_pdm == 'PS'`); no PDM
+     *     antigo a coluna é recortada do schema, reproduzindo o `if` que o
+     *     `buildBaseCsvFields()` fazia;
+     *   - os rótulos de iniciativa/atividade/contexto/complementação vêm do PDM.
+     *
+     * `tipo` e `periodo` **não** entram: eles mudam a janela da consulta e o conteúdo da
+     * coluna `data`, nunca o conjunto de colunas.
+     */
+    async describeSchema(params: CreateRelIndicadorDto): Promise<ReportFileSchema[]> {
+        const pdm = await this.buscaRotulosDoPdm(params);
 
-        if (params.tipo_pdm == 'PS') fields.push({ value: 'pdm_nome', label: 'Plano Setorial' });
-
-        fields.push(
-            { value: 'meta.codigo', label: 'Código da Meta' },
-            { value: 'meta.titulo', label: 'Título da Meta' },
-            { value: 'meta.id', label: 'ID da Meta' },
-            { value: 'meta_tags_descricao', label: 'Meta Tags' },
-            { value: 'meta_tags_ids', label: 'Tags IDs' },
-            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-            { value: 'indicador.codigo', label: 'Código do Indicador' },
-            { value: 'indicador.titulo', label: 'Título do Indicador' },
-            { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
-            { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
-            { value: 'indicador.id', label: 'ID do Indicador' }
-        );
-
-        return fields;
-    }
-
-    private buildIndicadorCsvFields(pdm: any, params: any): { value: string; label: string }[] {
         return [
-            ...this.buildBaseCsvFields(pdm, params),
-            { value: 'data_referencia', label: 'Data de Referência' },
-            { value: 'serie', label: 'Serie' },
-            { value: 'data', label: 'Data' },
-            { value: 'valor', label: 'Valor' },
-            { value: 'eh_previa', label: 'É Prévia' },
-            { value: 'valores_categorica', label: 'Valores Categórica' },
+            this.aplicaVarianteDoPdm(getReportRowSchema(RelIndicadoresCsvRow), pdm, params),
+            this.aplicaVarianteDoPdm(getReportRowSchema(RelIndicadoresRegioesCsvRow), pdm, params),
         ];
     }
 
-    private buildRegiaoCsvFields(pdm: any, params: any): { value: string; label: string }[] {
-        return [
-            ...this.buildBaseCsvFields(pdm, params),
-            { value: 'variavel.orgao.id', label: 'ID do órgão' },
-            { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
-            { value: 'variavel.codigo', label: 'Código da Variável' },
-            { value: 'variavel.titulo', label: 'Título da Variável' },
-            { value: 'variavel.id', label: 'ID da Variável' },
-            { value: 'regiao_id', label: 'ID da região' },
-            { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
-            { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
-            { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
-            { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
-            { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
-            { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
-            { value: 'regiao_nivel_2.id', label: 'ID da Região' },
-            { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
-            { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
-            { value: 'data_referencia', label: 'Data de Referência' },
-            { value: 'serie', label: 'Serie' },
-            { value: 'data', label: 'Data' },
-            { value: 'valor', label: 'Valor' },
-            { value: 'valores_categorica', label: 'Valor Categórica' },
-        ];
+    private async buscaRotulosDoPdm(params: CreateRelIndicadorDto) {
+        return await this.prisma.pdm.findUniqueOrThrow({
+            where: { id: params.pdm_id },
+            select: {
+                rotulo_iniciativa: true,
+                rotulo_atividade: true,
+                rotulo_contexto_meta: true,
+                rotulo_complementacao_meta: true,
+            },
+        });
+    }
+
+    private aplicaVarianteDoPdm(
+        schema: ReportFileSchema,
+        pdm: Parameters<typeof rotulosPdmIndicadores>[0],
+        params: CreateRelIndicadorDto
+    ): ReportFileSchema {
+        const rotulos = rotulosPdmIndicadores(pdm);
+
+        return {
+            ...schema,
+            colunas: schema.colunas
+                .filter((c) => c.name !== 'pdm_nome' || params.tipo_pdm == 'PS')
+                .map((c) => (rotulos[c.name] ? { ...c, label: rotulos[c.name]! } : c)),
+        };
     }
 
     async toFileOutput(
@@ -669,21 +685,22 @@ export class IndicadoresService implements ReportableService {
 
         await ctx.progress(1);
 
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
+        // CSV bruto: cabeçalho com os nomes de máquina das colunas do schema, valores crus e
+        // nenhuma lambda de formatação. Rótulos (inclusive os do PDM), separador decimal pt-BR
+        // e `dd/mm/aaaa` vêm do schema, aplicados no pós-processamento.
+        const [schemaIndicador, schemaRegiao] = await this.describeSchema(params);
         const out: FileOutput[] = [];
 
         const tmpIndic = ctx.getTmpFile('indicadores.csv');
         const tmpRegio = ctx.getTmpFile('regioes.csv');
 
         try {
-            // Build field definitions and parsers for indicadores
-            const indicadorFields = this.buildIndicadorCsvFields(pdm, params);
-            const indicadorParser = this.createCsvParser(indicadorFields);
+            const indicadorParser = this.createCsvParser(schemaIndicador.colunas);
 
             const indicadoresCount = await this.processDadosIndicadores(
                 indicadores,
                 params,
-                indicadorFields,
+                schemaIndicador.colunas,
                 indicadorParser,
                 tmpIndic.path
             );
@@ -699,14 +716,12 @@ export class IndicadoresService implements ReportableService {
 
             await ctx.progress(50);
 
-            // Build field definitions and parsers for regioes
-            const regiaoFields = this.buildRegiaoCsvFields(pdm, params);
-            const regiaoParser = this.createCsvParser(regiaoFields);
+            const regiaoParser = this.createCsvParser(schemaRegiao.colunas);
 
             const regioesCount = await this.processDadosRegioes(
                 indicadores,
                 params as CreateRelIndicadorRegioesDto,
-                regiaoFields,
+                schemaRegiao.colunas,
                 regiaoParser,
                 tmpRegio.path
             );
@@ -733,7 +748,7 @@ export class IndicadoresService implements ReportableService {
     private async processDadosIndicadores(
         indicadores: { id: number }[],
         params: CreateRelIndicadorDto,
-        csvFields: { value: string; label: string }[],
+        csvColunas: ReportColumnDef[],
         parser: Parser<any, any>,
         filePath: string
     ): Promise<number> {
@@ -742,7 +757,7 @@ export class IndicadoresService implements ReportableService {
         const fileStream = createWriteStream(filePath);
 
         // Write header
-        this.writeCsvHeader(fileStream, csvFields);
+        this.writeCsvHeader(fileStream, csvColunas);
 
         // Base query structure - updated to use JSON function
         const queryBase = `
@@ -902,7 +917,7 @@ export class IndicadoresService implements ReportableService {
     private async processDadosRegioes(
         indicadores: { id: number }[],
         params: CreateRelIndicadorRegioesDto,
-        csvFields: { value: string; label: string }[],
+        csvColunas: ReportColumnDef[],
         parser: Parser<any, any>,
         filePath: string
     ): Promise<number> {
@@ -911,7 +926,7 @@ export class IndicadoresService implements ReportableService {
         const fileStream = createWriteStream(filePath);
 
         // Write header
-        this.writeCsvHeader(fileStream, csvFields);
+        this.writeCsvHeader(fileStream, csvColunas);
 
         try {
             // Get regioes first - needed for processing results
@@ -976,6 +991,13 @@ export class IndicadoresService implements ReportableService {
             i.atividade_id,
             atividade.titulo as atividade_titulo,
             atividade.codigo as atividade_codigo,
+            -- Estas duas colunas estavam no cabeçalho de regioes.csv desde sempre, mas nunca
+            -- eram selecionadas aqui: saíam vazias em toda linha. Com o schema declarado a
+            -- coluna também vira filtro/ordenação no modelo de relatório, então uma coluna
+            -- eternamente NULL deixa de ser só cosmética. A origem é a mesma usada em
+            -- indicadores.csv (i.contexto / i.complemento), sem ambiguidade.
+            i.complemento as indicador_complemento,
+            i.contexto as indicador_contexto,
             ${this.getDataExpression(params)} as "data",
             dt.dt::date::text as "data_referencia",
             series.serie,
@@ -1037,13 +1059,11 @@ export class IndicadoresService implements ReportableService {
             if (params.tipo == 'Mensal' && params.mes) {
                 this.logger.debug(`Executing Mensal query for regioes`);
                 total += Number(
-                    await this.executeSqlAndWriteToFileRegiao(
-                        queryBase,
-                        fileStream,
-                        regioes,
-                        parser,
-                        [`${params.ano}-${params.mes}-01`, `${params.ano}-${params.mes}-01`, '1 month']
-                    )
+                    await this.executeSqlAndWriteToFileRegiao(queryBase, fileStream, regioes, parser, [
+                        `${params.ano}-${params.mes}-01`,
+                        `${params.ano}-${params.mes}-01`,
+                        '1 month',
+                    ])
                 );
             } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
                 this.logger.debug(`Executing Anual Analitico query for regioes from ${anoInicial} to ${params.ano}`);
@@ -1051,25 +1071,21 @@ export class IndicadoresService implements ReportableService {
                 for (let ano = anoInicial; ano <= params.ano; ano++) {
                     this.logger.debug(`Processing year ${ano} for regioes`);
                     total += Number(
-                        await this.executeSqlAndWriteToFileRegiao(
-                            queryBase,
-                            fileStream,
-                            regioes,
-                            parser,
-                            [`${ano}-01-01`, `${ano}-12-01`, '1 month']
-                        )
+                        await this.executeSqlAndWriteToFileRegiao(queryBase, fileStream, regioes, parser, [
+                            `${ano}-01-01`,
+                            `${ano}-12-01`,
+                            '1 month',
+                        ])
                     );
                 }
             } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
                 this.logger.debug(`Executing Anual Consolidado query for regioes`);
                 total += Number(
-                    await this.executeSqlAndWriteToFileRegiao(
-                        queryBase,
-                        fileStream,
-                        regioes,
-                        parser,
-                        [`${params.ano}-12-01`, `${params.ano}-12-01`, '1 year']
-                    )
+                    await this.executeSqlAndWriteToFileRegiao(queryBase, fileStream, regioes, parser, [
+                        `${params.ano}-12-01`,
+                        `${params.ano}-12-01`,
+                        '1 year',
+                    ])
                 );
             } else if (params.periodo == 'Semestral' && params.tipo == 'Consolidado') {
                 const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
@@ -1077,13 +1093,11 @@ export class IndicadoresService implements ReportableService {
 
                 this.logger.debug(`Executing Semestral Consolidado query for regioes: ${tipo} ${params.ano}`);
                 total += Number(
-                    await this.executeSqlAndWriteToFileRegiao(
-                        queryBase,
-                        fileStream,
-                        regioes,
-                        parser,
-                        [dataAno, dataAno, '1 second']
-                    )
+                    await this.executeSqlAndWriteToFileRegiao(queryBase, fileStream, regioes, parser, [
+                        dataAno,
+                        dataAno,
+                        '1 second',
+                    ])
                 );
             } else if (params.periodo == 'Semestral' && params.tipo == 'Analitico') {
                 const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
@@ -1093,19 +1107,13 @@ export class IndicadoresService implements ReportableService {
 
                     this.logger.debug(`Executing Semestral Analitico query for regioes: ${tipo} ${ano}`);
                     total += Number(
-                        await this.executeSqlAndWriteToFileRegiao(
-                            queryBase,
-                            fileStream,
-                            regioes,
-                            parser,
-                            [
-                                DateTime.fromISO(semestreInicio)
-                                    .minus({ months: tipo === 'Segundo' ? 11 : 5 })
-                                    .toISODate(),
-                                semestreInicio,
-                                '1 month',
-                            ]
-                        )
+                        await this.executeSqlAndWriteToFileRegiao(queryBase, fileStream, regioes, parser, [
+                            DateTime.fromISO(semestreInicio)
+                                .minus({ months: tipo === 'Segundo' ? 11 : 5 })
+                                .toISODate(),
+                            semestreInicio,
+                            '1 month',
+                        ])
                     );
                 }
             } else {
@@ -1268,7 +1276,11 @@ export class IndicadoresService implements ReportableService {
         params: any[]
     ): Promise<number> {
         return this.executeSqlAndWriteToFile<RetornoDbIndicadorJson>(
-            'Indicador', query, fileStream, parser, params,
+            'Indicador',
+            query,
+            fileStream,
+            parser,
+            params,
             (row) => this.parseIndicadorJson(row),
             (row) => this.processRowForCsvIndicador(row)
         );
@@ -1282,7 +1294,11 @@ export class IndicadoresService implements ReportableService {
         params: any[]
     ): Promise<number> {
         return this.executeSqlAndWriteToFile<RetornoDbRegiao>(
-            'Regiao', query, fileStream, parser, params,
+            'Regiao',
+            query,
+            fileStream,
+            parser,
+            params,
             (row) => this.parseRegiaoJson(row),
             (row) => this.processRowForCsvRegiao(row, regioesDb)
         );
@@ -1294,7 +1310,7 @@ export class IndicadoresService implements ReportableService {
      */
     private processRowForCsvIndicador(row: RetornoDbIndicadorJson): Record<string, any> {
         // Pre-format categorical values
-        let valoresCategoricaStr = '';
+        let valoresCategoricaStr: string | null = null;
         if (row.valores_categorica && Array.isArray(row.valores_categorica)) {
             valoresCategoricaStr = row.valores_categorica
                 .map((v: CategoricaValorJson) => `${v.titulo}: ${v.quantidade}`)
@@ -1306,7 +1322,10 @@ export class IndicadoresService implements ReportableService {
             data_referencia: row.data_referencia,
             serie: row.serie,
             data: row.data,
-            valor: row.indicador_tipo === 'Categorica' ? '' : row.valor ?? '',
+            // `null` e não `''`: ausência de valor precisa chegar NULL no CSV bruto. O `??`
+            // preserva o zero legítimo. Indicador categórico segue sem valor numérico — o
+            // dado útil está em `valores_categorica` (regra de domínio, fica na extração).
+            valor: row.indicador_tipo === 'Categorica' ? null : (row.valor ?? null),
             eh_previa: row.eh_previa ? 'Sim' : 'Não',
             valores_categorica: valoresCategoricaStr,
         };
@@ -1318,15 +1337,12 @@ export class IndicadoresService implements ReportableService {
      */
     private processRowForCsvRegiao(row: RetornoDbRegiao, regioesDb: Regiao[]): Record<string, any> {
         // Pre-format categorical values
-        let valoresCategoricaStr = '';
+        let valoresCategoricaStr: string | null = null;
         if (row.valores_categorica && Array.isArray(row.valores_categorica)) {
-            const counts = row.valores_categorica.reduce(
-                (acc: Record<string, number>, v: CategoricaValorJson) => {
-                    acc[v.titulo] = (acc[v.titulo] || 0) + 1;
-                    return acc;
-                },
-                {}
-            );
+            const counts = row.valores_categorica.reduce((acc: Record<string, number>, v: CategoricaValorJson) => {
+                acc[v.titulo] = (acc[v.titulo] || 0) + 1;
+                return acc;
+            }, {});
             valoresCategoricaStr = Object.entries(counts)
                 .map(([titulo, count]) => `${titulo}: ${count}`)
                 .join('; ');
@@ -1351,11 +1367,11 @@ export class IndicadoresService implements ReportableService {
             data_referencia: row.data_referencia,
             serie: row.serie,
             data: row.data,
-            valor: row.valor ?? '',
+            // Ver `processRowForCsvIndicador`: ausência vira `null`, e o `??` preserva o zero.
+            valor: row.valor ?? null,
             valores_categorica: valoresCategoricaStr,
         };
     }
-
 
     /**
      * Stream rows for indicators (with JSON handling)

@@ -1,22 +1,28 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { flatten } from '@json2csv/transforms';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import {
-    DefaultCsvOptions,
-    DefaultTransforms,
-    FileOutput,
-    Path2FileName,
-    ReportableService,
-} from '../utils/utils.service';
-import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
+import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
+import { CreateRelTransferenciasDto } from './dto/create-transferencias.dto';
+import { RelTransferenciaCronogramaCsvRow, RelTransferenciasCsvRow } from './entities/transferencias-csv.entity';
 import {
     RelTransferenciaCronogramaDto,
     RelTransferenciasDto,
     TransferenciasRelatorioDto,
 } from './entities/transferencias.entity';
+
+/**
+ * O CSV bruto usa `__` como separador do aninhamento (`distribuicao_recurso`,
+ * `orgao_concedente`) porque o builder DuckDB trata `.` como referência qualificada por
+ * fonte — `distribuicao_recurso.id` seria lido como "coluna id da fonte
+ * distribuicao_recurso".
+ */
+const TransferenciasFlattenTransforms = [flatten({ objects: true, arrays: true, separator: '__' })];
 
 type WhereCond = {
     whereString: string;
@@ -53,6 +59,7 @@ class RetornoDbTransferencias {
     gestor_contrato: string | null;
     ordenador_despesa: string | null;
     numero_identificacao: string | null;
+    plano_de_acao: string | null;
     secretaria_concedente_str: string | null;
     interface: string;
     esfera: string;
@@ -104,7 +111,7 @@ class RetornoDbTransferencias {
 }
 
 @Injectable()
-export class TransferenciasService implements ReportableService {
+export class TransferenciasService implements ReportableService, SchemaAwareReportableService {
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => TarefaService))
@@ -167,6 +174,7 @@ export class TransferenciasService implements ReportableService {
                 t.gestor_contrato,
                 t.ordenador_despesa,
                 t.numero_identificacao,
+                t.plano_de_acao,
                 t.secretaria_concedente_str,
                 t.interface,
                 t.esfera,
@@ -317,10 +325,10 @@ export class TransferenciasService implements ReportableService {
             tarefasRows.linhas.map((e) => {
                 tarefasOut.push({
                     transferencia_id: tarefaCronoId.transferencia_id!,
-                    hirearquia: `="${tarefasHierarquia[e.id]}"`,
+                    hierarquia: tarefasHierarquia[e.id] ?? null,
                     tarefa: e.tarefa,
-                    inicio_planejado: e.inicio_planejado?.toString() || '',
-                    termino_planejado: e.termino_planejado?.toString() || '',
+                    inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
+                    termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
                     custo_estimado: e.custo_estimado,
                     duracao_planejado: e.duracao_planejado,
                 });
@@ -437,50 +445,57 @@ export class TransferenciasService implements ReportableService {
         return null; // Will be handled by `?? ''` later
     }
 
-    private formatExcelString(value: string | null | undefined): string {
-        return value !== null && value !== undefined ? `="${String(value).replace(/"/g, '""')}"` : '';
-    }
-
+    /**
+     * Converte as linhas do banco no formato do CSV bruto.
+     *
+     * Aqui não há formatação de apresentação: números seguem números, datas em ISO
+     * (`YYYY-MM-DD`) e ausência de valor é `null` (nunca `''` nem `="..."`). Traduções de
+     * domínio (booleano → `Sim`/`Não`) continuam, pois não são formatação de locale.
+     */
     private convertRowsTransferenciasInto(input: RetornoDbTransferencias[], out: RelTransferenciasDto[]) {
         for (const db of input) {
             out.push({
                 id: db.id,
                 identificador: db.identificador,
                 ano: db.ano,
-                objeto: this.formatExcelString(db.objeto),
-                detalhamento: this.formatExcelString(db.detalhamento),
+                objeto: db.objeto,
+                detalhamento: db.detalhamento,
                 clausula_suspensiva:
-                    db.clausula_suspensiva === true ? 'Sim' : db.clausula_suspensiva === false ? 'Não' : '',
-                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento) ?? '',
-                normativa: this.formatExcelString(db.normativa),
-                observacoes: this.formatExcelString(db.observacoes),
-                programa: this.formatExcelString(db.programa),
-                nome_programa: this.formatExcelString(db.nome_programa),
-                empenho: this.formatEmpenho(db.empenho) ?? '',
+                    db.clausula_suspensiva === true ? 'Sim' : db.clausula_suspensiva === false ? 'Não' : null,
+                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento),
+                normativa: db.normativa,
+                observacoes: db.observacoes,
+                programa: db.programa,
+                nome_programa: db.nome_programa,
+                empenho: this.formatEmpenho(db.empenho),
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
-                valor: db.valor ? db.valor : null,
-                valor_total: db.valor_total ? db.valor_total : null,
-                valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
-                emenda: db.emenda ? this.formatExcelString(db.emenda) : '',
-                emenda_unitaria: this.formatExcelString(db.emenda_unitaria),
-                dotacao: db.dotacao ? this.formatExcelString(db.dotacao) : '',
-                demanda: db.demanda ?? '',
-                banco_fim: this.formatExcelString(db.banco_fim),
-                conta_fim: this.formatExcelString(db.conta_fim),
-                agencia_fim: this.formatExcelString(db.agencia_fim),
-                banco_aceite: this.formatExcelString(db.banco_aceite),
-                conta_aceite: this.formatExcelString(db.conta_aceite),
-                agencia_aceite: this.formatExcelString(db.agencia_aceite),
-                gestor_contrato: this.formatExcelString(db.gestor_contrato),
-                ordenador_despesa: this.formatExcelString(db.ordenador_despesa),
-                numero_identificacao: this.formatExcelString(db.numero_identificacao),
-                secretaria_concedente: this.formatExcelString(db.secretaria_concedente_str),
+                // Sem ternário: `0` é valor legítimo (ex.: sem contrapartida exigida) e o
+                // falsy-check antigo o transformava em null. Com o XLSX tipado isso deixou de ser
+                // cosmético — a célula viraria vazia em vez de 0 e SUM/AVG no Excel mudariam.
+                valor: db.valor,
+                valor_total: db.valor_total,
+                valor_contrapartida: db.valor_contrapartida,
+                emenda: db.emenda,
+                emenda_unitaria: db.emenda_unitaria,
+                dotacao: db.dotacao,
+                demanda: db.demanda,
+                banco_fim: db.banco_fim,
+                conta_fim: db.conta_fim,
+                agencia_fim: db.agencia_fim,
+                banco_aceite: db.banco_aceite,
+                conta_aceite: db.conta_aceite,
+                agencia_aceite: db.agencia_aceite,
+                gestor_contrato: db.gestor_contrato,
+                ordenador_despesa: db.ordenador_despesa,
+                numero_identificacao: db.numero_identificacao,
+                plano_de_acao: db.plano_de_acao,
+                secretaria_concedente: db.secretaria_concedente_str,
                 interface: db.interface,
                 esfera: db.esfera,
-                tipo_transferencia: this.formatExcelString(db.tipo_transferencia),
-                classificacao: this.formatExcelString(db.classificacao),
+                tipo_transferencia: db.tipo_transferencia,
+                classificacao: db.classificacao,
 
-                parlamentares_info: this.formatExcelString(db.parlamentares_formatado), // Added
+                parlamentares_info: db.parlamentares_formatado, // Added
 
                 orgao_concedente: {
                     id: db.orgao_concedente_id,
@@ -501,57 +516,61 @@ export class TransferenciasService implements ReportableService {
                           id: db.distribuicao_recurso_id,
                           transferencia_id: db.distribuicao_recurso_transferencia_id,
                           orgao_gestor_id: db.distribuicao_recurso_orgao_gestor_id,
-                          orgao_gestor_descricao: this.formatExcelString(db.distribuicao_recurso_orgao_gestor),
-                          objeto: this.formatExcelString(db.distribuicao_recurso_objeto),
+                          orgao_gestor_descricao: db.distribuicao_recurso_orgao_gestor,
+                          objeto: db.distribuicao_recurso_objeto,
                           valor: db.distribuicao_recurso_valor,
                           valor_total: db.distribuicao_recurso_valor_total,
                           valor_contrapartida: db.distribuicao_recurso_valor_contrapartida,
                           empenho:
-                              (db.distribuicao_recurso_empenho === true
+                              db.distribuicao_recurso_empenho === true
                                   ? 'Sim'
                                   : db.distribuicao_recurso_empenho === false
                                     ? 'Não'
-                                    : null) ?? '',
-                          programa_orcamentario_estadual: this.formatExcelString(
-                              db.distribuicao_recurso_programa_orcamentario_estadual
+                                    : null,
+                          programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual,
+                          programa_orcamentario_municipal: db.distribuicao_recurso_programa_orcamentario_municipal,
+                          dotacao: db.distribuicao_recurso_dotacao,
+                          proposta: db.distribuicao_recurso_proposta,
+                          contrato: db.distribuicao_recurso_contrato,
+                          convenio: db.distribuicao_recurso_convenio,
+                          assinatura_termo_aceite: Date2YMD.toStringOrNull(
+                              db.distribuicao_recurso_assinatura_termo_aceite
                           ),
-                          programa_orcamentario_municipal: this.formatExcelString(
-                              db.distribuicao_recurso_programa_orcamentario_municipal
-                          ),
-                          dotacao: this.formatExcelString(db.distribuicao_recurso_dotacao),
-                          proposta: this.formatExcelString(db.distribuicao_recurso_proposta),
-                          contrato: this.formatExcelString(db.distribuicao_recurso_contrato),
-                          convenio: this.formatExcelString(db.distribuicao_recurso_convenio),
-                          assinatura_termo_aceite:
-                              Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_termo_aceite) ?? '',
-                          assinatura_municipio:
-                              Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio) ?? '',
-                          assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado) ?? '',
-                          vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia) ?? '',
-                          conclusao_suspensiva:
-                              Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva) ?? '',
-                          registro_sei: (db.distribuicao_recurso_sei ? db.distribuicao_recurso_sei : null) ?? '',
-                          nome_responsavel: this.formatExcelString(db.distribuicao_recurso_status_nome_responsavel),
-                          status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
-                          pct_custeio: this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toString()) ?? '  ',
-                          pct_investimento:
-                              this.formatExcelString(db.distribuicao_recurso_pct_investimento?.toString()) ?? '  ',
-                          conta: this.formatExcelString(db.distribuicao_recurso_conta),
-                          banco: this.formatExcelString(db.distribuicao_recurso_banco),
-                          agencia: this.formatExcelString(db.distribuicao_recurso_agencia),
-                          gestor_conta: this.formatExcelString(db.distribuicao_recurso_gestor_contrato),
+                          assinatura_municipio: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio),
+                          assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
+                          vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
+                          conclusao_suspensiva: Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva),
+                          registro_sei: db.distribuicao_recurso_sei,
+                          nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
+                          status_nome_base: db.distribuicao_recurso_status_nome_base,
+                          pct_custeio: db.distribuicao_recurso_pct_custeio,
+                          pct_investimento: db.distribuicao_recurso_pct_investimento,
+                          conta: db.distribuicao_recurso_conta,
+                          banco: db.distribuicao_recurso_banco,
+                          agencia: db.distribuicao_recurso_agencia,
+                          gestor_conta: db.distribuicao_recurso_gestor_contrato,
                       }
                     : null,
             });
         }
     }
 
-    private formatCurrency(value: number | null): string {
-        return value != null
-            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-            : '';
+    /**
+     * Schema do CSV bruto — habilita o pós-processamento (seleção/filtro/ordenação de
+     * colunas e geração de CSV pt-BR + XLSX tipado a partir do mesmo arquivo).
+     */
+    async describeSchema(_params: CreateRelTransferenciasDto): Promise<ReportFileSchema[]> {
+        return [getReportRowSchema(RelTransferenciasCsvRow), getReportRowSchema(RelTransferenciaCronogramaCsvRow)];
     }
 
+    /**
+     * Escreve os CSVs **brutos**: cabeçalho com as chaves de máquina (nomes das colunas do
+     * schema), valores crus e o conjunto **completo** de colunas, independente de
+     * `params.tipo`.
+     *
+     * O recorte por tipo (Geral/Resumido) virou uma seleção padrão de colunas — veja
+     * `COLUNAS_PADRAO_TRANSFERENCIAS_POR_TIPO` — aplicada na etapa de apresentação.
+     */
     async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
         const dados = await this.asJSON(params);
         await _ctx.resumoSaida('Transferências', dados.linhas.length);
@@ -559,171 +578,24 @@ export class TransferenciasService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let fields: { value: string | ((row: any) => string); label: string }[];
-        if (dados.tipo == TipoRelatorioTransferencia.Geral) {
-            fields = [
-                { value: 'id', label: 'ID' },
-                { value: 'identificador', label: 'Identificador' },
-                { value: 'ano', label: 'Ano' },
-                { value: 'objeto', label: 'Objeto' },
-                { value: 'detalhamento', label: 'Detalhamento' },
-                { value: 'clausula_suspensiva', label: 'Clausula Suspensiva' },
-                { value: 'clausula_suspensiva_vencimento', label: 'Data de vencimento da Suspensiva' },
-                { value: 'normativa', label: 'Normativa' },
-                { value: 'observacoes', label: 'Observações' },
-                { value: 'nome_programa', label: 'Nome Programa / Portfólio' },
-                { value: 'empenho', label: 'Empenho' },
-                {
-                    value: (row) => this.formatCurrency(row.valor),
-                    label: 'Valor do Repasse',
-                },
-                {
-                    value: (row) => this.formatCurrency(row.valor_total),
-                    label: 'Valor Total',
-                },
-                {
-                    value: (row) => this.formatCurrency(row.valor_contrapartida),
-                    label: 'Contrapartida',
-                },
-                {
-                    value: (row) => (row.emenda ? `="${row.emenda}"` : ''),
-                    label: 'Emenda',
-                },
-                { value: 'dotacao', label: 'Dotação Orçamentária' }, // Already formatted as ="value" or ' - '
-                {
-                    // Similar to emenda, if demanda needs ="value" format.
-                    // Current: value: (row) => (row.demanda ? `="${row.demanda}"` : ''),
-                    value: (row) => (row.demanda ? `="${row.demanda}"` : ''), // Keeps existing logic
-                    label: 'Número da Demanda/Proposta',
-                },
-                { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' }, // Already formatted as ="value"
-                { value: 'conta_fim', label: 'Conta - Número da Secretaria fim' }, // Already formatted as ="value"
-                { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' }, // Already formatted as ="value"
-                { value: 'banco_aceite', label: 'Conta - Banco do aceite' }, // Already formatted as ="value"
-                { value: 'agencia_aceite', label: 'Conta - Agência do aceite' }, // Already formatted as ="value"
-                { value: 'conta_aceite', label: 'Conta - Número do aceite' }, // Already formatted as ="value"
-                // { value: 'nome_programa', label: 'Nome do Programa' }, // Duplicated? Already have 'Nome Programa / Portfólio'
-                { value: 'emenda_unitaria', label: 'Emenda Unitária' }, // Already formatted as ="value"
-                {
-                    value: 'distribuicao_recurso.orgao_gestor_descricao',
-                    label: 'Gestor Municipal do Contrato (secretaria)',
-                },
-                { value: 'ordenador_despesa', label: 'Ordenador de despesas' },
-                { value: 'secretaria_concedente', label: 'Secretaria do órgão concedente' }, // Changed from secretaria_concedente_str
-                { value: 'interface', label: 'Interface' },
-                { value: 'esfera', label: 'Esfera' },
-                { value: 'parlamentares_info', label: 'Parlamentares' }, // Added
-                { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
-                { value: 'distribuicao_recurso.id', label: 'ID Distribuição de Recurso' },
-                { value: 'distribuicao_recurso.nome_responsavel', label: 'Gestor Municipal (servidor)' },
-                { value: 'distribuicao_recurso.objeto', label: 'Objeto detalhado' },
-                {
-                    value: (row) => this.formatCurrency(row['distribuicao_recurso.valor']),
-                    label: 'Distribuição - Valor do Repasse',
-                },
-                {
-                    value: (row) => this.formatCurrency(row['distribuicao_recurso.valor_total']),
-                    label: 'Distribuição - Valor Total',
-                },
-                {
-                    value: (row) => this.formatCurrency(row['distribuicao_recurso.valor_contrapartida']),
-                    label: 'Distribuição - Valor da Contrapartida',
-                },
-                { value: 'distribuicao_recurso.empenho', label: 'Distribuição - Empenho' },
-                {
-                    value: 'distribuicao_recurso.programa_orcamentario_estadual',
-                    label: 'Programa Orçamentário Estadual ou Federal',
-                },
-                {
-                    value: 'distribuicao_recurso.programa_orcamentario_municipal',
-                    label: 'Programa Orçamentário Municipal',
-                },
-                { value: 'distribuicao_recurso.dotacao', label: 'Dotação orçamentária' },
-                { value: 'distribuicao_recurso.proposta', label: 'N° Proposta' },
-                { value: 'distribuicao_recurso.contrato', label: 'Nº do Contrato' },
-                { value: 'distribuicao_recurso.convenio', label: 'Nº do Convênio/Pré Convênio' },
-                {
-                    value: 'distribuicao_recurso.assinatura_termo_aceite',
-                    label: 'Data de assinatura do termo de aceite',
-                },
-                {
-                    value: 'distribuicao_recurso.assinatura_municipio',
-                    label: 'Data de assinatura do representante do Município',
-                },
-                {
-                    value: 'distribuicao_recurso.assinatura_estado',
-                    label: 'Data de assinatura do representante do Estado',
-                },
-                { value: 'distribuicao_recurso.vigencia', label: 'Data de início da vigência' },
-                {
-                    value: 'distribuicao_recurso.conclusao_suspensiva',
-                    label: 'Data de conclusão da Suspensiva',
-                },
-                { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
-                { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
-                { value: 'distribuicao_recurso.pct_custeio', label: 'Custeio/Corrente (%)' },
-                { value: 'distribuicao_recurso.pct_investimento', label: 'Investimento/Capital (%)' },
-                { value: 'distribuicao_recurso.banco', label: 'Distribuição - Banco' },
-                { value: 'distribuicao_recurso.agencia', label: 'Distribuição - Agência' },
-                { value: 'distribuicao_recurso.conta', label: 'Distribuição - Conta Corrente' },
-                { value: 'distribuicao_recurso.gestor_conta', label: 'Distribuição - Gestor da Conta' },
-            ];
-        } else {
-            // Simplified report
-            fields = [
-                { value: 'identificador', label: 'Identificador' },
-                { value: 'ano', label: 'Ano' },
-                { value: 'objeto', label: 'Objeto' },
-                { value: 'parlamentares_info', label: 'Parlamentares' },
-                {
-                    value: (row) => this.formatCurrency(row.valor),
-                    label: 'Valor do Repasse',
-                },
-                {
-                    value: (row) => this.formatCurrency(row.valor_total),
-                    label: 'Valor Total',
-                },
-                { value: 'orgao_concedente.sigla', label: 'Orgão Concedente' },
-                { value: 'distribuicao_recurso.orgao_gestor_descricao', label: 'Gestor Municipal' },
-                { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
-                { value: 'id', label: 'ID' },
-            ];
-        }
+        const schemas = await this.describeSchema(params);
+        const [schemaTransf, schemaCrono] = schemas;
 
         const tmpTransf = _ctx.getTmpFile('transferencias.csv');
         const transfOpts: CsvWriterOptions<RelTransferenciasDto> = {
             csvOptions: DefaultCsvOptions,
-            transforms: DefaultTransforms,
-            fields,
+            transforms: TransferenciasFlattenTransforms,
+            fields: schemaTransf.colunas.map((c) => c.name),
         };
         await WriteCsvToFile(dados.linhas, tmpTransf.stream, transfOpts);
         out.push({ name: 'transferencias.csv', localFile: tmpTransf.path });
 
         if (dados.linhas_cronograma?.length) {
             const tmpCrono = _ctx.getTmpFile('cronograma.csv');
-            const cronFields = [
-                { value: 'transferencia_id', label: 'ID da Transferência' },
-                { value: 'hirearquia', label: 'Hierarquia' }, // Assumes hirearquia is already ="value" formatted if needed
-                { value: 'tarefa', label: 'Tarefa' },
-                {
-                    value: (row: { inicio_planejado: string | null }) =>
-                        row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
-                    label: 'Início Planejado',
-                },
-                {
-                    value: (row: { termino_planejado: string | null }) =>
-                        row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
-                    label: 'Término Planejado',
-                },
-                { value: 'custo_estimado', label: 'Custo Estimado' }, // Numbers are usually fine
-                { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
-            ];
-
             const cronoOpts: CsvWriterOptions<RelTransferenciaCronogramaDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: cronFields,
+                transforms: TransferenciasFlattenTransforms,
+                fields: schemaCrono.colunas.map((c) => c.name),
             };
             await WriteCsvToFile(dados.linhas_cronograma, tmpCrono.stream, cronoOpts);
             out.push({ name: 'cronograma.csv', localFile: tmpCrono.path });

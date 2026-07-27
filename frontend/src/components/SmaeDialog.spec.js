@@ -221,6 +221,48 @@ describe('SmaeDialog', () => {
     });
   });
 
+  describe('abertura', () => {
+    it('emite evento dialogo-aberto ao montar já com a query correspondente', () => {
+      mockCurrentRoute.query = { dialogo: 'teste' };
+
+      const wrapper = montarComponente();
+
+      expect(wrapper.emitted('dialogo-aberto')).toBeTruthy();
+      expect(wrapper.emitted('dialogo-aberto')).toHaveLength(1);
+    });
+
+    it('não emite dialogo-aberto ao montar quando query não corresponde ao id', () => {
+      mockCurrentRoute.query = { dialogo: 'outro' };
+
+      const wrapper = montarComponente();
+
+      expect(wrapper.emitted('dialogo-aberto')).toBeFalsy();
+    });
+
+    it('emite dialogo-aberto quando a query muda para corresponder ao id', async () => {
+      mockCurrentRoute.query = {};
+
+      const wrapper = montarComponente();
+      expect(wrapper.emitted('dialogo-aberto')).toBeFalsy();
+
+      mockCurrentRoute.query = { dialogo: 'teste' };
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.emitted('dialogo-aberto')).toBeTruthy();
+    });
+
+    it('não reemite dialogo-aberto ao fechar o diálogo', async () => {
+      mockCurrentRoute.query = { dialogo: 'teste' };
+
+      const wrapper = montarComponente();
+      const botaoFechar = wrapper.find('[aria-label="Fechar diálogo"]');
+
+      await botaoFechar.trigger('click');
+
+      expect(wrapper.emitted('dialogo-aberto')).toHaveLength(1);
+    });
+  });
+
   describe('slots', () => {
     it('renderiza conteúdo no slot default', () => {
       mockCurrentRoute.query = { dialogo: 'teste' };

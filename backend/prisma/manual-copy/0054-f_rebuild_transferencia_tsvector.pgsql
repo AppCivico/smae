@@ -18,6 +18,7 @@ BEGIN
             COALESCE(t_main.nome_programa, ' ') || ' ' ||
             COALESCE(t_main.objeto, ' ') || ' ' ||
             COALESCE(t_main.demanda, ' ') || ' ' ||
+            COALESCE(t_main.plano_de_acao, ' ') || ' ' ||
             COALESCE(tt.nome, ' ') || ' ' ||
             COALESCE(o1.sigla, ' ') || ' ' ||
             COALESCE(o1.descricao, ' ') || ' ' ||
@@ -67,3 +68,9 @@ BEGIN
     RETURN v_tsvector_payload;
 END;
 $$;
+
+-- Reconstrói os vetores de busca de todas as transferências ativas, para que
+-- alterações nas colunas indexadas acima passem a valer também nos registros já existentes.
+UPDATE transferencia
+SET vetores_busca = f_rebuild_transferencia_tsvector(id)
+WHERE removido_em IS NULL;

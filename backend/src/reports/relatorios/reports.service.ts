@@ -42,6 +42,9 @@ import { PPObrasService } from '../pp-obras/pp-obras.service';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
+import { RelatorioModeloConfigDto } from '../post-process/dto/relatorio-modelo.dto';
+import { modeloPadraoDeSchemas, ReportPostProcessService } from '../post-process/report-post-process.service';
+import { isSchemaAware, ReportFileSchema } from '../post-process/report-schema';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { TransferenciasService } from '../transferencias/transferencias.service';
@@ -58,51 +61,7 @@ import {
     montarVisibilidade,
     VisibilidadeTipo,
 } from './helpers/visibilidade-templates';
-
-// Mapa de propriedade fonte → sistema. Fonte de verdade para "esta fonte pertence a qual módulo?".
-// Algumas fontes (PS*) são compartilhadas entre PlanoSetorial e ProgramaDeMetas — por isso o
-// valor é uma lista, não um único módulo.
-const FONTES_POR_SISTEMA: Record<ModuloSistema, readonly FonteRelatorio[]> = {
-    SMAE: [],
-    PDM: [
-        FonteRelatorio.Orcamento,
-        FonteRelatorio.PrevisaoCusto,
-        FonteRelatorio.Indicadores,
-        FonteRelatorio.MonitoramentoMensal,
-    ],
-    PlanoSetorial: [
-        FonteRelatorio.PSOrcamento,
-        FonteRelatorio.PSPrevisaoCusto,
-        FonteRelatorio.PSIndicadores,
-        FonteRelatorio.PSMonitoramentoMensal,
-    ],
-    ProgramaDeMetas: [
-        FonteRelatorio.PSOrcamento,
-        FonteRelatorio.PSPrevisaoCusto,
-        FonteRelatorio.PSIndicadores,
-        FonteRelatorio.PSMonitoramentoMensal,
-    ],
-    Projetos: [
-        FonteRelatorio.Projeto,
-        FonteRelatorio.Projetos,
-        FonteRelatorio.ProjetoStatus,
-        FonteRelatorio.ProjetoOrcamento,
-        FonteRelatorio.ProjetoPrevisaoCusto,
-    ],
-    MDO: [
-        FonteRelatorio.Obras,
-        FonteRelatorio.ObraStatus,
-        FonteRelatorio.ObrasOrcamento,
-        FonteRelatorio.ObrasPrevisaoCusto,
-    ],
-    CasaCivil: [
-        FonteRelatorio.Parlamentares,
-        FonteRelatorio.TribunalDeContas,
-        FonteRelatorio.Transferencias,
-        FonteRelatorio.AtvPendentes,
-        FonteRelatorio.Demandas,
-    ],
-};
+import { FONTES_POR_SISTEMA, hasReportPriv, modeloVisibilidadeWhere } from '../helpers/report-priv.helper';
 
 // Mapas de discriminador da fonte: forçam `parametros.tipo_projeto`/`tipo_pdm` antes do report
 // rodar, já que algumas fontes (Orcamento, PSOrcamento, ...) são compartilhadas entre sistemas.
@@ -127,21 +86,6 @@ const FONTES_TIPO_PDM_CALC: readonly FonteRelatorio[] = [
     FonteRelatorio.PSIndicadores,
     FonteRelatorio.PSMonitoramentoMensal,
 ];
-
-// Convenção de privilégio escopado: `Reports.{action}.{sistema}:{fonte}` libera apenas aquela
-// fonte específica; o privilégio sem `:` (ex.: `Reports.executar.CasaCivil`) libera todas as
-// fontes do sistema.
-function hasReportPriv(
-    user: PessoaFromJwt,
-    action: 'executar' | 'remover',
-    sistema: ModuloSistema,
-    fonte: FonteRelatorio
-): boolean {
-    return user.hasSomeRoles([
-        `Reports.${action}.${sistema}` as ListaDePrivilegios,
-        `Reports.${action}.${sistema}:${fonte}` as ListaDePrivilegios,
-    ]);
-}
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -187,7 +131,8 @@ export class ReportsService {
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
         @Inject(forwardRef(() => DemandasService))
         private readonly demandasService: DemandasService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly postProcess: ReportPostProcessService
     ) {}
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
@@ -221,7 +166,13 @@ export class ReportsService {
 
         const parametrosOriginal = structuredClone(parametros);
 
-        const files = await service.toFileOutput(parametros, ctx, user);
+        let files = await service.toFileOutput(parametros, ctx, user);
+
+        // Pós-processamento (seleção/renome/filtro/ordem + XLSX tipado) roda entre a extração e
+        // a injeção do info.json, para que o info.json descreva a execução e não seja tocado
+        // pelo modelo.
+        files = await this.aplicarPosProcessamento(service, parametros, files, dto, ctx);
+
         let hasInfo = false;
         for (const file of files) {
             ctx.addFile(file);
@@ -245,6 +196,131 @@ export class ReportsService {
                 buffer: Buffer.from(infoJson, 'utf8'),
             });
         }
+    }
+
+    /**
+     * Aplica o modelo de apresentação sobre os arquivos brutos.
+     *
+     * Para fonte **com schema declarado** o pós-processamento não é opcional: a extração dessas
+     * fontes deixou de formatar (emite "compute store" cru), então é aqui que labels, moeda,
+     * `dd/mm/aaaa` e o guard do Excel voltam. Sem `modelo_id` — ou com um `modelo_id` que não
+     * carrega mais — usa-se o modelo padrão derivado do próprio schema, que reproduz a saída
+     * anterior. Antes isto devolvia o CSV cru, com cabeçalho técnico e valores sem máscara.
+     *
+     * Fonte sem schema segue no caminho legado: lá a extração ainda formata, e não há schema
+     * para montar modelo nenhum.
+     *
+     * `REPORT_POST_PROCESS` **não** condiciona o modelo padrão — só os modelos salvos pelo
+     * usuário. Desligar a flag não restauraria a saída antiga (a extração não formata mais),
+     * apenas entregaria CSV cru; então ela virou um controle da customização, não do pipeline.
+     * O papel de escape hatch fica com o `catch` de falha segura abaixo.
+     *
+     * **Falha segura**: qualquer erro aqui devolve os arquivos originais. Uma extração pode
+     * levar minutos/horas; perder o relatório inteiro por um problema de formatação seria
+     * um péssimo negócio. O resultado (ok/erro/motivo do skip) vai para o `resumo_saida`.
+     */
+    private async aplicarPosProcessamento(
+        service: ReportableService,
+        parametros: any,
+        files: FileOutput[],
+        dto: CreateReportDto,
+        ctx: ReportContext
+    ): Promise<FileOutput[]> {
+        const modeloId = dto.modelo_id ?? null;
+
+        // Fonte sem schema: nada a fazer, a extração dela já entrega formatado.
+        if (!isSchemaAware(service)) {
+            if (modeloId)
+                await ctx.resumoSaida('pos_processamento', {
+                    aplicado: false,
+                    modelo_id: modeloId,
+                    motivo: 'fonte sem schema declarado',
+                });
+            return files;
+        }
+
+        const customizavel = await this.smaeConfigService.getConfigBooleanWithDefault('REPORT_POST_PROCESS', false);
+
+        try {
+            const schemas: ReportFileSchema[] = await service.describeSchema(parametros);
+            if (!schemas?.length) {
+                await ctx.resumoSaida('pos_processamento', {
+                    aplicado: false,
+                    ...(modeloId ? { modelo_id: modeloId } : {}),
+                    motivo: 'schema vazio',
+                });
+                return files;
+            }
+
+            // Modelo salvo só entra com a flag ligada. Sem ele — flag desligada, sem `modelo_id`,
+            // ou `modelo_id` que não carrega mais — vai o padrão do schema: degradar para "sem
+            // customização" é aceitável, degradar para "sem formatação" não.
+            const salvo = modeloId && customizavel ? await this.carregarModeloConfig(modeloId, dto.fonte) : null;
+            const config = salvo ?? modeloPadraoDeSchemas(schemas);
+
+            const { arquivos, ignoradas } = await this.postProcess.aplicarModelo(files, schemas, config);
+            await ctx.resumoSaida('pos_processamento', {
+                aplicado: true,
+                modelo: salvo ? 'salvo' : 'padrao',
+                ...(modeloId ? { modelo_id: modeloId } : {}),
+                ...(modeloId && !customizavel ? { motivo_padrao: 'REPORT_POST_PROCESS desligada' } : {}),
+                ...(modeloId && customizavel && !salvo ? { motivo_padrao: 'modelo não encontrado' } : {}),
+                arquivos: arquivos.map((f) => f.name),
+                // Colunas/filtros do modelo que o schema atual não tem mais. O relatório sai
+                // (coluna ausente vira NULL), mas fica registrado para quem for investigar
+                // "por que essa coluna está vazia?" não precisar adivinhar.
+                ...(ignoradas.length ? { referencias_ignoradas: ignoradas } : {}),
+            });
+            return arquivos;
+        } catch (error) {
+            this.logger.error(
+                `Falha no pós-processamento de ${dto.fonte} (${modeloId ? `modelo ${modeloId}` : 'modelo padrão'}), ` +
+                    `seguindo com os arquivos brutos: ${error}`
+            );
+            await ctx.resumoSaida('pos_processamento', {
+                aplicado: false,
+                ...(modeloId ? { modelo_id: modeloId } : { modelo: 'padrao' }),
+                motivo: 'erro no pós-processamento',
+                // Sem formatação a saída fica crua; registrar para não parecer sucesso silencioso.
+                saida: 'csv bruto, sem labels/formatação',
+                erro: `${error?.message ?? error}`,
+            });
+            return files;
+        }
+    }
+
+    /**
+     * Carrega a coluna `config` de `relatorio_modelo`.
+     *
+     * Revalida remoção e fonte: `saveReport` já barrou o modelo inválido na criação, mas a task
+     * roda depois e o modelo pode ter sido removido nesse intervalo.
+     *
+     * **Visibilidade não é rechecada aqui, de propósito.** A autorização acontece em `saveReport`,
+     * com o usuário autenticado em mão; a task roda desacoplada (fork) e sem `PessoaFromJwt`.
+     * Além disso, o modelo ficar mais restrito *depois* da criação não deveria quebrar um
+     * relatório já autorizado — o efeito seria perder a formatação no meio de uma extração que
+     * pode levar horas. Remoção é diferente: aí a config deixou de existir.
+     */
+    private async carregarModeloConfig(
+        modeloId: number,
+        fonte: FonteRelatorio
+    ): Promise<RelatorioModeloConfigDto | null> {
+        const row = await this.prisma.relatorioModelo.findFirst({
+            where: { id: modeloId, removido_em: null },
+            select: { config: true, fonte: true },
+        });
+        if (!row) return null;
+
+        // Modelo de outra fonte não tem como casar com o schema deste relatório.
+        if (row.fonte !== fonte) {
+            this.logger.warn(`Modelo ${modeloId} é da fonte ${row.fonte}, incompatível com ${fonte}.`);
+            return null;
+        }
+
+        const config = row.config?.valueOf() as RelatorioModeloConfigDto | undefined;
+        if (!config || !Array.isArray(config.arquivos)) return null;
+
+        return config;
     }
 
     private async calcTipoPdm(ctx: ReportContext, parametros: any) {
@@ -412,14 +488,25 @@ export class ReportsService {
     async zipFiles(files: FileOutput[]) {
         const zip = new AdmZip();
 
+        // Basenames que já chegam como XLSX pronto (caminho do pós-processamento, que emite
+        // `x.csv` + `x.xlsx` a partir da mesma tabela tipada). Reconverter o CSV com
+        // `read_csv_auto` desfaria os tipos e exigiria o remendo do `="valor"`.
+        const xlsxJaPresentes = new Set(
+            files.filter((f) => f.name.endsWith('.xlsx')).map((f) => f.name.slice(0, -'.xlsx'.length))
+        );
+
         for (const file of files) {
             try {
                 let csvContent: string | undefined = undefined;
+                // Só lê o conteúdo do CSV quando ele realmente vai ser convertido — arquivos
+                // grandes já pós-processados não precisam ser carregados em memória.
+                const precisaConverter =
+                    file.name.endsWith('.csv') && !xlsxJaPresentes.has(file.name.slice(0, -'.csv'.length));
 
                 if (file.buffer) {
                     zip.addFile(file.name, file.buffer);
 
-                    if (file.name.endsWith('.csv')) {
+                    if (precisaConverter) {
                         csvContent = file.buffer.toString('utf-8');
                     }
                 } else if (file.localFile) {
@@ -431,7 +518,7 @@ export class ReportsService {
                     fs.renameSync(file.localFile, tmpFilePath);
                     zip.addLocalFile(tmpFilePath);
 
-                    if (file.name.endsWith('.csv')) {
+                    if (precisaConverter) {
                         csvContent = fs.readFileSync(tmpFilePath, 'utf-8');
                     }
 
@@ -441,7 +528,7 @@ export class ReportsService {
                     throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
                 }
 
-                if (file.name.endsWith('.csv') && csvContent) {
+                if (precisaConverter && csvContent) {
                     try {
                         const xlsxBuffer = await this.convertCsvToXlsx(csvContent);
                         const xlsxName = file.name.replace('.csv', '.xlsx');
@@ -504,6 +591,29 @@ export class ReportsService {
                 );
         }
 
+        // Valida o modelo escolhido na tela de novo relatório já na criação: barrar aqui evita
+        // descobrir o problema só depois da extração inteira ter rodado na task.
+        if (dto.modelo_id) {
+            // A visibilidade entra no `where`, não numa checagem posterior: usar um modelo é uma
+            // forma de ler o modelo, então um modelo que o usuário não pode ver tem que responder
+            // "não encontrado" — sem isso, quem executa a fonte poderia aplicar o modelo `privado`
+            // de outra pessoa (ou de outro órgão) e inferir a config dela pelo resultado.
+            // `user` nulo = relatório disparado pelo próprio sistema, que não tem escopo a checar.
+            const modelo = await this.prisma.relatorioModelo.findFirst({
+                where: {
+                    id: dto.modelo_id,
+                    removido_em: null,
+                    ...(user ? { OR: modeloVisibilidadeWhere(user) } : {}),
+                },
+                select: { fonte: true },
+            });
+            if (!modelo) throw new BadRequestException(`Modelo de relatório ${dto.modelo_id} não encontrado.`);
+            if (modelo.fonte !== dto.fonte)
+                throw new BadRequestException(
+                    `Modelo de relatório ${dto.modelo_id} é da fonte ${modelo.fonte}, incompatível com a fonte ${dto.fonte} do relatório.`
+                );
+        }
+
         // Autorização: aceita o privilégio amplo `Reports.executar.{sistema}` ou o escopado
         // `Reports.executar.{sistema}:{fonte}`.
         if (user && !hasReportPriv(user, 'executar', sistema, dto.fonte)) {
@@ -528,6 +638,7 @@ export class ReportsService {
                     visibilidade_tipo: visibilidadeTipo,
                     restrito_para: restrito_para ?? undefined,
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
+                    modelo_id: dto.modelo_id ?? null,
                     parametros: parametros,
                     parametros_processados: await BuildParametrosProcessados(this.prisma, {
                         ...dto,
@@ -965,6 +1076,7 @@ export class ReportsService {
                     fonte: true,
                     parametros: true,
                     parametros_processados: true,
+                    modelo_id: true,
                     sistema: true,
                     criado_em: true,
                     criado_por: true,
@@ -999,6 +1111,7 @@ export class ReportsService {
                 {
                     fonte: relatorio.fonte,
                     parametros: relatorio.parametros,
+                    modelo_id: relatorio.modelo_id ?? undefined,
                 },
                 pessoaJwt,
                 contexto

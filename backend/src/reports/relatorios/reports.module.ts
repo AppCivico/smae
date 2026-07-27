@@ -8,6 +8,7 @@ import { MonitoramentoMensalModule } from '../monitoramento-mensal/monitoramento
 import { OrcamentoModule } from '../orcamento/orcamento.module';
 import { PPProjetoModule } from '../pp-projeto/pp-projeto.module';
 import { PPProjetosModule } from '../pp-projetos/pp-projetos.module';
+import { ReportPostProcessModule } from '../post-process/report-post-process.module';
 import { PrevisaoCustoModule } from '../previsao-custo/previsao-custo.module';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
@@ -42,6 +43,8 @@ import { DemandasModule } from '../demandas/demandas.module';
         forwardRef(() => CasaCivilAtividadesPendentesModule),
         forwardRef(() => TaskModule),
         forwardRef(() => DemandasModule),
+        // Sem forwardRef: o pós-processamento não depende de nada do ReportsModule.
+        ReportPostProcessModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },

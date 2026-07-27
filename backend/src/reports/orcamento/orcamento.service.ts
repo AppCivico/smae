@@ -1,19 +1,20 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { flatten } from '@json2csv/transforms';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import {
-    DefaultCsvOptions,
-    DefaultTransforms as DefaultTransforms,
-    FileOutput,
-    Path2FileName,
-    ReportableService,
-    UtilsService,
-} from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService, UtilsService } from '../utils/utils.service';
 import { SuperCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
+import {
+    recortarSchema,
+    RelOrcamentoExecutadoCsvRow,
+    RelOrcamentoPlanejadoCsvRow,
+} from './entities/orcamento-csv.entity';
 import {
     ListOrcamentoExecutadoDto,
     OrcamentoExecutadoSaidaDto,
@@ -22,6 +23,14 @@ import {
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { PrismaMerge } from '../../prisma/prisma.helpers';
 import { Prisma } from '@prisma/client';
+
+/**
+ * O CSV bruto usa `__` como separador do aninhamento (`meta`, `iniciativa`, `atividade`,
+ * `projeto`, `orgao`, `unidade`, `fonte`) porque o builder DuckDB trata `.` como referência
+ * qualificada por fonte — `orgao.codigo` seria lido como "coluna codigo da fonte orgao".
+ * Mesma abordagem de `TransferenciasFlattenTransforms`.
+ */
+const OrcamentoFlattenTransforms = [flatten({ objects: true, arrays: true, separator: '__' })];
 
 class RetornoRealizadoDb {
     plan_dotacao_ano_utilizado: string | null;
@@ -91,7 +100,7 @@ class RetornoPlanejadoDb {
 }
 
 @Injectable()
-export class OrcamentoService implements ReportableService {
+export class OrcamentoService implements ReportableService, SchemaAwareReportableService {
     private readonly logger = new Logger(OrcamentoService.name);
     constructor(
         @Inject(forwardRef(() => UtilsService))
@@ -668,13 +677,39 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
+    /**
+     * Schema dos dois arquivos, já recortado para a execução pedida.
+     *
+     * O recorte é obrigatório (e não cosmético): o conjunto de colunas deste relatório sempre
+     * dependeu de `params` — plano x projeto e Analítico x Consolidado. Ver `recortarSchema`.
+     *
+     * A consulta ao `pdm` repete a que o `toFileOutput` fazia: `pdm_id` que não resolve para um
+     * plano existente cai no recorte de projeto, exatamente como antes.
+     */
+    async describeSchema(params: SuperCreateOrcamentoExecutadoDto): Promise<ReportFileSchema[]> {
+        const pdm = params.pdm_id
+            ? await this.prisma.pdm.findUnique({
+                  where: { id: params.pdm_id },
+                  select: { rotulo_iniciativa: true, rotulo_atividade: true },
+              })
+            : null;
+        const analitico = params.tipo == 'Analitico';
+
+        return [
+            recortarSchema(getReportRowSchema(RelOrcamentoExecutadoCsvRow), pdm, analitico),
+            recortarSchema(getReportRowSchema(RelOrcamentoPlanejadoCsvRow), pdm, analitico),
+        ];
+    }
+
     async toFileOutput(
         params: SuperCreateOrcamentoExecutadoDto,
         ctx: ReportContext,
         user: PessoaFromJwt | null
     ): Promise<FileOutput[]> {
         const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params, user);
-        const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
+        // As colunas (e os rótulos vindos do plano) passaram a sair do schema; o `pdm` só era
+        // buscado aqui para montar o `fields` na mão.
+        const [schemaExec, schemaPlan] = await this.describeSchema(params);
         await ctx.progress(1);
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
@@ -701,84 +736,32 @@ export class OrcamentoService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        let camposAnoMes: any[] = [];
-        const camposAno: any[] = [];
-        if (params.tipo == 'Analitico') {
-            camposAnoMes = [
-                { value: 'mes', label: 'mês' },
-                'ano',
-                {
-                    value: (r: RetornoRealizadoDb) => {
-                        return r.mes_corrente ? 'Sim' : 'Não';
-                    },
-                    label: 'mês corrente',
-                },
-            ];
-            camposAno[0] = camposAnoMes[0];
-        }
-
-        const camposProjeto = [
-            { value: 'projeto.codigo', label: 'Código Projeto' },
-            { value: 'projeto.nome', label: 'Nome do Projeto' },
-            { value: 'projeto.id', label: 'ID do Projeto' },
-        ];
-
-        const campos = pdm
-            ? [
-                  { value: 'meta.codigo', label: 'Código da Meta' },
-                  { value: 'meta.titulo', label: 'Título da Meta' },
-                  { value: 'meta.id', label: 'ID da Meta' },
-                  { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-                  { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-                  { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-                  { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-                  { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-                  { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-              ]
-            : camposProjeto;
-
         if (retExecutado.length) {
             await this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
 
             const reportTmpExec = ctx.getTmpFile('executado.csv');
 
+            // CSV bruto: cabeçalho com os nomes de máquina do schema, sem rótulos e sem lambdas
+            // de formatação. Rótulos (inclusive os de iniciativa/atividade vindos do plano) e
+            // tipos vêm do schema, aplicados no pós-processamento.
             const execCsvOptions: CsvWriterOptions<OrcamentoExecutadoSaidaDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: [
-                    ...camposAnoMes,
-                    ...campos,
-                    'dotacao',
-                    'processo',
-                    'nota_empenho',
-                    'orgao.codigo',
-                    'orgao.nome',
-                    'unidade.codigo',
-                    'unidade.nome',
-                    'fonte.codigo',
-                    'fonte.nome',
-                    'acao_orcamentaria',
-                    'plan_dotacao_sincronizado_em',
-                    'plan_sof_val_orcado_atualizado',
-                    'plan_valor_planejado',
-                    'plan_dotacao_ano_utilizado',
-                    'plan_dotacao_mes_utilizado',
-                    'dotacao_sincronizado_em',
-                    'dotacao_valor_empenhado',
-                    'dotacao_valor_liquidado',
-                    'dotacao_ano_utilizado',
-                    'dotacao_mes_utilizado',
-                    'smae_valor_empenhado',
-                    'smae_valor_liquidado',
-                    'smae_percentual_empenhado',
-                    'smae_percentual_liquidado',
-                    'logs',
-                ],
+                transforms: OrcamentoFlattenTransforms,
+                fields: schemaExec.colunas.map((c) => c.name),
             };
 
             // escreve por streaming e usa o header uma única vez
             await WriteCsvToFile(
-                retExecutado.map((r) => ({ ...r, logs: r.logs.join('\r\n') })),
+                retExecutado.map((r) => ({
+                    ...r,
+                    logs: r.logs.join('\r\n'),
+                    // Tradução de domínio (não formatação de locale), então continua na extração.
+                    mes_corrente: r.mes_corrente ? 'Sim' : 'Não',
+                    // Correção: a coluna saía sempre vazia porque o nome pedido no `fields`
+                    // (`smae_percentual_empenhado`) nunca casou com o `smae_percentual_empenho`
+                    // do DTO. O rótulo e a posição continuam os mesmos; só o valor passa a sair.
+                    smae_percentual_empenhado: r.smae_percentual_empenho,
+                })),
                 reportTmpExec.stream,
                 execCsvOptions
             );
@@ -814,27 +797,13 @@ export class OrcamentoService implements ReportableService {
             await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
             const reportTmpPlan = ctx.getTmpFile('planejado.csv');
 
+            // A primeira coluna do Analítico agora é `ano` (e não mais `mes`, que o DTO do
+            // planejado não possui e que fazia a coluna sair sempre vazia). O campo já existe em
+            // `OrcamentoPlanejadoSaidaDto`, então basta o schema pedi-lo pelo nome certo.
             const planCsvOptions: CsvWriterOptions<OrcamentoPlanejadoSaidaDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: [
-                    ...camposAno,
-                    ...campos,
-                    'dotacao',
-                    'orgao.codigo',
-                    'orgao.nome',
-                    'unidade.codigo',
-                    'unidade.nome',
-                    'fonte.codigo',
-                    'fonte.nome',
-                    'acao_orcamentaria',
-                    'plan_dotacao_sincronizado_em',
-                    'plan_sof_val_orcado_atualizado',
-                    'plan_valor_planejado',
-                    'plan_dotacao_ano_utilizado',
-                    'plan_dotacao_mes_utilizado',
-                    'logs',
-                ],
+                transforms: OrcamentoFlattenTransforms,
+                fields: schemaPlan.colunas.map((c) => c.name),
             };
 
             await WriteCsvToFile(

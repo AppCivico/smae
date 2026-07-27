@@ -49,7 +49,7 @@ export class RequestLogService {
             ipp = decodedPageToken.ipp;
         }
 
-        const rows = await this.prisma.api_request_log.findMany({
+        const rows = await this.prisma.encrypted.api_request_log.findMany({
             where: {
                 created_pessoa_id: filters.created_pessoa_id,
                 req_method: filters.req_method ? filters.req_method : undefined,

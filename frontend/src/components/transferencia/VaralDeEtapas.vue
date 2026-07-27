@@ -95,6 +95,16 @@ function deletarWorkflow() {
   }, 'Deletar');
 }
 
+function reiniciarWorkflow() {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await workflowAndamento.reiniciarWorkflow()) {
+      await workflowAndamento.buscar();
+      alertStore.success('Workflow reiniciado!');
+      configurarWorkflow.value = false;
+    }
+  }, 'Reiniciar');
+}
+
 function formatarTexto(texto) {
   if (!texto) {
     return '';
@@ -354,28 +364,28 @@ const temPermissaoParaConfigurar = computed(() => temPermissãoPara.value(['Cada
       >
         Este workflow ainda <strong>não</strong> possui histórico.
       </div>
-      <div class="flex justifycenter">
+      <div class="flex justifycenter flexwrap g1">
         <button
           type="button"
-          class="btn bgnone outline tvermelho mr1"
+          class="btn bgnone outline tvermelho"
           @click="deletarWorkflow()"
         >
           fechar e deletar workflow
         </button>
         <button
+          type="button"
+          class="btn bgnone outline tvermelho"
+          @click="reiniciarWorkflow()"
+        >
+          reiniciar workflow
+        </button>
+        <button
           v-if="workflow?.pode_reabrir_fase"
           type="button"
-          class="btn mr1"
+          class="btn"
           @click="reabrirFase()"
         >
           reabrir fase
-        </button>
-        <button
-          type="button"
-          class="btn"
-          @click="configurarWorkflow = false"
-        >
-          fechar
         </button>
       </div>
       <div />
