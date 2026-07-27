@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION f_transfere_gov_oportunidade_update_tsvector() RETURNS TRIGGER AS $$
 BEGIN
     NEW.vetores_busca = (
-        SELECT to_tsvector('simple',
+        SELECT to_tsvector('simple_unaccent',
             COALESCE(CAST(NEW.tipo AS TEXT), '') || ' ' ||
             COALESCE(CAST(NEW.avaliacao AS TEXT), '') || ' ' ||
             COALESCE(CAST(NEW.id_programa AS TEXT), '') || ' ' ||
@@ -35,3 +35,7 @@ EXCEPTION
    WHEN duplicate_object THEN
       NULL;
 END;$$;
+
+-- Reconstrói os vetores de busca de todas as oportunidades já existentes, para que
+-- a mudança de configuração de busca acima passe a valer também nos registros já existentes.
+UPDATE transfere_gov_oportunidade SET vetores_busca = NULL;

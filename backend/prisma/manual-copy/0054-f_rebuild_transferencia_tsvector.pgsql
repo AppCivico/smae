@@ -8,7 +8,7 @@ DECLARE
 BEGIN
     SELECT
         to_tsvector(
-            'simple',
+            'simple_unaccent',
             COALESCE(CAST(t_main.esfera AS TEXT), '') || ' ' ||
             COALESCE(CAST(t_main.interface AS TEXT), '') || ' ' ||
             COALESCE(CAST(t_main.ano AS TEXT), '') || ' ' ||
@@ -19,6 +19,7 @@ BEGIN
             COALESCE(t_main.objeto, ' ') || ' ' ||
             COALESCE(t_main.demanda, ' ') || ' ' ||
             COALESCE(t_main.plano_de_acao, ' ') || ' ' ||
+            COALESCE(t_main.observacoes, ' ') || ' ' ||
             COALESCE(tt.nome, ' ') || ' ' ||
             COALESCE(o1.sigla, ' ') || ' ' ||
             COALESCE(o1.descricao, ' ') || ' ' ||

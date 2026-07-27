@@ -7,7 +7,7 @@ BEGIN
     NEW.vetores_busca = COALESCE((
         SELECT
             to_tsvector(
-                'simple',
+                'simple_unaccent',
                 COALESCE(NEW.nome, '') || ' ' ||
                 COALESCE(NEW.nome_popular, '') || ' ' ||
                 COALESCE(

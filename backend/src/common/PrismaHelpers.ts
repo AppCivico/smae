@@ -57,7 +57,7 @@ export class PrismaHelpers {
                 .join(' & ');
 
             const rows: { id: number }[] = await prisma.$queryRawUnsafe(
-                `SELECT id FROM ${tableName} WHERE vetores_busca @@ to_tsquery('simple', $1)`,
+                `SELECT id FROM ${tableName} WHERE vetores_busca @@ to_tsquery('simple_unaccent', $1)`,
                 words
             );
             palavrasChave = rows.map((row) => row.id);

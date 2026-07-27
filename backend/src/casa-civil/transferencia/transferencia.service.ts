@@ -1311,6 +1311,32 @@ export class TransferenciaService {
             }
         }
 
+        // Valor de Repasse (transferencia.valor) é um Decimal e não entra no tsvector.
+        // Detecta um token monetário no termo de busca e compara por igualdade exata.
+        const valorRepasse = this.extractValorRepasse(palavraChave);
+        if (valorRepasse !== undefined) {
+            searchConditions.push({ valor: valorRepasse });
+        }
+
+        // Processo SEI é armazenado só com dígitos (ver DistribuicaoRecursoService), então
+        // normalizamos o termo de busca da mesma forma e buscamos por substring.
+        const processoSeiDigits = this.extractProcessoSeiDigits(palavraChave);
+        if (processoSeiDigits !== undefined) {
+            searchConditions.push({
+                distribuicao_recursos: {
+                    some: {
+                        removido_em: null,
+                        registros_sei: {
+                            some: {
+                                removido_em: null,
+                                processo_sei: { contains: processoSeiDigits },
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
         // Adiciona busca por palavras-chave (vetores).
         // Inclui mesmo quando o array está vazio: { id: { in: [] } } não casa com nada,
         // garantindo que a busca sem resultados não seja ignorada.
@@ -1319,6 +1345,51 @@ export class TransferenciaService {
         }
 
         return searchConditions.length > 0 ? searchConditions : undefined;
+    }
+
+    /**
+     * Detecta um valor monetário no termo de busca (ex: "R$ 150.000,00", "150000,00", "150000.55")
+     * e o normaliza para uma string decimal compatível com o campo transferencia.valor.
+     */
+    private extractValorRepasse(palavraChave: string): string | undefined {
+        // Como a coluna é Decimal(15,2), um '.' seguido de 3 dígitos nunca é parte decimal
+        // (moeda só tem até 2 casas) — é sempre separador de milhar (ex: "150.000").
+        const normalizaValorMonetario = (token: string): string => {
+            if (token.includes(',')) {
+                // Formato BR: '.' é separador de milhar, ',' é separador decimal.
+                return token.replace(/\./g, '').replace(',', '.');
+            }
+            return token.replace(/\.(?=\d{3}(?:\D|$))/g, '');
+        };
+
+        // Prefixo "R$" explícito
+        const comPrefixo = palavraChave.match(/R\$\s*([\d.,]+)/i)?.[1];
+        if (comPrefixo) return normalizaValorMonetario(comPrefixo);
+
+        // Formato BR com separador de milhar e/ou decimal por vírgula
+        // (ex: "150.000", "150.000,00", "150000,00")
+        const comSeparadorOuVirgula = palavraChave.match(
+            /\b\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?\b|\b\d+,\d{1,2}\b/
+        )?.[0];
+        if (comSeparadorOuVirgula) return normalizaValorMonetario(comSeparadorOuVirgula);
+
+        // Formato "simples": decimal com ponto (ex: "150000.55") ou número inteiro solto,
+        // exigindo ao menos 3 dígitos (ex: busca só "150000").
+        return palavraChave.match(/\b\d{3,}(?:\.\d{1,2})?\b/)?.[0];
+    }
+
+    /**
+     * Detecta um trecho de Processo SEI no termo de busca e retorna só os dígitos,
+     * já que distribuicao_recurso_sei.processo_sei é gravado sem pontuação.
+     * Exige ao menos 8 dígitos para não colidir com identificador/ano/valor.
+     */
+    private extractProcessoSeiDigits(palavraChave: string): string | undefined {
+        const candidatos = palavraChave.match(/[\d./-]+/g) ?? [];
+        for (const candidato of candidatos) {
+            const digitos = candidato.replace(/\D/g, '');
+            if (digitos.length >= 8) return digitos;
+        }
+        return undefined;
     }
 
     async findOneTransferencia(id: number, user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
