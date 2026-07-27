@@ -80,6 +80,14 @@ export default object({
     .meta({
       balaoInformativo: 'Indica o código numérico da demanda de emenda parlamentar estadual, gerado no sistema do Governo do Estado.',
     }),
+  plano_de_acao: string()
+    .label('Plano de Ação')
+    .max(255)
+    .min(1)
+    .nullableOuVazio()
+    .meta({
+      balaoInformativo: 'Indica o código do detalhamento do uso dos repasses parlamentares nas transferências especiais.',
+    }),
   interface: string()
     .label('Interface')
     .nullable(),

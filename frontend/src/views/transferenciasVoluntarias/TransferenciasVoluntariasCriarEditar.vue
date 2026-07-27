@@ -371,6 +371,24 @@ watch(itemParaEdicao, (novosValores) => {
       </div>
     </div>
 
+    <div class="flex g2 mb1">
+      <div class="halfInput f1">
+        <LabelFromYup
+          name="plano_de_acao"
+          :schema="schema"
+        />
+        <Field
+          name="plano_de_acao"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="plano_de_acao"
+        />
+      </div>
+    </div>
+
     <div class="flex spacebetween center mb1">
       <h3 class="title">
         Origem
