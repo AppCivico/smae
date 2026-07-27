@@ -30,7 +30,7 @@ const { regiõesPorNível } = storeToRefs(regionsStore);
 const { tiposDeVisibilidade } = storeToRefs(relatoriosStore);
 
 const initialValues = {
-  fonte: 'Obras',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     grupo_tematico_id: null,
     orgao_responsavel_id: null,

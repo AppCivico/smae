@@ -21,7 +21,7 @@ const router = useRouter();
 const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
-  fonte: 'PSOrcamento',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     tipo: 'Analitico',
     pdm_id: 0,

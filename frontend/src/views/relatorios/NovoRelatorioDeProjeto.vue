@@ -20,7 +20,7 @@ const route = useRoute();
 const router = useRouter();
 
 const initialValues = {
-  fonte: 'Projeto',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     projeto_id: null,
   },

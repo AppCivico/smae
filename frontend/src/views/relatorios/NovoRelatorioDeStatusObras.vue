@@ -20,7 +20,7 @@ const route = useRoute();
 const router = useRouter();
 
 const initialValues = {
-  fonte: 'ObraStatus',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     tipo_pdm: 'MDO',
     portfolio_id: null,

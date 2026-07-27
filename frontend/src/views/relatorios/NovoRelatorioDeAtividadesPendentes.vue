@@ -25,7 +25,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'AtvPendentes',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     tipo_id: [],
     data_inicio: null,

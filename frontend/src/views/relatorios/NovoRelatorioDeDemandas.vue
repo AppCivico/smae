@@ -32,7 +32,7 @@ const orgaoPreSelecionado = ref(authStore.temPermissãoPara('SMAE.PerfilGestorDi
   : null);
 
 const valoresIniciais = ref({
-  fonte: 'Demandas',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     status: [],
     data_registro_inicio: null,

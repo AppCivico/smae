@@ -22,7 +22,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'TribunalDeContas',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     esfera: null,
     ano_inicio: null,

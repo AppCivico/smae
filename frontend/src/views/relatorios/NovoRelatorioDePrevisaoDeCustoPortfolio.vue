@@ -23,7 +23,7 @@ const { current, tiposDeVisibilidade } = storeToRefs(relatoriosStore);
 const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
-  fonte: 'ProjetoPrevisaoCusto',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     ano: currentYear,
     portfolio_id: 0,

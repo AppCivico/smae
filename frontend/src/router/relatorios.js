@@ -1,3 +1,5 @@
+import FONTES_POR_SISTEMA from '@/consts/fontesDeRelatoriosPorSistema';
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
@@ -63,7 +65,8 @@ export default {
       meta: {
         entidadeMãe: 'pdm',
         título: 'Relatórios Mensais',
-        títuloParaMenu: 'Relatório Mensal',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.PDM].MonitoramentoMensal.nome,
+        fonteDoRelatorio: 'MonitoramentoMensal',
         limitarÀsPermissões: [
           'Reports.executar.PDM',
         ],
@@ -74,7 +77,6 @@ export default {
           name: 'RelatóriosMensais',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'MonitoramentoMensal',
             rotaNovoRelatorio: 'novoRelatórioMensal',
           },
         },
@@ -133,7 +135,8 @@ export default {
       meta: {
         entidadeMãe: 'pdm',
         título: 'Relatórios orçamentários do PdM',
-        títuloParaMenu: 'Relatórios orçamentários',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.PDM].Orcamento.nome,
+        fonteDoRelatorio: 'Orcamento',
         limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
@@ -142,7 +145,6 @@ export default {
           name: 'RelatóriosOrçamentáriosPdM',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Orcamento',
             rotaNovoRelatorio: 'novoRelatórioOrçamentárioPdM',
           },
         },
@@ -167,6 +169,7 @@ export default {
       meta: {
         título: 'Relatórios orçamentários de portfólio',
         títuloParaMenu: undefined,
+        fonteDoRelatorio: 'ProjetoOrcamento',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -175,7 +178,6 @@ export default {
           name: 'RelatóriosOrçamentáriosPortfolio',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'ProjetoOrcamento',
             rotaNovoRelatorio: 'novoRelatórioOrçamentárioPortfolio',
           },
         },
@@ -199,7 +201,8 @@ export default {
       path: 'parlamentares',
       meta: {
         título: 'Relatórios de parlamentares',
-        títuloParaMenu: 'Parlamentares',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.CasaCivil].Parlamentares.nome,
+        fonteDoRelatorio: 'Parlamentares',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
@@ -208,7 +211,6 @@ export default {
           name: 'RelatóriosDeParlamentares',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Parlamentares',
             rotaNovoRelatorio: 'novoRelatórioDeParlamentares',
           },
         },
@@ -232,7 +234,8 @@ export default {
       path: 'transferencias-voluntarias',
       meta: {
         título: 'Relatórios de transferências voluntárias',
-        títuloParaMenu: 'Transferências voluntárias',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.CasaCivil].Transferencias.nome,
+        fonteDoRelatorio: 'Transferencias',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
@@ -241,7 +244,6 @@ export default {
           name: 'RelatóriosDeTransferênciasVoluntárias',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Transferencias',
             rotaNovoRelatorio: 'novoRelatórioDeTransferênciasVoluntárias',
           },
         },
@@ -267,7 +269,8 @@ export default {
       path: 'tribunal-de-contas',
       meta: {
         título: 'Relatórios de tribunal de contas',
-        títuloParaMenu: 'Tribunal de contas',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.CasaCivil].TribunalDeContas.nome,
+        fonteDoRelatorio: 'TribunalDeContas',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
@@ -276,7 +279,6 @@ export default {
           name: 'RelatóriosDeTribunalDeContas',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'TribunalDeContas',
             rotaNovoRelatorio: 'novoRelatórioDeTribunalDeContas',
           },
         },
@@ -301,7 +303,8 @@ export default {
       path: 'atividades-pendentes',
       meta: {
         título: 'Relatórios de Atividades Pendentes',
-        títuloParaMenu: 'Atividades pendentes',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.CasaCivil].AtvPendentes.nome,
+        fonteDoRelatorio: 'AtvPendentes',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
@@ -310,7 +313,6 @@ export default {
           name: 'RelatóriosDeAtividadesPendentes',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'AtvPendentes',
             rotaNovoRelatorio: 'novoRelatórioDeAtividadePendente',
           },
         },
@@ -334,7 +336,8 @@ export default {
       path: 'demandas',
       meta: {
         título: 'Demandas',
-        títuloParaMenu: 'Demandas',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.CasaCivil].Demandas.nome,
+        fonteDoRelatorio: 'Demandas',
         limitarÀsPermissões: [
           'Reports.executar.CasaCivil',
           'Reports.executar.CasaCivil:Demandas',
@@ -346,7 +349,6 @@ export default {
           name: 'relatóriosDeDemandas',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Demandas',
             rotaNovoRelatorio: 'relatóriosDeDemandas.novo',
           },
         },
@@ -375,6 +377,7 @@ export default {
       meta: {
         título: 'Relatórios de projeto',
         títuloParaMenu: undefined,
+        fonteDoRelatorio: 'Projeto',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -383,7 +386,6 @@ export default {
           name: 'RelatóriosDeProjeto',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Projeto',
             rotaNovoRelatorio: 'novoRelatórioDeProjeto',
           },
         },
@@ -408,7 +410,8 @@ export default {
       meta: {
         entidadeMãe: 'pdm',
         título: 'Relatórios de previsão de custo de PdM',
-        títuloParaMenu: 'Previsão de custo',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.PDM].PrevisaoCusto.nome,
+        fonteDoRelatorio: 'PrevisaoCusto',
         limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
@@ -417,7 +420,6 @@ export default {
           name: 'RelatóriosDePrevisãoDeCustoPdM',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'PrevisaoCusto',
             rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPdM',
           },
         },
@@ -442,6 +444,7 @@ export default {
       meta: {
         título: 'Relatórios de previsão de custo de portfólio',
         títuloParaMenu: undefined,
+        fonteDoRelatorio: 'ProjetoPrevisaoCusto',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -450,7 +453,6 @@ export default {
           name: 'RelatóriosDePrevisãoDeCustoPortfolio',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'ProjetoPrevisaoCusto',
             rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolio',
           },
         },
@@ -475,6 +477,7 @@ export default {
       meta: {
         título: 'Relatórios de portfólio',
         títuloParaMenu: undefined,
+        fonteDoRelatorio: 'Projetos',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -483,7 +486,6 @@ export default {
           name: 'RelatóriosDePortfolio',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Projetos',
             rotaNovoRelatorio: 'novoRelatórioDePortfolio',
           },
         },
@@ -508,6 +510,7 @@ export default {
       meta: {
         título: 'Relatórios de status',
         títuloParaMenu: undefined,
+        fonteDoRelatorio: 'ProjetoStatus',
         limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
@@ -516,7 +519,6 @@ export default {
           name: 'RelatóriosDeStatus',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'ProjetoStatus',
             rotaNovoRelatorio: 'novoRelatórioDeStatus',
           },
         },
@@ -540,7 +542,8 @@ export default {
       path: 'portfolio-obras',
       meta: {
         título: 'Relatórios de portfólio de Obras',
-        títuloParaMenu: 'Relatório de portfólio',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.MDO].Obras.nome,
+        fonteDoRelatorio: 'Obras',
         limitarÀsPermissões: 'Reports.executar.MDO',
       },
       children: [
@@ -549,7 +552,6 @@ export default {
           name: 'RelatóriosDePortfolioObras',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Obras',
             rotaNovoRelatorio: 'novoRelatórioDePortfolioObras',
           },
         },
@@ -573,7 +575,8 @@ export default {
       path: 'obra-e-status',
       meta: {
         título: 'Relatórios de status',
-        títuloParaMenu: 'Relatório de status',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.MDO].ObraStatus.nome,
+        fonteDoRelatorio: 'ObraStatus',
         limitarÀsPermissões: 'Reports.executar.MDO',
       },
       children: [
@@ -582,7 +585,6 @@ export default {
           name: 'RelatóriosDeStatusObras',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'ObraStatus',
             rotaNovoRelatorio: 'NovoRelatórioDeStatusObras',
           },
         },
@@ -606,7 +608,8 @@ export default {
       path: 'previsao-de-custo-portfolio-obras',
       meta: {
         título: 'Relatórios de previsão de custo de portfólio de obras',
-        títuloParaMenu: 'Previsão de custo',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.MDO].ObrasPrevisaoCusto.nome,
+        fonteDoRelatorio: 'ObrasPrevisaoCusto',
         limitarÀsPermissões: 'Reports.executar.MDO',
       },
       children: [
@@ -615,7 +618,6 @@ export default {
           name: 'RelatóriosDePrevisãoDeCustoPortfolioObras',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'ObrasPrevisaoCusto',
             rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
           },
         },
@@ -639,7 +641,8 @@ export default {
       path: 'orcamentarios-portfolio-obras',
       meta: {
         título: 'Relatórios orçamentários de portfólio de obras',
-        títuloParaMenu: 'Execução orçamentária',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.MDO].ObrasOrcamento.nome,
+        fonteDoRelatorio: 'ObrasOrcamento',
         limitarÀsPermissões: 'Reports.executar.MDO',
       },
       children: [
@@ -648,7 +651,6 @@ export default {
           name: 'RelatóriosOrçamentáriosPortfolioObras',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'ObrasOrcamento',
             rotaNovoRelatorio: 'novoRelatórioOrçamentárioPortfolioObras',
           },
         },

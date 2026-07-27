@@ -25,7 +25,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'Transferencias',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     ano: null,
     esfera: null,

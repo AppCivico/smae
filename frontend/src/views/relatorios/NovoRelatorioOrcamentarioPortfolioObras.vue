@@ -21,7 +21,7 @@ const route = useRoute();
 const router = useRouter();
 
 const initialValues = computed(() => ({
-  fonte: 'ObrasOrcamento',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     tipo: 'Analitico',
     inicio: '',

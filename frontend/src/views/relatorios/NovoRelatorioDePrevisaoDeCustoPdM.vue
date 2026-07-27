@@ -40,7 +40,7 @@ const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.i
 const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
-  fonte: 'PrevisaoCusto',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     ano: currentYear,
     iniciativa_id: null,

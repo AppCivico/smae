@@ -38,7 +38,7 @@ const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosS
 const { loading } = storeToRefs(relatoriosStore);
 
 const initialValues = ref({
-  fonte: 'PSMonitoramentoMensal',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     metas: [],
     pdm_id: null,

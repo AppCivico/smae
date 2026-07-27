@@ -19,7 +19,7 @@ const route = useRoute();
 const router = useRouter();
 
 const initialValues = {
-  fonte: 'Parlamentares',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     cargo: null,
     partido_id: null,

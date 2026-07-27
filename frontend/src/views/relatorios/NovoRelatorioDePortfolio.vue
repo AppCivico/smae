@@ -27,7 +27,7 @@ const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { tiposDeVisibilidade } = storeToRefs(relatoriosStore);
 
 const initialValues = {
-  fonte: 'Projetos',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     status: null,
     orgao_responsavel_id: null,

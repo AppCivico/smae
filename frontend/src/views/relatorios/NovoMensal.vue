@@ -32,7 +32,7 @@ const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
 
 const initialValues = ref({
-  fonte: 'MonitoramentoMensal',
+  fonte: route.meta.fonteDoRelatorio,
   parametros: {
     tipo: 'Analitico',
     metas_ids: [],
