@@ -56,9 +56,6 @@ export default object({
     .label('Nome')
     .max(250)
     .required('Preencha o nome do modelo'),
-  visibilidade_tipo: string()
-    .label('Visibilidade')
-    .nullableOuVazio(),
 });
 
 // Schema do formulário de filtro da listagem (FiltroParaPagina) — só o que é filtrável lá, não o

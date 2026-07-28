@@ -14,7 +14,6 @@ import schema from '@/consts/formSchemas/modelosDeRelatorio';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useModelosDeRelatorioStore } from '@/stores/modelosDeRelatorio.store';
-import { useRelatoriosStore } from '@/stores/relatorios.store';
 
 const props = defineProps({
   modelosDeRelatorioId: {
@@ -28,7 +27,6 @@ const alertStore = useAlertStore();
 
 const { sistemaEscolhido } = useAuthStore();
 const modelosDeRelatorioStore = useModelosDeRelatorioStore(sistemaEscolhido);
-const relatoriosStore = useRelatoriosStore();
 
 const fontesDoSistema = computed(
   () => Object.values(FONTES_POR_SISTEMA[sistemaEscolhido] || {}),
@@ -37,7 +35,6 @@ const fontesDoSistema = computed(
 const {
   emFoco, chamadasPendentes,
 } = storeToRefs(modelosDeRelatorioStore);
-const { tiposDeVisibilidade } = storeToRefs(relatoriosStore);
 
 const valoresIniciais = computed(() => {
   if (props.modelosDeRelatorioId && emFoco.value?.id) {
@@ -45,7 +42,6 @@ const valoresIniciais = computed(() => {
       nome: emFoco.value.nome || '',
       descricao: emFoco.value.descricao || '',
       fonte: emFoco.value.fonte,
-      visibilidade_tipo: emFoco.value.visibilidade_tipo || '',
       config: {
         xlsx_tipado: emFoco.value.config?.xlsx_tipado ?? true,
         arquivos: (emFoco.value.config?.arquivos || []).map((arquivo) => ({
@@ -65,7 +61,6 @@ const valoresIniciais = computed(() => {
     nome: '',
     descricao: '',
     fonte: '',
-    visibilidade_tipo: '',
     config: {
       xlsx_tipado: true,
       arquivos: [],
@@ -170,7 +165,7 @@ const onSubmit = handleSubmit(async (formValues) => {
   try {
     // `formValues` já sai pronto pro backend: os nomes compostos (`config.arquivos`,
     // `config.xlsx_tipado`) dispensam remontar `config`, e `nullableOuVazio()` no schema
-    // (descricao, visibilidade_tipo, colunas.label) já troca `''` por `null` na validação. Linhas
+    // (descricao, colunas.label) já troca `''` por `null` na validação. Linhas
     // de arquivo sem seleção nem chegam aqui — `arquivo` é `required()`, então `handleSubmit`
     // barra o envio antes de chamar este callback.
     const payload = { ...formValues };
@@ -198,7 +193,6 @@ const onSubmit = handleSubmit(async (formValues) => {
 });
 
 onMounted(() => {
-  relatoriosStore.buscarTiposDeVisibilidade();
   modelosDeRelatorioStore.buscarFontes();
 
   if (props.modelosDeRelatorioId) {
@@ -288,33 +282,6 @@ watch(valoresIniciais, (novosValores) => {
     </div>
 
     <div class="flex g2 flexwrap">
-      <div class="f1">
-        <SmaeLabel
-          name="visibilidade_tipo"
-          :schema="schema"
-        />
-        <Field
-          name="visibilidade_tipo"
-          as="select"
-          class="inputtext light"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="tipo in tiposDeVisibilidade"
-            :key="tipo.tipo"
-            :value="tipo.tipo"
-          >
-            {{ tipo.label }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="visibilidade_tipo"
-          class="error-msg"
-        />
-      </div>
-
       <div class="f1 flex g1 start">
         <Field
           id="xlsx_tipado"
