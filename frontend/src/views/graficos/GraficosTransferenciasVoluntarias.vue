@@ -9,6 +9,7 @@ import Grafico from '@/components/graficos/GraficoDashboard.vue';
 import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dateToDate from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -16,11 +17,18 @@ import requestS from '@/helpers/requestS.ts';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 const fluxosEtapasProjetos = useEtapasProjetosStore();
 const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
+const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
+
+const listaEsferas = Object.values(esferasDeTransferencia).map((item) => ({
+  id: item.valor,
+  nome: item.nome,
+}));
 
 const {
   lista: listaEtapas,
@@ -40,6 +48,12 @@ const {
   chamadasPendentes: chamadasPendentesParlamentares,
   parlamentaresPorId,
 } = storeToRefs(parlamentarStore);
+
+const {
+  lista: listaTiposDeTransferencia,
+  chamadasPendentes: chamadasPendentesTiposDeTransferencia,
+  tiposDeTransferenciaPorId,
+} = storeToRefs(tipoDeTransferenciaStore);
 
 const route = useRoute();
 const router = useRouter();
@@ -92,6 +106,8 @@ const graficos = ref({});
 const filtrosEscolhidos = ref({
   etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
   anos: route.query.anos?.map((ano) => Number(ano)) || [],
+  esfera: route.query.esfera || [],
+  tipo_ids: route.query.tipo_ids?.map((id) => Number(id)) || [],
   partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
   parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
 });
@@ -278,6 +294,7 @@ async function iniciar() {
   fluxosEtapasProjetos.buscarTudo();
   parlamentarStore.buscarTudo({ ipp: -1 });
   partidoStore.buscarTudo();
+  tipoDeTransferenciaStore.buscarTudo();
 
   atualizarQuery();
   if (!Object.keys(route.query).length) {
@@ -346,6 +363,8 @@ watch(
     filtrosEscolhidos.value = {
       etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
       anos: route.query.anos?.map((ano) => Number(ano)) || [],
+      esfera: route.query.esfera || [],
+      tipo_ids: route.query.tipo_ids?.map((id) => Number(id)) || [],
       partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
       parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
     };
@@ -407,6 +426,19 @@ watch(
       @submit.prevent="onSubmit"
     >
       <div class="f1">
+        <label class="tc300">Anos</label>
+        <AutocompleteField
+          :disabled="!anos.length"
+          :controlador="{
+            busca: '',
+            participantes: filtrosEscolhidos.anos || [],
+          }"
+          :grupo="anos"
+          label="ano"
+        />
+      </div>
+
+      <div class="f1">
         <label class="tc300">Etapas</label>
         <AutocompleteField
           :disabled="!listaEtapas.length"
@@ -423,17 +455,34 @@ watch(
       </div>
 
       <div class="f1">
-        <label class="tc300">Anos</label>
+        <label class="tc300">Esfera</label>
         <AutocompleteField
-          :disabled="!anos.length"
+          :disabled="!listaEsferas.length"
           :controlador="{
             busca: '',
-            participantes: filtrosEscolhidos.anos || [],
+            participantes: filtrosEscolhidos.esfera || [],
           }"
-          :grupo="anos"
-          label="ano"
+          :grupo="listaEsferas"
+          label="nome"
         />
       </div>
+
+      <div class="f1">
+        <label class="tc300">Tipo</label>
+        <AutocompleteField
+          :disabled="!listaTiposDeTransferencia.length"
+          :controlador="{
+            busca: '',
+            participantes: filtrosEscolhidos.tipo_ids || [],
+          }"
+          :class="{
+            loading: chamadasPendentesTiposDeTransferencia.lista,
+          }"
+          :grupo="listaTiposDeTransferencia"
+          label="nome"
+        />
+      </div>
+
       <div class="f1">
         <label class="tc300">Partidos</label>
         <AutocompleteField
@@ -491,6 +540,22 @@ watch(
       class="tagfilter"
     >
       {{ ano }}
+    </span>
+
+    <span
+      v-for="esfera in route.query.esfera"
+      :key="esfera"
+      class="tagfilter"
+    >
+      {{ esfera }}
+    </span>
+
+    <span
+      v-for="tipo in route.query.tipo_ids"
+      :key="tipo"
+      class="tagfilter"
+    >
+      {{ tiposDeTransferenciaPorId[tipo]?.nome || tipo }}
     </span>
 
     <span
