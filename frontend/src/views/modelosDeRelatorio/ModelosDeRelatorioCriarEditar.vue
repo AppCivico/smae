@@ -581,7 +581,7 @@ watch(valoresIniciais, (novosValores) => {
                     </Field>
 
                     <p
-                      v-if="campoDeOrdenacao.value.coluna
+                      v-if="campoDeOrdenacao.value?.coluna
                         && !colunaEstaNoArquivo(field.value.colunas, campoDeOrdenacao.value.coluna)"
                       class="flex g1 center tc600 p05"
                     >
