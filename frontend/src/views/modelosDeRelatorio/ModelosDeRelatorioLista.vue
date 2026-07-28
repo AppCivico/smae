@@ -39,7 +39,7 @@ const colunas = [
   {
     chave: 'fonte',
     // Mesmo nome amigável exibido no `select` de fonte do formulário de criação/edição.
-    formatador: (valor) => FONTES_POR_SISTEMA[sistemaEscolhido][valor]?.nome || valor,
+    formatador: (valor) => (FONTES_POR_SISTEMA[sistemaEscolhido] || {})[valor]?.nome || valor,
   },
   { chave: 'criador', label: 'Criado por' },
 ];
