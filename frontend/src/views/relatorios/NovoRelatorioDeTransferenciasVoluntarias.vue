@@ -115,7 +115,6 @@ modelosDeRelatorioStore.buscarTudo({ fonte: [route.meta.fonteDoRelatorio] });
     <Field
       name="fonte"
       type="hidden"
-      value="Transferencias"
     />
     <div class="flex flexwrap g2 mb2">
       <!-- ESFERA -->

@@ -106,7 +106,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     <Field
       name="fonte"
       type="hidden"
-      value="TribunalDeContas"
     />
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
