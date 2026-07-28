@@ -151,6 +151,31 @@ export class DistribuicaoRecursoStatusService {
                     },
                 });
 
+                let statusNovo;
+                if (dto.status_id) {
+                    statusNovo = await prismaTx.distribuicaoStatus.findFirstOrThrow({
+                        where: { id: dto.status_id },
+                        select: { tipo: true, valor_distribuicao_contabilizado: true },
+                    });
+                } else {
+                    statusNovo = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
+                        where: { id: dto.status_base_id },
+                        select: { tipo: true, valor_distribuicao_contabilizado: true },
+                    });
+                }
+
+                // Distribuição deixou de ser contabilizada (cancelada, redistribuída, impedida tecnicamente etc.):
+                // cancela todo o planejamento (fases/tarefas/cronograma) vinculado a ela.
+                if (statusNovo.valor_distribuicao_contabilizado === false) {
+                    await prismaTx.tarefa.updateMany({
+                        where: { distribuicao_recurso_id: distribuicao_id, removido_em: null },
+                        data: {
+                            removido_em: new Date(Date.now()),
+                            removido_por: user.id,
+                        },
+                    });
+                }
+
                 // Caso o status seja do tipo "ConcluidoComSucesso"
                 // Então é necessário atualizar a tarefa no cronograma.
                 if (distribuicaoRecursoStatus.distribuicao.transferencia.workflow_id) {
@@ -160,19 +185,6 @@ export class DistribuicaoRecursoStatusService {
                     );
 
                     if (workflowValido) {
-                        let statusNovo;
-                        if (dto.status_id) {
-                            statusNovo = await prismaTx.distribuicaoStatus.findFirstOrThrow({
-                                where: { id: dto.status_id },
-                                select: { tipo: true },
-                            });
-                        } else {
-                            statusNovo = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
-                                where: { id: dto.status_base_id },
-                                select: { tipo: true },
-                            });
-                        }
-
                         if (statusNovo.tipo == DistribuicaoStatusTipo.ConcluidoComSucesso) {
                             await prismaTx.tarefa.updateMany({
                                 where: { distribuicao_recurso_id: distribuicao_id },
