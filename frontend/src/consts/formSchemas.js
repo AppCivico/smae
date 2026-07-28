@@ -6,7 +6,6 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
@@ -43,6 +42,7 @@ import {
   setLocale,
   string,
 } from './formSchemas/initSchema';
+import relatorioValidacaoBase from './formSchemas/relatorioValidacaoBase';
 
 setLocale(i18n);
 
@@ -2916,24 +2916,6 @@ export const relatorioOrcamentarioPlanoSetorial = relatorioPlanoSetorialBase.sha
   },
 );
 
-const relatorioValidacaoBase = object()
-  .shape({
-    eh_publico: boolean()
-      .label('Relatório Público')
-      .nullable()
-      .when('visibilidade_tipo', {
-        is: undefined,
-        then: (schema) => schema.required(),
-        otherwise: (schema) => schema.optional(),
-      }),
-    visibilidade_tipo: string()
-      .label('Visibilidade')
-      .nullable()
-      .optional(),
-    fonte: string()
-      .required(),
-  });
-
 export const relatórioDeAtividadesPendentes = relatorioValidacaoBase.concat(object({
   parametros: object({
     partido_id: number()
@@ -3198,89 +3180,6 @@ export const relatórioDePrevisãoDeCustoPortfolioObras = relatorioValidacaoBase
     }),
   }),
 );
-
-export const relatórioDeTransferênciasVoluntárias = relatorioValidacaoBase.concat(object({
-  parametros: object({
-    ano: number()
-      .label('Ano')
-      .min(2003, 'A partir de 2003')
-      .nullable(),
-    esfera: mixed()
-      .label('Esfera')
-      .nullable()
-      // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-      .oneOf([...Object.keys(esferasDeTransferencia), null]),
-    gestor_contrato: string()
-      .label('Gestor do Contrato')
-      .nullable(),
-    interface: mixed()
-      .label('Interface')
-      .nullable()
-    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-      .oneOf([...Object.keys(interfacesDeTransferências), null])
-      .transform((v) => (v === '' ? null : v)),
-    objeto: string()
-      .label('Objeto/Empreendimento')
-      .max(50000)
-      .nullable(),
-    orgao_gestor_id: number()
-      .label('Órgão gestor')
-      .nullable(),
-    parlamentar_id: number()
-      .label('Parlamentar')
-      .nullable(),
-    orgao_concedente_id: number()
-      .label('Órgão concedente')
-      .min(1, 'Selecione um órgão responsável')
-      .nullable(),
-    partido_id: number()
-      .label('Partido')
-      .min(0, '${label} inválido')
-      .nullable()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
-    secretaria_concedente: string()
-      .label('Secretaria concedente')
-      .max(250)
-      .nullable(),
-    tipo: mixed()
-      .label('Tipo')
-      .oneOf([
-        'Geral',
-        'Resumido',
-      ])
-      .required('Escolha o tipo'),
-  }),
-}));
-
-export const relatórioDeTribunalDeContas = relatorioValidacaoBase.concat(object({
-  parametros: object({
-    ano_inicio: number()
-      .label('Ano Início')
-      .min(2003, 'A partir de 2003')
-      .required(),
-    ano_fim: number()
-      .label('Ano Fim')
-      .min(2003, 'A partir de 2003')
-      .required(),
-    esfera: mixed()
-      .label('Esfera')
-      .required()
-      // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
-      .oneOf([...Object.keys(esferasDeTransferencia), null]),
-    tipo_id: mixed()
-      .label('Tipo de Transferência')
-      .required()
-      .nullableOuVazio(),
-    // .oneOf([...Object.keys(tiposTransferências), null]),
-    tipo: mixed()
-      .label('Tipo')
-      .oneOf([
-        'Geral',
-        'Resumido',
-      ])
-      .required('Escolha o tipo'),
-  }),
-}));
 
 export const relatórioAtividadesPendentes = relatorioValidacaoBase.concat(object({
   parametros: object({

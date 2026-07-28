@@ -3,12 +3,15 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
 } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/relatorioDeTribunalDeContas';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useModelosDeRelatorioStore } from '@/stores/modelosDeRelatorio.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
@@ -18,11 +21,23 @@ const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaSto
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
 
+const { sistemaEscolhido } = useAuthStore();
+const modelosDeRelatorioStore = useModelosDeRelatorioStore(sistemaEscolhido);
+const {
+  lista: modelosDisponiveis,
+  chamadasPendentes: chamadasPendentesModelos,
+} = storeToRefs(modelosDeRelatorioStore);
+
+// A store é compartilhada por sistema (não por fonte): sem isso, a lista filtrada por
+// `TribunalDeContas` ficaria em `lista` até outra tela sobrescrever.
+onUnmounted(() => modelosDeRelatorioStore.$reset());
+
 const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
   fonte: route.meta.fonteDoRelatorio,
+  modelo_id: '',
   parametros: {
     esfera: null,
     ano_inicio: null,
@@ -34,6 +49,7 @@ const valoresIniciais = {
 };
 
 TipoDeTransferenciaStore.buscarTudo();
+modelosDeRelatorioStore.buscarTudo({ fonte: [route.meta.fonteDoRelatorio] });
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, values,
@@ -46,6 +62,10 @@ const tiposDisponíveis = computed(() => (values.parametros.esfera
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.parametros.esfera)
   : []));
 
+const modeloSelecionado = computed(
+  () => modelosDisponiveis.value.find((item) => item.id === values.modelo_id),
+);
+
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = 'Relatório em processamento, acompanhe na tela de listagem';
@@ -56,7 +76,11 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     valoresControlados.parametros
       .ano_fim = parseInt(valoresControlados.parametros.ano_fim, 10);
 
-    if (await relatoriosStore.insert(valoresControlados)) {
+    // `modelo_id` chega como string vazia quando "Layout padrão" é selecionado (select nativo
+    // não reflete `null`) — nulificadorTotal converte para `null` antes de enviar.
+    const carga = nulificadorTotal(valoresControlados);
+
+    if (await relatoriosStore.insert(carga)) {
       alertStore.success(msg);
       router.push({ name: route.meta.rotaDeEscape });
     }
@@ -248,6 +272,47 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
         >
           {{ errors['eh_publico'] }}
         </div>
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="modelo_id"
+          :schema="schema"
+        />
+        <Field
+          name="modelo_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors['modelo_id'],
+            loading: chamadasPendentesModelos?.lista,
+          }"
+          :disabled="!modelosDisponiveis.length"
+        >
+          <option value="">
+            padrão
+          </option>
+          <option
+            v-for="item in modelosDisponiveis"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="modelo_id"
+          class="error-msg"
+        />
+        <p
+          v-if="modeloSelecionado?.descricao"
+          class="t13 tc300"
+          style="max-width: 33em;"
+        >
+          {{ modeloSelecionado.descricao }}
+        </p>
       </div>
     </div>
 
