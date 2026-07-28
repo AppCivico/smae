@@ -459,6 +459,7 @@ watch(valoresIniciais, (novosValores) => {
                     type="button"
                     aria-label="Mover para cima"
                     title="Mover para cima"
+                    :disabled="colIdx === 0"
                     @click="moverColuna(colIdx, colIdx - 1)"
                   >
                     <svg
@@ -480,6 +481,7 @@ watch(valoresIniciais, (novosValores) => {
                     type="button"
                     aria-label="Mover para baixo"
                     title="Mover para baixo"
+                    :disabled="colIdx === camposDeColuna.length - 1"
                     @click="moverColuna(colIdx, colIdx + 1)"
                   >
                     <svg
@@ -616,6 +618,7 @@ watch(valoresIniciais, (novosValores) => {
                     type="button"
                     aria-label="Mover para cima"
                     title="Mover para cima"
+                    :disabled="ordemIdx === 0"
                     @click="moverOrdenacao(ordemIdx, ordemIdx - 1)"
                   >
                     <svg
@@ -637,6 +640,7 @@ watch(valoresIniciais, (novosValores) => {
                     type="button"
                     aria-label="Mover para baixo"
                     title="Mover para baixo"
+                    :disabled="ordemIdx === camposDeOrdenacao.length - 1"
                     @click="moverOrdenacao(ordemIdx, ordemIdx + 1)"
                   >
                     <svg
