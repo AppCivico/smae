@@ -143,7 +143,11 @@ function arquivosDisponiveisPara(nomeAtual) {
 // a pessoa desmarca o que não quiser) e sem ordenação.
 function aoEscolherArquivo(idx, evento) {
   const arquivo = arquivosDaFontePorNome.value[evento.target.value];
-  if (!arquivo) return;
+  if (!arquivo) {
+    setFieldValue(`config.arquivos[${idx}].colunas`, []);
+    setFieldValue(`config.arquivos[${idx}].order_by`, []);
+    return;
+  }
 
   setFieldValue(`config.arquivos[${idx}].colunas`, arquivo.colunas.map((coluna) => ({
     coluna: coluna.name,
