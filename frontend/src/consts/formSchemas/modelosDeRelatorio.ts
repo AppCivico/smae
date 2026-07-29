@@ -12,7 +12,7 @@ export default object({
             .label('Arquivo')
             .required(),
           colunas: array()
-            .label('Colunas incluídas')
+            .label('Colunas selecionadas')
             .of(
               object({
                 coluna: string()

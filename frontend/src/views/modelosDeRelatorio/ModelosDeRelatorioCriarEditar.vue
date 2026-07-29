@@ -574,7 +574,7 @@ watch(valoresIniciais, (novosValores) => {
                       </option>
                       <optgroup
                         v-if="colunasNaoExportadas(field.value).length"
-                        label="Colunas não incluídas no arquivo"
+                        label="Colunas não selecionadas para o arquivo"
                       >
                         <option
                           v-for="coluna in colunasNaoExportadas(field.value)"
@@ -596,7 +596,7 @@ watch(valoresIniciais, (novosValores) => {
                         height="24"
                         color="#F2890D"
                       ><use xlink:href="#i_alert" /></svg>
-                      A coluna escolhida não está entre as incluídas no arquivo.
+                      A coluna escolhida não está entre as selecionadas para o arquivo.
                     </p>
                   </div>
 
