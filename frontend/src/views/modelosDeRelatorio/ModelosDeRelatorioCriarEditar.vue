@@ -286,19 +286,22 @@ watch(valoresIniciais, (novosValores) => {
     </div>
 
     <div class="flex g2 flexwrap">
-      <div class="f1 flex g1 start">
-        <Field
-          id="xlsx_tipado"
-          name="config.xlsx_tipado"
-          type="checkbox"
-          :value="true"
-          :unchecked-value="false"
-          class="inputcheckbox"
-        />
+      <div class="f1 flex g1 center">
         <SmaeLabel
           name="config.xlsx_tipado"
           :schema="schema"
-        />
+        >
+          <template #prepend>
+            <Field
+              id="xlsx_tipado"
+              name="config.xlsx_tipado"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+              class="inputcheckbox"
+            />
+          </template>
+        </SmaeLabel>
       </div>
     </div>
 
@@ -356,7 +359,7 @@ watch(valoresIniciais, (novosValores) => {
             </div>
 
             <button
-              class="like-a__text"
+              class="like-a__text mt1"
               type="button"
               aria-label="Remover"
               title="Remover"
@@ -380,17 +383,20 @@ watch(valoresIniciais, (novosValores) => {
             </p>
 
             <div class="flex g1 start mb2">
-              <Field
-                :name="`config.arquivos[${idx}].incluir`"
-                type="checkbox"
-                :value="false"
-                :unchecked-value="true"
-                class="inputcheckbox"
-              />
               <SmaeLabel
                 name="config.arquivos.incluir"
                 :schema="schema"
-              />
+              >
+                <template #prepend>
+                  <Field
+                    :name="`config.arquivos[${idx}].incluir`"
+                    type="checkbox"
+                    :value="false"
+                    :unchecked-value="true"
+                    class="inputcheckbox"
+                  />
+                </template>
+              </SmaeLabel>
             </div>
           </template>
 
