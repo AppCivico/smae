@@ -1,10 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import schema from '@/consts/formSchemas/transferenciasVoluntariasFiltro';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
@@ -14,7 +16,6 @@ import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVolunt
 
 const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const route = useRoute();
-const router = useRouter();
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
@@ -32,27 +33,24 @@ async function excluirTransferencia(id) {
   }, 'Remover');
 }
 
-const ano = ref(route.query.ano);
-const esfera = ref(route.query.esfera
-  ? Object.keys(esferasDeTransferencia)
-    .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
-  : undefined);
-const palavraChave = ref(route.query.palavra_chave);
-const preenchimentoCompleto = ref(route.query.preenchimento_completo);
-const cancelada = ref(route.query.cancelada);
-
-function atualizarUrl() {
-  router.push({
-    query: {
-      ...route.query,
-      ano: ano.value || undefined,
-      esfera: esfera.value || undefined,
-      palavra_chave: palavraChave.value || undefined,
-      preenchimento_completo: preenchimentoCompleto.value || undefined,
-      cancelada: cancelada.value || undefined,
+const camposDeFiltro = [{
+  campos: {
+    ano: { tipo: 'numeric', atributos: { min: 2003, max: 9999 } },
+    esfera: {
+      tipo: 'select',
+      opcoes: Object.values(esferasDeTransferencia).map((e) => ({ id: e.valor, label: e.nome })),
     },
-  });
-}
+    cancelada: {
+      tipo: 'select',
+      opcoes: [{ id: 'true', label: 'Sim' }, { id: 'false', label: 'Não' }],
+    },
+    preenchimento_completo: {
+      tipo: 'select',
+      opcoes: [{ id: 'true', label: 'Sim' }, { id: 'false', label: 'Não' }],
+    },
+    palavra_chave: { tipo: 'text' },
+  },
+}];
 
 watch([
   () => route.query.ano,
@@ -98,109 +96,12 @@ watch([
     </router-link>
   </div>
 
-  <form
-    class="flex flexwrap bottom mb2 g1"
-    @submit.prevent="atualizarUrl"
-  >
-    <div class="f0">
-      <label
-        for="ano"
-        class="label tc300"
-      >Ano</label>
-      <input
-        id="ano"
-        v-model.number="ano"
-        inputmode="numeric"
-        class="inputtext mb1"
-        name="ano"
-        type="number"
-        min="2003"
-        max="9999"
-      >
-    </div>
-
-    <div class="f0">
-      <label
-        for="esfera"
-        class="label tc300"
-      >Esfera</label>
-      <select
-        id="esfera"
-        v-model.trim="esfera"
-        class="inputtext mb1"
-        name="esfera"
-      >
-        <option value="" />
-        <option
-          v-for="item in Object.values(esferasDeTransferencia)"
-          :key="item.valor"
-          :value="item.valor"
-        >
-          {{ item.nome }}
-        </option>
-      </select>
-    </div>
-
-    <div class="f0">
-      <label
-        for="cancelada"
-        class="label tc300"
-      >Cancelada</label>
-      <select
-        id="cancelada"
-        v-model.trim="cancelada"
-        class="inputtext mb1"
-        name="cancelada"
-      >
-        <option value="" />
-        <option value="true">
-          Sim
-        </option>
-        <option value="false">
-          Não
-        </option>
-      </select>
-    </div>
-
-    <div class="f0">
-      <label
-        for="preenchimento_completo"
-        class="label tc300"
-      >Preenchimento completo</label>
-      <select
-        id="preenchimento_completo"
-        v-model.trim="preenchimentoCompleto"
-        class="inputtext mb1"
-        name="preenchimento_completo"
-      >
-        <option value="" />
-        <option value="true">
-          Sim
-        </option>
-        <option value="false">
-          Não
-        </option>
-      </select>
-    </div>
-
-    <div class="f0">
-      <label
-        for="palavra_chave"
-        class="label tc300"
-      >Palavra-chave</label>
-      <input
-        id="palavra_chave"
-        v-model.trim="palavraChave"
-        class="inputtext"
-        name="palavra_chave"
-        type="text"
-      >
-    </div>
-
-    <button class="btn outline bgnone tcprimary mtauto mb1">
-      Pesquisar
-    </button>
-  </form>
+  <FiltroParaPagina
+    class="mb2"
+    :formulario="camposDeFiltro"
+    :schema="schema"
+    :carregando="chamadasPendentes.lista"
+  />
 
   <SmaeTable
     class="mb1"
