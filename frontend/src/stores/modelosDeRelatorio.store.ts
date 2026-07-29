@@ -82,6 +82,7 @@ export const useModelosDeRelatorioStore = (
     async buscarItem(id = 0): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       this.erros.emFoco = null;
+      this.emFoco = null;
 
       try {
         this.emFoco = (await this.requestS.get(
