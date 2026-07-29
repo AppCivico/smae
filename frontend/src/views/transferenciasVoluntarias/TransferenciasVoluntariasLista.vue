@@ -38,7 +38,8 @@ const esfera = ref(route.query.esfera
     .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
   : undefined);
 const palavraChave = ref(route.query.palavra_chave);
-const apenasPreenchimentoCompleto = ref(!!route.query.preenchimento_completo);
+const preenchimentoCompleto = ref(route.query.preenchimento_completo);
+const cancelada = ref(route.query.cancelada);
 
 function atualizarUrl() {
   router.push({
@@ -47,7 +48,8 @@ function atualizarUrl() {
       ano: ano.value || undefined,
       esfera: esfera.value || undefined,
       palavra_chave: palavraChave.value || undefined,
-      preenchimento_completo: !!apenasPreenchimentoCompleto.value || undefined,
+      preenchimento_completo: preenchimentoCompleto.value || undefined,
+      cancelada: cancelada.value || undefined,
     },
   });
 }
@@ -57,6 +59,7 @@ watch([
   () => route.query.esfera,
   () => route.query.palavra_chave,
   () => route.query.preenchimento_completo,
+  () => route.query.cancelada,
 ], () => {
   let { ano: anoParaBusca, palavra_chave: palavraChaveParaBusca } = route.query;
   if (typeof anoParaBusca === 'string') {
@@ -73,7 +76,8 @@ watch([
         .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
       : undefined,
     palavra_chave: palavraChaveParaBusca,
-    preenchimento_completo: !!route.query.preenchimento_completo || undefined,
+    preenchimento_completo: route.query.preenchimento_completo || undefined,
+    cancelada: route.query.cancelada || undefined,
   });
 }, { immediate: true });
 
@@ -139,6 +143,48 @@ watch([
 
     <div class="f0">
       <label
+        for="cancelada"
+        class="label tc300"
+      >Cancelada</label>
+      <select
+        id="cancelada"
+        v-model.trim="cancelada"
+        class="inputtext mb1"
+        name="cancelada"
+      >
+        <option value="" />
+        <option value="true">
+          Sim
+        </option>
+        <option value="false">
+          Não
+        </option>
+      </select>
+    </div>
+
+    <div class="f0">
+      <label
+        for="preenchimento_completo"
+        class="label tc300"
+      >Preenchimento completo</label>
+      <select
+        id="preenchimento_completo"
+        v-model.trim="preenchimentoCompleto"
+        class="inputtext mb1"
+        name="preenchimento_completo"
+      >
+        <option value="" />
+        <option value="true">
+          Sim
+        </option>
+        <option value="false">
+          Não
+        </option>
+      </select>
+    </div>
+
+    <div class="f0">
+      <label
         for="palavra_chave"
         class="label tc300"
       >Palavra-chave</label>
@@ -148,23 +194,6 @@ watch([
         class="inputtext"
         name="palavra_chave"
         type="text"
-      >
-    </div>
-
-    <div class="flex f0 center g1 mb1">
-      <label
-        class="label tc300 mt2 mb0"
-        for="preenchimento_completo"
-      >
-        apenas completas
-      </label>
-      <input
-        id="preenchimento_completo"
-        v-model="apenasPreenchimentoCompleto"
-        name="preenchimento_completo"
-        type="checkbox"
-        :value="true"
-        class="mt2"
       >
     </div>
 
