@@ -133,9 +133,9 @@ onBeforeRouteLeave(() => {
     :colunas="[
       { chave: 'criador.nome_exibicao', label: 'Criador' },
       { chave: 'criado_em', label: 'Gerado em', formatador: localizarDataHorario },
-      { chave: 'parametros_processados', label: 'Filtros Aplicados' },
+      { chave: 'parametros_processados', label: 'Parâmetros Aplicados' },
       { chave: 'resumo_saida', label: 'Resumo saída' },
-  { chave: 'visibilidade_tipo_label', label: 'Visibilidade' },
+      { chave: 'visibilidade_tipo_label', label: 'Visibilidade' },
       { chave: 'acoes', label: 'Ações' },
     ]"
     @deletar="excluirRelatório"
@@ -151,22 +151,26 @@ onBeforeRouteLeave(() => {
 
     <template #celula:resumo_saida="{ celula }">
       <dl>
-        <div
+        <template
           v-for="(resumoValor, resumoLabel) in celula"
           :key="`resumo-celula--${resumoLabel}`"
         >
-          <dt class="w700 inline">
-            {{ resumoLabel }}:
-          </dt>
-          <dd class="inline">
-            <template v-if="!Array.isArray(resumoValor)">
-              {{ resumoValor }}
-            </template>
-            <template v-else>
-              {{ combinadorDeListas(resumoValor) }}
-            </template>
-          </dd>
-        </div>
+          <div
+            v-if="resumoLabel !== 'pos_processamento'"
+          >
+            <dt class="w700 inline">
+              {{ resumoLabel }}:
+            </dt>
+            <dd class="inline">
+              <template v-if="!Array.isArray(resumoValor)">
+                {{ resumoValor }}
+              </template>
+              <template v-else>
+                {{ combinadorDeListas(resumoValor) }}
+              </template>
+            </dd>
+          </div>
+        </template>
       </dl>
     </template>
 
@@ -186,6 +190,17 @@ onBeforeRouteLeave(() => {
             <template v-else>
               {{ combinadorDeListas(parametro.valor) }}
             </template>
+          </dd>
+        </div>
+
+        <div
+          v-if="linha.modelo && linha.modelo.nome !== 'padrao'"
+        >
+          <dt class="w700 inline">
+            Modelo:
+          </dt>
+          <dd class="inline">
+            {{ linha.modelo.nome }}
           </dd>
         </div>
       </dl>
