@@ -463,7 +463,6 @@ modelosDeRelatorioStore.buscarTudo({ fonte: [route.meta.fonteDoRelatorio] });
         <p
           v-if="modeloSelecionado?.descricao"
           class="t13 tc300"
-          style="max-width: 33em;"
         >
           {{ modeloSelecionado.descricao }}
         </p>
