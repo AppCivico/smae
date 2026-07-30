@@ -98,7 +98,10 @@ function obterInfoDoArquivo(arquivo) {
 // renomeadas — a linha correspondente fica travada em vez de permitir remover/renomear.
 function colunaEhTravada(arquivo, nomeDaColuna) {
   const coluna = obterInfoDoArquivo(arquivo)?.colunas.find((item) => item.name === nomeDaColuna);
-  return coluna ? !coluna.customizavel : false;
+  // `=== false` (não `!coluna.customizavel`): a API já teve versões que omitem esse campo, e a
+  // ausência deve cair no default documentado no backend (`customizavel` ausente = true = não
+  // travada), não travar tudo por causa de um `undefined`.
+  return coluna?.customizavel === false;
 }
 
 // A ordenação aceita qualquer coluna do schema, mesmo uma que a pessoa não incluiu em "Colunas
