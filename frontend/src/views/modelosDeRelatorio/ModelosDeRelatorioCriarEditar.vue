@@ -275,12 +275,12 @@ watch(valoresIniciais, (novosValores) => {
         name="descricao"
         :schema="schema"
       />
-      <Field
+      <SmaeText
         name="descricao"
         as="textarea"
         rows="3"
         class="inputtext light"
-        maxlength="1000"
+        :schema="schema"
       />
       <ErrorMessage
         name="descricao"
