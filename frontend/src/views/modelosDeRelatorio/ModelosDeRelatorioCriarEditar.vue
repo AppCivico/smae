@@ -9,6 +9,7 @@ import {
 import { useRouter } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
+import ListaReordenavel from '@/components/ListaReordenavel.vue';
 import FONTES_POR_SISTEMA from '@/consts/fontesDeRelatoriosPorSistema';
 import schema from '@/consts/formSchemas/modelosDeRelatorio';
 import { useAlertStore } from '@/stores/alert.store';
@@ -420,103 +421,74 @@ watch(valoresIniciais, (novosValores) => {
                 }"
                 :name="`config.arquivos[${idx}].colunas`"
               >
-                <div
-                  v-for="(campoDeColuna, colIdx) in camposDeColuna"
-                  :key="`arquivos[${idx}].colunas--${campoDeColuna.key}`"
-                  class="flex g2 mb1 start"
+                <ListaReordenavel
+                  :items="camposDeColuna"
+                  @move="moverColuna"
                 >
-                  <div class="f1">
-                    <SmaeLabel
-                      name="config.arquivos.colunas.coluna"
-                      :schema="schema"
-                    />
-                    <Field
-                      :name="`config.arquivos[${idx}].colunas[${colIdx}].coluna`"
-                      as="select"
-                      class="inputtext light"
+                  <template #default="{ item: campoDeColuna, index: colIdx }">
+                    <div class="flex g2">
+                      <div class="f1">
+                        <SmaeLabel
+                          name="config.arquivos.colunas.coluna"
+                          :schema="schema"
+                        />
+                        <Field
+                          :name="`config.arquivos[${idx}].colunas[${colIdx}].coluna`"
+                          as="select"
+                          class="inputtext light"
+                          :disabled="colunaEhTravada(
+                            field.value.arquivo, campoDeColuna.value?.coluna
+                          )"
+                        >
+                          <option value="">
+                            Selecionar coluna
+                          </option>
+                          <option
+                            v-for="coluna in obterInfoDoArquivo(field.value.arquivo)?.colunas"
+                            :key="coluna.name"
+                            :value="coluna.name"
+                          >
+                            {{ coluna.label }}
+                          </option>
+                        </Field>
+                      </div>
+
+                      <div class="f1">
+                        <SmaeLabel
+                          name="config.arquivos.colunas.label"
+                          :schema="schema"
+                        />
+                        <Field
+                          :name="`config.arquivos[${idx}].colunas[${colIdx}].label`"
+                          type="text"
+                          placeholder="Título (opcional)"
+                          class="inputtext light"
+                          :disabled="colunaEhTravada(
+                            field.value.arquivo, campoDeColuna.value?.coluna
+                          )"
+                        />
+                      </div>
+                    </div>
+                  </template>
+
+                  <template #extra="{ item: campoDeColuna, index: colIdx }">
+                    <button
+                      class="like-a__text mt2"
+                      type="button"
+                      aria-label="Remover"
+                      title="Remover"
                       :disabled="colunaEhTravada(field.value.arquivo, campoDeColuna.value?.coluna)"
+                      @click="removerColuna(colIdx)"
                     >
-                      <option value="">
-                        Selecionar coluna
-                      </option>
-                      <option
-                        v-for="coluna in obterInfoDoArquivo(field.value.arquivo)?.colunas"
-                        :key="coluna.name"
-                        :value="coluna.name"
+                      <svg
+                        width="20"
+                        height="20"
                       >
-                        {{ coluna.label }}
-                      </option>
-                    </Field>
-                  </div>
-
-                  <div class="f1">
-                    <SmaeLabel
-                      name="config.arquivos.colunas.label"
-                      :schema="schema"
-                    />
-                    <Field
-                      :name="`config.arquivos[${idx}].colunas[${colIdx}].label`"
-                      type="text"
-                      placeholder="Título (opcional)"
-                      class="inputtext light"
-                      :disabled="colunaEhTravada(field.value.arquivo, campoDeColuna.value?.coluna)"
-                    />
-                  </div>
-
-                  <button
-                    class="like-a__text addlink tc300 mt2"
-                    type="button"
-                    aria-label="Mover para cima"
-                    title="Mover para cima"
-                    :disabled="colIdx === 0"
-                    @click="moverColuna(colIdx, colIdx - 1)"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use
-                        xlink:href="#i_down"
-                        style="
-                      transform: rotate(180deg);
-                      transform-origin: center;
-                    "
-                      />
-                    </svg>
-                  </button>
-
-                  <button
-                    class="like-a__text addlink tc300 mt2"
-                    type="button"
-                    aria-label="Mover para baixo"
-                    title="Mover para baixo"
-                    :disabled="colIdx === camposDeColuna.length - 1"
-                    @click="moverColuna(colIdx, colIdx + 1)"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_down" />
-                    </svg>
-                  </button>
-
-                  <button
-                    class="like-a__text mt2"
-                    type="button"
-                    aria-label="Remover"
-                    title="Remover"
-                    :disabled="colunaEhTravada(field.value.arquivo, campoDeColuna.value?.coluna)"
-                    @click="removerColuna(colIdx)"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_remove" />
-                    </svg>
-                  </button>
-                </div>
+                        <use xlink:href="#i_remove" />
+                      </svg>
+                    </button>
+                  </template>
+                </ListaReordenavel>
 
                 <button
                   class="like-a__text addlink"
@@ -550,131 +522,100 @@ watch(valoresIniciais, (novosValores) => {
                 }"
                 :name="`config.arquivos[${idx}].order_by`"
               >
-                <div
-                  v-for="(campoDeOrdenacao, ordemIdx) in camposDeOrdenacao"
-                  :key="`arquivos[${idx}].order_by--${campoDeOrdenacao.key}`"
-                  class="flex g2 mb1 start"
+                <ListaReordenavel
+                  :items="camposDeOrdenacao"
+                  @move="moverOrdenacao"
                 >
-                  <div class="f1">
-                    <SmaeLabel
-                      name="config.arquivos.order_by.coluna"
-                      :schema="schema"
-                    />
-                    <Field
-                      :name="`config.arquivos[${idx}].order_by[${ordemIdx}].coluna`"
-                      as="select"
-                      class="inputtext light"
-                    >
-                      <option value="">
-                        Selecionar coluna
-                      </option>
-                      <option
-                        v-for="coluna in colunasExportadas(field.value)"
-                        :key="coluna.name"
-                        :value="coluna.name"
-                      >
-                        {{ coluna.label }}
-                      </option>
-                      <optgroup
-                        v-if="colunasNaoExportadas(field.value).length"
-                        label="Colunas não selecionadas para o arquivo"
-                      >
-                        <option
-                          v-for="coluna in colunasNaoExportadas(field.value)"
-                          :key="coluna.name"
-                          :value="coluna.name"
+                  <template #default="{ item: campoDeOrdenacao, index: ordemIdx }">
+                    <div class="flex g2">
+                      <div class="f1">
+                        <SmaeLabel
+                          name="config.arquivos.order_by.coluna"
+                          :schema="schema"
+                        />
+                        <Field
+                          :name="`config.arquivos[${idx}].order_by[${ordemIdx}].coluna`"
+                          as="select"
+                          class="inputtext light"
                         >
-                          {{ coluna.label }}
-                        </option>
-                      </optgroup>
-                    </Field>
+                          <option value="">
+                            Selecionar coluna
+                          </option>
+                          <option
+                            v-for="coluna in colunasExportadas(field.value)"
+                            :key="coluna.name"
+                            :value="coluna.name"
+                          >
+                            {{ coluna.label }}
+                          </option>
+                          <optgroup
+                            v-if="colunasNaoExportadas(field.value).length"
+                            label="Colunas não selecionadas para o arquivo"
+                          >
+                            <option
+                              v-for="coluna in colunasNaoExportadas(field.value)"
+                              :key="coluna.name"
+                              :value="coluna.name"
+                            >
+                              {{ coluna.label }}
+                            </option>
+                          </optgroup>
+                        </Field>
 
-                    <p
-                      v-if="campoDeOrdenacao.value?.coluna
-                        && !colunaEstaNoArquivo(field.value.colunas, campoDeOrdenacao.value.coluna)"
-                      class="flex g1 center tc600 p05"
+                        <p
+                          v-if="campoDeOrdenacao.value?.coluna
+                            && !colunaEstaNoArquivo(
+                              field.value.colunas, campoDeOrdenacao.value.coluna
+                            )"
+                          class="flex g1 center tc600 p05"
+                        >
+                          <svg
+                            width="24"
+                            height="24"
+                            color="#F2890D"
+                          ><use xlink:href="#i_alert" /></svg>
+                          A coluna escolhida não está entre as selecionadas para o arquivo.
+                        </p>
+                      </div>
+
+                      <div class="f1">
+                        <SmaeLabel
+                          name="config.arquivos.order_by.direcao"
+                          :schema="schema"
+                        />
+                        <Field
+                          :name="`config.arquivos[${idx}].order_by[${ordemIdx}].direcao`"
+                          as="select"
+                          class="inputtext light"
+                        >
+                          <option value="ASC">
+                            Crescente
+                          </option>
+                          <option value="DESC">
+                            Decrescente
+                          </option>
+                        </Field>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template #extra="{ index: ordemIdx }">
+                    <button
+                      class="like-a__text mt2"
+                      type="button"
+                      aria-label="Remover"
+                      title="Remover"
+                      @click="removerOrdenacao(ordemIdx)"
                     >
                       <svg
-                        width="24"
-                        height="24"
-                        color="#F2890D"
-                      ><use xlink:href="#i_alert" /></svg>
-                      A coluna escolhida não está entre as selecionadas para o arquivo.
-                    </p>
-                  </div>
-
-                  <div class="f1">
-                    <SmaeLabel
-                      name="config.arquivos.order_by.direcao"
-                      :schema="schema"
-                    />
-                    <Field
-                      :name="`config.arquivos[${idx}].order_by[${ordemIdx}].direcao`"
-                      as="select"
-                      class="inputtext light"
-                    >
-                      <option value="ASC">
-                        Crescente
-                      </option>
-                      <option value="DESC">
-                        Decrescente
-                      </option>
-                    </Field>
-                  </div>
-
-                  <button
-                    class="like-a__text addlink tc300 mt2"
-                    type="button"
-                    aria-label="Mover para cima"
-                    title="Mover para cima"
-                    :disabled="ordemIdx === 0"
-                    @click="moverOrdenacao(ordemIdx, ordemIdx - 1)"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use
-                        xlink:href="#i_down"
-                        style="
-                      transform: rotate(180deg);
-                      transform-origin: center;
-                    "
-                      />
-                    </svg>
-                  </button>
-
-                  <button
-                    class="like-a__text addlink tc300 mt2"
-                    type="button"
-                    aria-label="Mover para baixo"
-                    title="Mover para baixo"
-                    :disabled="ordemIdx === camposDeOrdenacao.length - 1"
-                    @click="moverOrdenacao(ordemIdx, ordemIdx + 1)"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_down" />
-                    </svg>
-                  </button>
-
-                  <button
-                    class="like-a__text mt2"
-                    type="button"
-                    aria-label="Remover"
-                    title="Remover"
-                    @click="removerOrdenacao(ordemIdx)"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    >
-                      <use xlink:href="#i_remove" />
-                    </svg>
-                  </button>
-                </div>
+                        width="20"
+                        height="20"
+                      >
+                        <use xlink:href="#i_remove" />
+                      </svg>
+                    </button>
+                  </template>
+                </ListaReordenavel>
 
                 <button
                   class="like-a__text addlink"
