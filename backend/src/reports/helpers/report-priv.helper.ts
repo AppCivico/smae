@@ -82,6 +82,18 @@ export function hasReportPriv(
     ]);
 }
 
+/**
+ * Manter modelos (criar/editar/remover) é um eixo separado de executar relatórios: quem roda
+ * relatórios **usa** modelos, quem os mantém precisa de `Reports.modelo_admin.{sistema}`.
+ *
+ * Um por sistema e sem escopo de fonte, ao contrário de `executar`/`remover`: a amarração à fonte
+ * já vem de graça, porque gerenciar um modelo também exige poder executar aquela fonte
+ * (`assertPodeEscrever`). Repetir o escopo aqui só multiplicaria privilégios sem restringir nada.
+ */
+export function hasModeloAdminPriv(user: PessoaFromJwt, sistema: ModuloSistema): boolean {
+    return user.hasSomeRoles([`Reports.modelo_admin.${sistema}` as ListaDePrivilegios]);
+}
+
 /** `true` quando o usuário tem o privilégio amplo do sistema (sem escopo de fonte). */
 export function hasReportPrivAmplo(
     user: PessoaFromJwt,

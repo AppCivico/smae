@@ -114,6 +114,74 @@ export class ListRelatorioColunasDto {
     arquivos: RelatorioArquivoColunasDto[];
 }
 
+/** Referência do modelo que o schema consultado não tem. */
+export class ModeloReferenciaIgnoradaDto {
+    @ApiProperty()
+    arquivo: string;
+
+    @ApiProperty({ enum: ['colunas', 'filtros', 'order_by'] })
+    onde: 'colunas' | 'filtros' | 'order_by';
+
+    @ApiProperty()
+    coluna: string;
+}
+
+/**
+ * O que um modelo **entrega**: por arquivo, as colunas na ordem e com os rótulos que o modelo
+ * define — já recortadas contra o schema, exatamente como o pós-processamento faz na execução
+ * (mesma função, `resolverColunasDoModelo`).
+ *
+ * É a resposta para quem vai *rodar* o relatório ("o que este modelo vai me dar?"), enquanto
+ * `GET /relatorio-modelo/colunas` responde para quem vai *montar* um ("o que posso escolher?").
+ * Por isso a visibilidade aqui é a de leitura do modelo, não a de gerenciá-lo.
+ */
+export class RelatorioModeloColunasDto {
+    @ApiProperty()
+    modelo_id: number;
+
+    @ApiProperty()
+    modelo_nome: string;
+
+    @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
+    fonte: FonteRelatorio;
+
+    /**
+     * `false`: recorte contra a união das variantes da fonte — é o superconjunto do que sairá.
+     *
+     * `true`: recorte contra o schema de uma combinação de parâmetros, ou seja, exatamente as
+     * colunas e os rótulos que aquela execução vai produzir.
+     */
+    @ApiProperty()
+    parametrizado: boolean;
+
+    /** Arquivos que o modelo entrega, cada um com as colunas finais na ordem final. */
+    @ApiProperty({ type: RelatorioArquivoColunasDto, isArray: true })
+    arquivos: RelatorioArquivoColunasDto[];
+
+    /** Arquivos que o modelo pediu para não entregar (`incluir: false`). */
+    @ApiProperty({ type: String, isArray: true })
+    arquivos_descartados: string[];
+
+    /**
+     * Referências que a fonte **não declara mais** — modelo salvo antes de a coluna sair do
+     * relatório. Diferente de `colunas_recortadas`: aqui é deriva de schema, e merece correção
+     * do modelo.
+     */
+    @ApiProperty({ type: ModeloReferenciaIgnoradaDto, isArray: true })
+    referencias_ignoradas: ModeloReferenciaIgnoradaDto[];
+
+    /**
+     * Referências recortadas por não se aplicarem a estes parâmetros (meta/iniciativa/atividade
+     * num orçamento de projeto, `mes`/`ano` fora do Analítico). Situação normal — o modelo cobre
+     * a união das variantes —, listada para responder "por que a coluna que escolhi não veio?".
+     *
+     * Só é preenchida com `parametrizado: true`: sem parâmetros o recorte é contra a própria
+     * união, então não há o que recortar.
+     */
+    @ApiProperty({ type: ModeloReferenciaIgnoradaDto, isArray: true })
+    colunas_recortadas: ModeloReferenciaIgnoradaDto[];
+}
+
 /**
  * Fontes que aceitam modelo no sistema da requisição, já com as colunas de cada uma — resolve o
  * ovo-e-galinha do `GET /colunas`, que exige `fonte` mas não tinha de onde a tela tirar a lista de

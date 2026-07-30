@@ -10,7 +10,12 @@ import {
     getReportRowColumns,
     getReportRowsOptions,
 } from '../post-process/report-column.decorator';
-import { ReportColumnDef } from '../post-process/report-schema';
+import {
+    ModeloReferenciaIgnorada,
+    registradorDeReferencias,
+    resolverColunasDoModelo,
+} from '../post-process/modelo-colunas';
+import { ReportColumnDef, ReportFileSchema } from '../post-process/report-schema';
 import { getVisibilidadeLabel, VisibilidadeTipo } from '../relatorios/helpers/visibilidade-templates';
 import { ReportsService } from '../relatorios/reports.service';
 import { CreateRelatorioModeloDto } from './dto/create-relatorio-modelo.dto';
@@ -20,12 +25,14 @@ import {
     ListRelatorioColunasDto,
     ListRelatorioFontesDto,
     RelatorioArquivoColunasDto,
+    RelatorioModeloColunasDto,
     RelatorioModeloDetailDto,
     RelatorioModeloItemDto,
 } from './entities/relatorio-modelo.entity';
 import {
     fonteEhDoSistema,
     fontesPermitidas,
+    hasModeloAdminPriv,
     hasReportPriv,
     modeloVisibilidadeWhere,
 } from '../helpers/report-priv.helper';
@@ -77,6 +84,7 @@ export class RelatorioModeloService {
 
     async create(dto: CreateRelatorioModeloDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('criar', 'Modelos de relatório');
+        this.assertPodeAdministrar(sistema, user);
         this.assertPodeEscrever(dto.fonte, sistema, user);
         this.validaConfig(dto.fonte, dto.config);
 
@@ -114,6 +122,7 @@ export class RelatorioModeloService {
 
     async update(id: number, dto: UpdateRelatorioModeloDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('editar', 'Modelos de relatório');
+        this.assertPodeAdministrar(sistema, user);
 
         const modelo = await this.prisma.relatorioModelo.findFirst({
             where: { id, removido_em: null },
@@ -205,6 +214,7 @@ export class RelatorioModeloService {
 
     async remove(id: number, user: PessoaFromJwt): Promise<void> {
         const sistema = user.assertOneModuloSistema('remover', 'Modelos de relatório');
+        this.assertPodeAdministrar(sistema, user);
 
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
@@ -250,8 +260,7 @@ export class RelatorioModeloService {
         const sistema = user.assertOneModuloSistema('buscar', 'Modelos de relatório');
         this.assertPodeEscrever(fonte, sistema, user);
 
-        if (parametros === undefined)
-            return { fonte, parametrizado: false, arquivos: this.colunasDaFonte(fonte) };
+        if (parametros === undefined) return { fonte, parametrizado: false, arquivos: this.colunasDaFonte(fonte) };
 
         const schemas = await this.reportsService.describeSchemaDaFonte(fonte, parametros, sistema);
         if (!schemas?.length) return { fonte, parametrizado: false, arquivos: this.colunasDaFonte(fonte) };
@@ -277,6 +286,114 @@ export class RelatorioModeloService {
                     format: c.format ?? null,
                 })),
             })),
+        };
+    }
+
+    /**
+     * O que um modelo **entrega** — colunas finais, por arquivo, na ordem e com os rótulos que o
+     * modelo define.
+     *
+     * Complementa `listColunas`, que responde "o que posso escolher" para quem monta um modelo;
+     * esta responde "o que este modelo vai me dar" para quem vai *rodar* o relatório. Por isso o
+     * gate é o de **leitura** do modelo (mesma visibilidade do `findOne`) e não o de gerenciá-lo:
+     * usar um modelo não exige poder editá-lo.
+     *
+     * O recorte usa a mesma `resolverColunasDoModelo` do pós-processamento — de propósito, para
+     * que a prévia não possa divergir do arquivo entregue. Contra a **união** da fonte sem
+     * `parametros` (superconjunto do que sairá), ou contra o schema **daquela execução** com eles.
+     */
+    async listColunasDoModelo(
+        id: number,
+        parametros: unknown | undefined,
+        user: PessoaFromJwt
+    ): Promise<RelatorioModeloColunasDto> {
+        const sistema = user.assertOneModuloSistema('buscar', 'Modelos de relatório');
+
+        const row = await this.prisma.relatorioModelo.findFirst({
+            where: {
+                id,
+                removido_em: null,
+                fonte: this.filtroDeFonte(undefined, user, sistema),
+                OR: modeloVisibilidadeWhere(user),
+            },
+            select: { id: true, nome: true, fonte: true, config: true },
+        });
+        if (!row) throw new HttpException('Modelo de relatório não encontrado', 404);
+
+        const config = row.config as unknown as RelatorioModeloConfigDto;
+        const doRegistro = this.arquivosDaFonte(row.fonte);
+
+        // Sem parâmetros o schema de referência é a própria união, então `conhecidas` seria igual
+        // ao schema e nada cairia em `recortadas` — o que é correto: não há recorte a relatar.
+        const schemas =
+            parametros === undefined
+                ? null
+                : await this.reportsService.describeSchemaDaFonte(row.fonte, parametros, sistema);
+
+        // Fonte sem `describeSchema` (ou que devolveu vazio) cai na união, igual ao `listColunas`:
+        // melhor o superconjunto do que uma resposta sem arquivo nenhum.
+        const parametrizado = !!schemas?.length;
+        const base: ReportFileSchema[] = parametrizado
+            ? schemas!
+            : doRegistro.map((a) => ({ arquivo: a.arquivo, colunas: a.colunas }));
+
+        const descricoes = new Map(doRegistro.flatMap((a) => [...a.descricoes.entries()]));
+        const descricaoDoArquivo = new Map(doRegistro.map((a) => [a.arquivo, a.descricao]));
+        const uniaoDaFonte = new Map(doRegistro.map((a) => [a.arquivo, new Set(a.colunas.map((c) => c.name))]));
+
+        const arquivos: RelatorioArquivoColunasDto[] = [];
+        const arquivos_descartados: string[] = [];
+        const referencias_ignoradas: ModeloReferenciaIgnorada[] = [];
+        const colunas_recortadas: ModeloReferenciaIgnorada[] = [];
+
+        for (const schema of base) {
+            const cfg = config?.arquivos?.find((a) => a.arquivo === schema.arquivo);
+
+            // Mesma precedência do `aplicarModelo`: `incluir: false` vence tudo, e arquivo não
+            // citado roda com o padrão do schema (todas as colunas) em vez de sumir.
+            if (cfg?.incluir === false) {
+                arquivos_descartados.push(schema.arquivo);
+                continue;
+            }
+
+            const registrar = registradorDeReferencias(
+                schema.arquivo,
+                uniaoDaFonte.get(schema.arquivo),
+                referencias_ignoradas,
+                colunas_recortadas
+            );
+
+            const colunas = resolverColunasDoModelo(schema, cfg ?? { arquivo: schema.arquivo }, registrar);
+
+            // Filtros e order_by não mudam as colunas entregues, mas as referências quebradas
+            // deles são o mesmo sintoma (modelo velho para schema novo) e o frontend mostra tudo
+            // no mesmo aviso — então são conferidos aqui também.
+            const validas = new Set(schema.colunas.map((c) => c.name));
+            for (const f of cfg?.filtros ?? []) if (!validas.has(f.coluna)) registrar('filtros', f.coluna);
+            for (const o of cfg?.order_by ?? []) if (!validas.has(o.coluna)) registrar('order_by', o.coluna);
+
+            arquivos.push({
+                arquivo: schema.arquivo,
+                descricao: descricaoDoArquivo.get(schema.arquivo) ?? null,
+                colunas: colunas.map((c) => ({
+                    name: c.name,
+                    label: c.label,
+                    type: c.type,
+                    descricao: descricoes.get(c.name) ?? null,
+                    format: c.format ?? null,
+                })),
+            });
+        }
+
+        return {
+            modelo_id: row.id,
+            modelo_nome: row.nome,
+            fonte: row.fonte,
+            parametrizado,
+            arquivos,
+            arquivos_descartados,
+            referencias_ignoradas,
+            colunas_recortadas,
         };
     }
 
@@ -338,11 +455,33 @@ export class RelatorioModeloService {
     }
 
     /**
-     * Editar/remover: o criador sempre pode; quem tem o privilégio de remoção da fonte
-     * (`Reports.remover.{sistema}`, amplo ou escopado) também, para poder faxinar modelos
-     * compartilhados de pessoas que saíram.
+     * Gate do eixo de administração, conferido contra o **sistema da requisição** — o guard do
+     * controller aceita `Reports.modelo_admin` de qualquer sistema, então sem isto quem administra
+     * modelos de um módulo administraria os de outro, bastando poder executar aquela fonte.
+     *
+     * Separado de `assertPodeEscrever` de propósito: aquele também gateia `GET`/`POST /colunas`,
+     * que são leitura do schema da fonte e seguem valendo para quem só executa relatórios.
+     */
+    private assertPodeAdministrar(sistema: ModuloSistema, user: PessoaFromJwt): void {
+        if (!hasModeloAdminPriv(user, sistema))
+            throw new HttpException(
+                `Usuário não tem permissão para gerenciar modelos de relatório em ${sistema}.`,
+                403
+            );
+    }
+
+    /**
+     * Editar/remover exige, antes de tudo, `Reports.modelo_admin.{sistema}`: manter modelos é um
+     * eixo separado de rodar relatórios. Dentro dele, o criador sempre pode; quem tem o privilégio
+     * de remoção da fonte (`Reports.remover.{sistema}`, amplo ou escopado) também, para poder
+     * faxinar modelos compartilhados de pessoas que saíram.
+     *
+     * O guard do controller aceita o privilégio de qualquer sistema; é aqui que ele é conferido
+     * contra o **sistema da requisição**. Vale também para `pode_editar`/`pode_remover` da
+     * listagem, que saem daqui — sem isso o frontend ofereceria botões que devolvem 403.
      */
     private podeEditar(criadoPor: number, fonte: FonteRelatorio, sistema: ModuloSistema, user: PessoaFromJwt): boolean {
+        if (!hasModeloAdminPriv(user, sistema)) return false;
         return criadoPor === user.id || hasReportPriv(user, 'remover', sistema, fonte);
     }
 

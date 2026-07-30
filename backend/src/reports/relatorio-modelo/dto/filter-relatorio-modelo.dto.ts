@@ -79,3 +79,18 @@ export class ColunasParametrizadasDto {
     @IsObject({ message: 'parametros precisa ser um objeto' })
     parametros?: Record<string, unknown>;
 }
+
+/**
+ * Corpo de `POST /relatorio-modelo/:id/colunas`. A fonte não vem no corpo: ela é a do modelo,
+ * que é imutável (ver `UpdateRelatorioModeloDto`).
+ */
+export class ColunasDoModeloDto {
+    /**
+     * Os mesmos parâmetros que irão para `POST /relatorios`. Omitido equivale a `{}` — o que,
+     * para as fontes cujo schema depende de `pdm_id`/`tipo`, devolve a variante default e não
+     * a que você vai rodar.
+     */
+    @IsOptional()
+    @IsObject({ message: 'parametros precisa ser um objeto' })
+    parametros?: Record<string, unknown>;
+}

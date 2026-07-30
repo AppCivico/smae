@@ -430,6 +430,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.dashboard_ps', 'Dashboard de Plano Setorial'],
         ['Reports.executar.PlanoSetorial', 'Executar relatórios de Programa Setorial'],
         ['Reports.remover.PlanoSetorial', 'Executar relatórios de Programa Setorial'],
+        ['Reports.modelo_admin.PlanoSetorial', 'Criar, editar e remover modelos de relatório de Plano Setorial'],
     ],
     CadastroPS: [
         ['CadastroPS.administrador', 'Gerenciar Plano Setorial'],
@@ -589,29 +590,41 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
         ['Reports.dashboard_portfolios', false],
     ],
+    // `Reports.modelo_admin.{sistema}` é o eixo "pode manter modelos de relatório", separado de
+    // executar: quem roda relatórios usa modelos, quem os cria/edita/remove precisa deste. Um por
+    // módulo, sem escopo de fonte — a amarração à fonte segue no service, que continua exigindo
+    // `Reports.executar.{sistema}` daquela fonte.
     ReportsPdm: [
         ['Reports.dashboard_pdm', 'Dashboard de programa de metas'],
         ['Reports.executar.PDM', 'Executar relatórios de programa de metas'],
         ['Reports.remover.PDM', 'Executar relatórios de programa de metas'],
+        ['Reports.modelo_admin.PDM', 'Criar, editar e remover modelos de relatório de programa de metas'],
     ],
     ReportsProjetos: [
         ['Reports.dashboard_portfolios', 'Dashboard de portfólios'],
         ['Reports.executar.Projetos', 'Executar relatórios de projetos'],
         ['Reports.remover.Projetos', 'Executar relatórios de projetos'],
+        ['Reports.modelo_admin.Projetos', 'Criar, editar e remover modelos de relatório de projetos'],
     ],
     ReportsMDO: [
         ['Reports.dashboard_mdo', 'Dashboard de portfólios de MdO'],
         ['Reports.executar.MDO', 'Executar relatórios de projetos de MdO'],
         ['Reports.remover.MDO', 'Executar relatórios de projetos de MdO'],
+        ['Reports.modelo_admin.MDO', 'Criar, editar e remover modelos de relatório de projetos de MdO'],
     ],
     ReportsProgramaDeMetas: [
         ['Reports.dashboard_programademetas', 'Dashboard de Programa de Metas'],
         ['Reports.executar.ProgramaDeMetas', 'Executar relatórios de Programa Setorial'],
         ['Reports.remover.ProgramaDeMetas', 'Executar relatórios de Programa Setorial'],
+        ['Reports.modelo_admin.ProgramaDeMetas', 'Criar, editar e remover modelos de relatório de Programa de Metas'],
     ],
     ReportsCasaCivil: [
         ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
+        [
+            'Reports.modelo_admin.CasaCivil',
+            'Criar, editar e remover modelos de relatório de transferências voluntárias',
+        ],
         [
             'Reports.executar.CasaCivil:Demandas',
             'Executar relatórios de Demandas (escopo Gestor de Distribuição de Recurso)',
@@ -1267,6 +1280,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroParlamentar.remover',
             'Reports.remover.CasaCivil',
             'Reports.executar.CasaCivil',
+            'Reports.modelo_admin.CasaCivil',
             'CadastroTransferencia.editar',
             'CadastroTransferencia.listar',
             'CadastroTransferencia.inserir',

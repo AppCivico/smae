@@ -12,6 +12,12 @@ import {
     RelatorioModeloOrdemDto,
 } from './dto/relatorio-modelo.dto';
 import { compilarFiltros } from './filtro-compiler';
+import {
+    ColunasDaFonte,
+    ModeloReferenciaIgnorada,
+    registradorDeReferencias,
+    resolverColunasDoModelo,
+} from './modelo-colunas';
 import { ReportColumnDef, ReportFileSchema, findFileSchema } from './report-schema';
 
 const DUCKDB_SETTINGS = { threads: '1', memory_limit: '800MB' };
@@ -63,21 +69,7 @@ export function modeloPadraoDeSchemas(schemas: ReportFileSchema[]): RelatorioMod
     return { arquivos: schemas.map((s) => ({ arquivo: s.arquivo })) };
 }
 
-/** Referência do modelo que o schema desta execução não tem. */
-export type ModeloReferenciaIgnorada = {
-    arquivo: string;
-    onde: 'colunas' | 'filtros' | 'order_by';
-    coluna: string;
-};
-
-/**
- * Colunas que a fonte declara somando **todas** as variantes, por arquivo.
- *
- * Serve só para separar duas ausências que são muito diferentes entre si: coluna que existe
- * na fonte mas não nesta execução (recorte esperado) e coluna que a fonte não tem mais
- * (schema mudou embaixo do modelo). Sem isto, as duas viravam o mesmo aviso.
- */
-export type ColunasDaFonte = Map<string, Set<string>>;
+export type { ColunasDaFonte, ModeloReferenciaIgnorada };
 
 export type AplicarModeloResultado = {
     arquivos: FileOutput[];
@@ -151,22 +143,18 @@ export class ReportPostProcessService {
 
             const cfg: RelatorioModeloArquivoDto = doModelo ?? { arquivo: file.name };
 
-            // Sem o mapa da fonte não dá para separar recorte de deriva; nesse caso tudo cai em
-            // `ignoradas`, que é o comportamento conservador (avisa demais, nunca de menos).
-            const conhecidas = colunasDaFonte?.get(file.name);
+            const registrar = registradorDeReferencias(
+                file.name,
+                colunasDaFonte?.get(file.name),
+                ignoradas,
+                recortadas,
+                (coluna, onde) =>
+                    this.logger.warn(
+                        `Modelo referencia "${coluna}" em ${onde} de ${file.name}, que a fonte não declara mais.`
+                    )
+            );
 
-            const registrar = (onde: ModeloReferenciaIgnorada['onde'], coluna: string) => {
-                if (conhecidas?.has(coluna)) {
-                    recortadas.push({ arquivo: file.name, onde, coluna });
-                    return;
-                }
-                ignoradas.push({ arquivo: file.name, onde, coluna });
-                this.logger.warn(
-                    `Modelo referencia "${coluna}" em ${onde} de ${file.name}, que a fonte não declara mais.`
-                );
-            };
-
-            const colunas = this.resolverColunas(schema, cfg, registrar);
+            const colunas = resolverColunasDoModelo(schema, cfg, registrar);
             // Filtro sobre coluna ausente é descartado, não convertido para NULL: `col = 'x'`
             // com col NULL nunca é verdadeiro e devolveria um relatório vazio — pior que
             // devolver as linhas sem aquele recorte.
@@ -203,61 +191,6 @@ export class ReportPostProcessService {
         } catch (e) {
             this.logger.warn(`Falha ao remover CSV bruto ${localFile}: ${e}`);
         }
-    }
-
-    /**
-     * Resolve a lista final de colunas: a seleção do modelo (na ordem escolhida) ou,
-     * na ausência dela, todas as colunas do schema na ordem declarada. Labels e
-     * formatação do modelo sobrescrevem os padrões do schema.
-     *
-     * A seleção do modelo é um **superconjunto**, e aqui ela é *recortada* contra o schema
-     * desta execução: fica a interseção, na ordem que o modelo pediu. Isso é o que permite
-     * criar o modelo antes de saber com que parâmetros ele vai rodar — que é a ordem natural,
-     * já que o modelo é montado uma vez e reusado em execuções diferentes.
-     *
-     * Uma coluna pedida e ausente é **descartada**, não emitida como NULL. Emitir NULL
-     * entregava uma coluna vazia com o nome de máquina no cabeçalho (`meta__titulo` em vez de
-     * "Título da Meta") toda vez que o modelo cobria uma variante que aquela execução não
-     * tem — por exemplo meta/iniciativa/atividade num orçamento de projeto.
-     *
-     * Em nenhum caso a ausência derruba o relatório: perder uma extração de horas por uma
-     * coluna cosmética seria um péssimo negócio. A validação estrita segue na criação/edição
-     * do modelo (`validaConfig`), onde coluna inexistente é erro de digitação.
-     */
-    private resolverColunas(
-        schema: ReportFileSchema,
-        cfg: RelatorioModeloArquivoDto,
-        registrar: (onde: ModeloReferenciaIgnorada['onde'], coluna: string) => void
-    ): ReportColumnDef[] {
-        if (!cfg.colunas?.length) return schema.colunas;
-
-        const porNome = new Map(schema.colunas.map((c) => [c.name, c]));
-        const out: ReportColumnDef[] = [];
-
-        for (const sel of cfg.colunas) {
-            const def = porNome.get(sel.coluna);
-
-            if (!def) {
-                registrar('colunas', sel.coluna);
-                continue;
-            }
-
-            out.push({
-                ...def,
-                label: sel.label ?? def.label,
-                format: {
-                    ...def.format,
-                    ...(sel.decimais !== undefined ? { decimalPlaces: sel.decimais } : {}),
-                    ...(sel.formato_data !== undefined ? { dateFormat: sel.formato_data } : {}),
-                },
-            });
-        }
-
-        // Recorte que zerou a seleção: entrega o schema inteiro em vez de um CSV sem coluna
-        // nenhuma. Acontece com modelo montado só para outra variante da fonte.
-        if (!out.length) return schema.colunas;
-
-        return out;
     }
 
     /**
