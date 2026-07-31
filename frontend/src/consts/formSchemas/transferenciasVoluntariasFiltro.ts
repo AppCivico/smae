@@ -7,15 +7,20 @@ export default object().shape({
     .label('Ano')
     .nullableOuVazio(),
   cancelada: string()
-    .label('Cancelada')
+    .label('Considera canceladas')
     .nullableOuVazio(),
   esfera: string()
     .label('Esfera')
     .nullableOuVazio(),
   palavra_chave: string()
     .label('Palavra-chave')
-    .nullableOuVazio(),
+    .nullableOuVazio()
+    .meta({
+      balaoInformativo: `Busca em
+Transferência (esfera, interface, ano, gestor do contrato, secretaria concedente, emenda, nome do programa, objeto, demanda, plano de ação, observações, programa, tipo, sigla, sigla, nome popular, sigla, cargo, identificador, valor de repasse)
+e Distribuição de Recursos(nome, objeto, sigla, descrição do órgão gestor, processo SEI).`,
+    }),
   preenchimento_completo: string()
-    .label('Preenchimento completo')
+    .label('Apenas completas')
     .nullableOuVazio(),
 });
