@@ -94,6 +94,18 @@ export class TaskRetryService {
     }
 }
 
+/**
+ * Sinaliza que o runJob já reagendou o retry da task (status voltou para 'pending' com esperar_ate).
+ * O chamador NÃO deve sobrescrever o status para 'errored' nesse caso, senão o handleCron nunca
+ * re-executa a task e ela fica presa.
+ */
+export class TaskRetryScheduledError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'TaskRetryScheduledError';
+    }
+}
+
 type InfoWorker = {
     pid: number;
     hostname: string;
@@ -488,23 +500,31 @@ export class TaskService {
                     this.current_concurrent_jobs--;
                 })
                 .catch(async (e: any) => {
-                    this.logger.error(`task ${task.id} failed`);
-                    this.logger.error(e);
+                    // Se o runJob já reagendou o retry (status = 'pending' com esperar_ate), NÃO
+                    // sobrescrever para 'errored' — do contrário o handleCron nunca re-executa a task.
+                    const retryAgendado = e instanceof TaskRetryScheduledError;
 
-                    await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
-                        await prismaTx.task_queue.update({
-                            where: { id: task.id },
-                            data: {
-                                status: 'errored',
-                                erro_em: new Date(),
-                                erro_mensagem: `${e}`,
-                            },
+                    if (retryAgendado) {
+                        this.logger.warn(`task ${task.id} falhou; ${e.message}`);
+                    } else {
+                        this.logger.error(`task ${task.id} failed`);
+                        this.logger.error(e);
+
+                        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+                            await prismaTx.task_queue.update({
+                                where: { id: task.id },
+                                data: {
+                                    status: 'errored',
+                                    erro_em: new Date(),
+                                    erro_mensagem: `${e}`,
+                                },
+                            });
+
+                            if (task.type == 'run_report') {
+                                await this.runReportService.handleError(task.id, e, prismaTx);
+                            }
                         });
-
-                        if (task.type == 'run_report') {
-                            await this.runReportService.handleError(task.id, e, prismaTx);
-                        }
-                    });
+                    }
 
                     if (task.pessoa_id) this.current_jobs_pessoa_ids.delete(task.pessoa_id);
                     if (task.type) this.current_jobs_types.delete(task.type);
@@ -574,7 +594,6 @@ export class TaskService {
 
     async runJob(taskId: number, type: task_type, params: Prisma.JsonValue, currentRetryCount: number): Promise<JSON> {
         let lastError: Error | null = null;
-        let retryCount = 0;
         const parsedParams = ParseParams(type, params);
         const retryConfig = parsedParams.retryConfig || new RetryConfigDto();
         try {
@@ -622,10 +641,11 @@ export class TaskService {
 
             if (!result) throw `process did not finished successfully, check logs`;
 
-            if (retryCount > 0) {
+            // Sucesso após uma ou mais tentativas: zera o contador e limpa o último erro registrado.
+            if (currentRetryCount > 0) {
                 await this.prisma.task_queue.update({
                     where: { id: taskId },
-                    data: { n_retry: 0 },
+                    data: { n_retry: 0, erro_em: null, erro_mensagem: null },
                 });
             }
 
@@ -639,26 +659,32 @@ export class TaskService {
                 throw lastError;
             }
 
-            // Increment retry count
-            retryCount++;
-            const nextRetryTime = TaskRetryService.calculateNextRetryTime(retryCount, retryConfig);
+            // Acumula a contagem com base no que já foi feito (currentRetryCount), e não em um
+            // contador local — do contrário n_retry ficaria preso em 1 e o retry nunca respeitaria
+            // o limite de maxRetries (loop infinito).
+            const nextRetryCount = currentRetryCount + 1;
+            const nextRetryTime = TaskRetryService.calculateNextRetryTime(nextRetryCount, retryConfig);
 
             this.logger.log(
-                `Task ${taskId} falhou, nova tentativa ${retryCount}/${retryConfig.maxRetries} em ${nextRetryTime.toISOString()}`
+                `Task ${taskId} falhou, nova tentativa ${nextRetryCount}/${retryConfig.maxRetries} em ${nextRetryTime.toISOString()}`
             );
 
-            // Update database with retry information
+            // Reagenda a task (volta para 'pending' com esperar_ate). Mantém a mensagem do erro
+            // para observabilidade enquanto aguarda a próxima tentativa.
             await this.prisma.task_queue.update({
                 where: { id: taskId },
                 data: {
                     status: 'pending',
-                    n_retry: retryCount,
+                    n_retry: nextRetryCount,
                     esperar_ate: nextRetryTime,
+                    erro_em: new Date(),
+                    erro_mensagem: `Retry ${nextRetryCount}/${retryConfig.maxRetries}: ${lastError.message}`,
                 },
             });
 
-            throw new Error(
-                `Retry ${retryCount}/${retryConfig.maxRetries}: ${lastError.message} Task terá nova tentativa em ${nextRetryTime.toISOString()}`
+            // Sinaliza ao chamador que o retry já foi agendado — ele NÃO deve marcar 'errored'.
+            throw new TaskRetryScheduledError(
+                `Retry ${nextRetryCount}/${retryConfig.maxRetries}: ${lastError.message} Task terá nova tentativa em ${nextRetryTime.toISOString()}`
             );
         }
     }

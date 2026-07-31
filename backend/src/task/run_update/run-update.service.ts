@@ -66,12 +66,15 @@ export class RunUpdateTaskService implements TaskableService {
     async executeJob(_params: CreateRunUpdateDto, taskId: string, context: TaskContext): Promise<any> {
         this.logger.log(`Executando tarefa de atualização em lote. ID da tarefa: ${taskId}`);
 
-        // Apenas atualizações em lote pendentes.
+        // Estados a partir dos quais o job pode (re)executar/retomar.
+        // 'Executando' está incluído propositalmente: se um job morrer no meio (ex.: OOM/SIGKILL)
+        // após já ter marcado 'Executando', o retry precisa reencontrar o registro e retomar
+        // (pulando os sucesso_ids) em vez de falhar com "não encontrada ou já processada".
         const atualizacaoEmLote = await this.prisma.atualizacaoEmLote.findUnique({
             where: {
                 id: _params.atualizacao_em_lote_id,
                 status: {
-                    in: ['Pendente', 'ConcluidoParcialmente', 'Falhou', 'Abortado', 'Concluido'],
+                    in: ['Pendente', 'Executando', 'ConcluidoParcialmente', 'Falhou', 'Abortado', 'Concluido'],
                 },
             },
         });
@@ -120,12 +123,17 @@ export class RunUpdateTaskService implements TaskableService {
                         // Buscando título/nome da linha para logs.
                         const paramsBusca = this.preparaParamsParaFindOne(_params.tipo);
                         const registro = await service.findOne(paramsBusca.tipo, id, pessoaJwt, 'ReadWrite');
-                        // Armazena o registro no nosso log estendido
+                        // Armazena o registro no nosso log estendido.
+                        // IMPORTANTE: guardamos apenas o estado anterior das colunas afetadas,
+                        // e não o objeto completo do registro. Reter o objeto inteiro por linha
+                        // fazia o buffer crescer sem limite e estourava a memória (SIGKILL/OOM)
+                        // em lotes grandes. A "Versão Anterior" do relatório continua sendo gerada
+                        // a partir desse recorte enxuto.
                         const registroProcessamento: RegistroProcessamento = {
                             id: id,
                             nome: registro?.nome || registro?.titulo || registro?.descricao || 'Nome não identificado',
                             status: 'OK',
-                            registro: registro,
+                            registro: this.montaVersaoAnterior(registro, _params.ops),
                         };
 
                         // Adiciona aos registros processados
@@ -281,6 +289,21 @@ export class RunUpdateTaskService implements TaskableService {
         }
 
         return { success: true };
+    }
+
+    // Captura apenas o estado anterior das colunas que serão editadas, para a coluna
+    // "Versão Anterior" do relatório — sem reter o objeto completo do registro (evita OOM).
+    private montaVersaoAnterior(registro: any, ops: UpdateOperacaoDto[]): Record<string, any> {
+        const versaoAnterior: Record<string, any> = {};
+        if (!registro || typeof registro !== 'object') return versaoAnterior;
+
+        for (const op of ops) {
+            if (op.col in registro) {
+                versaoAnterior[op.col] = registro[op.col];
+            }
+        }
+
+        return versaoAnterior;
     }
 
     // Novo método para pré-processar as operações e adicionar operações implícitas

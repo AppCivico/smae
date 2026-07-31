@@ -1,9 +1,11 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TipoAtualizacaoEmLote } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';
+import { IsCrontabEnabled } from 'src/common/crontab-utils';
 import { PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -46,6 +48,53 @@ export class AtualizacaoEmLoteService {
         @Inject(forwardRef(() => TaskService))
         private readonly taskService: TaskService
     ) {}
+
+    /**
+     * Reconciliação de lotes órfãos.
+     *
+     * Quando o job (task_queue) morre no meio da execução — tipicamente por OOM/SIGKILL — ele
+     * termina em status 'errored', mas a atualização em lote fica presa em 'Executando' para
+     * sempre, pois o `finalizarAtualizacaoEmLote` nunca roda. Este passo periódico detecta esses
+     * casos, marca o lote como 'Abortado' (estado que o enum reserva justamente para "morto no
+     * meio") e libera o buffer da task, evitando acúmulo de memória em disco.
+     */
+    @Interval(1000 * 60 * 10) // a cada 10 minutos
+    async reconciliaLotesOrfaos(): Promise<void> {
+        // Só reconcilia onde o worker de tasks roda (mesma família de crontab).
+        if (!IsCrontabEnabled('task')) return;
+
+        const orfaos = await this.prisma.atualizacaoEmLote.findMany({
+            where: {
+                status: 'Executando',
+                removido_em: null,
+                task: { status: 'errored' },
+            },
+            select: { id: true, task_id: true },
+        });
+
+        if (orfaos.length === 0) return;
+
+        this.logger.warn(
+            `Reconciliando ${orfaos.length} atualização(ões) em lote órfã(s): job morreu sem finalizar. Marcando como Abortado.`
+        );
+
+        for (const orfao of orfaos) {
+            try {
+                await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+                    await tx.atualizacaoEmLote.update({
+                        where: { id: orfao.id },
+                        data: { status: 'Abortado', terminou_em: new Date() },
+                    });
+
+                    if (orfao.task_id) {
+                        await tx.task_buffer.deleteMany({ where: { task_id: orfao.task_id } });
+                    }
+                });
+            } catch (error) {
+                this.logger.error(`Falha ao reconciliar atualização em lote ${orfao.id}: ${error}`);
+            }
+        }
+    }
 
     /**
      * Cria uma tarefa de atualização em lote e submete para processamento assíncrono
