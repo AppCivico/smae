@@ -1327,7 +1327,9 @@ export default [
         meta: {
           título: 'Modelos de relatório',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: ['Reports.executar.', 'Reports.remover.'],
+          limitarÀsPermissões: [
+            'Reports.modelo_admin.CasaCivil',
+          ],
         },
         children: [
           {
