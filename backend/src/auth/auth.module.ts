@@ -6,6 +6,8 @@ import { PessoaModule } from '../pessoa/pessoa.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { ImpersonacaoController } from './impersonacao.controller';
+import { ImpersonacaoService } from './impersonacao.service';
 import { EscreverNovaSenhaValidationMiddleware } from './middlewares/escrever-nova-senha-validation.middleware';
 import { LoginValidationMiddleware } from './middlewares/login-validation.middleware';
 import { SolicitarNovaSenhaValidationMiddleware } from './middlewares/solicitar-nova-senha-validation.middleware';
@@ -27,8 +29,8 @@ import { LocalStrategy } from './strategies/local.strategy';
             signOptions: { expiresIn: '30d' },
         }),
     ],
-    controllers: [AuthController, PrivController, PerfilAcessoController],
-    providers: [AuthService, LocalStrategy, JwtStrategy, PrivService, PerfilAcessoService],
+    controllers: [AuthController, PrivController, PerfilAcessoController, ImpersonacaoController],
+    providers: [AuthService, LocalStrategy, JwtStrategy, PrivService, PerfilAcessoService, ImpersonacaoService],
     exports: [AuthService],
 })
 export class AuthModule implements NestModule {

@@ -13,6 +13,11 @@ import { PessoaFromJwt } from './models/PessoaFromJwt';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
 
+export type AssinarSessionOpts = {
+    /// sobrescreve o expiresIn padrão do JwtModule (30d)
+    expiresIn?: string | number;
+};
+
 @Injectable()
 export class AuthService {
     constructor(
@@ -42,6 +47,16 @@ export class AuthService {
 
     async criarSession(pessoaId: number, ip: string) {
         const sessaoId = await this.pessoaService.newSessionForPessoa(pessoaId, ip);
+
+        return this.assinarSession(sessaoId);
+    }
+
+    /**
+     * Assina o JWT de uma sessão já existente. Separado de `criarSession` para que o login por
+     * token possa criar a sessão dentro da sua própria transação (junto com o consumo do token
+     * de uso único) e só depois assinar o JWT correspondente.
+     */
+    assinarSession(sessaoId: number, opts?: AssinarSessionOpts): AccessToken {
         const payload: JwtPessoaPayload = {
             sid: sessaoId,
             iat: Math.floor(Date.now() / 1000),
@@ -49,7 +64,9 @@ export class AuthService {
         };
 
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token: opts?.expiresIn
+                ? this.jwtService.sign(payload, { expiresIn: opts.expiresIn })
+                : this.jwtService.sign(payload),
         } as AccessToken;
     }
 

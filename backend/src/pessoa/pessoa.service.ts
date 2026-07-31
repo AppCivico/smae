@@ -45,6 +45,13 @@ import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { OrgaoService } from '../orgao/orgao.service';
 const BCRYPT_ROUNDS = 10;
 
+export type NewSessionOpts = {
+    /// ID do(a) sysadmin que está personificando esta pessoa
+    impersonadoPorPessoaId?: number;
+    /// transação já aberta pelo chamador
+    prismaTx?: Prisma.TransactionClient;
+};
+
 @Injectable()
 export class PessoaService implements OnModuleInit {
     private readonly logger = new Logger(PessoaService.name);
@@ -1756,13 +1763,14 @@ export class PessoaService implements OnModuleInit {
         return pessoa satisfies PessoaDto;
     }
 
-    async newSessionForPessoa(id: number, ip: string): Promise<number> {
-        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+    async newSessionForPessoa(id: number, ip: string, opts?: NewSessionOpts): Promise<number> {
+        const criar = async (prismaTx: Prisma.TransactionClient) => {
             const pessoaSessao = await prismaTx.pessoaSessao.create({
                 data: {
                     criado_ip: ip,
                     pessoa_id: id,
                     criado_em: new Date(Date.now()),
+                    impersonado_por_pessoa_id: opts?.impersonadoPorPessoaId ?? null,
                 },
             });
 
@@ -1774,7 +1782,13 @@ export class PessoaService implements OnModuleInit {
             });
 
             return pessoaSessaoAtiva.id;
-        });
+        };
+
+        // permite criar a sessão dentro de uma transação já aberta pelo chamador
+        // (personificação: consumir o token de uso único e criar a sessão precisam ser atômicos)
+        if (opts?.prismaTx) return await criar(opts.prismaTx);
+
+        return await this.prisma.$transaction(criar);
     }
 
     async invalidarSessao(id: number, ip: string) {

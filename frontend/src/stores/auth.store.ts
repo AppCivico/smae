@@ -178,6 +178,35 @@ export const useAuthStore = defineStore('auth', {
         alertStore.error(error);
       }
     },
+    // Login por token temporário de uso único, emitido por um endpoint administrativo.
+    // Do ponto de vista daqui é só mais uma forma de autenticar: troca o token por uma
+    // sessão e grava tudo como o `login()` faz. Propaga o erro para a tela decidir o que
+    // mostrar — recarregar a página aqui descartaria a mensagem junto com o documento.
+    async loginPorToken(token: string): Promise<void> {
+      const novoToken = (await this.requestS.post(`${baseUrl}/login-por-token`, {
+        token,
+      })) as AccessToken;
+
+      if (typeof novoToken?.access_token !== 'string') {
+        throw new TypeError('Token não recebido.');
+      }
+
+      // privilégios e módulo escolhido são de quem estava logado antes, se havia alguém
+      Object.keys(this.privilegiosPorModulo).forEach((modulo) => {
+        delete this.privilegiosPorModulo[modulo as ModuloSistema];
+      });
+      localStorage.removeItem('smae:privilegiosPorModulo');
+      localStorage.removeItem('sistemaEscolhido');
+      this.sistemaEscolhido = 'SMAE' as ModuloSistema;
+
+      this.token = novoToken.access_token;
+      localStorage.setItem('token', JSON.stringify(novoToken.access_token));
+
+      // o guarda de rota olha para `user`, não para `token`: precisa estar preenchido
+      // com a nova identidade antes de sair desta tela
+      await this.getDados(null, '');
+    },
+
     logout() {
       this.requestS.post(`${baseUrl}/sair`, null);
       localStorage.removeItem('user');

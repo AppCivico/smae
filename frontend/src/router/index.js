@@ -9,7 +9,9 @@ import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirD
 // eslint-disable-next-line import/no-cycle
 import { useAuthStore } from '@/stores/auth.store';
 import { Home } from '@/views';
-import { Login, LostPassword, NewPassword } from '@/views/auth';
+import {
+  Login, LoginPorToken, LostPassword, NewPassword,
+} from '@/views/auth';
 import AuthLayout from '@/views/auth/AuthLayout.vue';
 import Panorama from '@/views/Panorama.vue';
 
@@ -74,6 +76,15 @@ export const router = createRouter({
         { path: '/login', component: Login },
         { path: '/esqueci-minha-senha', component: LostPassword },
         { path: '/nova-senha', component: NewPassword },
+        {
+          path: '/login-por-token',
+          name: 'loginPorToken',
+          component: LoginPorToken,
+          meta: {
+            título: 'Entrando no sistema',
+            publico: true,
+          },
+        },
       ],
     },
 

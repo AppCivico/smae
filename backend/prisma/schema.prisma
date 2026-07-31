@@ -293,6 +293,11 @@ model Pessoa {
     variavel_suspensa_log      VariavelSuspensaoLog[]
     PessoaSessao               PessoaSessao[]
     PessoaAtividadeLog         PessoaAtividadeLog[]
+
+    PessoaSessoesQuePersonifiquei PessoaSessao[]            @relation("PessoaSessaoImpersonadaPor")
+    ImpersonacoesQueCriei         PessoaImpersonacaoToken[] @relation("ImpersonacaoCriadoPor")
+    ImpersonacoesQueSofri         PessoaImpersonacaoToken[] @relation("ImpersonacaoAlvo")
+
     GrupoPortfolioQueCriei     GrupoPortfolio[]       @relation("Criador")
     GrupoPortfolioQueAtualizei GrupoPortfolio[]       @relation("Atualizador")
     GrupoPortfoliQueRemovi     GrupoPortfolio[]       @relation("Removedor")
@@ -5206,12 +5211,57 @@ model PessoaSessao {
     removido_em DateTime?
     removido_ip String?   @db.Inet
 
-    PessoaSessaoAtiva  PessoaSessaoAtiva[]
-    PessoaAtividadeLog PessoaAtividadeLog[]
-    LogGenerico        LogGenerico[]
+    // quando preenchido, a sessão não foi criada por um login de verdade, e sim por um(a)
+    // sysadmin personificando esta pessoa. Serve para auditoria e para o aviso na interface.
+    impersonado_por_pessoa_id Int?
+    impersonado_por           Pessoa? @relation("PessoaSessaoImpersonadaPor", fields: [impersonado_por_pessoa_id], references: [id])
+
+    PessoaSessaoAtiva        PessoaSessaoAtiva[]
+    PessoaAtividadeLog       PessoaAtividadeLog[]
+    LogGenerico              LogGenerico[]
+    PessoaImpersonacaoToken  PessoaImpersonacaoToken[] @relation("ImpersonacaoSessaoCriada")
+    ImpersonacoesQueOriginou PessoaImpersonacaoToken[] @relation("ImpersonacaoSessaoCriador")
 
     @@index([pessoa_id])
     @@map("pessoa_sessao")
+}
+
+// Token de uso único, curta duração, que um(a) sysadmin cria para personificar outra pessoa.
+// Guardamos apenas o SHA-256 do token: o valor em claro só existe na resposta HTTP e no navegador
+// de quem pediu (o corpo/query das requisições é persistido em api_request_log quando LOG_REQ_ON_DB
+// está ligado, então o token em claro nunca pode ficar no banco).
+model PessoaImpersonacaoToken {
+    id Int @id @default(autoincrement())
+
+    token_hash String @unique
+
+    criado_por_pessoa_id Int
+    criado_por_pessoa    Pessoa @relation("ImpersonacaoCriadoPor", fields: [criado_por_pessoa_id], references: [id])
+
+    // sessão de quem criou o token. O resgate só é aceito a partir desta mesma sessão,
+    // então um link vazado sozinho não vale nada.
+    criado_por_sessao_id Int
+    criado_por_sessao    PessoaSessao @relation("ImpersonacaoSessaoCriador", fields: [criado_por_sessao_id], references: [id])
+
+    alvo_pessoa_id Int
+    alvo_pessoa    Pessoa @relation("ImpersonacaoAlvo", fields: [alvo_pessoa_id], references: [id])
+
+    motivo String
+
+    criado_em DateTime @default(now()) @db.Timestamptz(6)
+    criado_ip String   @db.Inet
+    expira_em DateTime @db.Timestamptz(6)
+
+    usado_em DateTime? @db.Timestamptz(6)
+    usado_ip String?   @db.Inet
+
+    sessao_criada_id Int?
+    sessao_criada    PessoaSessao? @relation("ImpersonacaoSessaoCriada", fields: [sessao_criada_id], references: [id])
+
+    @@index([criado_por_pessoa_id])
+    @@index([alvo_pessoa_id])
+    @@index([expira_em])
+    @@map("pessoa_impersonacao_token")
 }
 
 // tracking de quem está "online" no sistema, não é pra saber o que fez ou não
