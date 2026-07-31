@@ -12,6 +12,7 @@ import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import ListaReordenavel from '@/components/ListaReordenavel.vue';
 import FONTES_POR_SISTEMA from '@/consts/fontesDeRelatoriosPorSistema';
 import schema from '@/consts/formSchemas/modelosDeRelatorio';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useModelosDeRelatorioStore } from '@/stores/modelosDeRelatorio.store';
@@ -191,7 +192,7 @@ const onSubmit = handleSubmit(async (formValues) => {
     if (resposta) {
       alertStore.success(msg);
       modelosDeRelatorioStore.$reset();
-      router.push({ name: 'modelosDeRelatorio.listar' });
+      escaparDaRota(router);
     } else {
       alertStore.error('Não foi possível salvar o modelo. Tente novamente.');
     }
