@@ -18,12 +18,14 @@ interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
   colunas: boolean;
+  detalhamento: boolean;
 }
 
 interface Erros {
   lista: unknown;
   emFoco: unknown;
   colunas: unknown;
+  detalhamento: unknown;
 }
 
 interface Estado {
@@ -32,6 +34,11 @@ interface Estado {
   // Chaveado por fonte: o formulário de criação deixa a fonte a cargo do usuário (um select), e
   // várias fontes podem ter suas colunas já carregadas ao mesmo tempo nessa mesma store.
   colunas: Partial<Record<Fonte, ListRelatorioColunasDto>>;
+  // Detalhamento de colunas para uma combinação de parâmetros (`POST /relatorio-modelo/colunas`),
+  // pedido sob demanda pela tela de novo relatório. Chaveado por `modelo_id` (`''` = "padrão") —
+  // se a pessoa alternar entre modelos já vistos na mesma sessão, reaproveita a resposta em vez de
+  // chamar a API de novo.
+  detalhamento: Record<string, ListRelatorioColunasDto>;
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 }
@@ -48,16 +55,19 @@ export const useModelosDeRelatorioStore = (
     lista: [],
     emFoco: null,
     colunas: {},
+    detalhamento: {},
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
       colunas: false,
+      detalhamento: false,
     },
     erros: {
       lista: null,
       emFoco: null,
       colunas: null,
+      detalhamento: null,
     },
   }),
 
@@ -114,6 +124,33 @@ export const useModelosDeRelatorioStore = (
         this.erros.colunas = error_;
       }
       this.chamadasPendentes.colunas = false;
+    },
+
+    // Detalhamento das colunas que uma combinação de parâmetros vai produzir (`POST .../colunas`)
+    // — diferente de `buscarFontes`/`colunas`, que trazem a união de todas as variantes da fonte
+    // (o que se usa pra montar um modelo, não pra saber o que uma execução específica devolve).
+    // Sempre busca — cachear por `modeloId` pra evitar repetir a chamada ao alternar entre
+    // modelos já vistos é decisão de quem chama (ver `detalhamento` no state), não desta action:
+    // assim quem quiser forçar uma nova busca, mesmo já tendo cache, ainda pode.
+    async buscarDetalhamento(params: {
+      fonte: Fonte;
+      parametros?: Record<string, unknown>;
+      modeloId: string | number;
+    }): Promise<void> {
+      const chave = String(params.modeloId);
+
+      this.chamadasPendentes.detalhamento = true;
+      this.erros.detalhamento = null;
+
+      try {
+        this.detalhamento[chave] = (await this.requestS.post(
+          `${baseUrl}/relatorio-modelo/colunas`,
+          { fonte: params.fonte, parametros: params.parametros },
+        )) as ListRelatorioColunasDto;
+      } catch (error_) {
+        this.erros.detalhamento = error_;
+      }
+      this.chamadasPendentes.detalhamento = false;
     },
 
     async salvarItem(

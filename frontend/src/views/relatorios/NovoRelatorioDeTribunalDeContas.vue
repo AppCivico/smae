@@ -3,15 +3,14 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
 } from 'vee-validate';
-import { computed, onUnmounted } from 'vue';
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import CampoDeModeloDeRelatorio from '@/components/relatorios/CampoDeModeloDeRelatorio.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import schema from '@/consts/formSchemas/relatorioDeTribunalDeContas';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useModelosDeRelatorioStore } from '@/stores/modelosDeRelatorio.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
@@ -20,17 +19,6 @@ const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaSto
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
-
-const { sistemaEscolhido } = useAuthStore();
-const modelosDeRelatorioStore = useModelosDeRelatorioStore(sistemaEscolhido);
-const {
-  lista: modelosDisponiveis,
-  chamadasPendentes: chamadasPendentesModelos,
-} = storeToRefs(modelosDeRelatorioStore);
-
-// A store é compartilhada por sistema (não por fonte): sem isso, a lista filtrada por
-// `TribunalDeContas` ficaria em `lista` até outra tela sobrescrever.
-onUnmounted(() => modelosDeRelatorioStore.$reset());
 
 const route = useRoute();
 const router = useRouter();
@@ -49,7 +37,6 @@ const valoresIniciais = {
 };
 
 TipoDeTransferenciaStore.buscarTudo();
-modelosDeRelatorioStore.buscarTudo({ fonte: [route.meta.fonteDoRelatorio] });
 
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, values,
@@ -61,10 +48,6 @@ const {
 const tiposDisponíveis = computed(() => (values.parametros.esfera
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.parametros.esfera)
   : []));
-
-const modeloSelecionado = computed(
-  () => modelosDisponiveis.value.find((item) => item.id === values.modelo_id),
-);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
@@ -274,45 +257,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       </div>
     </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="modelo_id"
-          :schema="schema"
-        />
-        <Field
-          name="modelo_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors['modelo_id'],
-            loading: chamadasPendentesModelos?.lista,
-          }"
-          :disabled="!modelosDisponiveis.length"
-        >
-          <option value="">
-            padrão
-          </option>
-          <option
-            v-for="item in modelosDisponiveis"
-            :key="item.id"
-            :value="item.id"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="modelo_id"
-          class="error-msg"
-        />
-        <p
-          v-if="modeloSelecionado?.descricao"
-          class="t13 tc300"
-        >
-          {{ modeloSelecionado.descricao }}
-        </p>
-      </div>
-    </div>
+    <CampoDeModeloDeRelatorio :schema="schema" />
 
     <Field
       name="parametros.tipo"
