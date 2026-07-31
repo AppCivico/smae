@@ -1336,9 +1336,6 @@ export default [
             name: 'modelosDeRelatorio.listar',
             path: '',
             component: () => import('@/views/modelosDeRelatorio/ModelosDeRelatorioLista.vue'),
-            meta: {
-              título: 'Modelos de relatório',
-            },
           },
           {
             name: 'modelosDeRelatorio.criar',
