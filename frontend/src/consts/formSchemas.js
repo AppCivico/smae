@@ -3735,7 +3735,7 @@ export const usuário = object()
       .email('E-mail inválido'),
     grupos: array(),
     modulos_permitidos: array(),
-    sobreescrever_modulos: boolean(),
+    sobrescrever_modulos: boolean(),
     lotacao: string()
       .label('Lotação')
       .required('Preencha a lotação'),

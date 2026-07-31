@@ -15,6 +15,6 @@ export class Pessoa {
     pessoa_fisica: PessoaFisica | null;
     perfis_equipe_pdm: PerfilResponsavelEquipe[];
     perfis_equipe_ps: PerfilResponsavelEquipe[];
-    sobreescrever_modulos: boolean;
+    sobrescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];
 }

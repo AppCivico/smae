@@ -134,7 +134,7 @@ export default [
         'GrupoTematicoMDO.',
         'ModalidadeContratacao.',
         'TipoAditivo.',
-        'TipoIntervecaoMDO.',
+        'TipoIntervencaoMDO.',
         'CadastroOds.',
         'CadastroOrgao.',
         'CadastroPainelExterno.',
@@ -307,7 +307,7 @@ export default [
           título: 'Tipos de intervenção',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          limitarÀsPermissões: ['TipoIntervecaoMDO.'],
+          limitarÀsPermissões: ['TipoIntervencaoMDO.'],
         },
         children: [
           {

@@ -95,7 +95,7 @@ export class AuthService {
             perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
             perfis_equipe_ps: pessoa.perfis_equipe_ps,
             modulos_permitidos: pessoa.modulos_permitidos,
-            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+            sobrescrever_modulos: pessoa.sobrescrever_modulos,
         });
     }
 
@@ -122,7 +122,7 @@ export class AuthService {
             perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
             perfis_equipe_ps: pessoa.perfis_equipe_ps,
             modulos_permitidos: pessoa.modulos_permitidos,
-            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+            sobrescrever_modulos: pessoa.sobrescrever_modulos,
         });
     }
 

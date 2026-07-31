@@ -112,7 +112,7 @@ export class CreatePessoaDto {
 
     @IsOptional()
     @IsBoolean()
-    sobreescrever_modulos?: boolean;
+    sobrescrever_modulos?: boolean;
 
     @IsOptional()
     @IsArray()

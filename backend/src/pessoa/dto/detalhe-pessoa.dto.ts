@@ -29,7 +29,7 @@ export class DetalhePessoaDto {
     orgao_id?: number | undefined;
     perfil_acesso_ids: number[];
     responsavel_pelos_projetos: ProjetosResponsavelDto[];
-    sobreescrever_modulos: boolean;
+    sobrescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];
     sistemas_disponiveis: ModuloSistema[];
     permissoes: PessoaMetaPermissoesDto;

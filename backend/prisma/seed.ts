@@ -135,7 +135,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroGrupoVariavel: ['Grupos de Variáveis', ['SMAE']],
     CadastroEquipamentoMDO: ['Equipamentos', 'MDO'],
     CadastroEmpreendimentoMDO: ['Empreendimentos', 'MDO'],
-    TipoIntervecaoMDO: ['Tipo de Intervenção', 'MDO'],
+    TipoIntervencaoMDO: ['Tipo de Intervenção', 'MDO'],
     GrupoTematicoMDO: ['Grupo Temático', 'MDO'],
     CadastroTransferenciaTipo: ['Tipos de Transferência', 'CasaCivil'],
     CadastroDistribuicaoStatus: ['Status de Distribuição de Recurso', 'CasaCivil'],
@@ -376,10 +376,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroEmpreendimentoMDO.editar', 'Editar Empreendimento'],
         ['CadastroEmpreendimentoMDO.remover', 'Remover Empreendimento'],
     ],
-    TipoIntervecaoMDO: [
-        ['TipoIntervecaoMDO.inserir', 'Inserir Tipo de Intervenção'],
-        ['TipoIntervecaoMDO.editar', 'Editar Tipo de Intervenção'],
-        ['TipoIntervecaoMDO.remover', 'Remover Tipo de Intervenção'],
+    TipoIntervencaoMDO: [
+        ['TipoIntervencaoMDO.inserir', 'Inserir Tipo de Intervenção'],
+        ['TipoIntervencaoMDO.editar', 'Editar Tipo de Intervenção'],
+        ['TipoIntervencaoMDO.remover', 'Remover Tipo de Intervenção'],
     ],
 
     GrupoTematicoMDO: [
@@ -938,9 +938,9 @@ const MDOCadastroBasico: ListaDePrivilegios[] = [
     'TipoAditivo.editar',
     'TipoAditivo.remover',
 
-    'TipoIntervecaoMDO.inserir',
-    'TipoIntervecaoMDO.editar',
-    'TipoIntervecaoMDO.remover',
+    'TipoIntervencaoMDO.inserir',
+    'TipoIntervencaoMDO.editar',
+    'TipoIntervencaoMDO.remover',
 
     'GrupoTematicoMDO.inserir',
     'GrupoTematicoMDO.editar',

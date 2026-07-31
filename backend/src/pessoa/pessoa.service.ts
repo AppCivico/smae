@@ -107,7 +107,7 @@ export class PessoaService implements OnModuleInit {
             perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
             perfis_equipe_ps: pessoa.perfis_equipe_ps,
             modulos_permitidos: pessoa.modulos_permitidos,
-            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+            sobrescrever_modulos: pessoa.sobrescrever_modulos,
         });
     }
 
@@ -260,8 +260,8 @@ export class PessoaService implements OnModuleInit {
         const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
         if (!ehAdmin) {
-            if (updatePessoaDto.sobreescrever_modulos !== undefined)
-                throw new ForbiddenException('Você não pode modificar sobreescrever_modulos');
+            if (updatePessoaDto.sobrescrever_modulos !== undefined)
+                throw new ForbiddenException('Você não pode modificar sobrescrever_modulos');
             if (updatePessoaDto.modulos_permitidos !== undefined)
                 throw new ForbiddenException('Você não pode modificar modulos_permitidos');
         }
@@ -503,13 +503,13 @@ export class PessoaService implements OnModuleInit {
             equipes,
             equipes_responsavel,
             modulos_permitidos: pessoa.modulos_permitidos,
-            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+            sobrescrever_modulos: pessoa.sobrescrever_modulos,
             permissoes: {
                 posso_editar_modulos: ehAdmin,
             },
             sistemas_disponiveis: [],
         };
-        if (listFixed.sobreescrever_modulos == false) {
+        if (listFixed.sobrescrever_modulos == false) {
             // libera tudo exceto o modulo de metas novo
             listFixed.modulos_permitidos = ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'Projetos'];
         }
@@ -688,7 +688,7 @@ export class PessoaService implements OnModuleInit {
                     email: updatePessoaDto.email,
                     ...(user.hasSomeRoles(LISTA_PRIV_ADMIN)
                         ? {
-                              sobreescrever_modulos: updatePessoaDto.sobreescrever_modulos,
+                              sobrescrever_modulos: updatePessoaDto.sobrescrever_modulos,
                               modulos_permitidos: updatePessoaDto.modulos_permitidos,
                           }
                         : {}),
@@ -1520,11 +1520,11 @@ export class PessoaService implements OnModuleInit {
                         pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
                         ...(user.hasSomeRoles(LISTA_PRIV_ADMIN)
                             ? {
-                                  sobreescrever_modulos: createPessoaDto.sobreescrever_modulos ?? false,
+                                  sobrescrever_modulos: createPessoaDto.sobrescrever_modulos ?? false,
                                   modulos_permitidos: createPessoaDto.modulos_permitidos ?? [],
                               }
                             : {
-                                  sobreescrever_modulos: false,
+                                  sobrescrever_modulos: false,
                                   modulos_permitidos: [],
                               }),
                     },
@@ -1915,9 +1915,11 @@ export class PessoaService implements OnModuleInit {
                 JOIN perfil_privilegio priv ON priv.perfil_acesso_id = pa.id
                 JOIN privilegio p ON p.id = priv.privilegio_id
                 JOIN privilegio_modulo m ON p.modulo_id = m.id
+                -- sobreescrever_modulos com o typo é o nome da COLUNA no banco; no client
+                -- Prisma o campo é sobrescrever_modulos, mapeado por @map. Não renomear aqui.
                 LEFT JOIN pessoa pms ON pms.id = ${pessoaId} AND pms.sobreescrever_modulos=true
                 JOIN filter_modulos fm ON m.modulo_sistema && fm.modulos
-                    -- se a pessoa tem sobreescrever_modulos, então filtra mais uma vez
+                    -- se a pessoa tem sobrescrever_modulos, então filtra mais uma vez
                     -- apenas os módulos que ela tem permissão pela sobrescrita
                     AND (pms.id IS NULL OR m.modulo_sistema && ARRAY_APPEND(pms.modulos_permitidos,'SMAE'))
             ),

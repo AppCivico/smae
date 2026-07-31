@@ -17,7 +17,7 @@ export class TipoIntervencaoController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles(['TipoIntervecaoMDO.inserir'])
+    @Roles(['TipoIntervencaoMDO.inserir'])
     async create(
         @Body() createTipoIntervencaoDto: CreateTipoIntervencaoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -39,7 +39,7 @@ export class TipoIntervencaoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['TipoIntervecaoMDO.editar'])
+    @Roles(['TipoIntervencaoMDO.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateProjetoDto: UpdateTipoIntervencaoDto,
@@ -50,7 +50,7 @@ export class TipoIntervencaoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['TipoIntervecaoMDO.remover'])
+    @Roles(['TipoIntervencaoMDO.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

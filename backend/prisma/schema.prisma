@@ -32,8 +32,11 @@ model Pessoa {
     perfis_equipe_pdm PerfilResponsavelEquipe[]
     perfis_equipe_ps  PerfilResponsavelEquipe[]
 
-    sobreescrever_modulos Boolean         @default(false)
-    modulos_permitidos    ModuloSistema[]
+    // O campo do client é `sobrescrever_modulos`; a coluna no banco segue
+    // `sobreescrever_modulos` (typo de origem) via @map, então não há migration.
+    // SQL cru que toque esta coluna precisa continuar usando o nome antigo.
+    sobrescrever_modulos Boolean         @map("sobreescrever_modulos") @default(false)
+    modulos_permitidos   ModuloSistema[]
 
     ProjetoOrigemQcriei     CompromissoOrigem[] @relation("Criador")
     ProjetoOrigemQAtualizei CompromissoOrigem[] @relation("Atualizador")

@@ -41,7 +41,7 @@ export class MinhaContaController {
         let modulos_sobrescritos = false;
 
         // deixa o sistema agir naturalmente se não tiver marcado para sobrescrever
-        if (user.sobreescrever_modulos) {
+        if (user.sobrescrever_modulos) {
             sistemas = user.modulos_permitidos;
             modulos_sobrescritos = !user.sistemas.every((sistema) => sistemas.includes(sistema));
         }

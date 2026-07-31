@@ -176,8 +176,8 @@ const modulosOrdenados = computed(() => Object.values(perfisPorModulo.value)
   }));
 
 const handleModulosPermitidosChange = (novoValor) => {
-  if (!values.sobreescrever_modulos) {
-    setFieldValue('sobreescrever_modulos', true);
+  if (!values.sobrescrever_modulos) {
+    setFieldValue('sobrescrever_modulos', true);
   }
 
   setFieldValue('modulos_permitidos', novoValor);
@@ -194,7 +194,7 @@ const abasOcultas = computed(() => modulosOrdenados.value.reduce((acc, cur) => {
 }, {}));
 
 const modulosPermitidosValue = computed(() => {
-  const permitidos = values.sobreescrever_modulos
+  const permitidos = values.sobrescrever_modulos
     ? values.modulos_permitidos
     : modulosOrdenados.value.map((m) => m.nome);
 
@@ -205,7 +205,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 
   if (podeEditarMódulos.value) {
     carga.modulos_permitidos = controlledValues.modulos_permitidos;
-    carga.sobreescrever_modulos = values.sobreescrever_modulos;
+    carga.sobrescrever_modulos = values.sobrescrever_modulos;
   }
 
   if (!personalizarNomeParaExibição.value) {
@@ -234,11 +234,11 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 
 watch(values.modulos_permitidos, (novoValor) => {
   if (novoValor.length < modulosOrdenados.value.length) {
-    values.sobreescrever_modulos = true;
+    values.sobrescrever_modulos = true;
   }
 });
 
-watch(() => values.sobreescrever_modulos, (novoValor) => {
+watch(() => values.sobrescrever_modulos, (novoValor) => {
   if (!novoValor) {
     setFieldValue('modulos_permitidos', modulosOrdenados.value.map((modulo) => modulo.nome));
   }

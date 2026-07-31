@@ -37,6 +37,6 @@ export class PessoaFromJwtBase {
     })
     perfis_equipe_ps: PerfilResponsavelEquipe[];
 
-    sobreescrever_modulos: boolean;
+    sobrescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];
 }
