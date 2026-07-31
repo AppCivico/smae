@@ -52,6 +52,10 @@ const camposDeFiltro = [{
   },
 }];
 
+function paraValorEscalar(valor) {
+  return Array.isArray(valor) ? valor[0] : valor;
+}
+
 watch([
   () => route.query.ano,
   () => route.query.esfera,
@@ -59,7 +63,10 @@ watch([
   () => route.query.preenchimento_completo,
   () => route.query.cancelada,
 ], () => {
-  let { ano: anoParaBusca, palavra_chave: palavraChaveParaBusca } = route.query;
+  const esfera = paraValorEscalar(route.query.esfera);
+
+  let anoParaBusca = paraValorEscalar(route.query.ano);
+  let palavraChaveParaBusca = paraValorEscalar(route.query.palavra_chave);
   if (typeof anoParaBusca === 'string') {
     anoParaBusca = anoParaBusca.trim();
   }
@@ -69,13 +76,13 @@ watch([
   transferenciasVoluntarias.$reset();
   transferenciasVoluntarias.buscarTudo({
     ano: anoParaBusca,
-    esfera: route.query.esfera
+    esfera: esfera
       ? Object.keys(esferasDeTransferencia)
-        .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
+        .find((x) => x.toLowerCase() === esfera.toLocaleLowerCase())
       : undefined,
     palavra_chave: palavraChaveParaBusca,
-    preenchimento_completo: route.query.preenchimento_completo || undefined,
-    cancelada: route.query.cancelada || undefined,
+    preenchimento_completo: paraValorEscalar(route.query.preenchimento_completo) || undefined,
+    cancelada: paraValorEscalar(route.query.cancelada) || undefined,
   });
 }, { immediate: true });
 
