@@ -87,40 +87,38 @@ nextTick(() => {
 });
 </script>
 <template>
-  <header class="flex flexwrap spacebetween center mb2 g2">
-    <TítuloDePágina />
-
-    <hr class="f1">
-
-    <menu
+  <CabecalhoDePagina>
+    <template
       v-if="temPermissãoPara('AndamentoWorkflow.listar') && workflow"
-      class="flex g1 mr0 mlauto"
+      #acoes
     >
-      <li class="f0">
-        <button
-          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
-          type="button"
-          class="btn"
-          @click="iniciarFase(idDaPróximaFasePendente)"
-        >
-          Iniciar fase
-        </button>
-      </li>
-      <li class="f0">
-        <button
-          v-if="
-            workflow.pode_passar_para_proxima_etapa
+      <menu class="flex g1 mr0 mlauto">
+        <li class="f0">
+          <button
+            v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
+            type="button"
+            class="btn"
+            @click="iniciarFase(idDaPróximaFasePendente)"
+          >
+            Iniciar fase
+          </button>
+        </li>
+        <li class="f0">
+          <button
+            v-if="
+              workflow.pode_passar_para_proxima_etapa
               && temPermissãoPara('CadastroWorkflows.editar')
-          "
-          type="button"
-          class="btn"
-          @click="avançarEtapa"
-        >
-          Avançar etapa
-        </button>
-      </li>
-    </menu>
-  </header>
+            "
+            type="button"
+            class="btn"
+            @click="avançarEtapa"
+          >
+            Avançar etapa
+          </button>
+        </li>
+      </menu>
+    </template>
+  </CabecalhoDePagina>
 
   <pre v-scrollLockDebug>transferenciaEmFoco:{{ transferenciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuicao:{{ listaDeDistribuicao }}</pre>
