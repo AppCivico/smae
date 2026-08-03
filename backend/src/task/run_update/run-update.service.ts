@@ -141,7 +141,13 @@ export class RunUpdateTaskService implements TaskableService {
                             registro: this.montaVersaoAnterior(registro, _params.ops),
                         };
 
-                        // Adiciona aos registros processados
+                        // Adiciona aos registros processados, substituindo qualquer entrada anterior
+                        // deste mesmo id. Numa retomada, o stash carregado pode já conter o resultado
+                        // de uma tentativa anterior desta linha (ex.: falha reprocessada) — sem isso o
+                        // relatório final teria entradas duplicadas/conflitantes para o mesmo id.
+                        resultadosEstendidos.registrosProcessados = resultadosEstendidos.registrosProcessados.filter(
+                            (r) => r.id !== id
+                        );
                         resultadosEstendidos.registrosProcessados.push(registroProcessamento);
                         // Armazena dados após cada registro ser buscado
                         await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
@@ -562,6 +568,10 @@ export class RunUpdateTaskService implements TaskableService {
     }
 
     private adicionarLogErro(error: any, id: number, nome: string, results_log: LogResultadosEstendido) {
+        // Remove qualquer falha anterior deste mesmo id (ex.: reprocessamento numa retomada),
+        // para não acumular entradas duplicadas de falha para o mesmo registro.
+        results_log.falhas = results_log.falhas.filter((f) => f.id !== id);
+
         if (error instanceof HttpException) {
             const errorResponse = this.extrairMensagemErro(error);
 

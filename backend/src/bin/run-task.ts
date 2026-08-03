@@ -15,6 +15,16 @@ process.on('unhandledRejection', async (reason: unknown) => {
     console.error('Rejeição não tratada:', reason);
 });
 
+// Se o processo-pai morrer (ex.: restart/deploy), o canal IPC do fork é fechado e este worker
+// fica órfão. Encerramos imediatamente: manter o worker vivo faria, junto com o re-pick por
+// timeout feito pelo novo pai, duas execuções concorrentes do mesmo job — duplicando efeitos
+// colaterais (ex.: tarefas). A transação da linha em andamento sofre rollback ao cair a conexão,
+// então a retomada reprocessa a linha com segurança.
+process.on('disconnect', () => {
+    console.error('Processo-pai desconectou; encerrando worker órfão para evitar execução concorrente.');
+    process.exit(1);
+});
+
 async function bootstrap() {
     // desliga os crontab do 'fork'
     process.env.DISABLED_CRONTABS = 'all';
