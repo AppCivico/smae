@@ -87,6 +87,21 @@ export const useTransferenciasVoluntariasStore = defineStore(
         }
       },
 
+      async cancelarItem(id) {
+        this.chamadasPendentes.emFoco = true;
+        this.erro = null;
+
+        try {
+          await this.requestS.post(`${baseUrl}/transferencia/${id}/cancelar`);
+          this.chamadasPendentes.emFoco = false;
+          return true;
+        } catch (erro) {
+          this.erro = erro;
+          this.chamadasPendentes.emFoco = false;
+          return false;
+        }
+      },
+
       async salvarItem(params = {}, id = 0, éSegundoFormulário = false) {
         this.chamadasPendentes.emFoco = true;
         this.erro = null;
@@ -111,6 +126,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
           throw erro;
         }
       },
+
       async buscarArquivos(id = 0, params = {}) {
         this.chamadasPendentes.arquivos = true;
         this.erro = null;

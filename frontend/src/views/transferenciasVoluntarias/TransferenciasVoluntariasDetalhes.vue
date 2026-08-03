@@ -81,6 +81,16 @@ function avançarEtapa() {
   }, 'Avançar');
 }
 
+function cancelarTransferencia() {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await TransferenciasVoluntarias.cancelarItem(props.transferenciaId)) {
+      await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+
+      alertStore.success('Transferência cancelada!');
+    }
+  }, 'Cancelar transferência');
+}
+
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 nextTick(() => {
   window.scrollTo(0, 0);
@@ -89,33 +99,54 @@ nextTick(() => {
 <template>
   <CabecalhoDePagina>
     <template
-      v-if="temPermissãoPara('AndamentoWorkflow.listar') && workflow"
+      v-if="transferenciaEmFoco && !transferenciaEmFoco.cancelada
+        && (temPermissãoPara('CadastroWorkflows.editar')
+          || temPermissãoPara('CadastroTransferencia.editar'))"
       #acoes
     >
-      <menu class="flex g1 mr0 mlauto">
+      <menu
+        class="flex flexwrap justifyright g1 mr0 mlauto"
+        style="flex-basis: 0;"
+      >
+        <template
+          v-if="temPermissãoPara('CadastroWorkflows.editar')
+            && temPermissãoPara('AndamentoWorkflow.listar') && workflow"
+        >
+          <li
+            v-if="inícioDeFasePermitido"
+            class="f0"
+          >
+            <button
+              type="button"
+              class="btn"
+              @click="iniciarFase(idDaPróximaFasePendente)"
+            >
+              Iniciar fase
+            </button>
+          </li>
+          <li
+            v-if="workflow.pode_passar_para_proxima_etapa"
+            class="f0"
+          >
+            <button
+              type="button"
+              class="btn"
+              @click="avançarEtapa"
+            >
+              Avançar etapa
+            </button>
+          </li>
+        </template>
         <li
-          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
+          v-if="temPermissãoPara('CadastroTransferencia.editar')"
           class="f0"
         >
           <button
             type="button"
-            class="btn"
-            @click="iniciarFase(idDaPróximaFasePendente)"
+            class="btn outline bgnone tcamarelo"
+            @click="cancelarTransferencia"
           >
-            Iniciar fase
-          </button>
-        </li>
-        <li
-          v-if="workflow.pode_passar_para_proxima_etapa
-            && temPermissãoPara('CadastroWorkflows.editar')"
-          class="f0"
-        >
-          <button
-            type="button"
-            class="btn"
-            @click="avançarEtapa"
-          >
-            Avançar etapa
+            Cancelar transferência
           </button>
         </li>
       </menu>
