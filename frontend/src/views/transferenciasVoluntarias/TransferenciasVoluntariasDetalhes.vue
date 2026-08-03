@@ -93,9 +93,11 @@ nextTick(() => {
       #acoes
     >
       <menu class="flex g1 mr0 mlauto">
-        <li class="f0">
+        <li
+          v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
+          class="f0"
+        >
           <button
-            v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
             type="button"
             class="btn"
             @click="iniciarFase(idDaPróximaFasePendente)"
@@ -103,12 +105,12 @@ nextTick(() => {
             Iniciar fase
           </button>
         </li>
-        <li class="f0">
+        <li
+          v-if="workflow.pode_passar_para_proxima_etapa
+            && temPermissãoPara('CadastroWorkflows.editar')"
+          class="f0"
+        >
           <button
-            v-if="
-              workflow.pode_passar_para_proxima_etapa
-              && temPermissãoPara('CadastroWorkflows.editar')
-            "
             type="button"
             class="btn"
             @click="avançarEtapa"
