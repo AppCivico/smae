@@ -1201,8 +1201,6 @@ export class ReportsService {
                     sistema: true,
                     criado_em: true,
                     criado_por: true,
-                    progresso: true,
-                    processado_em: true,
                     criador: {
                         select: {
                             email: true,
@@ -1216,24 +1214,25 @@ export class ReportsService {
                 return;
             }
 
-            // Idempotência sob retry do job: se uma tentativa anterior já concluiu o relatório
-            // (progresso=100), não regerar o arquivo nem reenviar o e-mail. Fecha a janela em que o
-            // processo poderia morrer (ex.: OOM) logo após a transação de conclusão — que já enfileira
-            // o e-mail — mas antes de sinalizar sucesso ao processo-pai, o que dispararia um reprocessamento.
-            if (relatorio.progresso === 100 && relatorio.processado_em) {
-                this.logger.warn(
-                    `Relatório ${relatorio_id} já concluído por uma tentativa anterior; pulando reprocessamento.`
-                );
-                return;
-            }
-            await this.prisma.relatorio.update({
-                where: { id: relatorio_id },
+            // Reivindicação atômica contra reprocessamento por retry do job. Só prossegue se ainda
+            // não há arquivo gerado — `arquivo_id` é setado apenas na transação de conclusão
+            // bem-sucedida (updateRelatorioMetadata). Como o updateMany condicional é atômico, um
+            // relatório já concluído nunca é regerado nem tem o e-mail de conclusão reenviado, mesmo
+            // sob tentativas concorrentes. Um retry após crash (sem arquivo) segue normalmente.
+            const reivindicacao = await this.prisma.relatorio.updateMany({
+                where: { id: relatorio_id, arquivo_id: null },
                 data: {
                     iniciado_em: new Date(Date.now()),
                     err_msg: null,
                     progresso: 0,
                 },
             });
+            if (reivindicacao.count === 0) {
+                this.logger.warn(
+                    `Relatório ${relatorio_id} já concluído (arquivo existente); pulando reprocessamento.`
+                );
+                return;
+            }
 
             contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 

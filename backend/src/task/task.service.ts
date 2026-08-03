@@ -663,6 +663,14 @@ export class TaskService {
             // contador local — do contrário n_retry ficaria preso em 1 e o retry nunca respeitaria
             // o limite de maxRetries (loop infinito).
             const nextRetryCount = currentRetryCount + 1;
+
+            // Limite de tentativas atingido: não agenda um novo retry (que só voltaria a 'pending'
+            // para errar de imediato no próximo pick). Propaga o erro para o handler externo marcar
+            // a task como 'errored'. Consistente com retryTimedOutTask.
+            if (nextRetryCount >= retryConfig.maxRetries) {
+                throw new Error(`Limite de tentativas excedido (${retryConfig.maxRetries}): ${lastError.message}`);
+            }
+
             const nextRetryTime = TaskRetryService.calculateNextRetryTime(nextRetryCount, retryConfig);
 
             this.logger.log(

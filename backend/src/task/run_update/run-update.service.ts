@@ -70,12 +70,17 @@ export class RunUpdateTaskService implements TaskableService {
         // 'Executando' está incluído propositalmente: se um job morrer no meio (ex.: OOM/SIGKILL)
         // após já ter marcado 'Executando', o retry precisa reencontrar o registro e retomar
         // (pulando os sucesso_ids) em vez de falhar com "não encontrada ou já processada".
-        const atualizacaoEmLote = await this.prisma.atualizacaoEmLote.findUnique({
+        //
+        // Porém, exige que a task associada NÃO esteja 'errored': se o reconciliador já deu o lote
+        // como perdido (marcando 'Abortado' e apagando o task_buffer), não se deve retomar. Durante
+        // uma execução/retry legítimo a task está 'running', então isso não bloqueia o fluxo normal.
+        const atualizacaoEmLote = await this.prisma.atualizacaoEmLote.findFirst({
             where: {
                 id: _params.atualizacao_em_lote_id,
                 status: {
                     in: ['Pendente', 'Executando', 'ConcluidoParcialmente', 'Falhou', 'Abortado', 'Concluido'],
                 },
+                task: { status: { not: 'errored' } },
             },
         });
         if (!atualizacaoEmLote) throw new Error('Atualização em lote não encontrada ou já processada');
@@ -201,7 +206,15 @@ export class RunUpdateTaskService implements TaskableService {
                                 // Por agora, a única entidade que é criada pela atualização em lote é a tarefa.
                                 // Então utilizando direto o serviço.
                                 // TODO?: Implementar interface para solução mais genérica.
-                                await this.tarefaService.create({ projeto_id: id }, paramsCriacaoTarefa.dto, pessoaJwt);
+                                // Passa a tx da linha: a criação da tarefa precisa ser atômica com o
+                                // resto da linha, senão um rollback deixaria tarefa órfã e um retry a
+                                // duplicaria.
+                                await this.tarefaService.create(
+                                    { projeto_id: id },
+                                    paramsCriacaoTarefa.dto,
+                                    pessoaJwt,
+                                    prismaTxn
+                                );
                             }
                         } catch (error) {
                             this.logger.error(`Erro ao atualizar ID ${id}: ${error.message}`);
@@ -231,6 +244,18 @@ export class RunUpdateTaskService implements TaskableService {
                         if (operacaoFalhou) {
                             throw new Error(`Rollback da transação para o ID ${id}`);
                         }
+
+                        // Marca o sucesso desta linha de forma transacional, junto com a própria
+                        // mutação. Assim, se o job morrer no meio e for retomado (status Executando),
+                        // as linhas já concluídas ficam persistidas em sucesso_ids e são puladas — o
+                        // que evita reprocessá-las e duplicar tarefas criadas por Add/CreateTarefa.
+                        await prismaTxn.atualizacaoEmLote.update({
+                            where: { id: _params.atualizacao_em_lote_id },
+                            data: {
+                                sucesso_ids: { push: id },
+                                n_sucesso: { increment: 1 },
+                            },
+                        });
                     });
 
                     n_sucesso++;
