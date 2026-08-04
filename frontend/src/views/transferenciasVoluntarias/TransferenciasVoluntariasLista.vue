@@ -150,7 +150,19 @@ watch([
   >
     <template #celula:alerta="{ linha }">
       <span
-        v-if="linha.pendente_preenchimento_valores"
+        v-if="linha.cancelada"
+        class="tipinfo right"
+      >
+        <svg
+          width="20"
+          height="20"
+          color="#ee3b2b"
+        ><use xlink:href="#i_zero" /></svg><div>
+          Transferência cancelada
+        </div>
+      </span>
+      <span
+        v-else-if="linha.pendente_preenchimento_valores"
         class="tipinfo right"
       >
         <svg
