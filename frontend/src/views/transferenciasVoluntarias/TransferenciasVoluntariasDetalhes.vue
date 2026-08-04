@@ -88,7 +88,7 @@ function cancelarTransferencia() {
 
       alertStore.success('Transferência cancelada!');
     }
-  }, 'Cancelar transferência');
+  }, 'Definir transferência como cancelada');
 }
 
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
