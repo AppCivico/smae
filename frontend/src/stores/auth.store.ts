@@ -183,6 +183,16 @@ export const useAuthStore = defineStore('auth', {
     // sessão e grava tudo como o `login()` faz. Propaga o erro para a tela decidir o que
     // mostrar — recarregar a página aqui descartaria a mensagem junto com o documento.
     async loginPorToken(token: string): Promise<void> {
+      // o backend só aceita o resgate de quem pediu o token, na mesma sessão. Sem sessão
+      // local não há o que enviar: avisa aqui, em vez de deixar virar um 401 genérico
+      if (!this.token) {
+        throw new Error(
+          'É preciso estar autenticada, na mesma sessão em que o link foi solicitado, para usá-lo.',
+        );
+      }
+
+      // a troca vem antes de limpar qualquer estado: é o token de quem pediu, ainda em
+      // `localStorage`, que autentica esta requisição
       const novoToken = (await this.requestS.post(`${baseUrl}/login-por-token`, {
         token,
       })) as AccessToken;

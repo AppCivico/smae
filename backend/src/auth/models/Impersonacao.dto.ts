@@ -21,7 +21,7 @@ export class CriarImpersonacaoDto {
 export class ImpersonacaoCriadaDto {
     @ApiProperty({
         description:
-            'URL para o navegador de quem pediu. O token vai no fragmento (#), que não é enviado ao servidor nem gravado em log de acesso.',
+            'URL para o navegador de quem pediu — e só para ele: o resgate exige a mesma pessoa na mesma sessão. O token vai no fragmento (#), que não é enviado ao servidor nem gravado em log de acesso.',
         example: 'https://smae.exemplo.br/impersonar#t=abc123',
     })
     url: string;

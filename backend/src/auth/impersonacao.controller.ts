@@ -3,7 +3,6 @@ import { Throttle } from '@nestjs/throttler';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { IpAddress } from '../common/decorators/current-ip';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { IsPublic } from './decorators/is-public.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { ImpersonacaoService } from './impersonacao.service';
 import { AccessToken } from './models/AccessToken';
@@ -33,15 +32,19 @@ export class ImpersonacaoController {
         return await this.impersonacaoService.criarToken(dto, user, ipAddress);
     }
 
-    // Público de propósito: do ponto de vista do frontend isto é só um "login por token",
-    // sem nenhuma noção de personificação. Quem apresenta um token válido recebe a sessão.
-    @ApiTags('Público')
+    // Exige autenticação de propósito: o token só é resgatado por quem o pediu, na mesma
+    // sessão em que o pediu (o serviço faz esse cross-check). Assim o link vazado não vale
+    // nada sozinho, e a sessão que a personificação substitui é sempre a de quem a pediu.
+    @ApiTags('Impersonação')
     @Post('login-por-token')
     @HttpCode(HttpStatus.OK)
-    @IsPublic()
     @Throttle(THROTTLE_IMPERSONACAO)
     @ApiOkResponse({ type: AccessToken })
-    async loginPorToken(@Body() dto: LoginPorTokenDto, @IpAddress() ipAddress: string): Promise<AccessToken> {
-        return await this.impersonacaoService.loginPorToken(dto.token, ipAddress);
+    async loginPorToken(
+        @Body() dto: LoginPorTokenDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @IpAddress() ipAddress: string
+    ): Promise<AccessToken> {
+        return await this.impersonacaoService.loginPorToken(dto.token, user, ipAddress);
     }
 }

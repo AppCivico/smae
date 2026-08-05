@@ -82,6 +82,9 @@ export const router = createRouter({
           component: LoginPorToken,
           meta: {
             título: 'Entrando no sistema',
+            // a rota é pública mesmo que o resgate exija sessão: o guarda redirecionaria para
+            // o login antes do `onMounted`, e o token do fragmento se perderia no caminho.
+            // Quem chega sem sessão vê a mensagem da própria tela.
             publico: true,
           },
         },

@@ -13,7 +13,7 @@ import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
 /**
  * Tempo de vida do token de uso único. O resgate é automático pelo navegador logo após o
- * redirecionamento, então é curto de propósito: o token sozinho é suficiente para logar.
+ * redirecionamento, então é curto de propósito.
  */
 const TOKEN_TTL_SEGUNDOS = 120;
 
@@ -122,16 +122,55 @@ export class ImpersonacaoService {
     }
 
     /**
+     * Só quem pediu o token, na mesma sessão em que pediu, pode resgatá-lo.
+     *
+     * Comparar a sessão (e não apenas a pessoa) é o que amarra o resgate ao navegador onde a
+     * personificação foi solicitada: um link reenviado, ou aberto de outro lugar, não loga.
+     * A tentativa recusada é registrada em log genérico, porque é sinal de link vazado.
+     */
+    private async assertSessaoPodeUsarToken(tokenHash: string, user: PessoaFromJwt, ip: string): Promise<void> {
+        const registro = await this.prisma.pessoaImpersonacaoToken.findFirst({
+            where: { token_hash: tokenHash },
+            select: { criado_por_pessoa_id: true, criado_por_sessao_id: true },
+        });
+        // mesma mensagem do consumo: quem apresenta um hash desconhecido não descobre daqui se
+        // o token existe e é de outra pessoa, ou se simplesmente não existe
+        if (!registro) throw new HttpException('Token inválido, expirado ou já utilizado.', 400);
+
+        if (registro.criado_por_pessoa_id === user.id && registro.criado_por_sessao_id === user.session_id) return;
+
+        const logger = LoggerWithLog('Impersonação: Token recusado');
+        logger.warn(
+            `Pessoa ${user.id} (sessão ${user.session_id}) tentou usar token criado pela pessoa ${registro.criado_por_pessoa_id} (sessão ${registro.criado_por_sessao_id}).`
+        );
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await logger.saveLogs(prismaTx, { pessoa_id: user.id, pessoa_sessao_id: user.session_id, ip });
+        });
+
+        throw new HttpException(
+            'Este link de personificação só pode ser usado por quem o solicitou, no mesmo navegador e na mesma sessão.',
+            400
+        );
+    }
+
+    /**
      * Consome o token de uso único e devolve uma sessão da pessoa alvo.
      *
-     * Endpoint público: quem apresenta o token válido loga. É o que torna o fluxo um
-     * "login por token" simples do lado do frontend, e por isso o token é aleatório de
-     * 32 bytes, de uso único e vive apenas TOKEN_TTL_SEGUNDOS.
+     * Exige que quem resgata esteja autenticado(a) na mesma sessão que criou o token: o
+     * token sozinho não loga ninguém. É esse cross-check que garante que a personificação
+     * só substitui a sessão de quem a pediu, e que um link vazado (ou aberto em outro
+     * navegador) não vira um login. Ainda assim o token é aleatório de 32 bytes, de uso
+     * único e vive apenas TOKEN_TTL_SEGUNDOS.
      */
-    async loginPorToken(token: string, ip: string): Promise<AccessToken> {
+    async loginPorToken(token: string, user: PessoaFromJwt, ip: string): Promise<AccessToken> {
         const logger = LoggerWithLog('Impersonação: Usar token');
         const agora = new Date(Date.now());
         const tokenHash = this.hash(token);
+
+        // o cross-check com a sessão corrente fica fora da transação de consumo, de propósito:
+        // quem abriu o link no lugar errado não queima o token de quem o pediu, e a tentativa
+        // recusada fica registrada (um rollback levaria o log embora junto)
+        await this.assertSessaoPodeUsarToken(tokenHash, user, ip);
 
         const { sessaoId, alvoId, alvoNome, criadoPor } = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
