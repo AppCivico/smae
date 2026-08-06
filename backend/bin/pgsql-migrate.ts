@@ -1,5 +1,8 @@
 import { Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+// Carrega o .env quando rodado fora do Docker (onde DATABASE_URL vem do ambiente).
+// Sem isso o `pg` cai nas variáveis PG*/defaults e conecta no banco errado.
+import 'dotenv/config';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
