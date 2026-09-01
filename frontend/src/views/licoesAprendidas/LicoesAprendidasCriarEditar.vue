@@ -9,7 +9,6 @@ import { useRoute, useRouter } from 'vue-router';
 
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -22,7 +21,6 @@ const route = useRoute();
 
 const {
   chamadasPendentes,
-  emFoco,
   erro,
   itemParaEdicao,
 } = storeToRefs(liçõesAprendidasStore);
@@ -80,7 +78,7 @@ iniciar();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdicao"
     :validation-schema="schema"
@@ -143,7 +141,6 @@ iniciar();
           class="inputtext light mb1"
           max-length="2048"
           :schema="schema"
-          :model-value="values.contexto"
           anular-vazio
           :class="{ 'error': errors.contexto }"
         />
@@ -167,7 +164,6 @@ iniciar();
           class="inputtext light mb1"
           max-length="2048"
           :schema="schema"
-          :model-value="values.descricao"
           anular-vazio
           :class="{ 'error': errors.descricao }"
         />
@@ -191,7 +187,6 @@ iniciar();
           class="inputtext light mb1"
           max-length="2048"
           :schema="schema"
-          :model-value="values.resultado"
           anular-vazio
           :class="{ 'error': errors.resultado }"
         />
@@ -215,7 +210,6 @@ iniciar();
           class="inputtext light mb1"
           max-length="2048"
           :schema="schema"
-          :model-value="values.observacao"
           anular-vazio
           :class="{ 'error': errors.observacao }"
         />

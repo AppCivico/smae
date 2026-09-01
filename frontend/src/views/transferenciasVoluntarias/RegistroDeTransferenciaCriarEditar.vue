@@ -506,7 +506,6 @@ watch(() => values.dotacoes?.length, (newLength) => {
             :for="`parlamentares[${idx}].objeto`"
           />
           <SmaeText
-            :model-value="values.parlamentares[idx].objeto"
             :name="`parlamentares[${idx}].objeto`"
             class="inputtext light mb1"
             as="textarea"

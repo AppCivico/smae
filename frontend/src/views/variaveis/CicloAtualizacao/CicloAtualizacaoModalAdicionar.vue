@@ -219,7 +219,6 @@ function removerArquivo(arquivoIndex: number) {
 
             <SmaeText
               class="inputtext light f1"
-              :model-value="values.analise_qualitativa_liberador"
               as="textarea"
               name="analise_qualitativa_liberador"
               :disabled="!formulariosAExibir.liberacao.liberado"
@@ -246,7 +245,6 @@ function removerArquivo(arquivoIndex: number) {
 
             <SmaeText
               class="inputtext light f1"
-              :model-value="values.analise_qualitativa_aprovador"
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="
@@ -293,7 +291,6 @@ function removerArquivo(arquivoIndex: number) {
 
             <SmaeText
               class="inputtext light f1"
-              :model-value="values?.pedido_complementacao"
               as="textarea"
               name="pedido_complementacao"
               :disabled="!values.solicitar_complementacao"
@@ -388,7 +385,6 @@ function removerArquivo(arquivoIndex: number) {
 
             <SmaeText
               class="inputtext light f1"
-              :model-value="values.analise_qualitativa"
               as="textarea"
               name="analise_qualitativa"
               :disabled="!formulariosAExibir.cadastro.liberado

@@ -354,7 +354,6 @@ onMounted(async () => {
 
           <SmaeText
             name="objeto"
-            :model-value="values.objeto"
             as="textarea"
             class="inputtext light mb1"
             anular-vazio
