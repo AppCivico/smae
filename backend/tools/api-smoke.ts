@@ -15,6 +15,11 @@
  * conforme o banco. A pergunta que o baseline responde é "algo passou a estourar", não
  * "o 404 virou 403".
  *
+ * O `smae-sistemas` de cada rota é deduzido, não descoberto por tentativa: o decorator `Roles`
+ * escreve os privilégios exigidos no summary do Swagger, e `GET /minha-conta` devolve os
+ * privilégios que o usuário tem em cada sistema. O RolesGuard é só a interseção dos dois, então
+ * o script reproduz a conta e já chama com o header certo.
+ *
  * Usage:
  *   npx ts-node -T tools/api-smoke.ts --url http://127.0.0.1:3001 --email x@y.z --senha ... --write
  *   npx ts-node -T tools/api-smoke.ts --url http://127.0.0.1:3001 --email x@y.z --senha ...
@@ -24,7 +29,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-const SISTEMAS = ['SMAE', 'PDM', 'ProgramaDeMetas', 'PlanoSetorial', 'CasaCivil', 'Projetos', 'MDO'];
+const SISTEMAS = ['ProgramaDeMetas', 'PlanoSetorial', 'PDM', 'Projetos', 'CasaCivil', 'MDO'] as const;
+type Sistema = (typeof SISTEMAS)[number];
 const DOCS = [
     'swagger',
     'swagger-pdm',
@@ -37,7 +43,7 @@ const DOCS = [
 ];
 const BASELINE_PADRAO = resolve(__dirname, 'api-smoke.baseline.json');
 
-type Classe = 'ok' | 'erro-cliente' | 'erro-servidor' | 'sem-id' | 'falhou';
+type Classe = 'ok' | 'erro-cliente' | 'erro-servidor' | 'sem-id' | 'sem-priv' | 'falhou';
 type Resultado = { rota: string; url: string; sistema: string; status: number | null; classe: Classe; corpo: string };
 
 function arg(nome: string, envVar: string, padrao?: string): string {
@@ -78,12 +84,28 @@ async function main() {
         console.error('login não devolveu access_token (conta bloqueada devolve reduced_access_token).');
         process.exit(2);
     }
-    const headers = (sistema: string) => ({ Authorization: `Bearer ${token}`, 'smae-sistemas': sistema });
+    // O front sempre manda `SMAE,<sistema>`: sem o SMAE junto o backend descarta os privilégios
+    // dos módulos SMAE, e só com o SMAE o modulo_sistema fica vazio e assertOneModuloSistema dá 400.
+    const headers = (sistema: string) => ({ Authorization: `Bearer ${token}`, 'smae-sistemas': `SMAE,${sistema}` });
+
+    // Privilégios que o usuário tem em cada sistema: é exatamente o que o RolesGuard compara
+    const privPorSistema = new Map<Sistema, Set<string>>();
+    for (const sistema of SISTEMAS) {
+        const r = await fetch(`${base}/api/minha-conta`, { headers: headers(sistema) });
+        if (r.status !== 200) continue;
+        const j = (await r.json()) as { sessao?: { privilegios?: string[] } };
+        privPorSistema.set(sistema, new Set(j.sessao?.privilegios ?? []));
+    }
+    if (privPorSistema.size === 0) {
+        console.error('nenhum sistema respondeu em /minha-conta; a conta tem algum perfil de acesso?');
+        process.exit(2);
+    }
+    const sistemasUsuario = [...privPorSistema.keys()];
 
     // Une as rotas de todos os documentos: cada um expõe um subconjunto dos módulos
     const rotas = new Map<string, any>();
     for (const doc of DOCS) {
-        const r = await fetch(`${base}/api/${doc}-json`, { headers: headers('SMAE') });
+        const r = await fetch(`${base}/api/${doc}-json`, { headers: headers(sistemasUsuario[0]) });
         if (r.status !== 200) continue;
         const json = (await r.json()) as { paths: Record<string, any> };
         for (const [rota, metodos] of Object.entries(json.paths)) {
@@ -97,10 +119,10 @@ async function main() {
 
     /** Primeiro id real do endpoint de listagem pai, com o sistema que aceitou a chamada. */
     const cacheId = new Map<string, { id: unknown; sistema: string } | null>();
-    async function idReal(rotaLista: string) {
+    async function idReal(rotaLista: string, candidatos: Sistema[]) {
         if (cacheId.has(rotaLista)) return cacheId.get(rotaLista)!;
         let achado: { id: unknown; sistema: string } | null = null;
-        for (const sistema of SISTEMAS) {
+        for (const sistema of candidatos) {
             try {
                 const r = await fetch(base + rotaLista, { headers: headers(sistema) });
                 if (r.status !== 200) continue;
@@ -137,10 +159,25 @@ async function main() {
         return '?' + pares.join('&');
     }
 
+    /** `Roles` escreve os privilégios exigidos no summary: "... (Privilégios: A.b, C.d)". */
+    function privsExigidos(get: any): string[] {
+        const m = /\(Privil[ée]gios:([^)]*)\)/.exec(String(get?.summary ?? ''));
+        if (!m) return [];
+        return m[1]
+            .split(',')
+            .map((p) => p.trim())
+            .filter(Boolean);
+    }
+
+    /** Sistemas cujo conjunto de privilégios passa no RolesGuard desta rota. */
+    function sistemasDaRota(exigidos: string[]): Sistema[] {
+        if (exigidos.length === 0) return sistemasUsuario; // rota sem @Roles: o guard libera qualquer um
+        return sistemasUsuario.filter((s) => exigidos.some((p) => privPorSistema.get(s)!.has(p)));
+    }
+
     /**
-     * 403 e "apenas um smae-sistema por vez" morrem no guard: o service nem roda, e é
-     * justamente o código do service que um upgrade de Prisma/pg quebra. Então tenta os
-     * sistemas em ordem e fica com a primeira resposta que passou do guard.
+     * Rede de segurança para o que a inferência não cobre: rota sem @Roles cujo service chama
+     * assertOneModuloSistema, ou privilégio que o seed mapeou para um módulo diferente do esperado.
      */
     function barradoNoGuard(status: number, corpo: string): boolean {
         if (status === 403) return true;
@@ -148,21 +185,40 @@ async function main() {
     }
 
     const resultados: Resultado[] = [];
+    let inferidas = 0;
     for (const [rota, get] of [...rotas].sort(([a], [b]) => (a < b ? -1 : 1))) {
         let id: unknown = null;
-        let candidatos = SISTEMAS;
+        const exigidos = privsExigidos(get);
+        let candidatos = sistemasDaRota(exigidos);
+        if (exigidos.length) inferidas++;
+
+        if (candidatos.length === 0) {
+            resultados.push({
+                rota,
+                url: rota,
+                sistema: '-',
+                status: null,
+                classe: 'sem-priv',
+                corpo: exigidos.join(', '),
+            });
+            continue;
+        }
 
         if (rota.includes('{')) {
             const partes = rota.split('/');
             const rotaLista = partes.slice(0, partes.findIndex((p) => p.startsWith('{'))).join('/');
-            const achado = await idReal(rotaLista);
+            // Candidatos vindos da própria listagem, e não da rota filha: idReal é cacheado por
+            // rotaLista e várias filhas com guards diferentes caem na mesma listagem.
+            const pai = rotas.get(rotaLista);
+            const achado = await idReal(rotaLista, pai ? sistemasDaRota(privsExigidos(pai)) : sistemasUsuario);
             if (!achado) {
                 resultados.push({ rota, url: rota, sistema: '-', status: null, classe: 'sem-id', corpo: '' });
                 continue;
             }
             id = achado.id;
-            // O sistema que enxergou a linha vai primeiro, mas os outros seguem como alternativa
-            candidatos = [achado.sistema, ...SISTEMAS.filter((s) => s !== achado.sistema)];
+            // O sistema que enxergou a linha vai primeiro, se ele também passa no guard desta rota
+            const s = achado.sistema as Sistema;
+            if (candidatos.includes(s)) candidatos = [s, ...candidatos.filter((c) => c !== s)];
         }
 
         const url = rota.replace(/\{[^}]+\}/g, String(id)) + queryObrigatoria(get, id);
@@ -195,6 +251,7 @@ async function main() {
     const contagem: Record<string, number> = {};
     for (const r of resultados) contagem[r.classe] = (contagem[r.classe] ?? 0) + 1;
     console.log(`${resultados.length} GETs em ${base}`);
+    console.log(`  sistema inferido pelos privilégios em ${inferidas}, resto sem @Roles (qualquer sistema serve)`);
     console.log(
         Object.entries(contagem)
             .sort()
@@ -206,7 +263,9 @@ async function main() {
     if (problemas.length) {
         console.log('\nerro de servidor:');
         for (const p of problemas) {
-            console.log(`  ${p.status ?? 'ERR'} [${p.sistema}] ${p.url}\n      ${p.corpo.replace(/\s+/g, ' ').slice(0, 180)}`);
+            console.log(
+                `  ${p.status ?? 'ERR'} [${p.sistema}] ${p.url}\n      ${p.corpo.replace(/\s+/g, ' ').slice(0, 180)}`
+            );
         }
     }
 
@@ -216,7 +275,9 @@ async function main() {
 
     if (escrever) {
         writeFileSync(arquivoBaseline, JSON.stringify(atual, null, 1) + '\n');
-        console.log(`\nbaseline gravado em ${arquivoBaseline} (${problemas.length} erro(s) de servidor registrado(s) como conhecidos)`);
+        console.log(
+            `\nbaseline gravado em ${arquivoBaseline} (${problemas.length} erro(s) de servidor registrado(s) como conhecidos)`
+        );
         return;
     }
 
@@ -231,7 +292,8 @@ async function main() {
         const antes = baseline[rota];
         const depois = atual[rota];
         if (antes === undefined) {
-            if (depois === 'erro-servidor' || depois === 'falhou') regressoes.push(`+ ${rota}: rota nova já em ${depois}`);
+            if (depois === 'erro-servidor' || depois === 'falhou')
+                regressoes.push(`+ ${rota}: rota nova já em ${depois}`);
             continue;
         }
         if (depois === undefined) {
