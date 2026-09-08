@@ -3711,19 +3711,74 @@ export class ProjetoService {
     async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
         const logger = LoggerWithLog('Projeto.remove');
         logger.log(`projeto ${id}`);
-        await this.prisma.projeto.updateMany({
-            where: {
-                tipo: tipo,
-                id: id,
-                removido_em: null,
-            },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const removido = await prismaTx.projeto.updateMany({
+                where: {
+                    tipo: tipo,
+                    id: id,
+                    removido_em: null,
+                },
+                data: {
+                    removido_por: user.id,
+                    removido_em: now,
+                },
+            });
+
+            // Só faz a cascata se a obra/projeto foi de fato removido agora (evita mexer nos vínculos
+            // quando o registro não bateu o filtro — tipo diferente ou já removido).
+            if (removido.count > 0) {
+                await this.removeVinculosContratoDaObra(prismaTx, id, user, now);
+            }
+
+            await logger.saveLogs(prismaTx, user.getLogData());
         });
-        await logger.saveLogs(this.prisma, user.getLogData());
         return;
+    }
+
+    /**
+     * Ao excluir uma obra/projeto, baixa (soft-delete) os vínculos contrato_projeto dela e, para cada
+     * contrato afetado que ficar sem nenhum vínculo com obra ativa, marca o próprio contrato como
+     * excluído. Sem isso os vínculos ficam órfãos: o contrato continua "compartilhado" com uma obra
+     * que não existe mais — o que, entre outros efeitos, bloqueia indevidamente torná-lo exclusivo
+     * a partir de outra obra (a fonte do bug de contratos exclusivos).
+     */
+    private async removeVinculosContratoDaObra(
+        prismaTx: Prisma.TransactionClient,
+        projeto_id: number,
+        user: PessoaFromJwt,
+        now: Date
+    ): Promise<void> {
+        const vinculos = await prismaTx.contratoProjeto.findMany({
+            where: { projeto_id: projeto_id, removido_em: null },
+            select: { id: true, contrato_id: true },
+        });
+        if (vinculos.length === 0) return;
+
+        const contratoIds = [...new Set(vinculos.map((v) => v.contrato_id))];
+
+        // Serializa com associar()/remove() do módulo de contrato, que também travam a linha do
+        // contrato antes de recontar vínculos.
+        for (const contrato_id of contratoIds) {
+            await prismaTx.$queryRaw`SELECT id FROM contrato WHERE id = ${contrato_id} FOR UPDATE`;
+        }
+
+        await prismaTx.contratoProjeto.updateMany({
+            where: { id: { in: vinculos.map((v) => v.id) } },
+            data: { removido_em: now, removido_por: user.id },
+        });
+
+        for (const contrato_id of contratoIds) {
+            const restantes = await prismaTx.contratoProjeto.count({
+                where: { contrato_id: contrato_id, removido_em: null, projeto: { removido_em: null } },
+            });
+            if (restantes === 0) {
+                await prismaTx.contrato.updateMany({
+                    where: { id: contrato_id, removido_em: null },
+                    data: { removido_em: now, removido_por: user.id },
+                });
+            }
+        }
     }
 
     async append_document(tipo: TipoProjeto, projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {

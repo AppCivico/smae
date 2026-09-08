@@ -295,10 +295,15 @@ export class ContratoService {
                 }
 
                 // Mudança de compartilhado -> exclusivo só é permitida se não houver outra
-                // obra/projeto associado ao contrato.
+                // obra/projeto (ativo) associado ao contrato.
+                // O filtro `projeto.removido_em: null` ignora vínculos órfãos: obras que foram
+                // excluídas mas cujo contrato_projeto não foi baixado junto (o projeto.remove não
+                // faz cascata). Sem esse filtro, um contrato "compartilhado" apenas com uma obra
+                // já deletada — invisível para o usuário — bloqueia indevidamente a mudança para
+                // exclusivo.
                 if (dto.contrato_exclusivo === true && self.contrato_exclusivo === false) {
                     const vinculos = await prismaTx.contratoProjeto.count({
-                        where: { contrato_id: id, removido_em: null },
+                        where: { contrato_id: id, removido_em: null, projeto: { removido_em: null } },
                     });
                     if (vinculos > 1)
                         throw new HttpException(
@@ -411,8 +416,10 @@ export class ContratoService {
                 },
             });
 
+            // Considera apenas vínculos com obras ativas: vínculos órfãos (obra já excluída, mas
+            // contrato_projeto não baixado) não devem manter o contrato "vivo" indefinidamente.
             const restantes = await prismaTx.contratoProjeto.count({
-                where: { contrato_id: id, removido_em: null },
+                where: { contrato_id: id, removido_em: null, projeto: { removido_em: null } },
             });
 
             if (restantes === 0) {
