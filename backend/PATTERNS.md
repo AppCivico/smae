@@ -13,6 +13,7 @@ This document contains patterns and conventions learned from implementing featur
 - [Geolocation Integration](#geolocation-integration)
 - [Equipes & Perfis Derivados (perfis_equipe_pdm/ps)](#equipes--perfis-derivados-perfis_equipe_pdmps)
 - [Migration Workflow](#migration-workflow)
+- [Subindo Dependências](#subindo-dependências)
 - [Seed File Structure](#seed-file-structure)
 
 ---
@@ -730,6 +731,65 @@ CREATE UNIQUE INDEX "example_model_nome_unico"
     ON "example_model"("nome")
     WHERE "removido_em" IS NULL;
 ```
+
+---
+
+## Subindo Dependências
+
+`tsc --noEmit` e `nest build` passando não dizem quase nada sobre um `npm upgrade`: o que quebra
+é comportamento em runtime, em `require()` que o compilador não tipa e em validação que roda em
+todo endpoint. Três verificações cobrem isso, da mais barata para a mais cara.
+
+### 1. Contratos das libs (`npm run test:deps`)
+
+`src/common/dependency-contracts.spec.ts` trava a forma de uso de cada lib consumida de modo
+não-óbvio: `csv-parse` pela forma de callback, `graphlib` por `alg.topsort`/`findCycles`,
+`adm-zip` por `addFile`/`toBuffer`, `dompurify` pela fábrica que recebe a window do jsdom,
+`sharp`, `xlsx`, `@json2csv` e o `expiresIn` string do `jsonwebtoken`.
+
+Roda em ~12s, sem banco e sem API. Já faz parte do `npm test`. Ao adicionar consumo novo de uma
+lib de terceiros por `require()`, acrescente o caso aqui: é o único lugar que pega a remoção de
+uma API que o TypeScript não vê.
+
+### 2. Validação dos DTOs (`npm run test:dto-snapshot`)
+
+Todo endpoint passa pelo `ValidationPipe` global, então subir `class-validator` ou
+`class-transformer` mexe na superfície inteira da API sem alterar assinatura nenhuma. O script
+roda `validate()` nas 610 classes decoradas contra 8 formas de payload (~4.9k casos, ~15k
+restrições disparadas) e compara com `tools/dto-validation.snapshot.json`, que é versionado.
+
+```bash
+npm run build && npm run test:dto-snapshot   # antes de subir a lib: confirma verde
+# sobe a lib, npm run build
+npm run test:dto-snapshot                    # falha listando o que mudou
+```
+
+Precisa de `dist/` (é lido de lá por velocidade: ~3s). Mudança intencional se aceita com
+`npm run test:dto-snapshot:write` seguido de revisão do diff. O snapshot guarda só o nome da
+restrição, não a mensagem: mensagem é texto de UI e mudaria o arquivo a cada ajuste de copy.
+
+### 3. Varredura da API (`npm run test:api-smoke`)
+
+Precisa de API no ar e banco com dados. Lê as rotas do próprio Swagger e chama os 342 GETs
+(~50s), resolvendo `{id}` de path com id real vindo do endpoint de listagem correspondente e
+repetindo a chamada por sistema até passar do guard de privilégio, para que o service realmente
+rode: 403 e "apenas um smae-sistema por vez" morrem no guard, e é o código do service que um
+upgrade de Prisma/pg quebra.
+
+```bash
+npm run test:api-smoke -- --url http://127.0.0.1:3001 --email x@y.z --senha ... --write
+# sobe a lib, rebuild, reinicia a API
+npm run test:api-smoke -- --url http://127.0.0.1:3001 --email x@y.z --senha ...
+```
+
+A comparação é por classe (`ok` / `erro-cliente` / `erro-servidor`), não por código exato,
+porque o código exato depende de qual linha o endpoint de listagem devolveu primeiro. A pergunta
+que o baseline responde é "algo passou a estourar".
+
+O baseline **não** é versionado (está no `tools/.gitignore`): ele reflete os dados do banco em
+que foi gerado, e endpoint que depende de serviço externo ausente (SEI, metabase) responde 500
+de forma legítima nesse ambiente. Gere o baseline antes do upgrade e compare depois, no mesmo
+banco.
 
 ---
 
