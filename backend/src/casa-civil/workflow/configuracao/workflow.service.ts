@@ -261,29 +261,53 @@ export class WorkflowService {
 
         const offset = (page - 1) * ipp;
 
-        const [countResult, rows] = await this.prisma.$transaction([
+        // O banco usa collation "C", então `ORDER BY nome` ordena por bytes (maiúsculas antes
+        // de minúsculas, acentos fora de ordem). Ordenamos via query raw usando a collation ICU
+        // `pt_natural` (case/acento-insensível, com ordenação numérica natural), pois o `orderBy`
+        // do Prisma não permite especificar COLLATE.
+        // A collation é criada em prisma/manual-copy/0061-collation_pt_natural.pgsql.
+        const conditions: Prisma.Sql[] = [Prisma.sql`w.removido_em IS NULL`];
+        if (filters.ativo !== undefined) conditions.push(Prisma.sql`w.ativo = ${filters.ativo}`);
+        if (filters.transferencia_tipo_id !== undefined)
+            conditions.push(Prisma.sql`w.transferencia_tipo_id = ${filters.transferencia_tipo_id}`);
+        if (filters.esfera !== undefined)
+            conditions.push(Prisma.sql`tt.esfera = ${filters.esfera}::"TransferenciaTipoEsfera"`);
+        const whereSql = Prisma.join(conditions, ' AND ');
+
+        const [countResult, orderedIds] = await this.prisma.$transaction([
             filterToken ? this.prisma.workflow.count({ where: { id: -1 } }) : this.prisma.workflow.count({ where }),
-            this.prisma.workflow.findMany({
-                where,
-                orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
-                skip: offset,
-                take: ipp,
-                select: {
-                    id: true,
-                    nome: true,
-                    ativo: true,
-                    inicio: true,
-                    termino: true,
-                    transferencia_tipo: {
-                        select: {
-                            id: true,
-                            nome: true,
-                            esfera: true,
-                        },
+            this.prisma.$queryRaw<{ id: number }[]>`
+                SELECT w.id
+                FROM workflow w
+                JOIN transferencia_tipo tt ON tt.id = w.transferencia_tipo_id
+                WHERE ${whereSql}
+                ORDER BY w.ativo DESC, w.nome COLLATE pt_natural ASC
+                OFFSET ${offset}
+                LIMIT ${ipp}
+            `,
+        ]);
+
+        const ids = orderedIds.map((r) => r.id);
+        const unorderedRows = await this.prisma.workflow.findMany({
+            where: { id: { in: ids } },
+            select: {
+                id: true,
+                nome: true,
+                ativo: true,
+                inicio: true,
+                termino: true,
+                transferencia_tipo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        esfera: true,
                     },
                 },
-            }),
-        ]);
+            },
+        });
+        // Reordena os registros conforme a ordem definida pela query raw acima.
+        const rowById = new Map(unorderedRows.map((r) => [r.id, r]));
+        const rows = ids.map((id) => rowById.get(id)).filter((r): r is (typeof unorderedRows)[number] => r != null);
 
         if (!filterToken) {
             total_registros = countResult;
@@ -566,14 +590,13 @@ export class WorkflowService {
         });
         if (transferenciaEmAndamento) return true;
 
+        // Verifica se há histórico de andamentos de transferências deste workflow (inclusive removidas).
+        // Importante: filtrar pela transferência do workflow, e não pela etapa base (workflow_etapa),
+        // pois as etapas (WorkflowEtapa) são compartilhadas entre workflows. Filtrar pela etapa gera
+        // falso-positivo, marcando como "em uso" um workflow novo apenas por reutilizar uma etapa-base.
         const andamentoHistorico = await prismaTxn.transferenciaAndamento.count({
             where: {
-                workflow_etapa: {
-                    OR: [
-                        { fluxoSaida: { some: { workflow_id: id } } },
-                        { fluxoDestino: { some: { workflow_id: id } } },
-                    ],
-                },
+                transferencia: { workflow_id: id },
             },
         });
         return andamentoHistorico > 0;

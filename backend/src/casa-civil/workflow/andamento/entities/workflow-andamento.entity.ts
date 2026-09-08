@@ -23,6 +23,13 @@ export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto
      */
     pode_reiniciar_workflow: boolean;
     /**
+     * Existe workflow associado à transferência e o usuário é administrador da Casa Civil
+     * (`CadastroTransferencia.administrador`), portanto a opção "Limpar/Excluir Workflow" pode ser
+     * oferecida. ATENÇÃO: a exclusão é irreversível — alerte o usuário antes de chamar
+     * `POST /transferencia/:id/limpar-workflow`.
+     */
+    pode_limpar_workflow: boolean;
+    /**
      * O workflow ativo do tipo é diferente do associado à transferência (ex.: decreto alterou o
      * fluxo retroativamente). Útil para destacar a opção de reinício.
      */

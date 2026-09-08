@@ -2,7 +2,7 @@
 
 <!-- Gerado por bin/report-columns-gen.ts — não edite à mão. -->
 
-38 arquivos de relatório com schema de colunas declarado.
+39 arquivos de relatório com schema de colunas declarado.
 
 ## Arquivos
 
@@ -44,7 +44,8 @@
 | `riscos.csv` | `Projeto`, `Projetos` | 20 | [detalhes](./report-columns/riscos-csv.md) |
 | `termos_encerramento.csv` | `Projetos` | 18 | [detalhes](./report-columns/termos-encerramento-csv.md) |
 | `termos-encerramento.csv` | `Projeto` | 18 | [detalhes](./report-columns/termos-encerramento-csv.md) |
-| `transferencias.csv` | `Transferencias` | 68 | [detalhes](./report-columns/transferencias-csv.md) |
+| `transferencias_e_distribuicao.csv` | `Transferencias` | 69 | [detalhes](./report-columns/transferencias-e-distribuicao-csv.md) |
+| `transferencias.csv` | `Transferencias` | 40 | [detalhes](./report-columns/transferencias-csv.md) |
 | `tribunal-de-contas.csv` | `TribunalDeContas` | 13 | [detalhes](./report-columns/tribunal-de-contas-csv.md) |
 
 ## Fontes por arquivo
@@ -109,6 +110,7 @@ flowchart LR
     projetos["Projetos"] --> riscos-csv["riscos.csv"]
     projetos["Projetos"] --> termos-encerramento-csv["termos_encerramento.csv"]
     projeto["Projeto"] --> termos-encerramento-csv["termos-encerramento.csv"]
+    transferencias["Transferencias"] --> transferencias-e-distribuicao-csv["transferencias_e_distribuicao.csv"]
     transferencias["Transferencias"] --> transferencias-csv["transferencias.csv"]
     tribunaldecontas["TribunalDeContas"] --> tribunal-de-contas-csv["tribunal-de-contas.csv"]
 ```

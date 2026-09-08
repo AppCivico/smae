@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router';
 
 import TextoComBotao from '@/components/TextoComBotao.vue';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 
 import VaralDeFaseItem from './componentes/VaralDeFaseItem.vue';
@@ -14,6 +15,7 @@ import VaralDeFaseItem from './componentes/VaralDeFaseItem.vue';
 const TAMANHO_LARGO = 600;
 
 const workflowAndamentoStore = useWorkflowAndamentoStore();
+const transferenciaVoluntariaStore = useTransferenciasVoluntariasStore();
 
 const varalDeFasesEl = ref<HTMLElement>();
 const tamanhoLargo = ref<boolean>(true);
@@ -21,6 +23,8 @@ const tamanhoLargo = ref<boolean>(true);
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
+
+const { emFoco: transferenciaEmFoco } = storeToRefs(transferenciaVoluntariaStore);
 
 const {
   etapaEmFoco, faseAtual, proximaFase, inícioDeFasePermitido,
@@ -84,6 +88,7 @@ onMounted(() => {
 
       <template
         v-if="inícioDeFasePermitido
+          && !transferenciaEmFoco?.cancelada
           && temPermissãoPara('CadastroWorkflows.editar')
           && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
         #botao
@@ -139,7 +144,8 @@ onMounted(() => {
           :atual="faseObjeto.andamento.atual"
           :concluida="faseObjeto.andamento?.concluida"
           :pode-concluir="faseObjeto.andamento?.pode_concluir"
-          :bloqueado="!faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida"
+          :bloqueado="transferenciaEmFoco?.cancelada
+            || (!faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida)"
           :largo="tamanhoLargo"
           tipo="fase"
         />

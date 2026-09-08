@@ -63,6 +63,20 @@ const tituloDoItem = (item) => (
   || item.name
 );
 
+const itensComTitulo = computed(() => rotasParaMigalhasDePão.value.map((item) => {
+  const titulo = tituloDoItem(item);
+
+  return {
+    ...item,
+    titulo,
+    tituloTruncado: truncate(titulo, 50),
+  };
+}));
+
+const tituloDaRotaAtual = computed(() => (rotaTemDetalhe.value
+  ? (route.meta?.títuloParaMenu || route.name)
+  : truncate(tituloDoItem(route), 50)));
+
 </script>
 <template>
   <nav
@@ -71,7 +85,7 @@ const tituloDoItem = (item) => (
   >
     <ul class="migalhas-de-pão__lista">
       <li
-        v-for="item, k in rotasParaMigalhasDePão"
+        v-for="item, k in itensComTitulo"
         :key="k"
         class="migalhas-de-pão__item"
       >
@@ -85,10 +99,10 @@ const tituloDoItem = (item) => (
           <slot
             :name="`item--${k + 1}__texto`"
             v-bind="item"
-            :titulo="tituloDoItem(item)"
-            :titulo-truncado="truncate(tituloDoItem(item), 50)"
+            :titulo="item.titulo"
+            :titulo-truncado="item.tituloTruncado"
           >
-            {{ truncate(tituloDoItem(item), 50) }}
+            {{ item.tituloTruncado }}
           </slot>
         </component>
       </li>
@@ -126,13 +140,7 @@ const tituloDoItem = (item) => (
         */
         -->
 
-        <template v-if="rotaTemDetalhe">
-          {{ $route.meta?.títuloParaMenu || $route.name }}
-        </template>
-
-        <template v-else>
-          {{ truncate(tituloDoItem(route), 50) }}
-        </template>
+        {{ tituloDaRotaAtual }}
       </li>
     </ul>
   </nav>

@@ -87,7 +87,7 @@ tipoDeTransferenciaStore.buscarTudo();
     <template #acoes>
       <SmaeLink
         :to="{ name: 'fluxosCriar' }"
-        class="btn big ml2"
+        class="btn big"
       >
         Novo fluxo
       </SmaeLink>
@@ -112,9 +112,23 @@ tipoDeTransferenciaStore.buscarTudo();
       { chave: 'nome', label: 'Nome' },
       { chave: 'esfera', label: 'Esfera' },
       { chave: 'transferencia_tipo.nome', label: 'Tipo de transferência' },
-      { chave: 'termino', label: 'Fim da vigência' },
-      { chave: 'ativo', label: 'Ativo' },
-      { chave: 'inicio', label: 'Início da vigência' },
+      {
+        chave: 'termino',
+        label: 'Fim da vigência',
+        atributosDaCelula: { class: 'cell--data' },
+        atributosDaColuna: { class: 'col--data' },
+      },
+      {
+        chave: 'ativo',
+        label: 'Ativo',
+        atributosDaColuna: { class: 'col--minimum' },
+      },
+      {
+        chave: 'inicio',
+        label: 'Início da vigência',
+        atributosDaCelula: { class: 'cell--data' },
+        atributosDaColuna: { class: 'col--data' },
+      },
     ]"
     :carregando="chamadasPendentes.lista"
     :erro="erro"

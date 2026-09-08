@@ -76,7 +76,14 @@ export class TransferenciaController {
 
     @Post(':id/limpar-workflow')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferencia.administrador'])
+    @ApiOperation({
+        summary: 'Limpa/exclui o workflow da transferência',
+        description:
+            'Remove o andamento e o cronograma atuais da transferência. AÇÃO IRREVERSÍVEL — o front-end deve ' +
+            'alertar o usuário antes de chamar. Liberado apenas para administradores da Casa Civil ' +
+            '(`CadastroTransferencia.administrador`).',
+    })
     async limparWorkflow(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         return await this.transferenciaService.limparWorkflowCronograma(+params.id, user, undefined);
     }

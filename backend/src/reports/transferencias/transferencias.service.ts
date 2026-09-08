@@ -11,7 +11,12 @@ import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from 
 import { FilterTransferenciaCancelada } from 'src/casa-civil/transferencia/dto/filter-transferencia.dto';
 import { STATUS_DISTRIBUICAO_PREJUDICADOS_SQL_IN } from 'src/casa-civil/distribuicao-recurso/distribuicao-status.helpers';
 import { CreateRelTransferenciasDto } from './dto/create-transferencias.dto';
-import { RelTransferenciaCronogramaCsvRow, RelTransferenciasCsvRow } from './entities/transferencias-csv.entity';
+import {
+    linhasPorTransferencia,
+    RelTransferenciaCronogramaCsvRow,
+    RelTransferenciasCsvRow,
+    RelTransferenciasEDistribuicaoCsvRow,
+} from './entities/transferencias-csv.entity';
 import {
     RelTransferenciaCronogramaDto,
     RelTransferenciasDto,
@@ -583,7 +588,11 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
      * colunas e geração de CSV pt-BR + XLSX tipado a partir do mesmo arquivo).
      */
     async describeSchema(_params: CreateRelTransferenciasDto): Promise<ReportFileSchema[]> {
-        return [getReportRowSchema(RelTransferenciasCsvRow), getReportRowSchema(RelTransferenciaCronogramaCsvRow)];
+        return [
+            getReportRowSchema(RelTransferenciasCsvRow),
+            getReportRowSchema(RelTransferenciasEDistribuicaoCsvRow),
+            getReportRowSchema(RelTransferenciaCronogramaCsvRow),
+        ];
     }
 
     /**
@@ -591,18 +600,25 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
      * schema), valores crus e o conjunto **completo** de colunas, independente de
      * `params.tipo`.
      *
+     * São três arquivos: `transferencias.csv` (uma linha por transferência),
+     * `transferencias_e_distribuicao.csv` (uma linha por distribuição de recurso, com as colunas
+     * das duas entidades) e `cronograma.csv`. Os dois primeiros são a mesma consulta em
+     * granularidades diferentes — ver `RelTransferenciasCsvRow`.
+     *
      * O recorte por tipo (Geral/Resumido) virou uma seleção padrão de colunas — veja
      * `COLUNAS_PADRAO_TRANSFERENCIAS_POR_TIPO` — aplicada na etapa de apresentação.
      */
     async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
         const dados = await this.asJSON(params);
-        await _ctx.resumoSaida('Transferências', dados.linhas.length);
+        const linhasTransf = linhasPorTransferencia(dados.linhas);
+        await _ctx.resumoSaida('Transferências', linhasTransf.length);
+        await _ctx.resumoSaida('Transferências e Distribuições', dados.linhas.length);
         await _ctx.resumoSaida('Cronograma de Transferências', dados.linhas_cronograma.length);
 
         const out: FileOutput[] = [];
 
         const schemas = await this.describeSchema(params);
-        const [schemaTransf, schemaCrono] = schemas;
+        const [schemaTransf, schemaComDistrib, schemaCrono] = schemas;
 
         const tmpTransf = _ctx.getTmpFile('transferencias.csv');
         const transfOpts: CsvWriterOptions<RelTransferenciasDto> = {
@@ -610,8 +626,19 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
             transforms: TransferenciasFlattenTransforms,
             fields: schemaTransf.colunas.map((c) => c.name),
         };
-        await WriteCsvToFile(dados.linhas, tmpTransf.stream, transfOpts);
+        await WriteCsvToFile(linhasTransf, tmpTransf.stream, transfOpts);
         out.push({ name: 'transferencias.csv', localFile: tmpTransf.path });
+
+        // Sempre emitido, inclusive quando nenhuma transferência tem mais de uma distribuição:
+        // um arquivo que aparece e some conforme os dados é pior de automatizar do que um que,
+        // no pior caso, repete o outro com as colunas de distribuição vazias.
+        const tmpComDistrib = _ctx.getTmpFile('transferencias_e_distribuicao.csv');
+        await WriteCsvToFile(dados.linhas, tmpComDistrib.stream, {
+            csvOptions: DefaultCsvOptions,
+            transforms: TransferenciasFlattenTransforms,
+            fields: schemaComDistrib.colunas.map((c) => c.name),
+        } satisfies CsvWriterOptions<RelTransferenciasDto>);
+        out.push({ name: 'transferencias_e_distribuicao.csv', localFile: tmpComDistrib.path });
 
         if (dados.linhas_cronograma?.length) {
             const tmpCrono = _ctx.getTmpFile('cronograma.csv');

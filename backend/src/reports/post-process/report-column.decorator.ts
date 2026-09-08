@@ -49,7 +49,7 @@ export function ReportColumn(options: ReportColumnOptions): PropertyDecorator {
 
 /** Marca a classe como o conjunto de linhas de um arquivo de relatório. */
 export function ReportRows(options: ReportRowsOptions): ClassDecorator {
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     return (target: Function) => {
         Reflect.defineMetadata(ARQUIVO, options, target);
         REGISTRO.push(target as unknown as ReportRowClass);
@@ -58,6 +58,35 @@ export function ReportRows(options: ReportRowsOptions): ClassDecorator {
 
 export function getReportRowsOptions(cls: ReportRowClass): ReportRowsOptions | undefined {
     return Reflect.getMetadata(ARQUIVO, cls);
+}
+
+/**
+ * Copia colunas já declaradas de uma classe de linha para outra, preservando ordem, rótulo,
+ * tipo e formatação.
+ *
+ * Existe para o caso de dois arquivos do mesmo relatório que compartilham colunas mas têm
+ * granularidades diferentes — por exemplo `transferencias_e_distribuicao.csv` (uma linha por
+ * distribuição) e `transferencias.csv` (uma linha por transferência). Herança não serve aí:
+ * `coletarColunas` põe as colunas da base **antes** das próprias, então extrair um pai comum
+ * reordenaria as colunas do arquivo que já existe — e a ordem de declaração é a ordem entregue
+ * ao usuário quando não há modelo.
+ *
+ * A alternativa era repetir os `@ReportColumn` no segundo arquivo, o que faria os rótulos
+ * divergirem no primeiro `git revert` distraído. Aqui a fonte da verdade continua sendo uma só.
+ *
+ * Chame no escopo do módulo, logo após a classe de destino: os decoradores de propriedade da
+ * origem já rodaram (a classe está definida acima) e o registro precisa estar completo antes
+ * de qualquer `getReportRowSchema`.
+ */
+export function copiarColunas(
+    origem: ReportRowClass,
+    destino: ReportRowClass,
+    incluir: (nome: string) => boolean
+): void {
+    for (const { propriedade, options } of getReportRowColumns(origem)) {
+        if (!incluir(propriedade)) continue;
+        ReportColumn(options)(destino.prototype, propriedade);
+    }
 }
 
 /**

@@ -23,6 +23,21 @@ Veja a documentação completa em:
 Veja a documentação completa em:
 [frontend/src/components/InputImageProfile/README.md](frontend/src/components/InputImageProfile/README.md)
 
+## Backend - NUNCA rodar `prisma format` no schema
+
+**Não execute `npx prisma format`** (nem qualquer formatador/linter automático) em
+`backend/prisma/schema.prisma`.
+
+O arquivo usa indentação de **4 espaços**; o formatador do Prisma reescreve tudo com 2 espaços e
+realinha todos os modelos. O resultado é um diff de ~6500 linhas em cima de uma mudança de 50,
+que torna a revisão impossível e gera conflito com qualquer outra branch que toque o schema.
+
+Ao alterar o schema:
+1. Edite à mão, mantendo 4 espaços e o alinhamento do bloco vizinho
+2. Valide com `npx prisma validate` (só verifica, não reescreve)
+3. `npx prisma generate` para o client — esse não mexe no schema
+4. Confira o tamanho do diff antes de commitar: `git diff --stat backend/prisma/schema.prisma`
+
 ## Backend - Funções SQL (PostgreSQL)
 
 Funções SQL customizadas (stored procedures, triggers, views) **não** devem ser criadas como migrations Prisma.

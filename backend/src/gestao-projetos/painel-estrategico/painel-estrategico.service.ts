@@ -1195,9 +1195,10 @@ export class PainelEstrategicoService {
                     isolationLevel: 'ReadCommitted',
                 }
             );
-            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
         } catch (error) {
             Logger.error('Error refreshing materialized view:', error);
+        } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
         }
     }
 }

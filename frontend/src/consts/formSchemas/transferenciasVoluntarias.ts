@@ -64,7 +64,6 @@ export default object({
   emenda_unitaria: string()
     .label('Emenda unitária')
     .max(250)
-    .min(1)
     .nullable()
     .meta({
       balaoInformativo: 'Indica o código numérico da emenda parlamentar oriunda de Transferência Especial, em nos casos de distribuição de recursos. É gerado pelos respectivos sistemas do Governo Federal ou Estadual.',

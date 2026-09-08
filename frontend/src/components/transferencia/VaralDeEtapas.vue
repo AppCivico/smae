@@ -8,10 +8,14 @@ import { localizarDataHorario } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
+
+const transferenciaVoluntariaStore = useTransferenciasVoluntariasStore();
+const { emFoco: transferenciaEmFoco } = storeToRefs(transferenciaVoluntariaStore);
 
 const alertStore = useAlertStore();
 
@@ -89,10 +93,10 @@ function deletarWorkflow() {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.deletarWorkflow()) {
       await workflowAndamento.buscar();
-      alertStore.success('Workflow deletado!');
+      alertStore.success('Workflow excluído!');
       configurarWorkflow.value = false;
     }
-  }, 'Deletar');
+  }, 'Excluir');
 }
 
 function reiniciarWorkflow() {
@@ -112,7 +116,8 @@ function formatarTexto(texto) {
   return texto.replace(/([a-z])([A-Z])/g, '$1 $2');
 }
 
-const temPermissaoParaConfigurar = computed(() => temPermissãoPara.value(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
+const temPermissaoParaConfigurar = computed(() => !transferenciaEmFoco.value?.cancelada
+  && temPermissãoPara.value(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
   && !temPermissãoPara.value('SMAE.PerfilGestorDistribuicaoRecurso'));
 </script>
 <template>
@@ -365,14 +370,17 @@ const temPermissaoParaConfigurar = computed(() => temPermissãoPara.value(['Cada
       >
         Este workflow ainda <strong>não</strong> possui histórico.
       </div>
-      <div class="flex justifycenter flexwrap g1">
+      <div
+        v-if="!transferenciaEmFoco.value?.cancelada"
+        class="flex justifycenter flexwrap g1"
+      >
         <button
-          v-if="workflow && temPermissaoParaConfigurar"
+          v-if="workflow?.pode_limpar_workflow"
           type="button"
           class="btn bgnone outline tvermelho"
           @click="deletarWorkflow()"
         >
-          fechar e deletar workflow
+          excluir workflow
         </button>
         <button
           v-if="workflow?.pode_reiniciar_workflow"

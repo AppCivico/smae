@@ -425,7 +425,16 @@ export class RelatorioModeloService {
             // Sempre a união: esta rota lista TODAS as fontes de uma vez, e não há um conjunto
             // de parâmetros por fonte para recortar. Serve para a tela saber quais fontes
             // existem; o seletor de colunas de uma fonte deve usar `POST /colunas`.
-            .map((fonte) => ({ fonte, parametrizado: false, arquivos: this.colunasDaFonte(fonte) }))
+            .map((fonte) => ({
+                fonte,
+                parametrizado: false,
+                // Ordenadas por rótulo para o seletor de colunas da tela de modelos ficar
+                // alfabético — a união bruta segue a ordem dos decoradores `@ReportColumn`.
+                arquivos: this.colunasDaFonte(fonte).map((arquivo) => ({
+                    ...arquivo,
+                    colunas: [...arquivo.colunas].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR')),
+                })),
+            }))
             .filter((linha) => linha.arquivos.length > 0);
 
         return { linhas };

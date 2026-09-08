@@ -1,26 +1,31 @@
 # transferencias.csv
 
-Uma linha por distribuição de recurso da transferência (ou por transferência, sem distribuição).
+Uma linha por transferência, sem as colunas de distribuição de recurso — o mesmo conteúdo de transferencias_e_distribuicao.csv sem as linhas repetidas por distribuição.
 
 Fontes que produzem este arquivo: `Transferencias`
 
-68 colunas.
+40 colunas.
 
 Classe de linha: `RelTransferenciasCsvRow`
 
-Colunas do CSV **bruto** de `transferencias.csv`.
+Colunas do CSV bruto de `transferencias.csv`: as mesmas de
+`transferencias_e_distribuicao.csv`, menos tudo que vem da distribuição de recurso.
 
-A ordem de declaração é a ordem das colunas no arquivo bruto e também a ordem padrão
-quando nenhum modelo é aplicado. Os nomes usam `__` no lugar de `.` para o aninhamento
-(`distribuicao_recurso`, `orgao_concedente`) porque o builder DuckDB interpreta ponto
-como referência qualificada por fonte.
+É **uma linha por transferência**, e é o arquivo que responde à pergunta mais comum do
+relatório ("quais transferências, com que valores"). O arquivo com as duas entidades continua
+existindo ao lado, para quem precisa do detalhamento por distribuição.
 
-Regra geral: valores aqui são "compute store" — números como números, datas em ISO
-(`YYYY-MM-DD`), sem máscara de moeda e sem o hack `="valor"`. Moeda, separador decimal,
-`dd/mm/aaaa` são aplicados na etapa de pós-processamento.
+A separação existe porque uma transferência com N distribuições ocupa N linhas no arquivo
+completo, e o que diferencia essas linhas são justamente as colunas `distribuicao_recurso__*`.
+Quem montava um modelo só com colunas de transferência lia aquilo como se o relatório
+estivesse duplicando registros.
 
-Booleanos que o negócio exibe como `Sim`/`Não` continuam sendo traduzidos na extração:
-é tradução de domínio (e não formatação de locale), então permanece `VARCHAR`.
+Deduplicar o arquivo completo com `DISTINCT` não era opção: destruiria o detalhamento por
+distribuição, que é o motivo de ele existir. A resposta é entregar as duas granularidades
+lado a lado e deixar a escolha para quem abre o zip.
+
+As colunas são copiadas de `RelTransferenciasEDistribuicaoCsvRow` (mesma ordem, rótulo, tipo
+e formatação) em vez de redeclaradas: são o mesmo dado, e duas listas manuais divergiriam.
 
 | Coluna | Tipo | Rótulo | Formatação | Descrição |
 | --- | --- | --- | --- | --- |
@@ -48,40 +53,14 @@ Booleanos que o negócio exibe como `Sim`/`Não` continuam sendo traduzidos na e
 | `agencia_aceite` | `VARCHAR` | Conta - Agência do aceite | — | — |
 | `conta_aceite` | `VARCHAR` | Conta - Número do aceite | — | — |
 | `emenda_unitaria` | `VARCHAR` | Emenda Unitária | — | — |
-| `distribuicao_recurso__orgao_gestor_descricao` | `VARCHAR` | Gestor Municipal do Contrato (secretaria) | — | — |
 | `ordenador_despesa` | `VARCHAR` | Ordenador de despesas | — | — |
 | `secretaria_concedente` | `VARCHAR` | Secretaria do órgão concedente | — | — |
 | `plano_de_acao` | `VARCHAR` | Plano de Ação | — | Código do detalhamento do uso dos repasses parlamentares nas transferências especiais. |
 | `interface` | `VARCHAR` | Interface | — | — |
 | `esfera` | `VARCHAR` | Esfera | — | — |
+| `status` | `VARCHAR` | Status | — | Situação da transferência: "Cancelada" quando cancelada, senão "Ativa". |
 | `parlamentares_info` | `VARCHAR` | Parlamentares | — | — |
 | `orgao_concedente__descricao` | `VARCHAR` | Orgão Concedente | — | — |
-| `distribuicao_recurso__id` | `BIGINT` | ID Distribuição de Recurso | sem formatação | — |
-| `distribuicao_recurso__nome_responsavel` | `VARCHAR` | Gestor Municipal (servidor) | — | — |
-| `distribuicao_recurso__objeto` | `VARCHAR` | Objeto detalhado | — | — |
-| `distribuicao_recurso__valor` | `DECIMAL(18,2)` | Distribuição - Valor do Repasse | R$, 2 casas | — |
-| `distribuicao_recurso__valor_total` | `DECIMAL(18,2)` | Distribuição - Valor Total | R$, 2 casas | — |
-| `distribuicao_recurso__valor_contrapartida` | `DECIMAL(18,2)` | Distribuição - Valor da Contrapartida | R$, 2 casas | — |
-| `distribuicao_recurso__empenho` | `VARCHAR` | Distribuição - Empenho | — | — |
-| `distribuicao_recurso__programa_orcamentario_estadual` | `VARCHAR` | Programa Orçamentário Estadual ou Federal | — | — |
-| `distribuicao_recurso__programa_orcamentario_municipal` | `VARCHAR` | Programa Orçamentário Municipal | — | — |
-| `distribuicao_recurso__dotacao` | `VARCHAR` | Distribuição - Dotação Orçamentária | — | — |
-| `distribuicao_recurso__proposta` | `VARCHAR` | N° Proposta | — | — |
-| `distribuicao_recurso__contrato` | `VARCHAR` | Número do Instrumento | — | — |
-| `distribuicao_recurso__convenio` | `VARCHAR` | Nº do Convênio/Pré Convênio | — | — |
-| `distribuicao_recurso__assinatura_termo_aceite` | `DATE` | Data de assinatura do termo de aceite | — | — |
-| `distribuicao_recurso__assinatura_municipio` | `DATE` | Data de assinatura do representante do Município | — | — |
-| `distribuicao_recurso__assinatura_estado` | `DATE` | Data de assinatura do representante do Estado | — | — |
-| `distribuicao_recurso__vigencia` | `DATE` | Data de início da vigência | — | — |
-| `distribuicao_recurso__conclusao_suspensiva` | `DATE` | Data de conclusão da Suspensiva | — | — |
-| `distribuicao_recurso__registro_sei` | `VARCHAR` | Nº SEI | — | — |
-| `distribuicao_recurso__status_nome_base` | `VARCHAR` | Status da Demanda | — | — |
-| `distribuicao_recurso__pct_custeio` | `DOUBLE` | Custeio/Corrente (%) | 2 casas, unidade `%` | — |
-| `distribuicao_recurso__pct_investimento` | `DOUBLE` | Investimento/Capital (%) | 2 casas, unidade `%` | — |
-| `distribuicao_recurso__banco` | `VARCHAR` | Distribuição - Banco | — | — |
-| `distribuicao_recurso__agencia` | `VARCHAR` | Distribuição - Agência | — | — |
-| `distribuicao_recurso__conta` | `VARCHAR` | Distribuição - Conta Corrente | — | — |
-| `distribuicao_recurso__gestor_conta` | `VARCHAR` | Distribuição - Gestor da Conta | — | — |
 | `orgao_concedente__sigla` | `VARCHAR` | Sigla do Orgão Concedente | — | — |
 | `orgao_concedente__id` | `BIGINT` | ID do Orgão Concedente | sem formatação | — |
 | `programa` | `VARCHAR` | Programa | — | — |
@@ -90,7 +69,5 @@ Booleanos que o negócio exibe como `Sim`/`Não` continuam sendo traduzidos na e
 | `numero_identificacao` | `VARCHAR` | Número de Identificação | — | — |
 | `tipo_transferencia` | `VARCHAR` | Tipo de Transferência | — | — |
 | `classificacao` | `VARCHAR` | Classificação | — | — |
-| `distribuicao_recurso__transferencia_id` | `BIGINT` | ID da Transferência (Distribuição) | sem formatação | — |
-| `distribuicao_recurso__orgao_gestor_id` | `BIGINT` | ID do Órgão Gestor (Distribuição) | sem formatação | — |
 
 [← todos os arquivos](../report-columns.md)

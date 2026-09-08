@@ -861,6 +861,32 @@ export class ExampleModule {}
 
 ## Common Pitfalls
 
+### ⚠️ Prisma.Decimal: nunca use operadores nativos
+
+`Prisma.Decimal` é `decimal.js`, e `Decimal.prototype.valueOf()` retorna uma **string**. Por isso
+`a < b` entre dois Decimals compila sem erro (mesma regra que permite `date1 < date2`) mas compara
+as strings lexicograficamente — o resultado depende da quantidade de dígitos:
+
+```typescript
+// ❌ compila limpo com --strict, e responde errado
+saldo >= preco;                       // Decimal('9.99') >= Decimal('10.1') === true
+saldo + preco;                        // Decimal('1') + Decimal('2') === '12'
+saldo === preco;                      // compara referências de objeto
+[d('10.1'), d('2')].sort();           // ordena como string
+
+// ✅
+saldo.gte(preco);
+saldo.plus(preco);
+saldo.eq(preco);
+valores.sort((a, b) => a.comparedTo(b));
+```
+
+Métodos corretos: `.lt() .lte() .gt() .gte() .eq() .comparedTo() .plus() .minus() .times() .div()`.
+Comparar com `null`/`undefined` (`decimal !== null`) é seguro e permitido.
+
+A regra de lint `smae/no-decimal-operators` (em `eslint-rules/no-decimal-operators.js`, type-aware)
+bloqueia esses casos no `npm run lint`.
+
 ### ❌ DON'T
 ```typescript
 // Don't use unique relation names

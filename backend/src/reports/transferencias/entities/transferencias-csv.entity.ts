@@ -1,8 +1,17 @@
-import { ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { copiarColunas, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 import { TipoRelatorioTransferencia } from '../dto/create-transferencias.dto';
 
 /**
- * Colunas do CSV **bruto** de `transferencias.csv`.
+ * Colunas do CSV **bruto** de `transferencias_e_distribuicao.csv` — o conjunto completo.
+ *
+ * Granularidade: **uma linha por distribuição de recurso**. Uma transferência com N
+ * distribuições ocupa N linhas, e o que diferencia essas linhas são só as colunas
+ * `distribuicao_recurso__*`. Quem não quer esse detalhamento tem `transferencias.csv`, com uma
+ * linha por transferência — ver `RelTransferenciasCsvRow`, logo abaixo.
+ *
+ * O arquivo já se chamou `transferencias.csv`, o que fazia quem selecionava só colunas de
+ * transferência ler as N linhas repetidas como duplicação do relatório. O nome composto é o
+ * aviso: aqui é o produto das duas entidades.
  *
  * A ordem de declaração é a ordem das colunas no arquivo bruto e também a ordem padrão
  * quando nenhum modelo é aplicado. Os nomes usam `__` no lugar de `.` para o aninhamento
@@ -17,11 +26,12 @@ import { TipoRelatorioTransferencia } from '../dto/create-transferencias.dto';
  * é tradução de domínio (e não formatação de locale), então permanece `VARCHAR`.
  */
 @ReportRows({
-    arquivo: 'transferencias.csv',
+    arquivo: 'transferencias_e_distribuicao.csv',
     fontes: ['Transferencias'],
-    descricao: 'Uma linha por distribuição de recurso da transferência (ou por transferência, sem distribuição).',
+    descricao:
+        'Uma linha por distribuição de recurso da transferência (ou por transferência, quando não há distribuição).',
 })
-export class RelTransferenciasCsvRow {
+export class RelTransferenciasEDistribuicaoCsvRow {
     @ReportColumn({ type: 'BIGINT', label: 'ID', format: { raw: true } })
     id: number;
 
@@ -271,6 +281,79 @@ export class RelTransferenciasCsvRow {
 }
 
 /**
+ * Prefixo das colunas que vêm da **distribuição de recurso**, e não da transferência. É o que
+ * separa as duas granularidades do relatório — ver `RelTransferenciasCsvRow`.
+ */
+export const PREFIXO_COLUNA_DISTRIBUICAO = 'distribuicao_recurso__';
+
+/** A coluna pertence à transferência (e não à distribuição de recurso)? */
+export function ehColunaDeTransferencia(nome: string): boolean {
+    return !nome.startsWith(PREFIXO_COLUNA_DISTRIBUICAO);
+}
+
+/**
+ * Colunas do CSV bruto de `transferencias.csv`: as mesmas de
+ * `transferencias_e_distribuicao.csv`, menos tudo que vem da distribuição de recurso.
+ *
+ * É **uma linha por transferência**, e é o arquivo que responde à pergunta mais comum do
+ * relatório ("quais transferências, com que valores"). O arquivo com as duas entidades continua
+ * existindo ao lado, para quem precisa do detalhamento por distribuição.
+ *
+ * A separação existe porque uma transferência com N distribuições ocupa N linhas no arquivo
+ * completo, e o que diferencia essas linhas são justamente as colunas `distribuicao_recurso__*`.
+ * Quem montava um modelo só com colunas de transferência lia aquilo como se o relatório
+ * estivesse duplicando registros.
+ *
+ * Deduplicar o arquivo completo com `DISTINCT` não era opção: destruiria o detalhamento por
+ * distribuição, que é o motivo de ele existir. A resposta é entregar as duas granularidades
+ * lado a lado e deixar a escolha para quem abre o zip.
+ *
+ * As colunas são copiadas de `RelTransferenciasEDistribuicaoCsvRow` (mesma ordem, rótulo, tipo
+ * e formatação) em vez de redeclaradas: são o mesmo dado, e duas listas manuais divergiriam.
+ */
+@ReportRows({
+    arquivo: 'transferencias.csv',
+    fontes: ['Transferencias'],
+    descricao:
+        'Uma linha por transferência, sem as colunas de distribuição de recurso — ' +
+        'o mesmo conteúdo de transferencias_e_distribuicao.csv sem as linhas repetidas por distribuição.',
+})
+export class RelTransferenciasCsvRow {}
+
+copiarColunas(RelTransferenciasEDistribuicaoCsvRow, RelTransferenciasCsvRow, ehColunaDeTransferencia);
+
+/**
+ * As linhas de `transferencias.csv` a partir das de `transferencias_e_distribuicao.csv`:
+ * uma por transferência.
+ *
+ * A consulta do relatório é `transferencia LEFT JOIN distribuicao_recurso`, então a mesma
+ * transferência volta repetida quando tem mais de uma distribuição. As colunas de transferência
+ * são iguais em todas essas repetições — vêm de `t.*`, dos agregados por `t.id` e do órgão
+ * concedente —, então ficar com a primeira ocorrência não escolhe entre valores divergentes,
+ * só descarta cópias.
+ *
+ * Deduplicar por `id` (e não pela tupla de colunas emitidas) é o que garante uma linha por
+ * transferência mesmo que alguma coluna de transferência venha a divergir por distribuição
+ * no futuro.
+ *
+ * Mora aqui, junto da classe de linha, por ser a outra metade da mesma decisão: qual recorte de
+ * colunas e qual granularidade. Genérica em `T` para não arrastar o DTO da extração (e, com ele,
+ * o módulo do Prisma) para dentro do arquivo de schema.
+ */
+export function linhasPorTransferencia<T extends { id: number }>(linhas: T[]): T[] {
+    const vistas = new Set<number>();
+    const out: T[] = [];
+
+    for (const linha of linhas) {
+        if (vistas.has(linha.id)) continue;
+        vistas.add(linha.id);
+        out.push(linha);
+    }
+
+    return out;
+}
+
+/**
  * Colunas do CSV bruto de `cronograma.csv`.
  */
 @ReportRows({
@@ -306,7 +389,7 @@ export class RelTransferenciaCronogramaCsvRow {
 }
 
 /**
- * Seleção padrão de colunas de `transferencias.csv` por tipo de relatório.
+ * Seleção padrão de colunas de `transferencias_e_distribuicao.csv` por tipo de relatório.
  *
  * Antes, `dados.tipo` decidia quais colunas eram *escritas* no CSV. Agora o CSV bruto
  * sempre carrega o conjunto completo (é o compute store do pós-processamento), então o
@@ -391,7 +474,7 @@ export const COLUNAS_PADRAO_TRANSFERENCIAS_POR_TIPO: Record<TipoRelatorioTransfe
     ],
 };
 
-/** Colunas padrão (nome + ordem) de `transferencias.csv` para um tipo de relatório. */
+/** Colunas padrão (nome + ordem) de `transferencias_e_distribuicao.csv` para um tipo de relatório. */
 export function colunasPadraoTransferencias(tipo: TipoRelatorioTransferencia): string[] {
     return COLUNAS_PADRAO_TRANSFERENCIAS_POR_TIPO[tipo] ?? COLUNAS_PADRAO_TRANSFERENCIAS_POR_TIPO.Geral;
 }

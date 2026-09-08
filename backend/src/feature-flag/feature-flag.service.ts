@@ -24,22 +24,25 @@ export class FeatureFlagService {
     @Interval(60 * 1000)
     private async handleCron() {
         if (this.data && IsCrontabDisabled('feature_flag')) return;
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+        try {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
 
-        this.dbAsked = true;
+            this.dbAsked = true;
 
-        const updated = await this.prisma.feature_flag.findFirst();
+            const updated = await this.prisma.feature_flag.findFirst();
 
-        if (updated) {
-            this.data = {
-                mf_v2: updated.mf_v2,
-                panorama: updated.panorama,
-                pp_pe: updated.pp_pe,
-                mostrar_pdm_antigo: updated.mostrar_pdm_antigo,
-                ps_cp_readonly_pdm_config: updated.ps_cp_readonly_pdm_config,
-            };
+            if (updated) {
+                this.data = {
+                    mf_v2: updated.mf_v2,
+                    panorama: updated.panorama,
+                    pp_pe: updated.pp_pe,
+                    mostrar_pdm_antigo: updated.mostrar_pdm_antigo,
+                    ps_cp_readonly_pdm_config: updated.ps_cp_readonly_pdm_config,
+                };
+            }
+        } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
         }
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
     }
 
     async featureFlag(): Promise<FeatureFlagDto> {

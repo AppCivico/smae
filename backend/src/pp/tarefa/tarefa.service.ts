@@ -1136,11 +1136,16 @@ export class TarefaService {
                     tarefa_cronograma: {
                         select: {
                             projeto_id: true,
+                            transferencia: { select: { cancelada: true } },
                         },
                     },
                 },
             });
             if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
+
+            // Transferência cancelada não permite mais alterar o cronograma.
+            if (tarefa.tarefa_cronograma.transferencia?.cancelada)
+                throw new HttpException('Transferência cancelada não permite alteração do cronograma.', 400);
 
             if (
                 'duracao_planejado' in dto &&

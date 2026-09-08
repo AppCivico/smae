@@ -33,31 +33,34 @@ export class VariavelCalculadaService {
         if (this.is_running) return;
         this.is_running = true;
 
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-        await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient) => {
-                const lockPromise: Promise<{ locked: boolean }[]> =
-                    prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_CALC_LOCK}) as locked`;
+        try {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+            await this.prisma.$transaction(
+                async (prisma: Prisma.TransactionClient) => {
+                    const lockPromise: Promise<{ locked: boolean }[]> =
+                        prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_CALC_LOCK}) as locked`;
 
-                lockPromise.then(() => {
-                    process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-                });
+                    lockPromise.then(() => {
+                        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                    });
 
-                const locked = await lockPromise;
-                if (!locked[0].locked) return;
+                    const locked = await lockPromise;
+                    if (!locked[0].locked) return;
 
-                await this.variavelCalcCrontab();
+                    await this.variavelCalcCrontab();
 
-                process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-            },
-            {
-                maxWait: 15000,
-                timeout: 60 * 1000,
-                isolationLevel: 'ReadCommitted',
-            }
-        );
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-        this.is_running = false;
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+                },
+                {
+                    maxWait: 15000,
+                    timeout: 60 * 1000,
+                    isolationLevel: 'ReadCommitted',
+                }
+            );
+        } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+            this.is_running = false;
+        }
     }
 
     private async variavelCalcCrontab() {

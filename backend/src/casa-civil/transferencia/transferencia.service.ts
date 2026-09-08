@@ -232,9 +232,10 @@ export class TransferenciaService {
                 });
                 if (!self) throw new HttpException('Transferência não encontrada', 404);
 
-                // Transferência cancelada é terminal e não permite mais atualizações.
-                if (self.cancelada)
-                    throw new HttpException('Transferência cancelada não permite atualização.', 400);
+                // Transferência cancelada permite alterar identificação, recurso financeiro e distribuição,
+                // mas não permite alterar o tipo (que reconstrói o workflow) nem o cronograma/workflow em si.
+                if (self.cancelada && self.tipo_id != dto.tipo_id)
+                    throw new HttpException('Transferência cancelada não permite alteração do tipo/workflow.', 400);
 
                 /*Validação para caso seja informada a classificação realize a validação de existência
                  */
@@ -320,10 +321,6 @@ export class TransferenciaService {
                 // Caso o tipo da transferência seja modificado.
                 // O workflow e seu cronograma devem ser removidos.
                 if (self.tipo_id != dto.tipo_id) {
-                    // Transferência cancelada não permite reconstruir o workflow (troca de tipo).
-                    if (self.cancelada)
-                        throw new HttpException('Transferência cancelada não permite movimentação do workflow.', 400);
-
                     await prismaTxn.transferenciaAndamento.updateMany({
                         where: { transferencia_id: id, removido_em: null },
                         data: {
@@ -660,9 +657,6 @@ export class TransferenciaService {
                     select: { cancelada: true },
                 });
                 if (!atual) throw new HttpException('Transferência não encontrada', 404);
-                // Transferência cancelada é terminal e não permite mais atualizações.
-                if (atual.cancelada)
-                    throw new HttpException('Transferência cancelada não permite atualização.', 400);
 
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))

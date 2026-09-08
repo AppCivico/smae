@@ -389,33 +389,36 @@ export class TaskService {
         if (this.is_running) return;
         this.is_running = true;
 
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-        await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient) => {
-                const lockPromise: Promise<{ locked: boolean }[]> =
-                    prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${TASK_JOB_LOCK_NUMBER}) as locked`;
+        try {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+            await this.prisma.$transaction(
+                async (prisma: Prisma.TransactionClient) => {
+                    const lockPromise: Promise<{ locked: boolean }[]> =
+                        prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${TASK_JOB_LOCK_NUMBER}) as locked`;
 
-                // Immediately set the INTERNAL_DISABLE_QUERY_LOG to ''
-                lockPromise.then(() => {
-                    process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-                });
+                    // Immediately set the INTERNAL_DISABLE_QUERY_LOG to ''
+                    lockPromise.then(() => {
+                        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                    });
 
-                const locked = await lockPromise;
-                if (!locked[0].locked) return;
+                    const locked = await lockPromise;
+                    if (!locked[0].locked) return;
 
-                await this.startPendingJobs();
+                    await this.startPendingJobs();
 
-                await this.handleActiveJobs();
-                process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-            },
-            {
-                maxWait: 15000,
-                timeout: 60 * 1000,
-                isolationLevel: 'ReadCommitted',
-            }
-        );
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-        this.is_running = false;
+                    await this.handleActiveJobs();
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+                },
+                {
+                    maxWait: 15000,
+                    timeout: 60 * 1000,
+                    isolationLevel: 'ReadCommitted',
+                }
+            );
+        } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+            this.is_running = false;
+        }
     }
 
     async startPendingJobs() {
