@@ -16,7 +16,8 @@ BEGIN
     ON CONFLICT (pessoa_id) DO UPDATE
         SET pessoa_sessao_id    = EXCLUDED.pessoa_sessao_id,
             ip                  = EXCLUDED.ip,
-            ultima_atividade_em = EXCLUDED.ultima_atividade_em;
+            ultima_atividade_em = EXCLUDED.ultima_atividade_em
+        WHERE pessoa_ultima_atividade.ultima_atividade_em < NOW() - INTERVAL '1 minute';
 
     SELECT COUNT(*)
       INTO v_existing_count
