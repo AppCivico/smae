@@ -1,6 +1,7 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 import { FilterAuditLogDto, GroupByFieldsDto, GroupByFilterDto } from './dto/audit-log.dto';
 import { AuditLogDto, AuditLogSummaryRow } from './entities/audit-log.entity';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
@@ -30,7 +31,7 @@ export class AuditLogService {
             ipp = decodedPageToken.ipp;
         }
 
-        const where: any = {};
+        const where: Prisma.LogGenericoWhereInput = {};
         if (filters.pessoa_id) where.pessoa_id = filters.pessoa_id;
         if (filters.contexto) where.contexto = { contains: filters.contexto, mode: 'insensitive' };
         if (filters.log_contem) where.log = { contains: filters.log_contem, mode: 'insensitive' };

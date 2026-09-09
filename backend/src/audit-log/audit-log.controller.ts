@@ -1,9 +1,9 @@
-import { Controller, Get, Query } from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { AuditLogService } from "./audit-log.service";
-import { Roles } from "src/auth/decorators/roles.decorator";
-import { FilterAuditLogDto, GroupByFieldsDto, GroupByFilterDto } from "./dto/audit-log.dto";
-import { AuditLogSummaryDto } from "./entities/audit-log.entity";
+import { Controller, Get, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AuditLogService } from './audit-log.service';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { FilterAuditLogDto, GroupByFieldsDto, GroupByFilterDto } from './dto/audit-log.dto';
+import { AuditLogSummaryDto } from './entities/audit-log.entity';
 
 @Controller('audit-log')
 @ApiTags('Audit Log')
