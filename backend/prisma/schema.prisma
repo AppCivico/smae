@@ -582,6 +582,7 @@ model Pessoa {
     DistribuicaoSolicitacaoAjusteQueAtualizei DistribuicaoRecursoSolicitacaoAjuste[] @relation("Atualizador")
     DistribuicaoSolicitacaoAjusteQueRemovi    DistribuicaoRecursoSolicitacaoAjuste[] @relation("Removedor")
     DistribuicaoSolicitacaoAjusteQueRespondi  DistribuicaoRecursoSolicitacaoAjuste[] @relation("Respondedor")
+    ultimaAtividade PessoaUltimaAtividade?
 
     @@index([email])
     @@map("pessoa")
@@ -5209,9 +5210,10 @@ model PessoaSessao {
     removido_em DateTime?
     removido_ip String?   @db.Inet
 
-    PessoaSessaoAtiva  PessoaSessaoAtiva[]
-    PessoaAtividadeLog PessoaAtividadeLog[]
-    LogGenerico        LogGenerico[]
+    PessoaSessaoAtiva     PessoaSessaoAtiva[]
+    PessoaAtividadeLog    PessoaAtividadeLog[]
+    LogGenerico           LogGenerico[]
+    PessoaUltimaAtividade PessoaUltimaAtividade[]
 
     @@index([pessoa_id])
     @@map("pessoa_sessao")
@@ -8908,4 +8910,19 @@ model CacheKV {
     atualizado_em DateTime  @updatedAt @db.Timestamptz(6)
 
     @@map("cache_kv")
+}
+
+model PessoaUltimaAtividade {
+    id                  Int      @id @default(autoincrement())
+    pessoa_id           Int
+    pessoa_sessao_id    Int?
+    ip                  String   @db.Inet
+    ultima_atividade_em DateTime @default(now()) @db.Timestamptz(6)
+
+    pessoa Pessoa        @relation(fields: [pessoa_id], references: [id], onDelete: Cascade)
+    sessao PessoaSessao? @relation(fields: [pessoa_sessao_id], references: [id], onDelete: SetNull)
+
+    @@unique([pessoa_id])
+    @@index([ultima_atividade_em])
+    @@map("pessoa_ultima_atividade")
 }

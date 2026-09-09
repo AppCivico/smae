@@ -25,4 +25,6 @@ export class ListPessoa {
     cargo?: string | null;
     registro_funcionario?: string | null;
     cpf?: string | null;
+
+    ultima_atividade_em?: Date | null;
 }

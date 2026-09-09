@@ -1648,6 +1648,7 @@ export class PessoaService implements OnModuleInit {
                         perfil_acesso_id: true,
                     },
                 },
+                ultimaAtividade: { select: { ultima_atividade_em: true } },
             },
         });
 
@@ -1667,10 +1668,9 @@ export class PessoaService implements OnModuleInit {
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
                 perfil_acesso_ids: pessoaPerfilIds.filter((e) => visiblePriv.includes(e)),
                 is_sysadmin: pessoaPerfilIds.some((e) => sysadminPerfilIds.has(e)),
+                ultima_atividade_em: p.ultimaAtividade?.ultima_atividade_em ?? null,
             };
         });
-
-        this.logger.log(`encontrado ${listFixed.length} resultados`);
 
         return listFixed;
     }
