@@ -41,6 +41,7 @@ import { PrismaErrorFilter } from './prisma-error.filter';
 import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { RequestLogModule } from './request_log/request_log.module';
 import { SysadminModule } from './sysadmin/sysadmin.module';
+import { AuditLogModule } from './audit-log/audit-log.module';
 
 // Hacks pro JS
 /*
@@ -130,6 +131,7 @@ import { SysadminModule } from './sysadmin/sysadmin.module';
         // ========== Cross-cutting: SysAdmin Operations ==========
         // Reprocessing, sync, restore operations
         SysadminModule,
+        AuditLogModule,
 
         // ========== Supporting Features ==========
         // Notifications, search, utilities, etc.
