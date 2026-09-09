@@ -249,6 +249,9 @@ export class ChartDataDto {
     type: string;
     name?: string;
     nameLocation?: string;
+    nameTextStyle?: {
+        align: string;
+    };
     data?: string[] | ChartDataWithConfigDto[];
     stack?: string;
     encode?: ChartEncodeDto;
