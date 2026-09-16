@@ -374,6 +374,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .required(),
     processos_sei: array()
       .label('Processos SEI')
+      .min(1)
       .required(),
     modalidade_contratacao_id: number()
       .integer()
