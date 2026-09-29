@@ -11,8 +11,11 @@ BEGIN
             RETURN NULL;
         END IF;
     ELSE
-        IF TG_TABLE_NAME = 'variavel' AND NEW.tipo IS DISTINCT FROM 'PDM' AND OLD.tipo IS DISTINCT FROM 'PDM' THEN
-            RETURN NULL;
+        -- IF aninhado: plpgsql resolve NEW.tipo ao planejar a expressão, sem curto-circuito
+        IF TG_TABLE_NAME = 'variavel' THEN
+            IF NEW.tipo IS DISTINCT FROM 'PDM' AND OLD.tipo IS DISTINCT FROM 'PDM' THEN
+                RETURN NULL;
+            END IF;
         END IF;
         IF NOT EXISTS (SELECT 1 FROM pdm WHERE sistema = 'PDM' AND removido_em IS NULL) THEN
             RETURN NULL;
