@@ -53,9 +53,11 @@ BEGIN
         cf.data_ciclo INTO vPdmId, vCiclo
     FROM
         pdm p
-    join ciclo_fisico cf on cf.pdm_id = p.id and cf.ativo
+    join ciclo_fisico cf on cf.pdm_id = p.id and cf.ativo and cf.tipo = 'PDM'
     WHERE
         p.ativo = TRUE
+        AND p.tipo = 'PDM'
+        AND p.removido_em IS NULL
     LIMIT 1;
     IF vPdmId IS NULL THEN
         RETURN 'Erro: não há PDM com um ciclo fisico ativo';

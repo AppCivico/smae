@@ -176,7 +176,7 @@ BEGIN
         v_processando_ciclo_atrasado := TRUE;
         v_prazo := v_atrasos[1];
         SELECT * INTO v_quali FROM variavel_global_ciclo_analise
-        WHERE variavel_id = p_variavel_id AND referencia_data = v_atrasos[1] AND ultima_revisao = true;
+        WHERE variavel_id = p_variavel_id AND referencia_data = v_atrasos[1] AND ultima_revisao = true AND removido_em IS NULL;
 
         IF v_quali.fase IS NOT NULL THEN
 

@@ -80,7 +80,7 @@ CREATE CONSTRAINT TRIGGER trg_variavel_recalc_acesso_pdm AFTER INSERT OR DELETE 
     EXECUTE FUNCTION f_recalc_acesso_pessoas_no_commit();
 
 DROP TRIGGER IF EXISTS trg_pdm_recalc_acesso_pdm ON pdm;
-CREATE CONSTRAINT TRIGGER trg_pdm_recalc_acesso_pdm AFTER UPDATE OF ativo ON pdm
+CREATE CONSTRAINT TRIGGER trg_pdm_recalc_acesso_pdm AFTER UPDATE OF ativo, removido_em ON pdm
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
     EXECUTE FUNCTION f_recalc_acesso_pessoas_no_commit();

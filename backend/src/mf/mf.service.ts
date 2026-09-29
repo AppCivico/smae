@@ -86,6 +86,7 @@ export class MfService {
         const cicloAtivo = await this.prisma.cicloFisico.findFirst({
             where: {
                 ativo: true,
+                tipo: 'PDM',
                 pdm: {
                     ativo: true,
                 },
