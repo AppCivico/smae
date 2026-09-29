@@ -1,6 +1,8 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, getCurrentInstance, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -41,6 +43,14 @@ async function excluirVariavel(id, nome) {
     }
   }, 'Remover');
 }
+
+const valoresIniciais = {
+  ordem_coluna: 'criado_em',
+  ordem_direcao: 'desc',
+  ipp: getCurrentInstance()?.appContext.config.globalProperties.gblIpp,
+  pagina: 1,
+  token_paginacao: undefined,
+};
 
 // Extrai apenas os parâmetros relevantes em um computed
 // Isso cria uma "barreira" de reatividade - mudanças em outros parâmetros não afetam este computed
@@ -87,16 +97,11 @@ watch(parametrosSerializados, () => {
 
   <FormularioQueryString
     v-slot="{ aplicarQueryStrings }"
-    :valores-iniciais="{
-      ordem_coluna: 'criado_em',
-      ordem_direcao: 'desc',
-      ipp: gblIpp,
-      pagina: 1,
-      token_paginacao: undefined,
-    }"
+    :valores-iniciais="valoresIniciais"
   >
     <FiltroDeDeVariaveis
       :aria-busy="chamadasPendentes.lista"
+      :valores-iniciais="valoresIniciais"
       @submit="aplicarQueryStrings"
     />
   </FormularioQueryString>
