@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTipoDocumentoDto } from './dto/create-tipo-documento.dto';
@@ -75,42 +76,37 @@ export class TipoDocumentoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const documentos = await this.prisma.arquivo.count({
-            where: {
-                tipo_documento_id: id,
+        const emUso: Prisma.ArquivoWhereInput = {
+            tipo_documento_id: id,
+            OR: [
+                { Pdm: { some: { removido_em: null } } },
+                { VariavelGlobalCicloDocumento: { some: { removido_em: null } } },
+                { projeto_documentos: { some: { removido_em: null } } },
+            ],
+        };
 
-                OR: [
-                    { Pdm: { some: { removido_em: null } } },
-                    { VariavelGlobalCicloDocumento: { some: { removido_em: null } } },
-                    { projeto_documentos: { some: { removido_em: null } } },
-                ],
-            },
-        });
+        const documentos = await this.prisma.arquivo.count({ where: emUso });
         if (documentos > 0) {
-            const inUse = await this.prisma.tipoDocumento.findFirst({
-                where: { id: id },
+            const arquivo = await this.prisma.arquivo.findFirst({
+                where: emUso,
+                orderBy: { id: 'asc' },
                 select: {
-                    Arquivo: {
-                        take: 1,
-                        select: {
-                            Pdm: {
-                                select: { id: true, nome: true, tipo: true },
-                            },
-                            VariavelGlobalCicloDocumento: {
-                                select: { id: true, variavel: { select: { codigo: true, titulo: true } } },
-                            },
-                            projeto_documentos: {
-                                select: { id: true, projeto: { select: { codigo: true, nome: true, tipo: true } } },
-                            },
-                        },
+                    Pdm: {
+                        where: { removido_em: null },
+                        select: { id: true, nome: true, tipo: true },
+                    },
+                    VariavelGlobalCicloDocumento: {
+                        where: { removido_em: null },
+                        select: { id: true, variavel: { select: { codigo: true, titulo: true } } },
+                    },
+                    projeto_documentos: {
+                        where: { removido_em: null },
+                        select: { id: true, projeto: { select: { codigo: true, nome: true, tipo: true } } },
                     },
                 },
             });
 
-            let errorMessage = 'O Tipo de Documento não pode ser removido pois está em uso nos seguintes registros: ';
             const usageDetails: string[] = [];
-
-            const arquivo = inUse?.Arquivo?.[0]; // Get the first "Arquivo" instance
 
             if (arquivo) {
                 if (arquivo.Pdm?.length) {
@@ -143,10 +139,13 @@ export class TipoDocumentoService {
                 }
             }
 
-            if (usageDetails.length > 0) {
-                errorMessage += usageDetails.join('; ') + '.';
-                throw new HttpException(errorMessage, 400);
-            }
+            const errorMessage = 'O Tipo de Documento não pode ser removido pois está em uso';
+            throw new HttpException(
+                usageDetails.length > 0
+                    ? `${errorMessage} nos seguintes registros: ${usageDetails.join('; ')}.`
+                    : `${errorMessage}.`,
+                400
+            );
         }
 
         const created = await this.prisma.tipoDocumento.updateMany({

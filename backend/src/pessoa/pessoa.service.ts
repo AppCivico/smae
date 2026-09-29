@@ -458,6 +458,7 @@ export class PessoaService implements OnModuleInit {
                 },
 
                 GruposDePaineisQueParticipo: {
+                    where: { grupo_painel: { removido_em: null } },
                     select: {
                         grupo_painel: {
                             select: {
@@ -1046,7 +1047,7 @@ export class PessoaService implements OnModuleInit {
                                     some: {
                                         removido_em: null,
                                         atividade: {
-                                            some: { atividade_responsavel: somePessoaCp },
+                                            some: { removido_em: null, atividade_responsavel: somePessoaCp },
                                         },
                                     },
                                 },
@@ -1096,6 +1097,7 @@ export class PessoaService implements OnModuleInit {
                 const gpp = await prismaTx.grupoPortfolioPessoa.findMany({
                     where: {
                         grupo_portfolio: {
+                            removido_em: null,
                             tipo_projeto: priv == 'SMAE.espectador_de_projeto' ? 'PP' : 'MDO',
                         },
                         pessoa_id: pessoaId,
@@ -1116,6 +1118,7 @@ export class PessoaService implements OnModuleInit {
             } else if (priv == 'SMAE.espectador_de_painel_externo') {
                 const gpe = await prismaTx.grupoPainelExternoPessoa.findMany({
                     where: {
+                        grupo_painel_externo: { removido_em: null },
                         pessoa_id: pessoaId,
                         removido_em: null,
                     },
