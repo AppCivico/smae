@@ -2,11 +2,26 @@ CREATE OR REPLACE FUNCTION f_recalc_acesso_pessoas_no_commit()
     RETURNS trigger
     AS $$
 BEGIN
-    IF current_setting('smae.acesso_pdm_limpo_tx', true) IS DISTINCT FROM txid_current()::text THEN
-        PERFORM set_config('smae.acesso_pdm_limpo_tx', txid_current()::text, true);
-        DELETE FROM pessoa_acesso_pdm_valido;
-        DELETE FROM pessoa_acesso_pdm;
+    IF current_setting('smae.acesso_pdm_limpo_tx', true) IS NOT DISTINCT FROM txid_current()::text THEN
+        RETURN NULL;
     END IF;
+
+    IF TG_TABLE_NAME = 'pdm' THEN
+        IF NEW.sistema IS DISTINCT FROM 'PDM' AND OLD.sistema IS DISTINCT FROM 'PDM' THEN
+            RETURN NULL;
+        END IF;
+    ELSE
+        IF TG_TABLE_NAME = 'variavel' AND NEW.tipo IS DISTINCT FROM 'PDM' AND OLD.tipo IS DISTINCT FROM 'PDM' THEN
+            RETURN NULL;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pdm WHERE sistema = 'PDM' AND removido_em IS NULL) THEN
+            RETURN NULL;
+        END IF;
+    END IF;
+
+    PERFORM set_config('smae.acesso_pdm_limpo_tx', txid_current()::text, true);
+    DELETE FROM pessoa_acesso_pdm_valido;
+    DELETE FROM pessoa_acesso_pdm;
     RETURN NULL;
 END;
 $$
@@ -16,6 +31,10 @@ CREATE OR REPLACE FUNCTION f_limpa_status_meta_ciclo_fisico()
     RETURNS trigger
     AS $$
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pdm WHERE sistema = 'PDM' AND removido_em IS NULL) THEN
+        RETURN NULL;
+    END IF;
+
     IF current_setting('smae.status_meta_limpo_tx', true) IS DISTINCT FROM txid_current()::text THEN
         PERFORM set_config('smae.status_meta_limpo_tx', txid_current()::text, true);
         DELETE FROM status_meta_ciclo_fisico;
