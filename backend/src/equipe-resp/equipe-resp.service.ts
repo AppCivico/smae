@@ -338,6 +338,7 @@ export class EquipeRespService {
                     ? {
                           where: {
                               removido_em: null,
+                              variavel: { removido_em: null },
                           },
                           include: {
                               variavel: {
@@ -728,6 +729,7 @@ export class EquipeRespService {
             where: {
                 grupo_responsavel_equipe_id: id,
                 removido_em: null,
+                variavel: { removido_em: null },
             },
             select: { variavel: { select: { titulo: true } } },
         });
@@ -742,6 +744,18 @@ export class EquipeRespService {
             where: {
                 equipe_id: id,
                 removido_em: null,
+                pdm: { removido_em: null },
+                AND: [
+                    {
+                        OR: [
+                            { relacionamento: 'PDM' },
+                            { relacionamento: 'META', meta: { removido_em: null } },
+                            { relacionamento: 'INICIATIVA', iniciativa: { removido_em: null } },
+                            { relacionamento: 'ATIVIDADE', atividade: { removido_em: null } },
+                        ],
+                    },
+                    { OR: [{ etapa_id: null }, { etapa: { removido_em: null } }] },
+                ],
             },
             select: {
                 relacionamento: true,

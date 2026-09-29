@@ -760,6 +760,8 @@ export class IndicadorService {
                 where: {
                     indicador_origem_id: id,
                     desativado: false,
+                    indicador: { removido_em: null },
+                    variavel: { removido_em: null },
                 },
             });
 
@@ -779,25 +781,17 @@ export class IndicadorService {
             // Coleta as equipes que respondem pelas variáveis deste indicador ANTES do soft-delete,
             // para recalcular os perfis das pessoas afetadas (recalculaPessoaPdmTipos ignora variáveis
             // removidas, então elas ficariam "presas" ao indicador removido até o recalc-equipe rodar).
+            const variaveisProprias: Prisma.VariavelWhereInput = {
+                removido_em: null,
+                indicador_variavel: { some: { indicador_id: id, indicador_origem_id: null } },
+            };
             const vinculosVar = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
-                where: {
-                    removido_em: null,
-                    variavel: {
-                        removido_em: null,
-                        indicador_variavel: { some: { indicador_id: id } },
-                    },
-                },
+                where: { removido_em: null, variavel: variaveisProprias },
                 select: { grupo_responsavel_equipe_id: true },
             });
 
             await prismaTx.variavel.updateMany({
-                where: {
-                    indicador_variavel: {
-                        some: {
-                            indicador_id: id,
-                        },
-                    },
-                },
+                where: variaveisProprias,
                 data: {
                     removido_em: new Date(Date.now()),
                     removido_por: user.id,

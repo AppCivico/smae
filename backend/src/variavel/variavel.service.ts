@@ -217,7 +217,11 @@ export function GetVariavelWhereSet(filters: FilterVariavelDto, opts?: { regiona
             firstSet.push({
                 OR: [
                     { regiao: { nivel: filters.nivel_regionalizacao } },
-                    { variaveis_filhas: { some: { regiao: { nivel: filters.nivel_regionalizacao } } } },
+                    {
+                        variaveis_filhas: {
+                            some: { removido_em: null, regiao: { nivel: filters.nivel_regionalizacao } },
+                        },
+                    },
                 ],
             });
         } else {
@@ -260,7 +264,9 @@ export class VariavelService {
                 },
                 orgao_proprietario_id: true,
                 casas_decimais: true,
-                variavel_categorica: { select: { id: true, tipo: true, valores: true } },
+                variavel_categorica: {
+                    select: { id: true, tipo: true, valores: { where: { removido_em: null } } },
+                },
             },
         });
         for (const v of rows) {
@@ -1485,7 +1491,7 @@ export class VariavelService {
                 fim_medicao: true,
                 variavel_mae_id: true,
                 orgao_proprietario_id: true,
-                variaveis_filhas: { select: { id: true, titulo: true } },
+                variaveis_filhas: { where: { removido_em: null }, select: { id: true, titulo: true } },
                 casas_decimais: true,
                 valor_base: true,
             },
@@ -1826,6 +1832,7 @@ export class VariavelService {
                     mostrar_monitoramento: true,
                     suspendida_em: true,
                     variaveis_filhas: {
+                        where: { removido_em: null },
                         select: {
                             id: true,
                             titulo: true,
@@ -2455,7 +2462,7 @@ export class VariavelService {
                 FROM variavel v
                 INNER JOIN indicador_variavel iv ON iv.variavel_id = v.id AND iv.indicador_origem_id is null
                 INNER JOIN indicador i ON iv.indicador_id = i.id AND i.removido_em is null
-                LEFT JOIN meta m ON i.meta_id = m.id AND i.removido_em is null
+                LEFT JOIN meta m ON i.meta_id = m.id AND m.removido_em is null
                 LEFT JOIN iniciativa ini ON i.iniciativa_id = ini.id AND ini.removido_em is null
                 LEFT JOIN meta m2 ON ini.meta_id = m2.id AND m2.removido_em is null
                 LEFT JOIN atividade a ON i.atividade_id = a.id AND a.removido_em is null
@@ -2476,6 +2483,8 @@ export class VariavelService {
                 ) s
                 LEFT JOIN variavel_suspensa_controle vsc ON vsc.ciclo_fisico_corrente_id = cf.id AND vsc.variavel_id = v.id AND vsc.serie = s.serie
                 WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
+                AND v.removido_em IS NULL
+                AND pdm.removido_em IS NULL
                 AND vsc.id IS NULL
                 ORDER BY cf.id
             ) me

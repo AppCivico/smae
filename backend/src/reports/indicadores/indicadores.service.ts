@@ -445,7 +445,7 @@ export class IndicadoresService implements ReportableService, SchemaAwareReporta
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
         left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
-        where v.regiao_id is not null`;
+        where v.regiao_id is not null AND v.removido_em IS NULL`;
 
         if (Array.isArray(dto.regioes)) {
             const numbers = dto.regioes.map((n) => +n).join(',');
@@ -955,7 +955,7 @@ export class IndicadoresService implements ReportableService, SchemaAwareReporta
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
         left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
-        where v.regiao_id is not null${regionWhere}`;
+        where v.regiao_id is not null AND v.removido_em IS NULL${regionWhere}`;
 
             // Get the initial year if needed
             let anoInicial = params.ano;
@@ -1039,6 +1039,7 @@ export class IndicadoresService implements ReportableService, SchemaAwareReporta
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
         WHERE
             v.regiao_id is not null
+            AND v.removido_em IS NULL
             ${regionWhere}
             AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
         `;
