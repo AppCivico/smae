@@ -83,6 +83,10 @@ export class ProjetoTipoAditivoService {
             where: {
                 tipo_aditivo_id: id,
                 removido_em: null,
+                contrato: {
+                    removido_em: null,
+                    ContratoProjeto: { some: { removido_em: null, projeto: { removido_em: null } } },
+                },
             },
         });
 
@@ -133,6 +137,10 @@ export class ProjetoTipoAditivoService {
             where: {
                 tipo_aditivo_id: id,
                 removido_em: null,
+                contrato: {
+                    removido_em: null,
+                    ContratoProjeto: { some: { removido_em: null, projeto: { removido_em: null } } },
+                },
             },
         });
 
