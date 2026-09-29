@@ -226,7 +226,7 @@ export class EtapaService {
                 cronograma_id: true,
                 variavel_id: true,
                 termino_real: true,
-                PdmPerfil: true,
+                PdmPerfil: { where: { removido_em: null }, select: { equipe_id: true, tipo: true } },
             },
         });
         if (config && config.perfil == 'ponto_focal') {
@@ -340,7 +340,7 @@ export class EtapaService {
                 // do pai
                 if (self.etapa_pai.regiao.id !== dto.regiao_id) {
                     const regiaoEhfilha = await prismaTx.regiao.count({
-                        where: { id: dto.regiao_id, parente_id: self.etapa_pai.regiao.id },
+                        where: { id: dto.regiao_id, parente_id: self.etapa_pai.regiao.id, removido_em: null },
                     });
                     if (!regiaoEhfilha)
                         throw new BadRequestException(
@@ -1218,6 +1218,11 @@ export class EtapaService {
         if (etapa_has_children) throw new HttpException('Apague primeiro os filhos', 400);
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const perfis = await prismaTx.pdmPerfil.findMany({
+                where: { etapa_id, removido_em: null },
+                select: { equipe_id: true },
+            });
+
             await prismaTx.etapa.updateMany({
                 where: { id: etapa_id },
                 data: {
@@ -1225,6 +1230,8 @@ export class EtapaService {
                     removido_em: new Date(Date.now()),
                 },
             });
+
+            await recalcPessoasAfetadasPorEquipes([...new Set(perfis.map((p) => p.equipe_id))], prismaTx);
 
             await AddTaskRefreshMeta(prismaTx, { meta_id: metaRow.meta_id });
 

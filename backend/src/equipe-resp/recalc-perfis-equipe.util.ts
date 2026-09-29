@@ -64,6 +64,20 @@ export async function recalcPerfisEquipeColunas(
             FROM pessoa_equipe pe
             JOIN pdm_perfil pp ON pp.equipe_id = pe.equipe_id AND pp.removido_em IS NULL
             JOIN pdm ON pdm.id = pp.pdm_id AND pdm.removido_em IS NULL
+            LEFT JOIN meta pp_m ON pp_m.id = pp.meta_id
+            LEFT JOIN iniciativa pp_i ON pp_i.id = pp.iniciativa_id
+            LEFT JOIN meta pp_im ON pp_im.id = pp_i.meta_id
+            LEFT JOIN atividade pp_a ON pp_a.id = pp.atividade_id
+            LEFT JOIN iniciativa pp_ai ON pp_ai.id = pp_a.iniciativa_id
+            LEFT JOIN meta pp_am ON pp_am.id = pp_ai.meta_id
+            LEFT JOIN etapa pp_e ON pp_e.id = pp.etapa_id
+            WHERE pp_m.removido_em IS NULL
+            AND pp_i.removido_em IS NULL
+            AND pp_im.removido_em IS NULL
+            AND pp_a.removido_em IS NULL
+            AND pp_ai.removido_em IS NULL
+            AND pp_am.removido_em IS NULL
+            AND pp_e.removido_em IS NULL
         ),
         variavel_tipos AS (
             SELECT
@@ -74,13 +88,13 @@ export async function recalcPerfisEquipeColunas(
                     ELSE ARRAY(
                         SELECT DISTINCT pdm_v.tipo::text
                         FROM indicador_variavel iv
-                        JOIN indicador ind ON ind.id = iv.indicador_id
-                        LEFT JOIN meta m ON m.id = ind.meta_id
-                        LEFT JOIN iniciativa ini ON ini.id = ind.iniciativa_id
-                        LEFT JOIN meta mi ON mi.id = ini.meta_id
-                        LEFT JOIN atividade ati ON ati.id = ind.atividade_id
-                        LEFT JOIN iniciativa inia ON inia.id = ati.iniciativa_id
-                        LEFT JOIN meta ma ON ma.id = inia.meta_id
+                        JOIN indicador ind ON ind.id = iv.indicador_id AND ind.removido_em IS NULL
+                        LEFT JOIN meta m ON m.id = ind.meta_id AND m.removido_em IS NULL
+                        LEFT JOIN iniciativa ini ON ini.id = ind.iniciativa_id AND ini.removido_em IS NULL
+                        LEFT JOIN meta mi ON mi.id = ini.meta_id AND mi.removido_em IS NULL
+                        LEFT JOIN atividade ati ON ati.id = ind.atividade_id AND ati.removido_em IS NULL
+                        LEFT JOIN iniciativa inia ON inia.id = ati.iniciativa_id AND inia.removido_em IS NULL
+                        LEFT JOIN meta ma ON ma.id = inia.meta_id AND ma.removido_em IS NULL
                         JOIN pdm pdm_v ON pdm_v.id = COALESCE(m.pdm_id, mi.pdm_id, ma.pdm_id)
                             AND pdm_v.removido_em IS NULL
                         WHERE iv.variavel_id = v.id AND iv.desativado = false
