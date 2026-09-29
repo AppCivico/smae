@@ -8,9 +8,11 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.valor_planejado) filter (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS valor_planejado_sum
+            COALESCE(SUM(op.valor_planejado) filter (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS valor_planejado_sum
         FROM orcamento_planejado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
         GROUP BY 1
@@ -83,10 +85,12 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
-            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
+            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
+            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
         FROM orcamento_realizado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE
             op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
@@ -147,10 +151,12 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
-            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
+            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
+            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
         FROM orcamento_realizado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE
             op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
@@ -213,10 +219,12 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
-            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
+            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
+            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
         FROM orcamento_realizado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE
             op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao

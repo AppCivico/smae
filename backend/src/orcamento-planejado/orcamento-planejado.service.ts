@@ -273,7 +273,11 @@ export class OrcamentoPlanejadoService {
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
             where: {
                 meta_id: filters.meta_id,
-                AND: [{ meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
+                AND: [
+                    { meta_id: filterIdIn ? { in: filterIdIn } : undefined },
+                    { OR: [{ iniciativa_id: null }, { iniciativa: { removido_em: null } }] },
+                    { OR: [{ atividade_id: null }, { atividade: { removido_em: null } }] },
+                ],
                 removido_em: null,
                 dotacao: filters?.dotacao,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações

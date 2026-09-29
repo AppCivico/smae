@@ -118,11 +118,17 @@ export class MetaOrcamentoService {
 
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
-                AND: [{ meta_id: filters?.meta_id }, { meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
+                AND: [
+                    { meta_id: filters?.meta_id },
+                    { meta_id: filterIdIn ? { in: filterIdIn } : undefined },
+                    { OR: [{ iniciativa_id: null }, { iniciativa: { removido_em: null } }] },
+                    { OR: [{ atividade_id: null }, { atividade: { removido_em: null } }] },
+                ],
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
                 ultima_revisao: true,
                 meta_id: { not: null },
+                meta: { removido_em: null },
             },
             select: {
                 id: true,
@@ -337,6 +343,10 @@ export class MetaOrcamentoService {
                         removido_em: null,
                         ultima_revisao: true,
                         ano_referencia: dto.ano_referencia,
+                        AND: [
+                            { OR: [{ iniciativa_id: null }, { iniciativa: { removido_em: null } }] },
+                            { OR: [{ atividade_id: null }, { atividade: { removido_em: null } }] },
+                        ],
                     },
                 });
                 if (count > 0)
