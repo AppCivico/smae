@@ -783,10 +783,24 @@ export class IndicadorService {
             // removidas, então elas ficariam "presas" ao indicador removido até o recalc-equipe rodar).
             const variaveisProprias: Prisma.VariavelWhereInput = {
                 removido_em: null,
+                tipo: 'PDM',
                 indicador_variavel: { some: { indicador_id: id, indicador_origem_id: null } },
             };
+            const vinculadas = await prismaTx.indicadorVariavel.findMany({
+                where: {
+                    indicador_id: id,
+                    indicador_origem_id: null,
+                    variavel: { tipo: { in: ['Global', 'Calculada'] } },
+                },
+                select: { variavel_id: true },
+            });
+            const vinculadasIds = vinculadas.map((v) => v.variavel_id);
+
             const vinculosVar = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
-                where: { removido_em: null, variavel: variaveisProprias },
+                where: {
+                    removido_em: null,
+                    OR: [{ variavel: variaveisProprias }, { variavel_id: { in: vinculadasIds } }],
+                },
                 select: { grupo_responsavel_equipe_id: true },
             });
 
@@ -797,6 +811,15 @@ export class IndicadorService {
                     removido_por: user.id,
                 },
             });
+
+            if (vinculadasIds.length) {
+                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: vinculadasIds });
+                await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
+
+                await prismaTx.indicadorVariavel.deleteMany({
+                    where: { indicador_id: id, indicador_origem_id: null, variavel_id: { in: vinculadasIds } },
+                });
+            }
 
             await recalcPessoasAfetadasPorEquipes(
                 vinculosVar.map((v) => v.grupo_responsavel_equipe_id),

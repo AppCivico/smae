@@ -3352,9 +3352,30 @@ export class VariavelService {
         const now = new Date(Date.now());
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
+                const filhas = await prismaTx.variavel.findMany({
+                    where: { variavel_mae_id: variavelId, removido_em: null },
+                    select: { id: true },
+                });
+                const formulasDaMae = await prismaTx.formulaComposta.findMany({
+                    where: { variavel_mae_id: variavelId, autogerenciavel: true, removido_em: null },
+                    select: { id: true, variavel_calc_id: true },
+                });
+                const derivadas = [
+                    ...filhas.map((f) => f.id),
+                    ...formulasDaMae.map((f) => f.variavel_calc_id).filter((id): id is number => id !== null),
+                ];
+                const todas = [variavelId, ...derivadas];
+
+                const derivadasEmUso = await this.buscaVariaveisComIndicadorAtivo(prismaTx, derivadas);
+                if (derivadasEmUso.size) {
+                    throw new BadRequestException(
+                        'Não é possível remover a variável: variável filha ou calculada vinculada a indicador de um plano.'
+                    );
+                }
+
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
                     where: {
-                        variavel_id: variavelId,
+                        variavel_id: { in: todas },
                         indicador: {
                             removido_em: null,
                             // ignora indicadores cuja árvore (meta/iniciativa/atividade) pertence a um plano removido
@@ -3388,7 +3409,11 @@ export class VariavelService {
                 }
 
                 const refFormulaComposta = await prismaTx.formulaComposta.findMany({
-                    where: { removido_em: null, FormulaCompostaVariavel: { some: { variavel_id: variavelId } } },
+                    where: {
+                        removido_em: null,
+                        id: { notIn: formulasDaMae.map((f) => f.id) },
+                        FormulaCompostaVariavel: { some: { variavel_id: { in: todas } } },
+                    },
                     select: { titulo: true },
                 });
                 for (const ref of refFormulaComposta) {
@@ -3399,7 +3424,7 @@ export class VariavelService {
 
                 const filtroVinculos: Prisma.VariavelGrupoResponsavelEquipeWhereInput = {
                     removido_em: null,
-                    OR: [{ variavel_id: variavelId }, { variavel: { variavel_mae_id: variavelId, removido_em: null } }],
+                    variavel_id: { in: todas },
                 };
 
                 const equipesVinculadas = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
@@ -3417,15 +3442,24 @@ export class VariavelService {
                     prismaTx
                 );
 
-                await prismaTx.variavel.update({
-                    where: { id: variavelId },
+                await prismaTx.variavel.updateMany({
+                    where: { id: { in: todas }, removido_em: null },
                     data: { removido_em: now, removido_por: user.id },
-                    select: { id: true },
                 });
 
-                await prismaTx.indicadorVariavel.deleteMany({ where: { variavel_id: variavelId } });
+                if (formulasDaMae.length) {
+                    await prismaTx.formulaComposta.updateMany({
+                        where: { id: { in: formulasDaMae.map((f) => f.id) } },
+                        data: { removido_em: now, removido_por: user.id },
+                    });
+                    await prismaTx.indicadorFormulaComposta.deleteMany({
+                        where: { formula_composta_id: { in: formulasDaMae.map((f) => f.id) } },
+                    });
+                }
 
-                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [variavelId] });
+                await prismaTx.indicadorVariavel.deleteMany({ where: { variavel_id: { in: todas } } });
+
+                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: todas });
 
                 await logger.saveLogs(prismaTx, user.getLogData());
             },
