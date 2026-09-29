@@ -6,6 +6,9 @@
 --        4) PATCH /api/pessoa/recalc-equipe (SMAE.superadmin), depois que o script terminar (ver final do arquivo).
 -- As tarefas enfileiradas (refresh_meta, refresh_meta_orcamento_consolidado, refresh_variavel) são processadas pelo worker da API.
 
+-- tudo ou nada: uma execução parcial deixa filhas removidas com vínculos ativos que o re-run não pega mais
+BEGIN;
+
 -- ============================================================================
 -- 0. Diagnóstico e candidatos (tabelas temporárias da sessão)
 -- ============================================================================
@@ -336,6 +339,8 @@ WHERE m.removido_em IS NULL
       SELECT 1 FROM task_queue t
       WHERE t.type = 'refresh_meta_orcamento_consolidado' AND t.status = 'pending' AND (t.params->>'meta_id')::int = m.id
   );
+
+COMMIT;
 
 -- ============================================================================
 -- 10. Perfis de equipe (3012c1b95, d77baba7f): passo fora do SQL
