@@ -35,6 +35,9 @@ BEGIN
     --
     DELETE FROM pessoa_acesso_pdm
     WHERE pessoa_id = pPessoa_id;
+
+    DELETE FROM status_meta_ciclo_fisico
+    WHERE pessoa_id = pPessoa_id;
     --
     INSERT INTO pessoa_acesso_pdm_valido (pessoa_id)
     VALUES (pPessoa_id)
@@ -234,7 +237,7 @@ BEGIN
         from public.cronograma_etapa ce
         join cronogramas x on x.cronograma_id = ce.cronograma_id
         where ce.inativo  = false
-        AND
+        AND (
             (vPerfil = 'admin_cp')
         OR (
             vPerfil  = 'ponto_focal'
@@ -270,6 +273,7 @@ BEGIN
                 join cronograma_etapa iv on iv.cronograma_id = i.id and iv.inativo = false
                 where ar.pessoa_id=pPessoa_id
             )
+        )
         )
     ),
     -- cruza de volta com os cronogramas, mas passando pela cronograma_etapa e buscando outros cronogramas que indiretamente os cronogramas que a etapa faz parte

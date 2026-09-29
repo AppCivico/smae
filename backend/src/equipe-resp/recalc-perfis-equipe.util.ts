@@ -35,7 +35,7 @@ export type RecalcPerfisEquipeResult = {
 /**
  * Recalcula perfis_equipe_pdm/perfis_equipe_ps em uma única query.
  *
- * - Sem `pessoaIds`: recalcula TODAS as pessoas ativas (desativado = false) — modo recalc-full-db.
+ * - Sem `pessoaIds`: recalcula TODAS as pessoas, inclusive desativadas, no modo recalc-full-db.
  * - Com `pessoaIds`: recalcula apenas as pessoas informadas, independente de desativado
  *   (mesmo comportamento do antigo recálculo por evento).
  */
@@ -46,7 +46,7 @@ export async function recalcPerfisEquipeColunas(
 ): Promise<RecalcPerfisEquipeResult> {
     if (pessoaIds && pessoaIds.length === 0) return { updated: 0, total: 0 };
 
-    const filtroPessoa = pessoaIds ? Prisma.sql`p.id = ANY(${pessoaIds}::int[])` : Prisma.sql`p.desativado = false`;
+    const filtroPessoa = pessoaIds ? Prisma.sql`p.id = ANY(${pessoaIds}::int[])` : Prisma.sql`TRUE`;
 
     const startedAt = Date.now();
     const result = await prismaTx.$queryRaw<{ updated: number; total: number }[]>`
