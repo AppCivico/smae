@@ -856,6 +856,49 @@ export class VariavelService {
         await recalcPessoasAfetadasPorEquipes(equipesAfetadas, prismaTxn, logger);
     }
 
+    private async replicaEquipesParaFilhas(
+        dto: UpdateVariavelDto,
+        prismaTxn: Prisma.TransactionClient,
+        variavelMaeId: number,
+        now: Date,
+        logger: LoggerWithLog,
+        camposDerivados: Prisma.VariavelUncheckedUpdateManyInput
+    ): Promise<number[]> {
+        const filhas = await prismaTxn.variavel.findMany({
+            where: { variavel_mae_id: variavelMaeId, tipo: 'Global', removido_em: null },
+            select: { id: true },
+        });
+        if (filhas.length === 0) return [];
+
+        const filhasIds = filhas.map((f) => f.id);
+        const filtroVinculos = { variavel_id: { in: filhasIds }, removido_em: null };
+
+        const vinculosAntes = await prismaTxn.variavelGrupoResponsavelEquipe.findMany({
+            where: filtroVinculos,
+            select: { grupo_responsavel_equipe_id: true },
+        });
+        await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
+            where: filtroVinculos,
+            data: { removido_em: now },
+        });
+
+        const grupoIds = [
+            ...(dto.medicao_grupo_ids ?? []),
+            ...(dto.validacao_grupo_ids ?? []),
+            ...(dto.liberacao_grupo_ids ?? []),
+        ];
+        await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
+            data: filhasIds.flatMap((variavel_id) =>
+                grupoIds.map((grupo_id) => ({ variavel_id, grupo_responsavel_equipe_id: grupo_id }))
+            ),
+        });
+
+        await prismaTxn.variavel.updateMany({ where: { id: { in: filhasIds } }, data: camposDerivados });
+        logger.log(`Equipes replicadas para ${filhasIds.length} variável(is) filha(s)`);
+
+        return Array.from(new Set(vinculosAntes.map((v) => v.grupo_responsavel_equipe_id)));
+    }
+
     private getPeriodTuples(
         p: VariaveisPeriodosDto | null,
         periodo: Periodicidade
@@ -1531,6 +1574,7 @@ export class VariavelService {
                     suspendida_em: true,
                     valor_base: true,
                     periodicidade: true,
+                    atraso_meses: true,
                     acumulativa: true,
                     VariavelAssuntoVariavel: { select: { assunto_variavel_id: true } },
                     VariavelGrupoResponsavelEquipe: {
@@ -1686,12 +1730,14 @@ export class VariavelService {
             const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id);
 
             let equipes_configuradas: boolean | undefined = undefined;
+            let equipesAlteradas = false;
 
             let medicao_orgao_id: number | undefined = undefined;
             let validacao_orgao_id: number | undefined = undefined;
             let liberacao_orgao_id: number | undefined = undefined;
             if (IsArrayContentsChanged(gruposRecebidos, gruposAtuais)) {
                 logger.log('Equipe responsáveis alteradas...');
+                equipesAlteradas = true;
                 equipes_configuradas = this.isEquipesConfiguradas(dto);
 
                 await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
@@ -1715,12 +1761,21 @@ export class VariavelService {
                     ).map((v) => v.grupo_responsavel_equipe_id),
                 };
 
+                const equipesAntesFilhas = await this.replicaEquipesParaFilhas(
+                    dto,
+                    prismaTxn,
+                    variavelId,
+                    now,
+                    logger,
+                    { equipes_configuradas, medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id }
+                );
+
                 await this.insertEquipeResponsavel(
                     dto,
                     prismaTxn,
                     variavelId,
                     logger,
-                    gruposAtuais,
+                    [...gruposAtuais, ...equipesAntesFilhas],
                     gruposAntesPorPerfil
                 );
             }
@@ -1766,6 +1821,10 @@ export class VariavelService {
                     valor_base: true,
                     fim_medicao: true,
                     acumulativa: true,
+                    atraso_meses: true,
+                    periodicidade: true,
+                    mostrar_monitoramento: true,
+                    suspendida_em: true,
                     variaveis_filhas: {
                         select: {
                             id: true,
@@ -1859,6 +1918,22 @@ export class VariavelService {
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
             if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
                 await this.updateAvisoFimIndicador(prismaTxn, variavelId, updated);
+            }
+
+            const mudouParaDashboard =
+                equipesAlteradas ||
+                self.mostrar_monitoramento !== updated.mostrar_monitoramento ||
+                (self.suspendida_em !== null) !== (updated.suspendida_em !== null) ||
+                self.atraso_meses !== updated.atraso_meses ||
+                self.periodicidade !== updated.periodicidade ||
+                selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString();
+
+            if (mudouParaDashboard) {
+                const idsAfetados = [variavelId, ...updated.variaveis_filhas.map((f) => f.id)];
+                await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: [variavelId] });
+                for (const idAfetado of idsAfetados) {
+                    await AddTaskRefreshMeta(prismaTxn, { variavel_id: idAfetado });
+                }
             }
 
             if (Array.isArray(responsaveis)) {
@@ -3254,13 +3329,18 @@ export class VariavelService {
                     );
                 }
 
+                const filtroVinculos: Prisma.VariavelGrupoResponsavelEquipeWhereInput = {
+                    removido_em: null,
+                    OR: [{ variavel_id: variavelId }, { variavel: { variavel_mae_id: variavelId, removido_em: null } }],
+                };
+
                 const equipesVinculadas = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
-                    where: { removido_em: null, variavel_id: variavelId },
+                    where: filtroVinculos,
                     select: { grupo_responsavel_equipe_id: true },
                 });
 
                 await prismaTx.variavelGrupoResponsavelEquipe.updateMany({
-                    where: { removido_em: null, variavel: { id: variavelId } },
+                    where: filtroVinculos,
                     data: { removido_em: now },
                 });
 
