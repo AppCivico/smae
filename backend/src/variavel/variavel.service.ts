@@ -1335,6 +1335,11 @@ export class VariavelService {
 
         const ehAdminGeral = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
 
+        const idsComIndicadorAtivo = await this.buscaVariaveisComIndicadorAtivo(
+            this.prisma,
+            linhas.map((r) => r.id)
+        );
+
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -1378,7 +1383,7 @@ export class VariavelService {
                     periodicidade: r.periodicidade,
                     pode_editar: pode_editar,
                     pode_editar_valor: pode_editar_valor,
-                    pode_excluir: pode_editar && r.planos.length == 0,
+                    pode_excluir: pode_editar && r.planos.length == 0 && !idsComIndicadorAtivo.has(r.id),
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
                     regiao: r.regiao
@@ -1582,6 +1587,9 @@ export class VariavelService {
                     periodicidade: true,
                     atraso_meses: true,
                     acumulativa: true,
+                    periodo_preenchimento: true,
+                    periodo_validacao: true,
+                    periodo_liberacao: true,
                     VariavelAssuntoVariavel: { select: { assunto_variavel_id: true } },
                     VariavelGrupoResponsavelEquipe: {
                         where: { removido_em: null },
@@ -1826,6 +1834,10 @@ export class VariavelService {
                 select: {
                     valor_base: true,
                     fim_medicao: true,
+                    inicio_medicao: true,
+                    periodo_preenchimento: true,
+                    periodo_validacao: true,
+                    periodo_liberacao: true,
                     acumulativa: true,
                     atraso_meses: true,
                     periodicidade: true,
@@ -1933,7 +1945,11 @@ export class VariavelService {
                 (self.suspendida_em !== null) !== (updated.suspendida_em !== null) ||
                 self.atraso_meses !== updated.atraso_meses ||
                 self.periodicidade !== updated.periodicidade ||
-                selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString();
+                selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString() ||
+                selfBefUpdate.inicio_medicao?.toString() !== updated.inicio_medicao?.toString() ||
+                JSON.stringify(self.periodo_preenchimento) !== JSON.stringify(updated.periodo_preenchimento) ||
+                JSON.stringify(self.periodo_validacao) !== JSON.stringify(updated.periodo_validacao) ||
+                JSON.stringify(self.periodo_liberacao) !== JSON.stringify(updated.periodo_liberacao);
 
             if (mudouParaDashboard) {
                 const idsAfetados = [variavelId, ...updated.variaveis_filhas.map((f) => f.id)];
@@ -2269,7 +2285,7 @@ export class VariavelService {
                     );
 
                 const categoriaValores = await prismaTxn.variavelCategoricaValor.findMany({
-                    where: { id: dto.variavel_categorica_id },
+                    where: { variavel_categorica_id: dto.variavel_categorica_id, removido_em: null },
                 });
 
                 const serieValores = await prismaTxn.serieVariavel.groupBy({
@@ -2478,12 +2494,14 @@ export class VariavelService {
                     cf.pdm_id = pdm.id
                     AND cf.data_ciclo > v.suspendida_em
                     AND cf.data_ciclo <= now()
+                    AND cf.tipo = 'PDM'
                 CROSS JOIN (
                     SELECT unnest(enum_range(NULL::"Serie")) serie
                 ) s
-                LEFT JOIN variavel_suspensa_controle vsc ON vsc.ciclo_fisico_corrente_id = cf.id AND vsc.variavel_id = v.id AND vsc.serie = s.serie
+                LEFT JOIN variavel_suspensa_controle vsc ON vsc.ciclo_fisico_corrente_id = cf.id AND vsc.variavel_id = v.id AND vsc.serie = s.serie AND vsc.removido_em IS NULL
                 WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
                 AND v.removido_em IS NULL
+                AND v.tipo = 'PDM'
                 AND pdm.removido_em IS NULL
                 AND vsc.id IS NULL
                 ORDER BY cf.id
@@ -3265,6 +3283,43 @@ export class VariavelService {
         );
     }
 
+    private async buscaVariaveisComIndicadorAtivo(
+        prismaTx: Prisma.TransactionClient | PrismaService,
+        variavelIds: number[]
+    ): Promise<Set<number>> {
+        if (!variavelIds.length) return new Set();
+        const links = await prismaTx.indicadorVariavel.findMany({
+            where: {
+                variavel_id: { in: variavelIds },
+                desativado: false,
+                indicador: {
+                    removido_em: null,
+                    OR: [
+                        { meta: { removido_em: null, pdm: { removido_em: null } } },
+                        {
+                            iniciativa: {
+                                removido_em: null,
+                                meta: { removido_em: null, pdm: { removido_em: null } },
+                            },
+                        },
+                        {
+                            atividade: {
+                                removido_em: null,
+                                iniciativa: {
+                                    removido_em: null,
+                                    meta: { removido_em: null, pdm: { removido_em: null } },
+                                },
+                            },
+                        },
+                    ],
+                },
+            },
+            select: { variavel_id: true },
+            distinct: ['variavel_id'],
+        });
+        return new Set(links.map((l) => l.variavel_id));
+    }
+
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         const self = await this.findOne(tipo, variavelId, {}, user);
         if (!self) throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
@@ -3287,6 +3342,10 @@ export class VariavelService {
             const selfTyped = self as any as VariavelGlobalItemDto;
             if (!selfTyped.pode_excluir) {
                 throw new BadRequestException('Você não tem permissão para remover esta variável.');
+            }
+            const emUso = await this.buscaVariaveisComIndicadorAtivo(this.prisma, [variavelId]);
+            if (emUso.has(variavelId)) {
+                throw new BadRequestException('Não é possível remover a variável: vinculada a indicador de um plano.');
             }
         }
 
@@ -4358,6 +4417,12 @@ export class VariavelService {
                         await prismaTxn.$queryRaw`
                         select f_atualiza_variavel_ciclo_corrente(varId::int)::varchar
                         from unnest(${globais.map((n) => n.id)}::int[]) as varId;`;
+
+                        const globaisIds = globais.map((n) => n.id);
+                        await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: globaisIds });
+                        for (const globalId of globaisIds) {
+                            await AddTaskRefreshMeta(prismaTxn, { variavel_id: globalId });
+                        }
                     }
                 }
                 await logger.saveLogs(prismaTxn, user.getLogData());

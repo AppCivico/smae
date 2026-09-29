@@ -65,6 +65,7 @@ BEGIN
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             --RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
+            DELETE FROM variavel_ciclo_corrente WHERE variavel_id = p_variavel_id;
             RETURN;
         WHEN TOO_MANY_ROWS THEN
             RAISE EXCEPTION 'apenas uma linha esperada para a variável: %', p_variavel_id;

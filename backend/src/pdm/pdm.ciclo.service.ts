@@ -552,6 +552,14 @@ export class PdmCicloService {
 
         const now = new Date();
         const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
+            const previousData = await prismaTx.pdmCicloConfig.findFirst({
+                where: {
+                    pdm_id: pdmId,
+                    ultima_revisao: true,
+                    removido_em: null,
+                },
+            });
+
             await prismaTx.pdmCicloConfig.updateMany({
                 where: {
                     pdm_id: pdmId,
@@ -561,14 +569,6 @@ export class PdmCicloService {
                     ultima_revisao: null,
                     removido_em: now,
                     removido_por: user.id,
-                },
-            });
-
-            const previousData = await prismaTx.pdmCicloConfig.findFirst({
-                where: {
-                    pdm_id: pdmId,
-                    ultima_revisao: true,
-                    removido_em: null,
                 },
             });
 
@@ -593,6 +593,11 @@ export class PdmCicloService {
 
             // Call function to update future cycles
             await prismaTx.$queryRaw`SELECT atualiza_ciclos_config(${pdmId}::int)::text`;
+            await prismaTx.$queryRaw`
+                SELECT f_add_refresh_meta_task(m.id)::text
+                FROM meta m
+                WHERE m.pdm_id = ${pdmId}::int AND m.removido_em IS NULL
+            `;
 
             return config;
         };

@@ -67,7 +67,7 @@ export const MetasGetPermissionSet = async (
     const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
         {
             removido_em: null,
-            pdm: { tipo: PdmModoParaTipo(tipo) },
+            pdm: { tipo: PdmModoParaTipo(tipo), removido_em: null },
         },
     ];
     if (!user) return permissionsSet;

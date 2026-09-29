@@ -113,6 +113,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION f_pdm_orcamento_config_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    FOR v_meta_id IN (SELECT m.id FROM meta m WHERE m.pdm_id = COALESCE(NEW.pdm_id, OLD.pdm_id) AND m.removido_em IS NULL) LOOP
+        PERFORM f_add_refresh_meta_task(v_meta_id);
+    END LOOP;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION f_grupo_responsavel_equipe_refresh_meta_trigger()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -169,11 +182,12 @@ EXECUTE FUNCTION f_meta_orgao_refresh_meta_trigger();
 
 DROP TRIGGER IF EXISTS trg_refresh_meta_pdm ON pdm;
 CREATE TRIGGER trg_refresh_meta_pdm
-AFTER UPDATE OF ativo, monitoramento_orcamento ON pdm
+AFTER UPDATE OF ativo, monitoramento_orcamento, data_inicio ON pdm
 FOR EACH ROW
 WHEN (
     OLD.ativo IS DISTINCT FROM NEW.ativo
     OR OLD.monitoramento_orcamento IS DISTINCT FROM NEW.monitoramento_orcamento
+    OR OLD.data_inicio IS DISTINCT FROM NEW.data_inicio
 )
 EXECUTE FUNCTION f_pdm_refresh_meta_trigger();
 
@@ -186,3 +200,11 @@ WHEN (
     OR OLD.removido_em IS DISTINCT FROM NEW.removido_em
 )
 EXECUTE FUNCTION f_grupo_responsavel_equipe_refresh_meta_trigger();
+
+DROP TRIGGER IF EXISTS trg_refresh_meta_pdm_orcamento_config ON meta_orcamento_config;
+CREATE TRIGGER trg_refresh_meta_pdm_orcamento_config
+AFTER INSERT OR DELETE OR UPDATE OF pdm_id, ano_referencia, execucao_disponivel, execucao_disponivel_meses ON meta_orcamento_config
+FOR EACH ROW
+EXECUTE FUNCTION f_pdm_orcamento_config_refresh_meta_trigger();
+
+SELECT refresh_ps_meta_consolidado(id) FROM meta WHERE removido_em IS NULL AND pdm_id IN (SELECT id FROM pdm WHERE removido_em IS NULL AND sistema <> 'PDM');
