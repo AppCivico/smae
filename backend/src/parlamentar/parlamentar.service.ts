@@ -875,6 +875,7 @@ export class ParlamentarService {
                 regiao_id: { in: regiaoIds },
                 mandato: {
                     eleicao_id: eleicaoId,
+                    removido_em: null,
                 },
                 removido_em: null,
             },
@@ -1042,6 +1043,7 @@ export class ParlamentarService {
                         regiao_id: currentRep.regiao_id,
                         mandato: {
                             eleicao_id: currentRep.mandato.eleicao_id,
+                            removido_em: null,
                         },
                         id: { not: representatividadeId },
                         removido_em: null,
@@ -1196,6 +1198,7 @@ export class ParlamentarService {
                 regiao_id: regiaoId,
                 mandato: {
                     eleicao_id: eleicaoId,
+                    removido_em: null,
                 },
                 removido_em: null,
             },

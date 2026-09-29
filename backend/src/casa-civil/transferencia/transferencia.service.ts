@@ -851,6 +851,7 @@ export class TransferenciaService {
                 ) {
                     const outrasDistribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
                         where: {
+                            transferencia_id: id,
                             removido_em: null,
                             status: {
                                 some: {

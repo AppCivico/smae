@@ -425,6 +425,7 @@ export class WorkflowAndamentoService {
                         fluxos: {
                             take: 1,
                             where: {
+                                removido_em: null,
                                 fluxo: {
                                     workflow_id: workflow_id,
                                     removido_em: null,
@@ -536,9 +537,12 @@ export class WorkflowAndamentoService {
                         fluxoTarefas: {
                             take: 1,
                             where: {
+                                removido_em: null,
                                 fluxo_fase: {
+                                    removido_em: null,
                                     fluxo: {
                                         workflow_id: workflow_id,
+                                        removido_em: null,
                                     },
                                 },
                             },

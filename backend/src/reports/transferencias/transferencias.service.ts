@@ -250,6 +250,7 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
                         string_agg(format_proc_sei_sinproc(processo_sei::text) , ' | ')
                     FROM distribuicao_recurso_sei
                     WHERE distribuicao_recurso_id = dr.id
+                    AND removido_em IS NULL
                 ) AS distribuicao_recurso_sei,
                 drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
                 COALESCE(dsb.nome, ds.nome) AS distribuicao_recurso_status_nome_base,
@@ -316,6 +317,7 @@ export class TransferenciasService implements ReportableService, SchemaAwareRepo
                         dto.parlamentar_id || dto.partido_id
                             ? {
                                   some: {
+                                      removido_em: null,
                                       parlamentar_id: dto.parlamentar_id ?? undefined,
                                       partido_id: dto.partido_id ?? undefined,
                                   },
