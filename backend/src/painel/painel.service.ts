@@ -116,7 +116,7 @@ export class PainelService {
         let userGrupos = undefined;
         if (restringirGrupos) {
             userGrupos = await this.prisma.pessoaGrupoPainel.findMany({
-                where: { pessoa_id: user.id },
+                where: { pessoa_id: user.id, grupo_painel: { removido_em: null } },
                 select: { grupo_painel_id: true },
             });
         }
@@ -130,6 +130,7 @@ export class PainelService {
                     ? {
                           some: {
                               grupo_painel: {
+                                  removido_em: null,
                                   id: {
                                       in: userGrupos.map((g) => g.grupo_painel_id),
                                   },
@@ -274,6 +275,7 @@ export class PainelService {
                     mostrar_indicador_por_padrao: true,
 
                     grupos: {
+                        where: { grupo_painel: { removido_em: null } },
                         select: {
                             grupo_painel: {
                                 select: {

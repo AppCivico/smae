@@ -88,7 +88,7 @@ export class UtilsService {
                   where: {
                       meta_id: { in: metas.map((r) => r.id) },
                       removido_em: null,
-                      id: filters.meta_id ? filters.meta_id : undefined,
+                      id: filters.iniciativa_id ? filters.iniciativa_id : undefined,
                       iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
                   },
                   select: { id: true },
@@ -100,7 +100,7 @@ export class UtilsService {
                   where: {
                       iniciativa_id: { in: iniciativas.map((r) => r.id) },
                       removido_em: null,
-                      id: filters.meta_id ? filters.meta_id : undefined,
+                      id: filters.atividade_id ? filters.atividade_id : undefined,
                       atividade_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
                   },
                   select: { id: true },

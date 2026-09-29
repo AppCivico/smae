@@ -1301,7 +1301,9 @@ export class PdmService {
     }
 
     async append_document(tipo: TipoPdmType, pdm_id: number, dto: CreatePdmDocumentDto, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) } });
+        const pdm = await this.prisma.pdm.count({
+            where: { id: pdm_id, tipo: PdmModoParaTipo(tipo), removido_em: null },
+        });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
@@ -1333,7 +1335,9 @@ export class PdmService {
     }
 
     async list_document(tipo: TipoPdmType, pdm_id: number, user: PessoaFromJwt): Promise<PdmItemDocumentDto[]> {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) } });
+        const pdm = await this.prisma.pdm.count({
+            where: { id: pdm_id, tipo: PdmModoParaTipo(tipo), removido_em: null },
+        });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const documentosDB = await this.prisma.pdmDocumento.findMany({
@@ -1394,7 +1398,9 @@ export class PdmService {
     }
 
     async remove_document(tipo: TipoPdmType, pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo: PdmModoParaTipo(tipo) } });
+        const pdm = await this.prisma.pdm.count({
+            where: { id: pdm_id, tipo: PdmModoParaTipo(tipo), removido_em: null },
+        });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         await this.prisma.pdmDocumento.updateMany({
