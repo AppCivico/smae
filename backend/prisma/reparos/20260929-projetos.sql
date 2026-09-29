@@ -38,7 +38,7 @@ SELECT atualiza_ano_orcamento_projeto(p.id)
 FROM projeto p
 WHERE p.removido_em IS NULL;
 
--- e8925c820: rollups por portfolio ignoravam remoção/restauração de projeto (planejado, mesma regra de f_tgr_update_soma_dotação)
+-- e8925c820: rollups por portfolio ignoravam remoção/restauração de projeto (planejado, mesma regra de f_tgr_update_soma_dotacao)
 UPDATE portfolio_dotacao_planejado pdp
 SET
     soma_valor_planejado = s.soma,
