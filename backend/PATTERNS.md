@@ -12,6 +12,7 @@ This document contains patterns and conventions learned from implementing featur
 - [Workflow Permission System](#workflow-permission-system)
 - [Geolocation Integration](#geolocation-integration)
 - [Equipes & Perfis Derivados (perfis_equipe_pdm/ps)](#equipes--perfis-derivados-perfis_equipe_pdmps)
+- [Caches Mantidos pelo Banco (triggers)](#caches-mantidos-pelo-banco-triggers)
 - [Migration Workflow](#migration-workflow)
 - [Subindo Dependências](#subindo-dependências)
 - [Seed File Structure](#seed-file-structure)
@@ -231,6 +232,13 @@ await this.prisma.exampleModel.findMany({
     orderBy: { nome: 'asc' },
 });
 ```
+
+Vale também para **filhos e joins**, não só para a tabela principal: `_count`, `some`/`every`, listas
+aninhadas e SQL (`JOIN iniciativa i ON ...` precisa de `i.removido_em IS NULL`). Remover o pai
+normalmente **não** remove os filhos (ex.: `meta_orcamento` de uma iniciativa removida continua ativo),
+então o filtro precisa estar em cada tabela do caminho. Em SQL de agregação, coloque o filtro no `WHERE`
+quando a linha filha também guarda o id do avô (ex.: `meta_orcamento.meta_id`), senão o LEFT JOIN
+não exclui nada.
 
 ---
 
@@ -638,7 +646,11 @@ grupo_responsavel_equipe_participante (removido_em)      ← em quais equipes a 
                       └─ indicador ─→ meta/iniciativa/atividade ─→ pdm (tipo)
 ```
 
-- Variável `Global`: perfil entra em **ambos** os conjuntos (PDM e PS) — a cadeia do indicador é ignorada.
+- Variável `Global`: perfil entra em **ambos** os conjuntos (PDM e PS); a cadeia do indicador é ignorada.
+- Filhas regionais de uma `Global` (`variavel_mae_id`, `tipo = 'Global'`) têm **as mesmas linhas** de
+  `variavel_grupo_responsavel_equipe` da mãe. `VariavelService.update` replica a troca de equipes da mãe
+  para as filhas (`replicaEquipesParaFilhas`) e recalcula as equipes antigas delas; `remove` remove os
+  vínculos das filhas também. Qualquer escrita nova de equipe em variável Global precisa fazer o mesmo.
 - Variável não-Global: o tipo (PDM vs PS) é resolvido pelo indicador → meta → pdm. Hoje `Calculada` é
   sempre filha de uma `Global` e variáveis `PDM` (antigo) usam `variavel_responsavel` (pessoas, não
   equipes) — mas o código trata o caso mesmo assim, por segurança.
@@ -679,8 +691,9 @@ O vínculo de equipe e o privilégio de acesso são acoplados nos dois sentidos:
 - Remover o privilégio `SMAE.GrupoVariavel.participante`/`.colaborador` (em `pessoa.update` →
   `removeAcessoOuAbortaTx`) **remove** a pessoa de todas as equipes daquele tipo + recalcula.
 - **Só `participante` alimenta `perfis_equipe_pdm/ps`.** `colaborador` (responsável) só concede o perfil
-  de Coordenador — não entra no recálculo de perfis. Verificado nas duas derivações: `recalculaPessoaPdmTipos`
-  e o SQL `recalcPerfisEquipeColunas` leem **apenas** a tabela de participante. Por isso `atualizaEquipeColaborador`
+  de Coordenador e não entra no recálculo de perfis. Existe uma única implementação: a query de
+  `recalcPerfisEquipeColunas` (chamada por `recalculaPessoaPdmTipos`, `recalcPessoasAfetadasPorEquipes` e
+  `recalcFullDb`), que lê **apenas** a tabela de participante. Não há função `.pgsql` equivalente. Por isso `atualizaEquipeColaborador`
   **não** chama `recalculaPessoaPdmTipos` (seria no-op) — ao mexer só em colaborador, não há perfil derivado a recalcular.
 
 Transições fail-safe (bloqueiam em vez de driftar):
@@ -692,8 +705,8 @@ Transições fail-safe (bloqueiam em vez de driftar):
 
 ### Verificação / reconciliação
 
-- `PATCH /api/pessoa/recalc-equipe` (SMAE.superadmin) recalcula **todo mundo, inclusive desativados**, e
-  retorna um resumo (`RecalcEquipeResumoDto`): `pessoas_com_correcao` deve ser **0** em regime estável.
+- `PATCH /api/pessoa/recalc-equipe` e `POST equipe-responsavel/recalc-perfis` (`recalcFullDb`) recalculam
+  **todo mundo, inclusive desativados**. O PATCH retorna um resumo (`RecalcEquipeResumoDto`): `pessoas_com_correcao` deve ser **0** em regime estável.
   Não-zero após os fixes de jul/2026 = algum write path novo esqueceu o recálculo → use
   `pessoas_afetadas` + logs de auditoria da janela para achar o culpado.
   - **Inclui desativados de propósito:** pessoas desativadas mantêm vínculos ativos de equipe e seus
@@ -703,6 +716,50 @@ Transições fail-safe (bloqueiam em vez de driftar):
 - Limitação estrutural conhecida: qualquer solução "enumere os pontos de escrita" (service calls,
   triggers, eventos) pode esquecer um input transitivo novo. O backstop é a reconciliação periódica +
   alerta em drift > 0, não a disciplina.
+
+---
+
+## Caches Mantidos pelo Banco (triggers)
+
+Vários dados derivados são mantidos por triggers/funções em `prisma/manual-copy/*.pgsql`. Muitos triggers
+**vivos** foram criados por migrations antigas; o `manual-copy` às vezes só redefine a função (o `CREATE
+TRIGGER` aparece comentado). Antes de mexer, confira o que está no banco:
+`pg_get_triggerdef(oid)` em `pg_trigger` e `pg_get_functiondef('nome'::regproc)`.
+
+| Cache | Mantido por | Invalidação |
+|---|---|---|
+| `pessoa_acesso_pdm` + `_valido` | `pessoa_acesso_pdm()` (0005), recálculo lazy em `MfService` | Limpeza total por trigger (migrations + `0062`); `pessoa_perfil`/`pessoa.desativado` limpam só a pessoa |
+| `status_meta_ciclo_fisico` | 0006, lazy em `metas.service` | Limpo no recálculo de acesso da pessoa, `meta.ciclo_fase_id`, `etapa`, `cronograma_etapa` (`0062`) e `invalidaStatusIndicador` |
+| `meta_status_consolidado_cf`, `ps_dashboard_consolidado` | task `refresh_meta` (0004 / 0027) | Triggers que chamam `f_add_refresh_meta_task` (`0031`, `0063`, `0023`) + job diário em `pdm.ciclo.service` |
+| `ps_dashboard_variavel` | `recalc_vars_ps_dashboard` (0047) | `AddTaskRecalcVariaveis` no TS |
+| Orçamento consolidado da meta | 0056 | Triggers em `meta_orcamento`, `orcamento_realizado`, `iniciativa`, `atividade` |
+| `transferencia_status_consolidado` | 0007 | Triggers em `tarefa`, `transferencia`, `tarefa_cronograma` (`0039`) |
+| `transferencia.vetores_busca` | `f_rebuild_transferencia_tsvector` (0054) | TS (`updateVetoresBusca`) nas escritas da transferência; triggers de renomeação nos cadastros (`0064`) |
+| `tarefa.n_dep_*` | `atualiza_tarefa_n_dep` (0037) | Triggers em `tarefa_dependente` e `tarefa.removido_em` |
+| `perfil_acesso.modulos_sistemas` | `update_modulos_sistemas` (`0065`) | Trigger em `perfil_privilegio` (inclusive DELETE) |
+
+### Checklist ao criar ou alterar um trigger/cache
+
+1. **Liste os inputs reais**: toda coluna que a função lê, inclusive `removido_em` e FKs, também em
+   funções auxiliares. Cada input precisa de um trigger ou de uma chamada TS em **todos** os pontos de escrita.
+2. **Soft-delete é UPDATE**: trigger só em `INSERT OR DELETE` não pega `removido_em`.
+3. **`UPDATE OF` / `WHEN`**: inclua todas as colunas lidas. Compare com `IS DISTINCT FROM`, nunca `<>`
+   (com NULL o resultado é NULL e o trigger é pulado).
+4. **Troca de pai**: recalcule o pai antigo (`OLD`) e o novo (`NEW`).
+5. **`NEW` é NULL no DELETE**: use `OLD` (ou `COALESCE(NEW.x, OLD.x)`).
+6. **Buscar antes de apagar**: se o trigger descobre o afetado lendo uma MV/tabela derivada, leia **antes**
+   do `REFRESH`/delete (ver `refresh_mv_variavel_pdm_indicador_variavel`).
+7. **DDL idempotente**: `DROP TRIGGER IF EXISTS` + `CREATE TRIGGER` para cada trigger. **Não** use um único
+   `DO $$ BEGIN CREATE TRIGGER a; CREATE TRIGGER b; EXCEPTION WHEN duplicate_object ... $$`: em banco
+   existente o primeiro já existe, o bloco aborta e as alterações nunca chegam.
+8. **Só `*.pgsql` roda**: `bin/pgsql-migrate.ts` ignora `.sql`. Cada arquivo roda em uma transação, em ordem
+   de nome, quando o hash muda.
+9. **Limpeza total de cache compartilhado** (ex.: `pessoa_acesso_pdm`): prefira `CONSTRAINT TRIGGER ...
+   DEFERRABLE INITIALLY DEFERRED` com guarda por transação (`f_recalc_acesso_pessoas_no_commit`). Um
+   `DELETE` imediato dentro de uma transação longa segura lock nas linhas do cache e trava todos os leitores
+   até o commit.
+10. **Jobs de refresh (`task_queue`)**: ao apagar jobs antigos depois do refresh, apague só os ids lidos
+    **antes** do refresh. `criado_em` é o início da transação que enfileirou, não o commit.
 
 ---
 
