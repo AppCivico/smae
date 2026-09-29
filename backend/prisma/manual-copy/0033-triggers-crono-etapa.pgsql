@@ -195,12 +195,22 @@ $emp_stamp$ LANGUAGE plpgsql;
 --     )
 --     EXECUTE FUNCTION f_trg_estapa_esticar_datas_do_pai();
 --
--- CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
--- BEGIN
---     PERFORM  atualiza_inicio_fim_cronograma(NEW.cronograma_id);
---     RETURN NEW;
--- END;
--- $emp_stamp$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION f_trg_crono_estapa_resync() RETURNS trigger AS $emp_stamp$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        PERFORM atualiza_inicio_fim_cronograma(OLD.cronograma_id);
+        RETURN OLD;
+    END IF;
+
+    PERFORM atualiza_inicio_fim_cronograma(NEW.cronograma_id);
+
+    IF TG_OP = 'UPDATE' AND OLD.cronograma_id IS DISTINCT FROM NEW.cronograma_id THEN
+        PERFORM atualiza_inicio_fim_cronograma(OLD.cronograma_id);
+    END IF;
+
+    RETURN NEW;
+END;
+$emp_stamp$ LANGUAGE plpgsql;
 --
 -- CREATE TRIGGER trg_estapa_esticar_datas_do_pai AFTER INSERT OR DELETE OR UPDATE ON cronograma_etapa
 --     FOR EACH ROW
@@ -336,7 +346,7 @@ DECLARE
     parent_id INTEGER;
 BEGIN
 
-    IF (NEW.percentual_execucao <> OLD.percentual_execucao OR NEW.peso <> OLD.peso OR NEW.removido_em IS NOT NULL) OR TG_OP = 'INSERT' THEN
+    IF (NEW.percentual_execucao IS DISTINCT FROM OLD.percentual_execucao OR NEW.peso IS DISTINCT FROM OLD.peso OR NEW.removido_em IS DISTINCT FROM OLD.removido_em) OR TG_OP = 'INSERT' THEN
         parent_id := NEW.etapa_pai_id;
         WHILE parent_id IS NOT NULL LOOP
             PERFORM calculate_percentual_execucao_for_id(parent_id);
