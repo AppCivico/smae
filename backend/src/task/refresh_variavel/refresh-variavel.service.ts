@@ -46,6 +46,16 @@ export class RefreshVariavelService implements TaskableService {
             async () => {
                 // Inicia uma transação para garantir atomicidade
                 await this.prisma.$transaction(async (prismaTx) => {
+                    const inicioRecalculo = Date.now();
+                    const jobsAntigos = await prismaTx.$queryRaw<{ id: number }[]>`
+                        SELECT id FROM task_queue
+                        WHERE type = 'refresh_variavel'
+                        AND status='pending'
+                        AND id != ${task.id}
+                        AND (params->>'variavel_id')::int = ${inputParams.variavel_id}::int
+                        AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})
+                    `;
+
                     // Executa a função de recálculo de série variável dentro da transação
                     await prismaTx.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`;
 
@@ -61,11 +71,22 @@ export class RefreshVariavelService implements TaskableService {
                     // Se o recálculo for bem-sucedido, remove jobs antigos pendentes com o mesmo variavel_id
                     await prismaTx.$queryRaw`
                         DELETE FROM task_queue
-                        WHERE type = 'refresh_variavel'
-                        AND status='pending'
-                        AND id != ${task.id}
-                        AND (params->>'variavel_id')::int = ${inputParams.variavel_id}::int
-                        AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})
+                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])
+                    `;
+
+                    await prismaTx.$queryRaw`
+                        UPDATE variavel
+                        SET recalculando = false,
+                            recalculo_erro = NULL,
+                            recalculo_tempo = ${(Date.now() - inicioRecalculo) / 1000}::double precision
+                        WHERE id = ${inputParams.variavel_id}::int
+                        AND NOT EXISTS (
+                            SELECT 1 FROM task_queue
+                            WHERE type = 'refresh_variavel'
+                            AND status = 'pending'
+                            AND id != ${task.id}
+                            AND (params->>'variavel_id')::int = ${inputParams.variavel_id}::int
+                        )
                     `;
 
                     if (variavel.tipo == 'Global') {

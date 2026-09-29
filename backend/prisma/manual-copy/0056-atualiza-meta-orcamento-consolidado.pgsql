@@ -96,6 +96,9 @@ BEGIN
         )
             AND mo.removido_em IS NULL
             AND mo.ultima_revisao = true
+            AND i.removido_em IS NULL
+            AND a.removido_em IS NULL
+            AND ia.removido_em IS NULL
     )
     SELECT
         COALESCE(SUM(valor_planejado), 0),
@@ -126,6 +129,9 @@ BEGIN
             ia.meta_id = p_meta_id
         )
             AND orc.removido_em IS NULL
+            AND i.removido_em IS NULL
+            AND a.removido_em IS NULL
+            AND ia.removido_em IS NULL
     )
     SELECT
         COALESCE(SUM(soma_valor_empenho), 0),
@@ -436,6 +442,62 @@ CREATE TRIGGER tg_meta_orcamento_refresh_consolidado
     AFTER INSERT OR UPDATE OR DELETE ON meta_orcamento
     FOR EACH ROW
     EXECUTE FUNCTION tg_meta_orcamento_refresh_consolidado();
+
+-- Trigger para Iniciativa (remoção ou troca de meta)
+CREATE OR REPLACE FUNCTION tg_iniciativa_refresh_meta_orcamento_consolidado()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM f_add_refresh_meta_orcamento_consolidado_task(OLD.meta_id);
+
+    IF NEW.meta_id IS DISTINCT FROM OLD.meta_id THEN
+        PERFORM f_add_refresh_meta_orcamento_consolidado_task(NEW.meta_id);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tg_iniciativa_refresh_meta_orcamento_consolidado ON iniciativa;
+CREATE TRIGGER tg_iniciativa_refresh_meta_orcamento_consolidado
+    AFTER UPDATE OF removido_em, meta_id ON iniciativa
+    FOR EACH ROW
+    WHEN (
+        OLD.removido_em IS DISTINCT FROM NEW.removido_em
+        OR OLD.meta_id IS DISTINCT FROM NEW.meta_id
+    )
+    EXECUTE FUNCTION tg_iniciativa_refresh_meta_orcamento_consolidado();
+
+-- Trigger para Atividade (remoção ou troca de iniciativa)
+CREATE OR REPLACE FUNCTION tg_atividade_refresh_meta_orcamento_consolidado()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_old_meta_id INT;
+    v_meta_id INT;
+BEGIN
+    SELECT meta_id INTO v_old_meta_id FROM iniciativa WHERE id = OLD.iniciativa_id;
+    SELECT meta_id INTO v_meta_id FROM iniciativa WHERE id = NEW.iniciativa_id;
+
+    IF v_old_meta_id IS NOT NULL THEN
+        PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_old_meta_id);
+    END IF;
+
+    IF v_meta_id IS NOT NULL AND v_meta_id IS DISTINCT FROM v_old_meta_id THEN
+        PERFORM f_add_refresh_meta_orcamento_consolidado_task(v_meta_id);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tg_atividade_refresh_meta_orcamento_consolidado ON atividade;
+CREATE TRIGGER tg_atividade_refresh_meta_orcamento_consolidado
+    AFTER UPDATE OF removido_em, iniciativa_id ON atividade
+    FOR EACH ROW
+    WHEN (
+        OLD.removido_em IS DISTINCT FROM NEW.removido_em
+        OR OLD.iniciativa_id IS DISTINCT FROM NEW.iniciativa_id
+    )
+    EXECUTE FUNCTION tg_atividade_refresh_meta_orcamento_consolidado();
 
 -- Popular dados existentes
 INSERT INTO meta_orcamento_consolidado (meta_id)

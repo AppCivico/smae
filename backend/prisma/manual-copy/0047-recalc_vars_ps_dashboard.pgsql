@@ -14,6 +14,20 @@ BEGIN
     WHERE v.id = ANY(p_variaveis)
       AND v.removido_em IS NULL;
 
+    DELETE FROM ps_dashboard_variavel d
+    WHERE d.variavel_id IN (
+        SELECT DISTINCT COALESCE(v.variavel_mae_id, v.id)
+        FROM variavel v
+        WHERE v.id = ANY(p_variaveis)
+          AND v.removido_em IS NOT NULL
+    )
+    AND NOT EXISTS (
+        SELECT 1
+        FROM variavel a
+        WHERE COALESCE(a.variavel_mae_id, a.id) = d.variavel_id
+          AND a.removido_em IS NULL
+    );
+
     -- Se nenhum ID de família relevante e não removido for encontrado, sai mais cedo.
     IF family_ids_to_process IS NULL OR array_length(family_ids_to_process, 1) IS NULL THEN
         RETURN 0;

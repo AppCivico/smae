@@ -28,14 +28,17 @@ export class RefreshMetaOrcamentoConsolidadoService implements TaskableService {
             5,
             async () => {
                 await this.prisma.$transaction(async (tx) => {
-                    await tx.$queryRaw`SELECT f_refresh_meta_orcamento_consolidado(${inputParams.meta_id}::int)`;
-
-                    await tx.$queryRaw`DELETE FROM task_queue
+                    const jobsAntigos = await tx.$queryRaw<{ id: number }[]>`SELECT id FROM task_queue
                         WHERE type = 'refresh_meta_orcamento_consolidado'
                         AND status IN ('pending', 'completed')
                         AND id != ${task.id}
                         AND (params->>'meta_id')::int = ${inputParams.meta_id}::int
                         AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})`;
+
+                    await tx.$queryRaw`SELECT f_refresh_meta_orcamento_consolidado(${inputParams.meta_id}::int)`;
+
+                    await tx.$queryRaw`DELETE FROM task_queue
+                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])`;
                 });
             },
             async (error) => {
