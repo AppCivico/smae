@@ -413,7 +413,18 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
     planosSimplificadosPorTipo: ({ planosSimplificados }) => planosSimplificados
       .reduce((acc, cur) => {
-        const tipo = cur.tipo || 'outros';
+        let tipo;
+
+        switch (cur.tipo) {
+          case 'PS':
+            tipo = 'Plano Setoriais';
+            break;
+          case 'PDM':
+            tipo = 'Programas de Metas';
+            break;
+          default:
+            tipo = 'outros';
+        }
 
         if (!acc[tipo]) {
           acc[tipo] = [];
