@@ -136,7 +136,7 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
       .reduce((acc, cur) => {
         acc[cur.id] = cur;
         return acc;
-      }, {}),
+      }, {} as Record<number, MetaItemDto>),
 
     metasPorPlano: ({ lista }: Estado) => Object.groupBy(lista, ({ pdm_id }) => pdm_id),
   },
