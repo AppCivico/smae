@@ -1,6 +1,7 @@
 import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type {
+  PdmSimplesDto,
   ListPdmSimplesDto,
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
 } from '@back/variavel/dto/list-variavel.dto';
@@ -12,7 +13,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type Variavel = VariavelDetailDto & VariavelGlobalDetailDto & VariavelDetailComAuxiliaresDto ;
 
 export type PlanosSimplificadosPorTipo = {
-  [key: string]: ListPdmSimplesDto['linhas'];
+  [key: string]: PdmSimplesDto[];
 };
 
 interface Estado {
@@ -22,7 +23,7 @@ interface Estado {
   dadosDosPeriodosValidos: PeriodosValidosDto | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
-  planosSimplificados: ListPdmSimplesDto['linhas'];
+  planosSimplificados: PdmSimplesDto[];
 
   chamadasPendentes: ChamadasPendentes & {
     planosSimplificados: boolean;
@@ -366,7 +367,10 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     }),
 
     variaveisPorId: ({ lista }: Estado) => lista
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+      .reduce((acc, cur) => {
+        acc[cur.id] = cur;
+        return acc;
+      }, {}),
 
     filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae)
       .reduce((acc, maeId) => {
