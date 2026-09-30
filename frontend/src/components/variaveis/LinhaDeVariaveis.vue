@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -22,8 +23,29 @@ defineProps({
 const route = useRoute();
 
 const authStore = useAuthStore();
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
-const { temPermissãoPara } = storeToRefs(authStore);
+const {
+  temPermissãoPara,
+  sistemaCorrente,
+} = storeToRefs(authStore);
+
+function foiCriadaNoSistemaCorrente(planoId: number) {
+  const tipoDoPlano = variaveisGlobaisStore.planosPorId[planoId]?.tipo;
+
+  switch (tipoDoPlano) {
+    case 'PDM':
+      return sistemaCorrente.value === 'PDM'
+        || sistemaCorrente.value === 'ProgramaDeMetas';
+
+    case 'PS':
+      return sistemaCorrente.value === 'PlanoSetorial';
+
+    default:
+      return false;
+  }
+}
+
 </script>
 <template>
   <td class="cell--nowrap tr">
@@ -73,15 +95,15 @@ const { temPermissãoPara } = storeToRefs(authStore);
         v-for="plano in $props.linha?.planos"
         :key="plano.id"
       >
-        <component
-          :is="temPermissãoPara([
+        <SmaeLink
+          :desabilitar="!temPermissãoPara([
             'CadastroPS.administrador',
             'CadastroPDM.administrador',
             'CadastroPS.administrador_no_orgao',
             'CadastroPDM.administrador_no_orgao',
           ])
-            ? 'router-link'
-            : 'span'"
+            || !foiCriadaNoSistemaCorrente(plano.id)"
+          exibir-desabilitado
           :to="{
             name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
             params: { planoSetorialId: plano.id }
@@ -89,7 +111,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
           :title="plano.nome?.length > 36 ? plano.nome : null"
         >
           {{ truncate(plano.nome, 36) }}
-        </component>
+        </SmaeLink>
       </li>
     </ul>
     <template v-else>

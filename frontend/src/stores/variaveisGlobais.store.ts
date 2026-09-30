@@ -411,6 +411,12 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         return acc;
       }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
 
+    planosPorId: ({ planosSimplificados }) => planosSimplificados
+      .reduce((acc, cur) => {
+        acc[cur.id] = cur;
+        return acc;
+      }, {} as Record<number, PdmSimplesDto>),
+
     planosSimplificadosPorTipo: ({ planosSimplificados }) => planosSimplificados
       .reduce((acc, cur) => {
         let tipo;
