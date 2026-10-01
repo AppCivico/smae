@@ -382,6 +382,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         :desabilitar="!(linha.id && linha.arquivo.download_token)"
         :to="linha.id && obterUrlDownload(linha.arquivo.download_token)"
         class="flex center g05"
+        :download="linha.arquivo.nome_original"
         exibir-desabilitado
       >
         <span style="text-overflow: ellipsis; overflow: clip; flex-basis: 0; flex-grow: 1;">
