@@ -4764,6 +4764,8 @@ model TarefaDependente {
     tarefa             Tarefa @relation("dependencias", fields: [tarefa_id], references: [id])
     tarefas_dependente Tarefa @relation("ref_dependentes", fields: [dependencia_tarefa_id], references: [id])
 
+    @@index([tarefa_id])
+    @@index([dependencia_tarefa_id])
     @@map("tarefa_dependente")
 }
 

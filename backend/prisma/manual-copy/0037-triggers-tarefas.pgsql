@@ -4,37 +4,59 @@
 --    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
 
 
-CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_inc_counter() RETURNS trigger AS $emp_stamp$
+CREATE OR REPLACE FUNCTION atualiza_tarefa_n_dep(pTarefaId int)
+    RETURNS void
+    AS $$
 BEGIN
     UPDATE tarefa t
     SET
-        n_dep_inicio_planejado =  n_dep_inicio_planejado + CASE WHEN NEW.tipo IN ('termina_pro_inicio', 'inicia_pro_inicio') THEN 1 ELSE 0 END,
-        n_dep_termino_planejado = n_dep_termino_planejado + CASE WHEN NEW.tipo IN ('termina_pro_termino', 'inicia_pro_termino') THEN 1 ELSE 0 END
-    WHERE t.id = NEW.tarefa_id;
+        n_dep_inicio_planejado = cc.calculated_n_dep_inicio,
+        n_dep_termino_planejado = cc.calculated_n_dep_termino
+    FROM (
+        SELECT
+            COALESCE(SUM(CASE WHEN td.tipo IN ('termina_pro_inicio', 'inicia_pro_inicio') THEN 1 ELSE 0 END), 0) AS calculated_n_dep_inicio,
+            COALESCE(SUM(CASE WHEN td.tipo IN ('termina_pro_termino', 'inicia_pro_termino') THEN 1 ELSE 0 END), 0) AS calculated_n_dep_termino
+        FROM tarefa_dependente td
+        JOIN tarefa predecessor_task ON predecessor_task.id = td.dependencia_tarefa_id AND predecessor_task.removido_em IS NULL
+        WHERE td.tarefa_id = pTarefaId
+    ) cc
+    WHERE t.id = pTarefaId
+      AND t.removido_em IS NULL
+      AND (t.n_dep_inicio_planejado != cc.calculated_n_dep_inicio OR t.n_dep_termino_planejado != cc.calculated_n_dep_termino);
+END
+$$
+LANGUAGE plpgsql;
 
-    RETURN NEW;
-END;
-$emp_stamp$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_dec_counter() RETURNS trigger AS $emp_stamp$
+CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_atualiza_n_dep() RETURNS trigger AS $$
 BEGIN
-    UPDATE tarefa t
-    SET
-        n_dep_inicio_planejado =  n_dep_inicio_planejado - CASE WHEN OLD.tipo IN ('termina_pro_inicio', 'inicia_pro_inicio') THEN 1 ELSE 0 END,
-        n_dep_termino_planejado = n_dep_termino_planejado - CASE WHEN OLD.tipo IN ('termina_pro_termino', 'inicia_pro_termino') THEN 1 ELSE 0 END
-    WHERE t.id = OLD.tarefa_id;
+    IF TG_OP = 'INSERT' THEN
+        PERFORM atualiza_tarefa_n_dep(NEW.tarefa_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        PERFORM atualiza_tarefa_n_dep(OLD.tarefa_id);
+    ELSE
+        PERFORM atualiza_tarefa_n_dep(OLD.tarefa_id);
+        IF NEW.tarefa_id IS DISTINCT FROM OLD.tarefa_id THEN
+            PERFORM atualiza_tarefa_n_dep(NEW.tarefa_id);
+        END IF;
+    END IF;
 
-    RETURN null;
+    RETURN NULL;
 END;
-$emp_stamp$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
---CREATE TRIGGER trg_pp_tarefa_dependente_insert AFTER INSERT ON tarefa_dependente
---    FOR EACH ROW
---    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_inc_counter();
---
---CREATE TRIGGER trg_pp_tarefa_dependente_delete AFTER DELETE ON tarefa_dependente
---    FOR EACH ROW
---    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_dec_counter();
+CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_removido_atualiza_n_dep() RETURNS trigger AS $$
+BEGIN
+    -- a própria tarefa entra para o caso dela ser restaurada
+    PERFORM atualiza_tarefa_n_dep(x.tarefa_id)
+    FROM (
+        SELECT NEW.id AS tarefa_id
+        UNION
+        SELECT td.tarefa_id FROM tarefa_dependente td WHERE td.dependencia_tarefa_id = NEW.id
+    ) x;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
 
 
 
@@ -378,7 +400,7 @@ BEGIN
 --    END IF;
 --END $$;
     -- apenas em modificações no primeiro nivel, recalcular o projeto diretamente
-    IF NEW.tarefa_pai_id IS NULL THEN
+    IF NEW.tarefa_pai_id IS NULL OR (TG_OP = 'UPDATE' AND OLD.tarefa_pai_id IS NULL) THEN
         PERFORM atualiza_calendario_tarefa_cronograma(NEW.tarefa_cronograma_id);
     END IF;
 
@@ -1054,6 +1076,40 @@ CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update
         old.custo_real_anualizado::jsonb IS DISTINCT FROM new.custo_real_anualizado::jsonb
     )
     EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
+
+DROP TRIGGER IF EXISTS trg_pp_tarefa_removido_atualiza_n_dep ON tarefa;
+
+CREATE TRIGGER trg_pp_tarefa_removido_atualiza_n_dep
+    AFTER UPDATE OF removido_em ON tarefa
+    FOR EACH ROW
+    WHEN (old.removido_em IS DISTINCT FROM new.removido_em)
+    EXECUTE FUNCTION f_trg_pp_tarefa_removido_atualiza_n_dep();
+
+DROP TRIGGER IF EXISTS trg_pp_tarefa_dependente_insert ON tarefa_dependente;
+DROP TRIGGER IF EXISTS trg_pp_tarefa_dependente_update ON tarefa_dependente;
+DROP TRIGGER IF EXISTS trg_pp_tarefa_dependente_delete ON tarefa_dependente;
+DROP FUNCTION IF EXISTS f_trg_pp_tarefa_dependente_inc_counter();
+DROP FUNCTION IF EXISTS f_trg_pp_tarefa_dependente_dec_counter();
+
+CREATE TRIGGER trg_pp_tarefa_dependente_insert
+    AFTER INSERT ON tarefa_dependente
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_atualiza_n_dep();
+
+CREATE TRIGGER trg_pp_tarefa_dependente_update
+    AFTER UPDATE ON tarefa_dependente
+    FOR EACH ROW
+    WHEN (
+        old.tipo IS DISTINCT FROM new.tipo OR
+        old.tarefa_id IS DISTINCT FROM new.tarefa_id OR
+        old.dependencia_tarefa_id IS DISTINCT FROM new.dependencia_tarefa_id
+    )
+    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_atualiza_n_dep();
+
+CREATE TRIGGER trg_pp_tarefa_dependente_delete
+    AFTER DELETE ON tarefa_dependente
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_pp_tarefa_dependente_atualiza_n_dep();
 
 CREATE OR REPLACE FUNCTION f_trg_tarefa_sync_custo_anualizado() RETURNS trigger AS $$
 BEGIN

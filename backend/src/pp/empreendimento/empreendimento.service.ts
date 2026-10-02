@@ -140,7 +140,7 @@ export class EmpreendimentoService {
         const emUso = await this.prisma.projeto.count({
             where: {
                 removido_em: null,
-                equipamento_id: id,
+                empreendimento_id: id,
             },
         });
         if (emUso > 0) {

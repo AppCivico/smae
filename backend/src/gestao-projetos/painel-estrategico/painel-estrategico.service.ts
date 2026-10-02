@@ -542,6 +542,7 @@ export class PainelEstrategicoService {
                             (select count(*)
                              from projeto_risco pr
                              where pr.projeto_id = p.id
+                               and pr.removido_em is null
                                and pr.status_risco <> 'Fechado') ::int as riscos_abertos,
                             coalesce(p.codigo,'') as codigo
                      FROM projeto p
