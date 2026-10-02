@@ -57,7 +57,7 @@ const chavesDeValoresValidos = [
   'descricao',
   'ipp',
   'medicao_orgao_id',
-  'metas',
+  'meta_id',
   'ordem_coluna',
   'ordem_direcao',
   'orgao_proprietario_id',
@@ -236,7 +236,7 @@ iniciar();
       <div class="f1 fb20em">
         <label
           class="label"
-          for="variavel_categorica_idd"
+          for="variavel_categorica_id"
         >
           Tipo de variavel
         </label>
@@ -331,7 +331,7 @@ iniciar();
         </label>
         <select
           id="meta-id"
-          name="metas"
+          name="meta_id"
           class="inputtext light"
           :aria-busy="chamadasPendentesDeMetas.lista"
           :class="{ error: errosDeMetas.lista }"
@@ -342,7 +342,7 @@ iniciar();
             v-for="meta in metasDisponiveis"
             :key="meta.id"
             :value="meta.id"
-            :selected="Number(valoresIniciaisConsolidados.metas) === meta.id"
+            :selected="Number(valoresIniciaisConsolidados.meta_id) === meta.id"
             :title="meta.titulo?.length > 36 ? meta.titulo : undefined"
           >
             {{ truncate(meta.titulo, 36) }}

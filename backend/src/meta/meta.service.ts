@@ -557,7 +557,7 @@ export class MetaService {
                 },
                 id: filters?.id,
             },
-            orderBy: [{ codigo: 'asc' }],
+            orderBy: [{ titulo: 'asc' }],
             select: {
                 id: true,
                 titulo: true,

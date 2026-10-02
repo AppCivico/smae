@@ -273,6 +273,7 @@ export class PdmService {
             where: {
                 tipo: PdmModoParaTipo(tipo),
                 descricao: { equals: dto.nome, mode: 'insensitive' },
+                removido_em: null,
             },
         });
         if (similarExists > 0)
@@ -928,6 +929,7 @@ export class PdmService {
                 where: {
                     tipo: pdm.tipo,
                     descricao: { equals: dto.nome, mode: 'insensitive' },
+                    removido_em: null,
                     NOT: { id: id },
                 },
             });

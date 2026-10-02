@@ -133,16 +133,11 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
     }),
 
     metasPorId: ({ lista }: Estado) => lista
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
-
-    metasPorPlano: ({ lista }: Estado) => lista
       .reduce((acc, cur) => {
-        if (!acc[cur.pdm_id]) {
-          acc[cur.pdm_id] = [];
-        }
-        acc[cur.pdm_id].push(cur);
-
+        acc[cur.id] = cur;
         return acc;
-      }, {} as Record<number, MetaItemDto[]>),
+      }, {} as Record<number, MetaItemDto>),
+
+    metasPorPlano: ({ lista }: Estado) => Object.groupBy(lista, ({ pdm_id }) => pdm_id),
   },
 })();
