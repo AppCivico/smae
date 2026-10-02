@@ -9,6 +9,7 @@ import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
+import { ListMetaSimplesDto } from '../meta/dto/list-meta.dto';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
 import {
@@ -183,6 +184,13 @@ export class VariavelGlobalController {
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
     async listAllPDMs(): Promise<ListPdmSimplesDto> {
         return { linhas: await this.variavelService.findAllPdms() };
+    }
+
+    @Get('proxy/pdm-e-planos-setoriais/metas')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
+    async listAllMetasPDMs(@CurrentUser() user: PessoaFromJwt): Promise<ListMetaSimplesDto> {
+        return { linhas: await this.variavelService.findAllMetasPdmsESetoriais(user) };
     }
 
     @Post('variavel')

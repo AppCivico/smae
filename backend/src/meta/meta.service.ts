@@ -24,6 +24,7 @@ import {
     MetaOrgaoParticipante,
 } from './dto/create-meta.dto';
 import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
+import { MetaSimplesDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import {
     IdNomeExibicao,
@@ -58,15 +59,24 @@ interface MetaResponsavelChanges {
     }[];
 }
 
+/**
+ * 'PS_E_PDM_AS_PS' = metas de Planos Setoriais e de Programas de Metas (v2) juntos, ignorando o smae-sistemas,
+ * usado pelo Banco de Variáveis, que é compartilhado entre os dois módulos. Usa as mesmas regras do '_PS'.
+ */
+export type MetasPermissionSetTipo = TipoPdmType | 'PS_E_PDM_AS_PS';
+
 export const MetasGetPermissionSet = async (
-    tipo: TipoPdmType,
+    tipo: MetasPermissionSetTipo,
     user: PessoaFromJwt | undefined,
     prisma: PrismaService
 ) => {
     const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
         {
             removido_em: null,
-            pdm: { tipo: PdmModoParaTipo(tipo) },
+            pdm:
+                tipo == 'PS_E_PDM_AS_PS'
+                    ? { sistema: { in: ['PlanoSetorial', 'ProgramaDeMetas'] } }
+                    : { tipo: PdmModoParaTipo(tipo) },
         },
     ];
     if (!user) return permissionsSet;
@@ -1508,6 +1518,23 @@ export class MetaService {
                 return removed;
             }
         );
+    }
+
+    /**
+     * Lista reduzida das metas de Planos Setoriais e Programas de Metas (v2), independente do smae-sistemas,
+     * para os filtros do Banco de Variáveis
+     */
+    async findAllSimplesPsEPdm(user: PessoaFromJwt): Promise<MetaSimplesDto[]> {
+        const permissionsSet = await MetasGetPermissionSet('PS_E_PDM_AS_PS', user, this.prisma);
+
+        return await this.prisma.meta.findMany({
+            where: {
+                AND: permissionsSet,
+                pdm: { removido_em: null },
+            },
+            orderBy: [{ codigo: 'asc' }, { titulo: 'asc' }],
+            select: { id: true, codigo: true, titulo: true, pdm_id: true },
+        });
     }
 
     async buscaMetasIniciativaAtividades(
