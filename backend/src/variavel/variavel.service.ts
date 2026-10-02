@@ -34,6 +34,7 @@ import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
 import { SeriesArrayShuffle } from '../common/shuffleArray';
 import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
+import { MetaSimplesDto } from '../meta/dto/list-meta.dto';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
@@ -4933,11 +4934,16 @@ export class VariavelService {
 
     async findAllPdms(): Promise<PdmSimplesDto[]> {
         const rows = await this.prisma.pdm.findMany({
-            where: { removido_em: null },
+            // PdM legado (sistema=PDM) não usa o Banco de Variáveis
+            where: { removido_em: null, sistema: { in: ['PlanoSetorial', 'ProgramaDeMetas'] } },
             select: { id: true, nome: true, tipo: true },
             orderBy: { nome: 'asc' },
         });
         return rows;
+    }
+
+    async findAllMetasPdmsESetoriais(user: PessoaFromJwt): Promise<MetaSimplesDto[]> {
+        return await this.metaService.findAllSimplesPsEPdm(user);
     }
 
     async updateFilha(

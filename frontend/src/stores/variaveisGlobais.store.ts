@@ -1,5 +1,6 @@
 import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
+import type { ListMetaSimplesDto, MetaSimplesDto } from '@back/meta/dto/list-meta.dto';
 import type {
   PdmSimplesDto,
   ListPdmSimplesDto,
@@ -24,15 +25,18 @@ interface Estado {
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
   planosSimplificados: PdmSimplesDto[];
+  metasSimplificadas: MetaSimplesDto[];
 
   chamadasPendentes: ChamadasPendentes & {
     planosSimplificados: boolean;
+    metasSimplificadas: boolean;
     dadosDosPeriodosValidos: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
     seriesAgrupadas: boolean;
   };
   erros: Erros & {
     planosSimplificados: unknown;
+    metasSimplificadas: unknown;
     dadosDosPeriodosValidos: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
     seriesAgrupadas: unknown;
@@ -51,11 +55,13 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     dadosDosPeriodosValidos: null,
     variaveisFilhasPorMae: {},
     planosSimplificados: [],
+    metasSimplificadas: [],
 
     chamadasPendentes: {
       lista: false,
       variaveisFilhasPorMae: {},
       planosSimplificados: false,
+      metasSimplificadas: false,
       dadosDosPeriodosValidos: false,
       emFoco: false,
       seriesAgrupadas: false,
@@ -64,6 +70,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       lista: null,
       variaveisFilhasPorMae: {},
       planosSimplificados: null,
+      metasSimplificadas: null,
       dadosDosPeriodosValidos: null,
       emFoco: null,
       seriesAgrupadas: null,
@@ -158,6 +165,24 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       }
 
       this.chamadasPendentes.planosSimplificados = false;
+    },
+
+    // metas de Planos Setoriais e Programas de Metas juntos, independente do módulo
+    async buscarMetasSimplificadas(params = {}): Promise<void> {
+      this.chamadasPendentes.metasSimplificadas = true;
+      this.erros.metasSimplificadas = null;
+      this.metasSimplificadas = [];
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/proxy/pdm-e-planos-setoriais/metas`,
+          params,
+        ) as ListMetaSimplesDto;
+        this.metasSimplificadas = resposta.linhas;
+      } catch (erro: unknown) {
+        this.erros.metasSimplificadas = erro;
+      }
+
+      this.chamadasPendentes.metasSimplificadas = false;
     },
 
     async excluirItem(variavelId: number): Promise<boolean> {
@@ -410,6 +435,9 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
         return acc;
       }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
+
+    metasSimplificadasPorPlano: ({ metasSimplificadas }) => Object
+      .groupBy(metasSimplificadas, ({ pdm_id }) => pdm_id),
 
     planosPorId: ({ planosSimplificados }) => planosSimplificados
       .reduce((acc, cur) => {

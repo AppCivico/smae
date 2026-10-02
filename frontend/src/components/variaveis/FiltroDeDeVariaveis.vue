@@ -12,7 +12,6 @@ import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import truncate from '@/helpers/texto/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
-import { usePsMetasStore } from '@/stores/metasPs.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
@@ -68,7 +67,6 @@ const chavesDeValoresValidos = [
 ];
 
 const assuntosStore = useAssuntosStore();
-const MetasStore = usePsMetasStore(route.meta.entidadeMãe);
 const ÓrgãosStore = useOrgansStore();
 const regionsStore = useRegionsStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
@@ -79,14 +77,9 @@ const {
   planosSimplificados: listaDePlanosSimplificados,
   chamadasPendentes: chamadasPendentesDePlanosSimplificados,
   erros: errosDePlanosSimplificados,
+  metasSimplificadas: listaDeMetas,
+  metasSimplificadasPorPlano: metasPorPlano,
 } = storeToRefs(variaveisGlobaisStore);
-
-const {
-  lista: listaDeMetas,
-  chamadasPendentes: chamadasPendentesDeMetas,
-  metasPorPlano,
-  erros: errosDeMetas,
-} = storeToRefs(MetasStore);
 
 const {
   órgãosComoLista,
@@ -141,8 +134,9 @@ async function iniciar() {
     promessas.push(assuntosStore.buscarTudo());
   }
 
-  if (!listaDeMetas.value.length && !chamadasPendentesDeMetas.value.lista) {
-    promessas.push(MetasStore.buscarTudo());
+  if (!listaDeMetas.value.length
+    && !chamadasPendentesDePlanosSimplificados.value.metasSimplificadas) {
+    promessas.push(variaveisGlobaisStore.buscarMetasSimplificadas());
   }
 
   if (!listaDePlanosSimplificados.value.length
@@ -333,8 +327,8 @@ iniciar();
           id="meta-id"
           name="meta_id"
           class="inputtext light"
-          :aria-busy="chamadasPendentesDeMetas.lista"
-          :class="{ error: errosDeMetas.lista }"
+          :aria-busy="chamadasPendentesDePlanosSimplificados.metasSimplificadas"
+          :class="{ error: errosDePlanosSimplificados.metasSimplificadas }"
           :disabled="!metasDisponiveis.length"
         >
           <option value="" />
