@@ -405,7 +405,7 @@ const formularioSujo = useIsFormDirty();
 
   <button
     :disabled="$props.disabled || !(model.length < Number(props.max))"
-    class="block like-a__text addlink mb1 mt1"
+    class="flex like-a__text addlink mb1 mt1"
     type="button"
     @click="adicionarItem"
   >

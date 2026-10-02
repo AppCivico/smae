@@ -378,10 +378,12 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
     ]"
   >
     <template #celula:arquivo__nome_original="{ linha }">
-      <component
-        :is="linha.id && linha.arquivo.download_token ? 'SmaeLink' : 'span'"
+      <SmaeLink
+        :desabilitar="!(linha.id && linha.arquivo.download_token)"
         :to="linha.id && obterUrlDownload(linha.arquivo.download_token)"
         class="flex center g05"
+        :download="linha.arquivo.nome_original"
+        exibir-desabilitado
       >
         <span style="text-overflow: ellipsis; overflow: clip; flex-basis: 0; flex-grow: 1;">
           {{ linha.arquivo.nome_original }}
@@ -394,7 +396,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         >
           <use xlink:href="#i_clock" />
         </svg>
-      </component>
+      </SmaeLink>
     </template>
 
     <template

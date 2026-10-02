@@ -84,7 +84,7 @@ export class PainelExternoService {
                 descricao: true,
                 link: true,
                 PainelExternoGrupoPainelExterno: {
-                    where: { removido_em: null },
+                    where: { removido_em: null, GrupoPainelExterno: { removido_em: null } },
                     select: {
                         grupo_painel_externo_id: true,
                     },
@@ -122,6 +122,7 @@ export class PainelExternoService {
             const painel = await prismaTx.painelExterno.update({
                 where: {
                     id: id,
+                    removido_em: null,
                 },
                 data: {
                     atualizado_por: user.id,

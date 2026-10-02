@@ -1,8 +1,15 @@
+// eslint-disable-next-line import/no-cycle
+import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 
 import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
-const entidadeMãe = 'planoSetorial';
+// O banco de variáveis é compartilhado entre Planos Setoriais e Programa de
+// Metas. Como as rotas não são duplicadas nem prefixadas, a entidade mãe
+// depende do módulo em uso no momento em que a rota é resolvida.
+const obterEntidadeMãe = () => (useAuthStore().sistemaCorrente === 'ProgramaDeMetas'
+  ? 'programaDeMetas'
+  : 'planoSetorial');
 
 export default {
   path: '/variaveis',
@@ -23,7 +30,11 @@ export default {
   </defs>
 </svg>`,
     rotaPrescindeDeChave: true,
-    entidadeMãe,
+    // _getter_ porque o vue-router lê as propriedades de `meta` a cada
+    // resolução de rota, o que mantém o valor em sincronia com o módulo
+    get entidadeMãe() {
+      return obterEntidadeMãe();
+    },
     limitarÀsPermissões: [
       'CadastroPS.administrador',
       'CadastroPDM.administrador',
