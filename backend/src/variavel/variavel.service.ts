@@ -34,6 +34,7 @@ import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
 import { SeriesArrayShuffle } from '../common/shuffleArray';
 import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
+import { DadosCodTituloMetaDto } from '../meta/dto/create-meta.dto';
 import { MetaSimplesDto } from '../meta/dto/list-meta.dto';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -4943,6 +4944,13 @@ export class VariavelService {
 
     async findAllMetasPdmsESetoriais(user: PessoaFromJwt): Promise<MetaSimplesDto[]> {
         return await this.metaService.findAllSimplesPsEPdm(user);
+    }
+
+    async buscaMetasIniciativaAtividadesPsEPdm(
+        metas: number[],
+        user: PessoaFromJwt
+    ): Promise<DadosCodTituloMetaDto[]> {
+        return await this.metaService.buscaMetasIniciativaAtividadesPsEPdm(metas, user);
     }
 
     async updateFilha(
