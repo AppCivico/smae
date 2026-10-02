@@ -268,18 +268,20 @@ export class OrgaoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const countMeta = await this.prisma.meta.count({ where: { meta_orgao: { some: { orgao_id: id } } } });
+        const countMeta = await this.prisma.meta.count({
+            where: { removido_em: null, meta_orgao: { some: { orgao_id: id } } },
+        });
         if (countMeta > 0)
             throw new HttpException('Não é possível remover o órgão, pois existem Metas associadas.', 400);
 
         const countIniciativa = await this.prisma.iniciativa.count({
-            where: { iniciativa_orgao: { some: { orgao_id: id } } },
+            where: { removido_em: null, iniciativa_orgao: { some: { orgao_id: id } } },
         });
         if (countIniciativa > 0)
             throw new HttpException('Não é possível remover o órgão, pois existem Iniciativas associadas.', 400);
 
         const countAtividade = await this.prisma.atividade.count({
-            where: { atividade_orgao: { some: { orgao_id: id } } },
+            where: { removido_em: null, atividade_orgao: { some: { orgao_id: id } } },
         });
         if (countAtividade > 0)
             throw new HttpException('Não é possível remover o órgão, pois existem Iniciativas associadas.', 400);
