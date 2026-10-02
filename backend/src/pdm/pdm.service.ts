@@ -1002,7 +1002,14 @@ export class PdmService {
                 const mesesSorted = dto.meses?.sort((a, b) => a - b).join(',');
                 const currentMeses = cicloConfigAtiva?.meses.sort((a, b) => a - b).join(',');
 
-                if (mesesSorted != currentMeses || dto.data_inicio != pdm.data_inicio || dto.data_fim != pdm.data_fim) {
+                const mudouData = (novo: Date | null | undefined, atual: Date | null) =>
+                    novo !== undefined && Date2YMD.toStringOrNull(novo) !== Date2YMD.toStringOrNull(atual);
+
+                if (
+                    (dto.meses !== undefined && mesesSorted != currentMeses) ||
+                    mudouData(dto.data_inicio, pdm.data_inicio) ||
+                    mudouData(dto.data_fim, pdm.data_fim)
+                ) {
                     await this.pdmCicloService.updateCicloConfig(
                         tipo,
                         pdm.id,

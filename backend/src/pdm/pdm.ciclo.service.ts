@@ -107,16 +107,17 @@ export class PdmCicloService {
                 await this.variavelService.processVariaveisSuspensas(prismaTx);
 
                 this.logger.debug(`Atualizando metas consolidadas`);
+                // atualizado_em é timestamp sem fuso gravado por now() em sessão UTC
                 await prismaTx.$queryRaw`
                     SELECT f_add_refresh_meta_task(t.meta_id)::text
                     FROM (
                         SELECT meta_id
                         FROM meta_status_consolidado_cf cf
-                        WHERE (atualizado_em at time zone ${SYSTEM_TIMEZONE})::date != current_date at time zone ${SYSTEM_TIMEZONE}
+                        WHERE (atualizado_em at time zone 'UTC' at time zone ${SYSTEM_TIMEZONE})::date != (now() at time zone ${SYSTEM_TIMEZONE})::date
                         UNION
                         SELECT meta_id
                         FROM ps_dashboard_consolidado ps
-                        WHERE (atualizado_em at time zone ${SYSTEM_TIMEZONE})::date != current_date at time zone ${SYSTEM_TIMEZONE}
+                        WHERE (atualizado_em at time zone 'UTC' at time zone ${SYSTEM_TIMEZONE})::date != (now() at time zone ${SYSTEM_TIMEZONE})::date
                     ) t
                 `;
             },
