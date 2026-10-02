@@ -1,4 +1,3 @@
-
 ALTER TABLE "tarefa" DROP CONSTRAINT "tarefa_projeto_id_fkey";
 
 -- DropIndex
@@ -72,24 +71,6 @@ select setval('tarefa_cronograma_id_seq'::regclass, (select max(id) from tarefa_
 ALTER TABLE "tarefa" alter column tarefa_cronograma_id set NOT NULL;
 
 ALTER TABLE "tarefa_cronograma" ADD COLUMN "tarefas_proximo_recalculo" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
-CREATE OR REPLACE VIEW view_projeto_custo_categoria_uso_corrente AS
-SELECT * from view_projeto_custo_categoria
-
-UNION ALL
-SELECT
-    'Custo previsto até o momento',
-    sum(custo_estimado) AS valor,
-    b.projeto_id as id
-FROM
-    tarefa a
-    join tarefa_cronograma b on b.id = a.tarefa_cronograma_id
-WHERE
-    termino_planejado <= now() at time zone 'America/Sao_Paulo'
-and custo_estimado is not null
-and tarefa_pai_id is null
-and b.removido_em is null
-group by 1,3;
 
 -- AlterTable
 ALTER TABLE "tarefa" DROP COLUMN "projeto_id";

@@ -131,7 +131,7 @@ export class PortfolioService {
                     },
                 },
                 PortfolioGrupoPortfolio: {
-                    where: { removido_em: null },
+                    where: { removido_em: null, GrupoPortfolio: { removido_em: null } },
                     select: {
                         grupo_portfolio_id: true,
                     },

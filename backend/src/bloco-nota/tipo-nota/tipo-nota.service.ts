@@ -12,11 +12,12 @@ export class TipoNotaService {
         const similarExists = await this.prisma.tipoNota.count({
             where: {
                 codigo: { equals: dto.codigo, mode: 'insensitive' },
+                removido_em: null,
             },
         });
 
         if (similarExists > 0)
-            throw new BadRequestException('Descrição igual ou semelhante já existe em outro registro ativo');
+            throw new BadRequestException('Código igual ou semelhante já existe em outro registro ativo');
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const created = await prismaTx.tipoNota.create({
