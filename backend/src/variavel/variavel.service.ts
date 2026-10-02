@@ -4934,8 +4934,7 @@ export class VariavelService {
 
     async findAllPdms(): Promise<PdmSimplesDto[]> {
         const rows = await this.prisma.pdm.findMany({
-            // PdM legado (sistema=PDM) não usa o Banco de Variáveis
-            where: { removido_em: null, sistema: { in: ['PlanoSetorial', 'ProgramaDeMetas'] } },
+            where: { removido_em: null },
             select: { id: true, nome: true, tipo: true },
             orderBy: { nome: 'asc' },
         });
