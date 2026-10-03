@@ -1,8 +1,9 @@
--- Resolve o plano da linha (meta/iniciativa/atividade/indicador/cronograma/etapa e tabelas *_responsavel,
--- indicador_variavel, cronograma_etapa, ciclo_fisico) e diz se ela pertence a um PDM legado (sistema = 'PDM').
--- Recebe a linha como jsonb para não depender das colunas de cada tabela. Na dúvida (pai não encontrado)
--- devolve true, para invalidar a mais e nunca a menos.
-CREATE OR REPLACE FUNCTION f_acesso_pdm_linha_eh_legado(r jsonb)
+-- Resolve o plano da linha e diz se ela pertence a um PDM legado (sistema = 'PDM'). Recebe a linha como jsonb para
+-- não depender das colunas de cada tabela; a tabela decide qual coluna leva ao plano (não dá para deduzir pelas
+-- chaves: etapa tem variavel_id, por exemplo). Na dúvida (tabela não prevista, pai não encontrado) devolve true,
+-- para invalidar a mais e nunca a menos.
+DROP FUNCTION IF EXISTS f_acesso_pdm_linha_eh_legado(jsonb);
+CREATE OR REPLACE FUNCTION f_acesso_pdm_linha_eh_legado(p_tabela text, r jsonb)
     RETURNS boolean
     AS $$
 DECLARE
@@ -16,37 +17,45 @@ BEGIN
         RETURN false;
     END IF;
 
-    IF r ? 'pdm_id' THEN
-        v_pdm_id := (r->>'pdm_id')::int;
-    ELSIF r ? 'variavel_id' AND NOT r ? 'indicador_id' THEN
-        -- variavel_responsavel: só variável do tipo PDM entra no cálculo de acesso legado
-        RETURN EXISTS (SELECT 1 FROM variavel WHERE id = (r->>'variavel_id')::int AND tipo = 'PDM');
-    ELSE
-        IF r ? 'cronograma_id' THEN
-            v_cronograma_id := (r->>'cronograma_id')::int;
-        ELSIF r ? 'etapa_id' THEN
-            SELECT e.cronograma_id INTO v_cronograma_id FROM etapa e WHERE e.id = (r->>'etapa_id')::int;
-        END IF;
+    CASE p_tabela
+        WHEN 'meta', 'ciclo_fisico' THEN
+            v_pdm_id := (r->>'pdm_id')::int;
 
-        IF v_cronograma_id IS NOT NULL THEN
-            SELECT c.meta_id, c.iniciativa_id, c.atividade_id INTO v_meta_id, v_iniciativa_id, v_atividade_id
-            FROM cronograma c WHERE c.id = v_cronograma_id;
-        ELSIF r ? 'indicador_id' THEN
-            SELECT i.meta_id, i.iniciativa_id, i.atividade_id INTO v_meta_id, v_iniciativa_id, v_atividade_id
-            FROM indicador i WHERE i.id = (r->>'indicador_id')::int;
+        WHEN 'variavel_responsavel' THEN
+            -- só variável do tipo PDM entra no cálculo de acesso legado
+            RETURN EXISTS (SELECT 1 FROM variavel WHERE id = (r->>'variavel_id')::int AND tipo = 'PDM');
+
+        WHEN 'etapa', 'cronograma_etapa', 'etapa_responsavel', 'cronograma', 'indicador', 'indicador_variavel',
+             'meta_responsavel', 'iniciativa', 'iniciativa_responsavel', 'atividade', 'atividade_responsavel' THEN
+            IF p_tabela IN ('etapa', 'cronograma_etapa') THEN
+                v_cronograma_id := (r->>'cronograma_id')::int;
+            ELSIF p_tabela = 'etapa_responsavel' THEN
+                SELECT e.cronograma_id INTO v_cronograma_id FROM etapa e WHERE e.id = (r->>'etapa_id')::int;
+            END IF;
+
+            IF v_cronograma_id IS NOT NULL THEN
+                SELECT c.meta_id, c.iniciativa_id, c.atividade_id INTO v_meta_id, v_iniciativa_id, v_atividade_id
+                FROM cronograma c WHERE c.id = v_cronograma_id;
+            ELSIF p_tabela = 'indicador_variavel' THEN
+                SELECT i.meta_id, i.iniciativa_id, i.atividade_id INTO v_meta_id, v_iniciativa_id, v_atividade_id
+                FROM indicador i WHERE i.id = (r->>'indicador_id')::int;
+            ELSE
+                -- cronograma, indicador, iniciativa (meta_id), atividade (iniciativa_id) e *_responsavel
+                v_meta_id := (r->>'meta_id')::int;
+                v_iniciativa_id := (r->>'iniciativa_id')::int;
+                v_atividade_id := (r->>'atividade_id')::int;
+            END IF;
+
+            v_meta_id := COALESCE(
+                v_meta_id,
+                (SELECT i.meta_id FROM iniciativa i WHERE i.id = v_iniciativa_id),
+                (SELECT i.meta_id FROM atividade a JOIN iniciativa i ON i.id = a.iniciativa_id WHERE a.id = v_atividade_id)
+            );
+            SELECT m.pdm_id INTO v_pdm_id FROM meta m WHERE m.id = v_meta_id;
+
         ELSE
-            v_meta_id := (r->>'meta_id')::int;
-            v_iniciativa_id := (r->>'iniciativa_id')::int;
-            v_atividade_id := (r->>'atividade_id')::int;
-        END IF;
-
-        v_meta_id := COALESCE(
-            v_meta_id,
-            (SELECT i.meta_id FROM iniciativa i WHERE i.id = v_iniciativa_id),
-            (SELECT i.meta_id FROM atividade a JOIN iniciativa i ON i.id = a.iniciativa_id WHERE a.id = v_atividade_id)
-        );
-        SELECT m.pdm_id INTO v_pdm_id FROM meta m WHERE m.id = v_meta_id;
-    END IF;
+            RETURN true;
+    END CASE;
 
     IF v_pdm_id IS NULL THEN
         RETURN true;
@@ -57,19 +66,26 @@ END;
 $$
 LANGUAGE plpgsql;
 
--- Limpa as tabelas de cache no fim da transação. Em Read Committed o DELETE enxerga tudo que já foi
--- commitado; em Repeatable Read/Serializable ele roda no snapshot do início da transação (não apaga
--- cache recalculado depois, e dá 40001 se outra transação apagou antes), então usa TRUNCATE, que limpa a
--- tabela inteira independente do snapshot.
-CREATE OR REPLACE FUNCTION f_limpa_cache_pdm_tabela(p_tabela text)
+DROP FUNCTION IF EXISTS f_limpa_cache_pdm_tabela(text);
+
+-- PDM legado ligado na feature flag (busca pela PK). Desligado, nada enfileira: quem escreve não paga nada e o
+-- cache não é lido (só o MF legado lê). Ao religar, trg_feature_flag_pdm_antigo_limpa_cache apaga tudo.
+CREATE OR REPLACE FUNCTION f_pdm_legado_ligado()
+    RETURNS boolean
+    AS $$
+    SELECT COALESCE((SELECT ff.mostrar_pdm_antigo FROM feature_flag ff ORDER BY ff.id LIMIT 1), false);
+$$
+LANGUAGE sql STABLE;
+
+-- Quem escreve só enfileira (uma linha de task_queue por transação). A tarefa refresh_cache_pdm faz o DELETE
+-- depois do COMMIT, em Read Committed: não depende do snapshot de quem escreveu (Serializable deixava cache
+-- velho ou falhava com 40001) e não trava as tabelas de cache durante a transação de quem escreve.
+CREATE OR REPLACE FUNCTION f_enfileira_refresh_cache_pdm(p_acesso boolean, p_status_meta boolean)
     RETURNS void
     AS $$
 BEGIN
-    IF current_setting('transaction_isolation') = 'read committed' THEN
-        EXECUTE format('DELETE FROM %I', p_tabela);
-    ELSE
-        EXECUTE format('TRUNCATE %I', p_tabela);
-    END IF;
+    INSERT INTO task_queue ("type", params)
+    VALUES ('refresh_cache_pdm', jsonb_build_object('acesso', p_acesso, 'status_meta', p_status_meta));
 END;
 $$
 LANGUAGE plpgsql;
@@ -82,15 +98,15 @@ BEGIN
         RETURN NULL;
     END IF;
 
+    IF NOT f_pdm_legado_ligado() THEN
+        RETURN NULL;
+    END IF;
+
     IF TG_TABLE_NAME = 'pdm' THEN
         IF NEW.sistema IS DISTINCT FROM 'PDM' AND OLD.sistema IS DISTINCT FROM 'PDM' THEN
             RETURN NULL;
         END IF;
     ELSE
-        IF NOT EXISTS (SELECT 1 FROM pdm WHERE sistema = 'PDM' AND removido_em IS NULL) THEN
-            RETURN NULL;
-        END IF;
-
         IF TG_TABLE_NAME = 'variavel' THEN
             -- IF aninhado: plpgsql resolve NEW.tipo ao planejar a expressão, sem curto-circuito
             IF NEW.tipo IS DISTINCT FROM 'PDM' AND OLD.tipo IS DISTINCT FROM 'PDM' THEN
@@ -99,8 +115,8 @@ BEGIN
         ELSIF TG_TABLE_NAME <> 'perfil_privilegio' THEN
             -- linha de PS / PdM novo não mexe no cache do PDM legado
             IF NOT (
-                f_acesso_pdm_linha_eh_legado(CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END)
-                OR f_acesso_pdm_linha_eh_legado(CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END)
+                f_acesso_pdm_linha_eh_legado(TG_TABLE_NAME, CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END)
+                OR f_acesso_pdm_linha_eh_legado(TG_TABLE_NAME, CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END)
             ) THEN
                 RETURN NULL;
             END IF;
@@ -108,8 +124,7 @@ BEGIN
     END IF;
 
     PERFORM set_config('smae.acesso_pdm_limpo_tx', txid_current()::text, true);
-    PERFORM f_limpa_cache_pdm_tabela('pessoa_acesso_pdm_valido');
-    PERFORM f_limpa_cache_pdm_tabela('pessoa_acesso_pdm');
+    PERFORM f_enfileira_refresh_cache_pdm(true, false);
     RETURN NULL;
 END;
 $$
@@ -123,19 +138,19 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    IF NOT EXISTS (SELECT 1 FROM pdm WHERE sistema = 'PDM' AND removido_em IS NULL) THEN
+    IF NOT f_pdm_legado_ligado() THEN
         RETURN NULL;
     END IF;
 
     IF NOT (
-        f_acesso_pdm_linha_eh_legado(CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END)
-        OR f_acesso_pdm_linha_eh_legado(CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END)
+        f_acesso_pdm_linha_eh_legado(TG_TABLE_NAME, CASE WHEN TG_OP <> 'INSERT' THEN to_jsonb(OLD) END)
+        OR f_acesso_pdm_linha_eh_legado(TG_TABLE_NAME, CASE WHEN TG_OP <> 'DELETE' THEN to_jsonb(NEW) END)
     ) THEN
         RETURN NULL;
     END IF;
 
     PERFORM set_config('smae.status_meta_limpo_tx', txid_current()::text, true);
-    PERFORM f_limpa_cache_pdm_tabela('status_meta_ciclo_fisico');
+    PERFORM f_enfileira_refresh_cache_pdm(false, true);
     RETURN NULL;
 END;
 $$
@@ -387,3 +402,28 @@ CREATE CONSTRAINT TRIGGER trg_cronograma_etapa_limpa_status_meta AFTER INSERT OR
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW
     EXECUTE FUNCTION f_limpa_status_meta_ciclo_fisico();
+
+-- PDM legado religado: enquanto esteve desligado nada foi invalidado, então o cache pode estar velho
+CREATE OR REPLACE FUNCTION f_feature_flag_pdm_antigo_limpa_cache()
+    RETURNS trigger
+    AS $$
+BEGIN
+    DELETE FROM pessoa_acesso_pdm_valido;
+    DELETE FROM pessoa_acesso_pdm;
+    DELETE FROM status_meta_ciclo_fisico;
+    RETURN NULL;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_feature_flag_pdm_antigo_limpa_cache ON feature_flag;
+CREATE TRIGGER trg_feature_flag_pdm_antigo_limpa_cache AFTER UPDATE OF mostrar_pdm_antigo ON feature_flag
+    FOR EACH ROW
+    WHEN (NEW.mostrar_pdm_antigo AND NOT OLD.mostrar_pdm_antigo)
+    EXECUTE FUNCTION f_feature_flag_pdm_antigo_limpa_cache();
+
+DROP TRIGGER IF EXISTS trg_feature_flag_pdm_antigo_limpa_cache_ins ON feature_flag;
+CREATE TRIGGER trg_feature_flag_pdm_antigo_limpa_cache_ins AFTER INSERT ON feature_flag
+    FOR EACH ROW
+    WHEN (NEW.mostrar_pdm_antigo)
+    EXECUTE FUNCTION f_feature_flag_pdm_antigo_limpa_cache();
