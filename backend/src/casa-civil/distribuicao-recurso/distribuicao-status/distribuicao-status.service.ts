@@ -150,6 +150,7 @@ export class DistribuicaoStatusService {
                     where: {
                         removido_em: null,
                         status_id: id,
+                        distribuicao: { removido_em: null },
                     },
                 });
                 if (emUso) throw new HttpException('Edição indisponível, pois status já está em uso em histórico', 400);
@@ -192,6 +193,7 @@ export class DistribuicaoStatusService {
             where: {
                 removido_em: null,
                 status_id: id,
+                distribuicao: { removido_em: null },
             },
         });
         if (emUso) throw new HttpException('Remoção indisponível, pois tipo de status já está em uso', 400);

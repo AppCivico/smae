@@ -1412,7 +1412,7 @@ export class DemandaService {
 
             // Busca todas as eleições vigentes
             const eleicoesVigentes = await prismaTxn.eleicao.findMany({
-                where: { atual_para_mandatos: true },
+                where: { atual_para_mandatos: true, removido_em: null },
             });
 
             if (eleicoesVigentes.length === 0) {

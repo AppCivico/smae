@@ -78,6 +78,7 @@ export class TipoVinculoService {
             where: {
                 tipo_vinculo_id: id,
                 removido_em: null,
+                distribuicao: { removido_em: null, transferencia: { removido_em: null } },
             },
         });
         if (emUso > 0) throw new HttpException('Não é possível remover tipo de vínculo em uso.', 400);

@@ -73,6 +73,7 @@ export class DashTransferenciaService {
                     parlamentar: filter.partido_ids
                         ? {
                               some: {
+                                  removido_em: null,
                                   partido_id: { in: filter.partido_ids },
                               },
                           }
@@ -88,6 +89,7 @@ export class DashTransferenciaService {
                         esfera: true,
                         objeto: true,
                         parlamentar: {
+                            where: { removido_em: null },
                             select: {
                                 partido_id: true,
                             },
@@ -160,7 +162,7 @@ export class DashTransferenciaService {
                     ...(searchConditions ? { OR: searchConditions } : {}),
 
                     parlamentar: filters.partido_ids
-                        ? { some: { partido_id: { in: filters.partido_ids } } }
+                        ? { some: { removido_em: null, partido_id: { in: filters.partido_ids } } }
                         : undefined,
 
                     TransferenciaStatusConsolidado:
@@ -234,6 +236,7 @@ export class DashTransferenciaService {
                             },
                         },
                         parlamentar: {
+                            where: { removido_em: null },
                             select: {
                                 parlamentar_id: true,
                                 valor: true,
@@ -909,6 +912,7 @@ export class DashTransferenciaService {
                             },
                         },
                         parlamentar: {
+                            where: { removido_em: null },
                             select: {
                                 parlamentar: {
                                     select: {
