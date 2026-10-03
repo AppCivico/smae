@@ -65,7 +65,7 @@ export class AcompanhamentoTipoService {
         await this.prisma.$transaction(async (prismaTx) => {
             // Se o tipo de acompanhamento estiver associado a algum projeto, não pode ser removido
             const tipoAcompanhamentoAssociado = await prismaTx.projetoAcompanhamento.count({
-                where: { acompanhamento_tipo_id: id, removido_em: null },
+                where: { acompanhamento_tipo_id: id, removido_em: null, projeto: { removido_em: null } },
             });
             if (tipoAcompanhamentoAssociado) {
                 throw new HttpException('Tipo de acompanhamento associado à um projeto, não pode ser removido.', 400);

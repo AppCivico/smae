@@ -28,7 +28,12 @@ export class PortfolioTagService {
 
             // Caso esteja em uso, não pode editar.
             const emUso = await this.prisma.projetoPortfolioTag.count({
-                where: { portfolio_tag_id: id, removido_em: null, portfolio: { id: dto.portfolio_id } },
+                where: {
+                    portfolio_tag_id: id,
+                    removido_em: null,
+                    portfolio: { id: dto.portfolio_id },
+                    projeto: { removido_em: null },
+                },
             });
             if (emUso > 0) throw new HttpException('Tag de portfólio em uso em projetos. Edição não permitida.', 400);
         }
@@ -161,7 +166,7 @@ export class PortfolioTagService {
     async remove(id: number, user: PessoaFromJwt) {
         // Verificando se está em uso
         const emUso = await this.prisma.projetoPortfolioTag.count({
-            where: { portfolio_tag_id: id, removido_em: null },
+            where: { portfolio_tag_id: id, removido_em: null, projeto: { removido_em: null } },
         });
         if (emUso > 0) throw new HttpException('Tag de portfólio em uso em projetos.', 400);
 

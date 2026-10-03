@@ -1,6 +1,3 @@
-DROP VIEW if exists view_meta_orcamento_realizado;
-DROP VIEW if exists view_meta_orcamento_plan;
-
 /*
   Warnings:
 
