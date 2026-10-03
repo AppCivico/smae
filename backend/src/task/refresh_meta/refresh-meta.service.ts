@@ -50,7 +50,8 @@ export class RefreshMetaService implements TaskableService {
 
                     // Se chegou aqui com sucesso, apaga os jobs antigos que deram sucesso ou estão pendentes
                     await tx.$queryRaw`DELETE FROM task_queue
-                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])`;
+                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])
+                        AND status IN ('pending', 'completed')`;
                 });
             },
             async (error) => {

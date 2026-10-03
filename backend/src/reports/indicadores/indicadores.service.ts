@@ -193,9 +193,10 @@ export class IndicadoresService implements ReportableService, SchemaAwareReporta
         const indicadores = await this.prisma.indicador.findMany({
             where: {
                 removido_em: null,
+                // filtro por iniciativa/atividade traz só os indicadores daquele nível para baixo
                 OR: [
-                    { meta_id: { in: metas.map((r) => r.id) } },
-                    { iniciativa_id: { in: iniciativas.map((r) => r.id) } },
+                    { meta_id: { in: dto.iniciativa_id || dto.atividade_id ? [] : metas.map((r) => r.id) } },
+                    { iniciativa_id: { in: dto.atividade_id ? [] : iniciativas.map((r) => r.id) } },
                     { atividade_id: { in: atividades.map((r) => r.id) } },
                 ],
             },

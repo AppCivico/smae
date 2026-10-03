@@ -1240,9 +1240,8 @@ export class EtapaService {
                 select: { id: true },
             });
 
-            // que gambiarra, pois isso está fora do transaction, mas se der erro, vai dar rollback em ambos
             for (const cronograma of cronogramas) {
-                await this.cronogramaEtapaService.delete(tipo, cronograma.id, user);
+                await this.cronogramaEtapaService.delete(tipo, cronograma.id, user, prismaTx);
             }
         });
     }

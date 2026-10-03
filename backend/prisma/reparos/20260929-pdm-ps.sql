@@ -5,6 +5,11 @@
 -- Ordem: 1) prisma migrate deploy  2) runner dos manual-copy/*.pgsql (funções e triggers novos)  3) este script
 --        4) PATCH /api/pessoa/recalc-equipe (SMAE.superadmin), depois que o script terminar (ver final do arquivo).
 -- As tarefas enfileiradas (refresh_meta, refresh_meta_orcamento_consolidado, refresh_variavel) são processadas pelo worker da API.
+--
+-- Pode rodar com a API no ar: só as seções 0 a 2 ficam numa transação única (são rápidas). Da seção 3 em diante cada
+-- comando é a sua própria transação, e a seção 4 faz COMMIT a cada cronograma, para não segurar lock da
+-- mv_variavel_pdm, do cache de acesso ou de todas as etapas enquanto o resto roda. Como tudo é idempotente, se parar
+-- no meio (ex.: deadlock com um usuário editando), basta rodar o arquivo de novo.
 
 -- tudo ou nada: uma execução parcial deixa filhas removidas com vínculos ativos que o re-run não pega mais
 BEGIN;
@@ -13,27 +18,44 @@ BEGIN;
 -- 0. Diagnóstico e candidatos (tabelas temporárias da sessão)
 -- ============================================================================
 
--- 77d6a4e75 (b): variáveis Global/Calculada removidas junto com o indicador pelo IndicadorService.remove antigo
+-- 77d6a4e75 (b): variáveis removidas junto com o indicador pelo IndicadorService.remove antigo, que apagava toda
+-- variável com QUALQUER linha em indicador_variavel do indicador, inclusive as herdadas (indicador_origem_id = indicador
+-- filho ainda ativo). Só a variável PDM com vínculo próprio ao indicador removido foi removida de propósito.
 CREATE TEMP TABLE IF NOT EXISTS tmp_vitimas_indicador (
     variavel_id int,
     tipo text,
     codigo text,
     titulo text,
     indicador_id int,
+    indicador_origem_id int,
     indicador_removido_em timestamptz,
     variavel_removido_em timestamptz
 );
 TRUNCATE tmp_vitimas_indicador;
 
 INSERT INTO tmp_vitimas_indicador
-SELECT DISTINCT v.id, v.tipo::text, v.codigo, v.titulo, i.id, i.removido_em, v.removido_em
+SELECT DISTINCT v.id, v.tipo::text, v.codigo, v.titulo, i.id, iv.indicador_origem_id, i.removido_em, v.removido_em
 FROM variavel v
-JOIN indicador_variavel iv ON iv.variavel_id = v.id AND iv.indicador_origem_id IS NULL
+JOIN indicador_variavel iv ON iv.variavel_id = v.id
 JOIN indicador i ON i.id = iv.indicador_id AND i.removido_em IS NOT NULL
-WHERE v.tipo IN ('Global', 'Composta') -- Composta é o valor no banco de Calculada
-  AND v.removido_em IS NOT NULL
+WHERE v.removido_em IS NOT NULL
   AND v.removido_por IS NOT DISTINCT FROM i.removido_por
-  AND abs(extract(epoch FROM (v.removido_em - i.removido_em))) <= 5;
+  AND abs(extract(epoch FROM (v.removido_em - i.removido_em))) <= 5
+  AND (
+      v.tipo IN ('Global', 'Composta') -- Composta é o valor no banco de Calculada
+      -- vínculo herdado: a variável é de outro indicador; vítima se nenhum indicador próprio dela foi removido
+      OR (
+          iv.indicador_origem_id IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1
+              FROM indicador_variavel own
+              JOIN indicador oi ON oi.id = own.indicador_id
+              WHERE own.variavel_id = v.id
+                AND own.indicador_origem_id IS NULL
+                AND oi.removido_em IS NOT NULL
+          )
+      )
+  );
 
 -- ============================================================================
 -- 1. Variáveis filhas e calculadas órfãs de mãe removida (77d6a4e75, a)
@@ -173,6 +195,11 @@ ORDER BY t.indicador_id, t.variavel_id;
 --
 -- depois de restaurar: SELECT refresh_variavel(variavel_id, NULL) FROM tmp_vitimas_indicador;
 -- os vínculos de equipe (variavel_grupo_responsavel_equipe) e o indicador_variavel não são refeitos aqui
+-- indicador_origem_id preenchido = a variável pertence a esse indicador (filho, ainda ativo), não ao removido
+
+COMMIT;
+
+-- daqui para baixo, autocommit: cada comando (e cada cronograma na seção 4) é uma transação
 
 -- ============================================================================
 -- 3. Cache de acesso e status de meta do PDM legado (c6560b6e2, 00c34432e, b45edb37c)
@@ -187,44 +214,49 @@ DELETE FROM status_meta_ciclo_fisico;
 -- 4. Cronograma e etapas (39fff7ace)
 -- ============================================================================
 
--- percentual_execucao das etapas pai, das folhas para a raiz, e depois dos cronogramas
+-- por cronograma: percentual_execucao das etapas pai (das folhas para a raiz), do cronograma e as datas de início e
+-- fim. Um COMMIT por cronograma; deadlock com edição concorrente pula o cronograma (aparece no NOTICE, rodar de novo)
 DO $$
 DECLARE
+    c RECORD;
     r RECORD;
 BEGIN
-    FOR r IN
-        WITH RECURSIVE arvore AS (
-            SELECT id, etapa_pai_id, 0 AS profundidade
-            FROM etapa
-            WHERE etapa_pai_id IS NULL AND removido_em IS NULL
-            UNION ALL
-            SELECT e.id, e.etapa_pai_id, a.profundidade + 1
-            FROM etapa e
-            JOIN arvore a ON a.id = e.etapa_pai_id
-            WHERE e.removido_em IS NULL
-        )
-        SELECT a.id
-        FROM arvore a
-        WHERE EXISTS (SELECT 1 FROM etapa f WHERE f.etapa_pai_id = a.id)
-        ORDER BY a.profundidade DESC, a.id
+    FOR c IN
+        SELECT cr.id FROM cronograma cr WHERE cr.removido_em IS NULL ORDER BY cr.id
     LOOP
-        PERFORM calculate_percentual_execucao_for_id(r.id);
-    END LOOP;
+        BEGIN
+            FOR r IN
+                WITH RECURSIVE arvore AS (
+                    SELECT id, etapa_pai_id, 0 AS profundidade
+                    FROM etapa
+                    WHERE etapa_pai_id IS NULL AND removido_em IS NULL AND cronograma_id = c.id
+                    UNION ALL
+                    SELECT e.id, e.etapa_pai_id, a.profundidade + 1
+                    FROM etapa e
+                    JOIN arvore a ON a.id = e.etapa_pai_id
+                    WHERE e.removido_em IS NULL
+                )
+                SELECT a.id
+                FROM arvore a
+                WHERE EXISTS (SELECT 1 FROM etapa f WHERE f.etapa_pai_id = a.id)
+                ORDER BY a.profundidade DESC, a.id
+            LOOP
+                PERFORM calculate_percentual_execucao_for_id(r.id);
+            END LOOP;
 
-    FOR r IN
-        SELECT DISTINCT e.cronograma_id AS id
-        FROM etapa e
-        JOIN cronograma c ON c.id = e.cronograma_id AND c.removido_em IS NULL
-        WHERE e.removido_em IS NULL
-    LOOP
-        PERFORM calculate_percentual_execucao_for_id(r.id, true);
+            IF EXISTS (SELECT 1 FROM etapa e WHERE e.cronograma_id = c.id AND e.removido_em IS NULL) THEN
+                PERFORM calculate_percentual_execucao_for_id(c.id, true);
+            END IF;
+
+            -- só atualiza quando muda
+            PERFORM atualiza_inicio_fim_cronograma(c.id);
+        EXCEPTION
+            WHEN deadlock_detected OR lock_not_available OR serialization_failure THEN
+                RAISE NOTICE 'cronograma % pulado (%), rodar o script de novo', c.id, SQLERRM;
+        END;
+        COMMIT;
     END LOOP;
 END $$;
-
--- datas de início e fim dos cronogramas (só atualiza quando muda)
-SELECT atualiza_inicio_fim_cronograma(c.id)
-FROM cronograma c
-WHERE c.removido_em IS NULL;
 
 -- ============================================================================
 -- 5. Ciclo corrente das variáveis (243cfff25, 7724a7e77: 0010)
@@ -286,7 +318,7 @@ WHERE NOT EXISTS (
 );
 
 -- ============================================================================
--- 8. Somas de dotação do PDM com iniciativa/atividade removida (e8b106050: 0034, 0066)
+-- 8. Somas de dotação do PDM com meta/iniciativa/atividade removida (e8b106050: 0034, 0066, 0078)
 -- ============================================================================
 
 -- toca uma linha por chave para os triggers de soma recalcularem pdm_dotacao_planejado
@@ -295,10 +327,11 @@ SET id = d.id
 WHERE (d.ano_referencia, d.dotacao) IN (
     SELECT op.ano_referencia, op.dotacao
     FROM orcamento_planejado op
+    LEFT JOIN meta m ON m.id = op.meta_id
     LEFT JOIN iniciativa i ON i.id = op.iniciativa_id
     LEFT JOIN atividade a ON a.id = op.atividade_id
     WHERE op.removido_em IS NULL
-      AND (i.removido_em IS NOT NULL OR a.removido_em IS NOT NULL)
+      AND (m.removido_em IS NOT NULL OR i.removido_em IS NOT NULL OR a.removido_em IS NOT NULL)
 );
 
 -- idem para realizado (pdm_dotacao_realizado, _processo e _processo_nota)
@@ -307,10 +340,11 @@ SET id = r.id
 WHERE r.id IN (
     SELECT DISTINCT ON (o.ano_referencia, o.dotacao, o.processo, o.nota_empenho) o.id
     FROM orcamento_realizado o
+    LEFT JOIN meta m ON m.id = o.meta_id
     LEFT JOIN iniciativa i ON i.id = o.iniciativa_id
     LEFT JOIN atividade a ON a.id = o.atividade_id
     WHERE o.removido_em IS NULL
-      AND (i.removido_em IS NOT NULL OR a.removido_em IS NOT NULL)
+      AND (m.removido_em IS NOT NULL OR i.removido_em IS NOT NULL OR a.removido_em IS NOT NULL)
     ORDER BY o.ano_referencia, o.dotacao, o.processo, o.nota_empenho, o.id
 );
 
@@ -339,8 +373,6 @@ WHERE m.removido_em IS NULL
       SELECT 1 FROM task_queue t
       WHERE t.type = 'refresh_meta_orcamento_consolidado' AND t.status = 'pending' AND (t.params->>'meta_id')::int = m.id
   );
-
-COMMIT;
 
 -- ============================================================================
 -- 10. Perfis de equipe (3012c1b95, d77baba7f): passo fora do SQL

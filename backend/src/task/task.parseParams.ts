@@ -10,6 +10,7 @@ import { CreateRefreshDemandaDto } from '../sysadmin/dto/demanda/create-refresh-
 import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
 import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMetaOrcamentoConsolidadoDto } from './refresh_meta_orcamento_consolidado/dto/create-refresh-meta-orcamento-consolidado.dto';
+import { CreateRefreshCachePdmDto } from './refresh_cache_pdm/dto/create-refresh-cache-pdm.dto';
 import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
 import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
 import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
@@ -72,6 +73,9 @@ export function ParseParams(taskType: task_type, value: any): any {
             break;
         case 'refresh_meta_orcamento_consolidado':
             theClass = CreateRefreshMetaOrcamentoConsolidadoDto;
+            break;
+        case 'refresh_cache_pdm':
+            theClass = CreateRefreshCachePdmDto;
             break;
         default:
             taskType satisfies never;

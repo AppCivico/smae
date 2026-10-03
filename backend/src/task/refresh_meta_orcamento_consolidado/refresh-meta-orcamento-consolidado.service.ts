@@ -38,7 +38,8 @@ export class RefreshMetaOrcamentoConsolidadoService implements TaskableService {
                     await tx.$queryRaw`SELECT f_refresh_meta_orcamento_consolidado(${inputParams.meta_id}::int)`;
 
                     await tx.$queryRaw`DELETE FROM task_queue
-                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])`;
+                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])
+                        AND status IN ('pending', 'completed')`;
                 });
             },
             async (error) => {

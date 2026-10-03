@@ -1335,7 +1335,7 @@ export class VariavelService {
 
         const ehAdminGeral = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
 
-        const idsComIndicadorAtivo = await this.buscaVariaveisComIndicadorAtivo(
+        const idsComIndicadorAtivo = await this.buscaVariaveisBloqueadasPorIndicador(
             this.prisma,
             linhas.map((r) => r.id)
         );
@@ -3320,6 +3320,44 @@ export class VariavelService {
         return new Set(links.map((l) => l.variavel_id));
     }
 
+    // mesma regra do remove(): a variável é bloqueada se ela, alguma filha ou alguma calculada autogerenciável
+    // estiver vinculada a indicador ativo
+    private async buscaVariaveisBloqueadasPorIndicador(
+        prismaTx: Prisma.TransactionClient | PrismaService,
+        variavelIds: number[]
+    ): Promise<Set<number>> {
+        if (!variavelIds.length) return new Set();
+        const [filhas, formulas] = await Promise.all([
+            prismaTx.variavel.findMany({
+                where: { variavel_mae_id: { in: variavelIds }, removido_em: null },
+                select: { id: true, variavel_mae_id: true },
+            }),
+            prismaTx.formulaComposta.findMany({
+                where: {
+                    variavel_mae_id: { in: variavelIds },
+                    autogerenciavel: true,
+                    removido_em: null,
+                    variavel_calc_id: { not: null },
+                },
+                select: { variavel_calc_id: true, variavel_mae_id: true },
+            }),
+        ]);
+
+        const maePorDerivada = new Map<number, number>();
+        for (const f of filhas) maePorDerivada.set(f.id, f.variavel_mae_id!);
+        for (const f of formulas) maePorDerivada.set(f.variavel_calc_id!, f.variavel_mae_id!);
+
+        const emUso = await this.buscaVariaveisComIndicadorAtivo(prismaTx, [...variavelIds, ...maePorDerivada.keys()]);
+
+        const bloqueadas = new Set<number>();
+        for (const id of emUso) {
+            if (variavelIds.includes(id)) bloqueadas.add(id);
+            const mae = maePorDerivada.get(id);
+            if (mae !== undefined) bloqueadas.add(mae);
+        }
+        return bloqueadas;
+    }
+
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         const self = await this.findOne(tipo, variavelId, {}, user);
         if (!self) throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
@@ -3337,16 +3375,6 @@ export class VariavelService {
         if (tipo == 'PDM') {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
             await this.verificaEscritaNaMeta(variavelId, user);
-        }
-        if ('pode_editar' in self) {
-            const selfTyped = self as any as VariavelGlobalItemDto;
-            if (!selfTyped.pode_excluir) {
-                throw new BadRequestException('Você não tem permissão para remover esta variável.');
-            }
-            const emUso = await this.buscaVariaveisComIndicadorAtivo(this.prisma, [variavelId]);
-            if (emUso.has(variavelId)) {
-                throw new BadRequestException('Não é possível remover a variável: vinculada a indicador de um plano.');
-            }
         }
 
         const now = new Date(Date.now());
@@ -3366,10 +3394,21 @@ export class VariavelService {
                 ];
                 const todas = [variavelId, ...derivadas];
 
-                const derivadasEmUso = await this.buscaVariaveisComIndicadorAtivo(prismaTx, derivadas);
-                if (derivadasEmUso.size) {
-                    throw new BadRequestException(
-                        'Não é possível remover a variável: variável filha ou calculada vinculada a indicador de um plano.'
+                // variável PDM sempre tem vínculo com o próprio indicador; só a Global é bloqueada pelo vínculo direto
+                const emUso = await this.buscaVariaveisComIndicadorAtivo(
+                    prismaTx,
+                    tipo === 'Global' ? todas : derivadas
+                );
+                if (emUso.has(variavelId)) {
+                    throw new HttpException(
+                        'Não é possível remover a variável: vinculada a indicador de um plano.',
+                        400
+                    );
+                }
+                if (emUso.size) {
+                    throw new HttpException(
+                        'Não é possível remover a variável: variável filha ou calculada vinculada a indicador de um plano.',
+                        400
                     );
                 }
 

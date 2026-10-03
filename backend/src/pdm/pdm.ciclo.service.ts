@@ -582,8 +582,9 @@ export class PdmCicloService {
                 data: {
                     pdm_id: pdmId,
                     meses: dto.meses ?? previousData?.meses ?? [],
-                    data_inicio: dto.data_inicio ?? previousData?.data_inicio ?? null,
-                    data_fim: dto.data_fim ?? previousData?.data_fim ?? null,
+                    // null explícito limpa a data; só undefined (campo não enviado) herda da config anterior
+                    data_inicio: dto.data_inicio !== undefined ? dto.data_inicio : (previousData?.data_inicio ?? null),
+                    data_fim: dto.data_fim !== undefined ? dto.data_fim : (previousData?.data_fim ?? null),
                     ultima_revisao: true,
                     criado_por: user.id,
                 },

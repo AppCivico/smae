@@ -91,14 +91,45 @@ EXECUTE FUNCTION f_pdm_perfil_refresh_meta_trigger();
 
 DROP TRIGGER IF EXISTS trg_refresh_meta_pdm ON pdm;
 CREATE TRIGGER trg_refresh_meta_pdm
-AFTER UPDATE OF ativo, monitoramento_orcamento, data_inicio ON pdm
+AFTER UPDATE OF ativo, monitoramento_orcamento, data_inicio, data_fim ON pdm
 FOR EACH ROW
 WHEN (
     OLD.ativo IS DISTINCT FROM NEW.ativo
     OR OLD.monitoramento_orcamento IS DISTINCT FROM NEW.monitoramento_orcamento
     OR OLD.data_inicio IS DISTINCT FROM NEW.data_inicio
+    OR OLD.data_fim IS DISTINCT FROM NEW.data_fim
 )
 EXECUTE FUNCTION f_pdm_refresh_meta_trigger();
+
+-- criação de iniciativa/atividade muda as contagens do ps_dashboard_consolidado; a remoção já é coberta
+-- pelos triggers do mv_variavel_pdm (refresh_mv_variavel_pdm_iniciativa/_atividade)
+CREATE OR REPLACE FUNCTION f_iniciativa_insert_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM f_add_refresh_meta_task_nn(NEW.meta_id);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION f_atividade_insert_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM f_add_refresh_meta_task_nn(f_meta_id_por_hierarquia(NULL, NEW.iniciativa_id, NULL));
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_refresh_meta_iniciativa_insert ON iniciativa;
+CREATE TRIGGER trg_refresh_meta_iniciativa_insert
+AFTER INSERT ON iniciativa
+FOR EACH ROW
+EXECUTE FUNCTION f_iniciativa_insert_refresh_meta_trigger();
+
+DROP TRIGGER IF EXISTS trg_refresh_meta_atividade_insert ON atividade;
+CREATE TRIGGER trg_refresh_meta_atividade_insert
+AFTER INSERT ON atividade
+FOR EACH ROW
+EXECUTE FUNCTION f_atividade_insert_refresh_meta_trigger();
 
 -- removidos: o app nunca troca o pai, e meta_orgao/equipe/orçamento já são cobertos ou não são lidos pelo refresh
 DROP TRIGGER IF EXISTS trg_refresh_meta_iniciativa ON iniciativa;
