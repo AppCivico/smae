@@ -55,7 +55,14 @@ BEGIN
         FROM mv_variavel_pdm
         WHERE variavel_id = OLD.variavel_id OR indicador_id = OLD.indicador_id;
 
-        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+        -- trigger é por linha: só faz o REFRESH (ACCESS EXCLUSIVE na view) se o par removido ainda aparece nela.
+        -- vínculos herdados (indicador_origem_id) e de indicador já removido não entram na view
+        IF OLD.indicador_origem_id IS NULL AND EXISTS (
+            SELECT 1 FROM mv_variavel_pdm
+            WHERE indicador_id = OLD.indicador_id AND variavel_id = OLD.variavel_id
+        ) THEN
+            REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+        END IF;
 
         FOR v_meta_id IN (SELECT unnest(v_meta_ids)) LOOP
             PERFORM f_add_refresh_meta_task(v_meta_id);

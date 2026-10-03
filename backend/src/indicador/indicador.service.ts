@@ -812,9 +812,19 @@ export class IndicadorService {
                 },
             });
 
+            // o soft-delete do indicador vem antes do deleteMany dos vínculos: o trigger de indicador já faz o
+            // REFRESH do mv_variavel_pdm (e enfileira o refresh_meta) uma vez, e o trigger por linha de
+            // indicador_variavel pula o REFRESH quando o par não está mais na view
+            const removed = await prismaTx.indicador.updateMany({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+
             if (vinculadasIds.length) {
                 await AddTaskRecalcVariaveis(prismaTx, { variavelIds: vinculadasIds });
-                await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
 
                 await prismaTx.indicadorVariavel.deleteMany({
                     where: { indicador_id: id, indicador_origem_id: null, variavel_id: { in: vinculadasIds } },
@@ -826,13 +836,7 @@ export class IndicadorService {
                 prismaTx
             );
 
-            return await prismaTx.indicador.updateMany({
-                where: { id: id },
-                data: {
-                    removido_por: user.id,
-                    removido_em: new Date(Date.now()),
-                },
-            });
+            return removed;
         });
 
         return removed;

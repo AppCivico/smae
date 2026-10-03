@@ -76,6 +76,12 @@ export class UtilsService {
                     { id: filters.meta_id ? filters.meta_id : undefined },
                     { id: filters.metas_ids && filters.metas_ids.length > 0 ? { in: filters.metas_ids } : undefined },
                     { AND: whereSet ? whereSet : {} },
+                    // filtro de nível mais baixo também restringe os níveis acima (senão o OR do
+                    // filtraIndicadores traz os indicadores de todas as metas/iniciativas do plano)
+                    filters.iniciativa_id ? { iniciativa: { some: { id: filters.iniciativa_id } } } : {},
+                    filters.atividade_id
+                        ? { iniciativa: { some: { atividade: { some: { id: filters.atividade_id } } } } }
+                        : {},
                 ],
                 meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
             },
@@ -89,6 +95,7 @@ export class UtilsService {
                       meta_id: { in: metas.map((r) => r.id) },
                       removido_em: null,
                       id: filters.iniciativa_id ? filters.iniciativa_id : undefined,
+                      atividade: filters.atividade_id ? { some: { id: filters.atividade_id } } : undefined,
                       iniciativa_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
                   },
                   select: { id: true },
