@@ -50,7 +50,7 @@ export class RefreshVariavelService implements TaskableService {
                     const jobsAntigos = await prismaTx.$queryRaw<{ id: number }[]>`
                         SELECT id FROM task_queue
                         WHERE type = 'refresh_variavel'
-                        AND status='pending'
+                        AND status IN ('pending', 'completed')
                         AND id != ${task.id}
                         AND (params->>'variavel_id')::int = ${inputParams.variavel_id}::int
                         AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})
@@ -68,10 +68,11 @@ export class RefreshVariavelService implements TaskableService {
                         );
                     }
 
-                    // Se o recálculo for bem-sucedido, remove jobs antigos pendentes com o mesmo variavel_id
+                    // Se o recálculo for bem-sucedido, remove jobs antigos (pendentes ou concluídos) com o mesmo variavel_id
                     await prismaTx.$queryRaw`
                         DELETE FROM task_queue
                         WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])
+                        AND status IN ('pending', 'completed')
                     `;
 
                     await prismaTx.$queryRaw`
