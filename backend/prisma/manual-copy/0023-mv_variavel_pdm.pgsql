@@ -44,14 +44,27 @@ CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_indicador_variavel()
 RETURNS TRIGGER AS $$
 DECLARE
     v_meta_id INTEGER;
+    v_meta_ids INTEGER[];
 BEGIN
     IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.* IS DISTINCT FROM NEW.*)) THEN
         REFRESH MATERIALIZED VIEW mv_variavel_pdm;
     END IF;
 
     IF TG_OP = 'DELETE' THEN
-        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
-        FOR v_meta_id IN (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id) LOOP
+        SELECT array_agg(DISTINCT meta_id) INTO v_meta_ids
+        FROM mv_variavel_pdm
+        WHERE variavel_id = OLD.variavel_id OR indicador_id = OLD.indicador_id;
+
+        -- trigger é por linha: só faz o REFRESH (ACCESS EXCLUSIVE na view) se o par removido ainda aparece nela.
+        -- vínculos herdados (indicador_origem_id) e de indicador já removido não entram na view
+        IF OLD.indicador_origem_id IS NULL AND EXISTS (
+            SELECT 1 FROM mv_variavel_pdm
+            WHERE indicador_id = OLD.indicador_id AND variavel_id = OLD.variavel_id
+        ) THEN
+            REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+        END IF;
+
+        FOR v_meta_id IN (SELECT unnest(v_meta_ids)) LOOP
             PERFORM f_add_refresh_meta_task(v_meta_id);
         END LOOP;
     ELSE
@@ -133,11 +146,17 @@ DECLARE
     v_meta_id INTEGER;
 BEGIN
     IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
+        v_meta_id := COALESCE(
+            NEW.meta_id,
+            (SELECT i.meta_id FROM iniciativa i WHERE i.id = NEW.iniciativa_id),
+            (SELECT i.meta_id FROM atividade a JOIN iniciativa i ON i.id = a.iniciativa_id WHERE a.id = NEW.atividade_id)
+        );
+
         REFRESH MATERIALIZED VIEW mv_variavel_pdm;
 
-        FOR v_meta_id IN (SELECT DISTINCT meta_id FROM mv_variavel_pdm WHERE indicador_id = NEW.id) LOOP
+        IF v_meta_id IS NOT NULL THEN
             PERFORM f_add_refresh_meta_task(v_meta_id);
-        END LOOP;
+        END IF;
     END IF;
 
     RETURN NEW;

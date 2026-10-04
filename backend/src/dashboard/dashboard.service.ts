@@ -155,6 +155,7 @@ export class DashboardService {
 
         if (config && config['params'] && config['params']['pdm_id']) {
             const pdms = await this.prisma.pdm.findMany({
+                where: { removido_em: null },
                 orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
                 select: { id: true, nome: true },
             });

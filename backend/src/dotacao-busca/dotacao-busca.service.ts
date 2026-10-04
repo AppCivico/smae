@@ -62,6 +62,11 @@ export class DotacaoBuscaService {
                 dotacao: { startsWith: parteNormalizada },
                 dotacao_complemento: whereComplemento,
                 ano_referencia: dto.ano,
+                AND: [
+                    { OR: [{ meta_id: null }, { meta: { removido_em: null } }] },
+                    { OR: [{ iniciativa_id: null }, { iniciativa: { removido_em: null } }] },
+                    { OR: [{ atividade_id: null }, { atividade: { removido_em: null } }] },
+                ],
             },
             select: {
                 id: true,

@@ -11,6 +11,7 @@ import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/orig
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { UniqueNumbers } from '../common/UniqueNumbers';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto, PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
@@ -66,7 +67,7 @@ export const MetasGetPermissionSet = async (
     const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
         {
             removido_em: null,
-            pdm: { tipo: PdmModoParaTipo(tipo) },
+            pdm: { tipo: PdmModoParaTipo(tipo), removido_em: null },
         },
     ];
     if (!user) return permissionsSet;
@@ -1236,8 +1237,10 @@ export class MetaService {
                 where: {
                     pessoa_id: resp.pessoa_id,
                     variavel: {
+                        removido_em: null,
                         indicador_variavel: {
                             some: {
+                                indicador_origem: null,
                                 indicador: {
                                     removido_em: null,
                                     meta_id: metaId,
@@ -1493,6 +1496,19 @@ export class MetaService {
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+                const perfis = await prismaTx.pdmPerfil.findMany({
+                    where: {
+                        removido_em: null,
+                        OR: [
+                            { meta_id: meta.id },
+                            { iniciativa: { meta_id: meta.id } },
+                            { atividade: { iniciativa: { meta_id: meta.id } } },
+                        ],
+                    },
+                    select: { equipe_id: true },
+                    distinct: ['equipe_id'],
+                });
+
                 const removed = await prismaTx.meta.updateMany({
                     where: { id: meta.id, removido_em: null },
                     data: {
@@ -1500,6 +1516,11 @@ export class MetaService {
                         removido_em: now,
                     },
                 });
+
+                await recalcPessoasAfetadasPorEquipes(
+                    perfis.map((p) => p.equipe_id),
+                    prismaTx
+                );
 
                 // Caso a Meta seja removida, é necessário remover relacionamentos com Painel
                 // public.painel_conteudo e public.painel_conteudo_detalhe

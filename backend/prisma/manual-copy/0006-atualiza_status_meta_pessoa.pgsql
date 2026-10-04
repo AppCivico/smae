@@ -37,9 +37,13 @@ BEGIN
         select count(1) as variaveis_atrasadas
         from status_variavel_ciclo_fisico svcf
         join ciclo_fisico cf on cf.id = svcf.ciclo_fisico_id and cf.data_ciclo < vDataCicloCorrente
+        join variavel v on v.id = svcf.variavel_id
         where (select perfil from perfil) IN ('admin_cp', 'tecnico_cp')
         and svcf.meta_id = pMetaId
         and svcf.conferida = false
+        and v.removido_em is null
+        and v.mostrar_monitoramento = true
+        and v.suspendida_em is null
     )
     select perfil, variaveis_atrasadas
     into vPerfil, vAtrasadaCount

@@ -95,6 +95,7 @@ export class FonteVariavelService {
         const emUso = await this.prisma.variavel.findMany({
             where: {
                 fonte_id: id,
+                removido_em: null,
             },
             select: {
                 id: true,

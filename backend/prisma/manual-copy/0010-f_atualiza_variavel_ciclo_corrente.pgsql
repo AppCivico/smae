@@ -65,6 +65,7 @@ BEGIN
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             --RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
+            DELETE FROM variavel_ciclo_corrente WHERE variavel_id = p_variavel_id;
             RETURN;
         WHEN TOO_MANY_ROWS THEN
             RAISE EXCEPTION 'apenas uma linha esperada para a variável: %', p_variavel_id;
@@ -176,7 +177,7 @@ BEGIN
         v_processando_ciclo_atrasado := TRUE;
         v_prazo := v_atrasos[1];
         SELECT * INTO v_quali FROM variavel_global_ciclo_analise
-        WHERE variavel_id = p_variavel_id AND referencia_data = v_atrasos[1] AND ultima_revisao = true;
+        WHERE variavel_id = p_variavel_id AND referencia_data = v_atrasos[1] AND ultima_revisao = true AND removido_em IS NULL;
 
         IF v_quali.fase IS NOT NULL THEN
 
@@ -558,29 +559,30 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DO
-$$BEGIN
+DROP TRIGGER IF EXISTS tgr_update_variavel_ciclo_corrente ON variavel;
 CREATE TRIGGER tgr_update_variavel_ciclo_corrente
     AFTER UPDATE ON variavel
     FOR EACH ROW
     WHEN ((
            OLD.fim_medicao IS DISTINCT FROM NEW.fim_medicao
+        OR OLD.inicio_medicao IS DISTINCT FROM NEW.inicio_medicao
+        OR OLD.periodicidade IS DISTINCT FROM NEW.periodicidade
         OR OLD.periodo_preenchimento IS DISTINCT FROM NEW.periodo_preenchimento
         OR OLD.periodo_validacao IS DISTINCT FROM NEW.periodo_validacao
         OR OLD.periodo_liberacao IS DISTINCT FROM NEW.periodo_liberacao
         OR OLD.atraso_meses IS DISTINCT FROM NEW.atraso_meses
+        OR OLD.removido_em IS DISTINCT FROM NEW.removido_em
+        OR OLD.tipo IS DISTINCT FROM NEW.tipo
+        OR OLD.variavel_mae_id IS DISTINCT FROM NEW.variavel_mae_id
         )
     )
     EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
 
+DROP TRIGGER IF EXISTS tgr_insert_variavel_ciclo_corrente ON variavel;
 CREATE TRIGGER tgr_insert_variavel_ciclo_corrente
     AFTER INSERT ON variavel
     FOR EACH ROW
     EXECUTE FUNCTION f_trigger_update_variavel_ciclo();
-EXCEPTION
-   WHEN duplicate_object THEN
-      NULL;
-END;$$;
 
 DROP FUNCTION IF EXISTS f_variavel_periodos_redimensionados(
     p_preenchimento_phase INT[],

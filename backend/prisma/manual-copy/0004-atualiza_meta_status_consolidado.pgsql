@@ -112,6 +112,7 @@ BEGIN
         left join status_variavel_ciclo_fisico svcf ON svcf.variavel_id = v.id
             AND svcf.ciclo_fisico_id = pCicloFisicoIdAtual
         where iv.meta_id = pMetaId and iv.pdm_id = v_pdm_id
+        AND v.removido_em IS NULL
         AND v.mostrar_monitoramento = true
         AND v.suspendida_em IS NULL
         -- antes era feito pelo join, mas isso não é OK em situações como a variaveis categorizadas não tem series
@@ -474,6 +475,9 @@ BEGIN
         JOIN pdm on pdm.id = mvp.pdm_id AND pdm.tipo = 'PDM'
         JOIN variavel v on v.id = sv.variavel_id
         WHERE sv.serie = 'PrevistoAcumulado' AND mvp.meta_id = pMetaId
+        AND v.removido_em IS NULL
+        AND v.mostrar_monitoramento = true
+        AND v.suspendida_em IS NULL
         and sv.data_valor < date_trunc('month', (now() - ( v.atraso_meses || ' month')::interval) at time zone 'America/Sao_Paulo')
         AND (pdm.considerar_atraso_apos IS NULL OR sv.data_valor >= pdm.considerar_atraso_apos)
     ), late_vars as (

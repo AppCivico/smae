@@ -65,6 +65,7 @@ export class GrupoPaineisService {
                 },
 
                 paineis: {
+                    where: { painel: { removido_em: null } },
                     select: {
                         painel: {
                             select: {
@@ -164,6 +165,7 @@ export class GrupoPaineisService {
                 },
 
                 paineis: {
+                    where: { painel: { removido_em: null } },
                     select: {
                         painel: {
                             select: {

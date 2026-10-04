@@ -8,6 +8,7 @@ import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
+import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-equipe.util';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { MetaOrgaoParticipante } from '../meta/dto/create-meta.dto';
 import { MetaIniAtvTag } from '../meta/entities/meta.entity';
@@ -106,6 +107,7 @@ export class AtividadeService {
                         where: {
                             id: dto.iniciativa_id,
                             ativo: true,
+                            removido_em: null,
                         },
                     });
 
@@ -399,7 +401,9 @@ export class AtividadeService {
                     },
                 },
                 Cronograma: {
+                    where: { removido_em: null },
                     take: 1,
+                    orderBy: { criado_em: 'asc' },
                     select: {
                         id: true,
                     },
@@ -887,8 +891,10 @@ export class AtividadeService {
                 where: {
                     pessoa_id: resp.pessoa_id,
                     variavel: {
+                        removido_em: null,
                         indicador_variavel: {
                             some: {
+                                indicador_origem: null,
                                 indicador: {
                                     removido_em: null,
                                     atividade_id: atividadeId,
@@ -995,9 +1001,10 @@ export class AtividadeService {
                 },
                 compoe_indicador_iniciativa: true,
                 Indicador: {
+                    where: { removido_em: null },
                     select: {
                         IndicadorVariavel: {
-                            where: { desativado: false },
+                            where: { desativado: false, variavel: { removido_em: null } },
                             select: { id: true },
                         },
                     },
@@ -1129,6 +1136,12 @@ export class AtividadeService {
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+                const perfis = await prismaTx.pdmPerfil.findMany({
+                    where: { removido_em: null, atividade_id: id },
+                    select: { equipe_id: true },
+                    distinct: ['equipe_id'],
+                });
+
                 const removed = await prismaTx.atividade.updateMany({
                     where: { id: id },
                     data: {
@@ -1136,6 +1149,11 @@ export class AtividadeService {
                         removido_em: now,
                     },
                 });
+
+                await recalcPessoasAfetadasPorEquipes(
+                    perfis.map((p) => p.equipe_id),
+                    prismaTx
+                );
 
                 // Caso a Atividade seja removida, é necessário remover relacionamentos com PainelConteudoDetalhe
                 // public.painel_conteudo_detalhe

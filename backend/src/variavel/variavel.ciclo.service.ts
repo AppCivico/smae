@@ -180,6 +180,7 @@ export async function getVariavelPermissionsWhere(
             orConditions.push({
                 VariavelGrupoResponsavelEquipe: {
                     some: {
+                        removido_em: null,
                         grupo_responsavel_equipe: {
                             removido_em: null,
                             id: {
