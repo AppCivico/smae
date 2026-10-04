@@ -169,9 +169,9 @@ export class CompromissoOrigemHelper {
                     pdm_id: null,
                 });
             } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
-                throw new HttpException('origem_tipo=Outro não é suportado para tipo extra', 500);
+                throw new HttpException('origem_tipo=Outro não é suportado para tipo extra', 400);
             } else {
-                throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
+                throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 400);
             }
 
             dto.meta_id = meta_id;

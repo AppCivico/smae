@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpException, Query, Req, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -32,6 +32,8 @@ export class DashboardController {
     @IsPublic()
     async renderIframe(@Query() params: { url: string }, @Res() res: Response): Promise<void> {
         const url = params.url;
+        if (!url || !/^https?:\/\//i.test(url) || !URL.canParse(url))
+            throw new HttpException('Parâmetro url deve ser uma URL http(s) válida', 400);
 
         const domain = GetDomainFromUrl(url);
 

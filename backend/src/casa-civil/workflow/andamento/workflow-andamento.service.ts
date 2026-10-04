@@ -841,8 +841,9 @@ export class WorkflowAndamentoService {
                 return;
             }
         } else {
-            throw new Error(
-                'Não foi possível encontrar configurações de fluxo para este workflow seguindo estes parâmetros'
+            throw new HttpException(
+                'Não foi possível encontrar configurações de fluxo para este workflow seguindo estes parâmetros',
+                400
             );
         }
     }

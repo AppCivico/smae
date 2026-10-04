@@ -4820,9 +4820,8 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-        console.log(result);
-
-        if (!result[0].meta_id) throw `getMetaIdDaVariavel: nenhum resultado para variavel ${variavel_id}`;
+        if (!result[0].meta_id)
+            throw new HttpException(`Variável ${variavel_id} não encontrada ou sem meta associada`, 400);
         return result[0].meta_id;
     }
 
@@ -4862,10 +4861,11 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-        console.log(result);
-
         if (!result[0].meta_id)
-            throw `getMetaIdDaFormulaComposta: nenhum resultado para formula_composta ${formula_composta_id}`;
+            throw new HttpException(
+                `Fórmula composta ${formula_composta_id} não encontrada ou sem meta associada`,
+                400
+            );
         return result[0].meta_id;
     }
 
@@ -4899,9 +4899,8 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-        console.log(result);
-
-        if (!result[0].meta_id) throw `getMetaIdDoIndicador: nenhum resultado para indicador ${indicador_id}`;
+        if (!result[0].meta_id)
+            throw new HttpException(`Indicador ${indicador_id} não encontrado ou sem meta associada`, 400);
         return result[0].meta_id;
     }
 

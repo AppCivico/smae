@@ -386,7 +386,7 @@ export class ProjetoService {
         } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
             validaOutro();
         } else {
-            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
+            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 400);
         }
 
         return {

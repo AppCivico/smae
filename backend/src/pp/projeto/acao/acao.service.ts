@@ -61,7 +61,7 @@ export class AcaoService {
         } as const;
 
         const dbAction = dePara[dto.acao];
-        if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
+        if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 400);
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(
