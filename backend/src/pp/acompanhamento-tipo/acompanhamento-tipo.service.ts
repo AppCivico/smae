@@ -16,7 +16,7 @@ export class AcompanhamentoTipoService {
         const tipoJaExiste = await this.prisma.acompanhamentoTipo.count({
             where: { nome: dto.nome, removido_em: null, tipo_projeto: tipo },
         });
-        if (tipoJaExiste) throw new Error('Já existe um tipo de acompanhamento com este nome.');
+        if (tipoJaExiste) throw new HttpException('Já existe um tipo de acompanhamento com este nome.', 400);
 
         const acompanhamentoTipo = await this.prisma.acompanhamentoTipo.create({
             data: {

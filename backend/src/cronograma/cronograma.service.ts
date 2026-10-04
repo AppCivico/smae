@@ -22,7 +22,7 @@ export class CronogramaService {
 
     async create(tipo: TipoPdmType, createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
-            throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
+            throw new HttpException('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa)', 400);
 
         const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
             where: {

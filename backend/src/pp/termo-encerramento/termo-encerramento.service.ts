@@ -202,7 +202,7 @@ export class TermoEncerramentoService {
                 const justificativa = await this.prisma.projetoTipoEncerramento.findFirst({
                     where: { id: dto.justificativa_id },
                 });
-                if (!justificativa) throw new Error('Justificativa não encontrada');
+                if (!justificativa) throw new HttpException('Justificativa não encontrada', 400);
 
                 if (!justificativa.habilitar_info_adicional) dto.justificativa_complemento = null;
             }
