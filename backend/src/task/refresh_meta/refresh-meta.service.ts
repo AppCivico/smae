@@ -29,6 +29,13 @@ export class RefreshMetaService implements TaskableService {
             5,
             async () => {
                 await this.prisma.$transaction(async (tx) => {
+                    const jobsAntigos = await tx.$queryRaw<{ id: number }[]>`SELECT id FROM task_queue
+                        WHERE type = 'refresh_meta'
+                        AND status IN ('pending', 'completed')
+                        AND id != ${task.id}
+                        AND (params->>'meta_id')::int = ${inputParams.meta_id}::int
+                        AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})`;
+
                     // Executa o procedimento que atualiza a meta
                     await RetryPromise(
                         () =>
@@ -43,11 +50,8 @@ export class RefreshMetaService implements TaskableService {
 
                     // Se chegou aqui com sucesso, apaga os jobs antigos que deram sucesso ou estão pendentes
                     await tx.$queryRaw`DELETE FROM task_queue
-                        WHERE type = 'refresh_meta'
-                        AND status IN ('pending', 'completed')
-                        AND id != ${task.id}
-                        AND (params->>'meta_id')::int = ${inputParams.meta_id}::int
-                        AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})`;
+                        WHERE id = ANY(${jobsAntigos.map((r) => r.id)}::int[])
+                        AND status IN ('pending', 'completed')`;
                 });
             },
             async (error) => {

@@ -9,6 +9,7 @@ import { EchoModule } from './echo/echo.module';
 import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
 import { RefreshDemandaModule } from './refresh_demanda/refresh-demanda.module';
 import { RefreshMetaOrcamentoConsolidadoModule } from './refresh_meta_orcamento_consolidado/refresh-meta-orcamento-consolidado.module';
+import { RefreshCachePdmModule } from './refresh_cache_pdm/refresh-cache-pdm.module';
 import { RefreshIndicadorModule } from './refresh_indicador/refresh-indicador.module';
 import { RefreshMetaModule } from './refresh_meta/refresh-meta.module';
 import { RefreshMvModule } from './refresh_mv/refresh-mv.module';
@@ -37,6 +38,7 @@ import { TaskService } from './task.service';
         forwardRef(() => RefreshVariavelModule),
         forwardRef(() => RefreshDemandaModule),
         forwardRef(() => RefreshMetaOrcamentoConsolidadoModule),
+        forwardRef(() => RefreshCachePdmModule),
         forwardRef(() => RunUpdateModule),
     ],
     controllers: [TaskController],

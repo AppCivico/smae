@@ -86,6 +86,7 @@ export class MfService {
         const cicloAtivo = await this.prisma.cicloFisico.findFirst({
             where: {
                 ativo: true,
+                tipo: 'PDM',
                 pdm: {
                     ativo: true,
                 },
@@ -98,7 +99,9 @@ export class MfService {
         });
         if (!cicloAtivo) {
             let detail = '';
-            const pdmAtivo = await this.prisma.pdm.findFirst({ where: { ativo: true } });
+            const pdmAtivo = await this.prisma.pdm.findFirst({
+                where: { ativo: true, sistema: 'PDM', removido_em: null },
+            });
             if (pdmAtivo) {
                 const ultimaFase = await this.prisma.cicloFisicoFase.findFirst({
                     where: {

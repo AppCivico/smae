@@ -5344,6 +5344,7 @@ enum task_type {
     gerar_thumbnail_imagem
     refresh_demanda
     refresh_meta_orcamento_consolidado
+    refresh_cache_pdm
 }
 
 enum task_status {

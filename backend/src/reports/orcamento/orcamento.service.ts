@@ -290,6 +290,8 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.id = ANY(${search.map((r) => r.id)}::int[])
                 and op.removido_em IS NULL
+                and (op.iniciativa_id IS NULL OR mi.id IS NOT NULL)
+                and (op.atividade_id IS NULL OR ma.id IS NOT NULL)
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -363,6 +365,8 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.removido_em IS NULL
                 and op.id = ANY(${search.map((r) => r.id)}::int[])
+                and (op.iniciativa_id IS NULL OR mi.id IS NOT NULL)
+                and (op.atividade_id IS NULL OR ma.id IS NOT NULL)
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -423,6 +427,8 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
                 and i.mes_corrente = TRUE
                 and i.sobrescrito_em IS NULL
                 and o.removido_em IS NULL
+                and (o.iniciativa_id IS NULL OR mi.id IS NOT NULL)
+                and (o.atividade_id IS NULL OR ma.id IS NOT NULL)
             ), analitico as (
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -544,6 +550,8 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
                 and i.mes_corrente = true
                 and i.sobrescrito_em IS NULL
                 and o.removido_em IS NULL
+                and (o.iniciativa_id IS NULL OR mi.id IS NOT NULL)
+                and (o.atividade_id IS NULL OR ma.id IS NOT NULL)
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,

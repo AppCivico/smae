@@ -107,10 +107,18 @@ export class PdmCicloService {
                 await this.variavelService.processVariaveisSuspensas(prismaTx);
 
                 this.logger.debug(`Atualizando metas consolidadas`);
+                // atualizado_em é timestamp sem fuso gravado por now() em sessão UTC
                 await prismaTx.$queryRaw`
-                    SELECT f_add_refresh_meta_task(meta_id)::text
-                    FROM meta_status_consolidado_cf cf
-                    WHERE (atualizado_em at time zone ${SYSTEM_TIMEZONE})::date != current_date at time zone ${SYSTEM_TIMEZONE}
+                    SELECT f_add_refresh_meta_task(t.meta_id)::text
+                    FROM (
+                        SELECT meta_id
+                        FROM meta_status_consolidado_cf cf
+                        WHERE (atualizado_em at time zone 'UTC' at time zone ${SYSTEM_TIMEZONE})::date != (now() at time zone ${SYSTEM_TIMEZONE})::date
+                        UNION
+                        SELECT meta_id
+                        FROM ps_dashboard_consolidado ps
+                        WHERE (atualizado_em at time zone 'UTC' at time zone ${SYSTEM_TIMEZONE})::date != (now() at time zone ${SYSTEM_TIMEZONE})::date
+                    ) t
                 `;
             },
             {
@@ -545,6 +553,14 @@ export class PdmCicloService {
 
         const now = new Date();
         const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
+            const previousData = await prismaTx.pdmCicloConfig.findFirst({
+                where: {
+                    pdm_id: pdmId,
+                    ultima_revisao: true,
+                    removido_em: null,
+                },
+            });
+
             await prismaTx.pdmCicloConfig.updateMany({
                 where: {
                     pdm_id: pdmId,
@@ -557,14 +573,6 @@ export class PdmCicloService {
                 },
             });
 
-            const previousData = await prismaTx.pdmCicloConfig.findFirst({
-                where: {
-                    pdm_id: pdmId,
-                    ultima_revisao: true,
-                    removido_em: null,
-                },
-            });
-
             if (dto.meses) {
                 dto.meses.sort((a, b) => a - b);
             }
@@ -574,8 +582,9 @@ export class PdmCicloService {
                 data: {
                     pdm_id: pdmId,
                     meses: dto.meses ?? previousData?.meses ?? [],
-                    data_inicio: dto.data_inicio ?? previousData?.data_inicio ?? null,
-                    data_fim: dto.data_fim ?? previousData?.data_fim ?? null,
+                    // null explícito limpa a data; só undefined (campo não enviado) herda da config anterior
+                    data_inicio: dto.data_inicio !== undefined ? dto.data_inicio : (previousData?.data_inicio ?? null),
+                    data_fim: dto.data_fim !== undefined ? dto.data_fim : (previousData?.data_fim ?? null),
                     ultima_revisao: true,
                     criado_por: user.id,
                 },
@@ -586,6 +595,11 @@ export class PdmCicloService {
 
             // Call function to update future cycles
             await prismaTx.$queryRaw`SELECT atualiza_ciclos_config(${pdmId}::int)::text`;
+            await prismaTx.$queryRaw`
+                SELECT f_add_refresh_meta_task(m.id)::text
+                FROM meta m
+                WHERE m.pdm_id = ${pdmId}::int AND m.removido_em IS NULL
+            `;
 
             return config;
         };

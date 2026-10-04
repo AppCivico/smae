@@ -136,7 +136,7 @@ export class SubTemaService {
 
         const emUso = await this.prisma.meta.count({
             where: {
-                macro_tema_id: id,
+                sub_tema_id: id,
                 pdm: { tipo: PdmModoParaTipo(tipo) },
                 removido_em: null,
             },

@@ -79,6 +79,10 @@ export class PrevisaoCustoService implements ReportableService, SchemaAwareRepor
                 ano_referencia: ano,
                 removido_em: null,
                 ultima_revisao: true,
+                AND: [
+                    { OR: [{ iniciativa_id: null }, { iniciativa: { removido_em: null } }] },
+                    { OR: [{ atividade_id: null }, { atividade: { removido_em: null } }] },
+                ],
             },
             select: {
                 id: true,

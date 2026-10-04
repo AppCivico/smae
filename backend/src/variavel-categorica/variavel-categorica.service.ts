@@ -208,7 +208,7 @@ export class VariavelCategoricaService {
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
                 const count = await prismaTxn.serieVariavel.count({
-                    where: { variavel_categorica_id: selfVariavelCat.id },
+                    where: { variavel_categorica_id: selfVariavelCat.id, variavel: { removido_em: null } },
                 });
 
                 if (count > 0)
@@ -345,6 +345,7 @@ export class VariavelCategoricaService {
                 where: {
                     variavel_categorica_valor_id: { in: deleted },
                     serie: { in: ['Realizado', 'Previsto'] },
+                    variavel: { removido_em: null },
                 },
             });
             if (emUso) {
@@ -352,6 +353,7 @@ export class VariavelCategoricaService {
                     where: {
                         variavel_categorica_valor_id: { in: deleted },
                         serie: { in: ['Realizado', 'Previsto'] },
+                        variavel: { removido_em: null },
                     },
                     by: ['variavel_categorica_valor_id', 'variavel_id'],
                     _count: true,
