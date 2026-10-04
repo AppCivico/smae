@@ -79,6 +79,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService, S
                 SELECT string_agg(p.nome::text, ', ')
                 FROM parlamentar p
                 INNER JOIN transferencia_parlamentar tp ON p.id = tp.parlamentar_id AND tp.transferencia_id = t.id
+                WHERE tp.removido_em IS NULL AND p.removido_em IS NULL
             ) as parlamentares,
             t.valor AS valor,
             tf.tarefa as atividade,

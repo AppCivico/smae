@@ -136,11 +136,11 @@ export class EleicaoService {
 
         // Verifica se tem relacionamentos antes de remover
         const mandatos = await this.prisma.parlamentarMandato.count({
-            where: { eleicao_id: id },
+            where: { eleicao_id: id, removido_em: null },
         });
 
         const comparecimentos = await this.prisma.eleicaoComparecimento.count({
-            where: { eleicao_id: id },
+            where: { eleicao_id: id, removido_em: null },
         });
 
         if (mandatos > 0 || comparecimentos > 0) {

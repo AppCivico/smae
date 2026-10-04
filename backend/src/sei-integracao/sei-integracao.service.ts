@@ -26,6 +26,11 @@ class NextPageTokenJwtBody {
     ipp: number;
 }
 
+const PROCESSOS_DISTRIBUICAO_ATIVOS: Prisma.DistribuicaoRecursoSeiWhereInput = {
+    removido_em: null,
+    distribuicao_recurso: { removido_em: null, transferencia: { removido_em: null } },
+};
+
 type SeiBatchEntry = { processo: string; statusSeiId: number };
 type SeiBatchAccumulator = SeiBatchEntry[];
 
@@ -136,7 +141,7 @@ export class SeiIntegracaoService {
         const now = new Date();
         let statusSei = await this.prisma.statusSEI.findUnique({
             where: { processo_sei: params.processo_sei },
-            include: { processosDistribuicaoRecurso: true },
+            include: { processosDistribuicaoRecurso: { where: PROCESSOS_DISTRIBUICAO_ATIVOS } },
         });
 
         const needsUpdate =
@@ -173,7 +178,7 @@ export class SeiIntegracaoService {
                             proxima_sincronizacao: this.calculaProximaSync(),
                             usuarios_lidos: [],
                         },
-                        include: { processosDistribuicaoRecurso: true },
+                        include: { processosDistribuicaoRecurso: { where: PROCESSOS_DISTRIBUICAO_ATIVOS } },
                     });
                 } else {
                     const updateData: Prisma.StatusSEIUpdateInput = {
@@ -208,7 +213,7 @@ export class SeiIntegracaoService {
                         where: { id: statusSei.id },
                         data: updateData,
                         // TODO: tratar para não ser necessário chamar o include aqui. Problema de tipagem.
-                        include: { processosDistribuicaoRecurso: true },
+                        include: { processosDistribuicaoRecurso: { where: PROCESSOS_DISTRIBUICAO_ATIVOS } },
                     });
                 }
             } catch (error) {
