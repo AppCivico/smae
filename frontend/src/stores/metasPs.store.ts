@@ -138,6 +138,12 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
         return acc;
       }, {} as Record<number, MetaItemDto>),
 
-    metasPorPlano: ({ lista }: Estado) => Object.groupBy(lista, ({ pdm_id }) => pdm_id),
+    // sem Object.groupBy: o plugin-legacy não aplica polyfill no bundle moderno (Chrome < 117, Safari < 17.4)
+    metasPorPlano: ({ lista }: Estado) => lista
+      .reduce((acc, cur) => {
+        if (!acc[cur.pdm_id]) acc[cur.pdm_id] = [];
+        acc[cur.pdm_id].push(cur);
+        return acc;
+      }, {} as Record<number, MetaItemDto[]>),
   },
 })();
