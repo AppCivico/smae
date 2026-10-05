@@ -1293,7 +1293,7 @@ export class DistribuicaoRecursoService {
                     dto.custeio != undefined ||
                     dto.investimento != undefined ||
                     dto.valor_contrapartida != undefined ||
-                    dto.valor_total
+                    dto.valor_total != undefined
                 ) {
                     const transferencia = await prismaTx.transferencia.findFirst({
                         where: {
