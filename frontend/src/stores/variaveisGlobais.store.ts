@@ -1,5 +1,7 @@
 import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
+import type { DadosCodTituloMetaDto, ListDadosMetaIniciativaAtividadesDto } from '@back/meta/dto/create-meta.dto';
+import type { ListMetaSimplesDto, MetaSimplesDto } from '@back/meta/dto/list-meta.dto';
 import type {
   PdmSimplesDto,
   ListPdmSimplesDto,
@@ -8,12 +10,19 @@ import type {
 import type { PeriodosValidosDto, VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
 import { defineStore } from 'pinia';
 
+import type { ArvoreDeIniciativas } from './helpers/mapIniciativas';
+import mapIniciativas from './helpers/mapIniciativas';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Variavel = VariavelDetailDto & VariavelGlobalDetailDto & VariavelDetailComAuxiliaresDto ;
 
 export type PlanosSimplificadosPorTipo = {
   [key: string]: PdmSimplesDto[];
+};
+
+type FolhaDeMeta = Omit<DadosCodTituloMetaDto, 'iniciativas'> & {
+  iniciativas: ArvoreDeIniciativas;
 };
 
 interface Estado {
@@ -24,15 +33,21 @@ interface Estado {
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
   planosSimplificados: PdmSimplesDto[];
+  metasSimplificadas: MetaSimplesDto[];
+  arvoreDeMetas: { [k: number]: FolhaDeMeta };
 
   chamadasPendentes: ChamadasPendentes & {
     planosSimplificados: boolean;
+    metasSimplificadas: boolean;
+    arvoreDeMetas: boolean;
     dadosDosPeriodosValidos: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
     seriesAgrupadas: boolean;
   };
   erros: Erros & {
     planosSimplificados: unknown;
+    metasSimplificadas: unknown;
+    arvoreDeMetas: unknown;
     dadosDosPeriodosValidos: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
     seriesAgrupadas: unknown;
@@ -51,11 +66,15 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     dadosDosPeriodosValidos: null,
     variaveisFilhasPorMae: {},
     planosSimplificados: [],
+    metasSimplificadas: [],
+    arvoreDeMetas: {},
 
     chamadasPendentes: {
       lista: false,
       variaveisFilhasPorMae: {},
       planosSimplificados: false,
+      metasSimplificadas: false,
+      arvoreDeMetas: false,
       dadosDosPeriodosValidos: false,
       emFoco: false,
       seriesAgrupadas: false,
@@ -64,6 +83,8 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       lista: null,
       variaveisFilhasPorMae: {},
       planosSimplificados: null,
+      metasSimplificadas: null,
+      arvoreDeMetas: null,
       dadosDosPeriodosValidos: null,
       emFoco: null,
       seriesAgrupadas: null,
@@ -158,6 +179,46 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       }
 
       this.chamadasPendentes.planosSimplificados = false;
+    },
+
+    // metas de Planos Setoriais e Programas de Metas juntos, independente do módulo
+    async buscarMetasSimplificadas(params = {}): Promise<void> {
+      this.chamadasPendentes.metasSimplificadas = true;
+      this.erros.metasSimplificadas = null;
+      this.metasSimplificadas = [];
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/proxy/pdm-e-planos-setoriais/metas`,
+          params,
+        ) as ListMetaSimplesDto;
+        this.metasSimplificadas = resposta.linhas;
+      } catch (erro: unknown) {
+        this.erros.metasSimplificadas = erro;
+      }
+
+      this.chamadasPendentes.metasSimplificadas = false;
+    },
+
+    async buscarArvoreDeMetas(params = {}): Promise<void> {
+      this.chamadasPendentes.arvoreDeMetas = true;
+      this.erros.arvoreDeMetas = null;
+
+      try {
+        const { linhas } = await this.requestS.get(
+          `${baseUrl}/proxy/pdm-e-planos-setoriais/metas/iniciativas-atividades`,
+          params,
+        ) as ListDadosMetaIniciativaAtividadesDto;
+
+        linhas.forEach((cur) => {
+          this.arvoreDeMetas[cur.id] = {
+            ...cur,
+            iniciativas: mapIniciativas(cur.iniciativas),
+          };
+        });
+      } catch (erro: unknown) {
+        this.erros.arvoreDeMetas = erro;
+      }
+      this.chamadasPendentes.arvoreDeMetas = false;
     },
 
     async excluirItem(variavelId: number): Promise<boolean> {
@@ -410,6 +471,9 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
         return acc;
       }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
+
+    metasSimplificadasPorPlano: ({ metasSimplificadas }) => Object
+      .groupBy(metasSimplificadas, ({ pdm_id }) => pdm_id),
 
     planosPorId: ({ planosSimplificados }) => planosSimplificados
       .reduce((acc, cur) => {

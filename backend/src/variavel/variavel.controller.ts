@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    ParseArrayPipe,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { TipoVariavel } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -9,6 +21,8 @@ import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
+import { ListDadosMetaIniciativaAtividadesDto } from '../meta/dto/create-meta.dto';
+import { ListMetaSimplesDto } from '../meta/dto/list-meta.dto';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
 import {
@@ -183,6 +197,23 @@ export class VariavelGlobalController {
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
     async listAllPDMs(): Promise<ListPdmSimplesDto> {
         return { linhas: await this.variavelService.findAllPdms() };
+    }
+
+    @Get('proxy/pdm-e-planos-setoriais/metas')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
+    async listAllMetasPDMs(@CurrentUser() user: PessoaFromJwt): Promise<ListMetaSimplesDto> {
+        return { linhas: await this.variavelService.findAllMetasPdmsESetoriais(user) };
+    }
+
+    @Get('proxy/pdm-e-planos-setoriais/metas/iniciativas-atividades')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
+    async buscaMetasIniciativaAtividades(
+        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[],
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListDadosMetaIniciativaAtividadesDto> {
+        return { linhas: await this.variavelService.buscaMetasIniciativaAtividadesPsEPdm(ids, user) };
     }
 
     @Post('variavel')

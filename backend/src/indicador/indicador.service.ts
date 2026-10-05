@@ -1318,6 +1318,14 @@ export class IndicadorService {
             },
             select: { meta_id: true },
         });
+        // no modo PDM_AS_PS o filtro é por pdm.tipo, que também casa com o PdM legado;
+        // o Banco de Variáveis é só de Planos Setoriais e Programas de Metas (v2)
+        const metaPdm = await this.prisma.meta.findFirstOrThrow({
+            where: { id: metaRow.meta_id },
+            select: { pdm: { select: { sistema: true } } },
+        });
+        if (metaPdm.pdm.sistema === 'PDM')
+            throw new BadRequestException('Operação não permitida para PDMs antigos');
         await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'indicador');
 
         const variaveisDb = await this.prisma.variavel.findMany({

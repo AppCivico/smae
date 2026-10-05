@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { EquipeRespItemDto } from '@back/equipe-resp/entities/equipe-resp.entity.ts';
-import type { MetaItemDto } from '@back/meta/entities/meta.entity';
+import type { MetaSimplesDto } from '@back/meta/dto/list-meta.dto';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
@@ -14,8 +14,6 @@ import maskMonth from '@/helpers/maskMonth';
 import truncate from '@/helpers/texto/truncate';
 import { useEquipesStore } from '@/stores/equipes.store';
 import type { ArvoreDeIniciativas, AtividadesPorId } from '@/stores/helpers/mapIniciativas';
-import { usePsMetasStore } from '@/stores/metasPs.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { PlanosSimplificadosPorTipo } from '@/stores/variaveisGlobais.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 
@@ -29,7 +27,7 @@ type FieldsProps = {
   tipo: string
   agruparOpcoes?: boolean
   opcoes?: EquipeRespItemDto[]
-  | MetaItemDto[]
+  | MetaSimplesDto[]
   | ArvoreDeIniciativas
   | AtividadesPorId
   | PlanosSimplificadosPorTipo;
@@ -48,15 +46,12 @@ const valoresIniciais = {
 };
 
 const equipesStore = useEquipesStore();
-const metasStore = usePsMetasStore(route.meta.entidadeMãe);
-const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
-const { lista: listaDeMetas, metasPorPlano } = storeToRefs(metasStore);
 const {
   arvoreDeMetas,
-} = storeToRefs(planosSetoriaisStore);
-const {
+  metasSimplificadas: listaDeMetas,
+  metasSimplificadasPorPlano: metasPorPlano,
   planosSimplificadosPorTipo,
   planosSimplificados: listaDePlanosSimplificados,
   chamadasPendentes: chamadasPendentesDePlanosSimplificados,
@@ -171,7 +166,7 @@ watch(() => route.query, (val) => {
 
 watch(() => values.meta_id, (val) => {
   if (val && !arvoreDeMetas.value[Number(val)]) {
-    planosSetoriaisStore.buscarArvoreDeMetas({ meta_ids: [val] });
+    variaveisGlobaisStore.buscarArvoreDeMetas({ meta_ids: [val] });
     setFieldValue('iniciativa_id', null);
     setFieldValue('atividade_id', null);
   }
@@ -181,8 +176,9 @@ onMounted(() => {
   // Redefinir porque carregaremos com filtragem no backend
   equipesStore.$reset();
 
-  if (!listaDeMetas.value.length) {
-    metasStore.buscarTudo();
+  if (!listaDeMetas.value.length
+    && !chamadasPendentesDePlanosSimplificados.value.metasSimplificadas) {
+    variaveisGlobaisStore.buscarMetasSimplificadas();
   }
 
   if (!listaDePlanosSimplificados.value.length
