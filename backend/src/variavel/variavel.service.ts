@@ -3387,7 +3387,7 @@ export class VariavelService {
         // findAll mascara a categórica de cronograma como null, então lê direto do banco
         const raw = await this.prisma.variavel.findFirstOrThrow({
             where: { id: variavelId },
-            select: { variavel_categorica_id: true },
+            select: { variavel_categorica_id: true, tipo: true },
         });
         // TODO: pensar se quando apagar uma calculada, ou seja por side-effect talvez, precisa apagar a formula-composta
         // do autogerenciavel
@@ -3400,10 +3400,12 @@ export class VariavelService {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
             await this.verificaEscritaNaMeta(variavelId, user);
         } else if (tipo == 'Global') {
-            // filha herda a permissão da mãe
-            const podeEditar = self.variavel_mae_id
-                ? await this.podeEditarVariavelGlobal(self.variavel_mae_id, user)
-                : (self as VariavelGlobalDetailDto).pode_editar;
+            // filha herda a permissão da mãe; calculada (que também tem variavel_mae_id) nunca é removida direto
+            const podeEditar =
+                raw.tipo != 'Calculada' &&
+                (self.variavel_mae_id
+                    ? await this.podeEditarVariavelGlobal(self.variavel_mae_id, user)
+                    : (self as VariavelGlobalDetailDto).pode_editar);
             if (!podeEditar) throw new ForbiddenException('Você não tem permissão para remover esta variável.');
         }
 
