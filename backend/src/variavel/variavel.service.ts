@@ -1335,8 +1335,6 @@ export class VariavelService {
             return plano;
         };
 
-        const ehAdminGeral = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
-
         const idsComIndicadorAtivo = await this.buscaVariaveisBloqueadasPorIndicador(
             this.prisma,
             linhas.map((r) => r.id)
@@ -1351,21 +1349,10 @@ export class VariavelService {
             paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): VariavelGlobalItemDto => {
-                let pode_editar = ehAdminGeral;
-                let pode_editar_valor = ehAdminGeral;
-
-                if (!pode_editar && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
-                    if (r.orgao_proprietario_id == user.orgao_id) {
-                        pode_editar = true;
-                        pode_editar_valor = true;
-                    }
-                }
-
-                if (r.tipo == 'Calculada' || r.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
-                    pode_editar = false;
-                    pode_editar_valor = false;
-                }
-                if (r.variavel_mae_id) pode_editar = false;
+                const { pode_editar, pode_editar_valor } = this.calculaPermissaoVariavelGlobal(
+                    { ...r, variavel_categorica_id: r.variavel.variavel_categorica_id },
+                    user
+                );
 
                 return {
                     id: r.id,
@@ -1513,6 +1500,9 @@ export class VariavelService {
                 'Edição de variáveis filhas não permitida por este endpoint. Use o endpoint específico para variáveis filhas (updateFilha).'
             );
         }
+
+        if (tipo == 'Global' && !this.calculaPermissaoVariavelGlobal({ tipo, ...selfBefUpdate }, user).pode_editar)
+            throw new ForbiddenException('Você não tem permissão para editar esta variável.');
 
         // Validar alteração de casas_decimais
         if (dto.casas_decimais !== undefined && dto.casas_decimais !== selfBefUpdate.casas_decimais) {
@@ -3360,6 +3350,33 @@ export class VariavelService {
         return bloqueadas;
     }
 
+    // regra única de permissão da variável Global (listagem, detalhe, update e remove)
+    private calculaPermissaoVariavelGlobal(
+        v: {
+            tipo: TipoVariavel;
+            orgao_proprietario_id: number | null;
+            variavel_mae_id: number | null;
+            variavel_categorica_id: number | null;
+        },
+        user: PessoaFromJwt
+    ): { pode_editar: boolean; pode_editar_valor: boolean } {
+        let pode = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
+        if (!pode && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao']))
+            pode = v.orgao_proprietario_id == user.orgao_id;
+        if (v.tipo == 'Calculada' || v.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) pode = false;
+
+        // filha não é editável pelo próprio registro, só via updateFilha com a permissão da mãe
+        return { pode_editar: pode && !v.variavel_mae_id, pode_editar_valor: pode };
+    }
+
+    private async podeEditarVariavelGlobal(variavelId: number, user: PessoaFromJwt): Promise<boolean> {
+        const v = await this.prisma.variavel.findFirstOrThrow({
+            where: { id: variavelId, removido_em: null },
+            select: { tipo: true, orgao_proprietario_id: true, variavel_mae_id: true, variavel_categorica_id: true },
+        });
+        return this.calculaPermissaoVariavelGlobal(v, user).pode_editar;
+    }
+
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         const self = await this.findOne(tipo, variavelId, {}, user);
         if (!self) throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
@@ -3367,9 +3384,14 @@ export class VariavelService {
         const logger = LoggerWithLog('Remoção de variável');
         logger.debug(`Removendo variável ${variavelId}`);
 
+        // findAll mascara a categórica de cronograma como null, então lê direto do banco
+        const raw = await this.prisma.variavel.findFirstOrThrow({
+            where: { id: variavelId },
+            select: { variavel_categorica_id: true, tipo: true },
+        });
         // TODO: pensar se quando apagar uma calculada, ou seja por side-effect talvez, precisa apagar a formula-composta
         // do autogerenciavel
-        if (self.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+        if (raw.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new BadRequestException(
                 'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa.'
             );
@@ -3377,6 +3399,14 @@ export class VariavelService {
         if (tipo == 'PDM') {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
             await this.verificaEscritaNaMeta(variavelId, user);
+        } else if (tipo == 'Global') {
+            // filha herda a permissão da mãe; calculada (que também tem variavel_mae_id) nunca é removida direto
+            const podeEditar =
+                raw.tipo != 'Calculada' &&
+                (self.variavel_mae_id
+                    ? await this.podeEditarVariavelGlobal(self.variavel_mae_id, user)
+                    : (self as VariavelGlobalDetailDto).pode_editar);
+            if (!podeEditar) throw new ForbiddenException('Você não tem permissão para remover esta variável.');
         }
 
         const now = new Date(Date.now());
@@ -4977,6 +5007,10 @@ export class VariavelService {
                 metodologia: true,
                 dado_aberto: true,
                 descricao: true,
+                tipo: true,
+                variavel_mae_id: true,
+                variavel_categorica_id: true,
+                orgao_proprietario_id: true,
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
                 medicao_orgao_id: true,
                 validacao_orgao_id: true,
@@ -5058,13 +5092,22 @@ export class VariavelService {
                 }
             }
 
-            const variaveisFilhas = await this.prisma.variavel.findMany({
-                where: { variavel_mae_id: id, removido_em: null, tipo: 'Global' },
-                select: { id: true, valor_base: true },
-            });
+            const [variaveisFilhas, viewRow, bloqueadas] = await Promise.all([
+                this.prisma.variavel.findMany({
+                    where: { variavel_mae_id: id, removido_em: null, tipo: 'Global' },
+                    select: { id: true, valor_base: true },
+                }),
+                this.prisma.viewVariavelGlobal.findFirst({ where: { id }, select: { planos: true } }),
+                this.buscaVariaveisBloqueadasPorIndicador(this.prisma, [id]),
+            ]);
+
+            const { pode_editar, pode_editar_valor } = this.calculaPermissaoVariavelGlobal(detalhes, user);
 
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
+                pode_editar,
+                pode_editar_valor,
+                pode_excluir: pode_editar && !viewRow?.planos.length && !bloqueadas.has(id),
                 medicao_orgao_id: detalhes.medicao_orgao_id,
                 validacao_orgao_id: detalhes.validacao_orgao_id,
                 liberacao_orgao_id: detalhes.liberacao_orgao_id,
@@ -5172,10 +5215,7 @@ export class VariavelService {
         return await this.metaService.findAllSimplesPsEPdm(user);
     }
 
-    async buscaMetasIniciativaAtividadesPsEPdm(
-        metas: number[],
-        user: PessoaFromJwt
-    ): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividadesPsEPdm(metas: number[], user: PessoaFromJwt): Promise<DadosCodTituloMetaDto[]> {
         return await this.metaService.buscaMetasIniciativaAtividadesPsEPdm(metas, user);
     }
 
