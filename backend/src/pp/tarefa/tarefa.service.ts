@@ -230,6 +230,7 @@ export class TarefaService {
                     throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
             }
 
+            await this.utils.normalizaNumero(prismaTx, tarefaCronoId, dto.tarefa_pai_id);
             const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
 
             const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId, null, maiorNumero);
@@ -1326,6 +1327,13 @@ export class TarefaService {
                     (dto.numero !== undefined && dto.numero !== tarefa.numero))
             ) {
                 if (dto.tarefa_pai_id === undefined) dto.tarefa_pai_id = tarefa.tarefa_pai_id;
+
+                // garante numeração 1..N nos grupos afetados antes de mover, e relê o número da tarefa
+                await this.utils.normalizaNumero(prismaTx, tarefaCronoId, tarefa.tarefa_pai_id);
+                if (dto.tarefa_pai_id !== tarefa.tarefa_pai_id)
+                    await this.utils.normalizaNumero(prismaTx, tarefaCronoId, dto.tarefa_pai_id);
+                tarefa.numero = await this.utils.numeroAtual(prismaTx, tarefa.id);
+
                 if (dto.nivel === undefined) dto.nivel = tarefa.nivel;
                 if (dto.numero === undefined) dto.numero = tarefa.numero;
 
@@ -1728,6 +1736,9 @@ export class TarefaService {
                         `Tarefa não pode ser removida, remova primeiro a dependência na tarefa "${tenhoDependencia.tarefa.tarefa}", no nível ${tenhoDependencia.tarefa.nivel} número ${tenhoDependencia.tarefa.numero}.`,
                         400
                     );
+
+                await this.utils.normalizaNumero(prismaTx, tarefaCronoId, tarefa.tarefa_pai_id);
+                tarefa.numero = await this.utils.numeroAtual(prismaTx, tarefa.id);
 
                 const dto = {
                     id: tarefa.id,
