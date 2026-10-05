@@ -35,6 +35,7 @@ export class CategoriaAssuntoVariavelService {
                 id: true,
                 nome: true,
                 assunto_variavel:{
+                    where: { removido_em: null },
                     select :{
                         nome: true,
                         id: true,
@@ -65,6 +66,7 @@ export class CategoriaAssuntoVariavelService {
         const emUso = await this.prisma.assuntoVariavel.findMany({
             where: {
                 categoria_assunto_variavel_id: id,
+                removido_em: null,
             },
             select: {
                 id: true,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -22,7 +22,7 @@ export class CronogramaService {
 
     async create(tipo: TipoPdmType, createCronogramaDto: CreateCronogramaDto, user: PessoaFromJwt) {
         if (!createCronogramaDto.meta_id && !createCronogramaDto.atividade_id && !createCronogramaDto.iniciativa_id)
-            throw new Error('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa');
+            throw new HttpException('Cronograma precisa ter 1 relacionamento (Meta, Atividade ou Iniciativa)', 400);
 
         const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
             where: {
@@ -106,7 +106,7 @@ export class CronogramaService {
         });
 
         // acredito que o sistema usa apenas 1 por vez (atividade, meta ou iniciativa)
-        if (rows.length > 10) throw new Error('Filtro muito abrangente, limite de 10 registros');
+        if (rows.length > 10) throw new HttpException('Filtro muito abrangente, limite de 10 registros', 400);
 
         const ret: CronogramaDto[] = [];
         for (const row of rows) {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -36,8 +36,9 @@ export class MonitoramentoMensalService implements ReportableService {
         const metasArr = metas.map((r) => r.id);
         // um dia aqui é capaz que fiquem muitas metas e o retorno fique muito grande e cause OOM no asJSON
         if (metasArr.length > 10000)
-            throw new Error(
-                'Mais de 10000 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
+            throw new HttpException(
+                'Mais de 10000 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV',
+                400
             );
 
         const paineis_ret: RelPainelDetalhe[] = [];

@@ -8,9 +8,11 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.valor_planejado) filter (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS valor_planejado_sum
+            COALESCE(SUM(op.valor_planejado) filter (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS valor_planejado_sum
         FROM orcamento_planejado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
         GROUP BY 1
@@ -83,10 +85,12 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
-            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
+            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
+            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
         FROM orcamento_realizado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE
             op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
@@ -147,10 +151,12 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
-            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
+            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
+            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
         FROM orcamento_realizado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE
             op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
@@ -213,10 +219,12 @@ BEGIN
     WITH pdm_sum AS(
         SELECT
             m.pdm_id,
-            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
-            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
+            COALESCE(SUM(op.soma_valor_empenho) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_empenho_sum,
+            COALESCE(SUM(op.soma_valor_liquidado) FILTER (where op.removido_em IS NULL AND m.removido_em IS NULL AND mi.removido_em IS NULL AND ma.removido_em IS NULL), 0) AS soma_valor_liquidado_sum
         FROM orcamento_realizado op
         JOIN meta m ON m.id = op.meta_id
+        LEFT JOIN iniciativa mi ON mi.id = op.iniciativa_id
+        LEFT JOIN atividade ma ON ma.id = op.atividade_id
         WHERE
             op.ano_referencia = NEW.ano_referencia
         AND op.dotacao = NEW.dotacao
@@ -319,6 +327,7 @@ BEGIN
            OR EXTRACT(YEAR FROM OLD.termino_real)   IS DISTINCT FROM EXTRACT(YEAR FROM NEW.termino_real)
            OR EXTRACT(YEAR FROM OLD.inicio_planejado) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.inicio_planejado)
            OR EXTRACT(YEAR FROM OLD.termino_planejado) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.termino_planejado)
+           OR OLD.removido_em IS DISTINCT FROM NEW.removido_em
         THEN
             PERFORM atualiza_ano_orcamento_projeto(p_projeto_id);
         END IF;
@@ -342,6 +351,62 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
+
+
+DROP TRIGGER IF EXISTS tgr_ano_orcamento_projeto_cronograma ON tarefa_cronograma;
+
+-- o rollup do cronograma só é atualizado depois da trigger da tarefa, então o ano precisa ser recalculado aqui também
+CREATE TRIGGER tgr_ano_orcamento_projeto_cronograma
+    AFTER UPDATE OF previsao_inicio, previsao_termino, realizado_inicio, realizado_termino ON tarefa_cronograma
+    FOR EACH ROW
+    WHEN (
+        NEW.projeto_id IS NOT NULL
+        AND (
+            EXTRACT(YEAR FROM OLD.previsao_inicio) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.previsao_inicio)
+            OR EXTRACT(YEAR FROM OLD.previsao_termino) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.previsao_termino)
+            OR EXTRACT(YEAR FROM OLD.realizado_inicio) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.realizado_inicio)
+            OR EXTRACT(YEAR FROM OLD.realizado_termino) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.realizado_termino)
+        )
+    )
+    EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+
+
+CREATE OR REPLACE FUNCTION f_tgr_projeto_removido_recalc_dotacao()
+    RETURNS TRIGGER
+    AS $$
+BEGIN
+    -- dispara as triggers de rollup por portfolio (dotacao_planejado e orcamento_realizado)
+    UPDATE dotacao_planejado d
+    SET id = d.id
+    WHERE (d.ano_referencia, d.dotacao) IN (
+        SELECT op.ano_referencia, op.dotacao
+        FROM orcamento_planejado op
+        WHERE op.projeto_id = NEW.id
+        AND op.removido_em IS NULL
+    );
+
+    UPDATE orcamento_realizado r
+    SET id = r.id
+    WHERE r.id IN (
+        SELECT DISTINCT ON (o.ano_referencia, o.dotacao, o.processo, o.nota_empenho) o.id
+        FROM orcamento_realizado o
+        WHERE o.projeto_id = NEW.id
+        AND o.removido_em IS NULL
+        ORDER BY o.ano_referencia, o.dotacao, o.processo, o.nota_empenho, o.id
+    );
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS tgr_projeto_removido_recalc_dotacao ON projeto;
+
+CREATE TRIGGER tgr_projeto_removido_recalc_dotacao
+    AFTER UPDATE OF removido_em ON projeto
+    FOR EACH ROW
+    WHEN (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
+    EXECUTE FUNCTION f_tgr_projeto_removido_recalc_dotacao();
 
 
 --CREATE TRIGGER tgr_ano_orcamento_projeto_realizado

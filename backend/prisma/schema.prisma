@@ -4764,6 +4764,8 @@ model TarefaDependente {
     tarefa             Tarefa @relation("dependencias", fields: [tarefa_id], references: [id])
     tarefas_dependente Tarefa @relation("ref_dependentes", fields: [dependencia_tarefa_id], references: [id])
 
+    @@index([tarefa_id])
+    @@index([dependencia_tarefa_id])
     @@map("tarefa_dependente")
 }
 
@@ -5342,6 +5344,7 @@ enum task_type {
     gerar_thumbnail_imagem
     refresh_demanda
     refresh_meta_orcamento_consolidado
+    refresh_cache_pdm
 }
 
 enum task_status {
@@ -6958,10 +6961,13 @@ model BlocoNota {
     @@map("bloco_nota")
 }
 
+/// A unicidade de `codigo` (sem diferenciar maiúsculas) entre as linhas ativas é garantida por um
+/// índice único **parcial** criado à mão na migration (`tipo_nota_codigo_ativo_uniq`, com
+/// `WHERE removido_em IS NULL`) — o Prisma não sabe expressar unique parcial no schema.
 model TipoNota {
     id Int @id @default(autoincrement())
 
-    codigo                String  @unique
+    codigo                String
     permite_revisao       Boolean
     permite_enderecamento Boolean
     permite_email         Boolean

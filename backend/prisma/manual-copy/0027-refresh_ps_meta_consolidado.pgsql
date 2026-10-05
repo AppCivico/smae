@@ -104,6 +104,7 @@ BEGIN
                 AND mcff.ciclo_fisico_id = v_CicloFisicoId
                 AND mcff.ultima_revisao
                 AND mcff.removido_em IS NULL
+                AND mcff.reaberto_em IS NULL
             )
         INTO
             v_fase_analise_preenchida,

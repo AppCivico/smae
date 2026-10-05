@@ -125,7 +125,8 @@ export class MonitoramentoMensalMfService {
             vv.codigo,
             (cf.data_ciclo - (vv.atraso_meses || ' months')::interval)::date as data_valor
         from variavel vv,  cf
-        where exists (
+        where vv.removido_em is null
+        and exists (
             select
                 1
             from indicador_variavel iv

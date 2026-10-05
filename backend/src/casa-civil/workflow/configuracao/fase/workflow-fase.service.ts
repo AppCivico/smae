@@ -129,6 +129,7 @@ export class WorkflowFaseService {
                 where: {
                     workflow_fase_id: id,
                     removido_em: null,
+                    transferencia: { removido_em: null },
                 },
             });
             if (emUsoTransferenciaAtual || emUsoAndamento)

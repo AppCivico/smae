@@ -2018,7 +2018,7 @@ export class DistribuicaoRecursoService {
 
     async remove(id: number, user: PessoaFromJwt) {
         // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.remover']) no controller.
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const transferenciaId = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
                 where: {
                     id,
@@ -2054,14 +2054,13 @@ export class DistribuicaoRecursoService {
                 },
             });
 
-            // Atualizando vetores da transferência.
-            this.transferenciaService.updateVetoresBusca(self.transferencia_id).catch((err) => {
-                // Optional: log if the background task fails for some reason
-                console.error(
-                    `Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`,
-                    err
-                );
-            });
+            return self.transferencia_id;
+        });
+
+        // Atualizando vetores da transferência.
+        this.transferenciaService.updateVetoresBusca(transferenciaId).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${transferenciaId}`, err);
         });
 
         return;
@@ -2267,19 +2266,24 @@ export class DistribuicaoRecursoService {
 
         const workflow_id = distribuicaoRecurso.transferencia.workflow_id;
 
+        const fluxoFaseOutroOrgao: Prisma.FluxoFaseWhereInput = {
+            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+            removido_em: null,
+            fluxo: { workflow_id, removido_em: null },
+        };
+        const fluxoTarefaOutroOrgao: Prisma.FluxoTarefaWhereInput = {
+            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+            removido_em: null,
+            fluxo_fase: { removido_em: null, fluxo: { workflow_id, removido_em: null } },
+        };
+
         // 1. Fetch workflow phases with 'OutroOrgao' responsibility
         const andamentoFases = await prismaTx.transferenciaAndamento.findMany({
             where: {
                 transferencia_id: distribuicaoRecurso.transferencia_id,
                 removido_em: null,
                 workflow_fase: {
-                    fluxos: {
-                        some: {
-                            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
-                            removido_em: null,
-                            fluxo: { workflow_id },
-                        },
-                    },
+                    fluxos: { some: fluxoFaseOutroOrgao },
                 },
             },
             select: {
@@ -2287,6 +2291,7 @@ export class DistribuicaoRecursoService {
                     select: {
                         fase: true,
                         fluxos: {
+                            where: fluxoFaseOutroOrgao,
                             select: {
                                 duracao: true,
                             },
@@ -2314,13 +2319,7 @@ export class DistribuicaoRecursoService {
                     removido_em: null,
                 },
                 workflow_tarefa: {
-                    fluxoTarefas: {
-                        some: {
-                            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
-                            removido_em: null,
-                            fluxo_fase: { fluxo: { workflow_id } },
-                        },
-                    },
+                    fluxoTarefas: { some: fluxoTarefaOutroOrgao },
                 },
             },
             select: {
@@ -2328,6 +2327,7 @@ export class DistribuicaoRecursoService {
                     select: {
                         tarefa_fluxo: true,
                         fluxoTarefas: {
+                            where: fluxoTarefaOutroOrgao,
                             select: {
                                 duracao: true,
                             },

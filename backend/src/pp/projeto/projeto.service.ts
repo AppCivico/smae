@@ -386,7 +386,7 @@ export class ProjetoService {
         } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
             validaOutro();
         } else {
-            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
+            throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 400);
         }
 
         return {
@@ -4166,7 +4166,12 @@ export class ProjetoService {
                 arquivado: filters.retornar_arquivados === true ? true : false,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 ProjetoRegistroSei: filters.registros_sei?.length
-                    ? { some: { processo_sei: { in: filters.registros_sei.map((e) => e.replace(/\D/g, '')) } } }
+                    ? {
+                          some: {
+                              removido_em: null,
+                              processo_sei: { in: filters.registros_sei.map((e) => e.replace(/\D/g, '')) },
+                          },
+                      }
                     : undefined,
                 PessoasRevisao:
                     filters.revisado == undefined

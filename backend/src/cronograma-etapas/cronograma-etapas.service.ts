@@ -763,8 +763,13 @@ export class CronogramaEtapaService {
         return { nivel, ordem };
     }
 
-    async delete(tipo: TipoPdmType, cronograma_etapa_id: number, user: PessoaFromJwt) {
-        const self = await this.prisma.cronogramaEtapa.findUnique({
+    async delete(
+        tipo: TipoPdmType,
+        cronograma_etapa_id: number,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ) {
+        const self = await (prismaCtx ?? this.prisma).cronogramaEtapa.findUnique({
             where: { id: cronograma_etapa_id },
             select: {
                 cronograma_id: true,
@@ -778,7 +783,9 @@ export class CronogramaEtapaService {
         }
         await this.assertMetaForCronograma(tipo, self.cronograma_id, user);
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        // quem já está numa transação (ex.: EtapaService.remove) precisa passar o prismaCtx: o trigger de
+        // resync atualiza a linha do cronograma, que a transação de fora já travou -> deadlock entre conexões
+        const performDelete = async (prisma: Prisma.TransactionClient) => {
             await prisma.cronogramaEtapa.delete({
                 where: { id: cronograma_etapa_id },
             });
@@ -804,7 +811,13 @@ export class CronogramaEtapaService {
             );
 
             return Promise.all(updates);
-        });
+        };
+
+        if (prismaCtx) {
+            await performDelete(prismaCtx);
+        } else {
+            await this.prisma.$transaction(performDelete);
+        }
 
         return self;
     }

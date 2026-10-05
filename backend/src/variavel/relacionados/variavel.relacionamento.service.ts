@@ -165,6 +165,8 @@ export class VariavelRelacionamentoService {
             LEFT JOIN atividade a ON a.id = v.atividade_id AND a.removido_em IS NULL
             LEFT JOIN pdm p ON p.id = v.pdm_id AND p.removido_em IS NULL
             WHERE iv.variavel_id = ANY(${searchVariableIds}::int[])
+            AND v.pdm_id IS NOT NULL
+            AND p.id IS NOT NULL
             ORDER BY i.codigo, var.codigo
         `;
 
@@ -214,6 +216,7 @@ export class VariavelRelacionamentoService {
             ) v ON v.fc_id = fc.id
             LEFT JOIN pdm p ON p.id = v.pdm_id AND p.removido_em IS NULL
             WHERE fcrv.variavel_id = ANY(${searchVariableIds}::int[])
+            AND (v.pdm_id IS NULL OR p.id IS NOT NULL)
             ORDER BY fc.titulo, var.codigo
         `;
 
@@ -284,6 +287,7 @@ export class VariavelRelacionamentoService {
                         ])
                     ),
                 },
+                removido_em: null,
             },
             orderBy: { nome: 'asc' },
         });

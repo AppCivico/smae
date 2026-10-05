@@ -950,7 +950,7 @@ export class OrcamentoRealizadoService {
         // quando é compartilhado, queremos que o campo seja sempre filtrado para retornar o null, se não for enviado o vizinho
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
-                meta: { pdm_id: pdm_id },
+                meta: { pdm_id: pdm_id, removido_em: null },
                 id: { not: filters.not_id },
                 removido_em: null,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
@@ -965,6 +965,8 @@ export class OrcamentoRealizadoService {
                 AND: [
                     { meta_id: 'meta_id' in filters ? filters.meta_id : undefined },
                     { meta_id: filterIdIn ? { in: filterIdIn } : undefined },
+                    { OR: [{ iniciativa_id: null }, { iniciativa: { removido_em: null } }] },
+                    { OR: [{ atividade_id: null }, { atividade: { removido_em: null } }] },
                 ],
                 iniciativa_id: 'iniciativa_id' in filters ? filters.iniciativa_id : undefined,
                 atividade_id: 'atividade_id' in filters ? filters.atividade_id : undefined,
@@ -1531,7 +1533,7 @@ export class OrcamentoRealizadoService {
         // Search for all PDMs first
         logger.log(`Iniciando verificação de abertura/fechamento do orçamento realizado`);
         const pdms = await this.prisma.pdm.findMany({
-            where: { ativo: true },
+            where: { ativo: true, removido_em: null },
             select: { id: true },
         });
         logger.log(`Encontrados ${pdms.length} PDMs ativos para processar`);
@@ -1613,7 +1615,7 @@ export class OrcamentoRealizadoService {
 
         // Obter as informações do PDM
         const pdm = await this.prisma.pdm.findFirst({
-            where: { ativo: true, id: pdmId },
+            where: { ativo: true, removido_em: null, id: pdmId },
         });
         if (!pdm) {
             logger.warn('Nenhum PDM ativo encontrado');

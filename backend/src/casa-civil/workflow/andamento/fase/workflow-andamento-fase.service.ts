@@ -65,10 +65,10 @@ export class WorkflowAndamentoFaseService {
                         },
                     },
                 });
-                if (!self) throw new Error('Não foi encontrada um registro de andamento para esta fase');
+                if (!self) throw new HttpException('Não foi encontrada um registro de andamento para esta fase', 400);
 
                 if (!self.transferencia.workflow_id)
-                    throw new Error('Transferência não possui configuração de Workflow.');
+                    throw new HttpException('Transferência não possui configuração de Workflow.', 400);
 
                 // Caso a situação seja modificada. Deve verificar se ela existe na config do Workflow.
                 if (dto.situacao_id != undefined && self.workflow_situacao_id != dto.situacao_id) {
@@ -229,12 +229,13 @@ export class WorkflowAndamentoFaseService {
                 },
             },
         });
-        if (!transferenciaAndamento) throw new Error('Não foi encontrada um registro de andamento para esta fase');
+        if (!transferenciaAndamento)
+            throw new HttpException('Não foi encontrada um registro de andamento para esta fase', 400);
 
         if (transferenciaAndamento.data_inicio == null) throw new HttpException('Fase deve ser iniciada.', 400);
 
         if (!transferenciaAndamento.transferencia.workflow_id)
-            throw new Error('Transferência não possui configuração de Workflow.');
+            throw new HttpException('Transferência não possui configuração de Workflow.', 400);
 
         const orgaoCasaCivil = await prismaTxn.orgao.findFirstOrThrow({
             where: {
@@ -307,8 +308,9 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
                 if (!transferenciaAndamentoTarefaRow)
-                    throw new Error(
-                        'Não foi encontrado registro de andamento para a tarefa. Fase anterior não foi fechada ou está em fase Terminal.'
+                    throw new HttpException(
+                        'Não foi encontrado registro de andamento para a tarefa. Fase anterior não foi fechada ou está em fase Terminal.',
+                        400
                     );
 
                 if (
@@ -401,10 +403,13 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
                 if (!self)
-                    throw new Error('Não foi encontrada um registro de andamento para esta fase ou já foi finalizada');
+                    throw new HttpException(
+                        'Não foi encontrada um registro de andamento para esta fase ou já foi finalizada',
+                        400
+                    );
 
                 if (!self.transferencia.workflow_id)
-                    throw new Error('Transferência não possui configuração de Workflow.');
+                    throw new HttpException('Transferência não possui configuração de Workflow.', 400);
 
                 // Finalizando a fase.
                 const finalizedFase = await prismaTxn.transferenciaAndamento.update({

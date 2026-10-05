@@ -219,7 +219,11 @@ export function GetVariavelWhereSet(filters: FilterVariavelDto, opts?: { regiona
             firstSet.push({
                 OR: [
                     { regiao: { nivel: filters.nivel_regionalizacao } },
-                    { variaveis_filhas: { some: { regiao: { nivel: filters.nivel_regionalizacao } } } },
+                    {
+                        variaveis_filhas: {
+                            some: { removido_em: null, regiao: { nivel: filters.nivel_regionalizacao } },
+                        },
+                    },
                 ],
             });
         } else {
@@ -262,7 +266,9 @@ export class VariavelService {
                 },
                 orgao_proprietario_id: true,
                 casas_decimais: true,
-                variavel_categorica: { select: { id: true, tipo: true, valores: true } },
+                variavel_categorica: {
+                    select: { id: true, tipo: true, valores: { where: { removido_em: null } } },
+                },
             },
         });
         for (const v of rows) {
@@ -858,6 +864,49 @@ export class VariavelService {
         await recalcPessoasAfetadasPorEquipes(equipesAfetadas, prismaTxn, logger);
     }
 
+    private async replicaEquipesParaFilhas(
+        dto: UpdateVariavelDto,
+        prismaTxn: Prisma.TransactionClient,
+        variavelMaeId: number,
+        now: Date,
+        logger: LoggerWithLog,
+        camposDerivados: Prisma.VariavelUncheckedUpdateManyInput
+    ): Promise<number[]> {
+        const filhas = await prismaTxn.variavel.findMany({
+            where: { variavel_mae_id: variavelMaeId, tipo: 'Global', removido_em: null },
+            select: { id: true },
+        });
+        if (filhas.length === 0) return [];
+
+        const filhasIds = filhas.map((f) => f.id);
+        const filtroVinculos = { variavel_id: { in: filhasIds }, removido_em: null };
+
+        const vinculosAntes = await prismaTxn.variavelGrupoResponsavelEquipe.findMany({
+            where: filtroVinculos,
+            select: { grupo_responsavel_equipe_id: true },
+        });
+        await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
+            where: filtroVinculos,
+            data: { removido_em: now },
+        });
+
+        const grupoIds = [
+            ...(dto.medicao_grupo_ids ?? []),
+            ...(dto.validacao_grupo_ids ?? []),
+            ...(dto.liberacao_grupo_ids ?? []),
+        ];
+        await prismaTxn.variavelGrupoResponsavelEquipe.createMany({
+            data: filhasIds.flatMap((variavel_id) =>
+                grupoIds.map((grupo_id) => ({ variavel_id, grupo_responsavel_equipe_id: grupo_id }))
+            ),
+        });
+
+        await prismaTxn.variavel.updateMany({ where: { id: { in: filhasIds } }, data: camposDerivados });
+        logger.log(`Equipes replicadas para ${filhasIds.length} variável(is) filha(s)`);
+
+        return Array.from(new Set(vinculosAntes.map((v) => v.grupo_responsavel_equipe_id)));
+    }
+
     private getPeriodTuples(
         p: VariaveisPeriodosDto | null,
         periodo: Periodicidade
@@ -1288,6 +1337,11 @@ export class VariavelService {
 
         const ehAdminGeral = user.hasSomeRoles(['CadastroVariavelGlobal.administrador']);
 
+        const idsComIndicadorAtivo = await this.buscaVariaveisBloqueadasPorIndicador(
+            this.prisma,
+            linhas.map((r) => r.id)
+        );
+
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -1331,7 +1385,7 @@ export class VariavelService {
                     periodicidade: r.periodicidade,
                     pode_editar: pode_editar,
                     pode_editar_valor: pode_editar_valor,
-                    pode_excluir: pode_editar && r.planos.length == 0,
+                    pode_excluir: pode_editar && r.planos.length == 0 && !idsComIndicadorAtivo.has(r.id),
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
                     regiao: r.regiao
@@ -1444,7 +1498,7 @@ export class VariavelService {
                 fim_medicao: true,
                 variavel_mae_id: true,
                 orgao_proprietario_id: true,
-                variaveis_filhas: { select: { id: true, titulo: true } },
+                variaveis_filhas: { where: { removido_em: null }, select: { id: true, titulo: true } },
                 casas_decimais: true,
                 valor_base: true,
             },
@@ -1533,7 +1587,11 @@ export class VariavelService {
                     suspendida_em: true,
                     valor_base: true,
                     periodicidade: true,
+                    atraso_meses: true,
                     acumulativa: true,
+                    periodo_preenchimento: true,
+                    periodo_validacao: true,
+                    periodo_liberacao: true,
                     VariavelAssuntoVariavel: { select: { assunto_variavel_id: true } },
                     VariavelGrupoResponsavelEquipe: {
                         where: { removido_em: null },
@@ -1688,12 +1746,14 @@ export class VariavelService {
             const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id);
 
             let equipes_configuradas: boolean | undefined = undefined;
+            let equipesAlteradas = false;
 
             let medicao_orgao_id: number | undefined = undefined;
             let validacao_orgao_id: number | undefined = undefined;
             let liberacao_orgao_id: number | undefined = undefined;
             if (IsArrayContentsChanged(gruposRecebidos, gruposAtuais)) {
                 logger.log('Equipe responsáveis alteradas...');
+                equipesAlteradas = true;
                 equipes_configuradas = this.isEquipesConfiguradas(dto);
 
                 await prismaTxn.variavelGrupoResponsavelEquipe.updateMany({
@@ -1717,12 +1777,21 @@ export class VariavelService {
                     ).map((v) => v.grupo_responsavel_equipe_id),
                 };
 
+                const equipesAntesFilhas = await this.replicaEquipesParaFilhas(
+                    dto,
+                    prismaTxn,
+                    variavelId,
+                    now,
+                    logger,
+                    { equipes_configuradas, medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id }
+                );
+
                 await this.insertEquipeResponsavel(
                     dto,
                     prismaTxn,
                     variavelId,
                     logger,
-                    gruposAtuais,
+                    [...gruposAtuais, ...equipesAntesFilhas],
                     gruposAntesPorPerfil
                 );
             }
@@ -1767,8 +1836,17 @@ export class VariavelService {
                 select: {
                     valor_base: true,
                     fim_medicao: true,
+                    inicio_medicao: true,
+                    periodo_preenchimento: true,
+                    periodo_validacao: true,
+                    periodo_liberacao: true,
                     acumulativa: true,
+                    atraso_meses: true,
+                    periodicidade: true,
+                    mostrar_monitoramento: true,
+                    suspendida_em: true,
                     variaveis_filhas: {
+                        where: { removido_em: null },
                         select: {
                             id: true,
                             titulo: true,
@@ -1861,6 +1939,26 @@ export class VariavelService {
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
             if (selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString()) {
                 await this.updateAvisoFimIndicador(prismaTxn, variavelId, updated);
+            }
+
+            const mudouParaDashboard =
+                equipesAlteradas ||
+                self.mostrar_monitoramento !== updated.mostrar_monitoramento ||
+                (self.suspendida_em !== null) !== (updated.suspendida_em !== null) ||
+                self.atraso_meses !== updated.atraso_meses ||
+                self.periodicidade !== updated.periodicidade ||
+                selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString() ||
+                selfBefUpdate.inicio_medicao?.toString() !== updated.inicio_medicao?.toString() ||
+                JSON.stringify(self.periodo_preenchimento) !== JSON.stringify(updated.periodo_preenchimento) ||
+                JSON.stringify(self.periodo_validacao) !== JSON.stringify(updated.periodo_validacao) ||
+                JSON.stringify(self.periodo_liberacao) !== JSON.stringify(updated.periodo_liberacao);
+
+            if (mudouParaDashboard) {
+                const idsAfetados = [variavelId, ...updated.variaveis_filhas.map((f) => f.id)];
+                await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: [variavelId] });
+                for (const idAfetado of idsAfetados) {
+                    await AddTaskRefreshMeta(prismaTxn, { variavel_id: idAfetado });
+                }
             }
 
             if (Array.isArray(responsaveis)) {
@@ -2189,7 +2287,7 @@ export class VariavelService {
                     );
 
                 const categoriaValores = await prismaTxn.variavelCategoricaValor.findMany({
-                    where: { id: dto.variavel_categorica_id },
+                    where: { variavel_categorica_id: dto.variavel_categorica_id, removido_em: null },
                 });
 
                 const serieValores = await prismaTxn.serieVariavel.groupBy({
@@ -2382,7 +2480,7 @@ export class VariavelService {
                 FROM variavel v
                 INNER JOIN indicador_variavel iv ON iv.variavel_id = v.id AND iv.indicador_origem_id is null
                 INNER JOIN indicador i ON iv.indicador_id = i.id AND i.removido_em is null
-                LEFT JOIN meta m ON i.meta_id = m.id AND i.removido_em is null
+                LEFT JOIN meta m ON i.meta_id = m.id AND m.removido_em is null
                 LEFT JOIN iniciativa ini ON i.iniciativa_id = ini.id AND ini.removido_em is null
                 LEFT JOIN meta m2 ON ini.meta_id = m2.id AND m2.removido_em is null
                 LEFT JOIN atividade a ON i.atividade_id = a.id AND a.removido_em is null
@@ -2398,11 +2496,15 @@ export class VariavelService {
                     cf.pdm_id = pdm.id
                     AND cf.data_ciclo > v.suspendida_em
                     AND cf.data_ciclo <= now()
+                    AND cf.tipo = 'PDM'
                 CROSS JOIN (
                     SELECT unnest(enum_range(NULL::"Serie")) serie
                 ) s
-                LEFT JOIN variavel_suspensa_controle vsc ON vsc.ciclo_fisico_corrente_id = cf.id AND vsc.variavel_id = v.id AND vsc.serie = s.serie
+                LEFT JOIN variavel_suspensa_controle vsc ON vsc.ciclo_fisico_corrente_id = cf.id AND vsc.variavel_id = v.id AND vsc.serie = s.serie AND vsc.removido_em IS NULL
                 WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
+                AND v.removido_em IS NULL
+                AND v.tipo = 'PDM'
+                AND pdm.removido_em IS NULL
                 AND vsc.id IS NULL
                 ORDER BY cf.id
             ) me
@@ -3183,6 +3285,81 @@ export class VariavelService {
         );
     }
 
+    private async buscaVariaveisComIndicadorAtivo(
+        prismaTx: Prisma.TransactionClient | PrismaService,
+        variavelIds: number[]
+    ): Promise<Set<number>> {
+        if (!variavelIds.length) return new Set();
+        const links = await prismaTx.indicadorVariavel.findMany({
+            where: {
+                variavel_id: { in: variavelIds },
+                desativado: false,
+                indicador: {
+                    removido_em: null,
+                    OR: [
+                        { meta: { removido_em: null, pdm: { removido_em: null } } },
+                        {
+                            iniciativa: {
+                                removido_em: null,
+                                meta: { removido_em: null, pdm: { removido_em: null } },
+                            },
+                        },
+                        {
+                            atividade: {
+                                removido_em: null,
+                                iniciativa: {
+                                    removido_em: null,
+                                    meta: { removido_em: null, pdm: { removido_em: null } },
+                                },
+                            },
+                        },
+                    ],
+                },
+            },
+            select: { variavel_id: true },
+            distinct: ['variavel_id'],
+        });
+        return new Set(links.map((l) => l.variavel_id));
+    }
+
+    // mesma regra do remove(): a variável é bloqueada se ela, alguma filha ou alguma calculada autogerenciável
+    // estiver vinculada a indicador ativo
+    private async buscaVariaveisBloqueadasPorIndicador(
+        prismaTx: Prisma.TransactionClient | PrismaService,
+        variavelIds: number[]
+    ): Promise<Set<number>> {
+        if (!variavelIds.length) return new Set();
+        const [filhas, formulas] = await Promise.all([
+            prismaTx.variavel.findMany({
+                where: { variavel_mae_id: { in: variavelIds }, removido_em: null },
+                select: { id: true, variavel_mae_id: true },
+            }),
+            prismaTx.formulaComposta.findMany({
+                where: {
+                    variavel_mae_id: { in: variavelIds },
+                    autogerenciavel: true,
+                    removido_em: null,
+                    variavel_calc_id: { not: null },
+                },
+                select: { variavel_calc_id: true, variavel_mae_id: true },
+            }),
+        ]);
+
+        const maePorDerivada = new Map<number, number>();
+        for (const f of filhas) maePorDerivada.set(f.id, f.variavel_mae_id!);
+        for (const f of formulas) maePorDerivada.set(f.variavel_calc_id!, f.variavel_mae_id!);
+
+        const emUso = await this.buscaVariaveisComIndicadorAtivo(prismaTx, [...variavelIds, ...maePorDerivada.keys()]);
+
+        const bloqueadas = new Set<number>();
+        for (const id of emUso) {
+            if (variavelIds.includes(id)) bloqueadas.add(id);
+            const mae = maePorDerivada.get(id);
+            if (mae !== undefined) bloqueadas.add(mae);
+        }
+        return bloqueadas;
+    }
+
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         const self = await this.findOne(tipo, variavelId, {}, user);
         if (!self) throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
@@ -3201,19 +3378,45 @@ export class VariavelService {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
             await this.verificaEscritaNaMeta(variavelId, user);
         }
-        if ('pode_editar' in self) {
-            const selfTyped = self as any as VariavelGlobalItemDto;
-            if (!selfTyped.pode_excluir) {
-                throw new BadRequestException('Você não tem permissão para remover esta variável.');
-            }
-        }
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
+                const filhas = await prismaTx.variavel.findMany({
+                    where: { variavel_mae_id: variavelId, removido_em: null },
+                    select: { id: true },
+                });
+                const formulasDaMae = await prismaTx.formulaComposta.findMany({
+                    where: { variavel_mae_id: variavelId, autogerenciavel: true, removido_em: null },
+                    select: { id: true, variavel_calc_id: true },
+                });
+                const derivadas = [
+                    ...filhas.map((f) => f.id),
+                    ...formulasDaMae.map((f) => f.variavel_calc_id).filter((id): id is number => id !== null),
+                ];
+                const todas = [variavelId, ...derivadas];
+
+                // variável PDM sempre tem vínculo com o próprio indicador; só a Global é bloqueada pelo vínculo direto
+                const emUso = await this.buscaVariaveisComIndicadorAtivo(
+                    prismaTx,
+                    tipo === 'Global' ? todas : derivadas
+                );
+                if (emUso.has(variavelId)) {
+                    throw new HttpException(
+                        'Não é possível remover a variável: vinculada a indicador de um plano.',
+                        400
+                    );
+                }
+                if (emUso.size) {
+                    throw new HttpException(
+                        'Não é possível remover a variável: variável filha ou calculada vinculada a indicador de um plano.',
+                        400
+                    );
+                }
+
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
                     where: {
-                        variavel_id: variavelId,
+                        variavel_id: { in: todas },
                         indicador: {
                             removido_em: null,
                             // ignora indicadores cuja árvore (meta/iniciativa/atividade) pertence a um plano removido
@@ -3247,7 +3450,11 @@ export class VariavelService {
                 }
 
                 const refFormulaComposta = await prismaTx.formulaComposta.findMany({
-                    where: { removido_em: null, FormulaCompostaVariavel: { some: { variavel_id: variavelId } } },
+                    where: {
+                        removido_em: null,
+                        id: { notIn: formulasDaMae.map((f) => f.id) },
+                        FormulaCompostaVariavel: { some: { variavel_id: { in: todas } } },
+                    },
                     select: { titulo: true },
                 });
                 for (const ref of refFormulaComposta) {
@@ -3256,13 +3463,18 @@ export class VariavelService {
                     );
                 }
 
+                const filtroVinculos: Prisma.VariavelGrupoResponsavelEquipeWhereInput = {
+                    removido_em: null,
+                    variavel_id: { in: todas },
+                };
+
                 const equipesVinculadas = await prismaTx.variavelGrupoResponsavelEquipe.findMany({
-                    where: { removido_em: null, variavel_id: variavelId },
+                    where: filtroVinculos,
                     select: { grupo_responsavel_equipe_id: true },
                 });
 
                 await prismaTx.variavelGrupoResponsavelEquipe.updateMany({
-                    where: { removido_em: null, variavel: { id: variavelId } },
+                    where: filtroVinculos,
                     data: { removido_em: now },
                 });
 
@@ -3271,15 +3483,24 @@ export class VariavelService {
                     prismaTx
                 );
 
-                await prismaTx.variavel.update({
-                    where: { id: variavelId },
+                await prismaTx.variavel.updateMany({
+                    where: { id: { in: todas }, removido_em: null },
                     data: { removido_em: now, removido_por: user.id },
-                    select: { id: true },
                 });
 
-                await prismaTx.indicadorVariavel.deleteMany({ where: { variavel_id: variavelId } });
+                if (formulasDaMae.length) {
+                    await prismaTx.formulaComposta.updateMany({
+                        where: { id: { in: formulasDaMae.map((f) => f.id) } },
+                        data: { removido_em: now, removido_por: user.id },
+                    });
+                    await prismaTx.indicadorFormulaComposta.deleteMany({
+                        where: { formula_composta_id: { in: formulasDaMae.map((f) => f.id) } },
+                    });
+                }
 
-                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [variavelId] });
+                await prismaTx.indicadorVariavel.deleteMany({ where: { variavel_id: { in: todas } } });
+
+                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: todas });
 
                 await logger.saveLogs(prismaTx, user.getLogData());
             },
@@ -4271,6 +4492,12 @@ export class VariavelService {
                         await prismaTxn.$queryRaw`
                         select f_atualiza_variavel_ciclo_corrente(varId::int)::varchar
                         from unnest(${globais.map((n) => n.id)}::int[]) as varId;`;
+
+                        const globaisIds = globais.map((n) => n.id);
+                        await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: globaisIds });
+                        for (const globalId of globaisIds) {
+                            await AddTaskRefreshMeta(prismaTxn, { variavel_id: globalId });
+                        }
                     }
                 }
                 await logger.saveLogs(prismaTxn, user.getLogData());
@@ -4595,9 +4822,8 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-        console.log(result);
-
-        if (!result[0].meta_id) throw `getMetaIdDaVariavel: nenhum resultado para variavel ${variavel_id}`;
+        if (!result[0].meta_id)
+            throw new HttpException(`Variável ${variavel_id} não encontrada ou sem meta associada`, 400);
         return result[0].meta_id;
     }
 
@@ -4637,10 +4863,11 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-        console.log(result);
-
         if (!result[0].meta_id)
-            throw `getMetaIdDaFormulaComposta: nenhum resultado para formula_composta ${formula_composta_id}`;
+            throw new HttpException(
+                `Fórmula composta ${formula_composta_id} não encontrada ou sem meta associada`,
+                400
+            );
         return result[0].meta_id;
     }
 
@@ -4674,9 +4901,8 @@ export class VariavelService {
                 )
             ) as meta_id
         `;
-        console.log(result);
-
-        if (!result[0].meta_id) throw `getMetaIdDoIndicador: nenhum resultado para indicador ${indicador_id}`;
+        if (!result[0].meta_id)
+            throw new HttpException(`Indicador ${indicador_id} não encontrado ou sem meta associada`, 400);
         return result[0].meta_id;
     }
 

@@ -78,6 +78,7 @@ export class AssuntoVariavelService {
         const emUso = await this.prisma.variavelAssuntoVariavel.findMany({
             where: {
                 assunto_variavel_id: id,
+                variavel: { removido_em: null },
             },
             select: {
                 id: true,
@@ -101,7 +102,8 @@ export class AssuntoVariavelService {
     async existeCategoria(id_categoria:number){
         return await  this.prisma.categoriaAssuntoVariavel.count({
             where : {
-                id: {equals: id_categoria}
+                id: {equals: id_categoria},
+                removido_em: null,
             }
         }) > 0;
     }

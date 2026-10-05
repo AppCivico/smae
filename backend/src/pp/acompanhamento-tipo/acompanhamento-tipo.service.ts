@@ -16,7 +16,7 @@ export class AcompanhamentoTipoService {
         const tipoJaExiste = await this.prisma.acompanhamentoTipo.count({
             where: { nome: dto.nome, removido_em: null, tipo_projeto: tipo },
         });
-        if (tipoJaExiste) throw new Error('Já existe um tipo de acompanhamento com este nome.');
+        if (tipoJaExiste) throw new HttpException('Já existe um tipo de acompanhamento com este nome.', 400);
 
         const acompanhamentoTipo = await this.prisma.acompanhamentoTipo.create({
             data: {
@@ -65,7 +65,7 @@ export class AcompanhamentoTipoService {
         await this.prisma.$transaction(async (prismaTx) => {
             // Se o tipo de acompanhamento estiver associado a algum projeto, não pode ser removido
             const tipoAcompanhamentoAssociado = await prismaTx.projetoAcompanhamento.count({
-                where: { acompanhamento_tipo_id: id, removido_em: null },
+                where: { acompanhamento_tipo_id: id, removido_em: null, projeto: { removido_em: null } },
             });
             if (tipoAcompanhamentoAssociado) {
                 throw new HttpException('Tipo de acompanhamento associado à um projeto, não pode ser removido.', 400);
