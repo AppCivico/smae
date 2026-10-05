@@ -13,6 +13,7 @@ import { formataSEI } from 'src/common/formata-sei';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { distribuicaoContabilizada, StatusAtualDistribuicaoSelect } from './distribuicao-contabilizada';
 import { AvisoEmailService } from '../../aviso-email/aviso-email.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../../bloco-nota/nota/nota.service';
@@ -147,39 +148,13 @@ export class DistribuicaoRecursoService {
                     investimento: true,
                     valor_contrapartida: true,
                     valor_total: true,
-                    status: {
-                        orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                        where: { removido_em: null },
-                        take: 1,
-                        select: {
-                            id: true,
-                            status_base: {
-                                select: {
-                                    tipo: true,
-                                    valor_distribuicao_contabilizado: true,
-                                },
-                            },
-                            status: {
-                                select: {
-                                    tipo: true,
-                                    valor_distribuicao_contabilizado: true,
-                                },
-                            },
-                        },
-                    },
+                    status: StatusAtualDistribuicaoSelect,
                 },
             });
 
-            const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
-
-                if (statusAtual) {
-                    const statusConfig = statusAtual.status_base ?? statusAtual.status;
-
-                    return statusConfig?.valor_distribuicao_contabilizado == true;
-                }
-                return true;
-            });
+            const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) =>
+                distribuicaoContabilizada(distribuicao.status)
+            );
 
             const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
             const transferencia_investimento =
@@ -259,22 +234,6 @@ export class DistribuicaoRecursoService {
                             distribuicao_recurso: {
                                 transferencia_id: dto.transferencia_id,
                                 removido_em: null,
-                                status: {
-                                    some: {
-                                        OR: [
-                                            {
-                                                status_base: {
-                                                    valor_distribuicao_contabilizado: true,
-                                                },
-                                            },
-                                            {
-                                                status: {
-                                                    valor_distribuicao_contabilizado: true,
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
                             },
                         },
                         select: {
@@ -284,25 +243,7 @@ export class DistribuicaoRecursoService {
 
                             distribuicao_recurso: {
                                 select: {
-                                    status: {
-                                        take: 1,
-                                        orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                                        where: { removido_em: null },
-                                        select: {
-                                            status_base: {
-                                                select: {
-                                                    tipo: true,
-                                                    valor_distribuicao_contabilizado: true,
-                                                },
-                                            },
-                                            status: {
-                                                select: {
-                                                    tipo: true,
-                                                    valor_distribuicao_contabilizado: true,
-                                                },
-                                            },
-                                        },
-                                    },
+                                    status: StatusAtualDistribuicaoSelect,
                                 },
                             },
                         },
@@ -317,14 +258,7 @@ export class DistribuicaoRecursoService {
 
                     let sumValor = rowsParlamentarDist
                         .filter((e) => e.valor != null)
-                        .filter((e) => {
-                            const statusUltimaRow = e.distribuicao_recurso.status[0];
-                            if (!statusUltimaRow) return true;
-
-                            const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-
-                            return statusConfig!.valor_distribuicao_contabilizado == true;
-                        })
+                        .filter((e) => distribuicaoContabilizada(e.distribuicao_recurso.status))
                         .reduce((acc, curr) => acc + +curr.valor!, 0);
                     sumValor += novaRow.valor ? +novaRow.valor : 0;
 
@@ -1387,38 +1321,13 @@ export class DistribuicaoRecursoService {
                             investimento: true,
                             valor_contrapartida: true,
                             valor_total: true,
-                            status: {
-                                orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                                where: { removido_em: null },
-                                take: 1,
-                                select: {
-                                    status_base: {
-                                        select: {
-                                            tipo: true,
-                                            valor_distribuicao_contabilizado: true,
-                                        },
-                                    },
-                                    status: {
-                                        select: {
-                                            tipo: true,
-                                            valor_distribuicao_contabilizado: true,
-                                        },
-                                    },
-                                },
-                            },
+                            status: StatusAtualDistribuicaoSelect,
                         },
                     });
 
-                    const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                        const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
-
-                        if (statusAtual) {
-                            const statusConfig = statusAtual.status_base ?? statusAtual.status;
-
-                            return statusConfig?.valor_distribuicao_contabilizado == true;
-                        }
-                        return true;
-                    });
+                    const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) =>
+                        distribuicaoContabilizada(distribuicao.status)
+                    );
 
                     let sumCusteio: number = dto.custeio ?? 0;
                     let sumInvestimento: number = dto.investimento ?? 0;
@@ -1649,25 +1558,7 @@ export class DistribuicaoRecursoService {
                                 valor: true,
                                 distribuicao_recurso: {
                                     select: {
-                                        status: {
-                                            take: 1,
-                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                                            where: { removido_em: null },
-                                            select: {
-                                                status_base: {
-                                                    select: {
-                                                        tipo: true,
-                                                        valor_distribuicao_contabilizado: true,
-                                                    },
-                                                },
-                                                status: {
-                                                    select: {
-                                                        tipo: true,
-                                                        valor_distribuicao_contabilizado: true,
-                                                    },
-                                                },
-                                            },
-                                        },
+                                        status: StatusAtualDistribuicaoSelect,
                                     },
                                 },
                             },
@@ -1675,13 +1566,7 @@ export class DistribuicaoRecursoService {
 
                         let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor != null)
-                            .filter((e) => {
-                                const statusUltimaRow = e.distribuicao_recurso.status[0];
-                                if (!statusUltimaRow) return true;
-
-                                const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-                                return statusConfig!.valor_distribuicao_contabilizado == true;
-                            })
+                            .filter((e) => distribuicaoContabilizada(e.distribuicao_recurso.status))
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 

@@ -19,6 +19,10 @@ import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DistribuicaoRecursoService } from 'src/casa-civil/distribuicao-recurso/distribuicao-recurso.service';
+import {
+    distribuicaoContabilizada,
+    StatusAtualDistribuicaoSelect,
+} from 'src/casa-civil/distribuicao-recurso/distribuicao-contabilizada';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -51,28 +55,6 @@ import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload
 class NextPageTokenJwtBody {
     offset: number;
     ipp: number;
-}
-
-const StatusAtualDistribuicaoSelect = {
-    take: 1,
-    where: { removido_em: null },
-    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-    select: {
-        status: { select: { valor_distribuicao_contabilizado: true } },
-        status_base: { select: { valor_distribuicao_contabilizado: true } },
-    },
-} satisfies Prisma.DistribuicaoRecurso$statusArgs;
-
-type StatusContabilizado = { valor_distribuicao_contabilizado: boolean } | null;
-
-// Distribuição sem status conta; com status, vale o último não removido.
-function distribuicaoContabilizada(
-    status: { status: StatusContabilizado; status_base: StatusContabilizado }[]
-): boolean {
-    const statusRow = status[0];
-    if (!statusRow) return true;
-
-    return !!(statusRow.status ?? statusRow.status_base)?.valor_distribuicao_contabilizado;
 }
 
 @Injectable()
@@ -951,13 +933,13 @@ export class TransferenciaService {
                                         },
                                         select: {
                                             valor: true,
+                                            distribuicao_recurso: { select: { status: StatusAtualDistribuicaoSelect } },
                                         },
                                     });
 
-                                    const sumDistribuicoes = distribuicoes.reduce(
-                                        (acc, curr) => acc + curr.valor!.toNumber(),
-                                        0
-                                    );
+                                    const sumDistribuicoes = distribuicoes
+                                        .filter((d) => distribuicaoContabilizada(d.distribuicao_recurso.status))
+                                        .reduce((acc, curr) => acc + curr.valor!.toNumber(), 0);
 
                                     if (+sumDistribuicoes > +relParlamentar.valor)
                                         throw new HttpException(
