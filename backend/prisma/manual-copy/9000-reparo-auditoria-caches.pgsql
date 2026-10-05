@@ -343,6 +343,31 @@ DELETE FROM indicador_variavel
 WHERE variavel_id IN (SELECT variavel_id FROM tmp_orfas_variavel)
    OR variavel_id IN (SELECT mae_id FROM tmp_orfas_variavel);
 
+-- órfã usada em fórmula de indicador ou em outra composta: o vínculo é removido (a fórmula deve usar a mãe)
+WITH apagados AS (
+    DELETE FROM indicador_formula_variavel ifv
+    USING tmp_orfas_variavel o
+    WHERE ifv.variavel_id = o.variavel_id
+    RETURNING ifv.*
+)
+INSERT INTO reparo.diagnostico (secao, dados)
+SELECT 'pdm_ps.orfa_vinculo_formula_indicador_removido', to_jsonb(a) || jsonb_build_object('indicador_formula', i.formula)
+FROM apagados a
+JOIN indicador i ON i.id = a.indicador_id;
+
+WITH apagados AS (
+    DELETE FROM formula_composta_variavel fcv
+    USING tmp_orfas_variavel o, formula_composta fc
+    WHERE fcv.variavel_id = o.variavel_id
+      AND fc.id = fcv.formula_composta_id
+      AND fc.removido_em IS NULL
+    RETURNING fcv.*
+)
+INSERT INTO reparo.diagnostico (secao, dados)
+SELECT 'pdm_ps.orfa_vinculo_formula_composta_removido', to_jsonb(a) || jsonb_build_object('formula_composta_titulo', fc.titulo, 'formula', fc.formula)
+FROM apagados a
+JOIN formula_composta fc ON fc.id = a.formula_composta_id;
+
 -- séries e dashboard PS (recalc_vars_ps_dashboard remove a linha da família removida)
 SELECT refresh_variavel(x.id, NULL)
 FROM (
