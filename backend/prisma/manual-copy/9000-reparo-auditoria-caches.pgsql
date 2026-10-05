@@ -171,6 +171,34 @@ FROM (
 WHERE r.id = s.id
   AND (r.soma_valor_empenho IS DISTINCT FROM s.empenho OR r.soma_valor_liquidado IS DISTINCT FROM s.liquidado);
 
+-- tarefa.numero fora de 1..N entre irmãs (clone concorrente duplicava o cronograma); qtd = 2 * distintos indica cópia em dobro
+INSERT INTO reparo.diagnostico (secao, dados)
+SELECT 'projetos.tarefa_numero_quebrado', jsonb_build_object(
+    'tipo', CASE WHEN tc.projeto_id IS NOT NULL THEN 'projeto' WHEN tc.transferencia_id IS NOT NULL THEN 'transferencia' ELSE 'outro' END,
+    'projeto_id', tc.projeto_id, 'transferencia_id', tc.transferencia_id,
+    'tarefa_cronograma_id', t.tarefa_cronograma_id, 'tarefa_pai_id', t.tarefa_pai_id,
+    'qtd', count(*), 'min', min(t.numero), 'max', max(t.numero), 'distintos', count(DISTINCT t.numero))
+FROM tarefa t
+JOIN tarefa_cronograma tc ON tc.id = t.tarefa_cronograma_id
+WHERE t.removido_em IS NULL
+GROUP BY tc.projeto_id, tc.transferencia_id, t.tarefa_cronograma_id, t.tarefa_pai_id
+HAVING min(t.numero) <> 1 OR max(t.numero) <> count(*) OR count(DISTINCT t.numero) <> count(*);
+
+-- renumera para 1..N mantendo a ordem (mesma regra do TarefaUtilsService.normalizaNumero); transferência só no diagnóstico
+WITH ordenado AS (
+    SELECT t.id,
+        (ROW_NUMBER() OVER (PARTITION BY t.tarefa_cronograma_id, t.tarefa_pai_id ORDER BY t.numero, t.criado_em, t.id))::int AS numero_correto
+    FROM tarefa t
+    JOIN tarefa_cronograma tc ON tc.id = t.tarefa_cronograma_id
+    WHERE t.removido_em IS NULL
+      AND tc.projeto_id IS NOT NULL
+)
+UPDATE tarefa t
+SET numero = o.numero_correto
+FROM ordenado o
+WHERE t.id = o.id
+  AND t.numero IS DISTINCT FROM o.numero_correto;
+
 -- ============================================================================
 -- C. Casa Civil (#668)
 -- ============================================================================
