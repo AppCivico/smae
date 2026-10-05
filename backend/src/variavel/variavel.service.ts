@@ -3384,9 +3384,14 @@ export class VariavelService {
         const logger = LoggerWithLog('Remoção de variável');
         logger.debug(`Removendo variável ${variavelId}`);
 
+        // findAll mascara a categórica de cronograma como null, então lê direto do banco
+        const raw = await this.prisma.variavel.findFirstOrThrow({
+            where: { id: variavelId },
+            select: { variavel_categorica_id: true },
+        });
         // TODO: pensar se quando apagar uma calculada, ou seja por side-effect talvez, precisa apagar a formula-composta
         // do autogerenciavel
-        if (self.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+        if (raw.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new BadRequestException(
                 'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa.'
             );
