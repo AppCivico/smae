@@ -3360,6 +3360,21 @@ export class VariavelService {
         return bloqueadas;
     }
 
+    // filha não é editável pelo próprio registro, a permissão vem da mãe (mesma regra do updateFilha)
+    private async verificaRemocaoVariavelGlobal(variavelId: number, user: PessoaFromJwt) {
+        const variavel = await this.prisma.variavel.findFirstOrThrow({
+            where: { id: variavelId, removido_em: null },
+            select: { variavel_mae_id: true },
+        });
+
+        const lista = await this.findAllGlobal(
+            { id: variavel.variavel_mae_id ?? variavelId, ordem_direcao: 'asc', ordem_coluna: 'id' },
+            user
+        );
+        if (!lista.linhas.length || !lista.linhas[0].pode_editar)
+            throw new ForbiddenException('Você não tem permissão para remover esta variável.');
+    }
+
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         const self = await this.findOne(tipo, variavelId, {}, user);
         if (!self) throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
@@ -3377,6 +3392,8 @@ export class VariavelService {
         if (tipo == 'PDM') {
             // buscando apenas pelo indicador pai verdadeiro desta variavel
             await this.verificaEscritaNaMeta(variavelId, user);
+        } else if (tipo == 'Global') {
+            await this.verificaRemocaoVariavelGlobal(variavelId, user);
         }
 
         const now = new Date(Date.now());
