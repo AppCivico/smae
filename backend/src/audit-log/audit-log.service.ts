@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { FilterAuditLogDto, GroupByFieldsDto, GroupByFilterDto } from './dto/audit-log.dto';
 import { AuditLogDto, AuditLogSummaryRow } from './entities/audit-log.entity';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
+import { SYSTEM_TIMEZONE } from '../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset!: number;
@@ -81,54 +82,41 @@ export class AuditLogService {
     }
 
     async getSummary(filters: GroupByFilterDto, groupBy: GroupByFieldsDto): Promise<AuditLogSummaryRow[]> {
-        const groupByFields: Array<'criado_em' | 'contexto' | 'pessoa_id'> = [];
-
-        if (groupBy.group_by_date) groupByFields.push('criado_em');
-        if (groupBy.group_by_contexto) groupByFields.push('contexto');
-        if (groupBy.group_by_pessoa_id) groupByFields.push('pessoa_id');
-
-        if (groupByFields.length === 0) {
+        if (!groupBy.group_by_date && !groupBy.group_by_contexto && !groupBy.group_by_pessoa_id) {
             throw new BadRequestException('Pelo menos um campo é obrigatório para agrupamento.');
         }
 
-        const summary = await this.prisma.logGenerico.groupBy({
-            by: groupByFields,
-            _count: {
-                _all: true,
-            },
-            where: {
-                pessoa_id: filters.pessoa_id,
-                contexto: filters.contexto,
-                log: filters.log_contem ? { contains: filters.log_contem, mode: 'insensitive' } : undefined,
-                ip: filters.ip,
-                criado_em: {
-                    gte: filters.criado_em_inicio ? new Date(filters.criado_em_inicio) : undefined,
-                    lte: filters.criado_em_fim ? new Date(filters.criado_em_fim) : undefined,
-                },
-            },
-            orderBy: [],
-        });
+        // agrupa no banco: agrupar pelo criado_em cru (timestamp) devolvia uma linha por registro do log
+        const dia = groupBy.group_by_date
+            ? Prisma.sql`(criado_em AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date`
+            : Prisma.sql`NULL::date`;
+        const contexto = groupBy.group_by_contexto ? Prisma.sql`contexto` : Prisma.sql`NULL::text`;
+        const pessoaId = groupBy.group_by_pessoa_id ? Prisma.sql`pessoa_id` : Prisma.sql`NULL::int`;
 
-        if (groupBy.group_by_date) {
-            const agg = new Map<string, AuditLogSummaryRow>();
-            for (const r of summary) {
-                const day = r.criado_em ? r.criado_em.toISOString().slice(0, 10) : undefined; // UTC day
-                const key = JSON.stringify([day, r.contexto, r.pessoa_id]);
-                const curr = agg.get(key) ?? {
-                    count: 0,
-                    date: day ? new Date(`${day}T00:00:00.000Z`) : undefined,
-                    contexto: r.contexto,
-                    pessoa_id: r.pessoa_id ?? undefined,
-                };
-                curr.count += r._count._all;
-                agg.set(key, curr);
-            }
-            return [...agg.values()].sort((a, b) => b.count - a.count);
-        }
-        return summary.map((r) => ({
-            count: r._count._all,
-            date: undefined,
-            contexto: r.contexto,
+        // mesmos filtros do findAll
+        const conds: Prisma.Sql[] = [Prisma.sql`TRUE`];
+        if (filters.pessoa_id) conds.push(Prisma.sql`pessoa_id = ${filters.pessoa_id}::int`);
+        if (filters.contexto) conds.push(Prisma.sql`strpos(lower(contexto), lower(${filters.contexto}::text)) > 0`);
+        if (filters.log_contem) conds.push(Prisma.sql`strpos(lower(log), lower(${filters.log_contem}::text)) > 0`);
+        if (filters.ip) conds.push(Prisma.sql`ip = ${filters.ip}::inet`);
+        if (filters.criado_em_inicio)
+            conds.push(Prisma.sql`criado_em >= ${new Date(filters.criado_em_inicio)}::timestamptz`);
+        if (filters.criado_em_fim) conds.push(Prisma.sql`criado_em <= ${new Date(filters.criado_em_fim)}::timestamptz`);
+
+        const rows = await this.prisma.$queryRaw<
+            { dia: Date | null; contexto: string | null; pessoa_id: number | null; count: number }[]
+        >`
+            SELECT ${dia} AS dia, ${contexto} AS contexto, ${pessoaId} AS pessoa_id, count(*)::int AS count
+            FROM log_generico
+            WHERE ${Prisma.join(conds, ' AND ')}
+            GROUP BY 1, 2, 3
+            ORDER BY count DESC
+        `;
+
+        return rows.map((r) => ({
+            count: r.count,
+            date: r.dia ?? undefined,
+            contexto: r.contexto ?? undefined,
             pessoa_id: r.pessoa_id ?? undefined,
         }));
     }
