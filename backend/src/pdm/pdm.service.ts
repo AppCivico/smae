@@ -1014,8 +1014,8 @@ export class PdmService {
                         tipo,
                         pdm.id,
                         {
-                            data_inicio: dto.data_inicio ?? pdm.data_inicio,
-                            data_fim: dto.data_fim ?? pdm.data_fim,
+                            data_inicio: dto.data_inicio !== undefined ? dto.data_inicio : pdm.data_inicio,
+                            data_fim: dto.data_fim !== undefined ? dto.data_fim : pdm.data_fim,
                             meses: dto.meses ?? cicloConfigAtiva?.meses ?? [],
                         },
                         user,
