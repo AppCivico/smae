@@ -53,6 +53,28 @@ class NextPageTokenJwtBody {
     ipp: number;
 }
 
+const StatusAtualDistribuicaoSelect = {
+    take: 1,
+    where: { removido_em: null },
+    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+    select: {
+        status: { select: { valor_distribuicao_contabilizado: true } },
+        status_base: { select: { valor_distribuicao_contabilizado: true } },
+    },
+} satisfies Prisma.DistribuicaoRecurso$statusArgs;
+
+type StatusContabilizado = { valor_distribuicao_contabilizado: boolean } | null;
+
+// Distribuição sem status conta; com status, vale o último não removido.
+function distribuicaoContabilizada(
+    status: { status: StatusContabilizado; status_base: StatusContabilizado }[]
+): boolean {
+    const statusRow = status[0];
+    if (!statusRow) return true;
+
+    return !!(statusRow.status ?? statusRow.status_base)?.valor_distribuicao_contabilizado;
+}
+
 @Injectable()
 export class TransferenciaService {
     constructor(
@@ -846,29 +868,13 @@ export class TransferenciaService {
                     dto.custeio != undefined ||
                     dto.investimento != undefined ||
                     dto.valor_contrapartida != undefined ||
-                    dto.valor_total ||
-                    dto.valor
+                    dto.valor_total !== undefined ||
+                    dto.valor !== undefined
                 ) {
-                    const distribuicoesContabilizadas = await prismaTxn.distribuicaoRecurso.findMany({
+                    const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
                         where: {
                             transferencia_id: id,
                             removido_em: null,
-                            status: {
-                                some: {
-                                    OR: [
-                                        {
-                                            status_base: {
-                                                valor_distribuicao_contabilizado: true,
-                                            },
-                                        },
-                                        {
-                                            status: {
-                                                valor_distribuicao_contabilizado: true,
-                                            },
-                                        },
-                                    ],
-                                },
-                            },
                         },
                         select: {
                             custeio: true,
@@ -876,8 +882,12 @@ export class TransferenciaService {
                             valor_contrapartida: true,
                             valor_total: true,
                             valor: true,
+                            status: StatusAtualDistribuicaoSelect,
                         },
                     });
+                    const distribuicoesContabilizadas = distribuicoes.filter((d) =>
+                        distribuicaoContabilizada(d.status)
+                    );
 
                     const limites = [
                         { campo: 'custeio', nome: 'custeio', alvo: 'valor de custeio' },
@@ -1491,27 +1501,7 @@ export class TransferenciaService {
                     select: {
                         id: true,
                         valor: true,
-                        status: {
-                            take: 1,
-                            where: { removido_em: null },
-                            orderBy: { data_troca: 'desc' },
-                            select: {
-                                status: {
-                                    select: {
-                                        tipo: true,
-                                        permite_novos_registros: true,
-                                        valor_distribuicao_contabilizado: true,
-                                    },
-                                },
-                                status_base: {
-                                    select: {
-                                        tipo: true,
-                                        permite_novos_registros: true,
-                                        valor_distribuicao_contabilizado: true,
-                                    },
-                                },
-                            },
-                        },
+                        status: StatusAtualDistribuicaoSelect,
                         vinculos: {
                             where: { removido_em: null, invalidado_em: null },
                             select: {
@@ -1625,15 +1615,7 @@ export class TransferenciaService {
             interface: row.interface,
             esfera: row.esfera,
             valor_distribuido: row.distribuicao_recursos
-                .filter((e) => {
-                    const statusRow = e.status[0];
-                    if (!statusRow) return true;
-
-                    const valor_contabilizado = statusRow.status
-                        ? statusRow.status?.valor_distribuicao_contabilizado
-                        : statusRow.status_base?.valor_distribuicao_contabilizado;
-                    return valor_contabilizado;
-                })
+                .filter((e) => distribuicaoContabilizada(e.status))
                 .reduce((acc, curr) => acc + curr.valor.toNumber(), 0),
             parlamentares: row.parlamentar,
             bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
