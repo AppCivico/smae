@@ -3925,6 +3925,10 @@ export class ProjetoService {
                     400
                 );
 
+            // Serializa clones concorrentes no mesmo projeto destino. Sem isso, duas chamadas simultâneas
+            // não enxergam as tarefas uma da outra e o cronograma fica com todas as tarefas em dobro.
+            await prismaTx.$executeRaw`SELECT id FROM projeto WHERE id = ${projetoId}::int FOR NO KEY UPDATE`;
+
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
 
