@@ -21,10 +21,11 @@
  * o script reproduz a conta e já chama com o header certo.
  *
  * Usage:
- *   npx ts-node -T tools/api-smoke.ts --url http://127.0.0.1:3001 --email x@y.z --senha ... --write
- *   npx ts-node -T tools/api-smoke.ts --url http://127.0.0.1:3001 --email x@y.z --senha ...
+ *   SMOKE_SENHA=... npx ts-node -T tools/api-smoke.ts --url http://127.0.0.1:3001 --email x@y.z --write
+ *   SMOKE_SENHA=... npx ts-node -T tools/api-smoke.ts --url http://127.0.0.1:3001 --email x@y.z
  *
- * Credenciais também via env: SMOKE_URL, SMOKE_EMAIL, SMOKE_SENHA.
+ * Credenciais também via env: SMOKE_URL, SMOKE_EMAIL, SMOKE_SENHA. Prefira a senha pelo env:
+ * `--senha` continua aceito, mas fica no histórico do shell e no `ps`.
  */
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
@@ -41,6 +42,12 @@ const DOCS = [
     'swagger-bloco-notas',
     'swagger-sysadmin',
 ];
+/** GETs com efeito colateral (escrita no banco, chamada externa, e-mail): nunca chamados pelo smoke. */
+const GET_COM_ESCRITA = new Set([
+    '/api/relatorios/sync-parametros',
+    '/api/sei-integracao/relatorio',
+    '/api/sei-integracao/resumo',
+]);
 const BASELINE_PADRAO = resolve(__dirname, 'api-smoke.baseline.json');
 
 type Classe = 'ok' | 'erro-cliente' | 'erro-servidor' | 'sem-id' | 'sem-priv' | 'falhou';
@@ -66,7 +73,7 @@ async function main() {
     const arquivoBaseline = iBase >= 0 ? resolve(process.argv[iBase + 1]) : BASELINE_PADRAO;
 
     if (!email || !senha) {
-        console.error('informe --email e --senha (ou SMOKE_EMAIL / SMOKE_SENHA).');
+        console.error('informe --email e a senha em SMOKE_SENHA (ou --senha).');
         process.exit(2);
     }
 
@@ -109,7 +116,7 @@ async function main() {
         if (r.status !== 200) continue;
         const json = (await r.json()) as { paths: Record<string, any> };
         for (const [rota, metodos] of Object.entries(json.paths)) {
-            if (metodos.get && !rotas.has(rota)) rotas.set(rota, metodos.get);
+            if (metodos.get && !rotas.has(rota) && !GET_COM_ESCRITA.has(rota)) rotas.set(rota, metodos.get);
         }
     }
     if (rotas.size === 0) {
@@ -121,6 +128,7 @@ async function main() {
     const cacheId = new Map<string, { id: unknown; sistema: string } | null>();
     async function idReal(rotaLista: string, candidatos: Sistema[]) {
         if (cacheId.has(rotaLista)) return cacheId.get(rotaLista)!;
+        if (GET_COM_ESCRITA.has(rotaLista)) return null;
         let achado: { id: unknown; sistema: string } | null = null;
         for (const sistema of candidatos) {
             try {
