@@ -38,8 +38,42 @@ export class TarefaUtilsService {
                      ELSE tarefa_pai_id IS NULL
                 END
               )
-              AND numero >= ${dto.numero}::int
+              AND numero > ${dto.numero}::int
         `;
+    }
+
+    /**
+     * Renumera as tarefas irmãs (mesmo pai, mesmo cronograma) para 1..N, preservando a ordem atual.
+     * As rotinas de incremento/decremento assumem numeração contígua e sem duplicatas; quando o dado
+     * já está fora disso (ex: cronograma clonado em dobro), elas propagam o erro em vez de corrigir.
+     * É no-op quando o grupo já está correto.
+     */
+    async normalizaNumero(
+        prismaTx: Prisma.TransactionClient,
+        tarefa_cronograma_id: number,
+        tarefa_pai_id: number | null
+    ) {
+        await prismaTx.$executeRaw`
+            WITH ordenado AS (
+                SELECT
+                    id,
+                    (ROW_NUMBER() OVER (ORDER BY numero ASC, criado_em ASC, id ASC))::int AS numero_correto
+                FROM tarefa
+                WHERE removido_em IS NULL
+                  AND tarefa_cronograma_id = ${tarefa_cronograma_id}::int
+                  AND tarefa_pai_id IS NOT DISTINCT FROM ${tarefa_pai_id}::int
+            )
+            UPDATE tarefa t
+            SET numero = o.numero_correto
+            FROM ordenado o
+            WHERE t.id = o.id
+              AND t.numero IS DISTINCT FROM o.numero_correto
+        `;
+    }
+
+    async numeroAtual(prismaTx: Prisma.TransactionClient, tarefa_id: number): Promise<number> {
+        const row = await prismaTx.tarefa.findUniqueOrThrow({ where: { id: tarefa_id }, select: { numero: true } });
+        return row.numero;
     }
 
     async incrementaNumero(

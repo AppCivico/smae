@@ -52,6 +52,7 @@ export default defineConfig({
       },
     },
   },
+  // TODO: bundle moderno sem polyfill de Object.groupBy/Set.union (Safari < 17.4 quebra); corrigir com legacy({ modernPolyfills: [...] })
   plugins: [htmlPlugin(), vue(), legacy()],
   resolve: {
     alias: {
