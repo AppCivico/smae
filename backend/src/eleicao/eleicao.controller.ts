@@ -29,16 +29,15 @@ export class EleicaoController {
         return { id: created.id };
     }
 
+    // leitura liberada para qualquer usuário logado: alimenta o mandato do parlamentar e o relatório de parlamentares
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
-    async findAll(@Query() filters: FilterEleicaoDto): Promise<ListEleicaoDto[]> {
-        return this.eleicaoService.findAll(filters);
+    async findAll(@Query() filters: FilterEleicaoDto): Promise<ListEleicaoDto> {
+        return { linhas: await this.eleicaoService.findAll(filters) };
     }
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
     async findOne(@Param() params: FindOneParams): Promise<Eleicao> {
         return this.eleicaoService.findOne(params.id);
     }

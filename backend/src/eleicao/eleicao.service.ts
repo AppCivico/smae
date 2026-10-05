@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { ListEleicaoDto } from './entity/eleicao.entity';
+import { EleicaoDto } from './entity/eleicao.entity';
 import { CreateEleicaoDto } from './dto/create-eleicao.dto';
 import { Eleicao } from '@prisma/client';
 import { FilterEleicaoDto } from './dto/filter-eleicao.dto';
@@ -42,7 +42,7 @@ export class EleicaoService {
         }
     }
 
-    async findAll(filters: FilterEleicaoDto): Promise<ListEleicaoDto[]> {
+    async findAll(filters: FilterEleicaoDto): Promise<EleicaoDto[]> {
         const eleicoes = await this.prisma.eleicao.findMany({
             where: {
                 removido_em: null,
@@ -59,7 +59,7 @@ export class EleicaoService {
             },
             orderBy: [{ ano: 'desc' }, { tipo: 'asc' }],
         });
-        return [{ linhas: eleicoes }];
+        return eleicoes;
     }
 
     async findOne(id: number): Promise<Eleicao> {
@@ -100,6 +100,8 @@ export class EleicaoService {
                 throw new BadRequestException('Já existe uma eleição deste tipo para este ano');
             }
         }
+
+        await this.findOne(id);
 
         try {
             const updated = await this.prisma.$transaction(async (tx) => {
