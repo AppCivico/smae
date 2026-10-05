@@ -23,7 +23,7 @@ import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { getMetadataStorage, validate } from 'class-validator';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
-import { join, resolve } from 'path';
+import { join, relative, resolve } from 'path';
 
 const DIST = resolve(__dirname, '..', 'dist', 'src');
 const SNAPSHOT_PADRAO = resolve(__dirname, 'dto-validation.snapshot.json');
@@ -49,7 +49,8 @@ type ClasseDto = new (...args: any[]) => object;
 
 function arquivosDeDto(dir: string): string[] {
     const encontrados: string[] = [];
-    for (const entrada of readdirSync(dir, { withFileTypes: true })) {
+    const entradas = readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1));
+    for (const entrada of entradas) {
         const caminho = join(dir, entrada.name);
         if (entrada.isDirectory()) encontrados.push(...arquivosDeDto(caminho));
         else if (/\.(dto|entity)\.js$/.test(entrada.name)) encontrados.push(caminho);
@@ -57,9 +58,11 @@ function arquivosDeDto(dir: string): string[] {
     return encontrados;
 }
 
+/** Chave `caminho/relativo.dto::Classe`: há DTOs com o mesmo nome em módulos diferentes. */
 function classesDecoradas(): Map<string, ClasseDto> {
     const storage = getMetadataStorage();
     const classes = new Map<string, ClasseDto>();
+    const vistas = new Set<unknown>();
 
     for (const arquivo of arquivosDeDto(DIST)) {
         let mod: Record<string, unknown>;
@@ -68,12 +71,16 @@ function classesDecoradas(): Map<string, ClasseDto> {
         } catch {
             continue; // DTO que não carrega isolado não é regressão de validação
         }
+        const origem = relative(DIST, arquivo).replace(/\.js$/, '');
         for (const [nome, exportado] of Object.entries(mod)) {
             if (typeof exportado !== 'function' || !/^[A-Z]/.test(nome)) continue;
-            if (classes.has(nome)) continue;
+            // Re-export compilado vira getter; a classe entra pelo arquivo que a declara
+            if (Object.getOwnPropertyDescriptor(mod, nome)?.get) continue;
+            if (vistas.has(exportado)) continue;
             // Sem metadata de validação não há o que comparar: entidade de resposta, enum, helper
             if (storage.getTargetValidationMetadatas(exportado, '', true, false).length === 0) continue;
-            classes.set(nome, exportado as ClasseDto);
+            vistas.add(exportado);
+            classes.set(`${origem}::${nome}`, exportado as ClasseDto);
         }
     }
     return classes;
@@ -108,14 +115,14 @@ async function gerarSnapshot(): Promise<Snapshot> {
     const classes = [...classesDecoradas()].sort(([a], [b]) => (a < b ? -1 : 1));
     const snapshot: Snapshot = {};
 
-    for (const [nome, cls] of classes) {
+    for (const [id, cls] of classes) {
         const props = propriedadesValidadas(cls);
 
         for (const [forma, valor] of Object.entries(FORMAS)) {
             const payload: Record<string, unknown> = {};
             if (forma !== 'vazio') for (const p of props) payload[p] = valor;
 
-            const chave = `${nome}::${forma}`;
+            const chave = `${id}::${forma}`;
             try {
                 // Mesmas opções do ValidationPipe global (app.module.ts)
                 const instancia = plainToInstance(cls, payload);
