@@ -280,6 +280,11 @@ export class ImportacaoOrcamentoService {
                         },
                     },
                 },
+                compartilhamentosPadrao: {
+                    where: { removido_em: null, portfolio_compartilhado: { removido_em: null } },
+                    select: { portfolio_compartilhado_id: true },
+                    orderBy: { id: 'asc' },
+                },
             },
             orderBy: { titulo: 'asc' },
         });
@@ -287,7 +292,8 @@ export class ImportacaoOrcamentoService {
         return listActive.map((r) => {
             return {
                 pode_editar: false,
-                ...r,
+                ...{ ...r, compartilhamentosPadrao: undefined },
+                portfolios_compartilhados_padrao: r.compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
                 icone_impressao: null,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
             };

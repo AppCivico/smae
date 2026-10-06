@@ -311,6 +311,9 @@ model Pessoa {
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
     projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
 
+    PortfolioCompartilhamentoPadraoQueCriei  PortfolioCompartilhamentoPadrao[] @relation("Criador")
+    PortfolioCompartilhamentoPadraoQueRemovi PortfolioCompartilhamentoPadrao[] @relation("Removedor")
+
     partidosQueCriei     Partido[] @relation("Criador")
     partidosQueAtualizei Partido[] @relation("Atualizador")
     partidosQueRemovi    Partido[] @relation("Removedor")
@@ -3934,6 +3937,9 @@ model Portfolio {
     ImportacaoLog                 ImportacaoOrcamento[]
     PortfolioGrupoPortfolio       PortfolioGrupoPortfolio[]
     projetosCompartilhados        PortfolioProjetoCompartilhado[]
+    // Portfólios com os quais os projetos/obras criados neste portfólio são compartilhados automaticamente
+    compartilhamentosPadrao       PortfolioCompartilhamentoPadrao[] @relation("PortfolioCompartilhamentoPadraoOrigem")
+    compartilhadoPorPadraoDe      PortfolioCompartilhamentoPadrao[] @relation("PortfolioCompartilhamentoPadraoDestino")
     ViewProjetoMDO                ViewProjetoMDO[]
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
     ViewProjetoV2                 ViewProjetoV2[]
@@ -4435,6 +4441,29 @@ model PortfolioProjetoCompartilhado {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
 
     @@map("portfolio_projeto_compartilhado")
+}
+
+// Compartilhamento padrão: todo projeto/obra criado em `portfolio` nasce compartilhado
+// com `portfolio_compartilhado` (vira uma linha em PortfolioProjetoCompartilhado).
+model PortfolioCompartilhamentoPadrao {
+    id Int @id @default(autoincrement())
+
+    portfolio_id               Int
+    portfolio_compartilhado_id Int
+    portfolio                  Portfolio @relation("PortfolioCompartilhamentoPadraoOrigem", fields: [portfolio_id], references: [id])
+    portfolio_compartilhado    Portfolio @relation("PortfolioCompartilhamentoPadraoDestino", fields: [portfolio_compartilhado_id], references: [id], map: "portfolio_compartilhamento_padrao_compartilhado_id_fkey")
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([portfolio_id])
+    @@index([portfolio_compartilhado_id], map: "portfolio_compartilhamento_padrao_compartilhado_id_idx")
+    @@map("portfolio_compartilhamento_padrao")
 }
 
 model ProjetoEquipe {
