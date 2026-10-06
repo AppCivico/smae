@@ -1123,6 +1123,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'ProjetoTagMDO.editar',
             'ProjetoTagMDO.remover',
             'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
+            'Reports.modelo_admin.MDO',
             'ProjetoMDO.administrador_no_orgao',
             // 'Reports.dashboard_mdo',
             'MDO.revisar_obra',
@@ -1152,6 +1153,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao: 'Pode ser escolhido(a) como assessor no escritório de projetos e tem acesso irrestrito aos projetos',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
+            'Reports.modelo_admin.Projetos',
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
@@ -1194,6 +1196,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'MDO.revisar_obra',
             'ProjetoTagMDO.remover',
             'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
+            'Reports.modelo_admin.MDO',
             'MDO.gestor_de_projeto',
             'Reports.dashboard_mdo',
             'ProjetoMDO.orcamento',
