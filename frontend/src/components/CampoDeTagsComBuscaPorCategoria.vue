@@ -219,6 +219,7 @@ watch(() => props.valoresIniciais, () => {
 
       <button
         class="like-a__text addlink"
+        type="button"
         aria-label="excluir"
         title="excluir"
         @click="removerLinha(idx)"
