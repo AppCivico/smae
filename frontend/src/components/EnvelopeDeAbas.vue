@@ -174,24 +174,26 @@ watch(
       </ul>
     </nav>
 
-    <Transition
-      v-for="nomeDaAba in abas"
-      :key="nomeDaAba"
-      appear
-      name="slide"
-    >
-      <div
-        v-show="String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
-        :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
-        class="abas__conteudo"
+    <div class="abas__conteudos">
+      <Transition
+        v-for="nomeDaAba in abas"
+        :key="nomeDaAba"
+        appear
+        name="slide"
       >
-        <slot
-          :name="nomeDaAba"
-          :está-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
-          :aba-esta-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
-        />
-      </div>
-    </Transition>
+        <div
+          v-show="String(abaAberta) === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+          :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
+          class="abas__conteudo"
+        >
+          <slot
+            :name="nomeDaAba"
+            :está-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+            :aba-esta-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+          />
+        </div>
+      </Transition>
+    </div>
   </div>
 </template>
 <style lang="less">
@@ -244,6 +246,18 @@ watch(
   .abas-lista__item--aberta sup.info {
     background-color: @c600;
   }
+}
+
+// as abas ocupam a mesma célula para que, durante a transição, a que entra não
+// empurre a que sai
+.abas__conteudos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.abas__conteudo {
+  grid-area: 1 / 1;
+  align-self: start;
 }
 
 .abas__link {
