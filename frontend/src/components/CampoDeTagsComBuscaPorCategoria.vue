@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
-  computed, onMounted, ref, watch, watchEffect,
+  computed, onMounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -150,10 +150,14 @@ onMounted(() => {
   montar();
 });
 
-watchEffect(async () => {
-  const caminho = caminhoParaApi(rota.meta);
+// `rota.meta` é um objeto novo a cada navegação, mesmo que só a query mude.
+// Por isso, assistimos apenas aos valores primitivos derivados dele.
+watch([
+  () => caminhoParaApi(rota.meta),
+  () => props.pdmId,
+], async ([caminho, pdmId]) => {
   const { linhas } = await requestS.get(`${baseUrl}/${caminho}`, {
-    pdm_id: props.pdmId,
+    pdm_id: pdmId,
   });
 
   if (Array.isArray(linhas)) {
@@ -162,7 +166,7 @@ watchEffect(async () => {
   } else {
     throw new Error('lista de tags entregue fora do padrão esperado');
   }
-});
+}, { immediate: true });
 
 watch(() => props.valoresIniciais, () => {
   montar();
