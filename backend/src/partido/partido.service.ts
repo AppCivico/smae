@@ -68,9 +68,10 @@ export class PartidoService {
     }
 
     async findOne(id: number, user: PessoaFromJwt) {
-        return await this.prisma.partido.findUniqueOrThrow({
+        return await this.prisma.partido.findFirstOrThrow({
             where: {
                 id: id,
+                removido_em: null,
             },
         });
     }
@@ -164,7 +165,7 @@ export class PartidoService {
             throw new HttpException('Partido não pode ser excluído, pois possui transferência(s).', 400);
 
         const deleted = await this.prisma.partido.updateMany({
-            where: { id: id },
+            where: { id: id, removido_em: null },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),

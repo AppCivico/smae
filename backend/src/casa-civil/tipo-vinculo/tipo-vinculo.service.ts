@@ -85,7 +85,7 @@ export class TipoVinculoService {
         if (emUso > 0) throw new HttpException('Não é possível remover tipo de vínculo em uso.', 400);
 
         const deleted = await this.prisma.tipoVinculo.updateMany({
-            where: { id: id },
+            where: { id: id, removido_em: null },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
