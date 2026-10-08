@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { obras as schema, projetoFiltro } from '@/consts/formSchemas';
+import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
@@ -417,7 +417,7 @@ onMounted(() => {
           class="label"
           for="codigo"
         >
-          {{ projetoFiltro.fields.codigo.spec.label }}
+          Número do contrato
         </label>
 
         <input
