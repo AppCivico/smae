@@ -259,7 +259,7 @@ export class TaskService {
         // se tem user, nao é report, então verificar se tem já tem algo na fila
         // se tiver algo pendente, volta o mesmo ID
         if (user) {
-            const existing = await this.prisma.task_queue.findFirst({
+            const candidates = await this.prisma.task_queue.findMany({
                 where: {
                     status: { in: ['running', 'pending'] },
                     pessoa_id: user.id,
@@ -268,12 +268,11 @@ export class TaskService {
                 orderBy: [{ erro_mensagem: { nulls: 'first', sort: 'desc' } }],
             });
 
-            if (
-                existing &&
-                existing.params?.valueOf() == 'object' &&
-                areJsonObjectsEquivalent(JSON.parse(existing.params?.toString()), dto.params)
-            )
-                return { id: existing.id };
+            const existing = candidates.find(
+                (c) =>
+                    typeof c.params == 'object' && c.params !== null && areJsonObjectsEquivalent(c.params, dto.params)
+            );
+            if (existing) return { id: existing.id };
         }
 
         const performCreateTask = async (prismaTx: Prisma.TransactionClient): Promise<task_queue> => {

@@ -125,17 +125,11 @@ describe('task', () => {
             assertStatus(await api(admin).get(`/api/task/${id}`), 200);
         });
 
-        it(
-            'mesma task pendente do mesmo usuário reaproveita o id',
-            {
-                todo: 'BUG: POST /api/task: esperado o mesmo id da task pendente idêntica, veio um id novo (comparação params.valueOf() == "object" nunca é verdadeira)',
-            },
-            async () => {
-                const { id, echo } = await criarEcho();
-                const repetida = await api(admin).post('/api/task').send({ type: 'echo', params: { echo } });
-                assertStatus(repetida, 201);
-                assert.equal(repetida.body.id, id);
-            }
-        );
+        it('mesma task pendente do mesmo usuário reaproveita o id', async () => {
+            const { id, echo } = await criarEcho();
+            const repetida = await api(admin).post('/api/task').send({ type: 'echo', params: { echo } });
+            assertStatus(repetida, 201);
+            assert.equal(repetida.body.id, id);
+        });
     });
 });
