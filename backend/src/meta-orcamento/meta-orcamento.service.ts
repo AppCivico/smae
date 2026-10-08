@@ -232,7 +232,7 @@ export class MetaOrcamentoService {
 
                         ano_referencia: metaOrcamento.ano_referencia,
 
-                        custo_previsto: dto.custo_previsto || metaOrcamento.custo_previsto,
+                        custo_previsto: dto.custo_previsto ?? metaOrcamento.custo_previsto,
                         parte_dotacao: dto.parte_dotacao || metaOrcamento.parte_dotacao,
 
                         criado_por: user.id,

@@ -728,7 +728,7 @@ export class OrcamentoRealizadoService {
                     },
                 },
             });
-            if (!processoDb) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
+            if (!processoDb) throw new HttpException('Processo não foi encontrado no banco de dados', 400);
         } else {
             const dotacaoDb = await this.prisma.dotacaoRealizado.findUnique({
                 where: {
@@ -738,7 +738,7 @@ export class OrcamentoRealizadoService {
                     },
                 },
             });
-            if (!dotacaoDb) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
+            if (!dotacaoDb) throw new HttpException('Dotação não foi encontrado no banco de dados', 400);
         }
 
         return {
@@ -1102,7 +1102,7 @@ export class OrcamentoRealizadoService {
                         },
                     },
                 });
-                if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
+                if (!notaTx) throw new HttpException('Nota-Empenho não foi encontrado no banco de dados', 400);
 
                 // não tem trigger nessa table, não há o que reprocessar
                 //await prismaTxn.dotacaoProcessoNota.update({where: { id: notaTx.id }, data: { id: notaTx.id } });
@@ -1116,7 +1116,7 @@ export class OrcamentoRealizadoService {
                         },
                     },
                 });
-                if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
+                if (!processoTx) throw new HttpException('Processo não foi encontrado no banco de dados', 400);
 
                 // não tem trigger nessa table, não há o que reprocessar
                 // await prismaTxn.dotacaoProcesso.update({where: { id: processoTx.id },data: { id: processoTx.id }, });
@@ -1129,7 +1129,7 @@ export class OrcamentoRealizadoService {
                         },
                     },
                 });
-                if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
+                if (!processoTx) throw new HttpException('Dotação não foi encontrado no banco de dados', 400);
 
                 // não tem trigger nessa table, não há o que reprocessar
                 // await prismaTxn.dotacaoRealizado.update({ where: { id: processoTx.id }, data: { id: processoTx.id }, });

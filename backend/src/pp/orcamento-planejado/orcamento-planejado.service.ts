@@ -41,7 +41,7 @@ export class OrcamentoPlanejadoService {
             where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
             select: { id: true },
         });
-        if (!dotacao) throw new HttpException('Dotação/projeto não foi ainda não foi importada no banco de dados', 400);
+        if (!dotacao) throw new HttpException('Dotação/projeto ainda não foi importada no banco de dados', 400);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
