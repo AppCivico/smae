@@ -89,34 +89,4 @@ form {
     -webkit-text-fill-color: inherit !important;
   }
 }
-
-.password-field {
-  position: relative;
-
-  // Prevenir o ícone de "mostrar senha" no input de senha do Edge
-  input[type="password"]::-ms-reveal {
-    display: none;
-  }
-}
-
-.password-field__input {
-  padding-right: 40px;
-}
-
-.password-field__toggle {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-}
-
-.password-field__icon {
-  display: block;
-}
 </style>
