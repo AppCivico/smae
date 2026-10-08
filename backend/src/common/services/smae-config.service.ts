@@ -172,6 +172,8 @@ export class EmailConfigService {
             from: dto.from,
             template_resolver_class: 'Shypper::TemplateResolvers::HTTP',
             email_transporter_class: 'Email::Sender::Transport::SMTP',
+            template_resolver_config: dto.template_resolver_config as any,
+            email_transporter_config: dto.email_transporter_config as any,
         };
 
         const row = await this.prisma.emaildbConfig.create({ data });
