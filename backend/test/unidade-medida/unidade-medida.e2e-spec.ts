@@ -149,40 +149,30 @@ describe('unidade-medida', () => {
             assert.match(dup.body.message, /Sigla igual ou semelhante/);
         });
 
-        it(
-            'PATCH só com sigla repetida é recusado',
-            { todo: 'BUG: unidade-medida valida a sigla no update só quando descricao também vem no corpo' },
-            async () => {
-                const s = sigla();
-                assertStatus(await api(gestor).post('/api/unidade-medida').send({ sigla: s, descricao: uniq() }), 201);
-                const outra = await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() });
-                assertStatus(outra, 201);
+        it('PATCH só com sigla repetida é recusado', async () => {
+            const s = sigla();
+            assertStatus(await api(gestor).post('/api/unidade-medida').send({ sigla: s, descricao: uniq() }), 201);
+            const outra = await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() });
+            assertStatus(outra, 201);
 
-                assertStatus(await api(gestor).patch(`/api/unidade-medida/${outra.body.id}`).send({ sigla: s }), 400);
-            }
-        );
+            assertStatus(await api(gestor).patch(`/api/unidade-medida/${outra.body.id}`).send({ sigla: s }), 400);
+        });
 
-        it(
-            'PATCH só com descricao nova é aceito',
-            {
-                todo: 'BUG: unidade-medida PATCH só com descricao falha com "Sigla igual" (sigla undefined vira filtro vazio)',
-            },
-            async () => {
-                assertStatus(
-                    await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() }),
-                    201
-                );
-                const alvo = await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() });
-                assertStatus(alvo, 201);
+        it('PATCH só com descricao nova é aceito', async () => {
+            assertStatus(
+                await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() }),
+                201
+            );
+            const alvo = await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() });
+            assertStatus(alvo, 201);
 
-                assertStatus(
-                    await api(gestor)
-                        .patch(`/api/unidade-medida/${alvo.body.id}`)
-                        .send({ descricao: uniq('nova') }),
-                    200
-                );
-            }
-        );
+            assertStatus(
+                await api(gestor)
+                    .patch(`/api/unidade-medida/${alvo.body.id}`)
+                    .send({ descricao: uniq('nova') }),
+                200
+            );
+        });
 
         it('400 ao remover unidade usada por variável ativa, liberada depois que a variável é removida', async () => {
             const criado = await api(gestor).post('/api/unidade-medida').send({ sigla: sigla(), descricao: uniq() });

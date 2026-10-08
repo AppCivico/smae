@@ -177,19 +177,15 @@ describe('partido', () => {
             assert.ok(comRemovidos.body.linhas.some((l: { id: number }) => l.id === id));
         });
 
-        it(
-            'GET por id não devolve partido removido',
-            { todo: 'BUG: GET /partido/:id usa findUniqueOrThrow sem filtrar removido_em' },
-            async () => {
-                const criado = await api(gestor)
-                    .post('/api/partido')
-                    .send(await criarPartido());
-                assertStatus(criado, 201);
-                assertStatus(await api(gestor).delete(`/api/partido/${criado.body.id}`), 202);
+        it('GET por id não devolve partido removido', async () => {
+            const criado = await api(gestor)
+                .post('/api/partido')
+                .send(await criarPartido());
+            assertStatus(criado, 201);
+            assertStatus(await api(gestor).delete(`/api/partido/${criado.body.id}`), 202);
 
-                assertStatus(await api(gestor).get(`/api/partido/${criado.body.id}`), 404);
-            }
-        );
+            assertStatus(await api(gestor).get(`/api/partido/${criado.body.id}`), 404);
+        });
     });
 
     describe('unicidade entre registros ativos', () => {
@@ -229,19 +225,15 @@ describe('partido', () => {
             assert.match(res.body.message, /Número igual já existe/);
         });
 
-        it(
-            'PATCH com sigla de outro partido é recusado',
-            { todo: 'BUG: partido update confere a sigla na tabela orgao, não na tabela partido' },
-            async () => {
-                const a = await criarPartido();
-                assertStatus(await api(gestor).post('/api/partido').send(a), 201);
-                const b = await criarPartido();
-                const criadoB = await api(gestor).post('/api/partido').send(b);
-                assertStatus(criadoB, 201);
+        it('PATCH com sigla de outro partido é recusado', async () => {
+            const a = await criarPartido();
+            assertStatus(await api(gestor).post('/api/partido').send(a), 201);
+            const b = await criarPartido();
+            const criadoB = await api(gestor).post('/api/partido').send(b);
+            assertStatus(criadoB, 201);
 
-                assertStatus(await api(gestor).patch(`/api/partido/${criadoB.body.id}`).send({ sigla: a.sigla }), 400);
-            }
-        );
+            assertStatus(await api(gestor).patch(`/api/partido/${criadoB.body.id}`).send({ sigla: a.sigla }), 400);
+        });
 
         it('400 ao remover partido com mandato, liberado depois que o mandato é removido', async () => {
             const criado = await api(gestor)
