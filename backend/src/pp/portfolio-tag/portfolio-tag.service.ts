@@ -28,8 +28,7 @@ export class PortfolioTagService {
             if (!self) throw new HttpException('Tag de portfólio não encontrada', 404);
 
             // O portfólio de destino é verificado abaixo; aqui garante acesso ao portfólio atual da tag.
-            if (self.portfolio_id !== dto.portfolio_id)
-                await this.portfolioService.findAll(TipoProjeto.PP, user, false, self.portfolio_id);
+            if (self.portfolio_id !== dto.portfolio_id) await this.verificarAcessoPortfolio(self.portfolio_id, user);
 
             // Caso esteja em uso, não pode editar.
             const emUso = await this.prisma.projetoPortfolioTag.count({
@@ -157,6 +156,7 @@ export class PortfolioTagService {
                 },
             },
         });
+        await this.verificarAcessoPortfolio(linha.portfolio.id, user);
 
         return {
             id: linha.id,
@@ -168,6 +168,12 @@ export class PortfolioTagService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.portfolioTag.findFirst({
+            where: { id, removido_em: null },
+            select: { portfolio_id: true },
+        });
+        if (self) await this.verificarAcessoPortfolio(self.portfolio_id, user);
+
         // Verificando se está em uso
         const emUso = await this.prisma.projetoPortfolioTag.count({
             where: { portfolio_tag_id: id, removido_em: null, projeto: { removido_em: null } },
@@ -175,7 +181,7 @@ export class PortfolioTagService {
         if (emUso > 0) throw new HttpException('Tag de portfólio em uso em projetos.', 400);
 
         const deleted = await this.prisma.portfolioTag.updateMany({
-            where: { id: id },
+            where: { id, removido_em: null },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
@@ -183,5 +189,10 @@ export class PortfolioTagService {
         });
 
         return deleted;
+    }
+
+    // Mesmo critério do modo edição da listagem de portfólios; lança 404 sem acesso.
+    private async verificarAcessoPortfolio(portfolio_id: number, user: PessoaFromJwt): Promise<void> {
+        await this.portfolioService.findAll(TipoProjeto.PP, user, false, portfolio_id);
     }
 }
