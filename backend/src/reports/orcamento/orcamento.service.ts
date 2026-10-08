@@ -3,6 +3,7 @@ import { flatten } from '@json2csv/transforms';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
+import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getReportRowSchema } from '../post-process/report-column.decorator';
 import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
@@ -212,6 +213,12 @@ export class OrcamentoService implements ReportableService, SchemaAwareReportabl
         if (dto.portfolio_id) {
             andConditionsBase.push(buildPortfolioFilterOrcamentoRealizadoItem(dto.portfolio_id));
             andConditionsPlan.push(buildPortfolioFilterOrcamentoPlanejado(dto.portfolio_id));
+        }
+
+        if ((dto.portfolio_id || dto.projeto_id) && dto.tipo_projeto) {
+            const permissoes = await ProjetoGetPermissionSet(dto.tipo_projeto, user ?? undefined);
+            andConditionsBase.push({ OrcamentoRealizado: { projeto: { AND: permissoes } } });
+            andConditionsPlan.push({ projeto: { AND: permissoes } });
         }
 
         // Filtro por órgãos

@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 
 export function DateTransform(a: TransformFnParams): Date | undefined | null {
-    if (a.value === '' || a.value === null) return a.value;
+    if (a.value === '' || a.value === null || a.value === undefined) return a.value;
     if (a.value instanceof Date) return a.value;
 
     const dateStr = a.value.substring(0, 10);
@@ -26,7 +26,7 @@ export function DateTransform(a: TransformFnParams): Date | undefined | null {
 }
 
 export function DateTransformDMY(a: TransformFnParams): Date | undefined | null {
-    if (a.value === '' || a.value === null) return a.value;
+    if (a.value === '' || a.value === null || a.value === undefined) return a.value;
     if (a.value instanceof Date) return a.value;
 
     const dateTimeStr = a.value as string;

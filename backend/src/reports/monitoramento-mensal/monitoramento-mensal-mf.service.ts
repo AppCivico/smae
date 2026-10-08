@@ -104,8 +104,8 @@ export class MonitoramentoMensalMfService {
         }
 
         return {
-            ano: cf.data_ciclo.getFullYear(),
-            mes: cf.data_ciclo.getMonth(),
+            ano: cf.data_ciclo.getUTCFullYear(),
+            mes: cf.data_ciclo.getUTCMonth() + 1,
             ciclo_fisico_id: cf.id,
             metas: metasOut,
             seriesVariaveis: seriesVariaveis,
