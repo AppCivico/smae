@@ -20,11 +20,17 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const props = defineProps({
   obraId: {
-    type: Number,
+    type: [
+      Number,
+      String,
+    ],
     default: 0,
   },
   projetoId: {
-    type: Number,
+    type: [
+      Number,
+      String,
+    ],
     default: 0,
   },
 });
