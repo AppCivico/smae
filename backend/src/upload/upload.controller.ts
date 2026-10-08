@@ -2,6 +2,7 @@ import {
     Body,
     Controller,
     Get,
+    HttpException,
     Param,
     Patch,
     Post,
@@ -66,6 +67,7 @@ export class UploadController {
 
             data.stream.pipe(res);
         } catch (err) {
+            if (err instanceof HttpException) throw err;
             console.error('Erro ao baixar arquivo do storage');
             console.error(err);
 

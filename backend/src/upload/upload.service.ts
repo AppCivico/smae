@@ -65,6 +65,8 @@ export class UploadService {
     ) {
         let originalname = '';
 
+        if (!file) throw new HttpException('Arquivo não enviado', 400);
+
         if ('size' in file) {
             if (file.size < 1) {
                 throw new HttpException('O arquivo precisa ter ao menos 1 byte!', 400);
@@ -338,8 +340,9 @@ export class UploadService {
 
         if (isSvg) {
             // Parse full file buffer with JSDOM to validate SVG structure
-            const dom = new JSDOM(file.buffer.toString('utf-8'), { contentType: 'image/svg+xml' });
+            let dom: JSDOM | undefined;
             try {
+                dom = new JSDOM(file.buffer.toString('utf-8'), { contentType: 'image/svg+xml' });
                 const document = dom.window.document;
 
                 // Validate that the parsed document contains a top-level <svg> element
@@ -351,7 +354,7 @@ export class UploadService {
                 throw new HttpException('O arquivo não é um SVG válido.', 400);
             } finally {
                 // Always close the JSDOM window to prevent memory leaks
-                if (dom && dom.window) dom.window.close();
+                if (dom) dom.window.close();
             }
         } else {
             try {
@@ -617,10 +620,11 @@ export class UploadService {
     }
 
     async getReadableStreamById(id: number): Promise<TokenResponse> {
-        const arquivo = await this.prisma.arquivo.findFirstOrThrow({
+        const arquivo = await this.prisma.arquivo.findFirst({
             where: { id: id },
             select: { caminho: true, nome_original: true, mime_type: true },
         });
+        if (!arquivo) throw new HttpException('Arquivo não encontrado', 404);
 
         return {
             stream: await this.storage.getStream(arquivo.caminho),
