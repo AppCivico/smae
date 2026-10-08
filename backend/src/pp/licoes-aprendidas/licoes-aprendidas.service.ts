@@ -142,6 +142,12 @@ export class LicoesAprendidasService {
                     if (exists) throw new HttpException('Valor já em uso', 400);
                 }
 
+                const self = await prismaTx.projetoLicaoAprendida.findFirst({
+                    where: { id, projeto_id, removido_em: null },
+                    select: { id: true },
+                });
+                if (!self) throw new HttpException('Não foi possível encontrar lição aprendida para este ID', 400);
+
                 return await prismaTx.projetoLicaoAprendida.update({
                     where: { id },
                     data: {

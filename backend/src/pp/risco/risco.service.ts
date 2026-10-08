@@ -295,13 +295,14 @@ export class RiscoService {
         };
     }
 
-    async update(projeto_risco_id: number, dto: UpdateRiscoDto, user: PessoaFromJwt) {
+    async update(projeto_id: number, projeto_risco_id: number, dto: UpdateRiscoDto, user: PessoaFromJwt) {
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const self = await prismaTx.projetoRisco.findFirstOrThrow({
-                    where: { id: projeto_risco_id },
+                const self = await prismaTx.projetoRisco.findFirst({
+                    where: { id: projeto_risco_id, projeto_id, removido_em: null },
                     select: { codigo: true },
                 });
+                if (!self) throw new HttpException('Não foi possível encontrar o Risco', 400);
 
                 if (dto.tarefa_id) {
                     const tarefa_id = dto.tarefa_id;
