@@ -32,6 +32,7 @@ import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
 import { PdmCicloService } from './pdm.ciclo.service';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../upload/arquivo-preview.helper';
+import { MONITORAMENTO_CONFIG_DEFAULTS } from './monitoramento-config.defaults';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -176,50 +177,6 @@ export const PDMGetPermissionSet = async (
     return ret;
 };
 
-type MonitoramentoFaseDefault = {
-    ordem: number;
-    rotulo: string;
-    aceita_tags: boolean;
-    aceita_anexos: boolean;
-    blocos: { ordem: number; rotulo: string }[];
-};
-
-// Configuração padrão das 4 fases do monitoramento do ciclo. Espelha o backfill da migration
-// 20260625133722_pdm_monitoramento_ciclo_config — mantenha em sincronia com aquele SQL.
-const MONITORAMENTO_CONFIG_DEFAULTS: MonitoramentoFaseDefault[] = [
-    {
-        ordem: 1,
-        rotulo: 'Qualificação',
-        aceita_tags: false,
-        aceita_anexos: true,
-        blocos: [{ ordem: 1, rotulo: 'Informações complementares' }],
-    },
-    {
-        ordem: 2,
-        rotulo: 'Análise de risco',
-        aceita_tags: false,
-        aceita_anexos: false,
-        blocos: [
-            { ordem: 1, rotulo: 'Detalhamento' },
-            { ordem: 2, rotulo: 'Ponto de atenção' },
-        ],
-    },
-    {
-        ordem: 3,
-        rotulo: 'Tags de monitoramento',
-        aceita_tags: true,
-        aceita_anexos: false,
-        blocos: [],
-    },
-    {
-        ordem: 4,
-        rotulo: 'Fechamento',
-        aceita_tags: false,
-        aceita_anexos: false,
-        blocos: [{ ordem: 1, rotulo: 'Comentário' }],
-    },
-];
-
 @Injectable()
 export class PdmService {
     private readonly logger = new Logger(PdmService.name);
@@ -339,6 +296,7 @@ export class PdmService {
                     tipo: PdmModoParaTipo(tipo),
                     ativo: false,
                     sistema: tipo == 'PDM_AS_PS' ? 'ProgramaDeMetas' : tipo == '_PDM' ? 'PDM' : 'PlanoSetorial',
+                    monitoramento_por_blocos: tipo != '_PDM',
                 },
             });
             logger.log(`PDM criado com ID: ${pdm.id} e tipo: ${tipo}`);
@@ -1625,6 +1583,9 @@ export class PdmService {
         if (new Set(faseIds).size !== faseIds.length)
             throw new BadRequestException('Cada fase só pode aparecer uma vez (id repetido)');
 
+        if (!dto.fases.some((f) => f.habilitada))
+            throw new BadRequestException('Ao menos uma fase precisa estar habilitada');
+
         for (const fase of dto.fases) {
             const blocos = fase.blocos ?? [];
             if (fase.aceita_tags) {
@@ -1636,6 +1597,8 @@ export class PdmService {
                 throw new BadRequestException(
                     `Fase "${fase.rotulo}" é de texto e precisa de ao menos um bloco`
                 );
+            } else if (fase.habilitada && !blocos.some((b) => b.habilitado)) {
+                throw new BadRequestException(`Fase "${fase.rotulo}" precisa de ao menos um bloco habilitado`);
             }
 
             const blocoIds = blocos.filter((b) => b.id != null).map((b) => b.id!);
@@ -1680,6 +1643,9 @@ export class PdmService {
         // offset para reservar a faixa final de `ordem` (1..N) durante a reatribuição.
         // Bem acima do domínio real (fases 1..4, blocos 1..5) e abaixo do máx de SmallInt.
         const ORDEM_OFFSET = 1000;
+
+        // serializa com o salvamento das fases (que trava a linha do pdm com FOR SHARE)
+        await prismaTx.$queryRaw`SELECT id FROM pdm WHERE id = ${pdm_id}::int FOR NO KEY UPDATE`;
 
         const existentes = await prismaTx.pdmMonitoramentoFaseConfig.findMany({
             where: { pdm_id, removido_em: null },
@@ -1818,6 +1784,14 @@ export class PdmService {
 
             ret.push({ id: faseId });
         }
+
+        // a fase que fecha o ciclo e a ordem mudam: o consolidado de todas as metas do plano precisa ser refeito
+        await prismaTx.$queryRaw`
+            SELECT f_add_refresh_meta_task(m.id)::text
+            FROM meta m
+            JOIN pdm p ON p.id = m.pdm_id
+            WHERE m.pdm_id = ${pdm_id}::int AND m.removido_em IS NULL AND p.monitoramento_por_blocos`;
+
         return ret;
     }
 

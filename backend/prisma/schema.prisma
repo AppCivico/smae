@@ -100,6 +100,13 @@ model Pessoa {
     PdmMonitoramentoBlocoConfigQueAtualizei PdmMonitoramentoBlocoConfig[] @relation("Atualizador")
     PdmMonitoramentoBlocoConfigQueRemovi    PdmMonitoramentoBlocoConfig[] @relation("Removedor")
 
+    MetaMonitoramentoFaseQueCriei              MetaMonitoramentoFase[]          @relation("Criador")
+    MetaMonitoramentoFaseQueRemovi             MetaMonitoramentoFase[]          @relation("Removedor")
+    MetaMonitoramentoFaseQueReabri             MetaMonitoramentoFase[]          @relation("reabertura")
+    MetaMonitoramentoFaseDocumentoQueCriei     MetaMonitoramentoFaseDocumento[] @relation("Criador")
+    MetaMonitoramentoFaseDocumentoQueAtualizei MetaMonitoramentoFaseDocumento[] @relation("Atualizador")
+    MetaMonitoramentoFaseDocumentoQueRemovi    MetaMonitoramentoFaseDocumento[] @relation("Removedor")
+
     FormulaCompostaQueCriei     FormulaComposta[] @relation("Criador")
     FormulaCompostaQueDesativei FormulaComposta[] @relation("Removedor")
     FormulaCompostaQueAtualizei FormulaComposta[] @relation("Atualizador")
@@ -1169,9 +1176,10 @@ model Tag {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    meta_tag       MetaTag[]
-    iniciativa_tag IniciativaTag[]
-    atividade_tag  AtividadeTag[]
+    meta_tag                    MetaTag[]
+    iniciativa_tag              IniciativaTag[]
+    atividade_tag               AtividadeTag[]
+    meta_monitoramento_fase_tag MetaMonitoramentoFaseTag[]
 
     @@index([pdm_id])
     @@map("tag")
@@ -1335,6 +1343,7 @@ model Arquivo {
     Pdm                             Pdm[]
     VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
+    MetaMonitoramentoFaseDocumento  MetaMonitoramentoFaseDocumento[]
     Relatorio                       Relatorio[]
     projeto_documentos              ProjetoDocumento[]
     fotosParlamentar                Parlamentar[]
@@ -1455,6 +1464,8 @@ model Meta {
     MetaCicloFisicoAnaliseDocumento        MetaCicloFisicoAnaliseDocumento[]
     MetaCicloFisicoRisco                   MetaCicloFisicoRisco[]
     MetaCicloFisicoFechamento              MetaCicloFisicoFechamento[]
+    MetaMonitoramentoFase                  MetaMonitoramentoFase[]
+    MetaMonitoramentoFaseDocumento         MetaMonitoramentoFaseDocumento[]
     MetaOrcamento                          OrcamentoPrevisto[]
     OrcamentoPlanejado                     OrcamentoPlanejado[]
     OrcamentoRealizado                     OrcamentoRealizado[]
@@ -2837,13 +2848,13 @@ model CicloFasesPdmConfig {
 }
 
 // Configuração das fases do monitoramento do ciclo físico, por PdM/PS (apenas não-legados).
-// Aplicada quando Pdm.monitoramento_por_blocos = true (registro de dados é follow-up; hoje só armazena a config).
+// O preenchimento fica em MetaMonitoramentoFase quando Pdm.monitoramento_por_blocos = true.
 model PdmMonitoramentoFaseConfig {
     id     Int @id @default(autoincrement())
     pdm_id Int
     pdm    Pdm @relation(fields: [pdm_id], references: [id])
 
-    ordem      Int     @db.SmallInt // 1..4, identidade estável entre edições + ordem de exibição
+    ordem      Int     @db.SmallInt // 1..4, posição no array enviado; a identidade é o id
     habilitada Boolean @default(true)
     rotulo     String
     // aceita_tags = true  -> fase de tags; blocos de texto NÃO são permitidos (regra no servidor).
@@ -2851,7 +2862,9 @@ model PdmMonitoramentoFaseConfig {
     aceita_tags   Boolean @default(false)
     aceita_anexos Boolean @default(false)
 
-    blocos PdmMonitoramentoBlocoConfig[]
+    blocos     PdmMonitoramentoBlocoConfig[]
+    revisoes   MetaMonitoramentoFase[]
+    documentos MetaMonitoramentoFaseDocumento[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -2873,9 +2886,11 @@ model PdmMonitoramentoBlocoConfig {
     fase_id Int
     fase    PdmMonitoramentoFaseConfig @relation(fields: [fase_id], references: [id])
 
-    ordem      Int     @db.SmallInt // 1..5, identidade estável dentro da fase + ordem de exibição
+    ordem      Int     @db.SmallInt // 1..5, posição no array enviado; a identidade é o id
     habilitado Boolean @default(true)
     rotulo     String
+
+    conteudos MetaMonitoramentoFaseBloco[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -2890,6 +2905,104 @@ model PdmMonitoramentoBlocoConfig {
 
     @@index([fase_id])
     @@map("pdm_monitoramento_bloco_config")
+}
+
+// Revisão do preenchimento de uma fase configurada, por meta e ciclo.
+// Índices parciais únicos na migration: uma ultima_revisao por fase e um fechamento aberto por (meta, ciclo).
+model MetaMonitoramentoFase {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+    fase_config_id  Int
+
+    referencia_data    DateTime @db.Date
+    ultima_revisao     Boolean
+    fecha_ciclo        Boolean  @default(false) // era a última fase habilitada quando foi salva
+    comentario_sistema String?
+
+    reaberto_em  DateTime? @db.Timestamptz(6)
+    reaberto_por Int?
+
+    // origem em meta_ciclo_fisico_{analise,risco,fechamento}, preenchido só na migração do plano
+    legado_tipo String? @db.VarChar(16)
+    legado_id   Int?
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    meta         Meta                       @relation(fields: [meta_id], references: [id])
+    ciclo_fisico CicloFisico                @relation(fields: [ciclo_fisico_id], references: [id])
+    fase_config  PdmMonitoramentoFaseConfig @relation(fields: [fase_config_id], references: [id])
+    criador      Pessoa                     @relation("Criador", fields: [criado_por], references: [id])
+    removedor    Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
+    reabridor    Pessoa?                    @relation("reabertura", fields: [reaberto_por], references: [id])
+
+    blocos MetaMonitoramentoFaseBloco[]
+    tags   MetaMonitoramentoFaseTag[]
+
+    @@index([meta_id, ciclo_fisico_id])
+    @@index([fase_config_id])
+    @@map("meta_monitoramento_fase")
+}
+
+model MetaMonitoramentoFaseBloco {
+    id              Int    @id @default(autoincrement())
+    revisao_id      Int
+    bloco_config_id Int
+    conteudo        String /// HTML
+
+    revisao      MetaMonitoramentoFase       @relation(fields: [revisao_id], references: [id])
+    bloco_config PdmMonitoramentoBlocoConfig @relation(fields: [bloco_config_id], references: [id])
+
+    @@unique([revisao_id, bloco_config_id])
+    @@index([bloco_config_id])
+    @@map("meta_monitoramento_fase_bloco")
+}
+
+model MetaMonitoramentoFaseTag {
+    id         Int @id @default(autoincrement())
+    revisao_id Int
+    tag_id     Int
+
+    revisao MetaMonitoramentoFase @relation(fields: [revisao_id], references: [id])
+    tag     Tag                   @relation(fields: [tag_id], references: [id])
+
+    @@unique([revisao_id, tag_id])
+    @@index([tag_id])
+    @@map("meta_monitoramento_fase_tag")
+}
+
+model MetaMonitoramentoFaseDocumento {
+    id              Int @id @default(autoincrement())
+    meta_id         Int
+    ciclo_fisico_id Int
+    fase_config_id  Int
+    arquivo_id      Int
+
+    referencia_data DateTime @db.Date
+    descricao       String?
+    legado_id       Int?     @unique // meta_ciclo_fisico_analise_documento.id
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    meta         Meta                       @relation(fields: [meta_id], references: [id])
+    ciclo_fisico CicloFisico                @relation(fields: [ciclo_fisico_id], references: [id])
+    fase_config  PdmMonitoramentoFaseConfig @relation(fields: [fase_config_id], references: [id])
+    arquivo      Arquivo                    @relation(fields: [arquivo_id], references: [id])
+    criador      Pessoa                     @relation("Criador", fields: [criado_por], references: [id])
+    atualizador  Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor    Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([meta_id, ciclo_fisico_id])
+    @@index([fase_config_id])
+    @@map("meta_monitoramento_fase_documento")
 }
 
 enum TipoCicloFisico {
@@ -2924,6 +3037,8 @@ model CicloFisico {
     MetaCicloFisicoAnaliseDocumento       MetaCicloFisicoAnaliseDocumento[]
     MetaCicloFisicoRisco                  MetaCicloFisicoRisco[]
     MetaCicloFisicoFechamento             MetaCicloFisicoFechamento[]
+    MetaMonitoramentoFase                 MetaMonitoramentoFase[]
+    MetaMonitoramentoFaseDocumento        MetaMonitoramentoFaseDocumento[]
     FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
     FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
 

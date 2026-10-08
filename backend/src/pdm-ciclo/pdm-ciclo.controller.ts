@@ -69,11 +69,10 @@ export class PsCicloController {
     async findAll(
         @Param() params: FindOneParams,
         @Query() dto: FilterPsCiclo,
+        @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<ListPSCicloDto> {
-        return await this.psCicloService.findAll(tipo, params.id, {
-            ...dto,
-        });
+        return await this.psCicloService.findAll(tipo, params.id, { ...dto }, user);
     }
 
     @Get(':id/ciclo/:id2/monitoramento')

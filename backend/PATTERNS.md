@@ -730,7 +730,7 @@ TRIGGER` aparece comentado). Antes de mexer, confira o que está no banco:
 |---|---|---|
 | `pessoa_acesso_pdm` + `_valido` | `pessoa_acesso_pdm()` (0005), recálculo lazy em `MfService` | Limpeza total por trigger (migrations + `0062`); `pessoa_perfil`/`pessoa.desativado` limpam só a pessoa |
 | `status_meta_ciclo_fisico` | 0006, lazy em `metas.service` | Limpo no recálculo de acesso da pessoa, `meta.ciclo_fase_id`, `etapa`, `cronograma_etapa` (`0062`) e `invalidaStatusIndicador` |
-| `meta_status_consolidado_cf`, `ps_dashboard_consolidado` | task `refresh_meta` (0004 / 0027) | Triggers que chamam `f_add_refresh_meta_task` (`0031`, `0063`, `0023`) + job diário em `pdm.ciclo.service` |
+| `meta_status_consolidado_cf`, `ps_dashboard_consolidado` | task `refresh_meta` (0004 / 0027) | Triggers que chamam `f_add_refresh_meta_task` (`0031`, `0063`, `0023`) + job diário em `pdm.ciclo.service`. Monitoramento por fases: trigger em `meta_monitoramento_fase` (`0031`), `pdm.monitoramento_por_blocos` (`0063`) e `applyMonitoramentoConfig` no TS (a config muda qual fase fecha o ciclo) |
 | `ps_dashboard_variavel` | `recalc_vars_ps_dashboard` (0047) | `AddTaskRecalcVariaveis` no TS |
 | Orçamento consolidado da meta | 0056 | Triggers em `meta_orcamento`, `orcamento_realizado`, `iniciativa`, `atividade` |
 | `transferencia_status_consolidado` | 0007 | Triggers em `tarefa`, `transferencia`, `tarefa_cronograma` (`0039`) |
