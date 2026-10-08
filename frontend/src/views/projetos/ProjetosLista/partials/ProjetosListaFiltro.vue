@@ -96,6 +96,7 @@ const campos = computed<Formulario>(() => [
       projeto_etapa_id: { tipo: 'select', opcoes: opcoesFormulario.value.etapas },
       registrado_em: { tipo: 'date' },
       revisado: { tipo: 'select', opcoes: opcoesFormulario.value.revisado },
+      codigo: { tipo: 'search' },
     },
   },
   {

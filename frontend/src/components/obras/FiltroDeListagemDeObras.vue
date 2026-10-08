@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { obras as schema } from '@/consts/formSchemas';
+import { obras as schema, projetoFiltro } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
@@ -76,6 +76,7 @@ const colunasParaOrdenacao = {
 };
 
 const chavesDeValoresValidos = [
+  'codigo',
   'equipamento_id',
   'grupo_tematico_id',
   'ipp',
@@ -406,6 +407,19 @@ onMounted(() => {
           name="registros_sei"
           type="search"
           :value="valoresIniciaisConsolidados.registros_sei"
+        >
+      </div>
+      <div class="f1 fb15em">
+        <label
+          class="label"
+          for="codigo"
+        >{{ projetoFiltro.fields.codigo.spec.label }}</label>
+        <input
+          id="codigo"
+          class="inputtext light"
+          name="codigo"
+          type="search"
+          :value="valoresIniciaisConsolidados.codigo"
         >
       </div>
     </div>
