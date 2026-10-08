@@ -78,7 +78,6 @@ export class DashboardService {
                 },
             },
         });
-        console.log(painelExterno);
 
         if (painelExterno.length === 0) return;
 

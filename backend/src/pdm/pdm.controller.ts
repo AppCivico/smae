@@ -59,7 +59,6 @@ export class PdmController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroPdm.inserir'])
     create(@Body() createPdmDto: CreatePdmDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        console.log(createPdmDto);
         return this.pdmService.create(this.tipoPdm, createPdmDto, user);
     }
 
