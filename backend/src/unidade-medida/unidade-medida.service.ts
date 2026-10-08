@@ -69,10 +69,10 @@ export class UnidadeMedidaService {
                 },
             });
             if (similarDescExists > 0)
-                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
-                    400
-                );
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
+        if (updateUnidadeMedidaDto.sigla !== undefined) {
             const similarSiglaExists = await this.prisma.unidadeMedida.count({
                 where: {
                     sigla: { endsWith: updateUnidadeMedidaDto.sigla, mode: 'insensitive' },

@@ -68,9 +68,10 @@ export class PartidoService {
     }
 
     async findOne(id: number, user: PessoaFromJwt) {
-        return await this.prisma.partido.findUniqueOrThrow({
+        return await this.prisma.partido.findFirstOrThrow({
             where: {
                 id: id,
+                removido_em: null,
             },
         });
     }
@@ -108,7 +109,7 @@ export class PartidoService {
         }
 
         if (dto.sigla && dto.sigla != self.sigla) {
-            const similarExists = await this.prisma.orgao.count({
+            const similarExists = await this.prisma.partido.count({
                 where: {
                     sigla: { endsWith: dto.sigla, mode: 'insensitive' },
                     removido_em: null,
