@@ -55,8 +55,6 @@ export class DotacaoProcessoNotaService {
             });
 
             for (const dotacaoProcesso of r.data) {
-                console.log({ dotacaoProcesso });
-
                 await this.prisma.$transaction(
                     async (prisma: Prisma.TransactionClient) => {
                         const jaExiste = await prisma.dotacaoProcessoNota.findUnique({

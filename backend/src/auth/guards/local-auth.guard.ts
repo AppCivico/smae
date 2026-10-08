@@ -5,7 +5,6 @@ import { AuthGuard } from '@nestjs/passport';
 export class LocalAuthGuard extends AuthGuard('local') {
     // apenas repassa o contexto da request pra frente
     canActivate(context: ExecutionContext) {
-        console.log('LocalAuthGuard.canActivate');
         return super.canActivate(context);
     }
 
