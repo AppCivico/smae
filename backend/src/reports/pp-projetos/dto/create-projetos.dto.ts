@@ -8,7 +8,7 @@ import { NumberTransform } from '../../../auth/transforms/number.transform';
 export class CreateRelProjetosDto extends PickType(FilterProjetoDto, ['projeto_id']) {
     @IsOptional()
     @IsInt()
-    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null || a.value === undefined ? a.value : +a.value))
     @Expose()
     orgao_responsavel_id?: number;
 

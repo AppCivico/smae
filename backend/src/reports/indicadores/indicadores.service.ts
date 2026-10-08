@@ -304,6 +304,11 @@ export class IndicadoresService implements ReportableService, SchemaAwareReporta
                     }
 
                     await this.streamRowsIntoIndicador(stream, prismaTxn);
+                } else {
+                    throw new HttpException(
+                        `Combinação de tipo ${dto.tipo} e periodo ${dto.periodo} não suportada`,
+                        400
+                    );
                 }
             },
             {
@@ -540,6 +545,11 @@ export class IndicadoresService implements ReportableService, SchemaAwareReporta
                     }
 
                     await this.streamRowsIntoRegiao(regioes, stream, prismaTxn);
+                } else {
+                    throw new HttpException(
+                        `Combinação de tipo ${dto.tipo} e periodo ${dto.periodo} não suportada`,
+                        400
+                    );
                 }
             },
             {

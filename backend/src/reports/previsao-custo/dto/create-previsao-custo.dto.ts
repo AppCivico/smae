@@ -1,4 +1,5 @@
-import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
+import { TipoProjeto } from '@prisma/client';
 import { Transform, Expose } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
@@ -59,6 +60,12 @@ export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetas
     @IsOptional()
     @Expose()
     portfolio_id?: number;
+
+    @IsOptional()
+    @IsEnum(TipoProjeto)
+    @ApiHideProperty()
+    @Expose()
+    tipo_projeto?: TipoProjeto;
 }
 
 // aqui remove os filtros do projeto

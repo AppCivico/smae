@@ -1,6 +1,6 @@
 import { IntersectionType, OmitType } from '@nestjs/swagger';
 import { Transform, Expose } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
@@ -17,6 +17,8 @@ export class RelMonitoramentoMensalParams {
      * @example ""
      */
     @IsInt()
+    @Min(1)
+    @Max(12)
     @Transform(NumberTransformOrUndef)
     @Expose()
     mes: number;

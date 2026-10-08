@@ -22,6 +22,7 @@ export class ProjetoPrevisaoCustoController {
         @Body() createPrevisaoCustDto: CreateRelProjetoPrevisaoCustoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPrevisaoCustoDto> {
+        createPrevisaoCustDto.tipo_projeto = 'PP';
         return await this.previsaoCustoService.asJSON(createPrevisaoCustDto, user);
     }
 }
@@ -38,6 +39,7 @@ export class ProjetoMDOPrevisaoCustoController {
         @Body() createPrevisaoCustDto: CreateRelObrasPrevisaoCustoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPrevisaoCustoDto> {
+        createPrevisaoCustDto.tipo_projeto = 'MDO';
         return await this.previsaoCustoService.asJSON(createPrevisaoCustDto, user);
     }
 }
