@@ -23,7 +23,7 @@ export class DistribuicaoRecursoStatusService {
                 distribuicao_id: distribuicao_id,
                 removido_em: null,
             },
-            orderBy: { data_troca: 'desc' },
+            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
             select: {
                 id: true,
                 data_troca: true,
@@ -107,7 +107,7 @@ export class DistribuicaoRecursoStatusService {
                         removido_em: null,
                         distribuicao_id: distribuicao_id,
                     },
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     select: {
                         status_base: true,
                         status: true,
