@@ -149,7 +149,6 @@ export const MetasGetPermissionSet = async (
         }
 
         const collab: number[] = await user.getEquipesColaborador(prisma);
-        console.log(collab);
         if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
             //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é admin_cp`);
             orSet.push({
