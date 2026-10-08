@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { TipoRelatorio } from '@prisma/client';
 import { Transform, Expose, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, Max, Min, ValidateIf } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
@@ -71,6 +71,11 @@ export class IndicadorParams {
     @Expose()
     analitico_desde_o_inicio?: boolean;
 
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    @Max(12)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     mes: number;
 }

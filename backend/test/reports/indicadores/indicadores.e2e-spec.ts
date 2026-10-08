@@ -179,7 +179,6 @@ describe('relatorio/indicadores', () => {
         'responde (sem travar) com tipo Geral',
         {
             timeout: 8000,
-            todo: 'BUG: POST /api/relatorio/indicadores: esperado resposta ou 400 para tipo Geral, a requisição nunca termina (nenhum ramo do queryData fecha o stream)',
         },
         async () => {
             const res = await api(administrador)
@@ -193,7 +192,6 @@ describe('relatorio/indicadores', () => {
         'responde (sem travar) com tipo Mensal e mes',
         {
             timeout: 8000,
-            todo: 'BUG: POST /api/relatorio/indicadores: esperado 201 com tipo Mensal e mes 3, a requisição nunca termina (provável causa: mes sem validador removido pelo whitelist, nenhum ramo do queryData fecha o stream)',
         },
         async () => {
             const res = await api(administrador)
