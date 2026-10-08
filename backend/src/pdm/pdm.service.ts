@@ -272,7 +272,7 @@ export class PdmService {
         const similarExists = await this.prisma.pdm.count({
             where: {
                 tipo: PdmModoParaTipo(tipo),
-                descricao: { equals: dto.nome, mode: 'insensitive' },
+                nome: { equals: dto.nome, mode: 'insensitive' },
                 removido_em: null,
             },
         });
@@ -928,7 +928,7 @@ export class PdmService {
             const similarExists = await prismaTx.pdm.count({
                 where: {
                     tipo: pdm.tipo,
-                    descricao: { equals: dto.nome, mode: 'insensitive' },
+                    nome: { equals: dto.nome, mode: 'insensitive' },
                     removido_em: null,
                     NOT: { id: id },
                 },
