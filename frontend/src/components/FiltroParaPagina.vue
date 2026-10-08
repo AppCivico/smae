@@ -26,7 +26,7 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete' | 'numeric' | 'vazio'
+  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete' | 'numeric'
   opcoes?: Opcoes
   autocomplete?: {
     label?: string
@@ -310,8 +310,6 @@ if (props.autoSubmit) {
                 inputmode="numeric"
                 v-bind="campo.atributos"
               />
-
-              <span v-if="campo.tipo === 'vazio'" />
 
               <Field
                 v-else

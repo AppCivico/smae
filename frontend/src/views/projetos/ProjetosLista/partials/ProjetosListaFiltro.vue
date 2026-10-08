@@ -99,9 +99,9 @@ const campos = computed<Formulario>(() => [
     },
   },
   {
+    class: 'fg999 espacador-final',
     campos: {
       codigo: { tipo: 'search' },
-      vazio: { tipo: 'vazio' },
     },
   },
   {
