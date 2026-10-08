@@ -471,6 +471,12 @@ export class GeoLocService {
             endereco_exibicao = propEndereco;
         }
 
+        if (dto.camadas?.length) {
+            const camadasExistentes = await this.prisma.geoCamada.count({ where: { id: { in: dto.camadas } } });
+            if (camadasExistentes !== new Set(dto.camadas).size)
+                throw new BadRequestException('Uma ou mais camadas informadas não existem');
+        }
+
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RetornoCreateEnderecoDto> => {
