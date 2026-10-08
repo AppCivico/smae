@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -27,6 +27,10 @@ const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 
 const router = useRouter();
 const route = useRoute();
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 defineProps({
   acompanhamentoId: {

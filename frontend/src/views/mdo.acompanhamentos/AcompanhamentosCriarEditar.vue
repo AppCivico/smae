@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -38,6 +38,10 @@ const {
   erro: erroEmTipos,
   lista: listaDeTipos,
 } = storeToRefs(tiposDeAcompanhamentoStore);
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const props = defineProps({
   obraId: {
