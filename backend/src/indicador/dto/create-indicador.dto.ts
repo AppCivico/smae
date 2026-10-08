@@ -72,7 +72,6 @@ export class CreateIndicadorDto {
      * inicio_medicao
      * @example YYYY-MM-DD
      */
-    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
     inicio_medicao: Date;
@@ -81,7 +80,6 @@ export class CreateIndicadorDto {
      * fim_medicao
      * @example YYYY-MM-DD
      */
-    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
     fim_medicao: Date;
