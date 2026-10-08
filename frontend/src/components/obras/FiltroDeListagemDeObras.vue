@@ -409,11 +409,17 @@ onMounted(() => {
           :value="valoresIniciaisConsolidados.registros_sei"
         >
       </div>
-      <div class="f1 fb15em">
+    </div>
+
+    <div class="flex g2 mb2 fb100 flexwrap">
+      <div class="f1 fb25em">
         <label
           class="label"
           for="codigo"
-        >{{ projetoFiltro.fields.codigo.spec.label }}</label>
+        >
+          {{ projetoFiltro.fields.codigo.spec.label }}
+        </label>
+
         <input
           id="codigo"
           class="inputtext light"
@@ -422,6 +428,8 @@ onMounted(() => {
           :value="valoresIniciaisConsolidados.codigo"
         >
       </div>
+
+      <div class="f1" />
     </div>
 
     <div class="flex g2 mb2 fb100 flexwrap">
