@@ -125,6 +125,8 @@ BEGIN
     -- 2. Localizações vinculadas a camadas que referenciam FILHOS desta região
     --    (porque caminhamos PARA CIMA, o cálculo dos filhos depende deste pai)
 
+    PERFORM calc_geo_localizacao_regioes(al.geo_localizacao_id)
+    FROM (
     WITH RECURSIVE
     affected_regions AS (
         -- Esta região
@@ -148,9 +150,8 @@ BEGIN
         FROM geo_localizacao_camada glc
         WHERE glc.geo_camada_id IN (SELECT geo_camada_id FROM affected_camadas)
     )
-    -- Recalcular cada localização afetada
-    SELECT calc_geo_localizacao_regioes(geo_localizacao_id)
-    FROM affected_locations;
+    SELECT geo_localizacao_id FROM affected_locations
+    ) al;
 
     RETURN COALESCE(NEW, OLD);
 END;
