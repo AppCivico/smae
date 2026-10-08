@@ -68,36 +68,20 @@ describe('relatorio/monitoramento-mensal', () => {
         assert.deepEqual(res.body.paineis, []);
     });
 
-    it(
-        'monitoramento_fisico.mes repete o mês pedido',
-        { todo: 'BUG: POST /api/relatorio/monitoramento-mensal: esperado mes 3 (pedido), veio 2 (getMonth 0-based)' },
-        async () => {
-            const pdm = await criarPdmAntigo();
-            await prisma().cicloFisico.create({ data: { pdm_id: pdm.id, data_ciclo: new Date('2027-03-01') } });
+    it('monitoramento_fisico.mes repete o mês pedido', async () => {
+        const pdm = await criarPdmAntigo();
+        await prisma().cicloFisico.create({ data: { pdm_id: pdm.id, data_ciclo: new Date('2027-03-01') } });
 
-            const res = await api(executor).post(url).send({ ano: 2027, mes: 3, pdm_id: pdm.id });
-            assertStatus(res, 201);
-            assert.equal(res.body.monitoramento_fisico.mes, 3);
-        }
-    );
+        const res = await api(executor).post(url).send({ ano: 2027, mes: 3, pdm_id: pdm.id });
+        assertStatus(res, 201);
+        assert.equal(res.body.monitoramento_fisico.mes, 3);
+    });
 
-    it(
-        '400 com mes fora de 1 a 12',
-        {
-            todo: 'BUG: POST /api/relatorio/monitoramento-mensal: esperado 400 para mes 13, veio 500 (Date inválida no Prisma)',
-        },
-        async () => {
-            assertStatus(await api(executor).post(url).send({ ano: 2027, mes: 13 }), 400);
-        }
-    );
+    it('400 com mes fora de 1 a 12', async () => {
+        assertStatus(await api(executor).post(url).send({ ano: 2027, mes: 13 }), 400);
+    });
 
-    it(
-        '400 com metas_ids não numérico',
-        {
-            todo: 'BUG: POST /api/relatorio/monitoramento-mensal: esperado 400 para metas_ids "x", veio 500 (NumberArrayTransformOrUndef devolve [NaN])',
-        },
-        async () => {
-            assertStatus(await api(executor).post(url).send({ ano: 2027, mes: 3, metas_ids: 'x' }), 400);
-        }
-    );
+    it('400 com metas_ids não numérico', async () => {
+        assertStatus(await api(executor).post(url).send({ ano: 2027, mes: 3, metas_ids: 'x' }), 400);
+    });
 });

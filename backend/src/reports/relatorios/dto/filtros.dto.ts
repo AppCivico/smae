@@ -21,6 +21,7 @@ export class FiltroMetasIniAtividadeDto {
     @IsOptional()
     @IsArray()
     @ArrayMaxSize(1000)
+    @IsInt({ each: true })
     @Transform(NumberArrayTransformOrUndef)
     @Expose()
     metas_ids?: number[];
