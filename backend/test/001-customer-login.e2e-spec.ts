@@ -1,61 +1,29 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { before, describe, it } from 'node:test';
+import { api, assert, assertStatus, bootApp, criarOrgao, criarPessoaComPrivilegios, Sessao } from './lib';
 
-import { AuthService } from '../src/auth/auth.service';
-import { AccessToken } from '../src/auth/models/AccessToken';
-import { OrgaoDto } from '../src/orgao/entities/orgao.entity';
-import { OrganizacaoExpert, PessoaExpert } from './lib/common';
+describe('minha-conta', () => {
+    let sessao: Sessao;
 
-describe('AppController (e2e)', () => {
-    let app: INestApplication;
-    let exitingOrg: OrgaoDto;
-    let session: AccessToken;
-
-    beforeAll(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
-        }).compile();
-
-        app = moduleFixture.createNestApplication();
-
-        exitingOrg = await OrganizacaoExpert.getOrCreateOrg(app, {
-            descricao: 'test-org',
-            sigla: 'org name',
-        });
-        console.log(exitingOrg);
-
-        const findCustomer = await PessoaExpert.getOrCreatePessoa(app, {
-            email: 'test@local.com',
-            orgao_id: exitingOrg.id,
-        });
-
-        console.log(findCustomer);
-
-        const authService = app.get(AuthService);
-        console.log(authService);
-
-        session = await authService.criarSession(findCustomer.id);
-
-        await app.init();
-    });
-    afterAll(async () => {
-        await app.close();
+    before(async () => {
+        await bootApp();
+        const orgao = await criarOrgao();
+        sessao = await criarPessoaComPrivilegios(['CadastroOrgao.inserir'], { orgao_id: orgao.id });
     });
 
-    it('/minha-conta (GET) should be 401 without session', async () => {
-        return await request(app.getHttpServer()).get('/minha-conta').expect(401);
+    it('GET /api/minha-conta sem sessão responde 401', async () => {
+        const res = await api().get('/api/minha-conta');
+        assertStatus(res, 401);
     });
 
-    it('/minha-conta (GET) should be 401 with invalid session', async () => {
-        return await request(app.getHttpServer()).get('/minha-conta').auth('het', { type: 'bearer' }).expect(401);
+    it('GET /api/minha-conta com token inválido responde 401', async () => {
+        const res = await api('het').get('/api/minha-conta');
+        assertStatus(res, 401);
     });
 
-    it('/minha-conta (GET) should be 200', async () => {
-        return await request(app.getHttpServer())
-            .get('/minha-conta')
-            .auth(session.access_token, { type: 'bearer' })
-            .expect(200);
+    it('GET /api/minha-conta com sessão responde 200 com os dados da pessoa', async () => {
+        const res = await api(sessao).get('/api/minha-conta');
+        assertStatus(res, 200);
+        assert.equal(res.body.sessao.id, sessao.pessoa.id);
+        assert.ok(res.body.sessao.privilegios.includes('CadastroOrgao.inserir'));
     });
 });
