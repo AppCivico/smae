@@ -74,7 +74,7 @@ describe('upload', () => {
         it(
             '400 para DOCUMENTO sem tipo_documento_id',
             {
-                todo: 'BUG: POST /api/upload tipo=DOCUMENTO sem tipo_documento_id: esperado 400 (ValidateIf exige o campo), veio sem erro de validação e só falhou no S3 (IsOptional anula o ValidateIf)',
+                todo: 'https://github.com/AppCivico/smae/issues/694 BUG: POST /api/upload tipo=DOCUMENTO sem tipo_documento_id: esperado 400 (ValidateIf exige o campo), veio sem erro de validação e só falhou no S3 (IsOptional anula o ValidateIf)',
             },
             async () => {
                 const res = await enviar({ tipo: 'DOCUMENTO' }, { conteudo: Buffer.from('x'), nome: 'a.txt' });
@@ -104,14 +104,10 @@ describe('upload', () => {
             assert.match(res.body.message, /ao menos 1 byte/);
         });
 
-        it(
-            '400 quando o campo arquivo não é enviado',
-            { todo: 'BUG: POST /api/upload sem arquivo: esperado 400, veio 500 (file undefined em "size" in file)' },
-            async () => {
-                const res = await enviar({ tipo: 'ICONE_TAG' });
-                assertStatus(res, 400);
-            }
-        );
+        it('400 quando o campo arquivo não é enviado', async () => {
+            const res = await enviar({ tipo: 'ICONE_TAG' });
+            assertStatus(res, 400);
+        });
 
         it('400 quando nome, extensão ou conteúdo não servem ao tipo de upload', async () => {
             const texto = Buffer.from('conteudo qualquer');
@@ -138,19 +134,13 @@ describe('upload', () => {
     });
 
     describe('POST upload (SVG)', () => {
-        it(
-            '400 com SVG que nem é XML',
-            {
-                todo: 'BUG: POST /api/upload ICONE_TAG .svg com texto que não é XML: esperado 400, veio 500 (new JSDOM fora do try)',
-            },
-            async () => {
-                const res = await enviar(
-                    { tipo: 'ICONE_TAG' },
-                    { conteudo: Buffer.from('isto não é xml'), nome: 'icone.svg' }
-                );
-                assertStatus(res, 400);
-            }
-        );
+        it('400 com SVG que nem é XML', async () => {
+            const res = await enviar(
+                { tipo: 'ICONE_TAG' },
+                { conteudo: Buffer.from('isto não é xml'), nome: 'icone.svg' }
+            );
+            assertStatus(res, 400);
+        });
     });
 
     describe('GET download/:token', () => {
@@ -158,21 +148,15 @@ describe('upload', () => {
             assert.notEqual((await api().get('/api/download/lixo')).status, 401);
         });
 
-        it(
-            '400 com token inválido, de outro tipo ou de arquivo inexistente',
-            {
-                todo: 'BUG: GET /api/download/:token com token inválido: esperado 400 (o service lança 400), veio 500 (o catch do controller engole HttpException)',
-            },
-            async () => {
-                const arquivo = await criarArquivo();
-                const tokenUpload = (await servico().getUploadToken(arquivo.id)).upload_token;
-                const tokenInexistente = servico().getDownloadToken(999999999, undefined).download_token;
+        it('400 com token inválido, de outro tipo ou de arquivo inexistente', async () => {
+            const arquivo = await criarArquivo();
+            const tokenUpload = (await servico().getUploadToken(arquivo.id)).upload_token;
+            const tokenInexistente = servico().getDownloadToken(999999999, undefined).download_token;
 
-                assertStatus(await api().get('/api/download/lixo'), 400);
-                assertStatus(await api().get(`/api/download/${tokenUpload}`), 400);
-                assertStatus(await api().get(`/api/download/${tokenInexistente}`), 400);
-            }
-        );
+            assertStatus(await api().get('/api/download/lixo'), 400);
+            assertStatus(await api().get(`/api/download/${tokenUpload}`), 400);
+            assertStatus(await api().get(`/api/download/${tokenInexistente}`), 400);
+        });
     });
 
     describe('PATCH diretorio/:token', () => {
