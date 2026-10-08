@@ -6,6 +6,7 @@ import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 import { TipoProjeto } from '@prisma/client';
 import { FilterProjetoEtapaDto } from './dto/filter-projeto-etapa.dto';
 import { PortfolioService } from 'src/pp/portfolio/portfolio.service';
+import { ProjetoGetPermissionSet } from '../pp/projeto/projeto.service';
 import { ProjetoEtapaDto } from './entities/projeto-etapa.entity';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
@@ -171,20 +172,34 @@ export class ProjetoEtapaService {
     }
 
     async findAll(tipo: TipoProjeto, filters: FilterProjetoEtapaDto, user: PessoaFromJwt): Promise<ProjetoEtapaDto[]> {
-        // Chamando findAll para verificar acesso.
-        let portfoliosId = [];
-
-        const portfolios = await this.portfolioService.findAll(tipo, user, true, filters?.portfolio_id);
-        if (filters?.portfolio_id && !portfolios.length)
-            throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
-
-        portfoliosId = portfolios.map((p) => p.id);
-
-        // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
         const ehTelaAssociacao = filters.eh_padrao === true;
 
-        if (ehTelaAssociacao && filters?.portfolio_id)
-            throw new HttpException('Não é possível filtrar por portfólio quando o filtro eh_padrao está ativo', 400);
+        let portfoliosId: number[] = [];
+
+        if (ehTelaAssociacao) {
+            if (filters?.portfolio_id)
+                throw new HttpException(
+                    'Não é possível filtrar por portfólio quando o filtro eh_padrao está ativo',
+                    400
+                );
+
+            const acoes = ['inserir', 'editar', 'remover'] as const;
+            const gerenciaEtapas = user.hasSomeRoles(
+                acoes.flatMap((a) => [
+                    this.getRequiredPrivilege(tipo, true, a),
+                    this.getRequiredPrivilege(tipo, false, a),
+                ])
+            );
+            // lança 400 para quem não tem nenhum perfil de projeto/obra
+            if (!gerenciaEtapas) await ProjetoGetPermissionSet(tipo, user);
+        } else {
+            // Chamando findAll para verificar acesso.
+            const portfolios = await this.portfolioService.findAll(tipo, user, true, filters?.portfolio_id);
+            if (filters?.portfolio_id && !portfolios.length)
+                throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
+
+            portfoliosId = portfolios.map((p) => p.id);
+        }
 
         const listActive = await this.prisma.projetoEtapa.findMany({
             where: {
