@@ -98,10 +98,9 @@ export class BancadaService {
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<BancadaOneDto> {
-        const bancada = await this.prisma.bancada.findFirstOrThrow({
+        const bancada = await this.prisma.bancada.findUniqueOrThrow({
             where: {
                 id: id,
-                removido_em: null,
             },
             select: {
                 id: true,
@@ -191,7 +190,7 @@ export class BancadaService {
         // TODO verificar dependentes
 
         const deleted = await this.prisma.bancada.updateMany({
-            where: { id: id, removido_em: null },
+            where: { id: id },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
