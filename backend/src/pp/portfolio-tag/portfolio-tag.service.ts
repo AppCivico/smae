@@ -22,9 +22,14 @@ export class PortfolioTagService {
                 where: { id, removido_em: null },
                 select: {
                     descricao: true,
+                    portfolio_id: true,
                 },
             });
             if (!self) throw new HttpException('Tag de portfólio não encontrada', 404);
+
+            // O portfólio de destino é verificado abaixo; aqui garante acesso ao portfólio atual da tag.
+            if (self.portfolio_id !== dto.portfolio_id)
+                await this.portfolioService.findAll(TipoProjeto.PP, user, false, self.portfolio_id);
 
             // Caso esteja em uso, não pode editar.
             const emUso = await this.prisma.projetoPortfolioTag.count({
