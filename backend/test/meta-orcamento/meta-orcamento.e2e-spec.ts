@@ -206,24 +206,20 @@ describe('meta-orcamento', () => {
             assert.equal(lista.body.linhas.length, 0);
         });
 
-        it(
-            'edita custo para zero',
-            { todo: 'BUG: PATCH custo_previsto: 0 mantém o valor antigo (dto.custo_previsto || ...)' },
-            async () => {
-                const { meta, ano } = await criarCenarioOrcamento();
-                const criado = await api(admin).post('/api/meta-orcamento').send(novoPrevisto(meta.id, ano));
-                assertStatus(criado, 201);
+        it('edita custo para zero', async () => {
+            const { meta, ano } = await criarCenarioOrcamento();
+            const criado = await api(admin).post('/api/meta-orcamento').send(novoPrevisto(meta.id, ano));
+            assertStatus(criado, 201);
 
-                assertStatus(
-                    await api(admin)
-                        .patch(`/api/meta-orcamento/${criado.body.id}`)
-                        .send({ meta_id: meta.id, custo_previsto: 0 }),
-                    202
-                );
+            assertStatus(
+                await api(admin)
+                    .patch(`/api/meta-orcamento/${criado.body.id}`)
+                    .send({ meta_id: meta.id, custo_previsto: 0 }),
+                202
+            );
 
-                const lista = await api(admin).get(`/api/meta-orcamento?meta_id=${meta.id}&ano_referencia=${ano}`);
-                assert.equal(lista.body.linhas[0].custo_previsto, '0.00');
-            }
-        );
+            const lista = await api(admin).get(`/api/meta-orcamento?meta_id=${meta.id}&ano_referencia=${ano}`);
+            assert.equal(lista.body.linhas[0].custo_previsto, '0.00');
+        });
     });
 });
