@@ -427,16 +427,18 @@ export class PainelService {
     }
 
     async update(id: number, updatePainelDto: UpdatePainelDto, user: PessoaFromJwt) {
-        const similarExists = await this.prisma.painel.count({
-            where: {
-                nome: { equals: updatePainelDto.nome, mode: 'insensitive' },
-                removido_em: null,
-                NOT: { id: +id },
-            },
-        });
+        if (updatePainelDto.nome) {
+            const similarExists = await this.prisma.painel.count({
+                where: {
+                    nome: { equals: updatePainelDto.nome, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: +id },
+                },
+            });
 
-        if (similarExists > 0)
-            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const grupos_to_assign = [];
@@ -631,7 +633,7 @@ export class PainelService {
                     }
                 }
 
-                for (const detalhe of updatePainelConteudoDetalheDto.detalhes!) {
+                for (const detalhe of updatePainelConteudoDetalheDto.detalhes ?? []) {
                     operations.push(
                         prisma.painelConteudoDetalhe.update({
                             where: {

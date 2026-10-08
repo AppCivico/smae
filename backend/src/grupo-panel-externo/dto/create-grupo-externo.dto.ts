@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, IsArray, IsInt, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateGrupoPainelExternoDto {
@@ -11,6 +11,7 @@ export class CreateGrupoPainelExternoDto {
         description:
             'Se não foi enviado, será associado automaticamente com o órgão do criador. Necessário `CadastroGrupoPainelExterno.administrador` para utilizar um órgão diferente.',
     })
+    @IsOptional()
     @IsInt()
     orgao_id?: number;
 
