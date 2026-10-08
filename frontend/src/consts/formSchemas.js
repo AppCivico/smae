@@ -2832,6 +2832,9 @@ export const projeto = object()
   });
 
 export const projetoFiltro = object().shape({
+  codigo: string()
+    .label('Número do contrato')
+    .nullableOuVazio(),
   ipp: number()
     .label('Itens por página')
     .nullableOuVazio(),
