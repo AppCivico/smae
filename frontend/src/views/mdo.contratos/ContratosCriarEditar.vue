@@ -37,6 +37,10 @@ const contratosStore = useContratosStore(route.meta.entidadeMãe);
 const tarefasStore = useTarefasStore();
 const DotaçãoStore = useDotaçãoStore();
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const fontesRecurso = ref({ participantes: [], busca: '' });
 
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
