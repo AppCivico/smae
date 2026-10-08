@@ -165,14 +165,16 @@ export class VariavelCategoricaService {
             this.validarOrdemUnica(dto.valores);
         }
 
-        const jaEmUso = await this.prisma.variavelCategorica.count({
-            where: {
-                removido_em: null,
-                titulo: dto.titulo,
-                NOT: { id: varCatId },
-            },
-        });
-        if (jaEmUso > 0) throw new HttpException(`Título ${dto.titulo} já está em uso.`, 400);
+        if (dto.titulo !== undefined) {
+            const jaEmUso = await this.prisma.variavelCategorica.count({
+                where: {
+                    removido_em: null,
+                    titulo: dto.titulo,
+                    NOT: { id: varCatId },
+                },
+            });
+            if (jaEmUso > 0) throw new HttpException(`Título ${dto.titulo} já está em uso.`, 400);
+        }
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {

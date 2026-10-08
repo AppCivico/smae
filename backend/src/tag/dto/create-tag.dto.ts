@@ -22,7 +22,6 @@ export class CreateTagDto {
      * ID do PDM
      */
     @IsInt({ message: 'Necessário ID do PDM' })
-    @IsOptional()
     @Type(() => Number)
     pdm_id: number;
 
