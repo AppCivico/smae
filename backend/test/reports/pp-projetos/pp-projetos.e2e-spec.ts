@@ -161,7 +161,7 @@ describe('relatorio/projetos', () => {
     it(
         'stream-projetos sem nenhum papel em projetos responde 400',
         {
-            todo: 'BUG: POST /api/relatorio/projetos/stream-projetos: esperado 400 (como no POST sem stream), veio 200 com {"error":...} no corpo',
+            todo: 'BUG: POST /api/relatorio/projetos/stream-projetos: esperado 400 (como no POST sem stream), veio 200 com {"error":...} no corpo (https://github.com/AppCivico/smae/issues/695)',
         },
         async () => {
             const res = await api(executor).post(`${url}/stream-projetos`).send(filtro()).buffer(true).parse(lerTexto);
