@@ -91,6 +91,7 @@ onBeforeMount(() => {
           class="mt2"
           :dados="listaDeProjetos"
           :colunas="[
+            { chave: 'codigo', label: 'Código do contrato', ehCabecalho: true },
             { chave: 'nome', label: 'Nome do Projeto', ehCabecalho: true },
             { chave: 'portfolio.titulo', label: 'Portfólio' },
             { chave: 'orgao_responsavel.sigla', label: 'Órgão Responsável' },

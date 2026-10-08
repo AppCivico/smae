@@ -26,7 +26,7 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete' | 'numeric'
+  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete' | 'numeric' | 'vazio'
   opcoes?: Opcoes
   autocomplete?: {
     label?: string
@@ -311,6 +311,8 @@ if (props.autoSubmit) {
                 v-bind="campo.atributos"
               />
 
+              <span v-if="campo.tipo === 'vazio'" />
+
               <Field
                 v-else
                 class="inputtext light mb1"
@@ -320,6 +322,7 @@ if (props.autoSubmit) {
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                v-bind="campo.atributos"
               />
 
               <ErrorMessage
