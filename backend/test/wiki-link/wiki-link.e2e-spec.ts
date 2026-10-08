@@ -148,9 +148,6 @@ describe('wiki-link', () => {
 
         it(
             'chave removida pode ser cadastrada de novo',
-            {
-                todo: 'BUG: wiki_link.chave_smae é @unique no banco, então recriar uma chave removida cai em P2002 (423)',
-            },
             async () => {
                 const key = chave();
                 const primeiro = await api(gestor).post('/api/wiki-link').send({ chave_smae: key, url_wiki: pagina() });
@@ -166,7 +163,7 @@ describe('wiki-link', () => {
 
         it(
             'usuário sem privilégio não cadastra link',
-            { todo: 'BUG: wiki-link não tem @Roles em nenhuma rota, qualquer usuário logado grava links' },
+            { todo: 'BUG (https://github.com/AppCivico/smae/issues/696): wiki-link não tem @Roles em nenhuma rota, qualquer usuário logado grava links' },
             async () => {
                 assertStatus(
                     await api(outro).post('/api/wiki-link').send({ chave_smae: chave(), url_wiki: pagina() }),

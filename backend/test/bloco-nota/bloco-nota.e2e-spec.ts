@@ -236,7 +236,7 @@ describe('bloco-nota', () => {
 
         it(
             'todo: BUG o id_jwt devolvido pelo POST não permite editar a própria nota',
-            { todo: 'BUG: nota.service.create devolve token com write=false' },
+            { todo: 'BUG (https://github.com/AppCivico/smae/issues/700): nota.service.create devolve token com write=false' },
             async () => {
                 const criada = await novaNota();
                 assertStatus(
