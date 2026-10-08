@@ -11,3 +11,5 @@ openapitools.json
 
 .vscode/settings.json
 .claude/
+
+.playwright-mcp

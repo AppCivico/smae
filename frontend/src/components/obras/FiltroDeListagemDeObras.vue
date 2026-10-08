@@ -411,7 +411,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="flex g2 mb2 fb100 flexwrap">
+    <div class="flex g2 mb2 fb100 flexwrap espacador-final">
       <div class="f1 fb25em">
         <label
           class="label"
@@ -428,8 +428,6 @@ onMounted(() => {
           :value="valoresIniciaisConsolidados.codigo"
         >
       </div>
-
-      <div class="f1" />
     </div>
 
     <div class="flex g2 mb2 fb100 flexwrap">
