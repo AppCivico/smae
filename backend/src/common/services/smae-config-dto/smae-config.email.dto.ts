@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+    IsDefined,
     IsEmail,
     IsNotEmpty,
     IsNumber,
@@ -82,6 +83,7 @@ export class CreateEmailConfigDto {
     @Type(() => TemplateResolverConfigDto)
     template_resolver_config: TemplateResolverConfigDto;
 
+    @IsDefined()
     @ValidateNested()
     @Type(() => TransporterConfigDto)
     email_transporter_config: TransporterConfigDto;
