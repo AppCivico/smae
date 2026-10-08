@@ -31,7 +31,6 @@ export class PortfolioTagService {
                 where: {
                     portfolio_tag_id: id,
                     removido_em: null,
-                    portfolio: { id: dto.portfolio_id },
                     projeto: { removido_em: null },
                 },
             });

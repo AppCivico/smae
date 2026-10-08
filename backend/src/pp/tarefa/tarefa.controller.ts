@@ -266,7 +266,7 @@ export class TarefaMDOController {
     @Roles([...rolesMDO, 'MDO.espectador_de_projeto'])
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
     async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
 
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
 
