@@ -19,6 +19,7 @@ export class ProjetoOrcamentoController {
         @Body() createPrevisaoCustDto: CreateRelProjetoOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoExecutadoDto> {
+        createPrevisaoCustDto.tipo_projeto = 'PP';
         return await this.orcamentoExecutadoService.asJSON(createPrevisaoCustDto, user);
     }
 }
@@ -35,6 +36,7 @@ export class ProjetoMDOOrcamentoController {
         @Body() createPrevisaoCustDto: CreateRelObrasOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoExecutadoDto> {
+        createPrevisaoCustDto.tipo_projeto = 'MDO';
         return await this.orcamentoExecutadoService.asJSON(createPrevisaoCustDto, user);
     }
 }

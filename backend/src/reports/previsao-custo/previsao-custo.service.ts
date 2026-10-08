@@ -5,6 +5,7 @@ import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
+import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { getReportRowSchema } from '../post-process/report-column.decorator';
 import { ReportFileSchema, SchemaAwareReportableService } from '../post-process/report-schema';
@@ -58,8 +59,14 @@ export class PrevisaoCustoService implements ReportableService, SchemaAwareRepor
             ano = dto.ano;
         }
 
+        const permissoesProjeto =
+            (dto.portfolio_id || dto.projeto_id) && dto.tipo_projeto
+                ? await ProjetoGetPermissionSet(dto.tipo_projeto, user ?? undefined)
+                : undefined;
+
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
+                ...(permissoesProjeto ? { projeto: { AND: permissoesProjeto } } : {}),
                 meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                 projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
                 ...(dto.portfolio_id
