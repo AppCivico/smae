@@ -16,6 +16,10 @@ export class PortfolioDto {
     orgaos: IdSiglaDescricao[];
     pode_editar: boolean;
     icone_impressao: PortfolioIconeDto | null;
+    /**
+     * IDs dos portfólios com os quais os projetos/obras criados neste portfólio são compartilhados automaticamente
+     */
+    portfolios_compartilhados_padrao: number[];
 }
 
 export class PortfolioOneDto {
@@ -31,6 +35,10 @@ export class PortfolioOneDto {
     grupo_portfolio: number[];
     modelo_clonagem: boolean;
     icone_impressao: PortfolioIconeDto | null;
+    /**
+     * IDs dos portfólios com os quais os projetos/obras criados neste portfólio são compartilhados automaticamente
+     */
+    portfolios_compartilhados_padrao: number[];
 }
 
 export class ListPortfolioDto {
