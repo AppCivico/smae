@@ -110,7 +110,7 @@ export class ParlamentarController {
         @Body() dto: UpdateEquipeDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.parlamentarService.updateEquipe(+params.id2, dto, user);
+        return await this.parlamentarService.updateEquipe(+params.id, +params.id2, dto, user);
     }
 
     @Delete(':id/equipe/:id2')
@@ -119,7 +119,7 @@ export class ParlamentarController {
     @HttpCode(HttpStatus.ACCEPTED)
     @Roles(['CadastroParlamentar.remover'])
     async removeEquipe(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.parlamentarService.removeEquipe(+params.id2, user);
+        await this.parlamentarService.removeEquipe(+params.id, +params.id2, user);
         return '';
     }
 

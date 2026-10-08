@@ -147,7 +147,7 @@ export class BancadaService {
         }
 
         if (dto.sigla) {
-            const similarExists = await this.prisma.orgao.count({
+            const similarExists = await this.prisma.bancada.count({
                 where: {
                     sigla: { endsWith: dto.sigla, mode: 'insensitive' },
                     removido_em: null,
@@ -158,7 +158,12 @@ export class BancadaService {
                 throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        if (dto.partido_ids && dto.partido_ids.length > 0 && dto.partido_ids.length != self.partidos.length) {
+        const partidosAtuais = new Set(self.partidos.map((p) => p.id));
+        if (
+            dto.partido_ids &&
+            dto.partido_ids.length > 0 &&
+            (dto.partido_ids.length != partidosAtuais.size || dto.partido_ids.some((pid) => !partidosAtuais.has(pid)))
+        ) {
             await this.checkPartido(dto.partido_ids);
 
             await this.prisma.bancadaPartido.deleteMany({ where: { bancada_id: id } });
