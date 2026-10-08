@@ -105,15 +105,9 @@ describe('relatorio/casa-civil-atividades-pendentes', () => {
         assertStatus(await enviar({ data_inicio: '31/12/2020' }), 400);
     });
 
-    it(
-        '201 com corpo vazio (datas omitidas)',
-        {
-            todo: 'BUG: POST /api/relatorio/casa-civil-atividades-pendentes: esperado 201 sem data_inicio/data_termino, veio 500 (DateTransform recebe undefined)',
-        },
-        async () => {
-            assertStatus(await api(executor).post(url).send({}), 201);
-        }
-    );
+    it('201 com corpo vazio (datas omitidas)', async () => {
+        assertStatus(await api(executor).post(url).send({}), 201);
+    });
 
     it('201 devolve a atividade vencida e sem término real, com os campos da transferência', async () => {
         const { tipoId, transferencia, tarefa } = await criarAtividade();

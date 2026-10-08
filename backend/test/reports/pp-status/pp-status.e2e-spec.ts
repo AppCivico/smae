@@ -130,25 +130,13 @@ function descreverRelatorio(
             );
         });
 
-        it(
-            '400 com corpo vazio',
-            {
-                todo: `BUG: POST ${url}: esperado 400 (portfolio_id obrigatório), veio 500 (DateTransform recebe undefined em periodo_inicio/periodo_fim)`,
-            },
-            async () => {
-                assertStatus(await api(administrador).post(url).send({}), 400);
-            }
-        );
+        it('400 com corpo vazio', async () => {
+            assertStatus(await api(administrador).post(url).send({}), 400);
+        });
 
-        it(
-            '201 sem periodo_inicio/periodo_fim (campos opcionais)',
-            {
-                todo: `BUG: POST ${url}: esperado 201 sem periodo_inicio/periodo_fim (@IsOptional), veio 500 (DateTransform recebe undefined)`,
-            },
-            async () => {
-                assertStatus(await api(administrador).post(url).send({ portfolio_id: portfolioId }), 201);
-            }
-        );
+        it('201 sem periodo_inicio/periodo_fim (campos opcionais)', async () => {
+            assertStatus(await api(administrador).post(url).send({ portfolio_id: portfolioId }), 201);
+        });
 
         it('201 devolve os projetos do portfólio com cronograma, tarefas e último acompanhamento', async () => {
             const res = await api(administrador).post(url).send(corpo());

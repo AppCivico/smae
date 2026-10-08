@@ -91,25 +91,13 @@ describe('relatorio/obras', () => {
         assertStatus(await enviar(filtro({ orgao_responsavel_id: 1.5 })), 400);
     });
 
-    it(
-        '400 com corpo vazio',
-        {
-            todo: 'BUG: POST /api/relatorio/obras: esperado 400 (portfolio_id obrigatório), veio 500 (DateTransform recebe undefined em periodo)',
-        },
-        async () => {
-            assertStatus(await api(executor).post(url).send({}), 400);
-        }
-    );
+    it('400 com corpo vazio', async () => {
+        assertStatus(await api(executor).post(url).send({}), 400);
+    });
 
-    it(
-        '201 sem periodo (campo opcional)',
-        {
-            todo: 'BUG: POST /api/relatorio/obras: esperado 201 sem periodo (@IsOptional), veio 500 (DateTransform recebe undefined)',
-        },
-        async () => {
-            assertStatus(await api(administrador).post(url).send({ portfolio_id: portfolioId }), 201);
-        }
-    );
+    it('201 sem periodo (campo opcional)', async () => {
+        assertStatus(await api(administrador).post(url).send({ portfolio_id: portfolioId }), 201);
+    });
 
     it('201 devolve as obras do portfólio e as demais seções do relatório', async () => {
         const res = await api(administrador).post(url).send(filtro());
