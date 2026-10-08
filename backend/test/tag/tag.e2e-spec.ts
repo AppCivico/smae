@@ -89,13 +89,9 @@ describe('tag', () => {
             );
         });
 
-        it(
-            '400 sem pdm_id',
-            { todo: 'BUG: CreateTagDto.pdm_id é @IsOptional, sem pdm_id a requisição não vira 400' },
-            async () => {
-                assertStatus(await api(gestor).post('/api/tag').send({ descricao: uniq(), ods_id: odsId }), 400);
-            }
-        );
+        it('400 sem pdm_id', async () => {
+            assertStatus(await api(gestor).post('/api/tag').send({ descricao: uniq(), ods_id: odsId }), 400);
+        });
 
         it('400 com pdm_id inexistente', async () => {
             const res = await api(gestor)
