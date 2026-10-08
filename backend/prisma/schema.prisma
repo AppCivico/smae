@@ -5384,9 +5384,21 @@ model task_queue {
     task_buffer          task_buffer?
     ApiRequestLogControl ApiRequestLogControl[]
     arquivo_previews     Arquivo[]              @relation("ArquivoPreviewTask")
+    task_queue_dedup     task_queue_dedup?
 
     @@index([status])
     @@index([criado_em])
+}
+
+// Mantida pelo trigger em manual-copy: só tasks pending/running com pessoa_id.
+model task_queue_dedup {
+    task_id     Int        @id
+    task        task_queue @relation(fields: [task_id], references: [id], onDelete: Cascade)
+    pessoa_id   Int
+    type        task_type
+    params_hash String     @db.Char(32)
+
+    @@unique([pessoa_id, type, params_hash])
 }
 
 model task_buffer {

@@ -138,26 +138,6 @@ export function coletarInfoWorker(isForeground: boolean): InfoWorker {
     };
 }
 
-function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
-    return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
-}
-
-function sortObjectKeys(obj: object): object {
-    if (typeof obj !== 'object' || obj === null) {
-        return obj;
-    }
-
-    if (Array.isArray(obj)) {
-        return obj.map(sortObjectKeys);
-    }
-
-    return Object.keys(obj)
-        .sort()
-        .reduce((result: { [key: string]: any }, key) => {
-            result[key] = sortObjectKeys((obj as any)[key]);
-            return result;
-        }, {});
-}
 @Injectable()
 export class TaskService {
     private enabled = false;
@@ -259,21 +239,13 @@ export class TaskService {
         // se tem user, nao é report, então verificar se tem já tem algo na fila
         // se tiver algo pendente, volta o mesmo ID
         if (user) {
-            const existing = await this.prisma.task_queue.findFirst({
-                where: {
-                    status: { in: ['running', 'pending'] },
-                    pessoa_id: user.id,
-                    type: dto.type,
-                },
-                orderBy: [{ erro_mensagem: { nulls: 'first', sort: 'desc' } }],
-            });
-
-            if (
-                existing &&
-                existing.params?.valueOf() == 'object' &&
-                areJsonObjectsEquivalent(JSON.parse(existing.params?.toString()), dto.params)
-            )
-                return { id: existing.id };
+            const existing = await this.prisma.$queryRaw<{ task_id: number }[]>`
+                SELECT task_id FROM task_queue_dedup
+                WHERE pessoa_id = ${user.id}
+                AND type = ${dto.type}::task_type
+                AND params_hash = md5(${JSON.stringify(dto.params ?? {})}::jsonb::text)
+            `;
+            if (existing.length) return { id: existing[0].task_id };
         }
 
         const performCreateTask = async (prismaTx: Prisma.TransactionClient): Promise<task_queue> => {
