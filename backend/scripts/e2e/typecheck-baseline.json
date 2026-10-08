@@ -1,0 +1,12 @@
+{
+    "src/app.controller.ts TS2349": 3,
+    "src/common/html-sanitizer.ts TS2349": 1,
+    "src/geo-loc/geo-loc.service.ts TS2339": 1,
+    "src/painel/painel.service.ts TS2322": 1,
+    "src/painel/painel.service.ts TS2349": 5,
+    "src/upload/gotenberg.service.ts TS2351": 4,
+    "src/upload/preview.service.ts TS2349": 1,
+    "src/upload/storage-service.ts TS2307": 1,
+    "src/upload/thumbnail.service.ts TS2349": 1,
+    "src/upload/upload.service.ts TS2349": 1
+}

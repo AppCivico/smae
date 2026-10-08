@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "es2022",
+        "sourceMap": true,
+        "noEmitHelpers": true,
+        "rootDir": "./",
+        "outDir": "./dist-test",
+        "paths": {
+            "src/*": ["./src/*"]
+        },
+        "skipLibCheck": true,
+        "strict": false,
+        "strictNullChecks": true,
+        "noImplicitAny": true,
+        "strictBindCallApply": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "types": ["node", "multer"]
+    },
+    "include": ["src/**/*.ts", "test/**/*.ts", "prisma/seed.ts", "bin/pgsql-migrate.ts"],
+    "exclude": ["node_modules", "dist", "dist-test", "**/*.spec.ts"]
+}

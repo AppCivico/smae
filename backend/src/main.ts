@@ -1,14 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 import { AppModule } from './app.module';
+import { configureApp } from './configure-app';
 import { setupSwaggerDocumentation } from './swagger.config';
-import { Request, Response } from 'express';
-import { currentPrismaQuerySeq, prismaQueryAls } from './prisma/prisma-query-context';
-
-const SMAE_HEADERS = 'smae-sistemas';
-const winston = require('winston'),
-    expressWinston = require('express-winston');
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -26,49 +20,9 @@ async function bootstrap() {
         console.error(error);
     });
 
-    app.setGlobalPrefix('api');
-
-    // Per-request Prisma query buffer (consumed by PrismaErrorFilter)
-    app.use((_req: Request, _res: Response, next: () => void) => {
-        prismaQueryAls.run({ startSeq: currentPrismaQuerySeq(), entries: [] }, () => next());
-    });
-
-    // Request/Response logging
-    app.use(
-        expressWinston.logger({
-            transports: [
-                new winston.transports.Console({
-                    json: true,
-                }),
-            ],
-            meta: true,
-            msg: 'HTTP_DEBUG {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}',
-            ignoreRoute: (req: Request, _res: Response) => {
-                if (req.url.startsWith('/api/relatorio/')) return true;
-                return false;
-            },
-            skip: (_req: Request, res: Response) => {
-                return res.statusCode < 400;
-            },
-        })
-    );
-    expressWinston.requestWhitelist.push('body');
-    expressWinston.responseWhitelist.push('body');
-
-    // Templates for reports
-    app.setBaseViewsDir(join(__dirname, '..', 'templates'));
-    app.setViewEngine('ejs');
+    configureApp(app);
 
     app.enableShutdownHooks();
-
-    if (process.env.ENABLE_CORS) {
-        app.enableCors({
-            allowedHeaders: [
-                ...'Origin,Content-Type,Accept,X-API-Key,Authorization,content-disposition'.split(','),
-                ...SMAE_HEADERS.split(','),
-            ],
-        });
-    }
 
     // Setup Swagger documentation
     const loadedRoutes = setupSwaggerDocumentation(app);
