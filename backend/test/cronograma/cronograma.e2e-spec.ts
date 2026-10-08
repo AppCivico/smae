@@ -114,28 +114,22 @@ describe('cronograma', () => {
             assert.ok(!daMeta.body.linhas.some((l: { id: number }) => l.id === criado.body.id));
         });
 
-        it(
-            '201 ao criar um segundo cronograma com outro ativo',
-            {
-                todo: 'BUG: índice único parcial cronograma_ativo_idx (migração 20220928131618) aceita um só cronograma ativo no banco inteiro, o segundo vira 423',
-            },
-            async () => {
+        it('201 ao criar um segundo cronograma com outro ativo', async () => {
+            await liberaCronogramas();
+            const meta = await criarMetaLegado(legado, pdm.id);
+            try {
+                assertStatus(
+                    await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }),
+                    201
+                );
+                assertStatus(
+                    await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }),
+                    201
+                );
+            } finally {
                 await liberaCronogramas();
-                const meta = await criarMetaLegado(legado, pdm.id);
-                try {
-                    assertStatus(
-                        await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }),
-                        201
-                    );
-                    assertStatus(
-                        await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }),
-                        201
-                    );
-                } finally {
-                    await liberaCronogramas();
-                }
             }
-        );
+        });
 
         it('400 quando a listagem passa de 10 cronogramas', async () => {
             const meta = await criarMetaLegado(legado, pdm.id);
