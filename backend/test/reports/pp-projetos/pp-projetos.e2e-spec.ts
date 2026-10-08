@@ -97,15 +97,9 @@ describe('relatorio/projetos', () => {
         }
     });
 
-    it(
-        '201 sem orgao_responsavel_id (campo opcional)',
-        {
-            todo: 'BUG: POST /api/relatorio/projetos: esperado 201 sem orgao_responsavel_id (@IsOptional), veio 400 (transform converte undefined em NaN)',
-        },
-        async () => {
-            assertStatus(await api(administrador).post(url).send({ portfolio_id: portfolioId }), 201);
-        }
-    );
+    it('201 sem orgao_responsavel_id (campo opcional)', async () => {
+        assertStatus(await api(administrador).post(url).send({ portfolio_id: portfolioId }), 201);
+    });
 
     it('201 devolve os projetos do portfólio com os campos do projeto', async () => {
         const res = await api(administrador).post(url).send(filtro());
