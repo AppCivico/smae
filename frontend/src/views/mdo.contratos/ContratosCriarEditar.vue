@@ -20,7 +20,6 @@ import preencherArraysAusentes from '@/components/camposDeFormulario/helpers/pre
 import SmaeCNPJCampo from '@/components/camposDeFormulario/SmaeCNPJCampo/SmaeCNPJCampo.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
 import truncate from '@/helpers/texto/truncate';
@@ -148,13 +147,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
   <form
     v-if="!contratoId || emFoco"

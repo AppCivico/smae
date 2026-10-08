@@ -108,24 +108,24 @@ watch(itemParaEdicao, (novosValores) => {
 resetForm();
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>
-      <div
-        v-if="processoId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ 'Editar processo' }}
-      </div>
+  <CabecalhoDePagina :formulario-sujo="formularioSujo">
+    <template
+      v-if="processoId"
+      #subtitulo
+    >
+      Editar processo
+    </template>
+
+    <template #titulo>
       {{ emFoco?.descricao || (processoId ? 'Processo' : 'Novo processo') }}
-    </h1>
+    </template>
 
-    <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeProcesso
-      v-if="emFoco?.id"
-    />
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+    <template #acoes>
+      <MenuDeMudançaDeStatusDeProcesso
+        v-if="emFoco?.id"
+      />
+    </template>
+  </CabecalhoDePagina>
 
   <form
     v-if="!processoId || emFoco"
@@ -238,29 +238,17 @@ resetForm();
       </div>
     </div>
 
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
-      >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
-    </div>
+    <SmaeFieldsetSubmit
+      :erros="errors"
+      :esta-carregando="chamadasPendentes.emFoco"
+      class="mt2"
+      :disabled="!!(chamadasPendentes.emFoco)"
+    />
   </form>
 
-  <div
+  <LoadingComponent
     v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >
-    Carregando
-  </div>
+  />
 
   <button
     v-if="emFoco?.id"
