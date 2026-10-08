@@ -242,9 +242,6 @@ describe('projeto-etapa', () => {
 
         it(
             'lista etapas padrão sem papel de projeto',
-            {
-                todo: 'BUG: GET /api/projeto-etapa?eh_padrao=true devolve 400 "Sem permissões para acesso aos projetos." para quem só tem CadastroProjetoEtapaPadrao, porque findAll consulta o portfólio mesmo quando eh_padrao=true (o comentário diz que não olha)',
-            },
             async () => {
                 const soPadrao = await criarPessoaComPrivilegios(['CadastroProjetoEtapaPadrao.editar'], {
                     orgao_id: orgaoA.id,

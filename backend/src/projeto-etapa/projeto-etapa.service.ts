@@ -171,17 +171,19 @@ export class ProjetoEtapaService {
     }
 
     async findAll(tipo: TipoProjeto, filters: FilterProjetoEtapaDto, user: PessoaFromJwt): Promise<ProjetoEtapaDto[]> {
-        // Chamando findAll para verificar acesso.
-        let portfoliosId = [];
-
-        const portfolios = await this.portfolioService.findAll(tipo, user, true, filters?.portfolio_id);
-        if (filters?.portfolio_id && !portfolios.length)
-            throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
-
-        portfoliosId = portfolios.map((p) => p.id);
-
         // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
         const ehTelaAssociacao = filters.eh_padrao === true;
+
+        // Chamando findAll para verificar acesso.
+        let portfoliosId: number[] = [];
+
+        if (!(ehTelaAssociacao && tipo === 'PP')) {
+            const portfolios = await this.portfolioService.findAll(tipo, user, true, filters?.portfolio_id);
+            if (filters?.portfolio_id && !portfolios.length)
+                throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
+
+            portfoliosId = portfolios.map((p) => p.id);
+        }
 
         if (ehTelaAssociacao && filters?.portfolio_id)
             throw new HttpException('Não é possível filtrar por portfólio quando o filtro eh_padrao está ativo', 400);

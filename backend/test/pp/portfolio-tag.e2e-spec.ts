@@ -133,9 +133,6 @@ describe('portfolio-tag', () => {
 
         it(
             'não edita tag em uso por projeto (400)',
-            {
-                todo: 'BUG: PortfolioTagService.upsert confere uso com portfolio: { id: dto.portfolio_id }, que filtra o relacionamento PortfolioTag pelo id do portfólio (não do projeto), então a edição de tag em uso passa',
-            },
             async () => {
                 const edita = await api(tagger)
                     .patch(`/api/portfolio-tag/${tagUsada.id}`)
