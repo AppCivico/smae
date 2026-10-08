@@ -179,9 +179,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
                 ? plainToInstance(AdminCpDbItem, metaInfo.pdm.ps_admin_cps)
                 : [];
 
-            console.log('ps_admin_cps', ps_admin_cps);
             const equipes = ps_admin_cps.filter((r) => filtros.includes(r.tipo));
-            console.log('equipes', equipes);
 
             equipesIds = equipes.map((r) => r.equipe_id);
         }

@@ -1577,7 +1577,6 @@ export class PessoaService implements OnModuleInit {
     private async buscaPerfisVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
         const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
 
-        console.log('ehAdmin', ehAdmin);
         if (ehAdmin) {
             return await this.listaPerfilAcessoIds();
         }

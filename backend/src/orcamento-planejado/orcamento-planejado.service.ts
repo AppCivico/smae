@@ -243,8 +243,6 @@ export class OrcamentoPlanejadoService {
         if (meta_id === undefined || meta_id == null)
             throw new HttpException('é necessário informar: meta, iniciativa ou atividade', 400);
 
-        console.log({ meta_id, iniciativa_id, atividade_id });
-
         return { meta_id, iniciativa_id, atividade_id };
     }
 

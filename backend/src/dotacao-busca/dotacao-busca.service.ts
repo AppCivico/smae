@@ -49,11 +49,6 @@ export class DotacaoBuscaService {
 
             // No parteNormalizada, deixamos só as 8 primeiras partes
             parteNormalizada = partes.slice(0, 8).join('.');
-
-            console.log('=====================================');
-            console.log(whereComplemento);
-            console.log(parteNormalizada);
-            console.log('=====================================');
         }
 
         const linhas = await this.prisma.orcamentoRealizado.findMany({
