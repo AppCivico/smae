@@ -138,7 +138,17 @@ export class PlanoAcaoService {
         };
     }
 
-    async update(plano_acao_id: number, dto: UpdatePlanoAcaoDto, user: PessoaFromJwt) {
+    private async assertPlanoDoProjeto(projeto_id: number, plano_acao_id: number) {
+        const plano = await this.prisma.planoAcao.findFirst({
+            where: { id: plano_acao_id, removido_em: null, projeto_risco: { projeto_id } },
+            select: { id: true },
+        });
+        if (!plano) throw new HttpException('Não foi possível encontrar o Plano de Ação', 400);
+    }
+
+    async update(projeto_id: number, plano_acao_id: number, dto: UpdatePlanoAcaoDto, user: PessoaFromJwt) {
+        await this.assertPlanoDoProjeto(projeto_id, plano_acao_id);
+
         return await this.prisma.planoAcao.update({
             where: { id: plano_acao_id },
             data: {
@@ -153,10 +163,13 @@ export class PlanoAcaoService {
         });
     }
 
-    async remove(plano_acao_id: number, user: PessoaFromJwt) {
+    async remove(projeto_id: number, plano_acao_id: number, user: PessoaFromJwt) {
+        await this.assertPlanoDoProjeto(projeto_id, plano_acao_id);
+
         return await this.prisma.planoAcao.updateMany({
             where: {
                 id: plano_acao_id,
+                projeto_risco: { projeto_id },
             },
             data: {
                 removido_em: new Date(Date.now()),

@@ -69,7 +69,7 @@ export class RiscoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
-        return await this.riscoService.update(params.id2, updateRiscoDto, user);
+        return await this.riscoService.update(params.id, params.id2, updateRiscoDto, user);
     }
 
     @Delete(':id/risco/:id2')

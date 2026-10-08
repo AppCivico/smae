@@ -74,7 +74,7 @@ export class PlanoAcaoController {
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
+        return await this.planoAcaoService.update(params.id, params.id2, updatePlanoAcaoDto, user);
     }
 
     @Delete(':id/plano-de-acao/:id2')
@@ -85,7 +85,7 @@ export class PlanoAcaoController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        await this.planoAcaoService.remove(params.id2, user);
+        await this.planoAcaoService.remove(params.id, params.id2, user);
         return '';
     }
 }
