@@ -90,7 +90,7 @@ export class TribunalDeContasService implements ReportableService, SchemaAwareRe
                 },
                 status: {
                     where: { removido_em: null },
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     take: 1,
                     select: {
                         status: true,

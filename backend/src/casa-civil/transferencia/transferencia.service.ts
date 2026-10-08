@@ -658,7 +658,14 @@ export class TransferenciaService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const atual = await prismaTxn.transferencia.findFirst({
                     where: { id, removido_em: null },
-                    select: { cancelada: true },
+                    select: {
+                        cancelada: true,
+                        valor: true,
+                        valor_total: true,
+                        valor_contrapartida: true,
+                        custeio: true,
+                        investimento: true,
+                    },
                 });
                 if (!atual) throw new HttpException('Transferência não encontrada', 404);
 
@@ -882,7 +889,7 @@ export class TransferenciaService {
                     for (const { campo, nome, alvo } of limites) {
                         const novo = dto[campo];
                         if (novo === undefined || novo === null) continue;
-                        if (self[campo] && Number(novo) == self[campo]!.toNumber()) continue;
+                        if (atual[campo] && Number(novo) == atual[campo]!.toNumber()) continue;
 
                         const soma = distribuicoesContabilizadas.reduce(
                             (acc, d) => acc.plus(d[campo]),
