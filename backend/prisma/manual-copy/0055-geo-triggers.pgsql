@@ -149,7 +149,7 @@ BEGIN
         WHERE glc.geo_camada_id IN (SELECT geo_camada_id FROM affected_camadas)
     )
     -- Recalcular cada localização afetada
-    SELECT calc_geo_localizacao_regioes(geo_localizacao_id)
+    PERFORM calc_geo_localizacao_regioes(geo_localizacao_id)
     FROM affected_locations;
 
     RETURN COALESCE(NEW, OLD);
