@@ -8307,7 +8307,7 @@ model AtualizacaoEmLote {
 
 model WikiLink {
     id         Int    @id @default(autoincrement())
-    chave_smae String @unique
+    chave_smae String
     url_wiki   String
 
     criado_por Int?
