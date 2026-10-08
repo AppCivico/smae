@@ -305,13 +305,6 @@ export class VariavelFormulaCompostaService {
     async unlinkVariavel(id: number, dto: UnlinkIndicadorVariavelDto, user: PessoaFromJwt): Promise<void> {
         await this.assertFormulaCompostaNaoGerenciada(id);
 
-        const alreadyInIndicador = await this.prisma.indicadorVariavel.findFirst({
-            where: { variavel_id: dto.variavel_id, indicador_id: id, desativado: false, indicador_origem_id: null },
-            select: { variavel_id: true },
-        });
-        // se não existe, já ta desvinculado
-        if (!alreadyInIndicador) return;
-
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             const emUso = await prismaTx.formulaCompostaVariavel.count({
                 where: { variavel_id: dto.variavel_id, formula_composta_id: id },

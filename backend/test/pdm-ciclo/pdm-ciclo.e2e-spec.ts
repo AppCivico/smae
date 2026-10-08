@@ -84,7 +84,7 @@ describe('pdm-ciclo', () => {
     it(
         'v2 responde para ciclo configurado no Plano Setorial',
         {
-            todo: 'BUG: ciclo gerado por ciclo-config não tem fases (atualiza_ciclos_config não cria ciclo_fisico_fase), v2 lança TypeError: 500',
+            todo: 'https://github.com/AppCivico/smae/issues/692 BUG: ciclo gerado por ciclo-config não tem fases (atualiza_ciclos_config não cria ciclo_fisico_fase), v2 lança TypeError: 500',
         },
         async () => {
             const ps = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
