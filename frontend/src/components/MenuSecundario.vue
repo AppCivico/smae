@@ -102,7 +102,6 @@ function alternarItens(índice) {
     <button
       type="button"
       class="menu-secundário__botão-de-alternância"
-      aria-hidden="true"
       title="Expandir menu secundário"
       @click="menuAberto = !menuAberto"
     >
@@ -126,7 +125,6 @@ function alternarItens(índice) {
         <button
           type="button"
           :value="i"
-          aria-hidden="true"
           class="menu-secundário__botão-de-alternância-de-grupo"
           :class="{
             'menu-secundário__botão-de-alternância-de-grupo--aberto': itensFechados.includes(i)
