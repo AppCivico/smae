@@ -561,9 +561,14 @@ export class ParlamentarService {
         return created;
     }
 
-    async updateEquipe(id: number, dto: UpdateEquipeDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async updateEquipe(
+        parlamentarId: number,
+        id: number,
+        dto: UpdateEquipeDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const membroEquipe = await this.prisma.parlamentarEquipe.count({
-            where: { id, removido_em: null },
+            where: { id, parlamentar_id: parlamentarId, removido_em: null },
         });
         if (!membroEquipe) throw new HttpException('Membro de equipe inválido.', 400);
 
@@ -579,7 +584,12 @@ export class ParlamentarService {
         return { id };
     }
 
-    async removeEquipe(id: number, user: PessoaFromJwt) {
+    async removeEquipe(parlamentarId: number, id: number, user: PessoaFromJwt) {
+        const membroEquipe = await this.prisma.parlamentarEquipe.count({
+            where: { id, parlamentar_id: parlamentarId, removido_em: null },
+        });
+        if (!membroEquipe) throw new HttpException('Membro de equipe inválido.', 400);
+
         await this.prisma.parlamentarEquipe.update({
             where: { id },
             data: {
@@ -690,19 +700,19 @@ export class ParlamentarService {
         });
 
         if (dto.partido_atual_id && self.partido_atual_id != dto.partido_atual_id) {
-            const partidoCandidaturaExists = await this.prisma.partido.count({
-                where: { id: dto.partido_candidatura_id, removido_em: null },
+            const partidoAtualExists = await this.prisma.partido.count({
+                where: { id: dto.partido_atual_id, removido_em: null },
             });
-            if (!partidoCandidaturaExists) throw new HttpException('Partido de candidatura inválido', 400);
+            if (!partidoAtualExists) throw new HttpException('Partido atual inválido', 400);
         }
 
         if (dto.biografia) dto.biografia = HtmlSanitizer(dto.biografia);
 
         if (dto.partido_candidatura_id && self.partido_candidatura_id != dto.partido_candidatura_id) {
-            const partidoAtualExists = await this.prisma.partido.count({
-                where: { id: dto.partido_atual_id, removido_em: null },
+            const partidoCandidaturaExists = await this.prisma.partido.count({
+                where: { id: dto.partido_candidatura_id, removido_em: null },
             });
-            if (!partidoAtualExists) throw new HttpException('Partido atual inválido', 400);
+            if (!partidoCandidaturaExists) throw new HttpException('Partido de candidatura inválido', 400);
         }
 
         await this.prisma.parlamentarMandato.update({
