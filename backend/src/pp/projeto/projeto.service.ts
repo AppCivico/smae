@@ -2698,7 +2698,27 @@ export class ProjetoService {
             tipo
         );
 
-        if (dto.responsavel_id && dto.responsavel_id != projeto.responsavel?.id) {
+        // Troca do órgão responsável (permitida também após o início do planejamento): o gerente/responsável
+        // precisa ser do novo órgão, então quem chama deve enviar o novo responsavel_id (ou null para limpar)
+        // caso o atual não pertença ao órgão novo.
+        const orgaoResponsavelMudou =
+            !!dto.orgao_responsavel_id && dto.orgao_responsavel_id != projeto.orgao_responsavel?.id;
+        if (orgaoResponsavelMudou) {
+            const responsavelId = dto.responsavel_id === undefined ? projeto.responsavel?.id : dto.responsavel_id;
+
+            if (responsavelId) {
+                const pertenceAoOrgao = await this.prisma.pessoa.count({
+                    where: { id: responsavelId, pessoa_fisica: { orgao_id: dto.orgao_responsavel_id! } },
+                });
+                if (!pertenceAoOrgao)
+                    throw new HttpException(
+                        'O responsável não pertence ao novo órgão responsável. Informe um responsável do novo órgão.',
+                        400
+                    );
+
+                await this.checkOrgaoResponsavel(tipo, dto.orgao_responsavel_id, responsavelId);
+            }
+        } else if (dto.responsavel_id && dto.responsavel_id != projeto.responsavel?.id) {
             await this.checkOrgaoResponsavel(
                 tipo,
                 dto.orgao_responsavel_id || projeto.orgao_responsavel?.id,
@@ -2932,19 +2952,6 @@ export class ProjetoService {
                 // Pois a tela chama um outro endpoint, logo chamo o delete do portfolio_id após utilizar.
                 await this.transferPortfolio(tipo, projetoId, { portfolio_id: dto.portfolio_id }, user, prismaTx);
                 delete dto.portfolio_id;
-            }
-
-            if (
-                tipo == 'PP' &&
-                projeto.em_planejamento_em !== null &&
-                projeto.orgao_responsavel?.id &&
-                dto.orgao_responsavel_id &&
-                projeto.orgao_responsavel?.id != dto.orgao_responsavel_id
-            ) {
-                throw new HttpException(
-                    'Não é possível alterar o órgão responsável após o início do planejamento.',
-                    400
-                );
             }
 
             // Caso a previsão de término seja enviada/modificada (e for diferente do que está salvo). Garantir que não seja menor que a previsão de início.
