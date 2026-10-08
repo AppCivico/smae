@@ -113,7 +113,6 @@ export class OrcamentoPlanejadoService {
             where: { id: +id, removido_em: null, projeto_id, projeto: { tipo, id: projeto_id } },
         });
         if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
-        console.log(dto);
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {

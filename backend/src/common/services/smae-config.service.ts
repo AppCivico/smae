@@ -120,7 +120,6 @@ export class SmaeConfigService {
     async getConfigBooleanWithDefault(key: string, defaultValue: boolean): Promise<boolean> {
         return this.getConfigWithDefault<boolean>(key, defaultValue, (value) => {
             // Converte o valor para booleano, tratando strings como 'true' ou 'false
-            console.log(value, typeof value);
             if (typeof value === 'string') {
                 return value.toLowerCase() === 'true';
             }
