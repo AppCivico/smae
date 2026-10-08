@@ -62,7 +62,7 @@ describe('tipo-vinculo', () => {
             );
         });
 
-        it('BUG GET de tipo removido responde 404', { todo: 'BUG: tipo-vinculo.service findOne usa findUniqueOrThrow sem removido_em: null, então o registro removido continua legível' }, async () => {
+        it('GET de tipo removido responde 404', async () => {
             const criado = await casaCivil(gestor).post('/api/tipo-vinculo').send({ nome: uniq('Removido') });
             assertStatus(criado, 201);
             assertStatus(await casaCivil(gestor).delete(`/api/tipo-vinculo/${criado.body.id}`), 202);

@@ -101,7 +101,7 @@ describe('distribuicao-recurso/:id/status (histórico de status)', () => {
             assert.equal(detalhe.body.valor_distribuido, 0);
         });
 
-        it('BUG status terminal registrado no mesmo dia não bloqueia novo registro', { todo: 'BUG: create de status escolhe o status anterior só por data_troca desc (sem id desc); com data_troca igual a escolha é arbitrária, e o "último status" do limite usa data_troca desc, id desc' }, async () => {
+        it('status terminal registrado no mesmo dia bloqueia novo registro', async () => {
             const { inicial } = await criarTransferenciaComOrcamento(gestor);
             assertStatus(await registrarStatus(gestor, inicial.id, (await buscarStatusBase('Cancelada')).id), 201);
             assertStatus(await registrarStatus(gestor, inicial.id, (await buscarStatusBase('Em Andamento')).id), 400);

@@ -65,9 +65,10 @@ export class TipoVinculoService {
     }
 
     async findOne(id: number, user: PessoaFromJwt) {
-        return await this.prisma.tipoVinculo.findUniqueOrThrow({
+        return await this.prisma.tipoVinculo.findFirstOrThrow({
             where: {
                 id: id,
+                removido_em: null,
             },
         });
     }
