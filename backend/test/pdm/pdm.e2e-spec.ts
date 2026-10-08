@@ -66,19 +66,15 @@ describe('pdm', () => {
             assertStatus(await api(criador).post('/api/pdm').send({ prefeito: 'X', nivel_orcamento: 'Meta' }), 400);
         });
 
-        it(
-            '400 com nome repetido (sem diferenciar maiúsculas)',
-            { todo: 'BUG: create compara descricao (nulo) com o nome, nome repetido e aceito (pdm.service create)' },
-            async () => {
-                const nome = uniq('PDM repetido');
-                await criarPdmAntigo({ nome });
-                const repetido = await api(criador)
-                    .post('/api/pdm')
-                    .send({ nome: nome.toUpperCase(), prefeito: 'X', nivel_orcamento: 'Meta' });
-                assertStatus(repetido, 400);
-                assert.match(repetido.body.message, /já existe/);
-            }
-        );
+        it('400 com nome repetido (sem diferenciar maiúsculas)', async () => {
+            const nome = uniq('PDM repetido');
+            await criarPdmAntigo({ nome });
+            const repetido = await api(criador)
+                .post('/api/pdm')
+                .send({ nome: nome.toUpperCase(), prefeito: 'X', nivel_orcamento: 'Meta' });
+            assertStatus(repetido, 400);
+            assert.match(repetido.body.message, /já existe/);
+        });
 
         it('cria, consulta com auxiliares e edita', async () => {
             const nome = uniq('PDM CRUD');
