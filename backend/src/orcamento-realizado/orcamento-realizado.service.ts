@@ -533,11 +533,6 @@ export class OrcamentoRealizadoService {
         dto: PartialOrcamentoRealizadoDto,
         dotacao: string
     ) {
-        console.log({
-            func: 'atualizaDotacao',
-            dotacao,
-        });
-
         const dotacaoTx = await this.buscaDotacao(prismaTxn, dto, dotacao);
         const mes_utilizado = dotacaoTx.mes_utilizado;
 

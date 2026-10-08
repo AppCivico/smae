@@ -63,11 +63,6 @@ export class OrcamentoRealizadoService {
             throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
         const dotacao_complemento = ExtraiComplementoDotacao(dto);
-        console.log(
-            'create orcamento pp ExtraiComplementoDotacaoExtraiComplementoDotacaoExtraiComplementoDotacaoExtraiComplementoDotacao',
-            dto,
-            dotacao_complemento
-        );
         dto.dotacao = TrataDotacaoGrande(dto.dotacao);
 
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
