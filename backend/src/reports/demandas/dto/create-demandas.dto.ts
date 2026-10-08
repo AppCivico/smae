@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DemandaStatus } from '@prisma/client';
 import { Expose, Type } from 'class-transformer';
-import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsInt, IsOptional } from 'class-validator';
 
 export class CreateRelDemandasDto {
     /**
@@ -21,7 +21,7 @@ export class CreateRelDemandasDto {
      * Filtro por data de registro inicial
      */
     @IsOptional()
-    @IsString()
+    @IsDateString()
     @Expose()
     data_registro_inicio?: string;
 
@@ -29,7 +29,7 @@ export class CreateRelDemandasDto {
      * Filtro por data de registro final
      */
     @IsOptional()
-    @IsString()
+    @IsDateString()
     @Expose()
     data_registro_fim?: string;
 
