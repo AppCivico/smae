@@ -1,28 +1,18 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { before, describe, it } from 'node:test';
+import { api, assert, assertStatus, bootApp } from './lib';
 
-describe('AppController (e2e)', () => {
-    let app: INestApplication;
-
-    beforeEach(async () => {
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
-        }).compile();
-
-        app = moduleFixture.createNestApplication();
-        await app.init();
-    });
-    afterAll(async () => {
-        await app.close();
+describe('AppController', () => {
+    before(async () => {
+        await bootApp();
     });
 
-    it('/ (GET) should be 404', async () => {
-        return await request(app.getHttpServer()).get('/').expect(404);
+    it('GET / responde 404', async () => {
+        const res = await api().get('/');
+        assert.equal(res.status, 404);
     });
 
-    it('/ping (GET)', async () => {
-        return await request(app.getHttpServer()).get('/ping').expect(200);
+    it('GET /api/ping responde 200 sem token', async () => {
+        const res = await api().get('/api/ping');
+        assertStatus(res, 200);
     });
 });
