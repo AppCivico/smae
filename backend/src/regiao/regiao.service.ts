@@ -151,7 +151,7 @@ export class RegiaoService {
             }
         }
 
-        if (updateRegiaoDto.parente_id) {
+        if (updateRegiaoDto.descricao) {
             const similarExists = await this.prisma.regiao.count({
                 where: {
                     descricao: { endsWith: updateRegiaoDto.descricao, mode: 'insensitive' },
@@ -219,6 +219,7 @@ export class RegiaoService {
         const first = await this.prisma.regiao.findFirst({
             where: {
                 id: id,
+                removido_em: null,
             },
             select: {
                 id: true,
