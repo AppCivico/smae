@@ -41,6 +41,16 @@ defineOptions({
   inheritAttrs: false,
 });
 
+defineProps({
+  contratoId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+});
+
 const fontesRecurso = ref({ participantes: [], busca: '' });
 
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
