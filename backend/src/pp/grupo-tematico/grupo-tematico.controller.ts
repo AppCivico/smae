@@ -6,6 +6,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateGrupoTematicoDto } from './dto/create-grupo-tematico.dto';
+import { UpdateGrupoTematicoDto } from './dto/update-grupo-tematico.dto';
 import { GrupoTematico, ListGrupoTematicoDto } from './entities/grupo-tematico.entity';
 import { GrupoTematicoService } from './grupo-tematico.service';
 
@@ -42,7 +43,7 @@ export class GrupoTematicoController {
     @Roles(['GrupoTematicoMDO.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateProjetoDto: CreateGrupoTematicoDto,
+        @Body() updateProjetoDto: UpdateGrupoTematicoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.grupoTematicoService.update(params.id, updateProjetoDto, user);
