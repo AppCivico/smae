@@ -110,6 +110,7 @@ class RetornoDbProjeto {
     pontos_focais_colaboradores: string;
     responsavel_id: number;
     responsavel_nome_exibicao: string;
+    grupos_observadores: string | null;
     mdo_observacoes?: string;
 
     programa_habitacional?: string;
@@ -194,6 +195,7 @@ class RetornoDbContratos {
     prazo: number | null;
     unidade_prazo: ContratoPrazoUnidade | null;
     data_base: string | null;
+    data_assinatura: Date | null;
     data_inicio: Date | null;
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
@@ -661,6 +663,15 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             ) as etiquetas,
             projeto.status,
             pe.descricao AS projeto_etapa,
+            (
+                SELECT
+                    string_agg(gp.titulo, '|' ORDER BY gp.titulo COLLATE pt_natural)
+                FROM projeto_grupo_portfolio pgp
+                JOIN grupo_portfolio gp ON gp.id = pgp.grupo_portfolio_id AND gp.removido_em IS NULL
+                WHERE pgp.projeto_id = projeto.id
+                AND pgp.removido_em IS NULL
+            ) AS grupos_observadores,
+            projeto.mdo_observacoes,
             tc.previsao_inicio AS inicio_planejado,
             tc.previsao_termino AS termino_planejado,
             projeto.previsao_inicio AS previsao_inicio,
@@ -716,7 +727,6 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             projeto.mdo_programa_habitacional as programa_habitacional,
             empreendimento.id AS empreendimento_id,
             empreendimento.identificador AS empreendimento_identificador,
-            projeto.mdo_observacoes,
             sp.titulos AS portfolios_compartilhados_titulos,
             projeto.secretario_responsavel,
             projeto.secretario_executivo,
@@ -814,6 +824,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
                 n_unidades_atendidas: db.n_unidades_atendidas ? db.n_unidades_atendidas : null,
                 programa_habitacional: db.programa_habitacional ? db.programa_habitacional : null,
                 pontos_focais_colaboradores: db.pontos_focais_colaboradores,
+                grupos_observadores: db.grupos_observadores ?? null,
                 observacoes: db.mdo_observacoes ? db.mdo_observacoes : null,
                 orgao_executor: db.orgao_executor_id
                     ? {
@@ -1080,6 +1091,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
             contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            contrato.data_assinatura AS data_assinatura,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
             (
@@ -1150,6 +1162,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
                 prazo: db.prazo,
                 unidade_prazo: db.unidade_prazo,
                 data_base: db.data_base,
+                data_assinatura: db.data_assinatura,
                 data_inicio: db.data_inicio,
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,

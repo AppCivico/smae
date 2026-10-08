@@ -37,6 +37,7 @@ export class RelObrasDto {
     @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
     origem_tipo: ProjetoOrigemTipo;
     descricao: string | null;
+    grupos_observadores: string | null;
     observacoes: string | null;
     inicio_planejado: string | null;
     previsao_custo: number | null;
@@ -160,6 +161,7 @@ export class RelObrasContratosDto {
     @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
     unidade_prazo: ContratoPrazoUnidade | null;
     data_base: string | null;
+    data_assinatura: Date | null;
     data_inicio: Date | null;
     data_termino: Date | null;
     data_termino_atualizada: Date | null;

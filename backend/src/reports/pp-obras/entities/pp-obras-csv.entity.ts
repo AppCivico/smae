@@ -71,6 +71,13 @@ export class RelObrasCsvRow {
     @ReportColumn({ type: 'VARCHAR', label: 'projeto_etapa' })
     projeto_etapa: string | null;
 
+    /** Títulos dos grupos de observadores vinculados diretamente à obra, separados por `|`. */
+    @ReportColumn({ type: 'VARCHAR', label: 'grupos_observadores' })
+    grupos_observadores: string | null;
+
+    @ReportColumn({ type: 'VARCHAR', label: 'mdo_observacoes' })
+    mdo_observacoes: string | null;
+
     /** Vem do cronograma (`tarefa_cronograma.previsao_inicio`), não do cadastro da obra. */
     @ReportColumn({ type: 'DATE', label: 'inicio_planejado' })
     inicio_planejado: string | null;
@@ -256,9 +263,6 @@ export class RelObrasCsvRow {
 
     @ReportColumn({ type: 'VARCHAR', label: 'empreendimento_identificador' })
     empreendimento_identificador: string | null;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'mdo_observacoes' })
-    mdo_observacoes: string | null;
 
     /** Títulos dos portfólios em que a obra foi compartilhada, separados por ` | `. */
     @ReportColumn({ type: 'VARCHAR', label: 'portfolios_compartilhados_titulos' })
@@ -547,6 +551,9 @@ export class RelObrasContratosCsvRow {
     /** `mês/ano` montado no SQL (ex.: `6/2024`): o Excel o converte em data ao abrir o CSV direto. */
     @ReportColumn({ type: 'VARCHAR', label: 'data_base' })
     data_base: string | null;
+
+    @ReportColumn({ type: 'DATE', label: 'data_assinatura' })
+    data_assinatura: string | null;
 
     @ReportColumn({ type: 'DATE', label: 'data_inicio' })
     data_inicio: string | null;
