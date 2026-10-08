@@ -110,16 +110,18 @@ export class GrupoPaineisService {
     }
 
     async update(id: number, updateGrupoPaineisDto: UpdateGrupoPaineisDto, user: PessoaFromJwt) {
-        const similarExists = await this.prisma.grupoPainel.count({
-            where: {
-                nome: { equals: updateGrupoPaineisDto.nome, mode: 'insensitive' },
-                removido_em: null,
-                NOT: { id: id },
-            },
-        });
+        if (updateGrupoPaineisDto.nome) {
+            const similarExists = await this.prisma.grupoPainel.count({
+                where: {
+                    nome: { equals: updateGrupoPaineisDto.nome, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id },
+                },
+            });
 
-        if (similarExists > 0)
-            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
+        }
 
         await this.prisma.grupoPainel.update({
             where: { id: id },

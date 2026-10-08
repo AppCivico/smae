@@ -180,6 +180,11 @@ export class GrupoPainelExternoService {
         dto.participantes = UniqueNumbers(dto.participantes);
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             if (dto.orgao_id) {
+                if (!user.hasSomeRoles(['CadastroGrupoPainelExterno.administrador']) && dto.orgao_id != user.orgao_id)
+                    throw new BadRequestException(
+                        'Você só tem permissão para editar Grupo de Painel Externo no mesmo órgão.'
+                    );
+
                 // verificando se órgão não foi removido
                 const orgao = await this.prisma.orgao.findFirst({
                     where: {
@@ -272,6 +277,7 @@ export class GrupoPainelExternoService {
                 },
                 data: {
                     titulo: dto.titulo,
+                    orgao_id: dto.orgao_id,
 
                     modulo_sistema: sistema,
                     atualizado_em: new Date(Date.now()),
