@@ -677,11 +677,18 @@ watch(itemParaEdicao, (novoValor) => {
               type="checkbox"
               :value="true"
               :unchecked-value="false"
-              @change="resetField('nivel_orcamento', {
-                value: carga.monitoramento_orcamento
-                  ? emFoco.nivel_orcamento
-                  : null
-              })"
+              @change="() => {
+                resetField('nivel_orcamento', {
+                  value: carga.monitoramento_orcamento
+                    ? emFoco?.nivel_orcamento
+                    : null
+                });
+                resetField('orcamento_dia_fechamento', {
+                  value: carga.monitoramento_orcamento
+                    ? emFoco?.orcamento_dia_fechamento
+                    : null
+                });
+              }"
             />
             <LabelFromYup
               name="monitoramento_orcamento"
@@ -715,10 +722,7 @@ watch(itemParaEdicao, (novoValor) => {
           </Field>
           <ErrorMessage name="nivel_orcamento" />
         </div>
-        <div
-          v-if="carga.monitoramento_orcamento"
-          class="f1 fb10em"
-        >
+        <div class="f1 fb10em">
           <LabelFromYup
             name="orcamento_dia_fechamento"
             :schema="schema"
@@ -728,6 +732,7 @@ watch(itemParaEdicao, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.orcamento_dia_fechamento }"
+            :disabled="!carga.monitoramento_orcamento"
           >
             <option
               v-for="dia in 28"
@@ -916,7 +921,9 @@ watch(itemParaEdicao, (novoValor) => {
                   type="text"
                   class="inputtext light mb1"
                   :class="{
-                    error: errors[`monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].rotulo`]
+                    error: errors[
+                      `monitoramento_config.fases[${idxFase}].blocos[${idxBloco}].rotulo`
+                    ]
                   }"
                 />
                 <ErrorMessage
