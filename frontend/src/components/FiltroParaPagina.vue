@@ -320,6 +320,7 @@ if (props.autoSubmit) {
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                v-bind="campo.atributos"
               />
 
               <ErrorMessage

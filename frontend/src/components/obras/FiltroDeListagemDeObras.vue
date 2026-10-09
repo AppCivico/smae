@@ -76,6 +76,7 @@ const colunasParaOrdenacao = {
 };
 
 const chavesDeValoresValidos = [
+  'codigo',
   'equipamento_id',
   'grupo_tematico_id',
   'ipp',
@@ -406,6 +407,25 @@ onMounted(() => {
           name="registros_sei"
           type="search"
           :value="valoresIniciaisConsolidados.registros_sei"
+        >
+      </div>
+    </div>
+
+    <div class="flex g2 mb2 fb100 flexwrap espacador-final">
+      <div class="f1 fb25em">
+        <label
+          class="label"
+          for="codigo"
+        >
+          Número do contrato
+        </label>
+
+        <input
+          id="codigo"
+          class="inputtext light"
+          name="codigo"
+          type="search"
+          :value="valoresIniciaisConsolidados.codigo"
         >
       </div>
     </div>
