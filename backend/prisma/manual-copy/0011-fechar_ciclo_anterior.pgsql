@@ -6,6 +6,7 @@ DECLARE
     vPorBlocos BOOLEAN;
     vFases INT[];
     vFaseFechamento INT;
+    vNovoCicloData DATE;
 BEGIN
     -- FOR SHARE: espera a migração do plano para fases configuradas, se estiver em andamento
     SELECT p.monitoramento_por_blocos INTO vPorBlocos FROM pdm p WHERE p.id = pPdmId FOR SHARE;
@@ -20,53 +21,58 @@ BEGIN
         vFaseFechamento := vFases[cardinality(vFases)];
     END IF;
 
-    -- Encontra todos os ciclos anteriores ativos do tipo CicloConfig
+    SELECT cf.data_ciclo INTO vNovoCicloData FROM ciclo_fisico cf WHERE cf.id = pNovoCicloId;
+
+    -- Ciclos anteriores ativos do tipo CicloConfig; por fases, também os passados já inativos
     FOR vCicloAnterior IN
-        SELECT cf.id, cf.data_ciclo
-        FROM ciclo_fisico cf
-        WHERE cf.pdm_id = pPdmId
-        AND cf.ativo = true
-        AND cf.id != pNovoCicloId
-        AND cf.tipo = 'CicloConfig'
+        SELECT c.id, c.data_ciclo, c.ativo, c.proxima_data
+        FROM (
+            SELECT cf.id, cf.data_ciclo, cf.ativo, cf.tipo,
+                lead(cf.data_ciclo) OVER (ORDER BY cf.data_ciclo) AS proxima_data
+            FROM ciclo_fisico cf
+            WHERE cf.pdm_id = pPdmId
+        ) c
+        WHERE c.id != pNovoCicloId
+        AND c.tipo = 'CicloConfig'
+        AND (c.ativo OR (vPorBlocos AND c.data_ciclo < vNovoCicloData))
+        ORDER BY c.data_ciclo
     LOOP
         raise notice 'Fechando ciclo anterior %', vCicloAnterior.id;
 
         IF vPorBlocos THEN
-            -- Mesma regra do legado: só fecha metas sem fechamento e com alguma fase anterior não preenchida
+            -- Fecha toda meta sem fechamento; reaberta tem linha fecha_ciclo e continua aberta
             FOR vMeta IN
-                SELECT a.meta_id, a.faltantes
-                FROM (
-                    SELECT
-                        m.id AS meta_id,
-                        (
-                            SELECT string_agg(f.rotulo, ', ' ORDER BY f.ordem)
-                            FROM pdm_monitoramento_fase_config f
-                            WHERE f.id = ANY (vFases[1:cardinality(vFases) - 1])
-                            AND NOT EXISTS (
-                                SELECT 1
-                                FROM meta_monitoramento_fase r
-                                WHERE r.meta_id = m.id
-                                AND r.ciclo_fisico_id = vCicloAnterior.id
-                                AND r.fase_config_id = f.id
-                                AND r.ultima_revisao
-                                AND r.removido_em IS NULL
-                            )
-                        ) AS faltantes
-                    FROM meta m
-                    WHERE m.pdm_id = pPdmId
-                    AND m.removido_em IS NULL
-                    AND vFaseFechamento IS NOT NULL
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM meta_monitoramento_fase r
-                        WHERE r.meta_id = m.id
-                        AND r.ciclo_fisico_id = vCicloAnterior.id
-                        AND r.fecha_ciclo
-                        AND r.ultima_revisao
-                        AND r.removido_em IS NULL
-                    )
-                ) a
-                WHERE a.faltantes IS NOT NULL
+                SELECT
+                    m.id AS meta_id,
+                    (
+                        SELECT string_agg(f.rotulo, ', ' ORDER BY f.ordem)
+                        FROM pdm_monitoramento_fase_config f
+                        WHERE f.id = ANY (vFases[1:cardinality(vFases) - 1])
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM meta_monitoramento_fase r
+                            WHERE r.meta_id = m.id
+                            AND r.ciclo_fisico_id = vCicloAnterior.id
+                            AND r.fase_config_id = f.id
+                            AND r.ultima_revisao
+                            AND r.removido_em IS NULL
+                        )
+                    ) AS faltantes
+                FROM meta m
+                WHERE m.pdm_id = pPdmId
+                AND m.removido_em IS NULL
+                AND vFaseFechamento IS NOT NULL
+                -- ciclo passado: só metas que já existiam nele
+                AND (vCicloAnterior.ativo OR m.criado_em < vCicloAnterior.proxima_data)
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM meta_monitoramento_fase r
+                    WHERE r.meta_id = m.id
+                    AND r.ciclo_fisico_id = vCicloAnterior.id
+                    AND r.fecha_ciclo
+                    AND r.ultima_revisao
+                    AND r.removido_em IS NULL
+                )
             LOOP
                 -- revisão da fase de fechamento salva antes de ela virar a última fase
                 UPDATE meta_monitoramento_fase
@@ -94,7 +100,7 @@ BEGIN
                     vCicloAnterior.data_ciclo,
                     true,
                     true,
-                    'Ciclo fechado automaticamente. Fases não preenchidas: ' || vMeta.faltantes,
+                    'Ciclo fechado automaticamente' || coalesce('. Fases não preenchidas: ' || vMeta.faltantes, ''),
                     -1, -- Usuário do sistema
                     now()
                 );
@@ -141,13 +147,14 @@ BEGIN
             AND (mcfa.id IS NULL OR mcfr.id IS NULL); -- Análise ou risco não preenchidos
         END IF;
 
-        raise notice 'Marcando ciclo anterior % como inativo', vCicloAnterior.id;
-        -- Marca o ciclo anterior como inativo
-        UPDATE ciclo_fisico
-        SET ativo = false,
-            acordar_ciclo_em = NULL,
-            acordar_ciclo_executou_em = now()
-        WHERE id = vCicloAnterior.id;
+        IF vCicloAnterior.ativo THEN
+            raise notice 'Marcando ciclo anterior % como inativo', vCicloAnterior.id;
+            UPDATE ciclo_fisico
+            SET ativo = false,
+                acordar_ciclo_em = NULL,
+                acordar_ciclo_executou_em = now()
+            WHERE id = vCicloAnterior.id;
+        END IF;
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
