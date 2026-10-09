@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 
-import { TipoProjeto } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
@@ -76,7 +76,49 @@ export class ProjetoSeiService {
             orderBy: [{ criado_em: 'desc' }],
         });
 
-        return projetosSei;
+        const contratoSei = projetosSei.length ? await this.contratoSeiDoProjeto(this.prisma, projeto.id) : [];
+
+        return projetosSei.map((registro) => {
+            return {
+                ...registro,
+                contratos: contratoSei
+                    .filter((r) => r.processo_sei === registro.processo_sei)
+                    .map((r) => r.contrato)
+                    // o mesmo número pode constar duas vezes no contrato (com e sem máscara)
+                    .filter((contrato, idx, lista) => lista.findIndex((c) => c.id === contrato.id) === idx),
+            };
+        });
+    }
+
+    /**
+     * Processos SEI em uso nos contratos ativos vinculados ao projeto/obra.
+     *
+     * `contrato_sei.numero_sei` é texto livre, sem FK para `projeto_registro_sei`, e há linhas antigas
+     * gravadas com máscara (`6012.2023/0019359-0`); por isso a comparação é sempre feita só pelos dígitos.
+     */
+    private async contratoSeiDoProjeto(prismaTx: Prisma.TransactionClient, projeto_id: number) {
+        const linhas = await prismaTx.contratoSei.findMany({
+            where: {
+                contrato: {
+                    removido_em: null,
+                    ContratoProjeto: { some: { projeto_id: projeto_id, removido_em: null } },
+                },
+            },
+            orderBy: [{ contrato: { numero: 'asc' } }],
+            select: {
+                id: true,
+                numero_sei: true,
+                contrato: { select: { id: true, numero: true } },
+            },
+        });
+
+        return linhas.map((linha) => {
+            return {
+                id: linha.id,
+                processo_sei: linha.numero_sei.replace(/[^0-9]/g, ''),
+                contrato: linha.contrato,
+            };
+        });
     }
 
     async update_sei(
@@ -138,27 +180,39 @@ export class ProjetoSeiService {
     }
 
     async remove_sei(tipo: TipoProjeto, projeto: ProjetoDetailDto, seiID: number, user: PessoaFromJwt) {
-        const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
-            where: {
-                projeto_id: projeto.id,
-                projeto: { tipo: tipo, id: projeto.id },
-                id: seiID,
-                removido_em: null,
-            },
-        });
-        if (self.categoria !== 'Manual')
-            throw new HttpException(`Processo SEI não pode ser removido, pois foi criado pelo sistema.`,
-                400
-            );
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const self = await prismaTx.projetoRegistroSei.findFirstOrThrow({
+                where: {
+                    projeto_id: projeto.id,
+                    projeto: { tipo: tipo, id: projeto.id },
+                    id: seiID,
+                    removido_em: null,
+                },
+            });
+            if (self.categoria !== 'Manual')
+                throw new HttpException(`Processo SEI não pode ser removido, pois foi criado pelo sistema.`,
+                    400
+                );
 
-        await this.prisma.projetoRegistroSei.update({
-            where: {
-                id: seiID,
-            },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id,
-            },
+            await prismaTx.projetoRegistroSei.update({
+                where: {
+                    id: seiID,
+                },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id,
+                },
+            });
+
+            // O formulário do contrato só oferece os processos cadastrados no projeto/obra. Se o número
+            // continuasse no contrato, apareceria na lista/resumo sem poder ser retirado pela edição.
+            // Em contrato compartilhado a remoção vale para todas as obras/projetos, como qualquer
+            // outra alteração feita no contrato.
+            const emUso = (await this.contratoSeiDoProjeto(prismaTx, projeto.id)).filter(
+                (r) => r.processo_sei === self.processo_sei
+            );
+            if (emUso.length)
+                await prismaTx.contratoSei.deleteMany({ where: { id: { in: emUso.map((r) => r.id) } } });
         });
     }
 }
