@@ -164,7 +164,7 @@ watch([
     listaDeTags.value = linhas;
     montar();
   } else {
-    throw new Error('lista de tags entregue fora do padrão esperado');
+    throw new TypeError('lista de tags entregue fora do padrão esperado');
   }
 }, { immediate: true });
 
