@@ -51,6 +51,12 @@ export class CicloFisicoPSDto {
     ativo: boolean;
     fechado: boolean;
     documentos_editaveis: DocumentoEditavelTipo[];
+    /**
+     * Apenas em planos com monitoramento por fases configuradas (ids de PdmMonitoramentoFaseConfig)
+     */
+    reaberto?: boolean;
+    fases_preenchidas?: number[];
+    fases_editaveis?: number[];
 }
 
 export class DadosCicloFisicoPSDto {
@@ -68,6 +74,7 @@ export class UltimaRevisao {
 export class ListPSCicloDto {
     linhas: CicloFisicoPSDto[];
     ultima_revisao: UltimaRevisao | null;
+    monitoramento_por_blocos: boolean;
 
     @ApiProperty({
         enum: DocumentoEditavelTipo,

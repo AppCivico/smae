@@ -9,6 +9,10 @@ DECLARE
     v_fase_analise_preenchida BOOLEAN;
     v_fase_risco_preenchida BOOLEAN;
     v_fase_fechamento_preenchida BOOLEAN;
+    v_por_blocos BOOLEAN;
+    v_fases int[];
+    v_n int;
+    v_preenchidas int[];
     -- Counters for meta and its children
     v_pendente BOOLEAN;
     v_pendente_variavel BOOLEAN;
@@ -56,9 +60,10 @@ BEGIN
         p.ativo AS v_pdm_ativo,
         cf.data_ciclo AS v_data_ciclo,
         CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId,
-        p.monitoramento_orcamento
+        p.monitoramento_orcamento,
+        p.monitoramento_por_blocos
             INTO
-        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId, v_monitoramento_orcamento
+        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId, v_monitoramento_orcamento, v_por_blocos
 
     FROM pdm p
     LEFT JOIN ciclo_fisico cf ON p.id = cf.pdm_id
@@ -79,6 +84,36 @@ BEGIN
         v_fase_risco_preenchida := FALSE;
         v_fase_fechamento_preenchida := FALSE;
         v_pendente_orcamento := FALSE;
+    ELSIF v_por_blocos THEN
+        SELECT coalesce(array_agg(f.id ORDER BY f.ordem), '{}')
+            INTO v_fases
+        FROM pdm_monitoramento_fase_config f
+        WHERE f.pdm_id = v_pdm_id
+          AND f.habilitada
+          AND f.removido_em IS NULL;
+        v_n := cardinality(v_fases);
+
+        SELECT coalesce(array_agg(r.fase_config_id), '{}')
+            INTO v_preenchidas
+        FROM meta_monitoramento_fase r
+        WHERE r.meta_id = pMetaId
+          AND r.ciclo_fisico_id = v_CicloFisicoId
+          AND r.ultima_revisao
+          AND r.removido_em IS NULL;
+
+        -- colunas fixas mantidas para o painel: primeira fase, fases antes do fechamento, fechamento
+        v_fase_analise_preenchida := v_n > 0 AND v_fases[1] = ANY (v_preenchidas);
+        v_fase_risco_preenchida := v_n > 0 AND v_fases[1:v_n - 1] <@ v_preenchidas;
+        v_fase_fechamento_preenchida := EXISTS (
+            SELECT 1
+            FROM meta_monitoramento_fase r
+            WHERE r.meta_id = pMetaId
+              AND r.ciclo_fisico_id = v_CicloFisicoId
+              AND r.ultima_revisao
+              AND r.fecha_ciclo
+              AND r.reaberto_em IS NULL
+              AND r.removido_em IS NULL
+        );
     ELSE
         SELECT
             EXISTS (

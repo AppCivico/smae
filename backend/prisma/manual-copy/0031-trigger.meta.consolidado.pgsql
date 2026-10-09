@@ -159,3 +159,9 @@ CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_analise
 AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_analise
 FOR EACH ROW
 EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+DROP TRIGGER IF EXISTS trg_refresh_meta_meta_monitoramento_fase ON meta_monitoramento_fase;
+CREATE TRIGGER trg_refresh_meta_meta_monitoramento_fase
+AFTER INSERT OR DELETE OR UPDATE OF ultima_revisao, fecha_ciclo, reaberto_em, removido_em ON meta_monitoramento_fase
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();

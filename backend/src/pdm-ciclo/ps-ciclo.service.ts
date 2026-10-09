@@ -1,4 +1,5 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -26,6 +27,7 @@ import {
     PsListFechamentoDto,
     PsListRiscoDto,
 } from './entities/pdm-ciclo.entity';
+import { PsCicloFaseService } from './ps-ciclo-fase.service';
 
 /**
  * Gerencia ciclos do Planejamento Estratégico e controla permissões
@@ -37,7 +39,8 @@ export class PsCicloService {
         private readonly metaService: MetaService,
         private readonly riscoService: MetasRiscoService,
         private readonly fechamentoService: MetasFechamentoService,
-        private readonly analiseService: MetasAnaliseQualiService
+        private readonly analiseService: MetasAnaliseQualiService,
+        private readonly psCicloFaseService: PsCicloFaseService
     ) {}
 
     /**
@@ -49,6 +52,9 @@ export class PsCicloService {
         params: FilterPsCiclo,
         user?: PessoaFromJwt
     ): Promise<ListPSCicloDto> {
+        if (await this.psCicloFaseService.modoPorBlocos(pdm_id))
+            return await this.psCicloFaseService.listaCiclos(tipo, pdm_id, params, user);
+
         if (params.meta_id && user) {
             await this.metaService.assertMetaWriteOrThrow(tipo, params.meta_id, user, 'monitoramento', 'readonly');
         }
@@ -158,6 +164,7 @@ export class PsCicloService {
             linhas: await Promise.all(retorno),
             ultima_revisao: ultimaRevisao,
             documentos_editaveis,
+            monitoramento_por_blocos: false,
         };
     }
 
@@ -280,6 +287,7 @@ export class PsCicloService {
         tipoDocumento?: DocumentoEditavelTipo,
         reabrindo_ciclo = false
     ): Promise<boolean> {
+        await this.psCicloFaseService.assertModoLegado(pdmId);
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readwrite');
 
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
@@ -323,6 +331,7 @@ export class PsCicloService {
         metaId: number,
         user: PessoaFromJwt
     ): Promise<CiclosRevisaoDto> {
+        await this.psCicloFaseService.assertModoLegado(pdmId);
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readonly');
 
         const cicloAtual = await this.prisma.cicloFisico.findUnique({
@@ -467,8 +476,11 @@ export class PsCicloService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
+        dto.ciclo_fisico_id = cicloId;
 
-        return await this.analiseService.addMetaAnaliseQualitativaInterno(dto, user);
+        return await this.comTxLegado(pdmId, (prismaTx) =>
+            this.analiseService.addMetaAnaliseQualitativaInterno(dto, user, prismaTx)
+        );
     }
 
     /**
@@ -483,7 +495,10 @@ export class PsCicloService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
-        return await this.analiseService.addMetaAnaliseQualitativaDocumentoInterno(dto, user);
+        dto.ciclo_fisico_id = cicloId;
+        return await this.comTxLegado(pdmId, (prismaTx) =>
+            this.analiseService.addMetaAnaliseQualitativaDocumentoInterno(dto, user, prismaTx)
+        );
     }
 
     /**
@@ -498,7 +513,9 @@ export class PsCicloService {
         user: PessoaFromJwt
     ): Promise<void> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
-        await this.analiseService.deleteMetaAnaliseQualitativaDocumentoInterno(documentoId, user);
+        await this.comTxLegado(pdmId, (prismaTx) =>
+            this.analiseService.deleteMetaAnaliseQualitativaDocumentoInterno(documentoId, user, prismaTx)
+        );
     }
 
     /**
@@ -513,7 +530,8 @@ export class PsCicloService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'risco');
-        return await this.riscoService.addMetaRiscoInterno(dto, user);
+        dto.ciclo_fisico_id = cicloId;
+        return await this.comTxLegado(pdmId, (prismaTx) => this.riscoService.addMetaRiscoInterno(dto, user, prismaTx));
     }
 
     /**
@@ -528,7 +546,10 @@ export class PsCicloService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, false, 'fechamento');
-        return await this.fechamentoService.addMetaFechamentoInterno(dto, user);
+        dto.ciclo_fisico_id = cicloId;
+        return await this.comTxLegado(pdmId, (prismaTx) =>
+            this.fechamentoService.addMetaFechamentoInterno(dto, user, prismaTx)
+        );
     }
 
     private async findPreviousCycle(currentCycleId: number, pdmId: number): Promise<number | null> {
@@ -562,6 +583,7 @@ export class PsCicloService {
         metaId: number,
         user: PessoaFromJwt
     ): Promise<PsListAnaliseQualitativaDto> {
+        await this.psCicloFaseService.assertModoLegado(pdmId);
         await this.metaService.assertMetaWriteOrThrow(
             tipo,
             metaId,
@@ -623,6 +645,7 @@ export class PsCicloService {
         metaId: number,
         user: PessoaFromJwt
     ): Promise<PsListRiscoDto> {
+        await this.psCicloFaseService.assertModoLegado(pdmId);
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento de risco', 'readonly');
 
         const currentData = await this.riscoService.getMetaRisco(
@@ -677,6 +700,7 @@ export class PsCicloService {
         metaId: number,
         user: PessoaFromJwt
     ): Promise<PsListFechamentoDto> {
+        await this.psCicloFaseService.assertModoLegado(pdmId);
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento de fechamento', 'readonly');
 
         const currentData = await this.fechamentoService.getMetaFechamento(
@@ -732,7 +756,9 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
 
-        await this.analiseService.updateMetaAnaliseQualitativaDocumentoInterno(documentoId, dto, user);
+        await this.comTxLegado(pdmId, (prismaTx) =>
+            this.analiseService.updateMetaAnaliseQualitativaDocumentoInterno(documentoId, dto, user, prismaTx)
+        );
 
         return { id: documentoId };
     }
@@ -744,6 +770,9 @@ export class PsCicloService {
         meta_id: number,
         user: PessoaFromJwt
     ): Promise<void> {
+        if (await this.psCicloFaseService.modoPorBlocos(pdmId))
+            return await this.psCicloFaseService.reabre(tipo, pdmId, cicloId, meta_id, user);
+
         await this.verificaPermissaoEscritaBase(tipo, pdmId, meta_id, cicloId, user, false, undefined, true);
 
         // Buscando linha fechamento atual para o ciclo.
@@ -761,8 +790,19 @@ export class PsCicloService {
             throw new HttpException('Não existe fechamento para reabrir neste ciclo', 400);
         }
 
-        await this.fechamentoService.reabrirMetaFechamentoInterno(fechamento.id, user);
+        await this.comTxLegado(pdmId, (prismaTx) =>
+            this.fechamentoService.reabrirMetaFechamentoInterno(fechamento.id, user, prismaTx)
+        );
+    }
 
-        return;
+    // legado: trava o plano para que a migração para fases configuradas não aconteça no meio da escrita
+    private async comTxLegado<T>(pdmId: number, fn: (prismaTx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient) => {
+                await this.psCicloFaseService.travaPlano(prismaTx, pdmId, false);
+                return await fn(prismaTx);
+            },
+            { isolationLevel: 'Serializable', maxWait: 5000, timeout: 15000 }
+        );
     }
 }
