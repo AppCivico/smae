@@ -165,6 +165,12 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  // a área de texto não é um controle de formulário e, por isso, ignora o
+  // `disabled` de um `<fieldset>` ancestral
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'change']);
@@ -338,6 +344,7 @@ onMounted(() => {
       TableCell,
     ],
     content: props.modelValue ?? props.value,
+    editable: !props.disabled,
     onSelectionUpdate: syncToolbarState,
     onUpdate: () => {
       syncToolbarState();
@@ -373,6 +380,10 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
   if (!isSame) {
     editor.value.commands.setContent(value, false);
   }
+});
+
+watch(() => props.disabled, (novoValor) => {
+  editor.value?.setEditable(!novoValor);
 });
 </script>
 <template>
