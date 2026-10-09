@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
+import CampoDeModeloDeRelatorio from '@/components/relatorios/CampoDeModeloDeRelatorio.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -21,6 +22,7 @@ const router = useRouter();
 
 const initialValues = {
   fonte: route.meta.fonteDoRelatorio,
+  modelo_id: '',
   parametros: {
     portfolio_id: null,
     projeto_id: null,
@@ -34,7 +36,7 @@ async function onSubmit(values) {
   async function enviar() {
     try {
       const msg = 'Relatório em processamento, acompanhe na tela de listagem';
-      const r = await relatoriosStore.insert(values);
+      const r = await relatoriosStore.insert({ ...values, modelo_id: values.modelo_id || null });
       if (r === true) {
         alertStore.success(msg);
         router.push({ name: route.meta.rotaDeEscape });
@@ -228,6 +230,8 @@ iniciar();
         </div>
       </div>
     </div>
+
+    <CampoDeModeloDeRelatorio :schema="schema" />
 
     <FormErrorsList :errors="errors" />
 

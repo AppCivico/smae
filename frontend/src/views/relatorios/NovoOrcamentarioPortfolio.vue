@@ -6,6 +6,7 @@ import {
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import CampoDeModeloDeRelatorio from '@/components/relatorios/CampoDeModeloDeRelatorio.vue';
 import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
@@ -28,6 +29,7 @@ const router = useRouter();
 
 const initialValues = computed(() => ({
   fonte: route.meta.fonteDoRelatorio,
+  modelo_id: '',
   parametros: {
     tipo: 'Analitico',
     inicio: '',
@@ -40,6 +42,7 @@ const initialValues = computed(() => ({
 
 async function onSubmit(values) {
   const carga = values;
+  carga.modelo_id = carga.modelo_id || null;
   carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
   carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
 
@@ -220,6 +223,8 @@ iniciar();
         {{ errors['parametros.tipo'] }}
       </div>
     </div>
+
+    <CampoDeModeloDeRelatorio :schema="schema" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">

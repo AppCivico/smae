@@ -42,6 +42,7 @@ import {
   setLocale,
   string,
 } from './formSchemas/initSchema';
+import relatorioComModeloBase from './formSchemas/relatorioComModeloBase';
 import relatorioValidacaoBase from './formSchemas/relatorioValidacaoBase';
 
 setLocale(i18n);
@@ -3017,7 +3018,7 @@ export const relatórioDePrevisãoDeCustoPlanosSetoriais = relatorioValidacaoBas
     }),
   }));
 
-export const relatórioDePrevisãoDeCustoPortfolio = relatorioValidacaoBase.concat(
+export const relatórioDePrevisãoDeCustoPortfolio = relatorioComModeloBase.concat(
   object({
     parametros: object({
       portfolio_id: number()
@@ -3039,7 +3040,7 @@ export const relatórioDePrevisãoDeCustoPortfolio = relatorioValidacaoBase.conc
   }),
 );
 
-export const relatórioDeProjeto = relatorioValidacaoBase.concat(object({
+export const relatórioDeProjeto = relatorioComModeloBase.concat(object({
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')
@@ -3054,7 +3055,7 @@ export const relatórioDeProjeto = relatorioValidacaoBase.concat(object({
   }),
 }));
 
-export const relatórioDeStatus = relatorioValidacaoBase.concat(object({
+export const relatórioDeStatus = relatorioComModeloBase.concat(object({
   parametros: object({
     periodo_inicio: date()
       .label('Início do período')
@@ -3079,7 +3080,7 @@ export const relatórioDeStatus = relatorioValidacaoBase.concat(object({
   }),
 }));
 
-export const relatórioDeStatusObra = relatorioValidacaoBase.concat(object({
+export const relatórioDeStatusObra = relatorioComModeloBase.concat(object({
   parametros: object({
     periodo_inicio: date()
       .label('Início do período')
@@ -3104,7 +3105,7 @@ export const relatórioDeStatusObra = relatorioValidacaoBase.concat(object({
   }),
 }));
 
-export const relatórioDePortfolio = relatorioValidacaoBase.concat(object({
+export const relatórioDePortfolio = relatorioComModeloBase.concat(object({
   parametros: object({
     orgao_responsavel_id: number()
       .min(0)
@@ -3132,7 +3133,7 @@ export const relatórioDePortfolio = relatorioValidacaoBase.concat(object({
   }),
 }));
 
-export const relatórioDePortfolioObras = relatorioValidacaoBase.concat(object({
+export const relatórioDePortfolioObras = relatorioComModeloBase.concat(object({
   parametros: object({
     orgao_responsavel_id: number()
       .min(0)
@@ -3160,7 +3161,7 @@ export const relatórioDePortfolioObras = relatorioValidacaoBase.concat(object({
   }),
 }));
 
-export const relatórioDePrevisãoDeCustoPortfolioObras = relatorioValidacaoBase.concat(
+export const relatórioDePrevisãoDeCustoPortfolioObras = relatorioComModeloBase.concat(
   object({
     parametros: object({
       portfolio_id: number()
@@ -3307,7 +3308,7 @@ export const relatórioOrçamentárioPlanosSetoriais = relatorioValidacaoBase.co
   }),
 }));
 
-export const relatórioOrçamentárioPortfolio = relatorioValidacaoBase.concat(object({
+export const relatórioOrçamentárioPortfolio = relatorioComModeloBase.concat(object({
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')
@@ -3332,7 +3333,7 @@ export const relatórioOrçamentárioPortfolio = relatorioValidacaoBase.concat(o
   }),
 }));
 
-export const relatóriosOrçamentáriosPortfolioObras = relatorioValidacaoBase.concat(object({
+export const relatóriosOrçamentáriosPortfolioObras = relatorioComModeloBase.concat(object({
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')

@@ -4,6 +4,7 @@ import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import CampoDeModeloDeRelatorio from '@/components/relatorios/CampoDeModeloDeRelatorio.vue';
 import { relatórioDePrevisãoDeCustoPortfolio as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -24,6 +25,7 @@ const currentYear = new Date().getFullYear();
 
 const initialValues = computed(() => ({
   fonte: route.meta.fonteDoRelatorio,
+  modelo_id: '',
   parametros: {
     ano: currentYear,
     portfolio_id: 0,
@@ -34,6 +36,7 @@ const initialValues = computed(() => ({
 
 async function onSubmit(values) {
   const carga = values;
+  carga.modelo_id = carga.modelo_id || null;
   if (carga.parametros.projeto_id === null) {
     delete carga.parametros.projeto_id;
   }
@@ -211,6 +214,8 @@ iniciar();
         </div>
       </div>
     </div>
+
+    <CampoDeModeloDeRelatorio :schema="schema" />
 
     <FormErrorsList :errors="errors" />
 
