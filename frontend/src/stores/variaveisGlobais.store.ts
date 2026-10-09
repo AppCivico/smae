@@ -244,7 +244,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       try {
         let resposta;
 
-        if (variavelId) {
+        if (variavelId || this.route.params.variavelId) {
           resposta = await this.requestS.patch(
             `${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`,
             params,
