@@ -15,17 +15,17 @@ const rev = (fase_config_id: number, extra: Partial<RevisaoEstado> = {}): Revisa
 });
 
 describe('calculaEstadoCiclo', () => {
-    it('ciclo ativo sem nada preenchido libera todas as fases', () => {
+    it('ciclo ativo sem nada preenchido libera só a primeira fase', () => {
         const e = calculaEstadoCiclo(true, fases, []);
-        expect(e.editaveis).toEqual([10, 20, 30, 40]);
+        expect(e.editaveis).toEqual([10]);
         expect(e.fechado).toBe(false);
         expect(e.faseFechamentoId).toBe(40);
     });
 
-    it('fase preenchida fora de ordem continua com todas editáveis', () => {
-        const e = calculaEstadoCiclo(true, fases, [rev(30)]);
-        expect(e.editaveis).toEqual([10, 20, 30, 40]);
-        expect(e.preenchidas).toEqual([30]);
+    it('libera as fases preenchidas e a próxima, em ordem', () => {
+        const e = calculaEstadoCiclo(true, fases, [rev(10), rev(20)]);
+        expect(e.editaveis).toEqual([10, 20, 30]);
+        expect(e.preenchidas).toEqual([10, 20]);
     });
 
     it('fase desabilitada não conta na ordem nem como fechamento', () => {
@@ -52,12 +52,12 @@ describe('calculaEstadoCiclo', () => {
         expect(e.editaveis).toEqual([]);
     });
 
-    it('ciclo inativo reaberto volta a ter todas as fases editáveis', () => {
+    it('ciclo inativo reaberto volta a ser editável, respeitando a ordem', () => {
         const ultimas = [rev(10), rev(20), rev(40, { fecha_ciclo: true, reaberto_em: new Date() })];
         const e = calculaEstadoCiclo(false, fases, ultimas);
         expect(e.reaberto).toBe(true);
         expect(e.fechado).toBe(false);
-        expect(e.editaveis).toEqual([10, 20, 30, 40]);
+        expect(e.editaveis).toEqual([10, 20, 30]);
     });
 
     it('sem fases habilitadas não há o que editar nem fase de fechamento', () => {

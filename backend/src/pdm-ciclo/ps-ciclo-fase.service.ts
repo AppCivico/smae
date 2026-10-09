@@ -275,7 +275,7 @@ export class PsCicloFaseService {
             const fases = await this.carregaFases(prismaTx, pdmId);
             const fase = this.faseHabilitada(fases, faseId);
             const estado = calculaEstadoCiclo(ciclo.ativo, fases, await this.carregaUltimas(prismaTx, metaId, [cicloId]));
-            this.assertFaseEditavel(fase, estado);
+            this.assertFaseEditavel(fases, fase, estado);
 
             const conteudo = await this.validaConteudo(prismaTx, pdmId, fase, dto);
 
@@ -494,7 +494,7 @@ export class PsCicloFaseService {
         if (!fase.aceita_anexos) throw new HttpException(`A fase "${fase.rotulo}" não aceita anexos`, 400);
 
         const estado = calculaEstadoCiclo(ciclo.ativo, fases, await this.carregaUltimas(prismaTx, metaId, [cicloId]));
-        this.assertFaseEditavel(fase, estado);
+        this.assertFaseEditavel(fases, fase, estado);
         return ciclo;
     }
 
@@ -505,10 +505,15 @@ export class PsCicloFaseService {
         return fase;
     }
 
-    private assertFaseEditavel(fase: FaseConfig, estado: EstadoCiclo): void {
+    private assertFaseEditavel(fases: FaseConfig[], fase: FaseConfig, estado: EstadoCiclo): void {
         if (estado.editaveis.includes(fase.id)) return;
         if (estado.fechado) throw new HttpException('Ciclo fechado para esta meta; reabra para editar', 400);
-        throw new HttpException('Não é possível editar um ciclo inativo', 400);
+        if (!estado.cicloEditavel) throw new HttpException('Não é possível editar um ciclo inativo', 400);
+
+        const pendentes = fases
+            .filter((f) => f.habilitada && f.ordem < fase.ordem && !estado.preenchidas.includes(f.id))
+            .map((f) => f.rotulo);
+        throw new HttpException(`Preencha antes as fases: ${pendentes.join(', ')}`, 400);
     }
 
     private async validaConteudo(
