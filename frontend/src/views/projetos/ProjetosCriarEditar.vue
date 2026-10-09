@@ -93,7 +93,6 @@ const {
   handleSubmit,
   isSubmitting,
   resetForm,
-  resetField,
   setFieldValue,
   values,
 } = useForm({
@@ -1628,10 +1627,10 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             :disabled="
-              values.codigo
-                || desabilitarTodosCampos.camposComuns
-                || !órgãosQueTemResponsáveis?.length"
-            @change="setFieldValue('responsavel_id', 0)"
+              desabilitarTodosCampos.camposComuns
+                || !órgãosQueTemResponsáveis?.length
+            "
+            @change="setFieldValue('responsavel_id', null)"
             @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
               || null"
           >
