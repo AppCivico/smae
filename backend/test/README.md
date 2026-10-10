@@ -8,7 +8,7 @@ Compiler: TypeScript 7 (`tsgo`, ~4s for all of `src/` + `test/`).
 
 ```bash
 npm run test:e2e -- test/orgao/orgao.e2e-spec.ts       # one file
-npm run test:e2e -- test/orgao test/ods                # folders (every *.e2e-spec.ts inside)
+npm run test:e2e -- test/orgao test/pessoa             # folders (every *.e2e-spec.ts inside)
 npm run test:e2e                                       # everything under test/
 npm run test:e2e -- test/orgao --test-name-pattern="CRUD"   # filter by test name (use the = form)
 npm run typecheck                                      # TS7 typecheck of src/ (~4s), skips src/**/*.spec.ts
@@ -143,7 +143,7 @@ describe('tipo-orgao', () => {
 ```
 
 More references: `test/tipo-orgao/`, `test/orgao/` (validation, hierarchy, soft delete checked with
-`prisma()`), `test/ods/` (privilege that depends on the `smae-sistemas` header).
+`prisma()`), `test/pessoa/` (editing depends on the `smae-sistemas` header).
 
 ## Reading a controller
 
