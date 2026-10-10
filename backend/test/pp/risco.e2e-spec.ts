@@ -167,9 +167,6 @@ describe('projeto-risco', () => {
 
         it(
             'não edita risco de outro projeto usando o caminho de um projeto que o usuário gerencia',
-            {
-                todo: 'BUG: PATCH /api/projeto/:id/risco/:id2 checa a permissão do projeto :id, mas RiscoService.update busca o risco só por id (sem projeto_id), então um risco de outro projeto é alterado',
-            },
             async () => {
                 const res = await api(gestorA)
                     .patch(`/api/projeto/${projetoA.id}/risco/${riscoDoB.id}`)

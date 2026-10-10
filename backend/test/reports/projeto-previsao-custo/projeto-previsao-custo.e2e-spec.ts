@@ -66,13 +66,18 @@ function descreverRelatorio(
     describe(nome, () => {
         let executor: Sessao;
         let semPrivilegio: Sessao;
+        let semAcessoProjeto: Sessao;
         let portfolioId: number;
         let projeto: { id: number; nome: string };
         let vazioId: number;
 
         before(async () => {
             await bootApp();
-            executor = await criarPessoaComPrivilegios([privilegio]);
+            executor = await criarPessoaComPrivilegios([
+                privilegio,
+                tipo === 'PP' ? 'Projeto.administrador' : 'ProjetoMDO.administrador',
+            ]);
+            semAcessoProjeto = await criarPessoaComPrivilegios([privilegio]);
             semPrivilegio = await criarPessoaSemPrivilegios();
             ({ portfolioId, projeto } = await criarProjetoComPrevisao(tipo, 4200.5, 2027));
             vazioId = (await criarPortfolio(tipo)).id;
@@ -137,21 +142,20 @@ function descreverRelatorio(
             assert.ok(doProjeto(res.body.linhas, projetoCorrente.id));
         });
 
-        it(
-            'não devolve previsão de portfólio do outro tipo',
-            {
-                todo: `BUG: POST ${url}: esperado linhas vazias para portfólio de ${tipo === 'PP' ? 'obras (MDO)' : 'projetos (PP)'}, veio a previsão (sem filtro de tipo nem de permissão no projeto)`,
-            },
-            async () => {
-                const outro = await criarProjetoComPrevisao(tipo === 'PP' ? 'MDO' : 'PP', 5, 2027);
+        it('não devolve previsão de portfólio do outro tipo', async () => {
+            const outro = await criarProjetoComPrevisao(tipo === 'PP' ? 'MDO' : 'PP', 5, 2027);
 
-                const res = await api(executor)
-                    .post(url)
-                    .send(corpo({ portfolio_id: outro.portfolioId }));
-                assertStatus(res, 201);
-                assert.deepEqual(res.body, { linhas: [] });
-            }
-        );
+            const res = await api(executor)
+                .post(url)
+                .send(corpo({ portfolio_id: outro.portfolioId }));
+            assertStatus(res, 201);
+            assert.deepEqual(res.body, { linhas: [] });
+        });
+
+        it('recusa usuário sem acesso a projetos', async () => {
+            const res = await api(semAcessoProjeto).post(url).send(corpo());
+            assertStatus(res, 400);
+        });
     });
 }
 

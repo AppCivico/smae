@@ -81,9 +81,6 @@ describe('grupo-painel-externo (exige smae-sistemas nas escritas)', () => {
 
         it(
             'cria sem orgao_id e usa o órgão do criador',
-            {
-                todo: 'BUG: POST /api/grupo-painel-externo: esperado 201 (orgao_id documentado como opcional), veio 400',
-            },
             async () => {
                 const { orgao_id: _orgao, ...semOrgao } = novoGrupo();
                 const res = await como(adminNoOrgao).post('/api/grupo-painel-externo').send(semOrgao);
@@ -234,9 +231,6 @@ describe('grupo-painel-externo (exige smae-sistemas nas escritas)', () => {
 
         it(
             'edita o orgao_id do grupo',
-            {
-                todo: 'BUG: PATCH /api/grupo-painel-externo/:id: esperado orgao_id gravado, veio 200 sem alterar (o service só valida o órgão)',
-            },
             async () => {
                 const outroOrgao = await criarOrgao();
                 const criado = await como(admin).post('/api/grupo-painel-externo').send(novoGrupo());

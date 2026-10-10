@@ -80,13 +80,18 @@ function descreverRelatorio(
     describe(nome, () => {
         let executor: Sessao;
         let semPrivilegio: Sessao;
+        let semAcessoProjeto: Sessao;
         let portfolioId: number;
         let projeto: { id: number; nome: string };
         let vazioId: number;
 
         before(async () => {
             await bootApp();
-            executor = await criarPessoaComPrivilegios([privilegio]);
+            executor = await criarPessoaComPrivilegios([
+                privilegio,
+                tipo === 'PP' ? 'Projeto.administrador' : 'ProjetoMDO.administrador',
+            ]);
+            semAcessoProjeto = await criarPessoaComPrivilegios([privilegio]);
             semPrivilegio = await criarPessoaSemPrivilegios();
             ({ portfolioId, projeto } = await criarProjetoComOrcamento(tipo, '2500.00', '800.40'));
             vazioId = (
@@ -126,15 +131,9 @@ function descreverRelatorio(
             assertStatus(await enviar({ portfolio_id: portfolioId, orgaos: 'x' }), 400);
         });
 
-        it(
-            '400 com corpo vazio',
-            {
-                todo: `BUG: POST ${url}: esperado 400 (portfolio_id, inicio e fim obrigatórios), veio 500 (DateTransform recebe undefined)`,
-            },
-            async () => {
-                assertStatus(await api(executor).post(url).send({}), 400);
-            }
-        );
+        it('400 com corpo vazio', async () => {
+            assertStatus(await api(executor).post(url).send({}), 400);
+        });
 
         it('201 devolve executado e planejado do projeto do portfólio', async () => {
             const res = await api(executor).post(url).send(corpo());
@@ -168,21 +167,20 @@ function descreverRelatorio(
             assert.deepEqual(outroProjeto.body, { linhas: [], linhas_planejado: [] });
         });
 
-        it(
-            'não devolve orçamento de portfólio do outro tipo',
-            {
-                todo: `BUG: POST ${url}: esperado listas vazias para portfólio de ${tipo === 'PP' ? 'obras (MDO)' : 'projetos (PP)'}, veio o orçamento (sem filtro de tipo nem de permissão no projeto)`,
-            },
-            async () => {
-                const outro = await criarProjetoComOrcamento(tipo === 'PP' ? 'MDO' : 'PP', '5', '5');
+        it('não devolve orçamento de portfólio do outro tipo', async () => {
+            const outro = await criarProjetoComOrcamento(tipo === 'PP' ? 'MDO' : 'PP', '5', '5');
 
-                const res = await api(executor)
-                    .post(url)
-                    .send(corpo({ portfolio_id: outro.portfolioId }));
-                assertStatus(res, 201);
-                assert.deepEqual(res.body, { linhas: [], linhas_planejado: [] });
-            }
-        );
+            const res = await api(executor)
+                .post(url)
+                .send(corpo({ portfolio_id: outro.portfolioId }));
+            assertStatus(res, 201);
+            assert.deepEqual(res.body, { linhas: [], linhas_planejado: [] });
+        });
+
+        it('recusa usuário sem acesso a projetos', async () => {
+            const res = await api(semAcessoProjeto).post(url).send(corpo());
+            assertStatus(res, 400);
+        });
 
         it('portfólio sem orçamento devolve listas vazias', async () => {
             const res = await api(executor)

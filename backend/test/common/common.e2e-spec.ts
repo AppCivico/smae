@@ -79,15 +79,11 @@ describe('common', () => {
             );
         });
 
-        it(
-            'todo: BUG configuração de transporte não é obrigatória na criação',
-            { todo: 'BUG: DTO aceita POST sem email_transporter_config (ValidateNested sem IsDefined)' },
-            async () => {
-                const semTransporte = novaConfig();
-                delete (semTransporte as { email_transporter_config?: unknown }).email_transporter_config;
-                assertStatus(await api(sysadmin).post('/api/smae-config/email').send(semTransporte), 400);
-            }
-        );
+        it('400 sem configuração de transporte na criação', async () => {
+            const semTransporte = novaConfig();
+            delete (semTransporte as { email_transporter_config?: unknown }).email_transporter_config;
+            assertStatus(await api(sysadmin).post('/api/smae-config/email').send(semTransporte), 400);
+        });
 
         it('cria, detalha, edita e remove', async () => {
             const dados = novaConfig();
@@ -120,17 +116,13 @@ describe('common', () => {
             assertStatus(await api(sysadmin).delete('/api/smae-config/email/999999'), 400);
         });
 
-        it(
-            'todo: BUG a criação guarda as configurações de transporte e de template enviadas',
-            { todo: 'BUG: EmailConfigService.create ignora template_resolver_config e email_transporter_config' },
-            async () => {
-                const dados = novaConfig();
-                const criada = await api(sysadmin).post('/api/smae-config/email').send(dados);
-                assertStatus(criada, 201);
-                assert.equal(criada.body.email_transporter_config?.host, '127.0.0.1');
-                assert.equal(criada.body.template_resolver_config?.base_url, 'http://127.0.0.1:9/');
-            }
-        );
+        it('a criação guarda as configurações de transporte e de template enviadas', async () => {
+            const dados = novaConfig();
+            const criada = await api(sysadmin).post('/api/smae-config/email').send(dados);
+            assertStatus(criada, 201);
+            assert.equal(criada.body.email_transporter_config?.host, '127.0.0.1');
+            assert.equal(criada.body.template_resolver_config?.base_url, 'http://127.0.0.1:9/');
+        });
     });
 
     describe('SysadminController', () => {

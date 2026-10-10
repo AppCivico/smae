@@ -112,20 +112,14 @@ describe('relatorios', () => {
             assert.equal(linha.fonte, 'ObraStatus');
         });
 
-        it(
-            '400 por portfolio_id ausente em ObraStatus com datas opcionais',
-            {
-                todo: 'BUG: POST /api/relatorios {fonte: ObraStatus, parametros: {}} devolve 500 (DateTransform em src/auth/transforms/date.transform.ts recebe undefined); esperado 400 por portfolio_id obrigatório',
-            },
-            async () => {
-                assertStatus(
-                    await api(multiMdo, { sistema: 'MDO' })
-                        .post('/api/relatorios')
-                        .send({ fonte: 'ObraStatus', parametros: {} }),
-                    400
-                );
-            }
-        );
+        it('400 por portfolio_id ausente em ObraStatus com datas opcionais', async () => {
+            assertStatus(
+                await api(multiMdo, { sistema: 'MDO' })
+                    .post('/api/relatorios')
+                    .send({ fonte: 'ObraStatus', parametros: {} }),
+                400
+            );
+        });
     });
 
     describe('validação', () => {

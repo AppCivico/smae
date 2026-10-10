@@ -137,7 +137,7 @@ describe('orcamento-realizado', () => {
             const { meta, ano } = await criarCenarioOrcamento();
             const res = await api(admin).post('/api/orcamento-realizado').send(novoRealizado(meta.id, ano));
             assertStatus(res, 400);
-            assert.match(res.body.message, /Dotação não foi foi encontrado no banco de dados/);
+            assert.match(res.body.message, /Dotação não foi encontrado no banco de dados/);
         });
 
         it('400 quando o ano não está com a execução liberada', async () => {

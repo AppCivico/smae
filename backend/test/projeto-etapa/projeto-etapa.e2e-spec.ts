@@ -68,16 +68,23 @@ describe('projeto-etapa', () => {
         });
 
         it('403 para etapa padrão com só o privilégio de etapa de portfólio', async () => {
-            const soPortfolio = await criarPessoaComPrivilegios(['Projeto.administrador', 'CadastroProjetoEtapa.inserir'], {
-                orgao_id: orgaoA.id,
-            });
-            const res = await api(soPortfolio).post('/api/projeto-etapa').send(etapa({ eh_padrao: true }));
+            const soPortfolio = await criarPessoaComPrivilegios(
+                ['Projeto.administrador', 'CadastroProjetoEtapa.inserir'],
+                {
+                    orgao_id: orgaoA.id,
+                }
+            );
+            const res = await api(soPortfolio)
+                .post('/api/projeto-etapa')
+                .send(etapa({ eh_padrao: true }));
             assertStatus(res, 403);
             assert.match(res.body.message, /Privilégio necessário: CadastroProjetoEtapaPadrao\.inserir/);
         });
 
         it('privilégios de obra não criam etapa de Projetos (403 pela guarda)', async () => {
-            const soObra = await criarPessoaComPrivilegios(['CadastroProjetoEtapaMDO.inserir'], { orgao_id: orgaoA.id });
+            const soObra = await criarPessoaComPrivilegios(['CadastroProjetoEtapaMDO.inserir'], {
+                orgao_id: orgaoA.id,
+            });
             assertStatus(await api(soObra).post('/api/projeto-etapa').send(etapa()), 403);
         });
 
@@ -91,7 +98,12 @@ describe('projeto-etapa', () => {
     describe('validação', () => {
         it('400 sem descricao, com ordem_painel 0 ou com :id não numérico', async () => {
             assertStatus(await api(gestor).post('/api/projeto-etapa').send({ portfolio_id: portfolioA.id }), 400);
-            assertStatus(await api(gestor).post('/api/projeto-etapa').send(etapa({ ordem_painel: 0 })), 400);
+            assertStatus(
+                await api(gestor)
+                    .post('/api/projeto-etapa')
+                    .send(etapa({ ordem_painel: 0 })),
+                400
+            );
             assertStatus(await api(gestor).patch('/api/projeto-etapa/abc').send({ descricao: uniq() }), 400);
         });
     });
@@ -117,13 +129,17 @@ describe('projeto-etapa', () => {
         });
 
         it('400 com descrição igual no mesmo portfólio, sem diferenciar maiúsculas', async () => {
-            const res = await api(gestor).post('/api/projeto-etapa').send(etapa({ descricao: descricao.toUpperCase() }));
+            const res = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ descricao: descricao.toUpperCase() }));
             assertStatus(res, 400);
             assert.match(res.body.message, /Descrição igual ou semelhante/);
         });
 
         it('mesma descrição em outro portfólio é permitida', async () => {
-            const res = await api(gestor).post('/api/projeto-etapa').send(etapa({ descricao, portfolio_id: portfolioB.id }));
+            const res = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ descricao, portfolio_id: portfolioB.id }));
             assertStatus(res, 201);
         });
 
@@ -147,7 +163,9 @@ describe('projeto-etapa', () => {
         });
 
         it('404 ao listar etapas de portfólio que o órgão não vê', async () => {
-            const umOrgao = await criarPessoaComPrivilegios(['Projeto.administrador_no_orgao'], { orgao_id: orgaoA.id });
+            const umOrgao = await criarPessoaComPrivilegios(['Projeto.administrador_no_orgao'], {
+                orgao_id: orgaoA.id,
+            });
             const res = await api(umOrgao).get(`/api/projeto-etapa?portfolio_id=${portfolioB.id}`);
             assertStatus(res, 404);
             assert.match(res.body.message, /Portfólio não encontrado/);
@@ -190,17 +208,17 @@ describe('projeto-etapa', () => {
         });
 
         it('inserir numa posição ocupada empurra as seguintes; remover fecha o buraco', async () => {
-            const primeira = await api(gestor).post('/api/projeto-etapa').send(
-                etapa({ eh_padrao: true, portfolio_id: undefined, ordem_painel: 1 })
-            );
+            const primeira = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ eh_padrao: true, portfolio_id: undefined, ordem_painel: 1 }));
             assertStatus(primeira, 201);
             const ordemDe = async (id: number): Promise<number> =>
                 (await prisma().projetoEtapa.findUniqueOrThrow({ where: { id } })).ordem_painel ?? 0;
 
             const inicio = await ordemDe(primeira.body.id);
-            const segunda = await api(gestor).post('/api/projeto-etapa').send(
-                etapa({ eh_padrao: true, portfolio_id: undefined, ordem_painel: inicio })
-            );
+            const segunda = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ eh_padrao: true, portfolio_id: undefined, ordem_painel: inicio }));
             assertStatus(segunda, 201);
             assert.equal(await ordemDe(segunda.body.id), inicio);
             assert.equal(await ordemDe(primeira.body.id), inicio + 1);
@@ -215,27 +233,25 @@ describe('projeto-etapa', () => {
                 _max: { ordem_painel: true },
             });
             const fim = (maior._max.ordem_painel ?? 0) + 1;
-            const res = await api(gestor).post('/api/projeto-etapa').send(
-                etapa({ eh_padrao: true, portfolio_id: undefined, ordem_painel: 999999 })
-            );
+            const res = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ eh_padrao: true, portfolio_id: undefined, ordem_painel: 999999 }));
             assertStatus(res, 201);
             const noBanco = await prisma().projetoEtapa.findUniqueOrThrow({ where: { id: res.body.id } });
             assert.equal(noBanco.ordem_painel, fim);
         });
 
         it('deixar de ser padrão é 400 enquanto outra etapa usa esta como padrão', async () => {
-            const padrao = await api(gestor).post('/api/projeto-etapa').send(
-                etapa({ eh_padrao: true, portfolio_id: undefined })
-            );
+            const padrao = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ eh_padrao: true, portfolio_id: undefined }));
             assertStatus(padrao, 201);
-            const filha = await api(gestor).post('/api/projeto-etapa').send(
-                etapa({ portfolio_id: portfolioA.id, etapa_padrao_id: padrao.body.id })
-            );
+            const filha = await api(gestor)
+                .post('/api/projeto-etapa')
+                .send(etapa({ portfolio_id: portfolioA.id, etapa_padrao_id: padrao.body.id }));
             assertStatus(filha, 201);
 
-            const res = await api(gestor)
-                .patch(`/api/projeto-etapa/${padrao.body.id}`)
-                .send({ eh_padrao: false });
+            const res = await api(gestor).patch(`/api/projeto-etapa/${padrao.body.id}`).send({ eh_padrao: false });
             assertStatus(res, 400);
             assert.match(res.body.message, /Não pode deixar de ser padrão/);
         });
@@ -243,7 +259,7 @@ describe('projeto-etapa', () => {
         it(
             'lista etapas padrão sem papel de projeto',
             {
-                todo: 'BUG: GET /api/projeto-etapa?eh_padrao=true devolve 400 "Sem permissões para acesso aos projetos." para quem só tem CadastroProjetoEtapaPadrao, porque findAll consulta o portfólio mesmo quando eh_padrao=true (o comentário diz que não olha)',
+                todo: 'BUG (corrigido em https://github.com/AppCivico/smae/pull/717): GET /api/projeto-etapa?eh_padrao=true devolve 400 "Sem permissões para acesso aos projetos." para quem só tem CadastroProjetoEtapaPadrao',
             },
             async () => {
                 const soPadrao = await criarPessoaComPrivilegios(['CadastroProjetoEtapaPadrao.editar'], {
@@ -261,9 +277,7 @@ describe('projeto-etapa', () => {
             const comum = await api(gestor).post('/api/projeto-etapa').send(etapa());
             assertStatus(comum, 201);
 
-            const res = await api(soEditaPadrao)
-                .patch(`/api/projeto-etapa/${comum.body.id}`)
-                .send({ eh_padrao: true });
+            const res = await api(soEditaPadrao).patch(`/api/projeto-etapa/${comum.body.id}`).send({ eh_padrao: true });
             assertStatus(res, 403);
             assert.match(res.body.message, /Sem permissão para converter/);
         });

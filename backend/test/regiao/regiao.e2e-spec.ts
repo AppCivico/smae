@@ -102,19 +102,13 @@ describe('regiao', () => {
             assert.match(comFilho.body.message, /dependentes/);
         });
 
-        it(
-            'DELETE remove a região (soft delete) e ela some da listagem',
-            {
-                todo: 'BUG: trg_regiao_update_geo_regioes (prisma/manual-copy/0055-geo-triggers.pgsql) faz SELECT sem PERFORM, então todo soft delete de região dá 500',
-            },
-            async () => {
-                const filho = await criar({ nivel: 2, descricao: uniq('Removível'), parente_id: raiz });
-                assertStatus(filho, 201);
+        it('DELETE remove a região (soft delete) e ela some da listagem', async () => {
+            const filho = await criar({ nivel: 2, descricao: uniq('Removível'), parente_id: raiz });
+            assertStatus(filho, 201);
 
-                assertStatus(await api(gestor).delete(`/api/regiao/${filho.body.id}`), 202);
-                assertStatus(await api(gestor).get(`/api/regiao/${filho.body.id}`), 404);
-            }
-        );
+            assertStatus(await api(gestor).delete(`/api/regiao/${filho.body.id}`), 202);
+            assertStatus(await api(gestor).get(`/api/regiao/${filho.body.id}`), 404);
+        });
     });
 
     describe('CRUD', () => {
@@ -173,30 +167,22 @@ describe('regiao', () => {
             assert.match(dup.body.message, /Descrição igual ou semelhante/);
         });
 
-        it(
-            'PATCH com a descrição de outra região do mesmo nível é recusado',
-            { todo: 'BUG: regiao.update só checa descrição duplicada quando parente_id vem no corpo' },
-            async () => {
-                const descricaoA = uniq('Oeste');
-                assertStatus(await criar({ nivel: 2, descricao: descricaoA, parente_id: raiz }), 201);
-                const b = await criar({ nivel: 2, descricao: uniq('Centro'), parente_id: raiz });
-                assertStatus(b, 201);
+        it('PATCH com a descrição de outra região do mesmo nível é recusado', async () => {
+            const descricaoA = uniq('Oeste');
+            assertStatus(await criar({ nivel: 2, descricao: descricaoA, parente_id: raiz }), 201);
+            const b = await criar({ nivel: 2, descricao: uniq('Centro'), parente_id: raiz });
+            assertStatus(b, 201);
 
-                const res = await api(gestor).patch(`/api/regiao/${b.body.id}`).send({ descricao: descricaoA });
-                assertStatus(res, 400);
-            }
-        );
+            const res = await api(gestor).patch(`/api/regiao/${b.body.id}`).send({ descricao: descricaoA });
+            assertStatus(res, 400);
+        });
 
-        it(
-            'PATCH só com parente_id (mesmo pai) não é recusado por descrição de outra região',
-            { todo: 'BUG: regiao.update monta descricao endsWith undefined quando o corpo não traz descricao' },
-            async () => {
-                const a = await criar({ nivel: 2, descricao: uniq('Sudeste'), parente_id: raiz });
-                assertStatus(a, 201);
-                assertStatus(await criar({ nivel: 2, descricao: uniq('Nordeste'), parente_id: raiz }), 201);
+        it('PATCH só com parente_id (mesmo pai) não é recusado por descrição de outra região', async () => {
+            const a = await criar({ nivel: 2, descricao: uniq('Sudeste'), parente_id: raiz });
+            assertStatus(a, 201);
+            assertStatus(await criar({ nivel: 2, descricao: uniq('Nordeste'), parente_id: raiz }), 201);
 
-                assertStatus(await api(gestor).patch(`/api/regiao/${a.body.id}`).send({ parente_id: raiz }), 200);
-            }
-        );
+            assertStatus(await api(gestor).patch(`/api/regiao/${a.body.id}`).send({ parente_id: raiz }), 200);
+        });
     });
 });

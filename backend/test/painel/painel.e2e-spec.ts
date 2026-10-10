@@ -348,7 +348,7 @@ describe('painel (módulo PDM)', () => {
         it(
             'PATCH com grupos substitui a lista de grupos do painel',
             {
-                todo: 'BUG (a confirmar): PATCH /api/painel/:id: esperado grupos=[B] ao enviar grupos:[B] (como no painel-externo), veio [A,B]',
+                todo: 'BUG (a confirmar): PATCH /api/painel/:id: esperado grupos=[B] ao enviar grupos:[B] (como no painel-externo), veio [A,B]. Issue: https://github.com/AppCivico/smae/issues/691',
             },
             async () => {
                 const [a, b] = [await criarGrupo(), await criarGrupo()];
@@ -371,9 +371,6 @@ describe('painel (módulo PDM)', () => {
 
         it(
             'edita só o ativo sem reenviar o nome',
-            {
-                todo: 'BUG: PATCH /api/painel/:id: esperado 200 com {ativo:false}, veio 400 "Nome igual ou semelhante" (nome undefined vira filtro vazio no count)',
-            },
             async () => {
                 await criarPainel();
                 const id = await criarPainel();
@@ -556,9 +553,6 @@ describe('painel (módulo PDM)', () => {
 
         it(
             'PATCH detalhes só com mostrar_indicador_meta (detalhes é opcional no DTO)',
-            {
-                todo: 'BUG: PATCH /api/painel/:id/conteudo/:id2/detalhes: esperado 200 sem detalhes, veio 500 (for..of em undefined)',
-            },
             async () => {
                 const painelId = await criarPainel();
                 const meta = await criarMeta();

@@ -141,9 +141,6 @@ describe('projeto-plano-de-acao', () => {
 
         it(
             'não edita plano de outro projeto usando o caminho de um projeto que o usuário gerencia',
-            {
-                todo: 'BUG: PATCH /api/projeto/:id/plano-de-acao/:id2 checa o projeto :id, mas PlanoAcaoService.update busca o plano só por id, então um plano de outro projeto é alterado',
-            },
             async () => {
                 const outro = (await api(admin)
                     .post(`/api/projeto/${projetoB.id}/plano-de-acao`)
@@ -157,9 +154,6 @@ describe('projeto-plano-de-acao', () => {
 
         it(
             'não remove plano de outro projeto usando o caminho de um projeto que o usuário gerencia',
-            {
-                todo: 'BUG: DELETE /api/projeto/:id/plano-de-acao/:id2 não confere que o plano pertence ao projeto :id (PlanoAcaoService.remove filtra só por id)',
-            },
             async () => {
                 const outro = (await api(admin)
                     .post(`/api/projeto/${projetoB.id}/plano-de-acao`)

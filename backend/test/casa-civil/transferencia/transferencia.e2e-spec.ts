@@ -23,9 +23,6 @@ import {
     vincularParlamentar,
 } from '../_helpers';
 
-const BUG_LIMITE =
-    'BUG: completar-registro lê self depois do update da transferência, na mesma transação; Number(novo) == self[campo] então pula todo limite de custeio, investimento, contrapartida, total e repasse, e a soma das distribuições nunca é validada';
-
 describe('transferencia', () => {
     let gestor: Sessao;
     let administrador: Sessao;
@@ -234,7 +231,7 @@ describe('transferencia', () => {
             assert.equal(Number(inicial.valor_total), 1600);
         });
 
-        it('BUG distribuição contabilizada trava a redução do custeio da transferência', { todo: BUG_LIMITE }, async () => {
+        it('distribuição contabilizada trava a redução do custeio da transferência', async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await completarTransferencia(gestor, id, valores), 200);
 
@@ -266,7 +263,7 @@ describe('transferencia', () => {
             assert.equal(depois.body.valor_distribuido, antes);
         });
 
-        it('BUG distribuição sem nenhum status trava a redução dos valores', { todo: BUG_LIMITE }, async () => {
+        it('distribuição sem nenhum status trava a redução dos valores', async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await completarTransferencia(gestor, id, valores), 200);
             await prisma().distribuicaoRecursoStatus.deleteMany({ where: { distribuicao_id: (await distribuicaoInicial(id)).id } });
@@ -276,7 +273,7 @@ describe('transferencia', () => {
             assert.match(reduzir.body.message, /Soma de custeio/);
         });
 
-        it('BUG 400 ao zerar valores com distribuição contabilizada', { todo: BUG_LIMITE }, async () => {
+        it('400 ao zerar valores com distribuição contabilizada', async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await completarTransferencia(gestor, id, valores), 200);
 
@@ -374,12 +371,12 @@ describe('transferencia', () => {
             assert.match(res.body.message, /cancelada não permite alteração do tipo/);
         });
 
-        it('CONFIRMAR PATCH só com objeto em transferência ativa', { todo: 'CONFIRMAR: PATCH sem tipo_id/esfera responde 400 "Esfera da transferência e esfera do tipo devem ser iguais" (updateTransferencia compara com undefined); se o contrato é PATCH parcial, é bug' }, async () => {
+        it('CONFIRMAR PATCH só com objeto em transferência ativa', { todo: 'CONFIRMAR (https://github.com/AppCivico/smae/issues/689): PATCH sem tipo_id/esfera responde 400 "Esfera da transferência e esfera do tipo devem ser iguais" (updateTransferencia compara com undefined); se o contrato é PATCH parcial, é bug' }, async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await casaCivil(gestor).patch(`/api/transferencia/${id}`).send({ objeto: uniq('objeto') }), 200);
         });
 
-        it('BUG cancelada aceita edição de identificação sem enviar tipo_id', { todo: 'BUG: transferência cancelada aceita edição de identificação segundo o comentário do service, mas PATCH sem tipo_id responde 400 (dto.tipo_id undefined difere de self.tipo_id)' }, async () => {
+        it('BUG cancelada aceita edição de identificação sem enviar tipo_id', { todo: 'BUG (https://github.com/AppCivico/smae/issues/689): transferência cancelada aceita edição de identificação segundo o comentário do service, mas PATCH sem tipo_id responde 400 (dto.tipo_id undefined difere de self.tipo_id)' }, async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await casaCivil(gestor).post(`/api/transferencia/${id}/cancelar`), 201);
             assertStatus(await casaCivil(gestor).patch(`/api/transferencia/${id}`).send({ objeto: uniq('objeto') }), 200);

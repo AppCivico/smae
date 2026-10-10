@@ -42,14 +42,8 @@ describe('public-upload', () => {
         assertStatus(await api().get(`/api/publico/arquivos/${expirado}`), 400);
     });
 
-    it(
-        '404 com token público de arquivo que não existe',
-        {
-            todo: 'BUG: GET /api/publico/arquivos/:token de arquivo inexistente: esperado 404, veio 500 (findFirstOrThrow vira "Falha ao baixar arquivo")',
-        },
-        async () => {
-            const token = servico().getPublicDownloadToken(999999999, undefined);
-            assertStatus(await api().get(`/api/publico/arquivos/${token}`), 404);
-        }
-    );
+    it('404 com token público de arquivo que não existe', async () => {
+        const token = servico().getPublicDownloadToken(999999999, undefined);
+        assertStatus(await api().get(`/api/publico/arquivos/${token}`), 404);
+    });
 });

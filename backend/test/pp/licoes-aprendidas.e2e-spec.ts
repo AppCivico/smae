@@ -137,9 +137,6 @@ describe('projeto-licoes-aprendidas', () => {
 
         it(
             'não edita lição de outro projeto usando o caminho de um projeto que o usuário gerencia',
-            {
-                todo: 'BUG: PATCH /api/projeto/:id/licoes-aprendidas/:id2 confere o sequencial dentro do projeto :id, mas o update final filtra só por id (LicoesAprendidasService.update), então uma lição de outro projeto é alterada',
-            },
             async () => {
                 const res = await api(gestorA)
                     .patch(`/api/projeto/${projetoA.id}/licoes-aprendidas/${licaoB.id}`)

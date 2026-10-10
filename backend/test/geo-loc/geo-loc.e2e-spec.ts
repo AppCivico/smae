@@ -248,18 +248,12 @@ describe('geo-loc', () => {
             assert.deepEqual(res.body.regioes.nivel_1, []);
         });
 
-        it(
-            '400 com camada inexistente',
-            {
-                todo: 'BUG: POST /api/geolocalizacao com camadas inexistentes: esperado 400, veio 423 (P2003 sem validar as camadas antes do insert)',
-            },
-            async () => {
-                const res = await api(usuario)
-                    .post('/api/geolocalizacao')
-                    .send({ tipo: 'Endereco', endereco: enderecoGeoJson(), camadas: [999999999] });
-                assertStatus(res, 400);
-            }
-        );
+        it('400 com camada inexistente', async () => {
+            const res = await api(usuario)
+                .post('/api/geolocalizacao')
+                .send({ tipo: 'Endereco', endereco: enderecoGeoJson(), camadas: [999999999] });
+            assertStatus(res, 400);
+        });
     });
 
     describe('GET geojson-collection (público, exige secret)', () => {

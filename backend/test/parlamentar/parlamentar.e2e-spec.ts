@@ -243,22 +243,16 @@ describe('parlamentar', () => {
             assertStatus(await api(gestor).delete(`/api/parlamentar/${id}/equipe/${membro.body.id}`), 202);
         });
 
-        it(
-            'todo: BUG editar equipe pela URL de outro parlamentar',
-            { todo: 'BUG: updateEquipe/removeEquipe ignoram o :id do parlamentar' },
-            async () => {
-                const dono = await parlamentarComMandato();
-                const outro = await parlamentarComMandato();
-                const membro = await api(gestor).post(`/api/parlamentar/${dono.id}/equipe`).send(membroNovo());
+        it('recusa editar equipe pela URL de outro parlamentar', async () => {
+            const dono = await parlamentarComMandato();
+            const outro = await parlamentarComMandato();
+            const membro = await api(gestor).post(`/api/parlamentar/${dono.id}/equipe`).send(membroNovo());
 
-                assertStatus(
-                    await api(gestor)
-                        .patch(`/api/parlamentar/${outro.id}/equipe/${membro.body.id}`)
-                        .send({ nome: uniq() }),
-                    400
-                );
-            }
-        );
+            assertStatus(
+                await api(gestor).patch(`/api/parlamentar/${outro.id}/equipe/${membro.body.id}`).send({ nome: uniq() }),
+                400
+            );
+        });
 
         it('mandato: edita campos do mandato', async () => {
             const { id, mandatoId } = await parlamentarComMandato();
@@ -268,18 +262,14 @@ describe('parlamentar', () => {
             );
         });
 
-        it(
-            'todo: BUG edição de mandato recusa partido atual inexistente com 400',
-            { todo: 'BUG: updateMandato confere partido_candidatura_id quando troca o partido atual' },
-            async () => {
-                const { id, mandatoId } = await parlamentarComMandato();
-                const invalido = await api(gestor)
-                    .patch(`/api/parlamentar/${id}/mandato/${mandatoId}`)
-                    .send({ partido_atual_id: 999999 });
-                assertStatus(invalido, 400);
-                assert.match(invalido.body.message, /Partido atual inválido/);
-            }
-        );
+        it('edição de mandato recusa partido atual inexistente com 400', async () => {
+            const { id, mandatoId } = await parlamentarComMandato();
+            const invalido = await api(gestor)
+                .patch(`/api/parlamentar/${id}/mandato/${mandatoId}`)
+                .send({ partido_atual_id: 999999 });
+            assertStatus(invalido, 400);
+            assert.match(invalido.body.message, /Partido atual inválido/);
+        });
 
         it('representatividade: regras de nível, mandato inexistente e região repetida', async () => {
             const { id, mandatoId } = await parlamentarComMandato();

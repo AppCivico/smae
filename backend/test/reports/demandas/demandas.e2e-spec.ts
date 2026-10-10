@@ -81,15 +81,9 @@ describe('relatorio/demandas', () => {
         assertStatus(await api(executor).post(url).send({ data_registro_inicio: 20300101 }), 400);
     });
 
-    it(
-        '400 com data_registro_inicio que não é data',
-        {
-            todo: 'BUG: POST /api/relatorio/demandas: esperado 400 para data_registro_inicio inválida, veio 500 (cast ::timestamptz no SQL)',
-        },
-        async () => {
-            assertStatus(await api(executor).post(url).send({ data_registro_inicio: 'ontem' }), 400);
-        }
-    );
+    it('400 com data_registro_inicio que não é data', async () => {
+        assertStatus(await api(executor).post(url).send({ data_registro_inicio: 'ontem' }), 400);
+    });
 
     it('201 devolve linhas e enderecos, e os campos da demanda do próprio órgão', async () => {
         const demanda = await criarDemanda();

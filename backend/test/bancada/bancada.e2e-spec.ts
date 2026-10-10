@@ -146,39 +146,31 @@ describe('bancada', () => {
         assert.match(colisao.body.message, /Nome igual ou semelhante/);
     });
 
-    it(
-        'todo: BUG PATCH aceita sigla já usada por outra bancada',
-        { todo: 'BUG: bancada.service.update checa sigla na tabela orgao' },
-        async () => {
-            const base = await api(gestor).post('/api/bancada').send(novaBancada());
-            const outra = await api(gestor).post('/api/bancada').send(novaBancada());
-            const siglaBase = (await api(gestor).get(`/api/bancada/${base.body.id}`)).body.sigla;
+    it('PATCH recusa sigla já usada por outra bancada', async () => {
+        const base = await api(gestor).post('/api/bancada').send(novaBancada());
+        const outra = await api(gestor).post('/api/bancada').send(novaBancada());
+        const siglaBase = (await api(gestor).get(`/api/bancada/${base.body.id}`)).body.sigla;
 
-            assertStatus(await api(gestor).patch(`/api/bancada/${outra.body.id}`).send({ sigla: siglaBase }), 400);
-        }
-    );
+        assertStatus(await api(gestor).patch(`/api/bancada/${outra.body.id}`).send({ sigla: siglaBase }), 400);
+    });
 
-    it(
-        'todo: BUG PATCH com a mesma quantidade de partidos ignora a troca',
-        { todo: 'BUG: update compara só o tamanho de partido_ids' },
-        async () => {
-            const criado = await api(gestor)
-                .post('/api/bancada')
-                .send(novaBancada({ partido_ids: [partidos[0]] }));
-            assertStatus(
-                await api(gestor)
-                    .patch(`/api/bancada/${criado.body.id}`)
-                    .send({ partido_ids: [partidos[1]] }),
-                200
-            );
+    it('PATCH com a mesma quantidade de partidos aplica a troca', async () => {
+        const criado = await api(gestor)
+            .post('/api/bancada')
+            .send(novaBancada({ partido_ids: [partidos[0]] }));
+        assertStatus(
+            await api(gestor)
+                .patch(`/api/bancada/${criado.body.id}`)
+                .send({ partido_ids: [partidos[1]] }),
+            200
+        );
 
-            const depois = await api(gestor).get(`/api/bancada/${criado.body.id}`);
-            assert.deepEqual(
-                depois.body.partidos.map((p: { id: number }) => p.id),
-                [partidos[1]]
-            );
-        }
-    );
+        const depois = await api(gestor).get(`/api/bancada/${criado.body.id}`);
+        assert.deepEqual(
+            depois.body.partidos.map((p: { id: number }) => p.id),
+            [partidos[1]]
+        );
+    });
 
     it('DELETE remove a bancada da listagem', async () => {
         const criado = await api(gestor).post('/api/bancada').send(novaBancada());

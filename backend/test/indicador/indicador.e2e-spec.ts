@@ -161,18 +161,12 @@ describe('indicador', () => {
             assert.ok(!daMeta.body.linhas.some((l: { id: number }) => l.id === criado.body.id));
         });
 
-        it(
-            '400 sem inicio_medicao, que a tabela exige',
-            {
-                todo: 'BUG: inicio_medicao e fim_medicao são IsOptional no DTO, mas NOT NULL no banco: 500 em vez de 400',
-            },
-            async () => {
-                const meta = await criarMetaLegado(legado, pdm.id);
-                const dados = dadosIndicador({ meta_id: meta });
-                delete (dados as Record<string, unknown>).inicio_medicao;
-                assertStatus(await api(legado).post('/api/indicador').send(dados), 400);
-            }
-        );
+        it('400 sem inicio_medicao, que a tabela exige', async () => {
+            const meta = await criarMetaLegado(legado, pdm.id);
+            const dados = dadosIndicador({ meta_id: meta });
+            delete (dados as Record<string, unknown>).inicio_medicao;
+            assertStatus(await api(legado).post('/api/indicador').send(dados), 400);
+        });
     });
 
     describe('/api/plano-setorial-indicador (Plano Setorial)', () => {

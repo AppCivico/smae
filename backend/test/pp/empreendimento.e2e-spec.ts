@@ -90,9 +90,6 @@ describe('empreendimento', () => {
 
         it(
             'mensagem de identificador repetido no create fala do identificador',
-            {
-                todo: 'BUG: POST /api/empreendimento com identificador repetido responde "Nome igual ou semelhante já existe", a mesma mensagem do nome (o PATCH usa a mensagem certa)',
-            },
             async () => {
                 const dados = novo();
                 assertStatus(await api(gestor).post('/api/empreendimento').send(dados), 201);

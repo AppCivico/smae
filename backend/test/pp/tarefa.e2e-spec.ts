@@ -143,9 +143,6 @@ describe('projeto-tarefa', () => {
     describe('obras (projeto-mdo/tarefas-hierarquia)', () => {
         it(
             'hierarquia de obra responde 200 para quem edita a obra',
-            {
-                todo: 'BUG: GET /api/projeto-mdo/:id/tarefas-hierarquia chama projetoService.findOne com tipo PP (TarefaMDOController), então a obra nunca é encontrada e a rota responde 400',
-            },
             async () => {
                 const obras = await cenarioObras();
                 const obra = await criarProjeto(obras.adminMdo, 'MDO', { portfolio_id: obras.portfolio.id });

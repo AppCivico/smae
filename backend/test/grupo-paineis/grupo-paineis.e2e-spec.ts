@@ -225,9 +225,6 @@ describe('grupo-paineis (módulo PDM)', () => {
 
         it(
             'edita só o ativo sem reenviar o nome',
-            {
-                todo: 'BUG: PATCH /api/grupo-paineis/:id: esperado 200 com {ativo:false}, veio 400 "Nome igual ou semelhante" (nome undefined vira filtro vazio no count)',
-            },
             async () => {
                 await como(gestor).post('/api/grupo-paineis').send(novoGrupo());
                 const grupo = await como(gestor)

@@ -78,7 +78,7 @@ describe('projeto-orcamento-planejado', () => {
                 .post(`/api/projeto/${projetoA.id}/orcamento-planejado`)
                 .send(planejado({ dotacao: '99.99.99.999.9999.9.999.99999999.99' }));
             assertStatus(naoImportada, 400);
-            assert.match(naoImportada.body.message, /não foi ainda não foi importada/);
+            assert.match(naoImportada.body.message, /ainda não foi importada/);
         });
     });
 

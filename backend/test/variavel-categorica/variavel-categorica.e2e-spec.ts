@@ -216,24 +216,18 @@ describe('variavel-categorica', () => {
             assert.equal((await buscaNaLista(criado.body.id)).tipo, 'Qualitativa');
         });
 
-        it(
-            'edição parcial sem titulo atualiza só a descrição',
-            {
-                todo: 'BUG: PATCH sem titulo responde 400 "Título undefined já está em uso" (checagem de duplicidade não ignora titulo ausente)',
-            },
-            async () => {
-                const criado = await api(gestor).post('/api/variavel-categorica').send(qualitativa());
-                assertStatus(criado, 201);
+        it('edição parcial sem titulo atualiza só a descrição', async () => {
+            const criado = await api(gestor).post('/api/variavel-categorica').send(qualitativa());
+            assertStatus(criado, 201);
 
-                assertStatus(
-                    await api(gestor)
-                        .patch(`/api/variavel-categorica/${criado.body.id}`)
-                        .send({ descricao: 'só descrição' }),
-                    200
-                );
-                assert.equal((await buscaNaLista(criado.body.id)).descricao, 'só descrição');
-            }
-        );
+            assertStatus(
+                await api(gestor)
+                    .patch(`/api/variavel-categorica/${criado.body.id}`)
+                    .send({ descricao: 'só descrição' }),
+                200
+            );
+            assert.equal((await buscaNaLista(criado.body.id)).descricao, 'só descrição');
+        });
 
         it('400 ao usar título de outra categórica, na criação e na edição', async () => {
             const titulo = uniq('Unico');

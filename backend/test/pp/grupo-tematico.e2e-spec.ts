@@ -139,11 +139,9 @@ describe('grupo-tematico', () => {
 
         it(
             'PATCH só com as flags, sem nome, é aceito',
-            {
-                todo: 'BUG: PATCH /api/grupo-tematico/:id usa CreateGrupoTematicoDto (nome obrigatório) e ignora UpdateGrupoTematicoDto, então devolve 400 sem nome, embora o service trate nome como opcional',
-            },
             async () => {
-                assertStatus(await api(gestor).patch(`/api/grupo-tematico/${grupo.id}`).send({ unidades_atendidas: true }), 200);
+                const livre = await api(gestor).post('/api/grupo-tematico').send({ nome: uniq('Livre') });
+                assertStatus(await api(gestor).patch(`/api/grupo-tematico/${livre.body.id}`).send({ unidades_atendidas: true }), 200);
             }
         );
 

@@ -128,7 +128,7 @@ describe('task', () => {
         it(
             'mesma task pendente do mesmo usuário reaproveita o id',
             {
-                todo: 'BUG: POST /api/task: esperado o mesmo id da task pendente idêntica, veio um id novo (comparação params.valueOf() == "object" nunca é verdadeira)',
+                todo: 'BUG (corrigido em https://github.com/AppCivico/smae/pull/716): a checagem de task pendente compara params com valueOf() e nunca reaproveita o id',
             },
             async () => {
                 const { id, echo } = await criarEcho();

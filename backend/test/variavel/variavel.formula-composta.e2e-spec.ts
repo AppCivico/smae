@@ -178,41 +178,35 @@ describe('VariavelGlobalFCController (plano-setorial-formula-composta)', () => {
             assert.match(String(recusaFim.body.message), /termina a medição em/);
         });
 
-        it(
-            'desassocia a variável vinculada',
-            {
-                todo: 'BUG: DELETE desassociar-variavel de fórmula PS não remove o vínculo (consulta indicadorVariavel com o id da fórmula e sai sem apagar)',
-            },
-            async () => {
-                const criada = await api(admin).post('/api/plano-setorial-formula-composta').send(novaFormula());
-                assertStatus(criada, 201);
-                const id: number = criada.body.id;
-                const variavel = await criaGlobal(admin, orgaoId, { titulo: uniq('Desassociar') });
-                assertStatus(
-                    await api(admin)
-                        .patch(`/api/plano-setorial-formula-composta/${id}/associar-variavel`)
-                        .send({ variavel_ids: [variavel] }),
-                    200
-                );
+        it('desassocia a variável vinculada', async () => {
+            const criada = await api(admin).post('/api/plano-setorial-formula-composta').send(novaFormula());
+            assertStatus(criada, 201);
+            const id: number = criada.body.id;
+            const variavel = await criaGlobal(admin, orgaoId, { titulo: uniq('Desassociar') });
+            assertStatus(
+                await api(admin)
+                    .patch(`/api/plano-setorial-formula-composta/${id}/associar-variavel`)
+                    .send({ variavel_ids: [variavel] }),
+                200
+            );
 
-                assertStatus(
-                    await api(admin)
-                        .delete(`/api/plano-setorial-formula-composta/${id}/desassociar-variavel`)
-                        .send({ variavel_id: variavel }),
-                    200
-                );
-                const vinculadas = await api(admin).get(`/api/plano-setorial-formula-composta/${id}/variaveis`);
-                assert.equal(
-                    vinculadas.body.linhas.some((l: { id: number }) => l.id === variavel),
-                    false
-                );
-            }
-        );
+            assertStatus(
+                await api(admin)
+                    .delete(`/api/plano-setorial-formula-composta/${id}/desassociar-variavel`)
+                    .send({ variavel_id: variavel }),
+                200
+            );
+            const vinculadas = await api(admin).get(`/api/plano-setorial-formula-composta/${id}/variaveis`);
+            assert.equal(
+                vinculadas.body.linhas.some((l: { id: number }) => l.id === variavel),
+                false
+            );
+        });
 
         it(
             'leitor de metas PS não deveria criar fórmula (somente leitura)',
             {
-                todo: 'CONFIRMAR: leitor de metas PS (somente CadastroMetaPS.listar) cria fórmula PS, pois o POST em rota de escrita reutiliza ROLES_ACESSO_VARIAVEL_PS (lista de leitura)',
+                todo: 'https://github.com/AppCivico/smae/issues/693 CONFIRMAR: leitor de metas PS (somente CadastroMetaPS.listar) cria fórmula PS, pois o POST em rota de escrita reutiliza ROLES_ACESSO_VARIAVEL_PS (lista de leitura)',
             },
             async () => {
                 const res = await api(leitorPs).post('/api/plano-setorial-formula-composta').send(novaFormula());

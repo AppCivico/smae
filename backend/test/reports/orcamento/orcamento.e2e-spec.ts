@@ -96,15 +96,9 @@ describe('relatorio/orcamento', () => {
         assertStatus(await enviar({ orgaos: 'x' }), 400);
     });
 
-    it(
-        '400 com corpo vazio',
-        {
-            todo: 'BUG: POST /api/relatorio/orcamento: esperado 400 (inicio/fim obrigatórios), veio 500 (DateTransform recebe undefined)',
-        },
-        async () => {
-            assertStatus(await api(executor).post(url).send({}), 400);
-        }
-    );
+    it('400 com corpo vazio', async () => {
+        assertStatus(await api(executor).post(url).send({}), 400);
+    });
 
     it('201 em PDM sem orçamento devolve linhas vazias', async () => {
         const vazio = await criarPdmAntigo();
@@ -224,15 +218,9 @@ describe('relatorio/plano-setorial-orcamento', () => {
         );
     });
 
-    it(
-        '400 com corpo vazio',
-        {
-            todo: 'BUG: POST /api/relatorio/plano-setorial-orcamento: esperado 400 (inicio/fim obrigatórios), veio 500 (DateTransform recebe undefined)',
-        },
-        async () => {
-            assertStatus(await ps(executor).post(url).send({}), 400);
-        }
-    );
+    it('400 com corpo vazio', async () => {
+        assertStatus(await ps(executor).post(url).send({}), 400);
+    });
 
     it('201 em plano sem orçamento devolve linhas vazias', async () => {
         const vazio = await criarPlanoSetorial();
