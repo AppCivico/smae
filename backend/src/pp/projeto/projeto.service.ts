@@ -633,6 +633,16 @@ export class ProjetoService {
             await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
         }
 
+        // Compartilhamento padrão configurado no portfólio: entra junto com o que o usuário escolheu.
+        // Não passa pela lista `portfolios` porque o padrão vale mesmo que o usuário não enxergue o destino.
+        if (!portfolio.modelo_clonagem) {
+            const compartilhadosPadrao = await this.portfolioService.buscaCompartilhamentoPadrao(portfolio);
+            if (compartilhadosPadrao.length)
+                dto.portfolios_compartilhados = [
+                    ...new Set([...(dto.portfolios_compartilhados ?? []), ...compartilhadosPadrao]),
+                ];
+        }
+
         if (tipo == 'MDO') {
             if (!dto.orgao_origem_id) throw new HttpException('Campo obrigatório para obras', 400);
             if (!dto.grupo_tematico_id) throw new HttpException('Campo obrigatório para obras', 400);

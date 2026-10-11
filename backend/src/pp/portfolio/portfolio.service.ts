@@ -40,6 +40,15 @@ export class PortfolioService {
 
         dto.orcamento_execucao_disponivel_meses?.sort((a, b) => a - b);
 
+        const compartilhadosPadrao = [...new Set(dto.portfolios_compartilhados_padrao ?? [])];
+        await this.validaCompartilhamentoPadrao(
+            tipoProjeto,
+            null,
+            dto.orgaos,
+            dto.modelo_clonagem ?? false,
+            compartilhadosPadrao
+        );
+
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -94,6 +103,19 @@ export class PortfolioService {
                     });
                 }
 
+                if (compartilhadosPadrao.length > 0) {
+                    await prismaTx.portfolioCompartilhamentoPadrao.createMany({
+                        data: compartilhadosPadrao.map((r) => {
+                            return {
+                                portfolio_id: row.id,
+                                portfolio_compartilhado_id: r,
+                                criado_em: now,
+                                criado_por: user.id,
+                            };
+                        }),
+                    });
+                }
+
                 return row;
             }
         );
@@ -136,11 +158,17 @@ export class PortfolioService {
                         grupo_portfolio_id: true,
                     },
                 },
+                compartilhamentosPadrao: {
+                    where: { removido_em: null, portfolio_compartilhado: { removido_em: null } },
+                    select: { portfolio_compartilhado_id: true },
+                    orderBy: { id: 'asc' },
+                },
             },
         });
 
         return {
-            ...{ ...r, PortfolioGrupoPortfolio: undefined },
+            ...{ ...r, PortfolioGrupoPortfolio: undefined, compartilhamentosPadrao: undefined },
+            portfolios_compartilhados_padrao: r.compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
             data_criacao: Date2YMD.toStringOrNull(r.data_criacao),
             grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
@@ -240,6 +268,11 @@ export class PortfolioService {
                         },
                     },
                 },
+                compartilhamentosPadrao: {
+                    where: { removido_em: null, portfolio_compartilhado: { removido_em: null } },
+                    select: { portfolio_compartilhado_id: true },
+                    orderBy: { id: 'asc' },
+                },
             },
             orderBy: { titulo: 'asc' },
         });
@@ -256,8 +289,9 @@ export class PortfolioService {
 
             return {
                 pode_editar: pode_editar,
-                ...r,
+                ...{ ...r, compartilhamentosPadrao: undefined },
                 orgaos: r.orgaos.map((rr) => rr.orgao),
+                portfolios_compartilhados_padrao: r.compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
                 icone_impressao: r.icone ? this.montarIconeDto(r.icone) : null,
             };
         });
@@ -344,6 +378,19 @@ export class PortfolioService {
                 );
         }
 
+        const compartilhadosPadrao = Array.isArray(dto.portfolios_compartilhados_padrao)
+            ? [...new Set(dto.portfolios_compartilhados_padrao)]
+            : undefined;
+        if (compartilhadosPadrao?.length) {
+            await this.validaCompartilhamentoPadrao(
+                tipoProjeto,
+                id,
+                dto.orgaos?.length ? dto.orgaos : self[0].orgaos.map((o) => o.id),
+                self[0].modelo_clonagem,
+                compartilhadosPadrao
+            );
+        }
+
         // conferir se todos os órgãos que estão saindo realmente nao estão em uso em nenhum projeto ativo
         // como orgao_gestor_id
         const now = new Date(Date.now());
@@ -390,6 +437,7 @@ export class PortfolioService {
                 }
 
                 await this.upsertGrupoPort(prismaTx, row, dto, now, user);
+                await this.upsertCompartilhamentoPadrao(prismaTx, row, compartilhadosPadrao, now, user);
 
                 return row;
             }
@@ -453,6 +501,113 @@ export class PortfolioService {
         }
     }
 
+    private async upsertCompartilhamentoPadrao(
+        prismaTx: Prisma.TransactionClient,
+        row: { id: number },
+        compartilhadosPadrao: number[] | undefined,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
+        if (!compartilhadosPadrao) return;
+
+        const prevVersions = await prismaTx.portfolioCompartilhamentoPadrao.findMany({
+            where: { removido_em: null, portfolio_id: row.id },
+            select: { id: true, portfolio_compartilhado_id: true },
+        });
+
+        const novos = compartilhadosPadrao.filter((r) => !prevVersions.some((p) => p.portfolio_compartilhado_id == r));
+        if (novos.length > 0) {
+            await prismaTx.portfolioCompartilhamentoPadrao.createMany({
+                data: novos.map((r) => {
+                    return {
+                        portfolio_id: row.id,
+                        portfolio_compartilhado_id: r,
+                        criado_em: now,
+                        criado_por: user.id,
+                    };
+                }),
+            });
+        }
+
+        const removidos = prevVersions.filter((p) => !compartilhadosPadrao.includes(p.portfolio_compartilhado_id));
+        if (removidos.length > 0) {
+            await prismaTx.portfolioCompartilhamentoPadrao.updateMany({
+                where: { id: { in: removidos.map((r) => r.id) }, removido_em: null },
+                data: { removido_em: now, removido_por: user.id },
+            });
+        }
+    }
+
+    /**
+     * Valida os portfólios escolhidos como compartilhamento padrão, com as mesmas regras do
+     * compartilhamento feito projeto a projeto (ver `ProjetoService.checkPortCompartilhadoOrgaos`).
+     */
+    private async validaCompartilhamentoPadrao(
+        tipoProjeto: TipoProjeto,
+        portfolioId: number | null,
+        orgaos: number[],
+        modeloClonagem: boolean,
+        compartilhadosPadrao: number[]
+    ) {
+        if (compartilhadosPadrao.length == 0) return;
+
+        if (modeloClonagem)
+            throw new HttpException(
+                'Portfólio de modelo de clonagem não pode ter compartilhamento padrão com outros portfólios.',
+                400
+            );
+
+        if (portfolioId && compartilhadosPadrao.includes(portfolioId))
+            throw new HttpException(
+                'Portfólio de compartilhamento padrão deve ser diferente do próprio portfólio.',
+                400
+            );
+
+        const rows = await this.prisma.portfolio.findMany({
+            where: { id: { in: compartilhadosPadrao }, tipo_projeto: tipoProjeto, removido_em: null },
+            select: { id: true, titulo: true, modelo_clonagem: true, orgaos: { select: { orgao_id: true } } },
+        });
+
+        if (rows.length != compartilhadosPadrao.length)
+            throw new HttpException('Um ou mais portfólios de compartilhamento padrão não foram encontrados.', 400);
+
+        for (const row of rows) {
+            if (row.modelo_clonagem)
+                throw new HttpException(
+                    `Portfólio "${row.titulo}" é modelo de clonagem e não pode receber compartilhamento padrão.`,
+                    400
+                );
+
+            if (!row.orgaos.some((o) => orgaos.includes(o.orgao_id)))
+                throw new HttpException(
+                    `Portfólio "${row.titulo}" deve conter ao menos um órgão em comum com este portfólio para ser usado como compartilhamento padrão.`,
+                    400
+                );
+        }
+    }
+
+    /**
+     * IDs dos portfólios com os quais um projeto/obra recém-criado em `portfolio` deve ser compartilhado.
+     * Só devolve os que continuam válidos (ativos, não-modelo e com órgão em comum), já que o cadastro
+     * dos portfólios pode ter mudado depois que o padrão foi definido.
+     */
+    async buscaCompartilhamentoPadrao(portfolio: { id: number; orgaos: { id: number }[] }): Promise<number[]> {
+        const rows = await this.prisma.portfolioCompartilhamentoPadrao.findMany({
+            where: {
+                portfolio_id: portfolio.id,
+                removido_em: null,
+                portfolio_compartilhado: {
+                    removido_em: null,
+                    modelo_clonagem: false,
+                    orgaos: { some: { orgao_id: { in: portfolio.orgaos.map((o) => o.id) } } },
+                },
+            },
+            select: { portfolio_compartilhado_id: true },
+        });
+
+        return rows.map((r) => r.portfolio_compartilhado_id);
+    }
+
     async remove(tipoProjeto: TipoProjeto, id: number, user: PessoaFromJwt) {
         const self = await this.findAll(tipoProjeto, user, false, id);
         if (!self[0].pode_editar) throw new BadRequestException('Sem permissão para remover o portfólio');
@@ -466,12 +621,21 @@ export class PortfolioService {
         });
         if (count > 0) throw new HttpException('Não é possível mais apagar o portfólio, há projetos dependentes.', 400);
 
-        const created = await this.prisma.portfolio.updateMany({
-            where: { id: id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        const now = new Date(Date.now());
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // o portfólio deixa de ser padrão de compartilhamento dos outros (e os dele deixam de valer)
+            await prismaTx.portfolioCompartilhamentoPadrao.updateMany({
+                where: { removido_em: null, OR: [{ portfolio_id: id }, { portfolio_compartilhado_id: id }] },
+                data: { removido_por: user.id, removido_em: now },
+            });
+
+            return await prismaTx.portfolio.updateMany({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: now,
+                },
+            });
         });
 
         return created;

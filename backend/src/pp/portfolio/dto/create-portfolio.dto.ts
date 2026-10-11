@@ -78,6 +78,18 @@ export class CreatePortfolioDto {
     modelo_clonagem?: boolean;
 
     /**
+     * IDs dos portfólios com os quais os projetos/obras criados neste portfólio
+     * serão compartilhados automaticamente ("Compartilhar obras/projetos por padrão com").
+     * No PATCH, enviar array vazio remove todos; não enviar mantém como está.
+     * @example "[]"
+     */
+    @IsOptional()
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
+    portfolios_compartilhados_padrao?: number[];
+
+    /**
      * Token do upload do ícone para impressão (ou download_token existente para manter o mesmo)
      * Para remover o ícone, envie sobrescrever_icone=true e icone_upload_token=null
      */
