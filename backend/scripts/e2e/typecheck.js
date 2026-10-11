@@ -25,8 +25,8 @@ if (r.error) throw r.error;
 
 const diags = [];
 for (const line of (r.stdout + r.stderr).split('\n')) {
-    const m = line.match(/^(.+?)\((\d+),(\d+)\): error (TS\d+): /);
-    if (m) diags.push({ file: m[1], code: m[4], text: line });
+    const m = line.match(/^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/);
+    if (m) diags.push({ file: m[1], code: m[4], message: m[5], text: line });
     else if (diags.length && line.startsWith(' ')) diags[diags.length - 1].text += '\n' + line;
 }
 const saida = r.stdout + r.stderr;
@@ -37,9 +37,11 @@ if (r.signal || globais.length || (r.status !== 0 && !diags.length)) {
 }
 const escopo = diags.filter((d) => withTests || !d.file.startsWith('test/'));
 
+// No line/column, so edits elsewhere in the file don't invalidate the baseline.
+const chave = (d) => `${d.file} ${d.code}: ${d.message}`;
 const contagem = {};
 for (const d of escopo.filter((d) => !d.file.startsWith('test/'))) {
-    const k = `${d.file} ${d.code}`;
+    const k = chave(d);
     contagem[k] = (contagem[k] || 0) + 1;
 }
 
@@ -52,7 +54,7 @@ if (writeBaseline) {
 
 const baseline = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
 const novos = escopo.filter((d) => {
-    const k = `${d.file} ${d.code}`;
+    const k = chave(d);
     return d.file.startsWith('test/') || (contagem[k] || 0) > (baseline[k] || 0);
 });
 
