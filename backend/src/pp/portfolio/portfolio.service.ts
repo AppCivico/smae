@@ -270,7 +270,7 @@ export class PortfolioService {
                 },
                 compartilhamentosPadrao: {
                     where: { removido_em: null, portfolio_compartilhado: { removido_em: null } },
-                    select: { portfolio_compartilhado_id: true },
+                    select: { portfolio_compartilhado_id: true, portfolio_compartilhado: { select: { titulo: true } } },
                     orderBy: { id: 'asc' },
                 },
             },
@@ -292,6 +292,10 @@ export class PortfolioService {
                 ...{ ...r, compartilhamentosPadrao: undefined },
                 orgaos: r.orgaos.map((rr) => rr.orgao),
                 portfolios_compartilhados_padrao: r.compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
+                compartilhamentos_padrao: r.compartilhamentosPadrao.map((rr) => ({
+                    id: rr.portfolio_compartilhado_id,
+                    titulo: rr.portfolio_compartilhado.titulo,
+                })),
                 icone_impressao: r.icone ? this.montarIconeDto(r.icone) : null,
             };
         });

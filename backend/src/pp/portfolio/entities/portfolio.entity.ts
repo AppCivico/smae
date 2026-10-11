@@ -1,5 +1,6 @@
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { IdSiglaDescricao } from '../../../common/dto/IdSigla.dto';
+import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 
 export class PortfolioIconeDto {
     id: number;
@@ -20,6 +21,10 @@ export class PortfolioDto {
      * IDs dos portfólios com os quais os projetos/obras criados neste portfólio são compartilhados automaticamente
      */
     portfolios_compartilhados_padrao: number[];
+    /**
+     * Portfólios de compartilhamento padrão ativos, com título
+     */
+    compartilhamentos_padrao: IdTituloDto[];
 }
 
 export class PortfolioOneDto {

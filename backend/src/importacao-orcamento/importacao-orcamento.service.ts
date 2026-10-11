@@ -282,7 +282,7 @@ export class ImportacaoOrcamentoService {
                 },
                 compartilhamentosPadrao: {
                     where: { removido_em: null, portfolio_compartilhado: { removido_em: null } },
-                    select: { portfolio_compartilhado_id: true },
+                    select: { portfolio_compartilhado_id: true, portfolio_compartilhado: { select: { titulo: true } } },
                     orderBy: { id: 'asc' },
                 },
             },
@@ -294,6 +294,10 @@ export class ImportacaoOrcamentoService {
                 pode_editar: false,
                 ...{ ...r, compartilhamentosPadrao: undefined },
                 portfolios_compartilhados_padrao: r.compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
+                compartilhamentos_padrao: r.compartilhamentosPadrao.map((rr) => ({
+                    id: rr.portfolio_compartilhado_id,
+                    titulo: rr.portfolio_compartilhado.titulo,
+                })),
                 icone_impressao: null,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
             };
