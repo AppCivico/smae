@@ -238,47 +238,43 @@ export class TaskService {
     ): Promise<RecordWithId> {
         // se tem user, nao é report, então verificar se tem já tem algo na fila
         // se tiver algo pendente, volta o mesmo ID
-        if (user) {
-            const existing = await this.prisma.$queryRaw<{ task_id: number }[]>`
-                SELECT task_id FROM task_queue_dedup
-                WHERE pessoa_id = ${user.id}
-                AND type = ${dto.type}::task_type
-                AND params_hash = md5(${JSON.stringify(dto.params ?? {})}::jsonb::text)
-            `;
-            if (existing.length) return { id: existing[0].task_id };
-        }
+        const performCreateTask = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            if (user) {
+                const paramsJson = JSON.stringify(dto.params ?? {});
+                // serializa por chave até o fim da transação, para requests concorrentes receberem o mesmo id
+                await prismaTx.$queryRaw`
+                    SELECT pg_advisory_xact_lock(hashtext(
+                        ${user.id}::text || ':' || ${dto.type} || ':' || md5(${paramsJson}::jsonb::text)
+                    ))::text
+                `;
+                const existing = await prismaTx.$queryRaw<{ task_id: number }[]>`
+                    SELECT task_id FROM task_queue_dedup
+                    WHERE pessoa_id = ${user.id}
+                    AND type = ${dto.type}::task_type
+                    AND params_hash = md5(${paramsJson}::jsonb::text)
+                `;
+                if (existing.length) return { id: existing[0].task_id };
+            }
 
-        const performCreateTask = async (prismaTx: Prisma.TransactionClient): Promise<task_queue> => {
-            return await prismaTx.task_queue.create({
+            const task = await prismaTx.task_queue.create({
                 data: {
                     status: 'pending',
                     pessoa_id: user ? user.id : null,
                     type: dto.type,
                     params: dto.params,
                 },
+                select: { id: true },
             });
+            return { id: task.id };
         };
 
-        let task: task_queue;
+        if (transactionClient) return await performCreateTask(transactionClient);
 
-        if (transactionClient) {
-            task = await performCreateTask(transactionClient);
-        } else {
-            task = await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient): Promise<task_queue> => {
-                    return performCreateTask(prismaTx);
-                },
-                {
-                    isolationLevel: 'ReadCommitted',
-                    maxWait: 5000,
-                    timeout: 5000,
-                }
-            );
-        }
-
-        return {
-            id: task.id,
-        };
+        return await this.prisma.$transaction(performCreateTask, {
+            isolationLevel: 'ReadCommitted',
+            maxWait: 5000,
+            timeout: 5000,
+        });
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<TaskSingleDto> {

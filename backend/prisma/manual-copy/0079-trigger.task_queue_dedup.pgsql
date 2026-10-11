@@ -24,10 +24,11 @@ CREATE TRIGGER tgr_task_queue_dedup_insert
 
 DROP TRIGGER IF EXISTS tgr_task_queue_dedup_update ON task_queue;
 CREATE TRIGGER tgr_task_queue_dedup_update
-    AFTER UPDATE OF status, params, pessoa_id, removido_em ON task_queue
+    AFTER UPDATE OF status, type, params, pessoa_id, removido_em ON task_queue
     FOR EACH ROW
     WHEN (
         OLD.status IS DISTINCT FROM NEW.status
+        OR OLD.type IS DISTINCT FROM NEW.type
         OR OLD.params IS DISTINCT FROM NEW.params
         OR OLD.pessoa_id IS DISTINCT FROM NEW.pessoa_id
         OR OLD.removido_em IS DISTINCT FROM NEW.removido_em
