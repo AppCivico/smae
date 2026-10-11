@@ -47,3 +47,6 @@ lerna-debug.log*
 
 # Cache de vereditos do bin/spellcheck-ptbr.ts (regenerável, custa uma chamada de LLM)
 /docs/.spellcheck-ptbr-cache.json
+
+# e2e (scripts/e2e/run.js)
+/dist-test

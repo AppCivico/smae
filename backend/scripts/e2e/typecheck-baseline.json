@@ -1,0 +1,12 @@
+{
+    "src/app.controller.ts TS2349: This expression is not callable.": 3,
+    "src/common/html-sanitizer.ts TS2349: This expression is not callable.": 1,
+    "src/geo-loc/geo-loc.service.ts TS2339: Property 'simplify' does not exist on type '{ default: <T extends AllGeoJSON>(geojson: T, options?: { tolerance?: number | undefined; highQuality?: boolean | undefined; mutate?: boolean | undefined; } | undefined) => T; }'.": 1,
+    "src/painel/painel.service.ts TS2322: Type '{ painel_conteudo: { periodo_fim: string | null; periodo_inicio: string | null; detalhes: { filhos: { atividade: { id: number; titulo: string; } | null; filhos: { mostrar_indicador: boolean; tipo: PainelConteudoTipoDetalhe; variavel: { ...; } | null; }[]; id: number; mostrar_indicador: boolean; tipo: PainelConteudoT...' is not assignable to type 'PainelDto[]'.": 1,
+    "src/painel/painel.service.ts TS2349: This expression is not callable.": 5,
+    "src/upload/gotenberg.service.ts TS2351: This expression is not constructable.": 4,
+    "src/upload/preview.service.ts TS2349: This expression is not callable.": 1,
+    "src/upload/storage-service.ts TS2307: Cannot find module 'minio/dist/main/internal/type' or its corresponding type declarations.": 1,
+    "src/upload/thumbnail.service.ts TS2349: This expression is not callable.": 1,
+    "src/upload/upload.service.ts TS2349: This expression is not callable.": 1
+}
