@@ -48,8 +48,8 @@ Mirror the controller's path under `src/`, one spec per controller file:
 | controller | spec |
 |---|---|
 | `src/orgao/orgao.controller.ts` | `test/orgao/orgao.e2e-spec.ts` |
-| `src/casa-civil/demanda/demanda.controller.ts` | `test/casa-civil/demanda/demanda.e2e-spec.ts` |
-| `src/pdm/pdm.controller.ts` (2 controllers) | `test/pdm/pdm.e2e-spec.ts` (one top-level `describe` per controller) |
+
+A controller file with several controllers gets one spec with one top-level `describe` per controller.
 
 Import helpers with a relative path (`'../lib'`, `'../../lib'`, ...). The file name must end in
 `.e2e-spec.ts`.
