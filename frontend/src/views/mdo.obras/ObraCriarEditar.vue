@@ -202,6 +202,27 @@ const {
   validationSchema: schema,
 });
 
+const portfólioSelecionado = computed(() => portfolioMdoStore.portfoliosPorId[values.portfolio_id]);
+
+const compartilhamentosPadrão = computed(() => portfólioSelecionado.value
+  ?.compartilhamentos_padrao || []);
+
+const idsDePortfóliosRemovíveis = computed(() => new Set([
+  ...portfolioMdoStore.lista.map((x) => x.id),
+  ...(portfólioSelecionado.value?.portfolios_compartilhados_padrao || []),
+]));
+
+const compartilhamentosForaDaLista = computed(() => (emFoco.value?.portfolios_compartilhados || [])
+  .filter((x) => values.portfolios_compartilhados?.includes(x.id)
+    && !portfóliosDisponíveis.value.some((y) => y.id === x.id)));
+
+function removerCompartilhamento(id) {
+  setFieldValue(
+    'portfolios_compartilhados',
+    values.portfolios_compartilhados.filter((x) => x !== id),
+  );
+}
+
 function alertarTrocaDeStatus() {
   if (!!itemParaEdicao.value.status && itemParaEdicao.value.status !== values.status) {
     alertStore.success('Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
@@ -575,6 +596,13 @@ watch(listaDeTiposDeIntervenção, () => {
           class="error-msg mb1"
           name="portfolio_id"
         />
+        <p
+          v-if="!obraId && compartilhamentosPadrão.length"
+          class="t13 tc500 mb1"
+        >
+          Também será compartilhada com:
+          {{ compartilhamentosPadrão.map((x) => x.titulo).join(', ') }}
+        </p>
       </div>
 
       <div class="f1 mb1 fb20em">
@@ -916,6 +944,31 @@ watch(listaDeTiposDeIntervenção, () => {
         }"
         label="titulo"
       />
+      <template
+        v-for="item in compartilhamentosForaDaLista"
+        :key="item.id"
+      >
+        <button
+          v-if="idsDePortfóliosRemovíveis.has(item.id)"
+          type="button"
+          class="tagsmall"
+          :title="item.titulo"
+          @click="removerCompartilhamento(item.id)"
+        >
+          {{ item.titulo }}
+          <svg
+            width="12"
+            height="12"
+          ><use xlink:href="#i_x" /></svg>
+        </button>
+        <span
+          v-else
+          class="tagsmall"
+          :title="item.titulo"
+        >
+          {{ item.titulo }}
+        </span>
+      </template>
       <ErrorMessage
         name="portfolios_compartilhados"
         class="error-msg"

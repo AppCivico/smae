@@ -119,6 +119,27 @@ const portfóliosDisponíveis = computed(() => {
       && x?.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
 });
 
+const portfólioSelecionado = computed(() => portfolioStore.portfoliosPorId[values.portfolio_id]);
+
+const compartilhamentosPadrão = computed(() => portfólioSelecionado.value
+  ?.compartilhamentos_padrao || []);
+
+const idsDePortfóliosRemovíveis = computed(() => new Set([
+  ...portfolioStore.lista.map((x) => x.id),
+  ...(portfólioSelecionado.value?.portfolios_compartilhados_padrao || []),
+]));
+
+const compartilhamentosForaDaLista = computed(() => (emFoco.value?.portfolios_compartilhados || [])
+  .filter((x) => values.portfolios_compartilhados?.includes(x.id)
+    && !portfóliosDisponíveis.value.some((y) => y.id === x.id)));
+
+function removerCompartilhamento(id) {
+  setFieldValue(
+    'portfolios_compartilhados',
+    values.portfolios_compartilhados.filter((x) => x !== id),
+  );
+}
+
 const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
   .reduce((acc, cur) => {
     if (!acc[cur.orgao_id]) {
@@ -491,6 +512,13 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
           class="error-msg mb1"
           name="portfolio_id"
         />
+        <p
+          v-if="!projetoId && compartilhamentosPadrão.length"
+          class="t13 tc500 mb1"
+        >
+          Também será compartilhado com:
+          {{ compartilhamentosPadrão.map((x) => x.titulo).join(', ') }}
+        </p>
       </div>
 
       <div
@@ -622,6 +650,32 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
           label="titulo"
           :readonly="desabilitarTodosCampos.camposComuns"
         />
+        <template
+          v-for="item in compartilhamentosForaDaLista"
+          :key="item.id"
+        >
+          <button
+            v-if="!desabilitarTodosCampos.camposComuns
+              && idsDePortfóliosRemovíveis.has(item.id)"
+            type="button"
+            class="tagsmall"
+            :title="item.titulo"
+            @click="removerCompartilhamento(item.id)"
+          >
+            {{ item.titulo }}
+            <svg
+              width="12"
+              height="12"
+            ><use xlink:href="#i_x" /></svg>
+          </button>
+          <span
+            v-else
+            class="tagsmall"
+            :title="item.titulo"
+          >
+            {{ item.titulo }}
+          </span>
+        </template>
         <ErrorMessage
           name="portfolios_compartilhados"
           class="error-msg"
