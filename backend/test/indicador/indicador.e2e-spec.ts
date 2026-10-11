@@ -124,6 +124,8 @@ describe('indicador', () => {
             assert.ok(!lista.body.linhas.some((l: { id: number }) => l.id === idOutro));
 
             const porId = await api(legado).get(`/api/indicador?id=${id}`);
+            assertStatus(porId, 200);
+            assert.equal(porId.body.linhas.length, 1);
             assert.equal(porId.body.linhas[0].meta_id, meta);
 
             const novoTitulo = uniq('Indicador editado');

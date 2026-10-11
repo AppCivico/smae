@@ -7,6 +7,7 @@ import {
     criarOrgao,
     criarPessoaComPrivilegios,
     criarPessoaSemPrivilegios,
+    prisma,
     Sessao,
 } from '../lib';
 import { criarPortfolio, criarProjeto } from './_helpers';
@@ -82,6 +83,13 @@ describe('projeto-termo-encerramento', () => {
 
         it('exclui o rascunho (204)', async () => {
             assertStatus(await api(gestorA).delete(`/api/projeto/${projetoA.id}/termo-encerramento`), 204);
+            const ativos = await prisma().projetoTermoEncerramento.count({
+                where: { projeto_id: projetoA.id, removido_em: null },
+            });
+            assert.equal(ativos, 0);
+            const lido = await api(gestorA).get(`/api/projeto/${projetoA.id}/termo-encerramento`);
+            assertStatus(lido, 200);
+            assert.notEqual(lido.body.previsao_custo, 1500.5);
         });
     });
 });

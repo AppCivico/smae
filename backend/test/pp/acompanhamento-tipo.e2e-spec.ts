@@ -104,7 +104,9 @@ describe('acompanhamento-tipo', () => {
                 portfolio_id: portfolio.id,
                 responsaveis_no_orgao_gestor: [gestorA.pessoa.id],
             });
-            const tipo = (await api(admin).post('/api/acompanhamento-tipo').send({ nome: uniq('Em uso') })).body;
+            const tipoRes = await api(admin).post('/api/acompanhamento-tipo').send({ nome: uniq('Em uso') });
+            assertStatus(tipoRes, 201);
+            const tipo = tipoRes.body;
             const acomp = await api(gestorA).post(`/api/projeto/${projeto.id}/acompanhamento`).send({
                 data_registro: '2026-04-01',
                 participantes: 'Equipe',

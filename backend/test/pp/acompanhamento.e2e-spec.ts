@@ -39,20 +39,22 @@ describe('projeto-acompanhamento', () => {
         gestorA = await criarPessoaComPrivilegios(['SMAE.gestor_de_projeto'], { orgao_id: orgaoA.id });
         colaboradorFora = await criarPessoaComPrivilegios(['SMAE.colaborador_de_projeto'], { orgao_id: orgaoA.id });
         semPrivilegio = await criarPessoaSemPrivilegios();
-        tipo = (await api(admin).post('/api/acompanhamento-tipo').send({ nome: uniq('Tipo') })).body;
+        const tipoRes = await api(admin).post('/api/acompanhamento-tipo').send({ nome: uniq('Tipo') });
+        assertStatus(tipoRes, 201);
+        tipo = tipoRes.body;
         const portfolio = await criarPortfolio(admin, 'PP', { orgaos: [orgaoA.id] });
         projetoA = await criarProjeto(admin, 'PP', {
             portfolio_id: portfolio.id,
             responsaveis_no_orgao_gestor: [gestorA.pessoa.id],
         });
-        riscoA = (
-            await api(gestorA).post(`/api/projeto/${projetoA.id}/risco`).send({
-                titulo: uniq('Risco'),
-                registrado_em: '2026-03-10',
-                probabilidade: 3,
-                impacto: 3,
-            })
-        ).body;
+        const riscoRes = await api(gestorA).post(`/api/projeto/${projetoA.id}/risco`).send({
+            titulo: uniq('Risco'),
+            registrado_em: '2026-03-10',
+            probabilidade: 3,
+            impacto: 3,
+        });
+        assertStatus(riscoRes, 201);
+        riscoA = riscoRes.body;
     });
 
     describe('autenticação e validação', () => {

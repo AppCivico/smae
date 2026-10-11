@@ -286,9 +286,11 @@ describe('variavel-categorica', () => {
             assertStatus(variavel, 201);
 
             const serie = await api(globalAdmin).get(`/api/variavel/${variavel.body.id}/serie`);
-            const token = serie.body.linhas[0].series.find((s: { referencia: string }) =>
+            assertStatus(serie, 200);
+            const token = serie.body.linhas[0]?.series.find((s: { referencia: string }) =>
                 s.referencia.startsWith('R_')
-            ).referencia;
+            )?.referencia;
+            assert.ok(token, `série sem token R_: ${JSON.stringify(serie.body.linhas)}`);
             assertStatus(
                 await api(globalAdmin)
                     .patch('/api/variavel-serie')

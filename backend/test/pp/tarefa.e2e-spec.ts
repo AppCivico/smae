@@ -121,7 +121,9 @@ describe('projeto-tarefa', () => {
         it('hierarquia do projeto responde com as tarefas', async () => {
             const res = await api(gestorA).get(`/api/projeto/${projetoA.id}/tarefas-hierarquia`);
             assertStatus(res, 200);
-            assert.ok(res.body[raiz.id] !== undefined || res.body[String(raiz.id)] !== undefined);
+            const numRaiz = res.body[raiz.id];
+            assert.ok(numRaiz);
+            assert.ok(res.body[filha.id]?.startsWith(`${numRaiz}.`), `filha fora da raiz: ${JSON.stringify(res.body)}`);
         });
 
         it('edita o nome da tarefa', async () => {

@@ -167,6 +167,7 @@ describe('projeto', () => {
             it('seleção grava selecionado_em, iniciar planejamento gera o código', async () => {
                 assertStatus(await acao(projetoAdmin, 'PP', projetoPrincipal.id, 'selecionar'), 204);
                 const selecionado = await api(projetoAdmin).get(`/api/projeto/${projetoPrincipal.id}`);
+                assertStatus(selecionado, 200);
                 assert.equal(selecionado.body.status, 'Selecionado');
                 const noBanco = await prisma().projeto.findUniqueOrThrow({ where: { id: projetoPrincipal.id } });
                 assert.ok(noBanco.selecionado_em);
@@ -174,6 +175,7 @@ describe('projeto', () => {
 
                 assertStatus(await acao(projetoAdmin, 'PP', projetoPrincipal.id, 'iniciar_planejamento'), 204);
                 const emPlanejamento = await api(projetoAdmin).get(`/api/projeto/${projetoPrincipal.id}`);
+                assertStatus(emPlanejamento, 200);
                 assert.equal(emPlanejamento.body.status, 'EmPlanejamento');
                 assert.ok(typeof emPlanejamento.body.codigo === 'string' && emPlanejamento.body.codigo.length > 0);
             });
@@ -208,6 +210,7 @@ describe('projeto', () => {
                 });
                 assertStatus(criado, 201);
                 const lido = await api(projetoAdmin).get(`/api/projeto/${criado.body.id}`);
+                assertStatus(lido, 200);
                 assert.equal(lido.body.status, 'Registrado');
             });
 
@@ -217,6 +220,7 @@ describe('projeto', () => {
                     200
                 );
                 const lido = await api(projetoAdmin).get(`/api/projeto/${projetoPrincipal.id}`);
+                assertStatus(lido, 200);
                 assert.equal(lido.body.status, 'Registrado');
             });
         });
