@@ -354,7 +354,8 @@ describe('transferencia', () => {
                     (l: { id: number }) => l.id
                 );
             assert.deepEqual(await ids('NaoIncluir'), [ativa]);
-            assert.deepEqual((await ids('Incluir')).sort(), [ativa, cancelar].sort());
+            const numerico = (a: number, b: number) => a - b;
+            assert.deepEqual((await ids('Incluir')).sort(numerico), [ativa, cancelar].sort(numerico));
             assert.deepEqual(await ids('Apenas'), [cancelar]);
 
             const detalhe = await casaCivil(gestor).get(`/api/transferencia/${cancelar}`);
