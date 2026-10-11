@@ -156,10 +156,15 @@ describe('indicador', () => {
                 .send(dadosIndicador({ iniciativa_id: iniciativa }));
             assertStatus(criado, 201);
 
+            const daMetaId = await criarIndicadorLegado(legado, meta);
+
             const daIniciativa = await api(legado).get(`/api/indicador?iniciativa_id=${iniciativa}`);
+            assertStatus(daIniciativa, 200);
             assert.ok(daIniciativa.body.linhas.some((l: { id: number }) => l.id === criado.body.id));
 
             const daMeta = await api(legado).get(`/api/indicador?meta_id=${meta}`);
+            assertStatus(daMeta, 200);
+            assert.ok(daMeta.body.linhas.some((l: { id: number }) => l.id === daMetaId));
             assert.ok(!daMeta.body.linhas.some((l: { id: number }) => l.id === criado.body.id));
         });
 

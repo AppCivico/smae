@@ -44,7 +44,6 @@ async function criarProjeto(tipo: Tipo, portfolioId: number, extra: { orgao_resp
     });
 }
 
-// DateTransform quebra (500) quando periodo_inicio/periodo_fim são omitidos: os testes enviam null
 const semPeriodo = { periodo_inicio: null, periodo_fim: null };
 
 function descreverRelatorio(

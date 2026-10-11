@@ -213,5 +213,17 @@ describe('VariavelGlobalFCController (plano-setorial-formula-composta)', () => {
                 assertStatus(res, 403);
             }
         );
+
+        it(
+            'leitor de metas PS não deveria remover fórmula (somente leitura)',
+            {
+                todo: 'BUG (https://github.com/AppCivico/smae/issues/693): DELETE /api/plano-setorial-formula-composta/:id não tem @Roles, então qualquer usuário logado remove a fórmula',
+            },
+            async () => {
+                const criada = await api(admin).post('/api/plano-setorial-formula-composta').send(novaFormula());
+                assertStatus(criada, 201);
+                assertStatus(await api(leitorPs).delete(`/api/plano-setorial-formula-composta/${criada.body.id}`), 403);
+            }
+        );
     });
 });

@@ -72,7 +72,9 @@ describe('PSMFDashboardController (plano-setorial/panorama)', () => {
     });
 
     it('header de PDM antigo é recusado no painel do plano setorial', async () => {
+        // nenhum privilégio de leitura da rota pertence ao sistema PDM: o header remove todos antes do @TipoPDM
         const res = await api(leitorPs, { sistema: 'PDM' }).get(`${BASE}/quadro-metas`);
         assertStatus(res, 400);
+        assert.match(res.body.message, /Seu usuário não tem mais permissões/);
     });
 });

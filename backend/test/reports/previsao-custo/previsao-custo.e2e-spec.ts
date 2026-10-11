@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { before, describe, it } from 'node:test';
 import {
     api,
@@ -12,6 +13,7 @@ import {
     prisma,
     Sessao,
 } from '../../lib';
+import { SYSTEM_TIMEZONE } from '../../../src/common/date2ymd';
 
 async function criarMetaComPrevisao(pdmId: number, custo: number, ano: number) {
     const meta = await prisma().meta.create({
@@ -82,7 +84,7 @@ describe('relatorio/previsao-custo', () => {
     it('201 em PDM sem previsão devolve linhas vazias', async () => {
         const vazio = await criarPdmAntigo();
 
-        const res = await api(executor).post(url).send({ ano: 2027, pdm_id: vazio.id });
+        const res = await api(administrador).post(url).send({ ano: 2027, pdm_id: vazio.id });
         assertStatus(res, 201);
         assert.deepEqual(res.body, { linhas: [] });
     });
@@ -111,7 +113,7 @@ describe('relatorio/previsao-custo', () => {
     });
 
     it('periodo_ano Corrente dispensa o ano e usa o ano atual', async () => {
-        const anoAtual = new Date().getFullYear();
+        const anoAtual = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
         const pdmCorrente = await criarPdmAntigo();
         const meta = await criarMetaComPrevisao(pdmCorrente.id, 10, anoAtual);
 

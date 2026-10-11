@@ -72,7 +72,6 @@ describe('relatorio/casa-civil-atividades-pendentes', () => {
         return { tipoId, transferencia, tarefa };
     }
 
-    // DateTransform quebra (500) quando data_inicio/data_termino são omitidos: os testes enviam null
     const semDatas = { data_inicio: null, data_termino: null };
 
     const consultar = async (corpo: Record<string, unknown>) => {

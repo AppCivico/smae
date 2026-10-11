@@ -99,11 +99,15 @@ describe('projeto-licoes-aprendidas', () => {
             assertStatus(dup, 400);
             assert.match(dup.body.message, /Valor já em uso/);
 
-            const outra = (await api(gestorA).post(`/api/projeto/${projetoA.id}/licoes-aprendidas`).send(licao({ sequencial: 10 }))).body;
+            const outra = await api(gestorA)
+                .post(`/api/projeto/${projetoA.id}/licoes-aprendidas`)
+                .send(licao({ sequencial: 10 }));
+            assertStatus(outra, 201);
             const edicao = await api(gestorA)
-                .patch(`/api/projeto/${projetoA.id}/licoes-aprendidas/${outra.id}`)
+                .patch(`/api/projeto/${projetoA.id}/licoes-aprendidas/${outra.body.id}`)
                 .send({ sequencial: 1 });
             assertStatus(edicao, 400);
+            assert.match(edicao.body.message, /Valor já em uso/);
         });
     });
 

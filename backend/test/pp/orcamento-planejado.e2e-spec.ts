@@ -33,17 +33,19 @@ describe('projeto-orcamento-planejado', () => {
             orgao_id: orgaoA.id,
         });
         semPrivilegio = await criarPessoaSemPrivilegios();
-        await prisma().dotacaoPlanejado.create({
-            data: {
-                informacao_valida: true,
-                ano_referencia: ANO,
-                mes_utilizado: 1,
-                dotacao: DOTACAO,
-                val_orcado_inicial: 10000,
-                val_orcado_atualizado: 10000,
-                saldo_disponivel: 10000,
-            },
-        });
+        for (const ano_referencia of [ANO, ANO + 1]) {
+            await prisma().dotacaoPlanejado.create({
+                data: {
+                    informacao_valida: true,
+                    ano_referencia,
+                    mes_utilizado: 1,
+                    dotacao: DOTACAO,
+                    val_orcado_inicial: 10000,
+                    val_orcado_atualizado: 10000,
+                    saldo_disponivel: 10000,
+                },
+            });
+        }
         const portfolio = await criarPortfolio(admin, 'PP', { orgaos: [orgaoA.id] });
         projetoA = await criarProjeto(admin, 'PP', {
             portfolio_id: portfolio.id,
@@ -133,7 +135,9 @@ describe('projeto-orcamento-planejado', () => {
         });
 
         it('não altera nem remove orçamento de outro projeto pelo caminho errado (404)', async () => {
-            const criado = await api(orcamentista).post(`/api/projeto/${projetoA.id}/orcamento-planejado`).send(planejado());
+            const criado = await api(orcamentista)
+                .post(`/api/projeto/${projetoA.id}/orcamento-planejado`)
+                .send(planejado({ ano_referencia: ANO + 1 }));
             assertStatus(criado, 201);
             const id = criado.body.id;
 

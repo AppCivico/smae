@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { before, describe, it } from 'node:test';
 import {
     api,
@@ -11,6 +12,7 @@ import {
     Sessao,
     uniq,
 } from '../../lib';
+import { SYSTEM_TIMEZONE } from '../../../src/common/date2ymd';
 
 type Tipo = 'PP' | 'MDO';
 
@@ -134,7 +136,7 @@ function descreverRelatorio(
             const { portfolioId: corrente, projeto: projetoCorrente } = await criarProjetoComPrevisao(
                 tipo,
                 77,
-                new Date().getFullYear()
+                DateTime.local({ zone: SYSTEM_TIMEZONE }).year
             );
 
             const res = await api(executor).post(url).send({ portfolio_id: corrente, periodo_ano: 'Corrente' });

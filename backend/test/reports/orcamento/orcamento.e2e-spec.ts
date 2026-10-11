@@ -103,7 +103,7 @@ describe('relatorio/orcamento', () => {
     it('201 em PDM sem orçamento devolve linhas vazias', async () => {
         const vazio = await criarPdmAntigo();
 
-        const res = await api(executor)
+        const res = await api(administrador)
             .post(url)
             .send({ ...periodo, pdm_id: vazio.id });
         assertStatus(res, 201);
@@ -225,7 +225,7 @@ describe('relatorio/plano-setorial-orcamento', () => {
     it('201 em plano sem orçamento devolve linhas vazias', async () => {
         const vazio = await criarPlanoSetorial();
 
-        const res = await ps(executor)
+        const res = await ps(administrador)
             .post(url)
             .send({ ...periodo, pdm_id: vazio.id });
         assertStatus(res, 201);

@@ -125,8 +125,9 @@ describe('projeto-plano-de-acao', () => {
         });
 
         it('400 ao ler plano pelo caminho de outro projeto', async () => {
-            const res = await api(gestorA).get(`/api/projeto/${projetoB.id}/plano-de-acao/${criado.id}`);
+            const res = await api(admin).get(`/api/projeto/${projetoB.id}/plano-de-acao/${criado.id}`);
             assertStatus(res, 400);
+            assert.match(res.body.message, /^inválido$/);
         });
 
         it('edita a contramedida do próprio plano', async () => {
@@ -142,23 +143,28 @@ describe('projeto-plano-de-acao', () => {
         it(
             'não edita plano de outro projeto usando o caminho de um projeto que o usuário gerencia',
             async () => {
-                const outro = (await api(admin)
+                const outro = await api(admin)
                     .post(`/api/projeto/${projetoB.id}/plano-de-acao`)
-                    .send(plano({ projeto_risco_id: riscoB.id, contramedida: uniq('De B') }))).body;
+                    .send(plano({ projeto_risco_id: riscoB.id, contramedida: uniq('De B') }));
+                assertStatus(outro, 201);
                 const res = await api(gestorA)
-                    .patch(`/api/projeto/${projetoA.id}/plano-de-acao/${outro.id}`)
+                    .patch(`/api/projeto/${projetoA.id}/plano-de-acao/${outro.body.id}`)
                     .send({ contramedida: 'Invadido' });
                 assertStatus(res, 400);
+                assert.match(res.body.message, /Não foi possível encontrar o Plano de Ação/);
             }
         );
 
         it(
             'não remove plano de outro projeto usando o caminho de um projeto que o usuário gerencia',
             async () => {
-                const outro = (await api(admin)
+                const outro = await api(admin)
                     .post(`/api/projeto/${projetoB.id}/plano-de-acao`)
-                    .send(plano({ projeto_risco_id: riscoB.id, contramedida: uniq('De B remover') }))).body;
-                assertStatus(await api(gestorA).delete(`/api/projeto/${projetoA.id}/plano-de-acao/${outro.id}`), 400);
+                    .send(plano({ projeto_risco_id: riscoB.id, contramedida: uniq('De B remover') }));
+                assertStatus(outro, 201);
+                const res = await api(gestorA).delete(`/api/projeto/${projetoA.id}/plano-de-acao/${outro.body.id}`);
+                assertStatus(res, 400);
+                assert.match(res.body.message, /Não foi possível encontrar o Plano de Ação/);
             }
         );
 

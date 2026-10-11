@@ -180,6 +180,10 @@ describe('portfolio', () => {
 
         it('gestor de projeto lê o portfólio pelo GET /:id', { todo: 'BUG: GET /api/portfolio/:id devolve 400 para quem tem SMAE.gestor_de_projeto, apesar de a rota aceitar PROJETO_READONLY_ROLES (findAll exige administrar_portfolios_no_orgao quando listaParaProjetos=false) https://github.com/AppCivico/smae/issues/690' }, async () => {
             const gestor = await criarPessoaComPrivilegios(['SMAE.gestor_de_projeto'], { orgao_id: orgaoA.id });
+            await criarProjeto(soProjeto, 'PP', {
+                portfolio_id: compartilhado.id,
+                responsaveis_no_orgao_gestor: [gestor.pessoa.id],
+            });
             assertStatus(await api(gestor).get(`/api/portfolio/${compartilhado.id}`), 200);
         });
     });

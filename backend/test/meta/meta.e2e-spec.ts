@@ -224,12 +224,20 @@ describe('meta', () => {
         });
 
         it('400 sem codigo, titulo ou pdm_id', async () => {
-            assertStatus(
-                await api(ps, { sistema: 'PlanoSetorial' })
-                    .post('/api/plano-setorial-meta')
-                    .send({ codigo: uniq(), pdm_id: psPdm.id }),
-                400
-            );
+            const enviar = (corpo: Record<string, unknown>) =>
+                api(ps, { sistema: 'PlanoSetorial' }).post('/api/plano-setorial-meta').send(corpo);
+
+            const semCodigo = await enviar({ titulo: uniq(), pdm_id: psPdm.id });
+            assertStatus(semCodigo, 400);
+            assert.match(String(semCodigo.body.message), /código: Precisa ser alfanumérico/);
+
+            const semTitulo = await enviar({ codigo: uniq(), pdm_id: psPdm.id });
+            assertStatus(semTitulo, 400);
+            assert.match(String(semTitulo.body.message), /título: Precisa ser alfanumérico/);
+
+            const semPdm = await enviar({ codigo: uniq(), titulo: uniq() });
+            assertStatus(semPdm, 400);
+            assert.match(String(semPdm.body.message), /pdm_id precisa ser um número/);
         });
 
         it('cria, consulta, edita e remove uma meta de PS sem orgãos participantes', async () => {
@@ -298,7 +306,10 @@ describe('meta', () => {
                 .send({ codigo: uniq(), titulo: uniq(), pdm_id: pdmLegado.id });
             assertStatus(criarNoLegado, 404);
 
+            assertStatus(await api(legado).get(`/api/meta/${metaPS}`), 404);
             const naLista = await api(legado).get(`/api/meta?pdm_id=${pdmLegado.id}`);
+            assertStatus(naLista, 200);
+            assert.ok(naLista.body.linhas.some((l: { id: number }) => l.id === metaLegado));
             assert.ok(!naLista.body.linhas.some((l: { id: number }) => l.id === metaPS));
         });
     });

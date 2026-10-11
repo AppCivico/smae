@@ -107,7 +107,7 @@ describe('relatorio/indicadores', () => {
     });
 
     it('201 em PDM sem metas devolve linhas e regioes vazias', async () => {
-        const res = await api(executor)
+        const res = await api(administrador)
             .post(url)
             .send(params({ pdm_id: pdmVazioId }));
         assertStatus(res, 201);
@@ -184,7 +184,8 @@ describe('relatorio/indicadores', () => {
             const res = await api(administrador)
                 .post(url)
                 .send(params({ tipo: 'Geral' }));
-            assert.ok(res.status === 201 || res.status === 400);
+            assertStatus(res, 400);
+            assert.match(res.body.message, /Combinação de tipo Geral e periodo Anual não suportada/);
         }
     );
 

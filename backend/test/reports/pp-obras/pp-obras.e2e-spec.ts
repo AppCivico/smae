@@ -68,7 +68,6 @@ describe('relatorio/obras', () => {
     }
 
     const url = '/api/relatorio/obras';
-    // DateTransform quebra (500) quando periodo é omitido: os testes enviam null
     const filtro = (extra: Record<string, unknown> = {}) => ({ portfolio_id: portfolioId, periodo: null, ...extra });
     const obraIds = (res: { body: { linhas: { obra_id: number }[] } }) => res.body.linhas.map((l) => l.obra_id);
 

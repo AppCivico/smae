@@ -489,7 +489,10 @@ describe('variavel', () => {
                 );
                 const original = await api(admin).get(`/api/variavel/${variavel}/periodos-validos`);
                 assertStatus(copia, 200);
-                assert.deepEqual(copia.body.periodos_validos, original.body.periodos_validos);
+                assertStatus(original, 200);
+                const esperado = ['2024-01-01', '2024-02-01', '2024-03-01'];
+                assert.deepEqual(original.body.periodos_validos, esperado);
+                assert.deepEqual(copia.body.periodos_validos, esperado);
 
                 const serie = await api(admin).get(`/api/plano-setorial-indicador-variavel/${variavel}/serie`);
                 assertStatus(serie, 200);

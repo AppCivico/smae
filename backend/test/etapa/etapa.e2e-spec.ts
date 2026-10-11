@@ -12,14 +12,7 @@ import {
     Sessao,
     uniq,
 } from '../lib';
-import {
-    criarCronogramaLegado,
-    criarMetaLegado,
-    criarMetaPS,
-    gestorLegado,
-    gestorPS,
-    liberaCronogramas,
-} from '../pdm/_helpers';
+import { criarCronogramaLegado, criarMetaLegado, criarMetaPS, gestorLegado, gestorPS } from '../pdm/_helpers';
 
 async function criarEtapa(g: Sessao, cronograma_id: number, dados: Record<string, unknown> = {}): Promise<number> {
     const res = await api(g)
@@ -136,7 +129,6 @@ describe('etapa', () => {
         it('cria e edita etapa de PS, e a rota de PDM legado não alcança a etapa de PS', async () => {
             const psPdm = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
             const metaPS = await criarMetaPS(ps, psPdm.id, 'PlanoSetorial');
-            await liberaCronogramas();
             const cronogramaPS = await api(ps, { sistema: 'PlanoSetorial' })
                 .post('/api/plano-setorial-cronograma')
                 .send({ meta_id: metaPS, regionalizavel: false });
@@ -157,6 +149,7 @@ describe('etapa', () => {
 
             const pelaRotaPDM = await api(legado).patch(`/api/etapa/${criada.body.id}`).send({ titulo: uniq() });
             assertStatus(pelaRotaPDM, 400);
+            assert.match(pelaRotaPDM.body.message, /Meta não pode ser encontrada para etapa do cronograma/);
         });
     });
 });

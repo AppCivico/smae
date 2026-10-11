@@ -119,7 +119,9 @@ describe('VariavelCicloGlobalController (variavel ciclo)', () => {
                 .get('/api/plano-setorial-variavel-ciclo')
                 .query({ referencia: dataReferencia, fase: 'Preenchimento' });
             assertStatus(res, 200);
-            assert.ok(Array.isArray(res.body.linhas));
+            const criada = res.body.linhas.find((l: { id: number }) => l.id === variavelId);
+            assert.ok(criada, 'variável criada não aparece no ciclo');
+            assert.equal(criada.fase, 'Preenchimento');
             for (const linha of res.body.linhas) {
                 assert.equal(typeof linha.id, 'number');
                 assert.equal(typeof linha.pode_editar, 'boolean');
