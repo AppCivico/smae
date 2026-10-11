@@ -45,7 +45,8 @@ describe('distribuicao-recurso/:id/status (histórico de status)', () => {
         });
 
         it('403 sem CadastroDistribuicaoStatus.listar / inserir / editar / remover', async () => {
-            const { id } = await criarTransferenciaComOrcamento(gestor);
+            const { inicial } = await criarTransferenciaComOrcamento(gestor);
+            const id = inicial.id;
             const lista = await casaCivil(semPrivilegio).get(`/api/distribuicao-recurso/${id}/status`);
             assertStatus(lista, 403);
             assert.match(lista.body.message, /CadastroDistribuicaoStatus\.listar/);
@@ -58,7 +59,8 @@ describe('distribuicao-recurso/:id/status (histórico de status)', () => {
 
     describe('validação', () => {
         it('400 sem status_id nem status_base_id, e 400 com os dois', async () => {
-            const { id } = await criarTransferenciaComOrcamento(gestor);
+            const { inicial } = await criarTransferenciaComOrcamento(gestor);
+            const id = inicial.id;
             const nenhum = await casaCivil(gestor).post(`/api/distribuicao-recurso/${id}/status`).send(corpo());
             assertStatus(nenhum, 400);
             assert.match(nenhum.body.message, /É necessário enviar um ID de status/);
@@ -71,7 +73,8 @@ describe('distribuicao-recurso/:id/status (histórico de status)', () => {
         });
 
         it('400 sem motivo', async () => {
-            const { id } = await criarTransferenciaComOrcamento(gestor);
+            const { inicial } = await criarTransferenciaComOrcamento(gestor);
+            const id = inicial.id;
             const semMotivo = corpo({ status_base_id: (await buscarStatusBase('Em Andamento')).id });
             delete (semMotivo as Record<string, unknown>).motivo;
             assertStatus(await casaCivil(gestor).post(`/api/distribuicao-recurso/${id}/status`).send(semMotivo), 400);
