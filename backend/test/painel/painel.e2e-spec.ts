@@ -131,7 +131,9 @@ describe('painel (módulo PDM)', () => {
                 200
             );
             assertStatus(await como(adminNoPdm).delete(`/api/painel/${id}`), 202);
-            assertStatus(await como(adminNoPdm).get(`/api/painel/${id}`), 403);
+            const removido = await prisma().painel.findUniqueOrThrow({ where: { id } });
+            assert.ok(removido.removido_em);
+            assert.equal(removido.removido_por, adminNoPdm.pessoa.id);
         });
 
         it('CadastroPainel pertence ao sistema PDM: com header Projetos a escrita dá 403', async () => {

@@ -372,7 +372,7 @@ describe('transferencia', () => {
             assert.match(res.body.message, /cancelada não permite alteração do tipo/);
         });
 
-        it('CONFIRMAR PATCH só com objeto em transferência ativa', { todo: 'CONFIRMAR (https://github.com/AppCivico/smae/issues/689): PATCH sem tipo_id/esfera responde 400 "Esfera da transferência e esfera do tipo devem ser iguais" (updateTransferencia compara com undefined); se o contrato é PATCH parcial, é bug' }, async () => {
+        it('BUG PATCH só com objeto em transferência ativa', { todo: 'BUG (https://github.com/AppCivico/smae/issues/689): PATCH sem tipo_id/esfera responde 400 "Esfera da transferência e esfera do tipo devem ser iguais" (updateTransferencia compara com undefined); se o contrato é PATCH parcial, é bug' }, async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await casaCivil(gestor).patch(`/api/transferencia/${id}`).send({ objeto: uniq('objeto') }), 200);
         });

@@ -60,7 +60,8 @@ describe('distribuicao-recurso', () => {
             assertStatus(criar, 403);
             assert.match(criar.body.message, /CadastroTransferencia\.inserir/);
 
-            const { id } = await transferenciaComOrcamento(gestor);
+            const { inicial } = await transferenciaComOrcamento(gestor);
+            const id = inicial.id;
             assertStatus(await casaCivil(semPrivilegio).get(`/api/distribuicao-recurso/${id}`), 403);
             assertStatus(await casaCivil(semPrivilegio).patch(`/api/distribuicao-recurso/${id}`).send({}), 403);
             assertStatus(await casaCivil(semPrivilegio).delete(`/api/distribuicao-recurso/${id}`), 403);
@@ -98,8 +99,11 @@ describe('distribuicao-recurso', () => {
 
         it('400 quando valores monetários não são string', async () => {
             const { id } = await transferenciaComOrcamento(gestor);
-            await cancelarDistribuicao(gestor, (await distribuicaoInicial(id)).id);
-            assertStatus(await criarDistribuicao(gestor, id, { custeio: 100, investimento: 0, contrapartida: 0 }, { valor: 100 }), 400);
+            assertStatus(await cancelarDistribuicao(gestor, (await distribuicaoInicial(id)).id), 201);
+            const res = await criarDistribuicao(gestor, id, { custeio: 100, investimento: 0, contrapartida: 0 }, { valor: 100 });
+            assertStatus(res, 400);
+            assert.equal(res.body.message.length, 1);
+            assert.match(res.body.message[0], /Precisa ser um número com até 35 dígitos/);
         });
 
         it('400 quando repasse diferente de custeio + investimento', async () => {

@@ -148,10 +148,14 @@ describe('bancada', () => {
 
     it('PATCH recusa sigla já usada por outra bancada', async () => {
         const base = await api(gestor).post('/api/bancada').send(novaBancada());
+        assertStatus(base, 201);
         const outra = await api(gestor).post('/api/bancada').send(novaBancada());
+        assertStatus(outra, 201);
         const siglaBase = (await api(gestor).get(`/api/bancada/${base.body.id}`)).body.sigla;
 
-        assertStatus(await api(gestor).patch(`/api/bancada/${outra.body.id}`).send({ sigla: siglaBase }), 400);
+        const res = await api(gestor).patch(`/api/bancada/${outra.body.id}`).send({ sigla: siglaBase });
+        assertStatus(res, 400);
+        assert.match(res.body.message, /Sigla igual ou semelhante/);
     });
 
     it('PATCH com a mesma quantidade de partidos aplica a troca', async () => {

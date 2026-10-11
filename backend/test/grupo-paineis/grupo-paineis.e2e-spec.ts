@@ -220,7 +220,10 @@ describe('grupo-paineis (módulo PDM)', () => {
             assert.match(dup.body.message, /igual ou semelhante/);
 
             const outro = await como(gestor).post('/api/grupo-paineis').send(novoGrupo());
-            assertStatus(await como(gestor).patch(`/api/grupo-paineis/${outro.body.id}`).send({ nome }), 400);
+            assertStatus(outro, 201);
+            const edicao = await como(gestor).patch(`/api/grupo-paineis/${outro.body.id}`).send({ nome });
+            assertStatus(edicao, 400);
+            assert.match(edicao.body.message, /igual ou semelhante/);
         });
 
         it(

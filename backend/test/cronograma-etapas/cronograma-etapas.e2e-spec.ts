@@ -17,7 +17,6 @@ import {
     criarMetaPS,
     gestorLegado,
     gestorPS,
-    liberaCronogramas,
 } from '../pdm/_helpers';
 
 async function criarEtapa(g: Sessao, cronograma_id: number, dados: Record<string, unknown> = {}): Promise<number> {
@@ -124,7 +123,6 @@ describe('cronograma-etapa', () => {
         it('lista etapas de PS e recusa a listagem de PS para cronograma de PDM legado', async () => {
             const psPdm = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
             const metaPS = await criarMetaPS(ps, psPdm.id, 'PlanoSetorial');
-            await liberaCronogramas();
             const cronogramaPS = await api(ps, { sistema: 'PlanoSetorial' })
                 .post('/api/plano-setorial-cronograma')
                 .send({ meta_id: metaPS, regionalizavel: false });

@@ -7,6 +7,7 @@ import {
     criarOrgao,
     criarPessoaComPrivilegios,
     criarPessoaSemPrivilegios,
+    prisma,
     Sessao,
     uniq,
 } from '../lib';
@@ -82,6 +83,7 @@ describe('atualizacao-em-lote', () => {
                 .get('/api/atualizacao-em-lote')
                 .query({ tipo: 'ProjetoMDO' });
             assertStatus(res, 400);
+            assert.match(res.body.message, /sem permissão para acessar atualizações em lote do tipo ProjetoMDO/);
         });
     });
 
@@ -203,11 +205,28 @@ describe('atualizacao-em-lote', () => {
         });
 
         it('filtra por status e não devolve atualizações de outro tipo', async () => {
+            const linha = (tipo: 'ProjetoPP' | 'ProjetoMDO', status: 'Concluido' | 'Pendente') => ({
+                tipo,
+                status,
+                target_ids: [930001],
+                operacao: [],
+                n_total: 1,
+                modulo_sistema: SISTEMA_PP,
+                criado_por_id: admin.pessoa.id,
+                orgao_id: admin.pessoa.orgao_id,
+            });
+            const concluida = await prisma().atualizacaoEmLote.create({ data: linha('ProjetoPP', 'Concluido') });
+            const pendente = await prisma().atualizacaoEmLote.create({ data: linha('ProjetoPP', 'Pendente') });
+            const outroTipo = await prisma().atualizacaoEmLote.create({ data: linha('ProjetoMDO', 'Concluido') });
+
             const res = await cliente()
                 .get('/api/atualizacao-em-lote')
                 .query({ tipo: 'ProjetoPP', status: 'Concluido' });
             assertStatus(res, 200);
-            assert.equal(res.body.total_registros, 0);
+            const ids = res.body.linhas.map((l: { id: number }) => l.id);
+            assert.ok(ids.includes(concluida.id));
+            assert.equal(ids.includes(pendente.id), false);
+            assert.equal(ids.includes(outroTipo.id), false);
         });
 
         it('400 ao ver atualização de outro órgão (administrador no órgão)', async () => {

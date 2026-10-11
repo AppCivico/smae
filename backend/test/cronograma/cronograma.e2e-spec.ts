@@ -18,7 +18,6 @@ import {
     criarMetaPS,
     gestorLegado,
     gestorPS,
-    liberaCronogramas,
 } from '../pdm/_helpers';
 
 describe('cronograma', () => {
@@ -73,7 +72,6 @@ describe('cronograma', () => {
         it('cria, lista pela meta, edita e remove', async () => {
             const meta = await criarMetaLegado(legado, pdm.id);
             const descricao = uniq('Cronograma CRUD');
-            await liberaCronogramas();
             const criado = await api(legado)
                 .post('/api/cronograma')
                 .send({ meta_id: meta, regionalizavel: true, descricao, observacao: 'obs E2E' });
@@ -101,7 +99,6 @@ describe('cronograma', () => {
         it('cronograma de iniciativa não aparece na listagem da meta', async () => {
             const meta = await criarMetaLegado(legado, pdm.id);
             const iniciativa = await criarIniciativaLegado(legado, meta);
-            await liberaCronogramas();
             const criado = await api(legado)
                 .post('/api/cronograma')
                 .send({ iniciativa_id: iniciativa, regionalizavel: false });
@@ -115,20 +112,9 @@ describe('cronograma', () => {
         });
 
         it('201 ao criar um segundo cronograma com outro ativo', async () => {
-            await liberaCronogramas();
             const meta = await criarMetaLegado(legado, pdm.id);
-            try {
-                assertStatus(
-                    await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }),
-                    201
-                );
-                assertStatus(
-                    await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }),
-                    201
-                );
-            } finally {
-                await liberaCronogramas();
-            }
+            assertStatus(await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }), 201);
+            assertStatus(await api(legado).post('/api/cronograma').send({ meta_id: meta, regionalizavel: false }), 201);
         });
 
         it('400 quando a listagem passa de 10 cronogramas', async () => {
@@ -154,7 +140,6 @@ describe('cronograma', () => {
             const metaPS = await criarMetaPS(ps, psPdm.id, 'PlanoSetorial');
             const cliente = api(ps, { sistema: 'PlanoSetorial' });
 
-            await liberaCronogramas();
             const criado = await cliente
                 .post('/api/plano-setorial-cronograma')
                 .send({ meta_id: metaPS, regionalizavel: false, descricao: uniq('Cronograma PS') });

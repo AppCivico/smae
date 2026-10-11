@@ -150,15 +150,18 @@ describe('equipe-responsavel', () => {
     });
 
     it('filtra a listagem por órgão', async () => {
-        assertStatus(
-            await api(admin)
-                .post('/api/equipe-responsavel')
-                .send(novaEquipe({ orgao_id: orgaoB })),
-            201
-        );
+        const deA = await api(admin)
+            .post('/api/equipe-responsavel')
+            .send(novaEquipe({ orgao_id: orgaoA }));
+        assertStatus(deA, 201);
+        const deB = await api(admin)
+            .post('/api/equipe-responsavel')
+            .send(novaEquipe({ orgao_id: orgaoB }));
+        assertStatus(deB, 201);
 
         const doA = await listar(`?orgao_id=${orgaoA}`);
-        assert.ok(doA.length > 0);
+        assert.ok(doA.some((l) => l.id === deA.body.id));
+        assert.ok(!doA.some((l) => l.id === deB.body.id));
         assert.ok(doA.every((l) => l.orgao_id === orgaoA));
     });
 

@@ -71,6 +71,7 @@ describe('transferencia-tipo', () => {
 
             const remocao = await casaCivil(gestor).delete(`/api/transferencia-tipo/${criado.body.id}`);
             assertStatus(remocao, 400);
+            assert.match(remocao.body.message, /já está sendo usado em alguma transferência/);
         });
     });
 });
