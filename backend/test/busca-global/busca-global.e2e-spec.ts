@@ -4,9 +4,12 @@ import {
     assert,
     assertStatus,
     bootApp,
+    criarPdmAntigo,
     criarPessoaComPrivilegios,
     criarPessoaSemPrivilegios,
+    prisma,
     Sessao,
+    uniq,
 } from '../lib';
 
 describe('busca-global', () => {
@@ -69,13 +72,36 @@ describe('busca-global', () => {
     });
 
     it('201 por ponto com a tabela unificada: cabeçalhos e linhas', async () => {
+        const lat = -23.5505;
+        const lon = -46.6333;
+        const pdm = await criarPdmAntigo();
+        const meta = await prisma().meta.create({
+            data: { pdm_id: pdm.id, status: 'Ativo', codigo: uniq('M'), titulo: uniq('Meta geo') },
+        });
+        const geo = await prisma().geoLocalizacao.create({
+            data: {
+                tipo: 'Endereco',
+                endereco_exibicao: uniq('Rua Teste'),
+                geom_geojson: { type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] } },
+                metadata: {},
+                lat,
+                lon,
+            },
+        });
+        await prisma().geoLocalizacaoReferencia.create({
+            data: { geo_localizacao_id: geo.id, tipo: 'Endereco', meta_id: meta.id },
+        });
+
         const res = await api(consulta)
             .post('/api/busca-global/proximidades-table')
-            .send({ lat: -23.5505, lon: -46.6333, raio: 500 });
+            .send({ lat: lat + 0.001, lon, raio: 500 });
         assertStatus(res, 201);
         assert.equal(res.body.headers.mainColumn, 'Endereço');
         assert.equal(res.body.headers.col3, 'Órgão');
-        assert.ok(Array.isArray(res.body.rows));
+        assert.ok(res.body.rows.length > 0);
+        const daMeta = res.body.rows.find((l: { row_id: string }) => l.row_id === `meta-${meta.id}`);
+        assert.ok(daMeta, 'meta georreferenciada não veio na tabela');
+        assert.equal(daMeta.col2, meta.titulo);
         for (const linha of res.body.rows) {
             assert.ok(linha.row_id);
             assert.ok(Array.isArray(linha.dynamic_metadados));

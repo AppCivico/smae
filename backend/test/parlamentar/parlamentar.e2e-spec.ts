@@ -247,11 +247,13 @@ describe('parlamentar', () => {
             const dono = await parlamentarComMandato();
             const outro = await parlamentarComMandato();
             const membro = await api(gestor).post(`/api/parlamentar/${dono.id}/equipe`).send(membroNovo());
+            assertStatus(membro, 201);
 
-            assertStatus(
-                await api(gestor).patch(`/api/parlamentar/${outro.id}/equipe/${membro.body.id}`).send({ nome: uniq() }),
-                400
-            );
+            const res = await api(gestor)
+                .patch(`/api/parlamentar/${outro.id}/equipe/${membro.body.id}`)
+                .send({ nome: uniq() });
+            assertStatus(res, 400);
+            assert.match(res.body.message, /Membro de equipe inválido/);
         });
 
         it('mandato: edita campos do mandato', async () => {

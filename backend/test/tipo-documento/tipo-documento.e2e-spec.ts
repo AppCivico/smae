@@ -144,10 +144,11 @@ describe('tipo-documento', () => {
 
             const outro = await api(gestor).post('/api/tipo-documento').send(novo());
             assertStatus(outro, 201);
-            assertStatus(
-                await api(gestor).patch(`/api/tipo-documento/${outro.body.id}`).send({ descricao: base.descricao }),
-                400
-            );
+            const edicao = await api(gestor)
+                .patch(`/api/tipo-documento/${outro.body.id}`)
+                .send({ descricao: base.descricao });
+            assertStatus(edicao, 400);
+            assert.match(edicao.body.message, /Descrição igual ou semelhante/);
         });
 
         it('400 ao remover tipo usado por arquivo de PDM, liberado depois que o vínculo sai', async () => {

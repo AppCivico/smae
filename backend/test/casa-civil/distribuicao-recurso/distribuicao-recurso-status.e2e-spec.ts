@@ -54,6 +54,17 @@ describe('distribuicao-recurso/:id/status (histórico de status)', () => {
             const criar = await casaCivil(leitor).post(`/api/distribuicao-recurso/${id}/status`).send(corpo());
             assertStatus(criar, 403);
             assert.match(criar.body.message, /CadastroDistribuicaoStatus\.inserir/);
+
+            const status = await registrarStatus(gestor, id, (await buscarStatusBase('Em Andamento')).id);
+            assertStatus(status, 201);
+            const rota = `/api/distribuicao-recurso/${id}/status/${status.body.id}`;
+            const editar = await casaCivil(leitor).patch(rota).send(corpo({ motivo: 'Outro motivo' }));
+            assertStatus(editar, 403);
+            assert.match(editar.body.message, /CadastroDistribuicaoStatus\.editar/);
+
+            const remover = await casaCivil(leitor).delete(rota);
+            assertStatus(remover, 403);
+            assert.match(remover.body.message, /CadastroDistribuicaoStatus\.remover/);
         });
     });
 

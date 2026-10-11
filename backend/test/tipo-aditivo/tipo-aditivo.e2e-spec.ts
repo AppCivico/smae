@@ -206,6 +206,7 @@ describe('tipo-aditivo', () => {
 
             const trocaTipo = await api(gestor).patch(`/api/tipo-aditivo/${id}`).send({ tipo: 'Reajuste' });
             assertStatus(trocaTipo, 400);
+            assert.match(trocaTipo.body.message, /Não é possível alterar os checkboxes ou o tipo/);
 
             const nome = uniq('Renomeado');
             assertStatus(await api(gestor).patch(`/api/tipo-aditivo/${id}`).send({ nome }), 200);

@@ -145,16 +145,21 @@ describe('geo-busca', () => {
             const metaRemovida = await prisma().meta.create({
                 data: { pdm_id: pdm.id, status: 'Ativo', codigo: uniq('MR'), titulo: uniq('Removida') },
             });
+            const metaAtiva = await prisma().meta.create({
+                data: { pdm_id: pdm.id, status: 'Ativo', codigo: uniq('MA'), titulo: uniq('Ativa') },
+            });
             await prisma().geoLocalizacaoReferencia.createMany({
                 data: [
                     { geo_localizacao_id: geo.id, tipo: 'Endereco', meta_id: metaInativa.id },
                     { geo_localizacao_id: geo.id, tipo: 'Endereco', meta_id: metaRemovida.id, removido_em: new Date() },
+                    { geo_localizacao_id: geo.id, tipo: 'Endereco', meta_id: metaAtiva.id },
                 ],
             });
 
             const res = await buscar({ lat, lon, raio_km: 1 });
             assertStatus(res, 201);
             const ids = res.body.metas.map((m: Entidade) => m.id);
+            assert.ok(ids.includes(metaAtiva.id), 'meta ativa no mesmo endereço não veio na busca');
             assert.equal(ids.includes(metaInativa.id), false);
             assert.equal(ids.includes(metaRemovida.id), false);
         });

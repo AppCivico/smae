@@ -112,7 +112,10 @@ describe('grupo-painel-externo (exige smae-sistemas nas escritas)', () => {
             assert.match(dup.body.message, /Título já está em uso/);
 
             const outro = await como(admin).post('/api/grupo-painel-externo').send(novoGrupo());
-            assertStatus(await como(admin).patch(`/api/grupo-painel-externo/${outro.body.id}`).send({ titulo }), 400);
+            assertStatus(outro, 201);
+            const edicao = await como(admin).patch(`/api/grupo-painel-externo/${outro.body.id}`).send({ titulo });
+            assertStatus(edicao, 400);
+            assert.match(edicao.body.message, /Título já está em uso/);
         });
 
         it('400 com órgão inexistente', async () => {

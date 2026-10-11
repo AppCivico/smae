@@ -174,8 +174,10 @@ describe('painel-externo (exige smae-sistemas nas escritas)', () => {
             assert.match(res.body.message, /igual ou semelhante/);
 
             const outro = await como(gestor).post('/api/painel-externo').send(novoPainel());
+            assertStatus(outro, 201);
             const edicao = await como(gestor).patch(`/api/painel-externo/${outro.body.id}`).send({ titulo });
             assertStatus(edicao, 400);
+            assert.match(edicao.body.message, /igual ou semelhante/);
         });
 
         it('vincula e desvincula grupos pelo PATCH e some do grupo ao remover o painel', async () => {
