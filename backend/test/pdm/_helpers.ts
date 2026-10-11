@@ -1,5 +1,5 @@
 import { ListaDePrivilegios } from '../../src/common/ListaDePrivilegios';
-import { api, assertStatus, criarPessoaComPrivilegios, prisma, Sessao, uniq } from '../lib';
+import { api, assertStatus, criarPessoaComPrivilegios, Sessao, uniq } from '../lib';
 
 const PRIVILEGIOS_LEGADO: ListaDePrivilegios[] = [
     'CadastroMeta.administrador_no_pdm',
@@ -103,17 +103,11 @@ export async function criarIndicadorLegado(
     return res.body.id;
 }
 
-/** Só pode haver um cronograma com ativo = true no banco (índice único parcial cronograma_ativo_idx). */
-export async function liberaCronogramas(): Promise<void> {
-    await prisma().cronograma.updateMany({ where: { ativo: true }, data: { ativo: false } });
-}
-
 export async function criarCronogramaLegado(
     g: Sessao,
     meta_id: number,
     dados: Record<string, unknown> = {}
 ): Promise<number> {
-    await liberaCronogramas();
     const res = await api(g)
         .post('/api/cronograma')
         .send({ meta_id, regionalizavel: false, ...dados });

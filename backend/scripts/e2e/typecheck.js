@@ -29,6 +29,12 @@ for (const line of (r.stdout + r.stderr).split('\n')) {
     if (m) diags.push({ file: m[1], code: m[4], text: line });
     else if (diags.length && line.startsWith(' ')) diags[diags.length - 1].text += '\n' + line;
 }
+const saida = r.stdout + r.stderr;
+const globais = saida.split('\n').filter((l) => /^error TS\d+/.test(l));
+if (r.signal || globais.length || (r.status !== 0 && !diags.length)) {
+    console.error(saida.trim() || `tsgo terminou com status ${r.status} sinal ${r.signal}`);
+    process.exit(1);
+}
 const escopo = diags.filter((d) => withTests || !d.file.startsWith('test/'));
 
 const contagem = {};

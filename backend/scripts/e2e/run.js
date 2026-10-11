@@ -10,7 +10,7 @@ const { Client } = require('pg');
 
 const ROOT = path.resolve(__dirname, '../..');
 const OUT_ROOT = path.join(ROOT, 'dist-test');
-const RUN_ID = String(process.pid);
+const RUN_ID = String(crypto.randomInt(1, 2 ** 31 - 1));
 const OUT_DIR = path.join(OUT_ROOT, `run-${RUN_ID}`);
 const PRELOAD = path.join(__dirname, 'preload.js');
 const TSGO = path.join(ROOT, 'node_modules/.bin/tsgo');
@@ -18,14 +18,19 @@ const TSGO = path.join(ROOT, 'node_modules/.bin/tsgo');
 const BASE_PREFIX = 'smae_test_base_';
 const CLONE_PREFIX = 'smae_test_run';
 const LOCK_KEY = 772026001;
+// Session locks held for the whole run: one per run id, and a shared one on the template in use.
+const RUN_LOCK_NS = 772026002;
+const BASE_LOCK_NS = 772026003;
 const KEEP_BASES = 3;
 // The .env points some of these at real homol services; tests must never reach them.
 const EXTERNAL_SERVICES = [
     'S3_HOST',
-    'SEI_HOST',
+    'SEI_API_PREFIX',
     'SOF_API_PREFIX',
     'GEO_API_PREFIX',
     'TRANSFEREGOV_API_PREFIX',
+    'TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX',
+    'TRANSFEREGOV_API_ESPECIAIS_PREFIX',
     'GOTENBERG_URL',
 ];
 const SAFE_DB = /^smae_test_(base_[0-9a-f]{12}$|build\d+$|run\d+_)/;
@@ -33,11 +38,10 @@ const SAFE_DB = /^smae_test_(base_[0-9a-f]{12}$|build\d+$|run\d+_)/;
 const fileEnv = dotenv.parse(fs.existsSync(path.join(ROOT, '.env')) ? fs.readFileSync(path.join(ROOT, '.env')) : '');
 
 function pgUrl(dbName) {
-    const raw = process.env.E2E_PG_URL || fileEnv.DATABASE_URL || process.env.DATABASE_URL;
+    const raw = process.env.E2E_PG_URL || process.env.DATABASE_URL || fileEnv.DATABASE_URL;
     if (!raw) throw new Error('E2E_PG_URL (ou DATABASE_URL no .env) precisa apontar para um servidor postgres');
     const url = new URL(raw);
     url.pathname = '/' + dbName;
-    url.search = '';
     return url.toString();
 }
 
@@ -83,14 +87,7 @@ function resolveSpecs(args) {
     return [...specs].sort().map((s) => path.relative(ROOT, s));
 }
 
-function isAlive(pid) {
-    try {
-        process.kill(pid, 0);
-        return true;
-    } catch (e) {
-        return e.code === 'EPERM';
-    }
-}
+const baseLockId = (name) => parseInt(name.slice(BASE_PREFIX.length, BASE_PREFIX.length + 7), 16);
 
 function parseDiagnostics(output) {
     const diags = [];
@@ -111,6 +108,11 @@ function compile(specs, allSelected) {
     });
     if (r.error) throw r.error;
     const diags = parseDiagnostics(r.stdout + r.stderr);
+    const globais = (r.stdout + r.stderr).split('\n').filter((l) => /^error TS\d+/.test(l));
+    if (r.signal || globais.length || (r.status !== 0 && !diags.length)) {
+        console.error((r.stdout + r.stderr).trim() || `tsgo terminou com status ${r.status} sinal ${r.signal}`);
+        return false;
+    }
     const relevant = (d) =>
         d.file.startsWith('test/lib/') || specs.includes(d.file) || (allSelected && d.file.startsWith('test/'));
     const blocking = diags.filter(relevant);
@@ -207,13 +209,15 @@ async function syncSequences(dbName) {
     }
 }
 
-async function ensureBaseDb(force) {
+async function ensureBaseDb(c, force) {
     const baseDb = BASE_PREFIX + seedHash().slice(0, 12);
-    const c = await adminClient();
     try {
         await c.query('SELECT pg_advisory_lock($1)', [LOCK_KEY]);
         const r = await c.query('SELECT 1 FROM pg_database WHERE datname = $1', [baseDb]);
-        if (r.rowCount && !force) return baseDb;
+        if (r.rowCount && !force) {
+            await c.query('SELECT pg_advisory_lock_shared($1, $2)', [BASE_LOCK_NS, baseLockId(baseDb)]);
+            return baseDb;
+        }
 
         console.log(`[e2e] construindo ${baseDb} (migrations, manual-copy, seed ou este script mudaram)`);
         const t0 = Date.now();
@@ -252,6 +256,7 @@ async function ensureBaseDb(force) {
         await c.query('SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1', [buildDb]);
         await c.query(`ALTER DATABASE "${buildDb}" RENAME TO "${baseDb}"`);
         await c.query(`ALTER DATABASE "${baseDb}" WITH IS_TEMPLATE true ALLOW_CONNECTIONS false`);
+        await c.query('SELECT pg_advisory_lock_shared($1, $2)', [BASE_LOCK_NS, baseLockId(baseDb)]);
         fs.rmSync(logFile, { force: true });
         console.log(`[e2e] ${baseDb} pronto em ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
@@ -260,29 +265,50 @@ async function ensureBaseDb(force) {
              ORDER BY oid DESC OFFSET $2`,
             [baseDb, KEEP_BASES - 1]
         );
-        for (const { datname } of antigos.rows) if (SAFE_DB.test(datname)) await dropDb(c, datname);
+        for (const { datname } of antigos.rows) {
+            if (!SAFE_DB.test(datname)) continue;
+            const id = baseLockId(datname);
+            const livre = await c.query('SELECT pg_try_advisory_lock($1, $2) AS ok', [BASE_LOCK_NS, id]);
+            if (!livre.rows[0].ok) continue;
+            try {
+                await dropDb(c, datname);
+            } finally {
+                await c.query('SELECT pg_advisory_unlock($1, $2)', [BASE_LOCK_NS, id]);
+            }
+        }
         return baseDb;
     } finally {
         await c.query('SELECT pg_advisory_unlock($1)', [LOCK_KEY]).catch(() => {});
-        await c.end();
     }
 }
 
-async function cleanup(runIds) {
-    const c = await adminClient();
-    try {
-        const r = await c.query(`SELECT datname FROM pg_database WHERE datname LIKE 'smae\\_test\\_%'`);
-        for (const { datname } of r.rows) {
-            const m = datname.match(/^smae_test_run(\d+)_/) || datname.match(/^smae_test_build(\d+)$/);
-            if (m && runIds(+m[1])) await dropDb(c, datname);
-        }
-    } finally {
-        await c.end();
+async function cleanup(c, onlyOwn) {
+    const r = await c.query(`SELECT datname FROM pg_database WHERE datname LIKE 'smae\\_test\\_%'`);
+    const porRun = new Map();
+    const add = (id, item) => porRun.set(id, [...(porRun.get(id) || []), item]);
+    for (const { datname } of r.rows) {
+        const m = datname.match(/^smae_test_run(\d+)_/) || datname.match(/^smae_test_build(\d+)$/);
+        if (m) add(m[1], { db: datname });
     }
     if (fs.existsSync(OUT_ROOT)) {
         for (const e of fs.readdirSync(OUT_ROOT)) {
             const m = e.match(/^run-(\d+)$/) || e.match(/^base-build-(\d+)\.log$/);
-            if (m && runIds(+m[1])) fs.rmSync(path.join(OUT_ROOT, e), { recursive: true, force: true });
+            if (m) add(m[1], { file: path.join(OUT_ROOT, e) });
+        }
+    }
+    for (const [id, itens] of porRun) {
+        if (onlyOwn !== (id === RUN_ID)) continue;
+        // a run that is still alive holds its lock, so the try fails and its databases are left alone
+        const morto =
+            onlyOwn || (await c.query('SELECT pg_try_advisory_lock($1, $2) AS ok', [RUN_LOCK_NS, +id])).rows[0].ok;
+        if (!morto) continue;
+        try {
+            for (const i of itens) {
+                if (i.db) await dropDb(c, i.db);
+                else fs.rmSync(i.file, { recursive: true, force: true });
+            }
+        } finally {
+            if (!onlyOwn) await c.query('SELECT pg_advisory_unlock($1, $2)', [RUN_LOCK_NS, +id]);
         }
     }
 }
@@ -298,6 +324,9 @@ function runTests(specs, nodeArgs, baseDb) {
         S3_ACCESS_KEY: 'e2e',
         S3_SECRET_KEY: 'e2e',
         DISABLED_CRONTABS: 'all',
+        // these two crons ignore DISABLED_CRONTABS
+        DISABLE_TRANSFERE_GOV_CRONTAB: '1',
+        DISABLE_PDM_CRONTAB: '1',
         LOG_REQ_ON_DB: 'false',
         NODE_PATH: OUT_DIR,
         NODE_OPTIONS: `--require ${PRELOAD} --enable-source-maps`,
@@ -331,19 +360,24 @@ async function main() {
     if (!specs.length) throw new Error('nenhum *.e2e-spec.ts encontrado');
 
     fs.mkdirSync(OUT_ROOT, { recursive: true });
-    await cleanup((pid) => !isAlive(pid));
-
+    const session = await adminClient();
     let code = 1;
     try {
-        if (!compile(specs, files.length === 0)) return 1;
-        if (compileOnly) return 0;
-        const baseDb = await ensureBaseDb(!!process.env.E2E_REBUILD_BASE);
-        const t0 = Date.now();
-        code = await runTests(specs, nodeArgs, baseDb);
-        console.log(`[e2e] ${specs.length} arquivo(s) em ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+        await session.query('SELECT pg_advisory_lock($1, $2)', [RUN_LOCK_NS, +RUN_ID]);
+        await cleanup(session, false);
+        try {
+            if (!compile(specs, files.length === 0)) return 1;
+            if (compileOnly) return 0;
+            const baseDb = await ensureBaseDb(session, !!process.env.E2E_REBUILD_BASE);
+            const t0 = Date.now();
+            code = await runTests(specs, nodeArgs, baseDb);
+            console.log(`[e2e] ${specs.length} arquivo(s) em ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+        } finally {
+            if (!keep) await cleanup(session, true);
+            else console.log(`[e2e] --keep: mantendo ${path.relative(ROOT, OUT_DIR)} e bancos ${CLONE_PREFIX}${RUN_ID}_*`);
+        }
     } finally {
-        if (!keep) await cleanup((pid) => pid === process.pid);
-        else console.log(`[e2e] --keep: mantendo ${path.relative(ROOT, OUT_DIR)} e bancos ${CLONE_PREFIX}${RUN_ID}_*`);
+        await session.end();
     }
     return code;
 }

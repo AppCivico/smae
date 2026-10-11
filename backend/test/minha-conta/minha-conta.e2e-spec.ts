@@ -17,10 +17,16 @@ describe('minha-conta', () => {
     }
 
     describe('MinhaContaController', () => {
+        it('GET /api/minha-conta responde 401 sem sessão ou com token inválido', async () => {
+            assertStatus(await api().get('/api/minha-conta'), 401);
+            assertStatus(await api('het').get('/api/minha-conta'), 401);
+        });
+
         it('GET /api/minha-conta não lista SMAE entre os sistemas da sessão', async () => {
             const sessao = await pessoaComSenhaConhecida();
             const res = await api(sessao).get('/api/minha-conta');
             assertStatus(res, 200);
+            assert.equal(res.body.sessao.id, sessao.pessoa.id);
             assert.equal(res.body.sessao.sistemas.includes('SMAE'), false);
             assert.ok(res.body.sessao.privilegios.includes('CadastroPessoa.editar'));
         });

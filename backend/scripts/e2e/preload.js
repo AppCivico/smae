@@ -1,6 +1,8 @@
 /* eslint-disable */
 // TS7 forces esModuleInterop; identity import helpers keep the prod semantics (tsc 5, interop off).
+// Every other helper (__exportStar, __awaiter, __disposeResources...) comes from tslib.
 const helpers = {
+    ...Object.fromEntries(Object.entries(require('tslib')).filter(([k]) => k.startsWith('__') && k !== '__esModule')),
     __importStar: function (mod) {
         return mod;
     },

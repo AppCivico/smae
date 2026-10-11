@@ -37,10 +37,6 @@ describe('orgao', () => {
         ...extra,
     });
 
-    it('401 sem token', async () => {
-        assertStatus(await api().get('/api/orgao'), 401);
-    });
-
     it('403 sem CadastroOrgao.inserir / editar / remover', async () => {
         const orgao = await criarOrgao();
         assertStatus(await api(semPrivilegio).post('/api/orgao').send(novoOrgao()), 403);

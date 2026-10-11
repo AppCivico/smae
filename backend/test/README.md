@@ -19,27 +19,31 @@ Run from `backend/`. Never run `node --test` or `jest` on these files directly: 
 database, env and module resolution.
 
 Useful env vars: `E2E_LOG=1` (Nest logs + HTTP request log), `E2E_CONCURRENCY=N` (parallel spec
-files, default 4), `E2E_KEEP=1` or `--keep` (keep `dist-test/run-<pid>` and the cloned databases for
-inspection; they are garbage-collected on a later run), `E2E_REBUILD_BASE=1`, `E2E_PG_URL`.
+files, default: CPU count minus 1, between 1 and 4), `E2E_KEEP=1` or `--keep` (keep `dist-test/run-<id>`
+and the cloned databases for inspection; they are garbage-collected on a later run), `E2E_REBUILD_BASE=1`,
+`E2E_PG_URL`. `--compile-only` stops after the compile (add `--keep` to keep the output).
 
 ## How it works (what you can rely on)
 
 1. `tsgo -p tsconfig.e2e.json` compiles `src/`, `test/`, `prisma/seed.ts` and `bin/pgsql-migrate.ts`
-   into `dist-test/run-<pid>/` (one dir per run, so concurrent runs never collide). Type errors in the
+   into `dist-test/run-<id>/` (one dir per run, so concurrent runs never collide). Type errors in the
    spec files you selected (or in `test/lib/`) abort the run; errors in other specs are only a warning.
 2. A template database `smae_test_base_<hash>` is built once (prisma migrate deploy, `prisma/manual-copy`
    pgsql, seed) and rebuilt only when migrations, manual-copy, seed or the runner change (~7s).
 3. Each spec file runs in its own process. `bootApp()` clones the template
-   (`CREATE DATABASE smae_test_run<pid>_... TEMPLATE ...`), points `DATABASE_URL` at it and boots the app
+   (`CREATE DATABASE smae_test_run<id>_... TEMPLATE ...`), points `DATABASE_URL` at it and boots the app
    (~1s). The database is dropped when the run ends. **No cleanup needed in tests**, and no test can
    see data from another file.
-4. Crons are disabled (`DISABLED_CRONTABS=all`). External services (S3, SEI, SOF, geo, TransfereGov,
+4. Crons are disabled (`DISABLED_CRONTABS=all`, plus `DISABLE_TRANSFERE_GOV_CRONTAB` and `DISABLE_PDM_CRONTAB`
+   for the two crons that ignore it). External services (S3, SEI, SOF, geo, TransfereGov,
    Gotenberg) point to `http://127.0.0.1:9/`, which refuses connections.
 5. The tests never touch `smae_dev`: the runner and `bootApp()` only create/drop databases named
-   `smae_test_*`. Server: the one in `DATABASE_URL` of `backend/.env` (or `E2E_PG_URL`). Postgres 12+ works
+   `smae_test_*`. Server: `E2E_PG_URL`, else `DATABASE_URL` from the environment, else from `backend/.env`. Postgres 12+ works
    (timescale is only referenced by a `.sql` file, which the pgsql runner ignores).
 
-Several agents can run `npm run test:e2e` at the same time on the same machine.
+Several agents can run `npm run test:e2e` at the same time, even from different machines against the same
+Postgres. Each run holds Postgres advisory locks on its run id and on the template it uses, so cleanup
+never drops a live run's databases or a template still in use.
 
 ## File layout
 
