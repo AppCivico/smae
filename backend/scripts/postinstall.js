@@ -8,6 +8,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+require('./patch-prisma-generate');
+
 const schema = path.join(__dirname, '..', 'prisma', 'schema.prisma');
 if (fs.existsSync(schema)) {
     execSync('npx prisma generate', { stdio: 'inherit', cwd: path.join(__dirname, '..') });
