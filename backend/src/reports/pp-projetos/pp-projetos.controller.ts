@@ -8,7 +8,7 @@ import { PPProjetosStreamingDto } from './dto/streaming-projetos.dto';
 import { PPProjetosService } from './pp-projetos.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { JsonStringifyTransformStream } from '../../auth/pipe/JsonStringifyTransformStream.pipe';
+import { PipeJsonLinesToResponse } from '../../common/helpers/Streaming';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/projetos')
@@ -44,21 +44,7 @@ export class PPProjetosController {
         @CurrentUser() user: PessoaFromJwt,
         @Res() res: ExpressResponse
     ) {
-        res.setHeader('Content-Type', 'application/jsonlines+json');
-        res.writeHead(200);
-        res.flushHeaders();
-
-        const stream = this.projetos.streamProjetos(dto, user).on('error', this.processError(res));
-        const transformStream = JsonStringifyTransformStream();
-        stream.pipe(transformStream).pipe(res);
-    }
-
-    private processError(res: ExpressResponse<any, Record<string, any>>): (err: Error) => void {
-        return (err) => {
-            console.log(err);
-            res.write(JSON.stringify({ error: 'error occurred during stream processing' }));
-            res.end();
-        };
+        PipeJsonLinesToResponse(this.projetos.streamProjetos(dto, user), res);
     }
 }
 
