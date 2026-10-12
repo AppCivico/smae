@@ -72,6 +72,10 @@ export class UploadService {
                 throw new HttpException('O arquivo precisa ter ao menos 1 byte!', 400);
             }
 
+            if (createUploadDto.tipo === TipoUpload.DOCUMENTO && !(createUploadDto.tipo_documento_id! > 0)) {
+                throw new HttpException('tipo_documento_id é obrigatório para tipo DOCUMENTO', 400);
+            }
+
             if ('originalname' in file && createUploadDto.tipo_documento_id) {
                 const tipoDoc = await this.prisma.tipoDocumento.findFirst({
                     where: { id: createUploadDto.tipo_documento_id },
