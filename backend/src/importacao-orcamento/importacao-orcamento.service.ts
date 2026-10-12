@@ -142,6 +142,9 @@ export class ImportacaoOrcamentoService {
                 throw new BadRequestException('Você não tem permissão para Meta');
             }
 
+            // CadastroMeta.orcamento só age sobre as metas que um perfil PDM.* já libera
+            if (dto.tipo_pdm === 'PDM') await PDMGetPermissionSet('_PDM', user, this.prisma);
+
             if (dto.tipo_pdm === 'PS' && !user.hasSomeRoles(PlanoSetorialController.OrcamentoWritePerms)) {
                 throw new BadRequestException('Você não tem permissão para Meta do Plano Setorial');
             }
