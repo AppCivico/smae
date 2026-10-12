@@ -236,9 +236,12 @@ export class TransferenciaService {
                 });
                 if (!self) throw new HttpException('Transferência não encontrada', 404);
 
+                const tipo_id: number = dto.tipo_id ?? self.tipo_id;
+                const esfera = dto.esfera ?? self.esfera;
+
                 // Transferência cancelada permite alterar identificação, recurso financeiro e distribuição,
                 // mas não permite alterar o tipo (que reconstrói o workflow) nem o cronograma/workflow em si.
-                if (self.cancelada && self.tipo_id != dto.tipo_id)
+                if (self.cancelada && self.tipo_id != tipo_id)
                     throw new HttpException('Transferência cancelada não permite alteração do tipo/workflow.', 400);
 
                 /*Validação para caso seja informada a classificação realize a validação de existência
@@ -250,8 +253,7 @@ export class TransferenciaService {
                     if (!tipoExiste) throw new HttpException('Classificação não encontrada.', 400);
                 }
 
-                if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
-                    const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
+                if (self.esfera != esfera || self.tipo_id != tipo_id) {
                     // Verificando match de esferas.
                     const tipo = await prismaTxn.transferenciaTipo.findFirstOrThrow({
                         where: {
@@ -262,7 +264,7 @@ export class TransferenciaService {
                             esfera: true,
                         },
                     });
-                    if (tipo.esfera != dto.esfera)
+                    if (tipo.esfera != esfera)
                         throw new HttpException('Esfera da transferência e esfera do tipo devem ser iguais', 400);
                 }
 
@@ -324,7 +326,7 @@ export class TransferenciaService {
 
                 // Caso o tipo da transferência seja modificado.
                 // O workflow e seu cronograma devem ser removidos.
-                if (self.tipo_id != dto.tipo_id) {
+                if (self.tipo_id != tipo_id) {
                     await prismaTxn.transferenciaAndamento.updateMany({
                         where: { transferencia_id: id, removido_em: null },
                         data: {
@@ -371,7 +373,7 @@ export class TransferenciaService {
                         data: {
                             transferencia_id: id,
                             tipo_antigo_id: self.tipo_id,
-                            tipo_novo_id: dto.tipo_id,
+                            tipo_novo_id: tipo_id,
                             acao: TransferenciaHistoricoAcao.TrocaTipo,
                             criado_por: user.id,
                             criado_em: agora,
@@ -380,10 +382,10 @@ export class TransferenciaService {
                 }
 
                 let workflow_id: number | undefined | null;
-                if (!self.workflow_id || (self.tipo_id && self.tipo_id != dto.tipo_id)) {
+                if (!self.workflow_id || (self.tipo_id && self.tipo_id != tipo_id)) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
-                            transferencia_tipo_id: dto.tipo_id,
+                            transferencia_tipo_id: tipo_id,
                             removido_em: null,
                             ativo: true,
                         },
