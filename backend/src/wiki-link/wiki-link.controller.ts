@@ -23,6 +23,7 @@ import { WikiUrlDto } from './dto/wiki-url.dto';
 import { UpdateWikiLinkDto } from './dto/update-wiki-link.dto';
 import { FindOneParams } from './dto/find-one-params.dto';
 import { IsPublic } from '../auth/decorators/is-public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('WikiLink')
 @Controller('wiki-link')
@@ -31,6 +32,7 @@ export class WikiLinkController {
 
     @Post()
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
     async create(@Body() dto: CreateWikiLinkDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return this.wikiLinkService.create(dto, user);
     }
@@ -66,6 +68,7 @@ export class WikiLinkController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
     @ApiOperation({ summary: 'Atualizar parcialmente vínculo da Wiki' })
     async update(
         @Param() params: FindOneParams,
@@ -77,6 +80,7 @@ export class WikiLinkController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
