@@ -451,12 +451,7 @@ export class PainelService {
                 }
 
                 await prisma.painelGrupoPainel.deleteMany({
-                    where: {
-                        painel_id: id,
-                        grupo_painel_id: {
-                            in: grupos,
-                        },
-                    },
+                    where: { painel_id: id },
                 });
             }
 
