@@ -30,7 +30,7 @@ import {
     PSFormulaCompostaDto,
     UpdatePSFormulaCompostaDto,
 } from './dto/variavel.formula-composta.dto';
-import { ROLES_ACESSO_VARIAVEL_PS } from './variavel.controller';
+import { ROLES_ACESSO_VARIAVEL_PS, ROLES_ESCRITA_VARIAVEL_PS } from './variavel.controller';
 import { VariavelFormulaCompostaService } from './variavel.formula-composta.service';
 
 @ApiTags('Indicador')
@@ -88,7 +88,7 @@ export class VariavelGlobalFCController {
 
     @Post('plano-setorial-formula-composta')
     @ApiBearerAuth('access-token')
-    @Roles(ROLES_ACESSO_VARIAVEL_PS)
+    @Roles(ROLES_ESCRITA_VARIAVEL_PS)
     async create_fc(
         @Body() dto: CreatePSFormulaCompostaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -122,7 +122,7 @@ export class VariavelGlobalFCController {
 
     @Patch('plano-setorial-formula-composta/:id/associar-variavel')
     @ApiBearerAuth('access-token')
-    @Roles(ROLES_ACESSO_VARIAVEL_PS)
+    @Roles(ROLES_ESCRITA_VARIAVEL_PS)
     async link_var(
         @Param() params: FindOneParams,
         @Body() dto: LinkIndicadorVariavelDto,
@@ -133,7 +133,7 @@ export class VariavelGlobalFCController {
 
     @Delete('plano-setorial-formula-composta/:id/desassociar-variavel')
     @ApiBearerAuth('access-token')
-    @Roles(ROLES_ACESSO_VARIAVEL_PS)
+    @Roles(ROLES_ESCRITA_VARIAVEL_PS)
     async unlink_var(
         @Param() params: FindOneParams,
         @Body() dto: UnlinkIndicadorVariavelDto,
@@ -157,7 +157,7 @@ export class VariavelGlobalFCController {
 
     @Patch('plano-setorial-formula-composta/:id')
     @ApiBearerAuth('access-token')
-    @Roles(ROLES_ACESSO_VARIAVEL_PS)
+    @Roles(ROLES_ESCRITA_VARIAVEL_PS)
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdatePSFormulaCompostaDto,
@@ -168,6 +168,7 @@ export class VariavelGlobalFCController {
 
     @Delete('plano-setorial-formula-composta/:id')
     @ApiBearerAuth('access-token')
+    @Roles(ROLES_ESCRITA_VARIAVEL_PS)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async deleteVariaveisGlobaisFormulaCompostaItem(

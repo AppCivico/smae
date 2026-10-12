@@ -171,6 +171,11 @@ export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
     'SMAE.GrupoVariavel.participante',
 ];
 
+export const ROLES_ESCRITA_VARIAVEL_PS: ListaDePrivilegios[] = [
+    'CadastroVariavelGlobal.administrador_no_orgao',
+    'CadastroVariavelGlobal.administrador',
+];
+
 @ApiTags('Variável Global')
 @Controller('')
 export class VariavelGlobalController {
