@@ -127,7 +127,7 @@ export class NotaService {
         }
 
         return {
-            id_jwt: this.getToken(id),
+            id_jwt: this.getToken(id, true),
             id,
         };
     }
@@ -537,7 +537,7 @@ export class NotaService {
             });
         }
 
-        return { id_jwt: this.getToken(id), id };
+        return { id_jwt: this.getToken(id, true), id };
     }
 
     private async upsertEnderecamentos(
