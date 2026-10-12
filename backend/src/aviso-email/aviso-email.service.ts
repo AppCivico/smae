@@ -1,4 +1,12 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+    forwardRef,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -79,7 +87,7 @@ export class AvisoEmailService {
                     com_copia: dto.com_copia,
                     recorrencia_dias: dto.recorrencia_dias,
                     criado_em: now,
-                    removido_por: user.id,
+                    criado_por: user.id,
                 },
             });
 
@@ -183,13 +191,24 @@ export class AvisoEmailService {
         });
     }
 
+    async verificaPermissaoEdicao(id: number, user: PessoaFromJwt): Promise<void> {
+        const aviso = await this.prisma.avisoEmail.findFirst({
+            where: { id },
+            select: { criado_por: true },
+        });
+        if (!aviso) throw new NotFoundException('Item não encontrado');
+        if (user.hasSomeRoles(['SMAE.superadmin'])) return;
+
+        if (aviso.criado_por !== user.id)
+            throw new ForbiddenException('Apenas quem criou o aviso pode alterá-lo ou removê-lo.');
+    }
+
     async update(
         id: number,
         dto: UpdateAvisoEmailDto,
         user: PessoaFromJwt,
         prismaCtx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
-        // TODO: verificar permissões e etc. isso aqui é só o mínimo possível
         const exists = await this.prisma.avisoEmail.findFirst({
             where: {
                 id,
@@ -228,7 +247,6 @@ export class AvisoEmailService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        // TODO: verificar permissões e etc. isso aqui é só o mínimo possível
         const exists = await this.prisma.avisoEmail.findFirst({
             where: {
                 id,
