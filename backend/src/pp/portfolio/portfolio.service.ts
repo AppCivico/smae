@@ -123,9 +123,24 @@ export class PortfolioService {
         return created;
     }
 
-    async findOne(tipoProjeto: TipoProjeto, id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
+    async findOne(
+        tipoProjeto: TipoProjeto,
+        id: number,
+        user: PessoaFromJwt | null,
+        permitirSomenteLeitura = false
+    ): Promise<PortfolioOneDto> {
         // faz o check de permissão pelo endpoint de listagem, se existir user
-        if (user) await this.findAll(tipoProjeto, user, false, id);
+        if (user) {
+            const modoLeitura =
+                permitirSomenteLeitura &&
+                !user.hasSomeRoles([
+                    'Projeto.administrar_portfolios',
+                    'ProjetoMDO.administrar_portfolios',
+                    'Projeto.administrar_portfolios_no_orgao',
+                    'ProjetoMDO.administrar_portfolios_no_orgao',
+                ]);
+            await this.findAll(tipoProjeto, user, modoLeitura, id);
+        }
 
         const r = await this.prisma.portfolio.findFirstOrThrow({
             where: {

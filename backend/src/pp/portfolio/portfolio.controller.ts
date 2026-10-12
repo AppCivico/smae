@@ -58,7 +58,7 @@ export class PortfolioController {
     @ApiBearerAuth('access-token')
     @Roles([...PORT_ROLES, 'Projeto.administrador', 'Projeto.administrador_no_orgao', ...PROJETO_READONLY_ROLES])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
-        return await this.portfolioService.findOne('PP', params.id, user);
+        return await this.portfolioService.findOne('PP', params.id, user, true);
     }
 
     @Patch(':id')
@@ -130,7 +130,7 @@ export class PortfolioMDOController {
         ...PROJETO_READONLY_ROLES_MDO,
     ])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
-        return await this.portfolioService.findOne('MDO', params.id, user);
+        return await this.portfolioService.findOne('MDO', params.id, user, true);
     }
 
     @Patch(':id')
