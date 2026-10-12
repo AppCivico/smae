@@ -37,6 +37,7 @@ export class SeiIntegracaoController {
 
     @Post('ativar-desativar')
     @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
     async ativarDesativarProcessos(@Body() params: AtivarDesativarSeiDto) {
         await this.seiIntegracaoService.atualizaStatusAtivo(params.processos_sei, params.ativo);
         return { message: 'Processos atualizados com sucesso' };
