@@ -60,7 +60,21 @@ const SelectRevisao = {
     blocos: {
         select: { bloco_config_id: true, conteudo: true, bloco_config: { select: { rotulo: true, ordem: true } } },
     },
-    tags: { select: { tag: { select: { id: true, descricao: true, ods_id: true, removido_em: true } } } },
+    tags: {
+        select: {
+            tag: {
+                select: {
+                    id: true,
+                    descricao: true,
+                    ods_id: true,
+                    removido_em: true,
+                    icone: true,
+                    arquivo_icone_id: true,
+                    ArquivoIcone: { select: { thumbnail_arquivo_id: true } },
+                },
+            },
+        },
+    },
 } satisfies Prisma.MetaMonitoramentoFaseSelect;
 
 type RevisaoCompleta = Prisma.MetaMonitoramentoFaseGetPayload<{ select: typeof SelectRevisao }>;
@@ -562,6 +576,21 @@ export class PsCicloFaseService {
         return { id: ciclo.id, data_ciclo: Date2YMD.toString(ciclo.data_ciclo), ativo: ciclo.ativo };
     }
 
+    private iconeTag(tag: RevisaoCompleta['tags'][number]['tag']): {
+        icone: string | null;
+        icone_thumbnail: string | null;
+    } {
+        if (!tag.arquivo_icone_id) return { icone: tag.icone, icone_thumbnail: null };
+
+        const thumbnailId = tag.ArquivoIcone?.thumbnail_arquivo_id;
+        return {
+            icone: this.uploadService.getDownloadToken(tag.arquivo_icone_id, '1 days').download_token,
+            icone_thumbnail: thumbnailId
+                ? this.uploadService.getDownloadToken(thumbnailId, '1 days').download_token
+                : null,
+        };
+    }
+
     private revisaoDto(
         r: RevisaoCompleta,
         blocosVisiveis: Set<number>,
@@ -594,6 +623,7 @@ export class PsCicloFaseService {
                       id: t.tag.id,
                       descricao: t.tag.descricao,
                       ods_id: t.tag.ods_id,
+                      ...this.iconeTag(t.tag),
                       removido: t.tag.removido_em !== null,
                   }))
                 : [],

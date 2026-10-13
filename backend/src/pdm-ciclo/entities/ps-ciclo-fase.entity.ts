@@ -31,6 +31,8 @@ export class PsCicloFaseTagDto {
     id: number;
     descricao: string;
     ods_id: number | null;
+    icone: string | null;
+    icone_thumbnail: string | null;
     removido: boolean;
 }
 
