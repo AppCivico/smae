@@ -308,7 +308,6 @@ watch(itemParaEdicao, (novoItem) => {
         />
         <SmaeText
           :schema="schema"
-          :model-value="values.observacao"
           name="observacao"
           as="textarea"
           rows="5"

@@ -4,14 +4,11 @@
  * Componente de entrada de texto com contador de caracteres.
  * Permite personalização através de props e integração com VeeValidate.
  *
- * Suporta três modos de uso:
+ * Suporta dois modos de uso:
  *
  * - **Modo autônomo** (padrão): basta passar `name` (e opcionalmente `:schema`).
  *   O componente se registra automaticamente no form via `useField`.
- * - **Modo Field v-slot**: o pai usa `<Field v-slot>` e passa `:model-value` e
- *   `@update:model-value`. O `useField` interno fica em modo `standalone` para
- *   evitar registro duplo no form.
- * - **Modo v-model**: igual ao modo Field v-slot, mas sem o wrapper `<Field>`.
+ * - **Modo v-model**: `v-model` externo sem VeeValidate.
  *   Útil fora de um `<Form>` ou `useForm`.
  *
  * @example
@@ -25,23 +22,6 @@
  *  :schema="schema"
  *  anular-vazio
  * />
- * ```
- *
- * @example
- * ```vue
- * <!-- Modo Field v-slot: registro no form controlado pelo Field pai -->
- * <Field v-slot="{ field, handleChange, value }" name="mdo_observacoes">
- *   <SmaeText
- *    name="mdo_observacoes"
- *    as="textarea"
- *    rows="5"
- *    class="inputtext light mb1"
- *    :schema="schema"
- *    :model-value="value"
- *    anular-vazio
- *    @update:model-value="handleChange"
- *   />
- * </Field>
  * ```
  *
  * @example

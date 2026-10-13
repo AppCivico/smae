@@ -193,7 +193,6 @@ onMounted(() => {
           as="textarea"
           rows="5"
           class="mb1"
-          :model-value="values.descricao"
           :schema="schema"
           anular-vazio
           :class="{ 'error': errors.descricao }"
@@ -379,7 +378,6 @@ onMounted(() => {
           rows="5"
           class="mb1"
           :class="{ error: errors.causa }"
-          :model-value="values.causa"
           :schema="schema"
           anular-vazio
         />
@@ -402,7 +400,6 @@ onMounted(() => {
           rows="5"
           class="mb1"
           :class="{ error: errors.consequencia }"
-          :model-value="values.consequencia"
           :schema="schema"
           anular-vazio
         />

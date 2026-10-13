@@ -109,7 +109,6 @@ observadoresStore.buscarTudo();
         />
         <SmaeText
           name="descricao"
-          :model-value="values.descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
