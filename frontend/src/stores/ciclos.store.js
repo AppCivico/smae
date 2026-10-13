@@ -5,7 +5,7 @@ import { usePdMStore } from '@/stores/pdm.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useCiclosStore = defineStore('Ciclos', {
+const useStore = defineStore('Ciclos', {
   state: () => ({
     Ciclos: {},
     SingleCiclo: {},
@@ -520,3 +520,20 @@ export const useCiclosStore = defineStore('Ciclos', {
     },
   },
 });
+
+let avisoDeObsolescenciaExibido = false;
+
+/**
+ * @deprecated Atende apenas o monitoramento físico legado. Para os ciclos
+ * de metas de Planos Setoriais e Programas de Metas, prefira
+ * `monitoramentoDeMetas.store.ts`.
+ */
+export const useCiclosStore = (...args) => {
+  // uma única vez, porque esse store é usado por muitos componentes
+  if (!avisoDeObsolescenciaExibido) {
+    console.warn('Obsoleto: prefira `monitoramentoDeMetas.store.ts`');
+    avisoDeObsolescenciaExibido = true;
+  }
+
+  return useStore(...args);
+};
