@@ -157,7 +157,11 @@ const listaDeMigalhas = computed(() => {
     const item = router.resolve({ ...rotaParaResolver, params: route.params });
 
     migalhas.push({
-      to: item.href,
+      // O caminho resolvido já inclui o prefixo do módulo, e o `<SmaeLink>`
+      // prefixaria uma string de novo. Por isso, apontamos pelo nome da rota.
+      to: item.name
+        ? { name: item.name, params: item.params, query: item.query }
+        : item.href,
       textoDoItem: compilarTextoDoLink(item.meta, item.name, 50),
       desabilitar,
     });
