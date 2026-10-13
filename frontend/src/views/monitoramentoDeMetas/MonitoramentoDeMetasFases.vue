@@ -5,7 +5,9 @@ import {
   defineOptions, defineProps,
   ref, watch,
 } from 'vue';
-import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import {
+  onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter,
+} from 'vue-router';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
@@ -127,14 +129,36 @@ onBeforeRouteUpdate((para, de) => {
 
   return false;
 });
+
+let saidaConfirmada = false;
+
+onBeforeRouteLeave((para) => {
+  if (saidaConfirmada) {
+    saidaConfirmada = false;
+    return true;
+  }
+
+  if (!formularioSujo.value) {
+    return true;
+  }
+
+  alertStore.confirmAction(
+    'Há alterações não salvas. Deseja sair mesmo assim?',
+    () => {
+      saidaConfirmada = true;
+      router.push(para);
+    },
+    'Sair',
+  );
+
+  return false;
+});
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
 
-  <CabecalhoDePagina
-    class="mb2"
-    :formulario-sujo="formularioSujo"
-  />
+  <!-- sem `formulario-sujo`: a confirmação de saída é feita no `onBeforeRouteLeave` -->
+  <CabecalhoDePagina class="mb2" />
 
   <ErrorComponent
     :erro="erros.fasesDoCicloEmFoco"
