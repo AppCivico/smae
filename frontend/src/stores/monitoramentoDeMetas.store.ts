@@ -23,6 +23,7 @@ type ChamadasPendentes = {
   ciclosDetalhadosPorId: Record<ChaveGenerica, boolean>;
 
   fasesDoCicloEmFoco: boolean;
+  salvarFase: Record<ChaveGenerica, boolean>;
   reabrirCiclo: Record<ChaveGenerica, boolean>;
 
   documento: boolean;
@@ -34,6 +35,7 @@ type Erros = {
   ciclosDetalhadosPorId: Record<ChaveGenerica, unknown>;
 
   fasesDoCicloEmFoco: unknown;
+  salvarFase: Record<ChaveGenerica, unknown>;
   reabrirCiclo: Record<ChaveGenerica, unknown>;
 
   documento: unknown;
@@ -66,6 +68,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       listaDeCiclos: false,
       ciclosDetalhadosPorId: {},
       fasesDoCicloEmFoco: false,
+      salvarFase: {},
       reabrirCiclo: {},
       documento: false,
     },
@@ -74,6 +77,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       listaDeCiclos: null,
       ciclosDetalhadosPorId: {},
       fasesDoCicloEmFoco: null,
+      salvarFase: {},
       reabrirCiclo: {},
       documento: null,
     },
@@ -138,19 +142,19 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
 
     // eslint-disable-next-line max-len
     async salvarFaseDoCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, faseId: ChaveGenerica, metaId: ChaveGenerica, params: SalvarPsCicloFaseDto): Promise<RespostaDeEnvio> {
-      this.chamadasPendentes.fasesDoCicloEmFoco = true;
+      this.chamadasPendentes.salvarFase[faseId] = true;
 
       try {
         // a meta é informada na query, não no corpo da requisição
         const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fase/${faseId}?meta_id=${metaId}`, params) as RecordWithId;
 
-        this.chamadasPendentes.fasesDoCicloEmFoco = false;
+        delete this.chamadasPendentes.salvarFase[faseId];
 
-        this.erros.fasesDoCicloEmFoco = null;
+        delete this.erros.salvarFase[faseId];
         return resposta;
       } catch (erro) {
-        this.erros.fasesDoCicloEmFoco = erro;
-        this.chamadasPendentes.fasesDoCicloEmFoco = false;
+        this.erros.salvarFase[faseId] = erro;
+        delete this.chamadasPendentes.salvarFase[faseId];
         return false;
       }
     },
