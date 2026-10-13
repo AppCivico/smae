@@ -59,6 +59,9 @@ const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entida
 
 const exibirSeletorDeArquivo = ref(false);
 
+// o `requestS` já alerta as falhas de HTTP; aqui o erro fica junto ao formulário
+const erroAoSalvar = computed(() => monitoramentoDeMetasStore.erros.salvarFase[props.fase.id]);
+
 // fases de tags não aceitam blocos de texto
 const blocos = computed(() => (props.fase.aceita_tags
   ? []
@@ -283,6 +286,8 @@ watch(formularioSujo, (novoValor) => {
           </button>
         </div>
       </template>
+
+      <ErrorComponent :erro="erroAoSalvar" />
 
       <SmaeFieldsetSubmit
         v-if="editavel"
