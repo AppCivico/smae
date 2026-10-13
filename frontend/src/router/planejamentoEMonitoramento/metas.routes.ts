@@ -252,34 +252,18 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasLista.vue'),
             },
             {
-              name: `${entidadeMãe}.monitoramentoDeMetasAnaliseDeRisco`,
-              path: 'analise-de-risco/:cicloId',
+              name: `${entidadeMãe}.monitoramentoDeMetasFases`,
+              path: 'ciclo/:cicloId',
+              props: tiparPropsDeRota,
               meta: {
-                título: 'Análise de Risco',
+                título: 'Fases do monitoramento',
                 títuloParaMenu: undefined,
                 rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
+                migalhasDeMetas: [
+                  `${entidadeMãe}.monitoramentoDeMetas`,
+                ],
               },
-              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseDeRisco.vue'),
-            },
-            {
-              name: `${entidadeMãe}.monitoramentoDeMetasRegistroDeFechamento`,
-              path: 'registro-de-fechamento/:cicloId',
-              meta: {
-                título: 'Registro de Fechamento',
-                títuloParaMenu: undefined,
-                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
-              },
-              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasRegistroDeFechamento.vue'),
-            },
-            {
-              name: `${entidadeMãe}.monitoramentoDeMetasAnaliseQualitativa`,
-              path: 'analise-qualitativa/:cicloId',
-              meta: {
-                título: 'Análise Qualitativa',
-                títuloParaMenu: undefined,
-                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
-              },
-              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseQualitativa.vue'),
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasFases.vue'),
             },
           ],
         },

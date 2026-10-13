@@ -1,13 +1,14 @@
 import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 import type {
   CicloFisicoPSDto,
-  CiclosRevisaoDto,
   ListPSCicloDto,
-  PsListAnaliseQualitativaDto,
-  PsListFechamentoDto,
-  PsListRiscoDto,
   UltimaRevisao,
 } from '@back/pdm-ciclo/entities/pdm-ciclo.entity';
+import type {
+  CreatePsCicloFaseDocumentoDto,
+  SalvarPsCicloFaseDto,
+} from '@back/pdm-ciclo/dto/ps-ciclo-fase.dto';
+import type { PsCicloFasesDto } from '@back/pdm-ciclo/entities/ps-ciclo-fase.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -21,9 +22,7 @@ type ChamadasPendentes = {
 
   ciclosDetalhadosPorId: Record<ChaveGenerica, boolean>;
 
-  analiseEmFoco: boolean;
-  riscoEmFoco: boolean;
-  fechamentoEmFoco: boolean;
+  fasesDoCicloEmFoco: boolean;
   reabrirCiclo: Record<ChaveGenerica, boolean>;
 
   documento: boolean;
@@ -34,9 +33,7 @@ type Erros = {
 
   ciclosDetalhadosPorId: Record<ChaveGenerica, unknown>;
 
-  analiseEmFoco: unknown;
-  riscoEmFoco: unknown;
-  fechamentoEmFoco: unknown;
+  fasesDoCicloEmFoco: unknown;
   reabrirCiclo: Record<ChaveGenerica, unknown>;
 
   documento: unknown;
@@ -47,11 +44,9 @@ type Estado = {
 
   ultimaRevisao: UltimaRevisao | null;
 
-  ciclosDetalhadosPorId: Record<ChaveGenerica, CiclosRevisaoDto>;
+  ciclosDetalhadosPorId: Record<ChaveGenerica, PsCicloFasesDto>;
 
-  analiseEmFoco: PsListAnaliseQualitativaDto | null;
-  riscoEmFoco: PsListRiscoDto | null;
-  fechamentoEmFoco: PsListFechamentoDto | null;
+  fasesDoCicloEmFoco: PsCicloFasesDto | null;
 
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
@@ -65,16 +60,12 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
 
     ciclosDetalhadosPorId: {},
 
-    analiseEmFoco: null,
-    riscoEmFoco: null,
-    fechamentoEmFoco: null,
+    fasesDoCicloEmFoco: null,
 
     chamadasPendentes: {
       listaDeCiclos: false,
       ciclosDetalhadosPorId: {},
-      analiseEmFoco: false,
-      riscoEmFoco: false,
-      fechamentoEmFoco: false,
+      fasesDoCicloEmFoco: false,
       reabrirCiclo: {},
       documento: false,
     },
@@ -82,9 +73,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
     erros: {
       listaDeCiclos: null,
       ciclosDetalhadosPorId: {},
-      analiseEmFoco: null,
-      riscoEmFoco: null,
-      fechamentoEmFoco: null,
+      fasesDoCicloEmFoco: null,
       reabrirCiclo: {},
       documento: null,
     },
@@ -115,7 +104,9 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       try {
         delete this.erros.ciclosDetalhadosPorId[cicloId];
 
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/monitoramento`, params) as CiclosRevisaoDto;
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fase`, params) as PsCicloFasesDto;
+
+        console.debug('Resposta do ciclo detalhado:', resposta);
 
         this.ciclosDetalhadosPorId[cicloId] = resposta;
       } catch (erro: unknown) {
@@ -130,127 +121,72 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
     },
 
     // eslint-disable-next-line max-len
-    async buscarAnaliseDoCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params = {}): Promise<void> {
-      this.chamadasPendentes.analiseEmFoco = true;
+    async buscarFasesDoCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params = {}): Promise<void> {
+      this.chamadasPendentes.fasesDoCicloEmFoco = true;
 
       try {
-        this.erros.analiseEmFoco = null;
+        this.erros.fasesDoCicloEmFoco = null;
 
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise`, params) as PsListAnaliseQualitativaDto;
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fase`, params) as PsCicloFasesDto;
 
-        this.analiseEmFoco = resposta;
+        this.fasesDoCicloEmFoco = resposta;
       } catch (erro: unknown) {
-        this.erros.analiseEmFoco = erro;
+        this.erros.fasesDoCicloEmFoco = erro;
       }
-      this.chamadasPendentes.analiseEmFoco = false;
+      this.chamadasPendentes.fasesDoCicloEmFoco = false;
     },
 
     // eslint-disable-next-line max-len
-    async atualizarListaDeArquivosDaAnaliseEmFoco(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params = {}): Promise<void> {
-      this.chamadasPendentes.analiseEmFoco = true;
+    async salvarFaseDoCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, faseId: ChaveGenerica, metaId: ChaveGenerica, params: SalvarPsCicloFaseDto): Promise<RespostaDeEnvio> {
+      this.chamadasPendentes.fasesDoCicloEmFoco = true;
 
       try {
-        if (!this.analiseEmFoco?.arquivos) {
-          throw new Error('Você não pode atualizar arquivos de uma análise que não existe.');
-        }
+        // a meta é informada na query, não no corpo da requisição
+        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fase/${faseId}?meta_id=${metaId}`, params) as RecordWithId;
 
-        const { arquivos } = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise`, params) as PsListAnaliseQualitativaDto;
+        this.chamadasPendentes.fasesDoCicloEmFoco = false;
 
-        this.chamadasPendentes.analiseEmFoco = false;
-
-        if (Array.isArray(arquivos)) {
-          this.analiseEmFoco.arquivos = arquivos;
-        }
-
-        this.erros.analiseEmFoco = null;
-      } catch (erro) {
-        this.erros.analiseEmFoco = erro;
-      }
-      this.chamadasPendentes.analiseEmFoco = false;
-    },
-
-    // eslint-disable-next-line max-len
-    async salvarAnaliseDeCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<RespostaDeEnvio> {
-      this.chamadasPendentes.analiseEmFoco = true;
-
-      try {
-        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise`, params) as RecordWithId;
-
-        this.chamadasPendentes.analiseEmFoco = false;
-
-        this.erros.analiseEmFoco = null;
+        this.erros.fasesDoCicloEmFoco = null;
         return resposta;
       } catch (erro) {
-        this.erros.analiseEmFoco = erro;
-        this.chamadasPendentes.analiseEmFoco = false;
+        this.erros.fasesDoCicloEmFoco = erro;
+        this.chamadasPendentes.fasesDoCicloEmFoco = false;
         return false;
       }
     },
 
     // eslint-disable-next-line max-len
-    async buscarRiscoDoCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params = {}): Promise<void> {
-      this.chamadasPendentes.riscoEmFoco = true;
+    async associarDocumentoComFase(pdmId: ChaveGenerica, cicloId: ChaveGenerica, faseId: ChaveGenerica, metaId: ChaveGenerica, params: CreatePsCicloFaseDocumentoDto): Promise<RespostaDeEnvio> {
+      this.chamadasPendentes.documento = true;
+
+      this.erros.documento = null;
 
       try {
-        this.erros.riscoEmFoco = null;
+        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fase/${faseId}/documento?meta_id=${metaId}`, params) as RecordWithId;
 
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/risco`, params) as PsListRiscoDto;
+        this.chamadasPendentes.documento = false;
 
-        this.riscoEmFoco = resposta;
-      } catch (erro: unknown) {
-        this.erros.riscoEmFoco = erro;
-      }
-      this.chamadasPendentes.riscoEmFoco = false;
-    },
-
-    // eslint-disable-next-line max-len
-    async salvarRiscoDeCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<RespostaDeEnvio> {
-      this.chamadasPendentes.riscoEmFoco = true;
-
-      try {
-        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/risco`, params) as RecordWithId;
-
-        this.chamadasPendentes.riscoEmFoco = false;
-
-        this.erros.riscoEmFoco = null;
         return resposta;
       } catch (erro) {
-        this.erros.riscoEmFoco = erro;
-        this.chamadasPendentes.riscoEmFoco = false;
+        this.erros.documento = erro;
+        this.chamadasPendentes.documento = false;
         return false;
       }
     },
 
     // eslint-disable-next-line max-len
-    async buscarFechamentoDoCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params = {}): Promise<void> {
-      this.chamadasPendentes.fechamentoEmFoco = true;
+    async desassociarDocumentoDeFase(pdmId: ChaveGenerica, cicloId: ChaveGenerica, documentoId: ChaveGenerica, metaId: ChaveGenerica): Promise<boolean> {
+      this.chamadasPendentes.documento = true;
+      this.erros.documento = null;
 
       try {
-        this.erros.fechamentoEmFoco = null;
+        await this.requestS.delete(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fase-documento/${documentoId}?meta_id=${metaId}`);
+        this.chamadasPendentes.documento = false;
 
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fechamento`, params) as PsListFechamentoDto;
-
-        this.fechamentoEmFoco = resposta;
-      } catch (erro: unknown) {
-        this.erros.fechamentoEmFoco = erro;
-      }
-      this.chamadasPendentes.fechamentoEmFoco = false;
-    },
-
-    // eslint-disable-next-line max-len
-    async salvarFechamentoDeCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<RespostaDeEnvio> {
-      this.chamadasPendentes.fechamentoEmFoco = true;
-
-      try {
-        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/fechamento`, params) as RecordWithId;
-
-        this.chamadasPendentes.fechamentoEmFoco = false;
-
-        this.erros.fechamentoEmFoco = null;
-        return resposta;
+        return true;
       } catch (erro) {
-        this.erros.fechamentoEmFoco = erro;
-        this.chamadasPendentes.fechamentoEmFoco = false;
+        this.erros.documento = erro;
+        this.chamadasPendentes.documento = false;
         return false;
       }
     },
@@ -269,42 +205,6 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       } catch (erro) {
         this.erros.reabrirCiclo[cicloId] = erro;
         delete this.chamadasPendentes.reabrirCiclo[cicloId];
-        return false;
-      }
-    },
-
-    // eslint-disable-next-line max-len
-    async associarDocumentoComAnalise(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<RespostaDeEnvio> {
-      this.chamadasPendentes.documento = true;
-
-      this.erros.documento = null;
-
-      try {
-        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise/documento`, params) as RecordWithId;
-
-        this.chamadasPendentes.documento = false;
-
-        return resposta;
-      } catch (erro) {
-        this.erros.documento = erro;
-        this.chamadasPendentes.documento = false;
-        return false;
-      }
-    },
-
-    // eslint-disable-next-line max-len
-    async desassociarDocumentoComAnalise(pdmId: ChaveGenerica, cicloId: ChaveGenerica, documentoId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<boolean> {
-      this.chamadasPendentes.documento = true;
-      this.erros.documento = null;
-
-      try {
-        await this.requestS.delete(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise/documento/${documentoId}`, params);
-        this.chamadasPendentes.documento = false;
-
-        return true;
-      } catch (erro) {
-        this.erros.documento = erro;
-        this.chamadasPendentes.documento = false;
         return false;
       }
     },

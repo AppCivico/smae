@@ -10,6 +10,8 @@ import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 const route = useRoute();
 
 const props = defineProps({
@@ -43,16 +45,22 @@ const {
   erros,
 } = storeToRefs(monitoramentoDeMetasStore);
 
-const detailsElem = ref(null);
-const cicloDetalhes = computed(() => ciclosDetalhadosPorId.value?.[props.ciclo.id]?.atual || null);
+const cicloDetalhes = computed(() => ciclosDetalhadosPorId.value?.[props.ciclo.id] || null);
 
-const analise = computed(() => cicloDetalhes.value?.analise || null);
-const analiseDocumentos = computed(() => cicloDetalhes.value?.arquivos || []);
-const risco = computed(() => cicloDetalhes.value?.risco || null);
-const listaDeFechamentos = computed(() => [].concat(
-  cicloDetalhes.value?.fechamento ? [cicloDetalhes.value.fechamento] : [],
-  cicloDetalhes.value?.historico_fechamentos || [],
-));
+// a API já entrega apenas as fases e os blocos habilitados, em ordem
+const fases = computed(() => cicloDetalhes.value?.fases || []);
+
+function conteudoDoBloco(revisao, blocoId) {
+  return revisao?.blocos.find((bloco) => bloco.bloco_id === blocoId)?.conteudo;
+}
+
+// a fase que fecha o ciclo exibe também os fechamentos anteriores a reaberturas
+function revisoesParaExibir(fase) {
+  return [].concat(
+    fase.atual ? [fase.atual] : [],
+    fase.config.fecha_ciclo ? fase.historico : [],
+  );
+}
 
 function handleToggle(event) {
   estaAberto.value = event.target.open;
@@ -116,7 +124,6 @@ onMounted(() => {
 <template>
   <details
     :id="$attrs.id || (ciclo.id ? `ciclo--${ciclo.id}` : null)"
-    ref="detailsElem"
     :open="$props.open || $props.cicloAtual"
     :class="cicloAtual ? 'ciclo-atual' : 'ciclo-passado'"
     @toggle.prevent="handleToggle"
@@ -165,200 +172,147 @@ onMounted(() => {
       v-if="chamadasPendentes.ciclosDetalhadosPorId[ciclo.id]"
       class="mb2"
     />
+    <ErrorComponent
+      v-else-if="erros.ciclosDetalhadosPorId[ciclo.id]"
+      :erro="erros.ciclosDetalhadosPorId[ciclo.id]"
+      class="mb2"
+    />
     <div
       v-else
       class="details-content"
     >
-      <div class="details-content__item">
+      <div
+        v-for="fase in fases"
+        :key="fase.config.id"
+        class="details-content__item"
+      >
         <div class="flex g2 center mt3 mb2">
           <h3 class="w700 mb0">
-            Qualificação
+            {{ fase.config.rotulo }}
           </h3>
           <hr class="f1">
-        </div>
-        <dl>
-          <div
-            class="mb1"
+          <SmaeLink
+            v-if="cicloDetalhes.pode_editar && fase.editavel"
+            :to="{
+              name: `.monitoramentoDeMetasFases`,
+              params: { cicloId: ciclo.id },
+              query: { aba: `fase-${fase.config.id}` },
+            }"
+            class="tprimary"
+            :title="`Editar ${fase.config.rotulo}`"
           >
-            <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween center mb1">
-                Informações complementares
-                <SmaeLink
-                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('analise')"
-                  :to="{
-                    name: `.monitoramentoDeMetasAnaliseQualitativa`,
-                    params: { cicloId: ciclo.id }
-                  }"
-                  class="tprimary"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  >
-                    <use xlink:href="#i_edit" />
-                  </svg>
-                </SmaeLink>
-              </div>
-              <hr class="f1 mt025">
-            </dt>
-            <dd
-              class="t13 contentStyle mt1"
-              v-html="analise?.informacoes_complementares || '-'"
-            />
-          </div>
-        </dl>
-        <hr class="f1">
-        <footer
-          v-if="analise?.criador?.nome_exibicao || analise?.criado_em"
-          class="tc600 mt1"
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_edit" />
+            </svg>
+          </SmaeLink>
+        </div>
+
+        <p
+          v-if="!fase.atual"
+          class="t12 tc300 w700"
         >
-          <p>
-            Analisado
-            <template v-if="analise.criador?.nome_exibicao">
-              por <strong>{{ analise.criador.nome_exibicao }}</strong>
-            </template>
-            <template v-if="analise.criado_em">
-              em
-              <time :datetime="analise.criado_em">
-                {{ dateToShortDate(analise.criado_em) }}
-              </time>.
-            </template>
-          </p>
-          <hr class="f1">
-        </footer>
+          Fase ainda não preenchida.
+        </p>
+
+        <div
+          v-for="revisao in revisoesParaExibir(fase)"
+          :key="revisao.id"
+          class="mb2"
+        >
+          <dl v-if="fase.config.aceita_tags">
+            <div class="mb1">
+              <dt class="t12 uc w700 mb05 tc300 sr-only">
+                Tags
+                <hr class="f1 mt025">
+              </dt>
+              <dd class="t13">
+                <ul
+                  v-if="revisao.tags.length"
+                  class="lista-de-tags flex g1 flexwrap"
+                >
+                  <li
+                    v-for="tag in revisao.tags"
+                    :key="tag.id"
+                    class="lista-de-tags__item flex center"
+                    :class="{
+                      'lista-de-tags__item--apenas-titulo': !tag.icone,
+                    }"
+                  >
+                    <a
+                      v-if="tag.icone"
+                      :href="`${baseUrl}/download/${tag.icone}`"
+                      download
+                      class="lista-de-tags__link block"
+                      :title="tag.descricao"
+                    >
+                      <img
+                        class="lista-de-tags__icone"
+                        :src="`${baseUrl}/download/${tag.icone_thumbnail || tag.icone}?inline=true`"
+                        :alt="tag.descricao"
+                        width="250"
+                      >
+                    </a>
+                    <strong
+                      v-else
+                      class="lista-de-tags__nome"
+                    >
+                      {{ tag.descricao }}
+                    </strong>
+                  </li>
+                </ul>
+                <template v-else>
+                  -
+                </template>
+              </dd>
+            </div>
+          </dl>
+          <dl v-else>
+            <div
+              v-for="bloco in fase.config.blocos"
+              :key="bloco.id"
+              class="mb1"
+            >
+              <dt class="t12 uc w700 mb05 tc300">
+                {{ bloco.rotulo }}
+                <hr class="f1 mt025">
+              </dt>
+              <dd
+                class="t13 contentStyle"
+                v-html="conteudoDoBloco(revisao, bloco.id) || '-'"
+              />
+            </div>
+          </dl>
+
+          <footer
+            v-if="revisao.criador?.nome_exibicao || revisao.criado_em"
+            class="tc600"
+          >
+            <p>
+              {{ fase.config.fecha_ciclo ? 'Fechado' : 'Preenchido' }}
+              <template v-if="revisao.criador?.nome_exibicao">
+                por <strong>{{ revisao.criador.nome_exibicao }}</strong>
+              </template>
+              <template v-if="revisao.criado_em">
+                em <time :datetime="revisao.criado_em">
+                  {{ dateToShortDate(revisao.criado_em) }}
+                </time>.
+              </template>
+            </p>
+          </footer>
+        </div>
 
         <ListaDeDocumentos
-          v-if="analiseDocumentos.length"
-          :arquivos="analiseDocumentos"
+          v-if="fase.documentos.length"
+          :arquivos="fase.documentos"
         />
-      </div>
-
-      <div class="details-content__item">
-        <div class="flex g2 center mt3 mb2">
-          <h3 class="w700 mb0">
-            Análise de risco
-          </h3>
-          <hr class="f1">
-        </div>
-        <dl>
-          <div class="mb1">
-            <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween center mb1">
-                Detalhamento
-                <SmaeLink
-                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('risco')"
-                  :to="{
-                    name: `.monitoramentoDeMetasAnaliseDeRisco`,
-                    params: { cicloId: ciclo.id }
-                  }"
-                  class="tprimary"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  >
-                    <use xlink:href="#i_edit" />
-                  </svg>
-                </SmaeLink>
-              </div>
-              <hr class="f1 mt025">
-            </dt>
-            <dd
-              class="t13 contentStyle"
-              v-html="risco?.detalhamento || '-'"
-            />
-          </div>
-          <div
-            class="mb1"
-          >
-            <dt class="t12 uc w700 mb05 tc300">
-              Ponto de ação
-              <hr class="f1 mt025">
-            </dt>
-            <dd
-              class="t13 contentStyle"
-              v-html="risco?.ponto_de_atencao || '-'"
-            />
-          </div>
-        </dl>
-        <footer
-          v-if="risco?.criador?.nome_exibicao || risco?.criado_em"
-          class="tc600"
-        >
-          <p>
-            Analisado
-            <template v-if="risco.criador?.nome_exibicao">
-              por <strong>{{ risco.criador.nome_exibicao }}</strong>
-            </template>
-            <template v-if="risco.criado_em">
-              em <time :datetime="risco.criado_em">{{ dateToShortDate(risco.criado_em) }}</time>.
-            </template>
-          </p>
-        </footer>
-      </div>
-
-      <div class="details-content__item">
-        <div class="flex g2 center mt3 mb2">
-          <h3 class="w700 mb0">
-            Fechamento
-          </h3>
-          <hr class="f1">
-        </div>
-        <dl>
-          <div class="mb1">
-            <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween center mb1">
-                Comentários
-                <SmaeLink
-                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('fechamento')"
-                  :to="{
-                    name: `.monitoramentoDeMetasRegistroDeFechamento`,
-                    params: { cicloId: ciclo.id }
-                  }"
-                  class="tprimary"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  >
-                    <use xlink:href="#i_edit" />
-                  </svg>
-                </SmaeLink>
-              </div>
-            </dt>
-            <dd
-              v-for="fechamento in listaDeFechamentos"
-              :key="fechamento.id"
-              class="t13 contentStyle mb2"
-            >
-              <div
-                class="mb1"
-                v-html="fechamento?.comentario || '-'"
-              />
-              <footer
-                v-if="fechamento?.criador?.nome_exibicao || fechamento?.criado_em"
-                class="tc600"
-              >
-                <p>
-                  Fechado
-                  <template v-if="fechamento.criador?.nome_exibicao">
-                    por <strong>{{ fechamento.criador.nome_exibicao }}</strong>
-                  </template>
-                  <template v-if="fechamento.criado_em">
-                    em <time :datetime="fechamento.criado_em">
-                      {{ dateToShortDate(fechamento.criado_em) }}
-                    </time>.
-                  </template>
-                </p>
-              </footer>
-            </dd>
-          </div>
-        </dl>
       </div>
     </div>
   </details>
 </template>
-<style scoped>
+<style lang="less" scoped>
 .ciclo-atual__summary::before {
   display: none;
 }
@@ -371,5 +325,31 @@ onMounted(() => {
 
 .ciclo-passado .details-content__item {
   padding-inline: 1.5rem;
+}
+
+/* mesmo estilo de `TagsDeMetas.vue`, que é restrito àquele componente */
+.lista-de-tags__item {
+  width: 6.857143rem;
+  height: 6.857143rem;
+}
+
+.lista-de-tags__icone {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
+}
+
+.lista-de-tags__item--apenas-titulo {
+  padding: 1rem;
+  border: 1px solid @c400;
+  min-width: min-content;
+}
+
+.lista-de-tags__nome {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
