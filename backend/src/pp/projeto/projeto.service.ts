@@ -131,6 +131,8 @@ type ProjetoResumoPermissao = {
     tipo: TipoProjeto;
 };
 
+type PortfolioCompartilhamentoRef = { id: number; orgaos: { id: number }[] };
+
 export const ProjetoGetPermissionSet = async (
     tipo: TipoProjeto,
     user: PessoaFromJwt | undefined
@@ -618,30 +620,18 @@ export class ProjetoService {
             await this.validateProjetoEtapa(this.prisma, dto.projeto_etapa_id, tipo, portfolio.id);
         }
 
-        if (dto.portfolios_compartilhados?.length) {
-            // Caso o portfolio seja de modelo para clonagem.
-            // Não permitir compartilhar com outros ports.
-            if (portfolio.modelo_clonagem)
-                throw new HttpException(
-                    'Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
-                    400
-                );
-
-            const portfoliosCompartilhados = portfolios.filter((p) =>
-                dto.portfolios_compartilhados?.some((x) => x == p.id)
-            );
-            await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
-        }
-
         // Compartilhamento padrão configurado no portfólio: entra junto com o que o usuário escolheu.
-        // Não passa pela lista `portfolios` porque o padrão vale mesmo que o usuário não enxergue o destino.
-        if (!portfolio.modelo_clonagem) {
-            const compartilhadosPadrao = await this.portfolioService.buscaCompartilhamentoPadrao(portfolio);
-            if (compartilhadosPadrao.length)
-                dto.portfolios_compartilhados = [
-                    ...new Set([...(dto.portfolios_compartilhados ?? []), ...compartilhadosPadrao]),
-                ];
-        }
+        const compartilhadosPadrao = portfolio.modelo_clonagem
+            ? []
+            : await this.portfolioService.buscaCompartilhamentoPadrao(portfolio);
+        dto.portfolios_compartilhados = await this.validaPortfoliosCompartilhados(
+            tipo,
+            portfolio,
+            portfolios,
+            compartilhadosPadrao,
+            [],
+            [...(dto.portfolios_compartilhados ?? []), ...compartilhadosPadrao]
+        );
 
         if (tipo == 'MDO') {
             if (!dto.orgao_origem_id) throw new HttpException('Campo obrigatório para obras', 400);
@@ -1007,7 +997,53 @@ export class ProjetoService {
         }
     }
 
-    private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
+    // Só mexe em portfólios visíveis ao usuário ou padrão do principal; os demais atuais são mantidos.
+    private async validaPortfoliosCompartilhados(
+        tipo: TipoProjeto,
+        portPrincipal: PortfolioCompartilhamentoRef & { modelo_clonagem: boolean },
+        portfoliosVisiveis: PortfolioDto[],
+        compartilhadosPadrao: number[],
+        atuais: number[],
+        enviados: number[]
+    ): Promise<number[]> {
+        const gerenciaveis = new Set([...portfoliosVisiveis.map((p) => p.id), ...compartilhadosPadrao]);
+        const adicionados = [...new Set(enviados)].filter((id) => !atuais.includes(id));
+
+        if (adicionados.length) {
+            if (portPrincipal.modelo_clonagem)
+                throw new HttpException(
+                    'Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
+                    400
+                );
+
+            const naoLiberados = adicionados.filter((id) => !gerenciaveis.has(id));
+            if (naoLiberados.length)
+                throw new HttpException(
+                    `Portfolio compartilhado não está liberado para o seu usuário: ${naoLiberados.join(', ')}.`,
+                    400
+                );
+
+            const rows = await this.prisma.portfolio.findMany({
+                where: { id: { in: adicionados }, tipo_projeto: tipo, removido_em: null },
+                select: { id: true, orgaos: { select: { orgao_id: true } } },
+            });
+            if (rows.length != adicionados.length)
+                throw new HttpException('Um ou mais portfolios compartilhados não foram encontrados.', 400);
+
+            await this.checkPortCompartilhadoOrgaos(
+                portPrincipal,
+                rows.map((r) => ({ id: r.id, orgaos: r.orgaos.map((o) => ({ id: o.orgao_id })) }))
+            );
+        }
+
+        const preservados = atuais.filter((id) => !gerenciaveis.has(id));
+        return [...new Set([...enviados, ...preservados])];
+    }
+
+    private async checkPortCompartilhadoOrgaos(
+        portPrincipal: PortfolioCompartilhamentoRef,
+        portCompartilhados: PortfolioCompartilhamentoRef[]
+    ) {
         for (const portfolioCompartilhado of portCompartilhados) {
             if (portfolioCompartilhado.id == portPrincipal.id)
                 throw new HttpException('Portfolio compartilhado deve ser diferente do Portfolio principal.', 400);
@@ -2696,6 +2732,29 @@ export class ProjetoService {
         const portfolio = portfolios.filter((r) => r.id == projeto.portfolio_id)[0];
         if (!portfolio) throw new HttpException('Portfolio não está liberado para o seu usuário editar', 400);
 
+        const portfoliosCompartilhadosAtuais = projeto.portfolios_compartilhados?.map((pc) => pc.id) ?? [];
+        let portfoliosCompartilhados: number[] | undefined = undefined;
+        if (Array.isArray(dto.portfolios_compartilhados)) {
+            let portfolioPrincipal: PortfolioCompartilhamentoRef & { modelo_clonagem: boolean } = portfolio;
+            if (dto.portfolio_id && dto.portfolio_id != projeto.portfolio_id) {
+                const novo = await this.prisma.portfolio.findFirst({
+                    where: { id: dto.portfolio_id, removido_em: null },
+                    select: { id: true, modelo_clonagem: true, orgaos: { select: { orgao_id: true } } },
+                });
+                if (!novo) throw new HttpException('Portfolio não encontrado.', 400);
+                portfolioPrincipal = { ...novo, orgaos: novo.orgaos.map((o) => ({ id: o.orgao_id })) };
+            }
+
+            portfoliosCompartilhados = await this.validaPortfoliosCompartilhados(
+                tipo,
+                portfolioPrincipal,
+                portfolios,
+                await this.portfolioService.buscaCompartilhamentoPadrao(portfolioPrincipal),
+                portfoliosCompartilhadosAtuais,
+                dto.portfolios_compartilhados
+            );
+        }
+
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
                   orgao_gestor_id: dto.orgao_gestor_id ?? projeto.orgao_gestor.id,
@@ -2889,51 +2948,36 @@ export class ProjetoService {
             dto.publico_alvo = HtmlSanitizer(dto.publico_alvo);
             dto.nao_escopo = HtmlSanitizer(dto.nao_escopo);
 
-            if (Array.isArray(dto.portfolios_compartilhados)) {
-                if (dto.portfolios_compartilhados.length) {
-                    const portfoliosCompartilhados = portfolios.filter((p) =>
-                        dto.portfolios_compartilhados?.some((x) => x == p.id)
-                    );
-                    await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
+            if (portfoliosCompartilhados) {
+                const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(
+                    portfoliosCompartilhadosAtuais,
+                    portfoliosCompartilhados
+                );
 
-                    const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(
-                        projeto.portfolios_compartilhados?.map((pc) => pc.id),
-                        dto.portfolios_compartilhados
-                    );
-
-                    if (deletedPC.length) {
-                        await prismaTx.portfolioProjetoCompartilhado.updateMany({
-                            where: {
-                                portfolio_id: { in: deletedPC },
-                                projeto_id: projetoId,
-                            },
-                            data: {
-                                removido_em: now,
-                                removido_por: user.id,
-                            },
-                        });
-                    }
-
-                    if (createdPC.length) {
-                        await prismaTx.portfolioProjetoCompartilhado.createMany({
-                            data: createdPC.map((cpc) => {
-                                return {
-                                    projeto_id: projetoId,
-                                    portfolio_id: cpc,
-                                    criado_em: now,
-                                    criado_por: user.id,
-                                };
-                            }),
-                        });
-                    }
-                } else {
-                    // Enviou array vazio explicitamente, remover todos.
+                if (deletedPC.length) {
                     await prismaTx.portfolioProjetoCompartilhado.updateMany({
-                        where: { projeto_id: projetoId, removido_em: null },
+                        where: {
+                            portfolio_id: { in: deletedPC },
+                            projeto_id: projetoId,
+                            removido_em: null,
+                        },
                         data: {
                             removido_em: now,
                             removido_por: user.id,
                         },
+                    });
+                }
+
+                if (createdPC.length) {
+                    await prismaTx.portfolioProjetoCompartilhado.createMany({
+                        data: createdPC.map((cpc) => {
+                            return {
+                                projeto_id: projetoId,
+                                portfolio_id: cpc,
+                                criado_em: now,
+                                criado_por: user.id,
+                            };
+                        }),
                     });
                 }
             }
