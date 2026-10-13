@@ -750,7 +750,6 @@ watch(itemParaEdicao, (novoValor) => {
       </LabelFromYup>
 
       <FieldArray
-        v-if="temPermissãoPara('Menu.MonitBloco')"
         v-slot="{ fields: fases, push: adicionarFase, remove: removerFase, move: moverFase }"
         name="monitoramento_config.fases"
       >
