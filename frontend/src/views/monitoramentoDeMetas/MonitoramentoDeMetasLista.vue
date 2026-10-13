@@ -57,7 +57,7 @@ onMounted(() => {
 <template>
   <MigalhasDeMetas class="mb1" />
 
-  <TituloDePagina />
+  <TituloDePagina class="mb2" />
 
   <div class="flex column g2">
     <LoadingComponent v-if="chamadasPendentes.listaDeCiclos" />

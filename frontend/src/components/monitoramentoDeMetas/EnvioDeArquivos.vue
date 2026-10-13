@@ -11,6 +11,16 @@ import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.stor
 
 const emit = defineEmits(['envioBemSucedido']);
 
+const props = defineProps({
+  faseId: {
+    type: [
+      Number,
+      String,
+    ],
+    required: true,
+  },
+});
+
 const route = useRoute();
 
 const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entidadeMãe);
@@ -24,7 +34,7 @@ const erros = ref({});
 const listaDeArquivos = computed(() => listaDeCampos.value
   .filter((registroDoArquivo) => registroDoArquivo));
 
-function associarDocumentoComAnalise() {
+function associarDocumentosComFase() {
   if (enviando.value || !listaDeArquivos.value.length) {
     return;
   }
@@ -34,13 +44,12 @@ function associarDocumentoComAnalise() {
   enviando.value = true;
 
   const associacoes = listaDeArquivos.value
-    .filter((registroDoArquivo) => registroDoArquivo)
-    .map((registroDoArquivo) => monitoramentoDeMetasStore.associarDocumentoComAnalise(
+    .map((registroDoArquivo) => monitoramentoDeMetasStore.associarDocumentoComFase(
       route.params.planoSetorialId,
       route.params.cicloId,
+      props.faseId,
+      route.params.meta_id,
       {
-        ciclo_fisico_id: route.params.cicloId,
-        meta_id: route.params.meta_id,
         upload_token: registroDoArquivo,
       },
     ));
@@ -50,13 +59,13 @@ function associarDocumentoComAnalise() {
 
     respostas.forEach((resposta, i) => {
       if (!resposta) {
-        erros.value[i] = 'Erro ao associar documento com a análise.';
+        erros.value[i] = 'Erro ao associar documento com a fase.';
         temErro = true;
       }
     });
 
     if (temErro) {
-      throw new Error('Erro ao associar um dos documentos com a análise.');
+      throw new Error('Erro ao associar um dos documentos com a fase.');
     } else {
       alertStore.success('Documento associado com sucesso!');
     }
@@ -72,12 +81,12 @@ function associarDocumentoComAnalise() {
   <TituloDePagina>Envio de arquivo</TituloDePagina>
 
   <p>
-    Envie um ou mais arquivos para associar com a análise qualitativa.
+    Envie um ou mais arquivos para associar com a fase.
   </p>
 
   <form
     class="contentStyle"
-    @submit.prevent="associarDocumentoComAnalise"
+    @submit.prevent="associarDocumentosComFase"
   >
     <ol v-if="listaDeCampos.length">
       <li

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ArquivoAnaliseQualitativaDocumentoDto } from '@back/mf/metas/dto/mf-meta-analise-quali.dto';
+import type { PsCicloFaseDocumentoDto } from '@back/pdm-ciclo/entities/ps-ciclo-fase.entity';
 
 import { dateToShortDate } from '@/helpers/dateToDate';
 
@@ -9,7 +9,7 @@ defineEmits(['apagar']);
 
 defineProps({
   arquivos: {
-    type: Array as () => ArquivoAnaliseQualitativaDocumentoDto[],
+    type: Array as () => PsCicloFaseDocumentoDto[],
     required: true,
   },
   permitirExclusao: {
@@ -61,7 +61,7 @@ defineProps({
           ><use xlink:href="#i_doc" /></svg>
           {{ doc?.arquivo?.nome_original }}
         </td>
-        <td>{{ doc.arquivo?.descricao }}</td>
+        <td>{{ doc.descricao }}</td>
         <td>{{ doc.criador?.nome_exibicao }}</td>
         <td>{{ dateToShortDate(doc.criado_em) }}</td>
         <td>
