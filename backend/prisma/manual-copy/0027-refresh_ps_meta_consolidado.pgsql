@@ -13,6 +13,9 @@ DECLARE
     v_fases int[];
     v_n int;
     v_preenchidas int[];
+    -- fases configuradas expostas no painel (só por blocos)
+    v_fases_preenchidas int[] := ARRAY[]::int[];
+    v_fase_atual_config_id int;
     -- Counters for meta and its children
     v_pendente BOOLEAN;
     v_pendente_variavel BOOLEAN;
@@ -114,6 +117,34 @@ BEGIN
               AND r.reaberto_em IS NULL
               AND r.removido_em IS NULL
         );
+
+        -- ciclo fechado: todas as fases habilitadas contam como preenchidas (não há mais o que preencher);
+        -- reaberto: o fechamento volta a ficar pendente, as demais seguem como estão
+        IF v_fase_fechamento_preenchida THEN
+            v_fases_preenchidas := v_fases;
+            v_fase_atual_config_id := NULL;
+        ELSE
+            SELECT coalesce(array_agg(f ORDER BY o), '{}')
+                INTO v_fases_preenchidas
+            FROM unnest(v_fases) WITH ORDINALITY AS t(f, o)
+            WHERE f = ANY (
+                SELECT r.fase_config_id
+                FROM meta_monitoramento_fase r
+                WHERE r.meta_id = pMetaId
+                  AND r.ciclo_fisico_id = v_CicloFisicoId
+                  AND r.ultima_revisao
+                  AND r.removido_em IS NULL
+                  AND NOT (r.fecha_ciclo AND r.reaberto_em IS NOT NULL)
+            );
+
+            -- mesma regra do preenchimento: a fase atual é a primeira habilitada ainda sem revisão
+            SELECT f
+                INTO v_fase_atual_config_id
+            FROM unnest(v_fases) WITH ORDINALITY AS t(f, o)
+            WHERE NOT (f = ANY (v_fases_preenchidas))
+            ORDER BY o
+            LIMIT 1;
+        END IF;
     ELSE
         SELECT
             EXISTS (
@@ -434,6 +465,7 @@ BEGIN
             variaveis_total, variaveis_total_no_ciclo, variaveis_a_coletar, variaveis_a_coletar_atrasadas,
             variaveis_coletadas_nao_conferidas, variaveis_conferidas_nao_liberadas, variaveis_liberadas,
             fase_atual, fase_analise_preenchida, fase_risco_preenchida, fase_fechamento_preenchida,
+            fase_atual_config_id, fases_preenchidas,
             equipes, equipes_orgaos,
             pendente, pendente_variavel, pendente_cronograma, pendente_orcamento,
             ciclo_fisico_id,
@@ -455,6 +487,8 @@ BEGIN
                 ELSE null::"CicloFase"
             END,
             v_fase_analise_preenchida, v_fase_risco_preenchida, v_fase_fechamento_preenchida,
+            CASE WHEN r_item.tipo = 'meta' THEN v_fase_atual_config_id ELSE NULL END,
+            CASE WHEN r_item.tipo = 'meta' THEN v_fases_preenchidas ELSE ARRAY[]::int[] END,
             v_equipes, v_equipes_orgaos,
             v_pendente, v_pendente_variavel, v_pendente_cronograma, v_pendente_orcamento,
             v_CicloFisicoId,

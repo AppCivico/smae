@@ -102,6 +102,33 @@ WHEN (
 )
 EXECUTE FUNCTION f_pdm_refresh_meta_trigger();
 
+-- a fase atual e as fases preenchidas do panorama dependem da ordem/habilitação das fases configuradas
+CREATE OR REPLACE FUNCTION f_pdm_monitoramento_fase_config_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    FOR v_meta_id IN (
+        SELECT m.id
+        FROM meta m
+        JOIN pdm p ON p.id = m.pdm_id
+        WHERE m.pdm_id = NEW.pdm_id
+          AND m.removido_em IS NULL
+          AND p.monitoramento_por_blocos
+    ) LOOP
+        PERFORM f_add_refresh_meta_task(v_meta_id);
+    END LOOP;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_refresh_meta_pdm_monitoramento_fase_config ON pdm_monitoramento_fase_config;
+CREATE TRIGGER trg_refresh_meta_pdm_monitoramento_fase_config
+AFTER INSERT OR UPDATE OF ordem, habilitada, removido_em ON pdm_monitoramento_fase_config
+FOR EACH ROW
+EXECUTE FUNCTION f_pdm_monitoramento_fase_config_refresh_meta_trigger();
+
 -- criação de iniciativa/atividade muda as contagens do ps_dashboard_consolidado; a remoção já é coberta
 -- pelos triggers do mv_variavel_pdm (refresh_mv_variavel_pdm_iniciativa/_atividade)
 CREATE OR REPLACE FUNCTION f_iniciativa_insert_refresh_meta_trigger()

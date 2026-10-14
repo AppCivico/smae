@@ -54,7 +54,10 @@ WITH meta_consolidated AS (
         BOOL_OR(CASE WHEN tipo = 'meta' AND ciclo_fisico_id IS NOT NULL THEN fase_analise_preenchida ELSE FALSE END) AS fase_analise_preenchida,
         BOOL_OR(CASE WHEN tipo = 'meta' AND ciclo_fisico_id IS NOT NULL THEN fase_risco_preenchida ELSE FALSE END) AS fase_risco_preenchida,
         BOOL_OR(CASE WHEN tipo = 'meta' AND ciclo_fisico_id IS NOT NULL THEN fase_fechamento_preenchida ELSE FALSE END) AS fase_fechamento_preenchida,
-        BOOL_OR(ciclo_fisico_id IS NOT NULL) AS has_ciclo_fisico
+        BOOL_OR(ciclo_fisico_id IS NOT NULL) AS has_ciclo_fisico,
+        -- fases configuradas (Pdm.monitoramento_por_blocos), também só da linha da meta
+        MAX(fase_atual_config_id) FILTER (WHERE tipo = 'meta') AS fase_atual_config_id,
+        COALESCE(MAX(fases_preenchidas) FILTER (WHERE tipo = 'meta'), '{}'::int[]) AS fases_preenchidas
     FROM
         ps_dashboard_consolidado main
     GROUP BY
@@ -95,6 +98,11 @@ SELECT
 
     -- Fechamento status
     CASE WHEN has_ciclo_fisico AND fase_fechamento_preenchida THEN 1 ELSE 0 END AS fechadas,
-    CASE WHEN has_ciclo_fisico AND NOT fase_fechamento_preenchida THEN 1 ELSE 0 END AS a_fechar
+    CASE WHEN has_ciclo_fisico AND NOT fase_fechamento_preenchida THEN 1 ELSE 0 END AS a_fechar,
+
+    -- novas colunas sempre no final (CREATE OR REPLACE VIEW só aceita acrescentar)
+    has_ciclo_fisico,
+    fase_atual_config_id,
+    fases_preenchidas
 FROM
     meta_consolidated;

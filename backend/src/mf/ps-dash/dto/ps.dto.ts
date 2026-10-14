@@ -116,6 +116,42 @@ export class PSMFQuadroVariaveisDto {
     nao_associadas: PSMFSituacaoVariavelDto | null;
 }
 
+export class PSMFFaseMonitoramentoDto {
+    @ApiProperty({
+        description:
+            'ID da fase configurada (pdm_monitoramento_fase_config). null nos planos que ainda usam as fases fixas',
+        type: Number,
+        nullable: true,
+    })
+    id: number | null;
+
+    @ApiProperty({ description: 'Ordem da fase no ciclo' })
+    ordem: number;
+
+    @ApiProperty({ description: 'Rótulo da fase (definido na configuração do PdM/PS)' })
+    rotulo: string;
+}
+
+export class PSMFQuadroFaseMonitoramentoDto extends PSMFFaseMonitoramentoDto {
+    @ApiProperty({ description: 'Quantidade de metas com a fase preenchida no ciclo' })
+    preenchidas: number;
+
+    @ApiProperty({ description: 'Quantidade de metas com a fase a preencher no ciclo' })
+    a_preencher: number;
+}
+
+export class PSMFMonitoramentoMetaDto {
+    @ApiProperty({
+        description: 'Fase em que a meta está no ciclo atual. null quando o ciclo já foi fechado',
+        type: PSMFFaseMonitoramentoDto,
+        nullable: true,
+    })
+    fase_atual: PSMFFaseMonitoramentoDto | null;
+
+    @ApiProperty({ description: 'Ciclo da meta fechado (última fase preenchida)' })
+    fechado: boolean;
+}
+
 export class PSMFQuadroMetasDto {
     @ApiProperty({ description: 'Quantidade de metas com alguma pendência' })
     com_pendencia: number;
@@ -158,6 +194,15 @@ export class PSMFQuadroMetasDto {
 
     @ApiProperty({ description: 'Quantidade de metas a fechar' })
     a_fechar: number;
+
+    @ApiProperty({
+        description:
+            'Preenchidas/a preencher por fase do monitoramento físico, na ordem do ciclo. ' +
+            'Com fases configuradas no PdM/PS (informar pdm_id), traz as fases habilitadas com os rótulos configurados; ' +
+            'senão, as fases fixas (qualificação, análise de risco e fechamento)',
+        type: [PSMFQuadroFaseMonitoramentoDto],
+    })
+    fases_monitoramento: PSMFQuadroFaseMonitoramentoDto[];
 }
 
 export class PSMFStatusVariaveisMetaDto {
@@ -230,8 +275,19 @@ export class PSMFItemMetaDto {
     })
     pendencia_cronograma: PSMFCountDto;
 
-    @ApiProperty({ description: 'Situação das fases do monitoramento da meta' })
+    @ApiProperty({
+        description:
+            'Situação das fases fixas do monitoramento da meta. Obsoleto: usar `monitoramento`, que considera as fases configuradas',
+        deprecated: true,
+    })
     monitoramento_ciclo: PSMFSituacaoCicloDto[];
+
+    @ApiProperty({
+        description: 'Fase atual do monitoramento físico (apenas para metas com ciclo ativo, senão null)',
+        type: PSMFMonitoramentoMetaDto,
+        nullable: true,
+    })
+    monitoramento: PSMFMonitoramentoMetaDto | null;
 
     @ApiProperty({ description: 'Estatísticas de variáveis' })
     variaveis: PSMFStatusVariaveisMetaDto;

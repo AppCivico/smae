@@ -8241,6 +8241,9 @@ model PsDashboardConsolidado {
     fase_analise_preenchida    Boolean    @default(false)
     fase_risco_preenchida      Boolean    @default(false)
     fase_fechamento_preenchida Boolean    @default(false)
+    // fases configuradas (Pdm.monitoramento_por_blocos): fase a preencher e fases já preenchidas no ciclo
+    fase_atual_config_id       Int?
+    fases_preenchidas          Int[]      @default([])
 
     equipes_orgaos      Int[]   @default([])
     equipes             Int[]   @default([])
@@ -8286,6 +8289,8 @@ view view_ps_dashboard_consolidado {
     fase_analise_preenchida            Boolean
     fase_risco_preenchida              Boolean
     fase_fechamento_preenchida         Boolean
+    fase_atual_config_id               Int?
+    fases_preenchidas                  Int[]
     equipes_orgaos                     Int[]
     equipes                            Int[]
     pendente                           Boolean
@@ -8376,6 +8381,12 @@ view view_ps_dashboard_meta_stats {
     // Closing status
     fechadas Int
     a_fechar Int
+
+    has_ciclo_fisico Boolean
+
+    // fases configuradas (Pdm.monitoramento_por_blocos)
+    fase_atual_config_id Int?
+    fases_preenchidas    Int[]
 
     ciclo_fisico_id Int?
 

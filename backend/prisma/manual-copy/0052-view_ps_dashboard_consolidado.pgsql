@@ -1,3 +1,4 @@
+-- x.* é expandido na criação: recriar a view sempre que ps_dashboard_consolidado ganhar colunas
 drop view if exists view_ps_dashboard_consolidado;
 CREATE OR REPLACE VIEW view_ps_dashboard_consolidado AS
 SELECT

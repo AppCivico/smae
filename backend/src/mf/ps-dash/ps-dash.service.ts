@@ -14,8 +14,11 @@ import {
     PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
     PSMFFiltroDashboardQuadroVariaveisDto,
+    PSMFFaseMonitoramentoDto,
     PSMFItemMetaDto,
     PSMFListaMetasDto,
+    PSMFMonitoramentoMetaDto,
+    PSMFQuadroFaseMonitoramentoDto,
     PSMFQuadroMetasDto,
     PSMFQuadroVariaveisDto,
     PSMFSituacaoCicloDto,
@@ -38,6 +41,15 @@ interface IdCodTituloTipoDto {
     iniciativa?: IdCodTituloDto | null;
     meta: IdCodTituloDto;
 }
+
+type FaseConfigurada = PSMFFaseMonitoramentoDto & { id: number; habilitada: boolean };
+
+// fases fixas dos planos sem fases configuradas (Pdm.monitoramento_por_blocos = false)
+const FASES_FIXAS: Record<'Analise' | 'Risco' | 'Fechamento', PSMFFaseMonitoramentoDto> = {
+    Analise: { id: null, ordem: 1, rotulo: 'Qualificação' },
+    Risco: { id: null, ordem: 2, rotulo: 'Análise de risco' },
+    Fechamento: { id: null, ordem: 3, rotulo: 'Fechamento' },
+};
 
 function geraDetalheMetaIniAtv(item: IdCodTituloTipoDto) {
     if (item.atividade_id && item.atividade && item.iniciativa) {
@@ -282,7 +294,11 @@ export class PSMFDashboardService {
             );
 
         // Obter ciclo atual
-        const cicloAtual = await this.obterCicloAtual(filtros.pdm_id);
+        const [cicloAtual, fasesConfiguradas] = await Promise.all([
+            this.obterCicloAtual(filtros.pdm_id),
+            this.carregaFasesConfiguradas(filtros.pdm_id),
+        ]);
+        const fasesPorId = new Map((fasesConfiguradas ?? []).map((f) => [f.id, f]));
 
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
 
@@ -345,8 +361,21 @@ export class PSMFDashboardService {
                 situacaoCiclo.push({ fase: CicloFase.Fechamento, preenchido: item.fase_fechamento_preenchida });
             }
 
+            let monitoramento: PSMFMonitoramentoMetaDto | null = null;
+            if (item.tipo == 'meta' && item.ciclo_fisico_id) {
+                let faseAtual: PSMFFaseMonitoramentoDto | null = null;
+                if (fasesConfiguradas) {
+                    const fase = item.fase_atual_config_id ? fasesPorId.get(item.fase_atual_config_id) : undefined;
+                    if (fase) faseAtual = { id: fase.id, ordem: fase.ordem, rotulo: fase.rotulo };
+                } else if (item.fase_atual && item.fase_atual in FASES_FIXAS) {
+                    faseAtual = FASES_FIXAS[item.fase_atual as keyof typeof FASES_FIXAS];
+                }
+                monitoramento = { fase_atual: faseAtual, fechado: item.fase_fechamento_preenchida };
+            }
+
             return {
                 fase: item.fase_atual,
+                monitoramento,
                 pendencia_orcamento: {
                     preenchido: item.orcamento_preenchido,
                     total: item.orcamento_total,
@@ -406,6 +435,24 @@ export class PSMFDashboardService {
             token_ttl: 3600, // 1 hora
             tem_mais,
         };
+    }
+
+    /** Fases configuradas do PdM/PS (não removidas, em ordem); null quando o plano usa as fases fixas */
+    private async carregaFasesConfiguradas(pdmId: number): Promise<FaseConfigurada[] | null> {
+        const pdm = await this.prisma.pdm.findFirst({
+            where: { id: pdmId, removido_em: null },
+            select: {
+                monitoramento_por_blocos: true,
+                PdmMonitoramentoFaseConfig: {
+                    where: { removido_em: null },
+                    orderBy: { ordem: 'asc' },
+                    select: { id: true, ordem: true, rotulo: true, habilitada: true },
+                },
+            },
+        });
+        if (!pdm?.monitoramento_por_blocos) return null;
+
+        return pdm.PdmMonitoramentoFaseConfig;
     }
 
     private async obterCicloAtual(pdmId: number): Promise<PSMFCicloDto | null> {
@@ -477,7 +524,7 @@ export class PSMFDashboardService {
         };
 
         // Usando um único aggregate query para obter todas as contagens necessárias
-        const stats = await this.prisma.view_ps_dashboard_meta_stats.aggregate({
+        const statsQuery = this.prisma.view_ps_dashboard_meta_stats.aggregate({
             _sum: {
                 pendente: true,
                 var_liberadas: true,
@@ -498,9 +545,48 @@ export class PSMFDashboardService {
             },
             where: baseFilter,
         });
+        const [stats, fasesConfiguradas] = await Promise.all([
+            statsQuery,
+            filtros.pdm_id ? this.carregaFasesConfiguradas(filtros.pdm_id) : Promise.resolve(null),
+        ]);
 
         // Extrair os resultados da soma
         const sum = stats._sum;
+
+        let fasesMonitoramento: PSMFQuadroFaseMonitoramentoDto[];
+        if (fasesConfiguradas) {
+            const metas = await this.prisma.view_ps_dashboard_meta_stats.findMany({
+                where: { ...baseFilter, has_ciclo_fisico: true },
+                select: { fases_preenchidas: true },
+            });
+
+            fasesMonitoramento = fasesConfiguradas
+                .filter((f) => f.habilitada)
+                .map((f) => {
+                    const preenchidas = metas.filter((m) => m.fases_preenchidas.includes(f.id)).length;
+                    return {
+                        id: f.id,
+                        ordem: f.ordem,
+                        rotulo: f.rotulo,
+                        preenchidas,
+                        a_preencher: metas.length - preenchidas,
+                    };
+                });
+        } else {
+            fasesMonitoramento = [
+                {
+                    ...FASES_FIXAS.Analise,
+                    preenchidas: sum.qualif_preenchida || 0,
+                    a_preencher: sum.qualif_a_preencher || 0,
+                },
+                {
+                    ...FASES_FIXAS.Risco,
+                    preenchidas: sum.risco_preenchido || 0,
+                    a_preencher: sum.risco_a_preencher || 0,
+                },
+                { ...FASES_FIXAS.Fechamento, preenchidas: sum.fechadas || 0, a_preencher: sum.a_fechar || 0 },
+            ];
+        }
         const totalCount = stats._count.meta_id || 0;
 
         // Calcular metas sem pendência (total - com pendência)
@@ -522,6 +608,7 @@ export class PSMFDashboardService {
             risco_a_preencher: sum.risco_a_preencher || 0,
             fechadas: sum.fechadas || 0,
             a_fechar: sum.a_fechar || 0,
+            fases_monitoramento: fasesMonitoramento,
         };
     }
 }
