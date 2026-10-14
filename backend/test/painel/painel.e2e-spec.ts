@@ -347,42 +347,33 @@ describe('painel (módulo PDM)', () => {
             assert.deepEqual((await grupos()).sort(), [a, b].sort());
         });
 
-        it(
-            'PATCH com grupos substitui a lista de grupos do painel',
-            {
-                todo: 'BUG (a confirmar): PATCH /api/painel/:id: esperado grupos=[B] ao enviar grupos:[B] (como no painel-externo), veio [A,B]. Issue: https://github.com/AppCivico/smae/issues/691',
-            },
-            async () => {
-                const [a, b] = [await criarGrupo(), await criarGrupo()];
-                const nome = uniq('Painel');
-                const id = await criarPainel({ nome, grupos: [a] });
+        it('PATCH com grupos substitui a lista de grupos do painel', async () => {
+            const [a, b] = [await criarGrupo(), await criarGrupo()];
+            const nome = uniq('Painel');
+            const id = await criarPainel({ nome, grupos: [a] });
 
-                assertStatus(
-                    await como(gestor)
-                        .patch(`/api/painel/${id}`)
-                        .send({ nome, grupos: [b] }),
-                    200
-                );
-                const grupos = (await como(gestor).get(`/api/painel/${id}`)).body.grupos;
-                assert.deepEqual(
-                    grupos.map((g: { grupo_painel: { id: number } }) => g.grupo_painel.id),
-                    [b]
-                );
-            }
-        );
+            assertStatus(
+                await como(gestor)
+                    .patch(`/api/painel/${id}`)
+                    .send({ nome, grupos: [b] }),
+                200
+            );
+            const grupos = (await como(gestor).get(`/api/painel/${id}`)).body.grupos;
+            assert.deepEqual(
+                grupos.map((g: { grupo_painel: { id: number } }) => g.grupo_painel.id),
+                [b]
+            );
+        });
 
-        it(
-            'edita só o ativo sem reenviar o nome',
-            async () => {
-                await criarPainel();
-                const id = await criarPainel();
+        it('edita só o ativo sem reenviar o nome', async () => {
+            await criarPainel();
+            const id = await criarPainel();
 
-                const res = await como(gestor).patch(`/api/painel/${id}`).send({ ativo: false });
-                assertStatus(res, 200);
-                const depois = await prisma().painel.findUniqueOrThrow({ where: { id } });
-                assert.equal(depois.ativo, false);
-            }
-        );
+            const res = await como(gestor).patch(`/api/painel/${id}`).send({ ativo: false });
+            assertStatus(res, 200);
+            const depois = await prisma().painel.findUniqueOrThrow({ where: { id } });
+            assert.equal(depois.ativo, false);
+        });
     });
 
     describe('conteúdo do painel', () => {
@@ -553,21 +544,18 @@ describe('painel (módulo PDM)', () => {
             assert.match(alheio.body.message, /painel_conteudo inválido/);
         });
 
-        it(
-            'PATCH detalhes só com mostrar_indicador_meta (detalhes é opcional no DTO)',
-            async () => {
-                const painelId = await criarPainel();
-                const meta = await criarMeta();
-                const criado = await como(gestor)
-                    .patch(`/api/painel/${painelId}/conteudo`)
-                    .send({ metas: [meta.id] });
-                const conteudoId: number = criado.body.created[0].id;
+        it('PATCH detalhes só com mostrar_indicador_meta (detalhes é opcional no DTO)', async () => {
+            const painelId = await criarPainel();
+            const meta = await criarMeta();
+            const criado = await como(gestor)
+                .patch(`/api/painel/${painelId}/conteudo`)
+                .send({ metas: [meta.id] });
+            const conteudoId: number = criado.body.created[0].id;
 
-                const res = await como(gestor)
-                    .patch(`/api/painel/${painelId}/conteudo/${conteudoId}/detalhes`)
-                    .send({ mostrar_indicador_meta: false });
-                assertStatus(res, 200);
-            }
-        );
+            const res = await como(gestor)
+                .patch(`/api/painel/${painelId}/conteudo/${conteudoId}/detalhes`)
+                .send({ mostrar_indicador_meta: false });
+            assertStatus(res, 200);
+        });
     });
 });
