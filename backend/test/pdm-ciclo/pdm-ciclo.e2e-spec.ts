@@ -81,7 +81,7 @@ describe('pdm-ciclo', () => {
         assert.equal(futuros.body.linhas.length, 0);
     });
 
-    it('v2 responde para ciclo configurado no Plano Setorial', async () => {
+    it('v2 recusa Plano Setorial com 400', async () => {
         const ps = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
         assertStatus(
             await api(admin, { sistema: 'PlanoSetorial' })
@@ -90,9 +90,8 @@ describe('pdm-ciclo', () => {
             200
         );
         const v2 = await api(editor).get(`/api/pdm-ciclo/v2?pdm_id=${ps.id}`);
-        assertStatus(v2, 200);
-        assert.ok(v2.body.linhas.length > 0);
-        assert.equal(v2.body.linhas[0].inicio_coleta, null);
+        assertStatus(v2, 400);
+        assert.match(v2.body.message, /Plano Setorial e Programa de Metas usam \/plano-setorial/);
     });
 
     describe('/api/plano-setorial/:id/ciclo (Plano Setorial)', () => {

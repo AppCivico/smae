@@ -146,30 +146,26 @@ describe('wiki-link', () => {
             );
         });
 
-        it(
-            'chave removida pode ser cadastrada de novo',
-            async () => {
-                const key = chave();
-                const primeiro = await api(gestor).post('/api/wiki-link').send({ chave_smae: key, url_wiki: pagina() });
-                assertStatus(primeiro, 201);
-                assertStatus(await api(gestor).delete(`/api/wiki-link/${primeiro.body.id}`), 204);
+        it('chave removida pode ser cadastrada de novo', async () => {
+            const key = chave();
+            const primeiro = await api(gestor).post('/api/wiki-link').send({ chave_smae: key, url_wiki: pagina() });
+            assertStatus(primeiro, 201);
+            assertStatus(await api(gestor).delete(`/api/wiki-link/${primeiro.body.id}`), 204);
 
-                assertStatus(
-                    await api(gestor).post('/api/wiki-link').send({ chave_smae: key, url_wiki: pagina() }),
-                    201
-                );
-            }
-        );
+            assertStatus(await api(gestor).post('/api/wiki-link').send({ chave_smae: key, url_wiki: pagina() }), 201);
+        });
 
-        it(
-            'usuário sem privilégio não cadastra link',
-            { todo: 'BUG (https://github.com/AppCivico/smae/issues/696): wiki-link não tem @Roles em nenhuma rota, qualquer usuário logado grava links' },
-            async () => {
-                assertStatus(
-                    await api(outro).post('/api/wiki-link').send({ chave_smae: chave(), url_wiki: pagina() }),
-                    403
-                );
-            }
-        );
+        it('usuário sem privilégio lê os links, mas não cadastra, edita nem remove', async () => {
+            const criado = await api(gestor).post('/api/wiki-link').send({ chave_smae: chave(), url_wiki: pagina() });
+            assertStatus(criado, 201);
+
+            assertStatus(await api(outro).get('/api/wiki-link'), 200);
+            assertStatus(
+                await api(outro).post('/api/wiki-link').send({ chave_smae: chave(), url_wiki: pagina() }),
+                403
+            );
+            assertStatus(await api(outro).patch(`/api/wiki-link/${criado.body.id}`).send({ url_wiki: pagina() }), 403);
+            assertStatus(await api(outro).delete(`/api/wiki-link/${criado.body.id}`), 403);
+        });
     });
 });

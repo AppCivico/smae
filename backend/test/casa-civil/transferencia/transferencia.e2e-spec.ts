@@ -45,7 +45,10 @@ describe('transferencia', () => {
             'CadastroTransferencia.administrador',
             'CadastroDistribuicaoStatus.inserir',
         ]);
-        anexos = await criarPessoaComPrivilegios(['CadastroTransferenciaAnexo.inserir', 'CadastroTransferenciaAnexo.listar']);
+        anexos = await criarPessoaComPrivilegios([
+            'CadastroTransferenciaAnexo.inserir',
+            'CadastroTransferenciaAnexo.listar',
+        ]);
         semPrivilegio = await criarPessoaSemPrivilegios();
     });
 
@@ -74,7 +77,10 @@ describe('transferencia', () => {
 
         it('rebuild-vetores-busca exige SMAE.superadmin', async () => {
             assertStatus(await casaCivil(gestor).post('/api/transferencia/rebuild-vetores-busca'), 403);
-            assertStatus(await casaCivil(await loginAsSuperAdmin()).post('/api/transferencia/rebuild-vetores-busca'), 202);
+            assertStatus(
+                await casaCivil(await loginAsSuperAdmin()).post('/api/transferencia/rebuild-vetores-busca'),
+                202
+            );
         });
     });
 
@@ -82,63 +88,73 @@ describe('transferencia', () => {
         it('400 com corpo vazio ou esfera fora do enum', async () => {
             const tipo = await criarTipoTransferencia();
             assertStatus(await casaCivil(gestor).post('/api/transferencia').send({}), 400);
-            const invalida = await casaCivil(gestor).post('/api/transferencia').send({
-                tipo_id: tipo.id,
-                orgao_concedente_id: 1,
-                esfera: 'Municipal',
-                objeto: uniq('objeto'),
-                ano: 2026,
-            });
+            const invalida = await casaCivil(gestor)
+                .post('/api/transferencia')
+                .send({
+                    tipo_id: tipo.id,
+                    orgao_concedente_id: 1,
+                    esfera: 'Municipal',
+                    objeto: uniq('objeto'),
+                    ano: 2026,
+                });
             assertStatus(invalida, 400);
         });
 
         it('400 com ano fora do intervalo 1889-2050', async () => {
             const tipo = await criarTipoTransferencia();
-            const res = await casaCivil(gestor).post('/api/transferencia').send({
-                tipo_id: tipo.id,
-                orgao_concedente_id: 1,
-                esfera: 'Estadual',
-                objeto: uniq('objeto'),
-                ano: 2051,
-            });
+            const res = await casaCivil(gestor)
+                .post('/api/transferencia')
+                .send({
+                    tipo_id: tipo.id,
+                    orgao_concedente_id: 1,
+                    esfera: 'Estadual',
+                    objeto: uniq('objeto'),
+                    ano: 2051,
+                });
             assertStatus(res, 400);
         });
 
         it('400 quando tipo não existe', async () => {
-            const res = await casaCivil(gestor).post('/api/transferencia').send({
-                tipo_id: 999999,
-                orgao_concedente_id: 1,
-                esfera: 'Estadual',
-                objeto: uniq('objeto'),
-                ano: 2026,
-            });
+            const res = await casaCivil(gestor)
+                .post('/api/transferencia')
+                .send({
+                    tipo_id: 999999,
+                    orgao_concedente_id: 1,
+                    esfera: 'Estadual',
+                    objeto: uniq('objeto'),
+                    ano: 2026,
+                });
             assertStatus(res, 400);
             assert.match(res.body.message, /Tipo não encontrado/);
         });
 
         it('400 quando a esfera difere da esfera do tipo', async () => {
             const tipo = await criarTipoTransferencia('Federal');
-            const res = await casaCivil(gestor).post('/api/transferencia').send({
-                tipo_id: tipo.id,
-                orgao_concedente_id: 1,
-                esfera: 'Estadual',
-                objeto: uniq('objeto'),
-                ano: 2026,
-            });
+            const res = await casaCivil(gestor)
+                .post('/api/transferencia')
+                .send({
+                    tipo_id: tipo.id,
+                    orgao_concedente_id: 1,
+                    esfera: 'Estadual',
+                    objeto: uniq('objeto'),
+                    ano: 2026,
+                });
             assertStatus(res, 400);
             assert.match(res.body.message, /Esfera da transferência e esfera do tipo devem ser iguais/);
         });
 
         it('400 quando classificacao_id não existe', async () => {
             const tipo = await criarTipoTransferencia();
-            const res = await casaCivil(gestor).post('/api/transferencia').send({
-                tipo_id: tipo.id,
-                orgao_concedente_id: 1,
-                esfera: 'Estadual',
-                objeto: uniq('objeto'),
-                ano: 2026,
-                classificacao_id: 999999,
-            });
+            const res = await casaCivil(gestor)
+                .post('/api/transferencia')
+                .send({
+                    tipo_id: tipo.id,
+                    orgao_concedente_id: 1,
+                    esfera: 'Estadual',
+                    objeto: uniq('objeto'),
+                    ano: 2026,
+                    classificacao_id: 999999,
+                });
             assertStatus(res, 400);
             assert.match(res.body.message, /Classificação não encontrada/);
         });
@@ -266,7 +282,9 @@ describe('transferencia', () => {
         it('distribuição sem nenhum status trava a redução dos valores', async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await completarTransferencia(gestor, id, valores), 200);
-            await prisma().distribuicaoRecursoStatus.deleteMany({ where: { distribuicao_id: (await distribuicaoInicial(id)).id } });
+            await prisma().distribuicaoRecursoStatus.deleteMany({
+                where: { distribuicao_id: (await distribuicaoInicial(id)).id },
+            });
 
             const reduzir = await completarTransferencia(gestor, id, { ...valores, custeio: 900 });
             assertStatus(reduzir, 400);
@@ -312,9 +330,14 @@ describe('transferencia', () => {
 
             // A distribuição inicial ocupa todo o custeio; cancelada, ela sai dos limites para caber a nova.
             assertStatus(await cancelarDistribuicao(gestor, (await distribuicaoInicial(id)).id), 201);
-            const distribuicao = await criarDistribuicao(gestor, id, { custeio: 500, investimento: 0, contrapartida: 0 }, {
-                parlamentares: [{ parlamentar_id: parlamentar.id, valor: '500.00' }],
-            });
+            const distribuicao = await criarDistribuicao(
+                gestor,
+                id,
+                { custeio: 500, investimento: 0, contrapartida: 0 },
+                {
+                    parlamentares: [{ parlamentar_id: parlamentar.id, valor: '500.00' }],
+                }
+            );
             assertStatus(distribuicao, 201);
 
             const abaixo = await completarTransferencia(gestor, id, valores, {
@@ -367,20 +390,42 @@ describe('transferencia', () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await casaCivil(gestor).post(`/api/transferencia/${id}/cancelar`), 201);
             const outroTipo = await criarTipoTransferencia();
-            const res = await casaCivil(gestor).patch(`/api/transferencia/${id}`).send({ tipo_id: outroTipo.id });
+            const res = await casaCivil(gestor)
+                .patch(`/api/transferencia/${id}`)
+                .send({ tipo_id: outroTipo.id, esfera: outroTipo.esfera });
             assertStatus(res, 400);
             assert.match(res.body.message, /cancelada não permite alteração do tipo/);
         });
 
-        it('BUG PATCH só com objeto em transferência ativa', { todo: 'BUG (https://github.com/AppCivico/smae/issues/689): PATCH sem tipo_id/esfera responde 400 "Esfera da transferência e esfera do tipo devem ser iguais" (updateTransferencia compara com undefined); se o contrato é PATCH parcial, é bug' }, async () => {
+        it('PATCH com só tipo_id ou só esfera: 400', async () => {
             const id = await criarTransferencia(gestor);
-            assertStatus(await casaCivil(gestor).patch(`/api/transferencia/${id}`).send({ objeto: uniq('objeto') }), 200);
+            const outroTipo = await criarTipoTransferencia();
+            for (const corpo of [{ tipo_id: outroTipo.id }, { esfera: 'Estadual' }]) {
+                const res = await casaCivil(gestor).patch(`/api/transferencia/${id}`).send(corpo);
+                assertStatus(res, 400);
+                assert.match(res.body.message, /tipo_id e esfera devem ser enviados juntos/);
+            }
         });
 
-        it('BUG cancelada aceita edição de identificação sem enviar tipo_id', { todo: 'BUG (https://github.com/AppCivico/smae/issues/689): transferência cancelada aceita edição de identificação segundo o comentário do service, mas PATCH sem tipo_id responde 400 (dto.tipo_id undefined difere de self.tipo_id)' }, async () => {
+        it('PATCH só com objeto em transferência ativa', async () => {
+            const id = await criarTransferencia(gestor);
+            assertStatus(
+                await casaCivil(gestor)
+                    .patch(`/api/transferencia/${id}`)
+                    .send({ objeto: uniq('objeto') }),
+                200
+            );
+        });
+
+        it('cancelada aceita edição de identificação sem enviar tipo_id', async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await casaCivil(gestor).post(`/api/transferencia/${id}/cancelar`), 201);
-            assertStatus(await casaCivil(gestor).patch(`/api/transferencia/${id}`).send({ objeto: uniq('objeto') }), 200);
+            assertStatus(
+                await casaCivil(gestor)
+                    .patch(`/api/transferencia/${id}`)
+                    .send({ objeto: uniq('objeto') }),
+                200
+            );
         });
 
         it('limpar-workflow responde 201 com CadastroTransferencia.administrador', async () => {

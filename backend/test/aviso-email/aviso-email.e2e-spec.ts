@@ -1,13 +1,26 @@
 import { before, describe, it } from 'node:test';
-import { api, assert, assertStatus, bootApp, criarPessoaComPrivilegios, prisma, Sessao } from '../lib';
+import {
+    api,
+    assert,
+    assertStatus,
+    bootApp,
+    criarPessoaComPrivilegios,
+    loginAsSuperAdmin,
+    prisma,
+    Sessao,
+} from '../lib';
 
-// os avisos não têm @Roles: qualquer sessão cria e edita. O envio de e-mail é feito pelo cron, desligado nos testes.
+// sem @Roles: qualquer sessão cria; só quem criou (ou superadmin) edita e remove. O cron de envio fica desligado nos testes.
 describe('aviso-email', () => {
     let usuario: Sessao;
+    let outro: Sessao;
+    let superadmin: Sessao;
 
     before(async () => {
         await bootApp();
         usuario = await criarPessoaComPrivilegios(['CadastroOrgao.inserir']);
+        outro = await criarPessoaComPrivilegios(['CadastroOrgao.inserir']);
+        superadmin = await loginAsSuperAdmin();
     });
 
     const novoAviso = (extra: Record<string, unknown> = {}) => ({
@@ -111,7 +124,28 @@ describe('aviso-email', () => {
         );
     });
 
-    it('404 ao editar aviso inexistente', async () => {
+    it('404 ao editar ou remover aviso inexistente', async () => {
         assertStatus(await api(usuario).patch('/api/aviso-email/999999').send({ numero: 2 }), 404);
+        assertStatus(await api(usuario).delete('/api/aviso-email/999999'), 404);
+    });
+
+    it('grava criado_por; outro usuário não edita nem remove, superadmin sim', async () => {
+        const criado = await api(usuario)
+            .post('/api/aviso-email')
+            .send(novoAviso({ tarefa_cronograma_id: await tarefaCronograma() }));
+        assertStatus(criado, 201);
+        const id: number = criado.body.id;
+
+        const gravado = await prisma().avisoEmail.findUniqueOrThrow({ where: { id } });
+        assert.equal(gravado.criado_por, usuario.pessoa.id);
+        assert.equal(gravado.removido_por, null);
+
+        const patch = await api(outro).patch(`/api/aviso-email/${id}`).send({ numero: 2 });
+        assertStatus(patch, 403);
+        assert.match(patch.body.message, /Apenas quem criou o aviso/);
+        assertStatus(await api(outro).delete(`/api/aviso-email/${id}`), 403);
+
+        assertStatus(await api(superadmin).patch(`/api/aviso-email/${id}`).send({ numero: 2 }), 200);
+        assertStatus(await api(superadmin).delete(`/api/aviso-email/${id}`), 202);
     });
 });

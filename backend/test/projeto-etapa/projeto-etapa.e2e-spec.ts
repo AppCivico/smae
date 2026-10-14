@@ -256,18 +256,12 @@ describe('projeto-etapa', () => {
             assert.match(res.body.message, /Não pode deixar de ser padrão/);
         });
 
-        it(
-            'lista etapas padrão sem papel de projeto',
-            {
-                todo: 'BUG (corrigido em https://github.com/AppCivico/smae/pull/717): GET /api/projeto-etapa?eh_padrao=true devolve 400 "Sem permissões para acesso aos projetos." para quem só tem CadastroProjetoEtapaPadrao',
-            },
-            async () => {
-                const soPadrao = await criarPessoaComPrivilegios(['CadastroProjetoEtapaPadrao.editar'], {
-                    orgao_id: orgaoA.id,
-                });
-                assertStatus(await api(soPadrao).get('/api/projeto-etapa?eh_padrao=true'), 200);
-            }
-        );
+        it('lista etapas padrão sem papel de projeto', async () => {
+            const soPadrao = await criarPessoaComPrivilegios(['CadastroProjetoEtapaPadrao.editar'], {
+                orgao_id: orgaoA.id,
+            });
+            assertStatus(await api(soPadrao).get('/api/projeto-etapa?eh_padrao=true'), 200);
+        });
 
         it('converter etapa de portfólio em padrão exige também o privilégio de portfólio', async () => {
             const soEditaPadrao = await criarPessoaComPrivilegios(
