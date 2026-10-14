@@ -49,7 +49,17 @@ export class PdmCicloService {
         return retorno;
     }
 
+    private async verificaPdmLegado(pdm_id: number) {
+        const pdm = await this.prisma.pdm.findFirst({
+            where: { id: pdm_id, tipo: 'PDM', sistema: { not: 'ProgramaDeMetas' } },
+            select: { id: true },
+        });
+        if (!pdm)
+            throw new HttpException('PDM não encontrado. Plano Setorial e Programa de Metas usam /plano-setorial', 400);
+    }
+
     async findAllV2(params: FilterPdmCiclo): Promise<CicloFisicoV2Dto[]> {
+        await this.verificaPdmLegado(params.pdm_id);
         const process = await this.findAll(params);
 
         const retorno: CicloFisicoV2Dto[] = [];
@@ -90,6 +100,7 @@ export class PdmCicloService {
             where: { id },
         });
         if (!cicloEscolhido) throw new HttpException('ciclo não encontrado', 404);
+        await this.verificaPdmLegado(cicloEscolhido.pdm_id);
 
         const cicloAtivo = await this.prisma.cicloFisico.findFirst({
             where: { pdm_id: cicloEscolhido.pdm_id, ativo: true },
