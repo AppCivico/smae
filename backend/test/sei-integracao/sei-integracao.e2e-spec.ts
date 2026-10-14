@@ -86,9 +86,11 @@ describe('sei-integracao', () => {
         it('desativa processos já cadastrados e a lista reflete o novo status', async () => {
             const processo = await criarStatusSei({ ativo: true });
 
-            const res = await api(semPrivilegio)
-                .post('/api/sei-integracao/ativar-desativar')
-                .send({ processos_sei: [processo.processo_sei], ativo: false });
+            const corpo = { processos_sei: [processo.processo_sei], ativo: false };
+            assertStatus(await api(semPrivilegio).post('/api/sei-integracao/ativar-desativar').send(corpo), 403);
+
+            const sysadmin = await criarPessoaComPrivilegios(['SMAE.sysadmin']);
+            const res = await api(sysadmin).post('/api/sei-integracao/ativar-desativar').send(corpo);
             assertStatus(res, 201);
 
             const noBanco = await prisma().statusSEI.findUniqueOrThrow({ where: { id: processo.id } });

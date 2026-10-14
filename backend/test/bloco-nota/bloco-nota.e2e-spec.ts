@@ -234,19 +234,15 @@ describe('bloco-nota', () => {
             assert.equal(depois.body.titulo, novoTitulo);
         });
 
-        it(
-            'todo: BUG o id_jwt devolvido pelo POST não permite editar a própria nota',
-            { todo: 'BUG (https://github.com/AppCivico/smae/issues/700): nota.service.create devolve token com write=false' },
-            async () => {
-                const criada = await novaNota();
-                assertStatus(
-                    await api(gestor)
-                        .patch(`/api/nota/${encodeURIComponent(criada.id_jwt)}`)
-                        .send({ titulo: uniq() }),
-                    200
-                );
-            }
-        );
+        it('o id_jwt devolvido pelo POST permite editar a própria nota', async () => {
+            const criada = await novaNota();
+            assertStatus(
+                await api(gestor)
+                    .patch(`/api/nota/${encodeURIComponent(criada.id_jwt)}`)
+                    .send({ titulo: uniq() }),
+                200
+            );
+        });
 
         it('400 quando a data de revisão já passou', async () => {
             const res = await api(gestor).post('/api/nota').send({
