@@ -215,6 +215,9 @@ export class TransferenciaService {
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // O acesso a este endpoint já é controlado pelo @Roles(['CadastroTransferencia.editar']) no controller.
+        if ((dto.tipo_id === undefined) !== (dto.esfera === undefined))
+            throw new HttpException('tipo_id e esfera devem ser enviados juntos', 400);
+
         const agora = new Date(Date.now());
         let workflowCriado: boolean = false;
         const updated = await this.prisma.$transaction(
