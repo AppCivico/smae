@@ -118,7 +118,7 @@ if (!activePdm.value.id) {
       justify-content: flex-end;
     }
 
-        .abas__navegacao {
+    .abas__navegacao {
       margin-left: 0;
       margin-right: auto;
     }
