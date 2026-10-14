@@ -50,6 +50,7 @@ export class AvisoEmailController {
         @Body() dto: UpdateAvisoEmailDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.avisoEmailService.verificaPermissaoEdicao(id.id, user);
         return await this.avisoEmailService.update(id.id, dto, user);
     }
 
@@ -58,6 +59,7 @@ export class AvisoEmailController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() id: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.avisoEmailService.verificaPermissaoEdicao(id.id, user);
         await this.avisoEmailService.remove(id.id, user);
 
         return '';
