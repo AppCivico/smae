@@ -281,6 +281,7 @@ iniciar();
           class="mb2"
         >
           <hr class="mt2 mb2">
+          <h4>Tags</h4>
           <TagsDeMetas :lista-de-tags="singleMeta.tags" />
         </div>
 

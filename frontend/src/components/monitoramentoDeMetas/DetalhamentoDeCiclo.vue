@@ -5,12 +5,11 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
+import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const route = useRoute();
 
@@ -52,6 +51,16 @@ const fases = computed(() => cicloDetalhes.value?.fases || []);
 
 function conteudoDoBloco(revisao, blocoId) {
   return revisao?.blocos.find((bloco) => bloco.bloco_id === blocoId)?.conteudo;
+}
+
+// no formato esperado pelo `TagsDeMetas`
+function tagsParaLista(revisao) {
+  return revisao.tags.map((tag) => ({
+    id: tag.id,
+    descricao: tag.descricao,
+    download_token: tag.icone,
+    download_token_miniatura: tag.icone_thumbnail,
+  }));
 }
 
 // a fase que fecha o ciclo exibe também os fechamentos anteriores a reaberturas
@@ -229,40 +238,10 @@ onMounted(() => {
                 <hr class="f1 mt025">
               </dt>
               <dd class="t13">
-                <ul
+                <TagsDeMetas
                   v-if="revisao.tags.length"
-                  class="lista-de-tags flex g1 flexwrap"
-                >
-                  <li
-                    v-for="tag in revisao.tags"
-                    :key="tag.id"
-                    class="lista-de-tags__item flex center"
-                    :class="{
-                      'lista-de-tags__item--apenas-titulo': !tag.icone,
-                    }"
-                  >
-                    <a
-                      v-if="tag.icone"
-                      :href="`${baseUrl}/download/${tag.icone}`"
-                      download
-                      class="lista-de-tags__link block"
-                      :title="tag.descricao"
-                    >
-                      <img
-                        class="lista-de-tags__icone"
-                        :src="`${baseUrl}/download/${tag.icone_thumbnail || tag.icone}?inline=true`"
-                        :alt="tag.descricao"
-                        width="250"
-                      >
-                    </a>
-                    <strong
-                      v-else
-                      class="lista-de-tags__nome"
-                    >
-                      {{ tag.descricao }}
-                    </strong>
-                  </li>
-                </ul>
+                  :lista-de-tags="tagsParaLista(revisao)"
+                />
                 <template v-else>
                   -
                 </template>
@@ -325,31 +304,5 @@ onMounted(() => {
 
 .ciclo-passado .details-content__item {
   padding-inline: 1.5rem;
-}
-
-/* mesmo estilo de `TagsDeMetas.vue`, que é restrito àquele componente */
-.lista-de-tags__item {
-  width: 6.857143rem;
-  height: 6.857143rem;
-}
-
-.lista-de-tags__icone {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: 50% 50%;
-}
-
-.lista-de-tags__item--apenas-titulo {
-  padding: 1rem;
-  border: 1px solid @c400;
-  min-width: min-content;
-}
-
-.lista-de-tags__nome {
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

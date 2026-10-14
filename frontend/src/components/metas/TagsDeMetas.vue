@@ -1,14 +1,18 @@
 <script lang="ts" setup>
 import type { MetaIniAtvTag } from '@back/meta/entities/meta.entity.ts';
 
+type Tag = Pick<MetaIniAtvTag, 'id' | 'descricao' | 'download_token'> & {
+  // quando presente, é exibida no lugar do ícone original
+  download_token_miniatura?: string | null;
+};
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 defineProps<{
-  listaDeTags: MetaIniAtvTag[];
+  listaDeTags: Tag[];
 }>();
 </script>
 <template>
-  <h4>Tags</h4>
   <ul class="lista-de-tags flex g1 flexwrap">
     <li
       v-for="tag in listaDeTags"
@@ -23,10 +27,14 @@ defineProps<{
         :href="baseUrl + '/download/' + tag.download_token"
         download
         class="lista-de-tags__link block"
+        :title="tag.descricao"
       >
         <img
           class="lista-de-tags__icone"
-          :src="`${baseUrl}/download/${tag.download_token}?inline=true`"
+          :src="`${baseUrl}/download/${
+            tag.download_token_miniatura || tag.download_token
+          }?inline=true`"
+          :alt="tag.descricao"
           width="250"
         >
       </a>
