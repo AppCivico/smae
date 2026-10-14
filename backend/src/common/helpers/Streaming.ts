@@ -86,6 +86,7 @@ export function PipeJsonLinesToResponse(stream: Readable, res: ExpressResponse):
         res.end();
     });
 
+    res.status(HttpStatus.OK);
     res.setHeader('Content-Type', 'application/jsonlines+json');
     stream.pipe(transformStream).pipe(res);
 }
