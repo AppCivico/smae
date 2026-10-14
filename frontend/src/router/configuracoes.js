@@ -139,6 +139,9 @@ export default [
         'ProjetoProgramaMDO.',
         'ProjetoTagMDO.',
         'ReferencialEm.Equipe.ProgramaDeMetas',
+        'Reports.modelo_admin.CasaCivil',
+        'Reports.modelo_admin.MDO',
+        'Reports.modelo_admin.Projetos',
       ],
       título: 'Configurações',
       íconeParaMenu: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1329,6 +1332,8 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
             'Reports.modelo_admin.CasaCivil',
+            'Reports.modelo_admin.MDO',
+            'Reports.modelo_admin.Projetos',
           ],
         },
         children: [

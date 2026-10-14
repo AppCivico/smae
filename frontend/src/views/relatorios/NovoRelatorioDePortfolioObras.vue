@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
+import CampoDeModeloDeRelatorio from '@/components/relatorios/CampoDeModeloDeRelatorio.vue';
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
 import truncate from '@/helpers/texto/truncate';
@@ -31,6 +32,7 @@ const { tiposDeVisibilidade } = storeToRefs(relatoriosStore);
 
 const initialValues = {
   fonte: route.meta.fonteDoRelatorio,
+  modelo_id: '',
   parametros: {
     grupo_tematico_id: null,
     orgao_responsavel_id: null,
@@ -304,6 +306,8 @@ iniciar();
         </div>
       </div>
     </div>
+
+    <CampoDeModeloDeRelatorio :schema="schema" />
 
     <FormErrorsList :errors="errors" />
 
