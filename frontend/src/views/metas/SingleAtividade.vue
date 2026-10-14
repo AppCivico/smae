@@ -184,6 +184,7 @@ iniciar();
       </div>
       <div v-if="singleAtividade?.tags.length">
         <hr class="mt2 mb2">
+        <h4>Tags</h4>
         <TagsDeMetas :lista-de-tags="singleAtividade.tags" />
       </div>
 
