@@ -203,27 +203,15 @@ describe('VariavelGlobalFCController (plano-setorial-formula-composta)', () => {
             );
         });
 
-        it(
-            'leitor de metas PS não deveria criar fórmula (somente leitura)',
-            {
-                todo: 'https://github.com/AppCivico/smae/issues/693 CONFIRMAR: leitor de metas PS (somente CadastroMetaPS.listar) cria fórmula PS, pois o POST em rota de escrita reutiliza ROLES_ACESSO_VARIAVEL_PS (lista de leitura)',
-            },
-            async () => {
-                const res = await api(leitorPs).post('/api/plano-setorial-formula-composta').send(novaFormula());
-                assertStatus(res, 403);
-            }
-        );
+        it('leitor de metas PS não deveria criar fórmula (somente leitura)', async () => {
+            const res = await api(leitorPs).post('/api/plano-setorial-formula-composta').send(novaFormula());
+            assertStatus(res, 403);
+        });
 
-        it(
-            'leitor de metas PS não deveria remover fórmula (somente leitura)',
-            {
-                todo: 'BUG (https://github.com/AppCivico/smae/issues/693): DELETE /api/plano-setorial-formula-composta/:id não tem @Roles, então qualquer usuário logado remove a fórmula',
-            },
-            async () => {
-                const criada = await api(admin).post('/api/plano-setorial-formula-composta').send(novaFormula());
-                assertStatus(criada, 201);
-                assertStatus(await api(leitorPs).delete(`/api/plano-setorial-formula-composta/${criada.body.id}`), 403);
-            }
-        );
+        it('leitor de metas PS não deveria remover fórmula (somente leitura)', async () => {
+            const criada = await api(admin).post('/api/plano-setorial-formula-composta').send(novaFormula());
+            assertStatus(criada, 201);
+            assertStatus(await api(leitorPs).delete(`/api/plano-setorial-formula-composta/${criada.body.id}`), 403);
+        });
     });
 });

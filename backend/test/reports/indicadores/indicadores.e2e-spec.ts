@@ -166,9 +166,6 @@ describe('relatorio/indicadores', () => {
 
     it(
         'stream-linhas com Semestral sem semestre responde 400',
-        {
-            todo: 'BUG: POST /api/relatorio/indicadores/stream-linhas: esperado 400 (como no POST sem stream), veio 200 com {"error":...} no corpo (https://github.com/AppCivico/smae/issues/695)',
-        },
         async () => {
             const res = await stream(executor, `${url}/stream-linhas`, params({ periodo: 'Semestral' }));
             assertStatus(res, 400);

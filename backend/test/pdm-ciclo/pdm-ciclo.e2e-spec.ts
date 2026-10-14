@@ -81,24 +81,19 @@ describe('pdm-ciclo', () => {
         assert.equal(futuros.body.linhas.length, 0);
     });
 
-    it(
-        'v2 responde para ciclo configurado no Plano Setorial',
-        {
-            todo: 'https://github.com/AppCivico/smae/issues/692 BUG: ciclo gerado por ciclo-config não tem fases (atualiza_ciclos_config não cria ciclo_fisico_fase), v2 lança TypeError: 500',
-        },
-        async () => {
-            const ps = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
-            assertStatus(
-                await api(admin, { sistema: 'PlanoSetorial' })
-                    .patch(`/api/plano-setorial/${ps.id}/ciclo-config`)
-                    .send({ meses: [1, 2, 3], data_inicio: '2025-01-01' }),
-                200
-            );
-            const v2 = await api(editor).get(`/api/pdm-ciclo/v2?pdm_id=${ps.id}`);
-            assertStatus(v2, 200);
-            assert.ok(v2.body.linhas.length > 0);
-        }
-    );
+    it('v2 responde para ciclo configurado no Plano Setorial', async () => {
+        const ps = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
+        assertStatus(
+            await api(admin, { sistema: 'PlanoSetorial' })
+                .patch(`/api/plano-setorial/${ps.id}/ciclo-config`)
+                .send({ meses: [1, 2, 3], data_inicio: '2025-01-01' }),
+            200
+        );
+        const v2 = await api(editor).get(`/api/pdm-ciclo/v2?pdm_id=${ps.id}`);
+        assertStatus(v2, 200);
+        assert.ok(v2.body.linhas.length > 0);
+        assert.equal(v2.body.linhas[0].inicio_coleta, null);
+    });
 
     describe('/api/plano-setorial/:id/ciclo (Plano Setorial)', () => {
         let ps: { id: number };
