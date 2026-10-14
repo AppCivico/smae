@@ -71,17 +71,11 @@ describe('upload', () => {
             assert.match(res.body.message, /Tipo de Documento não encontrado/);
         });
 
-        it(
-            '400 para DOCUMENTO sem tipo_documento_id',
-            {
-                todo: 'https://github.com/AppCivico/smae/issues/694 BUG: POST /api/upload tipo=DOCUMENTO sem tipo_documento_id: esperado 400 (ValidateIf exige o campo), veio sem erro de validação e só falhou no S3 (IsOptional anula o ValidateIf)',
-            },
-            async () => {
-                const res = await enviar({ tipo: 'DOCUMENTO' }, { conteudo: Buffer.from('x'), nome: 'a.txt' });
-                assertStatus(res, 400);
-                assert.match(JSON.stringify(res.body.message), /Necessário ID do Tipo Documento/);
-            }
-        );
+        it('400 para DOCUMENTO sem tipo_documento_id', async () => {
+            const res = await enviar({ tipo: 'DOCUMENTO' }, { conteudo: Buffer.from('x'), nome: 'a.txt' });
+            assertStatus(res, 400);
+            assert.match(JSON.stringify(res.body.message), /tipo_documento_id é obrigatório para tipo DOCUMENTO/);
+        });
 
         it('400 quando a extensão não é aceita pelo tipo de documento', async () => {
             const tipoDoc = await prisma().tipoDocumento.create({

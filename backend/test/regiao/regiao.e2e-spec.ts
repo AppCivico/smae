@@ -46,14 +46,15 @@ describe('regiao', () => {
             assertStatus(await api().delete(`/api/regiao/${raiz}`), 401);
         });
 
-        it('403 sem CadastroRegiao.*; GET por id exige CadastroRegiao.remover', async () => {
+        it('403 sem CadastroRegiao.*; GET por id aceita qualquer CadastroRegiao.*', async () => {
             assertStatus(
                 await api(semPrivilegio, CASA_CIVIL).post('/api/regiao').send({ nivel: 1, descricao: uniq() }),
                 403
             );
             assertStatus(await api(semPrivilegio).patch(`/api/regiao/${raiz}`).send({ descricao: uniq() }), 403);
             assertStatus(await api(semPrivilegio).delete(`/api/regiao/${raiz}`), 403);
-            assertStatus(await api(soInserir).get(`/api/regiao/${raiz}`), 403);
+            assertStatus(await api(semPrivilegio).get(`/api/regiao/${raiz}`), 403);
+            assertStatus(await api(soInserir).get(`/api/regiao/${raiz}`), 200);
             assertStatus(await api(gestor).get(`/api/regiao/${raiz}`), 200);
         });
 
