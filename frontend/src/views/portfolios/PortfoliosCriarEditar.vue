@@ -1,12 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
-import schema from '@/consts/formSchemas/portfolio';
+import schemaPortfolio, { portfoliosParaCompartilhamento } from '@/consts/formSchemas/portfolio';
 import months from '@/consts/months';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
@@ -28,7 +28,9 @@ const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
 const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(portfolioStore);
+const {
+  chamadasPendentes, emFoco, erro, itemParaEdicao, lista: portfolios,
+} = storeToRefs(portfolioStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
   lista: gruposDeObservadores,
@@ -39,6 +41,21 @@ const {
 const iconeAtualizado = ref(false);
 
 portfolioStore.$reset();
+
+const schema = schemaPortfolio({ obterPortfolios: () => portfolios.value });
+
+const {
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  setFieldValue,
+  validateField,
+  values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
 
 async function handleIconeChange(file) {
   iconeAtualizado.value = true;
@@ -51,14 +68,14 @@ async function handleIconeChange(file) {
   return uploadToken;
 }
 
-async function onSubmit(values) {
+const onSubmit = handleSubmit(async (carga) => {
   try {
     let r;
     const msg = props.portfolioId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const submitValues = { ...values };
+    const submitValues = { ...carga };
 
     if (!iconeAtualizado.value) {
       delete submitValues.icone_impressao;
@@ -77,7 +94,20 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
+
+watch(itemParaEdicao, (novoValor) => {
+  resetForm({ initialValues: novoValor });
+});
+
+// o schema só revalida o campo alterado; como a compatibilidade dos
+// compartilhamentos depende dos órgãos, conferimos de novo quando eles mudam.
+// `post` para rodar depois da renderização, quando o campo já está registrado
+watch(() => values.orgaos, () => {
+  if (!values.modelo_clonagem && values.portfolios_compartilhados_padrao?.length) {
+    validateField('portfolios_compartilhados_padrao');
+  }
+}, { deep: true, flush: 'post' });
 
 if (props.portfolioId) {
   portfolioStore.buscarItem(props.portfolioId);
@@ -88,17 +118,15 @@ if (props.portfolioId) {
 });
 
 observadoresStore.buscarTudo();
+portfolioStore.buscarTudo({}, false);
 </script>
 
 <template>
   <CabecalhoDePagina />
 
-  <Form
-    v-if="órgãosComoLista?.length"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdicao"
-    @submit="onSubmit"
+  <form
+    v-if="!props.portfolioId || emFoco"
+    @submit.prevent="onSubmit"
   >
     <div class="flex g2">
       <div class="f1 mb1">
@@ -288,6 +316,34 @@ observadoresStore.buscarTudo();
       </div>
     </div>
 
+    <div
+      v-if="!values.modelo_clonagem"
+      class="f1 mb2"
+    >
+      <LabelFromYup
+        :schema="schema"
+        name="portfolios_compartilhados_padrao"
+      />
+      <AutocompleteField
+        name="portfolios_compartilhados_padrao"
+        :controlador="{
+          busca: '',
+          participantes: values.portfolios_compartilhados_padrao || []
+        }"
+        :class="{ loading: chamadasPendentes.lista }"
+        :grupo="portfoliosParaCompartilhamento(portfolios, {
+          portfolioId: props.portfolioId,
+          orgaos: values.orgaos,
+          selecionados: values.portfolios_compartilhados_padrao,
+        })"
+        label="titulo"
+      />
+      <ErrorMessage
+        name="portfolios_compartilhados_padrao"
+        class="error-msg"
+      />
+    </div>
+
     <div class="f1 mb2">
       <LabelFromYup
         :schema="schema"
@@ -354,7 +410,7 @@ observadoresStore.buscarTudo();
       :disabled="isSubmitting"
       class="mb2"
     />
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
