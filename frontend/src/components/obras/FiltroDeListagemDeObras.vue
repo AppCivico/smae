@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
-import { obras as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/obras';
 import statusObras from '@/consts/statusObras';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';

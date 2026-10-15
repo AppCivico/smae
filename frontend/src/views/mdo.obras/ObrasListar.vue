@@ -6,7 +6,7 @@ import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
-import { obras as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/obras';
 import statusObras from '@/consts/statusObras';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';

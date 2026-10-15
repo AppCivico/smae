@@ -1,6 +1,6 @@
 import { object, number } from 'yup';
 
-import { obras as schemaOriginal } from '@/consts/formSchemas';
+import schemaOriginal from '@/consts/formSchemas/obras';
 import schemaTarefa from '@/consts/formSchemas/tarefa';
 
 const tarefa = schemaTarefa();

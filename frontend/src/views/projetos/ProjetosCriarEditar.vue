@@ -17,7 +17,7 @@ import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
-import { projeto as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/projeto';
 import listaDeStatuses from '@/consts/projectStatuses';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
@@ -106,23 +106,23 @@ const buscaDePossiveisGestoresPendente = ref(false);
 const possiveisGerentes = ref([]);
 const buscaDePossiveisGerentesPendente = ref(false);
 const portfóliosDisponíveis = computed(() => {
-  if (!emFoco.value?.portfolio_id) {
+  // na criação vem da query string, como texto
+  const idDoPortfólio = Number(values.portfolio_id);
+
+  if (!idDoPortfólio) {
     return [];
   }
 
-  const órgãosDoPortfólioCorrente = portfolioStore.portfoliosPorId[emFoco.value.portfolio_id]
+  const órgãosDoPortfólioCorrente = portfolioStore.portfoliosPorId[idDoPortfólio]
     ?.orgaos.map((x) => x.id) || [];
 
   return portfolioStore.lista
-    .filter((x) => x.id !== emFoco.value.portfolio_id
+    .filter((x) => x.id !== idDoPortfólio
       // limitar portfólios disponíveis aqueles com órgãos em comum com o principal
       && x?.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
 });
 
 const portfólioSelecionado = computed(() => portfolioStore.portfoliosPorId[values.portfolio_id]);
-
-const compartilhamentosPadrão = computed(() => portfólioSelecionado.value
-  ?.compartilhamentos_padrao || []);
 
 const idsDePortfóliosRemovíveis = computed(() => new Set([
   ...portfolioStore.lista.map((x) => x.id),
@@ -438,6 +438,17 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
     projetoEtiquetasStore.buscarTudo({ portfolio_id: novoPortfolioId });
   }
 });
+
+// na criação, já propõe os compartilhamentos padrão do portfólio escolhido.
+// Observa o portfólio, e não só o id, para cobrir a lista chegando depois do
+// id (vindo da query string); recargas da lista com o mesmo id são ignoradas
+watch(portfólioSelecionado, (novo, antigo) => {
+  if (props.projetoId || novo?.id === antigo?.id) {
+    return;
+  }
+
+  setFieldValue('portfolios_compartilhados', [...(novo?.portfolios_compartilhados_padrao || [])]);
+});
 </script>
 
 <template>
@@ -465,7 +476,7 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
         >
           <template #append>
             <router-link
-              v-if="portfóliosDisponíveis.length"
+              v-if="projetoId && portfóliosDisponíveis.length"
               :to="{
                 name: 'projetosTrocarPortfolio'
               }"
@@ -512,13 +523,6 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
           class="error-msg mb1"
           name="portfolio_id"
         />
-        <p
-          v-if="!projetoId && compartilhamentosPadrão.length"
-          class="t13 tc500 mb1"
-        >
-          Também será compartilhado com:
-          {{ compartilhamentosPadrão.map((x) => x.titulo).join(', ') }}
-        </p>
       </div>
 
       <div
@@ -626,10 +630,7 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
       </div>
     </div>
 
-    <div
-      v-if="projetoId"
-      class="flex g2 mb1"
-    >
+    <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup
           name="portfolios_compartilhados"
