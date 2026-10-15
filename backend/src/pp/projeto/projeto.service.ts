@@ -35,6 +35,7 @@ import {
     ProjetoDocumentoDto,
     ProjetoDto,
     ProjetoEquipeItemDto,
+    ProjetoFonteRecursoResumo,
     ProjetoMdoDto,
     ProjetoMetaDetailDto,
     ProjetoPermissoesDto,
@@ -794,7 +795,7 @@ export class ProjetoService {
                     select: { id: true, ProjetoRegiao: true },
                 });
 
-                await this.upsertFonteRecurso(dto, prismaTx, row.id);
+                await this.upsertFonteRecurso(dto, prismaTx, row.id, logger);
 
                 await prismaTx.tarefaCronograma.create({
                     data: {
@@ -1788,6 +1789,7 @@ export class ProjetoService {
                         fonte_recurso_detalhamento_descricao: true,
                         valor_percentual: true,
                         valor_nominal: true,
+                        observacao: true,
                     },
                 },
 
@@ -2074,6 +2076,10 @@ export class ProjetoService {
             premissas: projeto.premissas,
             restricoes: projeto.restricoes,
             fonte_recursos: projeto.fonte_recursos,
+            fonte_recursos_resumo: this.resumoFonteRecursos(
+                projeto.fonte_recursos,
+                tarefaCrono?.previsao_custo ?? null
+            ),
             origem_tipo: projeto.origem_tipo,
             origem_outro: projeto.origem_outro,
             meta_codigo: projeto.meta_codigo,
@@ -2809,7 +2815,7 @@ export class ProjetoService {
         const executarAtualizacao = async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
-            await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+            await this.upsertFonteRecurso(dto, prismaTx, projetoId, logger);
 
             if (Array.isArray(dto.tags)) {
                 const newTagsSorted = dto.tags.sort().join(',');
@@ -3681,10 +3687,34 @@ export class ProjetoService {
         });
     }
 
+    private resumoFonteRecursos(
+        fontes: { valor_nominal: number | null }[],
+        custoPlanejado: number | null
+    ): ProjetoFonteRecursoResumo {
+        const centavos = (v: number) => Math.round(v * 100) / 100;
+        const percentual = (v: number) => (custoPlanejado ? (v / custoPlanejado) * 100 : null);
+
+        const informado = centavos(fontes.reduce((acc, f) => acc + (f.valor_nominal ?? 0), 0));
+        const semInformacao = custoPlanejado != null ? Math.max(centavos(custoPlanejado - informado), 0) : null;
+        const total = centavos(informado + (semInformacao ?? 0));
+
+        return {
+            custo_total_planejado: custoPlanejado,
+            total_informado_nominal: informado,
+            total_informado_percentual: percentual(informado),
+            sem_informacao_nominal: semInformacao,
+            sem_informacao_percentual: semInformacao != null ? percentual(semInformacao) : null,
+            total_nominal: total,
+            total_percentual: percentual(total),
+            excede_custo_planejado: custoPlanejado != null && informado > centavos(custoPlanejado),
+        };
+    }
+
     private async upsertFonteRecurso(
         dto: { fonte_recursos?: PPfonteRecursoDto[] | undefined },
         prismaTx: Prisma.TransactionClient,
-        projetoId: number
+        projetoId: number,
+        logger: LoggerWithLog
     ) {
         if (Array.isArray(dto.fonte_recursos) == false) return;
 
@@ -3717,12 +3747,28 @@ export class ProjetoService {
             }
         }
 
+        const atuais = await prismaTx.projetoFonteRecurso.findMany({
+            where: { projeto_id: projetoId },
+            select: {
+                id: true,
+                fonte_recurso_cod_sof: true,
+                fonte_recurso_ano: true,
+                fonte_recurso_detalhamento_cod: true,
+                fonte_recurso_detalhamento_descricao: true,
+                valor_nominal: true,
+                observacao: true,
+            },
+        });
+        const atuaisById = new Map(atuais.map((r) => [r.id, r]));
+
         const keepIds: number[] = [];
         for (const fr of dto.fonte_recursos!) {
-            const valor_nominal = fr.valor_nominal !== undefined ? fr.valor_nominal : null;
-            const valor_percentual = fr.valor_percentual !== undefined ? fr.valor_percentual : null;
-            if (valor_nominal == null && valor_percentual == null)
-                throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
+            if (fr.valor_percentual != null)
+                throw new HttpException(
+                    'Valor Percentual é calculado automaticamente a partir do custo total planejado; informe apenas o Valor Nominal',
+                    400
+                );
+            if (fr.valor_nominal == null) throw new HttpException('Valor Nominal é obrigatório', 400);
 
             let anoLookup = fr.fonte_recurso_ano;
             if (anoLookup > anoCorrente) anoLookup = anoCorrente;
@@ -3734,41 +3780,52 @@ export class ProjetoService {
                 );
             }
 
+            const data = {
+                fonte_recurso_ano: fr.fonte_recurso_ano,
+                fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
+                fonte_recurso_detalhamento_cod: fr.fonte_recurso_detalhamento_cod,
+                fonte_recurso_detalhamento_descricao: fr.fonte_recurso_detalhamento_descricao,
+                valor_nominal: fr.valor_nominal,
+                observacao: fr.observacao,
+            };
+
             if ('id' in fr && fr.id) {
-                await prismaTx.projetoFonteRecurso.findFirstOrThrow({
-                    where: { projeto_id: projetoId, id: fr.id },
-                });
-                await prismaTx.projetoFonteRecurso.update({
-                    where: { id: fr.id },
-                    data: {
-                        fonte_recurso_ano: fr.fonte_recurso_ano,
-                        fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
-                        valor_nominal: valor_nominal,
-                        valor_percentual: valor_percentual,
-                        fonte_recurso_detalhamento_cod: fr.fonte_recurso_detalhamento_cod,
-                        fonte_recurso_detalhamento_descricao: fr.fonte_recurso_detalhamento_descricao,
-                        atualizado_em: new Date(Date.now()),
-                    },
-                });
+                const atual = atuaisById.get(fr.id);
+                if (!atual) throw new HttpException(`Fonte de recurso ${fr.id} não encontrada no projeto`, 400);
+
+                const mudancas = (Object.keys(data) as (keyof typeof data)[])
+                    .filter((k) => data[k] !== undefined && atual[k] !== data[k])
+                    .map((k) => `${k}: ${atual[k] ?? 'null'} → ${data[k] ?? 'null'}`);
+
+                if (mudancas.length) {
+                    logger.log(`Fonte de recurso ${fr.id} atualizada: ${mudancas.join(', ')}`);
+                    await prismaTx.projetoFonteRecurso.update({
+                        where: { id: fr.id },
+                        data: { ...data, atualizado_em: new Date(Date.now()) },
+                    });
+                }
                 keepIds.push(fr.id);
             } else {
                 const row = await prismaTx.projetoFonteRecurso.create({
-                    data: {
-                        fonte_recurso_ano: fr.fonte_recurso_ano,
-                        fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
-                        fonte_recurso_detalhamento_cod: fr.fonte_recurso_detalhamento_cod,
-                        fonte_recurso_detalhamento_descricao: fr.fonte_recurso_detalhamento_descricao,
-                        valor_nominal: valor_nominal,
-                        valor_percentual: valor_percentual,
-                        projeto_id: projetoId,
-                    },
+                    data: { ...data, projeto_id: projetoId },
                 });
+                logger.log(
+                    `Fonte de recurso ${row.id} criada: ${data.fonte_recurso_cod_sof}/${data.fonte_recurso_ano}, valor_nominal: ${data.valor_nominal}, observacao: ${data.observacao ?? 'null'}`
+                );
                 keepIds.push(row.id);
             }
         }
-        await prismaTx.projetoFonteRecurso.deleteMany({
-            where: { projeto_id: projetoId, id: { notIn: keepIds } },
-        });
+
+        const removidas = atuais.filter((r) => !keepIds.includes(r.id));
+        for (const r of removidas) {
+            logger.log(
+                `Fonte de recurso ${r.id} removida: ${r.fonte_recurso_cod_sof}/${r.fonte_recurso_ano}, valor_nominal: ${r.valor_nominal ?? 'null'}`
+            );
+        }
+        if (removidas.length)
+            await prismaTx.projetoFonteRecurso.deleteMany({
+                where: { projeto_id: projetoId, id: { in: removidas.map((r) => r.id) } },
+            });
     }
 
     async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {

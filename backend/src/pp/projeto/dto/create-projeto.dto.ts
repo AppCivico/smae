@@ -57,15 +57,28 @@ export class PPfonteRecursoDto {
     @Transform((a: TransformFnParams) => +a.value)
     fonte_recurso_ano: number;
 
+    /**
+     * Calculado automaticamente (valor_nominal / custo total planejado do cronograma).
+     * Não enviar: qualquer valor diferente de null retorna 400.
+     */
+    @IsOptional()
     @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
-    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
+    @Transform((a: TransformFnParams) => (a.value === null || a.value === undefined ? a.value : +a.value))
     valor_percentual?: number | null;
 
-    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
-    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    valor_nominal?: number | null;
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: 'Valor nominal é obrigatório, com até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null || a.value === undefined ? a.value : +a.value))
+    valor_nominal: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Observação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    observacao?: string | null;
 
     @IsOptional()
     @IsString()
