@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
-import { portfolio as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/portfolio';
 import months from '@/consts/months';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
