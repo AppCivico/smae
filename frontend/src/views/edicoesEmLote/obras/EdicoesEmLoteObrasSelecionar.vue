@@ -70,6 +70,7 @@ watch(
     route.query.previsao_termino_ate,
   ],
   () => {
+    listaDeTodosIds.value = [];
     obrasStore.buscarTudo(limparParametros(route.query));
   },
   { immediate: true },
