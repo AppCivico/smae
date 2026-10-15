@@ -620,7 +620,9 @@ export class ProjetoService {
             await this.validateProjetoEtapa(this.prisma, dto.projeto_etapa_id, tipo, portfolio.id);
         }
 
-        // Compartilhamento padrão configurado no portfólio: entra junto com o que o usuário escolheu.
+        // Compartilhamento padrão configurado no portfólio: só é aplicado se a lista não vier no DTO.
+        // Quando vem, ela é a palavra final — o formulário já a propõe preenchida com o padrão, e a
+        // pessoa pode retirar algum. Os padrão continuam liberados mesmo fora da lista do usuário.
         const compartilhadosPadrao = portfolio.modelo_clonagem
             ? []
             : await this.portfolioService.buscaCompartilhamentoPadrao(portfolio);
@@ -630,7 +632,7 @@ export class ProjetoService {
             portfolios,
             compartilhadosPadrao,
             [],
-            [...(dto.portfolios_compartilhados ?? []), ...compartilhadosPadrao]
+            Array.isArray(dto.portfolios_compartilhados) ? dto.portfolios_compartilhados : compartilhadosPadrao
         );
 
         if (tipo == 'MDO') {

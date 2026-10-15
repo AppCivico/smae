@@ -284,8 +284,16 @@ export class PortfolioService {
                     },
                 },
                 compartilhamentosPadrao: {
-                    where: { removido_em: null, portfolio_compartilhado: { removido_em: null } },
-                    select: { portfolio_compartilhado_id: true, portfolio_compartilhado: { select: { titulo: true } } },
+                    where: {
+                        removido_em: null,
+                        portfolio_compartilhado: { removido_em: null, modelo_clonagem: false },
+                    },
+                    select: {
+                        portfolio_compartilhado_id: true,
+                        portfolio_compartilhado: {
+                            select: { titulo: true, orgaos: { select: { orgao_id: true } } },
+                        },
+                    },
                     orderBy: { id: 'asc' },
                 },
             },
@@ -293,6 +301,17 @@ export class PortfolioService {
         });
 
         if (filterId && listActive.length == 0) throw new NotFoundException('Portfólio não encontrado.');
+
+        // Mesmas regras de `buscaCompartilhamentoPadrao`: a lista é usada pelos formulários de
+        // projeto/obra para propor, na criação, exatamente o que o padrão aplicaria.
+        const compartilhamentosValidos = (r: (typeof listActive)[number]) => {
+            if (r.modelo_clonagem) return [];
+
+            const orgaosDoPortfolio = r.orgaos.map((rr) => rr.orgao.id);
+            return r.compartilhamentosPadrao.filter((rr) =>
+                rr.portfolio_compartilhado.orgaos.some((o) => orgaosDoPortfolio.includes(o.orgao_id))
+            );
+        };
 
         return listActive.map((r) => {
             let pode_editar = isFullAdmin;
@@ -302,12 +321,14 @@ export class PortfolioService {
                 pode_editar = r.orgaos.length == 1 && r.orgaos[0].orgao.id == orgao_id;
             }
 
+            const compartilhamentosPadrao = compartilhamentosValidos(r);
+
             return {
                 pode_editar: pode_editar,
                 ...{ ...r, compartilhamentosPadrao: undefined },
                 orgaos: r.orgaos.map((rr) => rr.orgao),
-                portfolios_compartilhados_padrao: r.compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
-                compartilhamentos_padrao: r.compartilhamentosPadrao.map((rr) => ({
+                portfolios_compartilhados_padrao: compartilhamentosPadrao.map((rr) => rr.portfolio_compartilhado_id),
+                compartilhamentos_padrao: compartilhamentosPadrao.map((rr) => ({
                     id: rr.portfolio_compartilhado_id,
                     titulo: rr.portfolio_compartilhado.titulo,
                 })),

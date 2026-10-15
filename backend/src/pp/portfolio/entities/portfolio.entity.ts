@@ -18,11 +18,12 @@ export class PortfolioDto {
     pode_editar: boolean;
     icone_impressao: PortfolioIconeDto | null;
     /**
-     * IDs dos portfólios com os quais os projetos/obras criados neste portfólio são compartilhados automaticamente
+     * IDs dos portfólios com os quais os projetos/obras criados neste portfólio são compartilhados por padrão.
+     * Só os que ainda valem (ativos, não-modelo e com órgão em comum); vazio se este for modelo de clonagem
      */
     portfolios_compartilhados_padrao: number[];
     /**
-     * Portfólios de compartilhamento padrão ativos, com título
+     * Os mesmos de `portfolios_compartilhados_padrao`, com título
      */
     compartilhamentos_padrao: IdTituloDto[];
 }
