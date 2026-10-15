@@ -207,7 +207,10 @@ export default object({
     .nullableOuVazio(),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Na criação, vem preenchido com o compartilhamento padrão do portfólio escolhido. Remova os que não se aplicarem à obra.',
+    }),
   portfolio_id: number()
     .label('Portfólio')
     .min(1, 'Portfólio inválido')

@@ -185,7 +185,10 @@ export default object()
       ),
     portfolios_compartilhados: array()
       .label('Compartilhar com portfólios')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'Na criação, vem preenchido com o compartilhamento padrão do portfólio escolhido. Remova os que não se aplicarem ao projeto.',
+      }),
     publico_alvo: string()
       .label('Público alvo')
       .max(2048)
