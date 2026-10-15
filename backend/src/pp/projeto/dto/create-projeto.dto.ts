@@ -100,7 +100,9 @@ export class CreateProjetoDto {
     portfolio_id: number;
 
     /**
-     * IDs de Portfolios que também terão "acesso" ao projeto,
+     * IDs de Portfolios que também terão "acesso" ao projeto.
+     * Na criação, se não for enviado (ou vier `null`), aplica o compartilhamento padrão do portfólio;
+     * se for enviado, é usado como está — inclusive `[]` para não compartilhar com nenhum.
      * @example "[]"
      */
     @IsOptional()
