@@ -21,7 +21,7 @@ import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelac
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { obras as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/obras';
 import statusObras from '@/consts/statusObras';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';
@@ -137,20 +137,6 @@ const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
 
-const portfóliosDisponíveis = computed(() => {
-  if (!emFoco.value?.portfolio_id) {
-    return [];
-  }
-
-  const órgãosDoPortfólioCorrente = portfolioMdoStore.portfoliosPorId[emFoco.value.portfolio_id]
-    ?.orgaos.map((x) => x.id) || [];
-
-  return portfolioMdoStore.lista
-    .filter((x) => x.id !== emFoco.value.portfolio_id
-      // limitar portfólios disponíveis aqueles com órgãos em comum com o principal
-      && x?.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
-});
-
 const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
   .reduce((acc, cur) => {
     if (!acc[cur.orgao_id]) {
@@ -204,8 +190,22 @@ const {
 
 const portfólioSelecionado = computed(() => portfolioMdoStore.portfoliosPorId[values.portfolio_id]);
 
-const compartilhamentosPadrão = computed(() => portfólioSelecionado.value
-  ?.compartilhamentos_padrao || []);
+const portfóliosDisponíveis = computed(() => {
+  // na criação vem da query string, como texto
+  const idDoPortfólio = Number(values.portfolio_id);
+
+  if (!idDoPortfólio) {
+    return [];
+  }
+
+  const órgãosDoPortfólioCorrente = portfolioMdoStore.portfoliosPorId[idDoPortfólio]
+    ?.orgaos.map((x) => x.id) || [];
+
+  return portfolioMdoStore.lista
+    .filter((x) => x.id !== idDoPortfólio
+      // limitar portfólios disponíveis aqueles com órgãos em comum com o principal
+      && x?.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
+});
 
 const idsDePortfóliosRemovíveis = computed(() => new Set([
   ...portfolioMdoStore.lista.map((x) => x.id),
@@ -512,6 +512,17 @@ watch(itemParaEdicao, (novoValor) => {
   });
 });
 
+// na criação, já propõe os compartilhamentos padrão do portfólio escolhido.
+// Observa o portfólio, e não só o id, para cobrir a lista chegando depois do
+// id (vindo da query string); recargas da lista com o mesmo id são ignoradas
+watch(portfólioSelecionado, (novo, antigo) => {
+  if (props.obraId || novo?.id === antigo?.id) {
+    return;
+  }
+
+  setFieldValue('portfolios_compartilhados', [...(novo?.portfolios_compartilhados_padrao || [])]);
+});
+
 watch(listaDeTiposDeIntervenção, () => {
   // redefinir o formulário porque um atraso na carga da lista de intervenções
   // pode sujá-lo. Vamos tomar o cuidado de manter os dados já preenchidos.
@@ -596,13 +607,6 @@ watch(listaDeTiposDeIntervenção, () => {
           class="error-msg mb1"
           name="portfolio_id"
         />
-        <p
-          v-if="!obraId && compartilhamentosPadrão.length"
-          class="t13 tc500 mb1"
-        >
-          Também será compartilhada com:
-          {{ compartilhamentosPadrão.map((x) => x.titulo).join(', ') }}
-        </p>
       </div>
 
       <div class="f1 mb1 fb20em">
@@ -922,10 +926,7 @@ watch(listaDeTiposDeIntervenção, () => {
         :erro="erroDeTiposDeIntervenção.lista"
       />
     </div>
-    <div
-      v-if="obraId"
-      class="mb2"
-    >
+    <div class="mb2">
       <LabelFromYup
         name="portfolios_compartilhados"
         :schema="schema"

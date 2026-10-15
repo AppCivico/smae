@@ -9,7 +9,7 @@ import SelecionarTudo from '@/components/camposDeFormulario/SelecionarTudo/Selec
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { obras as obrasSchema } from '@/consts/formSchemas';
+import obrasSchema from '@/consts/formSchemas/obras';
 import statusObras from '@/consts/statusObras';
 import limparParametros from '@/helpers/limparParametros.ts';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';

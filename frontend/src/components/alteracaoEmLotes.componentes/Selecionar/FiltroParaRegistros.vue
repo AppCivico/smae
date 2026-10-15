@@ -5,10 +5,8 @@ import { useRoute } from 'vue-router';
 
 import type { Formulario } from '@/components/FiltroParaPagina.vue';
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
-import {
-  obras as obrasSchema,
-  alteracaoEmLoteNovoFiltro as schema,
-} from '@/consts/formSchemas';
+import { alteracaoEmLoteNovoFiltro as schema } from '@/consts/formSchemas';
+import obrasSchema from '@/consts/formSchemas/obras';
 import statusObras from '@/consts/statusObras';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';

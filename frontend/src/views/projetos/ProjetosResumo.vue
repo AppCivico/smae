@@ -7,7 +7,7 @@ import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudanç
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
-import { projeto as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/projeto';
 import statuses from '@/consts/projectStatuses';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import dateToField from '@/helpers/dateToField';
