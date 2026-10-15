@@ -129,17 +129,20 @@ const idsDePortfóliosRemovíveis = computed(() => new Set([
   ...(portfólioSelecionado.value?.portfolios_compartilhados_padrao || []),
 ]));
 
-// opções do campo: os disponíveis mais os compartilhamentos padrão do portfólio que
-// estejam fora da lista do usuário — o back-end os aceita, e assim eles ganham chip
-const opçõesDeCompartilhamento = computed(() => [
-  ...portfóliosDisponíveis.value,
-  ...(portfólioSelecionado.value?.compartilhamentos_padrao || [])
-    .filter((x) => !portfóliosDisponíveis.value.some((y) => y.id === x.id)),
-]);
+// compartilhamentos selecionados que não estão entre as opções de adição — os que o
+// registro já tinha e os padrão do portfólio fora da lista do usuário. Viram chips à
+// parte, para que a busca continue oferecendo só `portfóliosDisponíveis`
+const compartilhamentosForaDaLista = computed(() => {
+  const conhecidos = [
+    ...(emFoco.value?.portfolios_compartilhados || []),
+    ...(portfólioSelecionado.value?.compartilhamentos_padrao || []),
+  ];
 
-const compartilhamentosForaDaLista = computed(() => (emFoco.value?.portfolios_compartilhados || [])
-  .filter((x) => values.portfolios_compartilhados?.includes(x.id)
-    && !opçõesDeCompartilhamento.value.some((y) => y.id === x.id)));
+  return conhecidos
+    .filter((x, i) => conhecidos.findIndex((y) => y.id === x.id) === i)
+    .filter((x) => values.portfolios_compartilhados?.includes(x.id)
+      && !portfóliosDisponíveis.value.some((y) => y.id === x.id));
+});
 
 function removerCompartilhamento(id) {
   setFieldValue(
@@ -651,7 +654,7 @@ watch(portfólioSelecionado, (novo, antigo) => {
             busca: '',
             participantes: values.portfolios_compartilhados || []
           }"
-          :grupo="opçõesDeCompartilhamento"
+          :grupo="portfóliosDisponíveis"
           :class="{
             error: errors.portfolios_compartilhados,
             loading: portfolioStore.chamadasPendentes.lista
