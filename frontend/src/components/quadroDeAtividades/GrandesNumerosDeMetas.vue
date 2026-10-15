@@ -1,18 +1,13 @@
-<script setup>
-import { defineProps } from 'vue';
+<script lang="ts" setup>
+import type { PSMFQuadroMetasDto } from '@back/mf/ps-dash/dto/ps.dto';
 
 import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
 
-defineProps({
-  metas: {
-    type: [
-      Object,
-      null,
-    ],
-    required: true,
-    validator: (value) => value === null || Object.keys(value).length > 0,
-  },
-});
+type Props = {
+  metas: PSMFQuadroMetasDto | null;
+};
+
+defineProps<Props>();
 </script>
 <template>
   <section
@@ -117,12 +112,17 @@ defineProps({
       </article>
     </div>
     <div class="painel-grandes-numeros-metas__coluna">
-      <article>
-        <h2>Qualificações</h2>
+      <article
+        v-for="fase in $props.metas.fases_monitoramento"
+        :key="fase.id ?? fase.ordem"
+      >
+        <h2 class="painel-grandes-numeros-metas__titulo-fase">
+          {{ fase.rotulo }}
+        </h2>
         <div class="painel-grandes-numeros-metas__grupo-de-numeros">
           <NumeroComLegenda
             como-item
-            :numero="$props.metas.qualificacao_a_preencher"
+            :numero="fase.a_preencher"
             cor="#a6b6bd"
             legenda="Pendentes"
             cor-de-fundo="#e8e8e866"
@@ -132,57 +132,9 @@ defineProps({
 
           <NumeroComLegenda
             como-item
-            :numero="$props.metas.qualificacao_preenchida"
+            :numero="fase.preenchidas"
             cor="#005c8a"
             legenda="Preenchidas"
-            cor-de-fundo="#e8e8e866"
-            :tamanho-do-numero="58"
-            :tamanho-da-legenda="12"
-          />
-        </div>
-      </article>
-      <article>
-        <h2>Análise de risco</h2>
-        <div class="painel-grandes-numeros-metas__grupo-de-numeros">
-          <NumeroComLegenda
-            como-item
-            :numero="$props.metas.risco_a_preencher"
-            cor="#a6b6bd"
-            legenda="Preencher"
-            cor-de-fundo="#e8e8e866"
-            :tamanho-do-numero="58"
-            :tamanho-da-legenda="12"
-          />
-
-          <NumeroComLegenda
-            como-item
-            :numero="$props.metas.risco_preenchido"
-            cor="#005c8a"
-            legenda="Preenchidos"
-            cor-de-fundo="#e8e8e866"
-            :tamanho-do-numero="58"
-            :tamanho-da-legenda="12"
-          />
-        </div>
-      </article>
-      <article>
-        <h2>Fechamentos</h2>
-        <div class="painel-grandes-numeros-metas__grupo-de-numeros">
-          <NumeroComLegenda
-            como-item
-            :numero="$props.metas.a_fechar"
-            cor="#a6b6bd"
-            legenda="A fechar"
-            cor-de-fundo="#e8e8e866"
-            :tamanho-do-numero="58"
-            :tamanho-da-legenda="12"
-          />
-
-          <NumeroComLegenda
-            como-item
-            :numero="$props.metas.fechadas"
-            cor="#005c8a"
-            legenda="Fechadas"
             cor-de-fundo="#e8e8e866"
             :tamanho-do-numero="58"
             :tamanho-da-legenda="12"
@@ -202,6 +154,10 @@ defineProps({
 .painel-grandes-numeros-metas h2 {
   font-size: 1rem;
   color: #7e858d;
+}
+
+.painel-grandes-numeros-metas__titulo-fase {
+  overflow-wrap: anywhere;
 }
 
 .painel-grandes-numeros-metas__coluna {
