@@ -567,7 +567,7 @@ export class MetaService {
                 },
                 id: filters?.id,
             },
-            orderBy: [{ titulo: 'asc' }],
+            orderBy: [{ codigo: 'asc' }],
             select: {
                 id: true,
                 titulo: true,
@@ -1557,10 +1557,7 @@ export class MetaService {
         });
     }
 
-    async buscaMetasIniciativaAtividadesPsEPdm(
-        metas: number[],
-        user: PessoaFromJwt
-    ): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividadesPsEPdm(metas: number[], user: PessoaFromJwt): Promise<DadosCodTituloMetaDto[]> {
         const permissionsSet = await MetasGetPermissionSet('PS_E_PDM_AS_PS', user, this.prisma);
         const permitidas = await this.prisma.meta.findMany({
             where: { id: { in: metas }, AND: permissionsSet, pdm: { removido_em: null } },
