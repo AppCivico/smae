@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { PSMFMonitoramentoMetaDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -64,26 +63,6 @@ const legendas = {
   })),
 };
 
-// número exibido no ícone: posição entre as fases habilitadas, já que a `ordem` pode pular
-function obterNumeroFaseMonitoramento(monitoramento: PSMFMonitoramentoMetaDto | null) {
-  if (!monitoramento) return null;
-
-  const fases = estatisticasMetas.value?.fases_monitoramento || [];
-
-  if (monitoramento.fechado) {
-    return fases.length || null;
-  }
-
-  const { fase_atual: faseAtual } = monitoramento;
-  if (!faseAtual) return null;
-
-  const indice = fases.findIndex((fase) => (faseAtual.id !== null
-    ? fase.id === faseAtual.id
-    : fase.ordem === faseAtual.ordem));
-
-  return indice === -1 ? faseAtual.ordem : indice + 1;
-}
-
 const listaDeMetasPreparado = computed(() => {
   if (!route.query.pdm_id) {
     return [];
@@ -99,7 +78,7 @@ const listaDeMetasPreparado = computed(() => {
       atividadeId: item.atividade_id,
       variaveis: item.variaveis as ListaVariaveis,
       monitoramento: item.monitoramento,
-      numeroFaseMonitoramento: obterNumeroFaseMonitoramento(item.monitoramento),
+      numeroFaseMonitoramento: item.monitoramento?.fase_atual?.posicao ?? null,
       pendencias: {
         cronograma: item.pendencia_cronograma,
         orcamento: item.pendencia_orcamento,

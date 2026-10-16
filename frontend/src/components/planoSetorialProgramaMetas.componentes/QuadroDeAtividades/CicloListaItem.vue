@@ -66,7 +66,7 @@ export type CicloVigenteItemParams = {
   codigo: string;
   variaveis: ListaVariaveis,
   monitoramento: PSMFMonitoramentoMetaDto | null,
-  // posição da fase atual entre as fases habilitadas do plano; no ciclo fechado, a da última
+  // posição da fase atual entre as habilitadas; no ciclo fechado, a da última
   numeroFaseMonitoramento?: number | null,
   pendencias: {
     cronograma: PSMFCountDto,
