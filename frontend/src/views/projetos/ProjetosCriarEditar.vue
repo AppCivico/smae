@@ -404,6 +404,8 @@ const onSubmit = handleSubmit(async () => {
 
       alertStore.success(msg);
       emFoco.value = null;
+      // como as rotas de saída mostram o item em foco,
+      // precisamos buscar novamente o item atualizado antes de redirecionar.
       projetosStore.buscarItem(props.projetoId || resposta.id);
       router.push(rotaApósSalvamento);
     }
