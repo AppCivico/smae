@@ -13,6 +13,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import { acompanhamento as schema } from '@/consts/formSchemas';
+import { LIMITE_CAMPO_HTML } from '@/consts/limitesDeCampos';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
@@ -263,6 +264,7 @@ watch(itemParaEdicao, (novoItem) => {
           <TextEditor
             v-bind="field"
             :class="{ error: errors.pauta }"
+            :limite="LIMITE_CAMPO_HTML"
           />
         </Field>
         <ErrorMessage
