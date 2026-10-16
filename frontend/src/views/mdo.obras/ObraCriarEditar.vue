@@ -19,10 +19,14 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
+import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
+import TotalFontesDeRecurso from '@/components/FontesDeRecurso/TotalFontesDeRecurso.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import schema from '@/consts/formSchemas/obras';
 import statusObras from '@/consts/statusObras';
+import calcularResumoFontesDeRecurso from '@/helpers/calcularResumoFontesDeRecurso';
+import dinheiro from '@/helpers/dinheiro';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
@@ -367,8 +371,22 @@ async function buscarPossíveisColaboradores() {
 
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
+const custoTotalPlanejado = computed(() => emFoco.value?.tarefa_cronograma?.previsao_custo ?? null);
+
+const resumoFontesDeRecurso = computed(() => calcularResumoFontesDeRecurso(
+  (values.fonte_recursos || []).map((fonte) => fonte.valor_nominal),
+  custoTotalPlanejado.value,
+));
+
 const onSubmit = handleSubmit.withControlled(async (carga) => {
   const cargaManipulada = nulificadorTotal(carga);
+
+  if (Array.isArray(cargaManipulada.fonte_recursos)) {
+    cargaManipulada.fonte_recursos = cargaManipulada.fonte_recursos.map((fonte, idx) => ({
+      ...fonte,
+      valor_percentual: resumoFontesDeRecurso.value.percentuais[idx] ?? null,
+    }));
+  }
 
   switch (true) {
     case !!cargaManipulada.atividade_id:
@@ -1760,6 +1778,11 @@ watch(listaDeTiposDeIntervenção, () => {
         {{ schema.fields.fonte_recursos.spec.label }}
       </legend>
 
+      <ResumoFontesDeRecurso
+        :custo-total-planejado="custoTotalPlanejado"
+        :resumo="resumoFontesDeRecurso"
+      />
+
       <FieldArray
         v-slot="{ fields, push, remove }"
         name="fonte_recursos"
@@ -1879,13 +1902,14 @@ watch(listaDeTiposDeIntervenção, () => {
           </div>
 
           <div class="f1 mb1">
-            <label class="label tc300">
-              Previsão de custo&nbsp;<span
-                v-if="!fields[idx].value.valor_percentual"
-                class="tvermelho"
-              >*</span>
-            </label>
+            <LabelFromYup
+              name="valor_nominal"
+              :for="`fonte_recursos[${idx}].valor_nominal`"
+              class="tc300"
+              :schema="schema.fields.fonte_recursos.innerType"
+            />
             <MaskedFloatInput
+              :id="`fonte_recursos[${idx}].valor_nominal`"
               :name="`fonte_recursos[${idx}].valor_nominal`"
               :value="fields[idx].value.valor_nominal"
               class="inputtext light mb1"
@@ -1897,21 +1921,22 @@ watch(listaDeTiposDeIntervenção, () => {
           </div>
 
           <div class="f1 mb1">
-            <label class="label tc300">
-              Valor percentual&nbsp;<span
-                v-if="!fields[idx].value.valor_nominal"
-                class="tvermelho"
-              >*</span>
-            </label>
-            <MaskedFloatInput
-              :name="`fonte_recursos[${idx}].valor_percentual`"
-              :value="fields[idx].value.valor_percentual"
+            <LabelFromYup
+              name="valor_percentual"
+              :for="`fonte_recursos[${idx}].valor_percentual`"
+              class="tc300"
+              :schema="schema.fields.fonte_recursos.innerType"
+            />
+            <input
+              :id="`fonte_recursos[${idx}].valor_percentual`"
+              type="text"
               class="inputtext light mb1"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="`fonte_recursos[${idx}].valor_percentual`"
-            />
+              readonly
+              aria-readonly="true"
+              :value="resumoFontesDeRecurso.percentuais[idx] === null
+                ? '—'
+                : `${dinheiro(resumoFontesDeRecurso.percentuais[idx])}%`"
+            >
           </div>
 
           <button
@@ -1926,7 +1951,39 @@ watch(listaDeTiposDeIntervenção, () => {
               height="20"
             ><use xlink:href="#i_remove" /></svg>
           </button>
+
+          <div class="f1 fb100">
+            <LabelFromYup
+              name="observacao"
+              :for="`fonte_recursos[${idx}].observacao`"
+              class="tc300"
+              :schema="schema.fields.fonte_recursos.innerType"
+            />
+            <Field
+              :id="`fonte_recursos[${idx}].observacao`"
+              :name="`fonte_recursos[${idx}].observacao`"
+              as="textarea"
+              rows="3"
+              maxlength="2048"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fonte_recursos[${idx}].observacao`"
+            />
+          </div>
+
+          <hr class="f1 fb100">
         </div>
+
+        <template v-if="fields.length">
+          <ResumoFontesDeRecurso
+            :custo-total-planejado="custoTotalPlanejado"
+            :resumo="resumoFontesDeRecurso"
+          />
+
+          <TotalFontesDeRecurso :resumo="resumoFontesDeRecurso" />
+        </template>
 
         <button
           class="like-a__text addlink"
@@ -1936,6 +1993,7 @@ watch(listaDeTiposDeIntervenção, () => {
             fonte_recurso_ano: null,
             valor_nominal: null,
             valor_percentual: null,
+            observacao: null,
           })"
         >
           <svg
