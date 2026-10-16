@@ -14,6 +14,7 @@ import {
     PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
     PSMFFiltroDashboardQuadroVariaveisDto,
+    PSMFFaseAtualMonitoramentoDto,
     PSMFFaseMonitoramentoDto,
     PSMFItemMetaDto,
     PSMFListaMetasDto,
@@ -50,6 +51,21 @@ const FASES_FIXAS: Record<'Analise' | 'Risco' | 'Fechamento', PSMFFaseMonitorame
     Risco: { id: null, ordem: 2, rotulo: 'Análise de risco' },
     Fechamento: { id: null, ordem: 3, rotulo: 'Fechamento' },
 };
+
+/** Fase com a posição (começando em 1) entre as fases habilitadas do ciclo */
+function faseComPosicao(
+    fase: PSMFFaseMonitoramentoDto,
+    fasesDoCiclo: PSMFFaseMonitoramentoDto[]
+): PSMFFaseAtualMonitoramentoDto {
+    const indice = fasesDoCiclo.findIndex((f) => (fase.id !== null ? f.id === fase.id : f.ordem === fase.ordem));
+    return {
+        id: fase.id,
+        ordem: fase.ordem,
+        rotulo: fase.rotulo,
+        // fase desabilitada depois que a meta já estava nela não aparece entre as habilitadas
+        posicao: indice === -1 ? fase.ordem : indice + 1,
+    };
+}
 
 function geraDetalheMetaIniAtv(item: IdCodTituloTipoDto) {
     if (item.atividade_id && item.atividade && item.iniciativa) {
@@ -299,6 +315,10 @@ export class PSMFDashboardService {
             this.carregaFasesConfiguradas(filtros.pdm_id),
         ]);
         const fasesPorId = new Map((fasesConfiguradas ?? []).map((f) => [f.id, f]));
+        // mesmas fases de fases_monitoramento do quadro de metas
+        const fasesDoCiclo: PSMFFaseMonitoramentoDto[] = fasesConfiguradas
+            ? fasesConfiguradas.filter((f) => f.habilitada)
+            : Object.values(FASES_FIXAS);
 
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
 
@@ -363,14 +383,20 @@ export class PSMFDashboardService {
 
             let monitoramento: PSMFMonitoramentoMetaDto | null = null;
             if (item.tipo == 'meta' && item.ciclo_fisico_id) {
-                let faseAtual: PSMFFaseMonitoramentoDto | null = null;
-                if (fasesConfiguradas) {
-                    const fase = item.fase_atual_config_id ? fasesPorId.get(item.fase_atual_config_id) : undefined;
-                    if (fase) faseAtual = { id: fase.id, ordem: fase.ordem, rotulo: fase.rotulo };
+                const fechado = item.fase_fechamento_preenchida;
+                let faseAtual: PSMFFaseMonitoramentoDto | undefined;
+                if (fechado) {
+                    // ciclo fechado: fica na última fase habilitada (fechamento)
+                    faseAtual = fasesDoCiclo[fasesDoCiclo.length - 1];
+                } else if (fasesConfiguradas) {
+                    faseAtual = item.fase_atual_config_id ? fasesPorId.get(item.fase_atual_config_id) : undefined;
                 } else if (item.fase_atual && item.fase_atual in FASES_FIXAS) {
                     faseAtual = FASES_FIXAS[item.fase_atual as keyof typeof FASES_FIXAS];
                 }
-                monitoramento = { fase_atual: faseAtual, fechado: item.fase_fechamento_preenchida };
+                monitoramento = {
+                    fase_atual: faseAtual ? faseComPosicao(faseAtual, fasesDoCiclo) : null,
+                    fechado,
+                };
             }
 
             return {

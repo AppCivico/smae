@@ -140,13 +140,23 @@ export class PSMFQuadroFaseMonitoramentoDto extends PSMFFaseMonitoramentoDto {
     a_preencher: number;
 }
 
+export class PSMFFaseAtualMonitoramentoDto extends PSMFFaseMonitoramentoDto {
+    @ApiProperty({
+        description:
+            'Posição da fase (começando em 1) entre as fases habilitadas do plano. ' +
+            'Diferente de ordem, que conta as desabilitadas. Nos planos com fases fixas, igual à ordem',
+    })
+    posicao: number;
+}
+
 export class PSMFMonitoramentoMetaDto {
     @ApiProperty({
-        description: 'Fase em que a meta está no ciclo atual. null quando o ciclo já foi fechado',
-        type: PSMFFaseMonitoramentoDto,
+        description:
+            'Fase em que a meta está no ciclo atual. Com o ciclo fechado, é a última fase habilitada (fechamento)',
+        type: PSMFFaseAtualMonitoramentoDto,
         nullable: true,
     })
-    fase_atual: PSMFFaseMonitoramentoDto | null;
+    fase_atual: PSMFFaseAtualMonitoramentoDto | null;
 
     @ApiProperty({ description: 'Ciclo da meta fechado (última fase preenchida)' })
     fechado: boolean;
