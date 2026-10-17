@@ -534,12 +534,25 @@ export class IndicadorService {
         });
         await this.metaService.assertMetaWriteOrThrow(tipoParam, metaRow.meta_id, user, 'indicador');
 
-        const formula_variaveis = dto.formula_variaveis;
+        let formula_variaveis = dto.formula_variaveis;
         delete dto.formula_variaveis;
+        const alteraFormula = dto.formula !== undefined || formula_variaveis !== undefined;
         let formula: string = dto.formula ? dto.formula : '';
         const antigaFormulaCompilada = indicadorOld.formula_compilada || '';
-        if (dto.formula_variaveis && !dto.formula) {
-            formula = antigaFormulaCompilada;
+
+        if (alteraFormula) {
+            if (dto.formula === undefined) {
+                formula =
+                    (await this.prisma.indicador.findFirstOrThrow({ where: { id }, select: { formula: true } }))
+                        .formula ?? '';
+            } else if (formula_variaveis === undefined) {
+                formula_variaveis = indicadorOld.formula_variaveis.map((fv) => ({
+                    referencia: fv.referencia,
+                    janela: fv.janela,
+                    variavel_id: fv.variavel_id,
+                    usar_serie_acumulada: fv.usar_serie_acumulada,
+                }));
+            }
         }
 
         if (formula && !formula_variaveis) {
@@ -548,7 +561,9 @@ export class IndicadorService {
             throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
         }
 
-        let formula_compilada: string = await this.validateVariaveis(formula_variaveis, id, formula);
+        let formula_compilada: string = alteraFormula
+            ? await this.validateVariaveis(formula_variaveis, id, formula)
+            : antigaFormulaCompilada;
 
         // TODO rever isso aqui, pq não ta usando pra nada
         // pq ta errado a logica (salvando sempre)
@@ -605,7 +620,7 @@ export class IndicadorService {
                         atualizado_por: user.id,
                         atualizado_em: now,
                         ...(dto as any), // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
-                        formula_compilada: formula_compilada,
+                        ...(alteraFormula ? { formula_compilada } : {}),
                         acumulado_usa_formula:
                             dto.acumulado_usa_formula === null ? undefined : dto.acumulado_usa_formula,
                     },
@@ -617,7 +632,7 @@ export class IndicadorService {
                 //const newVersion = IndicadorService.getIndicadorHash(indicador);
                 //this.logger.debug({ oldVersion, newVersion });
 
-                if (formula_variaveis) {
+                if (alteraFormula && formula_variaveis) {
                     ({ formula, formula_compilada } = await this.trocaReferencias(
                         formula_variaveis,
                         formula,
