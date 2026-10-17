@@ -11,6 +11,7 @@ import {
     Sessao,
     uniq,
 } from '../lib';
+import { criaGlobal } from '../variavel/_helpers';
 
 describe('equipe-responsavel', () => {
     let admin: Sessao;
@@ -208,5 +209,166 @@ describe('equipe-responsavel', () => {
             (await listar(`?orgao_id=${orgaoB}`)).some((l) => l.id === criada.body.id),
             false
         );
+    });
+
+    describe('ciclo de vida de membros, perfis de acesso e uso', () => {
+        let orgaoFilho: number;
+
+        before(async () => {
+            orgaoFilho = (await criarOrgao({ parente_id: orgaoA })).id;
+        });
+
+        const nomePerfil = { participante: 'Participante em equipes', colaborador: 'Coordenador em equipes' };
+
+        const contaPerfil = (pessoaId: number, nome: string) =>
+            prisma().pessoaPerfil.count({ where: { pessoa_id: pessoaId, perfil_acesso: { nome } } });
+
+        const vinculosAtivos = async (pessoaId: number) => ({
+            participante: await prisma().grupoResponsavelEquipeParticipante.count({
+                where: { pessoa_id: pessoaId, removido_em: null },
+            }),
+            colaborador: await prisma().grupoResponsavelEquipeResponsavel.count({
+                where: { pessoa_id: pessoaId, removido_em: null },
+            }),
+        });
+
+        const criarEquipe = async (extra: Record<string, unknown> = {}) => {
+            const res = await api(admin)
+                .post('/api/equipe-responsavel')
+                .send(novaEquipe({ orgao_id: orgaoA, ...extra }));
+            assertStatus(res, 201);
+            return res.body.id as number;
+        };
+
+        const editar = (id: number, dados: Record<string, unknown>) =>
+            api(admin).patch(`/api/equipe-responsavel/${id}`).send(dados);
+
+        it('PATCH de participantes adiciona e remove vínculos e mantém um único perfil de participante por pessoa', async () => {
+            const p1 = await criarPessoaSemPrivilegios({ orgao_id: orgaoA });
+            const p2 = await criarPessoaSemPrivilegios({ orgao_id: orgaoA });
+            const equipe1 = await criarEquipe({ participantes: [p1.pessoa.id] });
+            const equipe2 = await criarEquipe({ participantes: [p1.pessoa.id, p2.pessoa.id] });
+
+            assert.equal(await contaPerfil(p1.pessoa.id, nomePerfil.participante), 1);
+            assert.equal(await contaPerfil(p2.pessoa.id, nomePerfil.participante), 1);
+
+            assertStatus(await editar(equipe1, { participantes: [p1.pessoa.id, p2.pessoa.id] }), 200);
+            assert.equal(await contaPerfil(p2.pessoa.id, nomePerfil.participante), 1, 'sem duplicar o perfil');
+            assert.equal((await vinculosAtivos(p2.pessoa.id)).participante, 2);
+
+            assertStatus(await editar(equipe1, { participantes: [p2.pessoa.id] }), 200);
+            assert.equal(await contaPerfil(p1.pessoa.id, nomePerfil.participante), 1, 'ainda está na equipe 2');
+            assert.equal((await vinculosAtivos(p1.pessoa.id)).participante, 1);
+
+            assertStatus(await editar(equipe2, { participantes: [p2.pessoa.id] }), 200);
+            assert.equal(await contaPerfil(p1.pessoa.id, nomePerfil.participante), 0, 'saiu de todas as equipes');
+            assert.deepEqual(await vinculosAtivos(p1.pessoa.id), { participante: 0, colaborador: 0 });
+            assert.equal(await contaPerfil(p2.pessoa.id, nomePerfil.participante), 1);
+        });
+
+        it('colaboradores seguem a mesma regra com o perfil de coordenador, sem mexer no de participante', async () => {
+            const c1 = await criarPessoaSemPrivilegios({ orgao_id: orgaoA });
+            const equipe = await criarEquipe({ colaboradores: [c1.pessoa.id] });
+
+            assert.equal(await contaPerfil(c1.pessoa.id, nomePerfil.colaborador), 1);
+            assert.equal(await contaPerfil(c1.pessoa.id, nomePerfil.participante), 0);
+            assert.deepEqual(await vinculosAtivos(c1.pessoa.id), { participante: 0, colaborador: 1 });
+
+            assertStatus(await editar(equipe, { colaboradores: [] }), 200);
+            assert.equal(await contaPerfil(c1.pessoa.id, nomePerfil.colaborador), 0);
+            assert.deepEqual(await vinculosAtivos(c1.pessoa.id), { participante: 0, colaborador: 0 });
+        });
+
+        it('aceita participante do órgão subordinado, e uma lista inválida no PATCH não altera nada', async () => {
+            const filho = await criarPessoaSemPrivilegios({ orgao_id: orgaoFilho });
+            const dentro = await criarPessoaSemPrivilegios({ orgao_id: orgaoA });
+            const equipe = await criarEquipe({ participantes: [dentro.pessoa.id] });
+
+            assertStatus(await editar(equipe, { participantes: [dentro.pessoa.id, filho.pessoa.id] }), 200);
+            const vinculo = await prisma().grupoResponsavelEquipeParticipante.findFirstOrThrow({
+                where: { pessoa_id: filho.pessoa.id, grupo_responsavel_equipe_id: equipe, removido_em: null },
+            });
+            assert.equal(vinculo.orgao_id, orgaoFilho);
+
+            const invalido = await editar(equipe, { participantes: [filho.pessoa.id, pessoaOrgaoB.pessoa.id] });
+            assertStatus(invalido, 400);
+            const restantes = await prisma().grupoResponsavelEquipeParticipante.findMany({
+                where: { grupo_responsavel_equipe_id: equipe, removido_em: null },
+                select: { pessoa_id: true },
+            });
+            assert.deepEqual(
+                restantes.map((r) => r.pessoa_id).sort(),
+                [dentro.pessoa.id, filho.pessoa.id].sort(),
+                'transação desfeita'
+            );
+            assert.equal(await contaPerfil(pessoaOrgaoB.pessoa.id, nomePerfil.participante), 0);
+        });
+
+        it('equipe do pai aparece no filtro por órgão de contexto do filho, e a do filho não aparece para o pai', async () => {
+            const doPai = await criarEquipe({ orgao_id: orgaoA });
+            const doFilho = await criarEquipe({ orgao_id: orgaoFilho });
+
+            const paraFilho = await listar(`?orgao_id_contexto=${orgaoFilho}`);
+            assert.ok(paraFilho.some((l) => l.id === doPai));
+            assert.ok(paraFilho.some((l) => l.id === doFilho));
+
+            const paraPai = await listar(`?orgao_id_contexto=${orgaoA}`);
+            assert.ok(paraPai.some((l) => l.id === doPai));
+            assert.ok(!paraPai.some((l) => l.id === doFilho));
+        });
+
+        it('PATCH de título: 400 para título de outra equipe (sem diferenciar caixa), 200 para o próprio', async () => {
+            const tituloA = uniq('Titulo A');
+            const a = await criarEquipe({ titulo: tituloA });
+            const b = await criarEquipe();
+
+            const repetido = await editar(b, { titulo: tituloA.toLowerCase() });
+            assertStatus(repetido, 400);
+            assert.match(repetido.body.message, /Título já está em uso/);
+
+            assertStatus(await editar(a, { titulo: tituloA.toUpperCase() }), 200);
+        });
+
+        it('remover equipe libera os perfis dos membros, e só se não houver outra equipe', async () => {
+            const membro = await criarPessoaSemPrivilegios({ orgao_id: orgaoA });
+            const coord = await criarPessoaSemPrivilegios({ orgao_id: orgaoA });
+            const doomed = await criarEquipe({ participantes: [membro.pessoa.id], colaboradores: [coord.pessoa.id] });
+            const outra = await criarEquipe({ participantes: [membro.pessoa.id] });
+
+            assertStatus(await api(admin).delete(`/api/equipe-responsavel/${doomed}`), 202);
+            assert.equal(await contaPerfil(membro.pessoa.id, nomePerfil.participante), 1, 'continua na outra equipe');
+            assert.equal(await contaPerfil(coord.pessoa.id, nomePerfil.colaborador), 0);
+            assert.deepEqual(await vinculosAtivos(coord.pessoa.id), { participante: 0, colaborador: 0 });
+
+            assertStatus(await api(admin).delete(`/api/equipe-responsavel/${doomed}`), 202);
+            assertStatus(await api(admin).delete(`/api/equipe-responsavel/${outra}`), 202);
+            assert.equal(await contaPerfil(membro.pessoa.id, nomePerfil.participante), 0);
+        });
+
+        it('equipe usada por variável não é removida e a mensagem lista a variável; depois de removê-la, pode', async () => {
+            const adminVar = await criarPessoaComPrivilegios(['CadastroVariavelGlobal.administrador'], {
+                orgao_id: orgaoA,
+            });
+            const equipe = await criarEquipe({ perfil: 'Medicao' });
+            const titulo = uniq('Variável da equipe');
+            const variavelId = await criaGlobal(adminVar, orgaoA, {
+                titulo,
+                orgao_id: orgaoA,
+                medicao_grupo_ids: [equipe],
+            });
+
+            const emUso = await api(admin).delete(`/api/equipe-responsavel/${equipe}`);
+            assertStatus(emUso, 400);
+            assert.ok(emUso.body.message.includes(titulo));
+
+            const comUso = await listar(`?id=${equipe}&retornar_uso=true`);
+            assert.deepEqual(
+                (comUso[0] as unknown as { variaveis: { id: number }[] }).variaveis.map((v) => v.id),
+                [variavelId]
+            );
+
+            assertStatus(await api(adminVar).delete(`/api/variavel/${variavelId}`), 202);
+            assertStatus(await api(admin).delete(`/api/equipe-responsavel/${equipe}`), 202);
+        });
     });
 });

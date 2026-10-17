@@ -86,3 +86,36 @@ export async function cenarioObras() {
     const adminMdo = await criarPessoaComPrivilegios(['ProjetoMDO.administrador_no_orgao'], { orgao_id: orgao.id });
     return { orgao, portfolio, adminMdo };
 }
+
+export type DadosTarefa = Record<string, unknown>;
+
+export function corpoTarefa(orgao_id: number, dados: DadosTarefa = {}): DadosTarefa {
+    return {
+        orgao_id,
+        nivel: 1,
+        numero: 1,
+        tarefa_pai_id: null,
+        tarefa: uniq('Tarefa'),
+        descricao: 'Descrição da tarefa',
+        recursos: 'Equipe',
+        ...dados,
+    };
+}
+
+// duracao em dias corridos, contando o primeiro dia
+export function periodo(inicio: string, duracao: number) {
+    const d = new Date(`${inicio}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + duracao - 1);
+    return { inicio_planejado: inicio, termino_planejado: d.toISOString().slice(0, 10), duracao_planejado: duracao };
+}
+
+export function periodoReal(inicio: string, duracao: number) {
+    const p = periodo(inicio, duracao);
+    return { inicio_real: p.inicio_planejado, termino_real: p.termino_planejado, duracao_real: duracao };
+}
+
+export function somaDias(data: string, dias: number): string {
+    const d = new Date(`${data}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + dias);
+    return d.toISOString().slice(0, 10);
+}
