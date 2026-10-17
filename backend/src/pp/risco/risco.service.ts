@@ -300,7 +300,7 @@ export class RiscoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await prismaTx.projetoRisco.findFirst({
                     where: { id: projeto_risco_id, projeto_id, removido_em: null },
-                    select: { codigo: true },
+                    select: { codigo: true, probabilidade: true, impacto: true },
                 });
                 if (!self) throw new HttpException('Não foi possível encontrar o Risco', 400);
 
@@ -382,8 +382,12 @@ export class RiscoService {
                     }
                 }
 
+                const probabilidade = dto.probabilidade ?? self.probabilidade;
+                const impacto = dto.impacto ?? self.impacto;
                 const calcResult =
-                    dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
+                    (dto.probabilidade || dto.impacto) && probabilidade && impacto
+                        ? RiscoCalc.getResult(probabilidade, impacto)
+                        : undefined;
 
                 return await prismaTx.projetoRisco.update({
                     where: { id: projeto_risco_id },
