@@ -573,9 +573,9 @@ export class TransferenciaService {
                     }
                 }
 
-                const parlamentaresRemovidos = updatedSelf.parlamentar.filter(
-                    (e) => !dto.parlamentares?.map((e) => e.id).includes(e.id)
-                );
+                const parlamentaresRemovidos = dto.parlamentares
+                    ? updatedSelf.parlamentar.filter((e) => !dto.parlamentares!.map((e) => e.id).includes(e.id))
+                    : [];
                 if (parlamentaresRemovidos.length) {
                     for (const row of parlamentaresRemovidos) {
                         // Verificando se parlamentar já está configurado em alguma distribuição desta transferência.
