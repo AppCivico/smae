@@ -888,6 +888,7 @@ export class WorkflowAndamentoFaseService {
                     data: {
                         workflow_etapa_atual_id: faseParaReabrir.workflow_etapa_id,
                         workflow_fase_atual_id: faseParaReabrir.workflow_fase_id,
+                        workflow_finalizado: false,
                     },
                 });
 
