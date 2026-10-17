@@ -252,6 +252,7 @@ export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
     fonte_recursos: ProjetoRecursos[] | null;
+    fonte_recursos_resumo: ProjetoFonteRecursoResumo;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
     meta_codigo: string | null;
@@ -353,6 +354,21 @@ export class ProjetoRecursos {
     fonte_recurso_detalhamento_descricao: string | null;
     valor_percentual: number | null;
     valor_nominal: number | null;
+    observacao: string | null;
+}
+
+export class ProjetoFonteRecursoResumo {
+    /** previsao_custo do cronograma */
+    custo_total_planejado: number | null;
+    total_informado_nominal: number;
+    total_informado_percentual: number | null;
+    /** linha "Sem informação": custo total planejado - total informado (mínimo 0) */
+    sem_informacao_nominal: number | null;
+    sem_informacao_percentual: number | null;
+    total_nominal: number;
+    total_percentual: number | null;
+    /** total informado nas fontes maior que o custo total planejado */
+    excede_custo_planejado: boolean;
 }
 
 export class ProjetoDocumentoDto {
