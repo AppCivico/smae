@@ -1029,7 +1029,7 @@ export class OrcamentoRealizadoService {
         return rows;
     }
 
-    async removeEmLote(tipo: TipoProjeto, params: BatchRecordWithId, user: PessoaFromJwt) {
+    async removeEmLote(tipo: TipoProjeto, projetoId: number, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
         const maxBatchSize = await this.smaeConfigService.getConfigNumberWithDefault(
@@ -1039,7 +1039,7 @@ export class OrcamentoRealizadoService {
         if (params.ids.length > maxBatchSize)
             throw new BadRequestException(`Máximo permitido é de ${maxBatchSize} remoções de uma vez`);
 
-        const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(tipo, linha.id));
+        const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(tipo, projetoId, linha.id));
 
         await Promise.all(checkPermissions);
 
@@ -1057,8 +1057,8 @@ export class OrcamentoRealizadoService {
         return;
     }
 
-    async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
-        await this.verificaPermissaoDelete(tipo, id);
+    async remove(tipo: TipoProjeto, projetoId: number, id: number, user: PessoaFromJwt) {
+        await this.verificaPermissaoDelete(tipo, projetoId, id);
 
         const now = new Date(Date.now());
 
@@ -1146,11 +1146,11 @@ export class OrcamentoRealizadoService {
         }
     }
 
-    private async verificaPermissaoDelete(tipo: TipoProjeto, id: number) {
+    private async verificaPermissaoDelete(tipo: TipoProjeto, projetoId: number, id: number) {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
-            where: { id: +id, removido_em: null, projeto: { tipo: tipo } },
+            where: { id: +id, removido_em: null, projeto_id: projetoId, projeto: { tipo: tipo } },
         });
-        if (!orcamentoRealizado || orcamentoRealizado.projeto_id === null)
+        if (!orcamentoRealizado)
             throw new HttpException('Orçamento realizado não encontrado', 404);
     }
 }
