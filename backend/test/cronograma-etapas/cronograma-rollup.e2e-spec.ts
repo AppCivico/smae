@@ -427,8 +427,9 @@ describe('cronograma, etapas e consolidação (rollup)', () => {
     });
 
     describe('atraso', () => {
-        const diasAtras = (n: number) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
-        const diasAFrente = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+        const diaSP = (ms: number) => new Date(ms).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+        const diasAtras = (n: number) => diaSP(Date.now() - n * 86400000);
+        const diasAFrente = (n: number) => diaSP(Date.now() + n * 86400000);
 
         it('classifica o grau pelo atraso em dias e etapa concluída vira Concluido', async () => {
             const { cronograma } = await novoCronograma();
