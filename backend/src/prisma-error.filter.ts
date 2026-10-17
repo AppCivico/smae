@@ -2,6 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Response } from 'express';
 import { AuthRequest } from './auth/models/AuthRequest';
+import { respondTriggerHttpError } from './prisma-error-unknown.filter';
 import { getRecentPrismaQueries } from './prisma/prisma-query-context';
 
 @Catch(Prisma.PrismaClientKnownRequestError)
@@ -12,6 +13,8 @@ export class PrismaErrorFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<AuthRequest>();
+
+        if (respondTriggerHttpError(exception, response)) return;
 
         // Get the stack trace and find the relevant application code location
         const stackLines = exception.stack?.split('\n') || [];
