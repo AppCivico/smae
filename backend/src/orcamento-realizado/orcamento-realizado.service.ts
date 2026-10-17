@@ -1319,7 +1319,7 @@ export class OrcamentoRealizadoService {
                 orgao_id: user.orgao_id,
             },
         });
-        if (!podeEditar) throw new BadRequestException('Necessário participar do órgão responsável da meta');
+        if (!podeEditar.length) throw new BadRequestException('Necessário participar do órgão responsável da meta');
 
         const now = new Date(Date.now());
 
@@ -1351,7 +1351,7 @@ export class OrcamentoRealizadoService {
                 orgao_id: dto.orgao_id,
             },
         });
-        if (!podeEditar) throw new BadRequestException('Órgão informado precisa ser responsável na meta.');
+        if (!podeEditar.length) throw new BadRequestException('Órgão informado precisa ser responsável na meta.');
 
         const now = new Date(Date.now());
 
