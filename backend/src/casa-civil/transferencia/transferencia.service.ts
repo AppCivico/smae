@@ -2315,6 +2315,7 @@ export class TransferenciaService {
             where: { id: andamentoPrimeiraFase.tarefaEspelhada[0].id },
             data: {
                 inicio_real: new Date(Date.now()),
+                fase_atual_workflow: true,
             },
         });
 
@@ -2326,6 +2327,7 @@ export class TransferenciaService {
                     where: { id: tarefaEspelhada.id },
                     data: {
                         inicio_real: new Date(Date.now()),
+                        fase_atual_workflow: true,
                     },
                 });
             }
