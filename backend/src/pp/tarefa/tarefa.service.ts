@@ -458,6 +458,13 @@ export class TarefaService {
                 };
             }
 
+            if (user.hasSomeRoles(['SMAE.espectador_de_projeto', 'MDO.espectador_de_projeto'])) {
+                return {
+                    pode_editar: false,
+                    pode_editar_realizado: false,
+                };
+            }
+
             // TODO passar o tipo do projeto da cá, pra conseguir liberar o acesso total de editação
             // para quem é do MDO, não há nenhum
 
