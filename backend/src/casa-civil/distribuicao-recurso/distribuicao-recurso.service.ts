@@ -1929,6 +1929,18 @@ export class DistribuicaoRecursoService {
                 },
             });
 
+            const tarefasFilhas = await prismaTx.tarefa.findMany({
+                where: { distribuicao_recurso_id: id, removido_em: null },
+                select: {
+                    id: true,
+                    tarefa_pai_id: true,
+                    inicio_planejado: true,
+                    termino_planejado: true,
+                    duracao_planejado: true,
+                    dependencias: { select: { dependencia_tarefa_id: true, tipo: true, latencia: true } },
+                },
+            });
+
             await prismaTx.tarefa.updateMany({
                 where: {
                     distribuicao_recurso_id: id,
@@ -1938,6 +1950,47 @@ export class DistribuicaoRecursoService {
                     removido_por: user.id,
                 },
             });
+
+            for (const filha of tarefasFilhas) {
+                if (!filha.tarefa_pai_id) continue;
+
+                const irmaRestante = await prismaTx.tarefa.findFirst({
+                    where: { tarefa_pai_id: filha.tarefa_pai_id, removido_em: null },
+                    orderBy: { numero: 'asc' },
+                    select: { id: true },
+                });
+
+                if (irmaRestante) {
+                    await prismaTx.tarefaDependente.updateMany({
+                        where: { dependencia_tarefa_id: filha.id },
+                        data: { dependencia_tarefa_id: irmaRestante.id },
+                    });
+                    continue;
+                }
+
+                await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: filha.id } });
+                await prismaTx.tarefaDependente.deleteMany({ where: { tarefa_id: filha.tarefa_pai_id } });
+                await prismaTx.tarefaDependente.createMany({
+                    data: filha.dependencias.map((d) => ({
+                        tarefa_id: filha.tarefa_pai_id!,
+                        dependencia_tarefa_id: d.dependencia_tarefa_id,
+                        tipo: d.tipo,
+                        latencia: d.latencia ?? 0,
+                    })),
+                });
+                await prismaTx.tarefaDependente.updateMany({
+                    where: { dependencia_tarefa_id: filha.id },
+                    data: { dependencia_tarefa_id: filha.tarefa_pai_id },
+                });
+                await prismaTx.tarefa.update({
+                    where: { id: filha.tarefa_pai_id },
+                    data: {
+                        inicio_planejado: filha.inicio_planejado,
+                        termino_planejado: filha.termino_planejado,
+                        duracao_planejado: filha.duracao_planejado,
+                    },
+                });
+            }
 
             return self.transferencia_id;
         });
