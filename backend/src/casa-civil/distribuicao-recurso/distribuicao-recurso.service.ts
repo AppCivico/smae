@@ -429,7 +429,7 @@ export class DistribuicaoRecursoService {
     private checkDuplicateSei(dto: { registros_sei?: CreateDistribuicaoRegistroSEIDto[] }) {
         if (dto.registros_sei) {
             const duplicateSei = dto.registros_sei
-                .map((r) => r.processo_sei)
+                .map((r) => r.processo_sei.replace(/\D/g, ''))
                 .filter((value, index, self) => self.indexOf(value) !== index);
             if (duplicateSei.length > 0) throw new HttpException('Processo SEI duplicado na distribuição.', 400);
         }
