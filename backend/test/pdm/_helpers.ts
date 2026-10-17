@@ -114,3 +114,47 @@ export async function criarCronogramaLegado(
     assertStatus(res, 201);
     return res.body.id;
 }
+
+export async function criarIniciativaPS(g: Sessao, meta_id: number, dados: Record<string, unknown> = {}): Promise<number> {
+    const res = await api(g, { sistema: 'PlanoSetorial' })
+        .post('/api/plano-setorial-iniciativa')
+        .send({ meta_id, codigo: uniq('PSI'), titulo: uniq('Iniciativa PS'), compoe_indicador_meta: false, ...dados });
+    assertStatus(res, 201);
+    return res.body.id;
+}
+
+export async function criarAtividadePS(g: Sessao, iniciativa_id: number, dados: Record<string, unknown> = {}): Promise<number> {
+    const res = await api(g, { sistema: 'PlanoSetorial' })
+        .post('/api/plano-setorial-atividade')
+        .send({
+            iniciativa_id,
+            codigo: uniq('PSA'),
+            titulo: uniq('Atividade PS'),
+            compoe_indicador_iniciativa: false,
+            ...dados,
+        });
+    assertStatus(res, 201);
+    return res.body.id;
+}
+
+export type RelacionamentoCronograma = { meta_id?: number; iniciativa_id?: number; atividade_id?: number };
+
+export async function criarCronogramaPS(
+    g: Sessao,
+    rel: RelacionamentoCronograma,
+    dados: Record<string, unknown> = {}
+): Promise<number> {
+    const res = await api(g, { sistema: 'PlanoSetorial' })
+        .post('/api/plano-setorial-cronograma')
+        .send({ ...rel, regionalizavel: false, ...dados });
+    assertStatus(res, 201);
+    return res.body.id;
+}
+
+export async function criarEtapaPS(g: Sessao, cronograma_id: number, dados: Record<string, unknown> = {}): Promise<number> {
+    const res = await api(g, { sistema: 'PlanoSetorial' })
+        .post(`/api/plano-setorial-cronograma/${cronograma_id}/etapa`)
+        .send({ titulo: uniq('Etapa'), ...dados });
+    assertStatus(res, 201);
+    return res.body.id;
+}
