@@ -461,7 +461,7 @@ export class TarefaService {
             if (user.hasSomeRoles(['SMAE.espectador_de_projeto', 'MDO.espectador_de_projeto'])) {
                 return {
                     pode_editar: false,
-                    pode_editar_realizado: false,
+                    pode_editar_realizado: pode_editar_realizado,
                 };
             }
 
