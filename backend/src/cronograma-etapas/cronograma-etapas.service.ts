@@ -887,9 +887,10 @@ export class CronogramaEtapaService {
             const etapa = row.etapa;
 
             if (etapa) {
-                if (etapa.atraso_grau)
-                    atrasoMaisSevero =
-                        CronogramaEtapaAtrasoGrau[etapa.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
+                if (etapa.atraso_grau) {
+                    comparacao = CronogramaEtapaAtrasoGrau[etapa.atraso_grau as keyof typeof CronogramaEtapaAtrasoGrau];
+                    if (atrasoMaisSevero === null || comparacao > atrasoMaisSevero) atrasoMaisSevero = comparacao;
+                }
                 if (atrasoMaisSevero && atrasoMaisSevero == CronogramaEtapaAtrasoGrau.Alto) break;
 
                 if (etapa.etapa_filha) {
