@@ -745,6 +745,7 @@ export class CronogramaEtapaService {
             where: {
                 cronograma_id,
                 nivel,
+                etapa_id: { not: etapa_id },
                 etapa: {
                     etapa_pai_id,
                 },
@@ -754,10 +755,14 @@ export class CronogramaEtapaService {
             take: 1,
         });
 
-        if (ultimaRow) {
-            ordem = ultimaRow.ordem + 1;
+        if (self_existe) {
+            const selfRow = await prismaTx.cronogramaEtapa.findFirst({
+                where: { cronograma_id, etapa_id },
+                select: { ordem: true },
+            });
+            ordem = Math.max(ultimaRow?.ordem ?? 1, selfRow?.ordem ?? 1);
         } else {
-            ordem = 1;
+            ordem = ultimaRow ? ultimaRow.ordem + 1 : 1;
         }
 
         return { nivel, ordem };
