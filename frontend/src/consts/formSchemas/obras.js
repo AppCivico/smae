@@ -58,7 +58,7 @@ export default object({
             .max(2048)
             .nullable()
             .meta({
-              balaoInformativo: 'Falta BE',
+              balaoInformativo: 'Falta persistir parametro no banco',
             }),
           valor_nominal: number()
             .label('Previsão de custo')
