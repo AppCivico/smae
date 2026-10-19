@@ -57,7 +57,6 @@ const lista = computed(() => {
       <span
         class="t14 w700"
         :class="{ tvermelho: resumo.excedente }"
-        :role="resumo.excedente ? 'alert' : undefined"
       >
         R$ {{ dinheiro(resumo.semInformacao) }}
         <template v-if="resumo.excedente">
