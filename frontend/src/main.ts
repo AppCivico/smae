@@ -5,6 +5,8 @@ import {
 } from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 
+import { VERSAO_SMAE } from '@back/common/versao';
+
 import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import CheckClose from '@/components/CheckClose.vue';
@@ -27,6 +29,9 @@ import App from './App.vue';
 import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
 import ResumoSessao from './components/ResumoSessao.vue';
 import { router } from './router';
+
+// eslint-disable-next-line no-console
+console.log('[SMAE] interface:', VERSAO_SMAE.versao, VERSAO_SMAE.tag);
 
 const app = createApp(App);
 
