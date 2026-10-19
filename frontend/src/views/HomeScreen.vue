@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 
+import DialogoDeVersoes from '@/components/DialogoDeVersoes.vue';
 import type { ModulosDoSistema } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
 import { useAuthStore } from '@/stores/auth.store';
+import { useVersaoStore } from '@/stores/versao.store';
 
 const authStore = useAuthStore();
+const versaoStore = useVersaoStore();
+
+const { versao, mesAnoDaVersao } = storeToRefs(versaoStore);
 
 const {
   user: sessao,
@@ -16,6 +21,7 @@ const {
 } = storeToRefs(authStore);
 
 authStore.carregarModulos();
+versaoStore.buscar();
 </script>
 <template>
   <div
@@ -38,6 +44,24 @@ authStore.carregarModulos();
       <p class="w700 t24 tamarelo">
         Selecione o módulo a ser visualizado:
       </p>
+
+      <div
+        v-if="versao"
+        class="escolha-de-módulos__versao mt2 t12 uc w700"
+      >
+        <p class="mb05">
+          Versão {{ versao.versao }}
+          <template v-if="mesAnoDaVersao">
+            ({{ mesAnoDaVersao }})
+          </template>
+        </p>
+        <router-link
+          :to="{ query: { dialogo: 'versoes' } }"
+          class="tprimary"
+        >
+          Saiba mais
+        </router-link>
+      </div>
 
       <div class="mt4 logos flex g2 center bgb p05">
         <img
@@ -121,6 +145,8 @@ authStore.carregarModulos();
     </svg>
     Sair
   </button>
+
+  <DialogoDeVersoes />
 </template>
 <style lang="less" scoped>
 .escolha-de-módulos {
@@ -142,6 +168,10 @@ authStore.carregarModulos();
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.escolha-de-módulos__versao {
+  color: @c400;
 }
 
 .escolha-de-módulos__lista {
