@@ -268,8 +268,6 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
                 ? (
                       await Promise.all(
                           projetoRow.fonte_recursos.map(async (e) => {
-                              let valor: string;
-
                               class queryRet {
                                   descricao: string;
                               }
@@ -280,11 +278,7 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
                               const nome_fonte: queryRet[] = await this.prisma
                                   .$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${ano} AND col = 'fonte_recursos'`;
 
-                              if (e.valor_nominal) {
-                                  valor = e.valor_nominal.toString();
-                              } else {
-                                  valor = e.valor_percentual!.toString();
-                              }
+                              const valor = (e.valor_nominal ?? e.valor_percentual)?.toString() ?? '-';
 
                               return `${nome_fonte[0].descricao}: ${valor}`;
                           })

@@ -4731,8 +4731,10 @@ model ProjetoFonteRecurso {
     fonte_recurso_detalhamento_cod       String?
     fonte_recurso_detalhamento_descricao String?
 
-    valor_percentual Float?
-    valor_nominal    Float?
+    valor_percentual     Float? // calculado por trigger (valor_nominal / tarefa_cronograma.previsao_custo)
+    valor_percentual_bkp Float? @ignore
+    valor_nominal        Float?
+    observacao           String?
 
     requer_revisao_sof Boolean  @default(false)
     criado_em          DateTime @default(now())
