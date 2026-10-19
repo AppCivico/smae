@@ -1203,6 +1203,7 @@ watch(portfólioSelecionado, (novo, antigo) => {
               />
 
               <input
+                :id="`fonte_recursos[${idx}].valor_percentual`"
                 type="text"
                 class="inputtext light mb1"
                 readonly
