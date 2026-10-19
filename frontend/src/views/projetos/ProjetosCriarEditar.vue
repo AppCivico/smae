@@ -358,13 +358,6 @@ const resumoFontesDeRecurso = computed(() => calcularResumoFontesDeRecurso(
 const onSubmit = handleSubmit(async () => {
   const carga = values;
 
-  if (Array.isArray(carga.fonte_recursos)) {
-    carga.fonte_recursos = carga.fonte_recursos.map((fonte, idx) => ({
-      ...fonte,
-      valor_percentual: resumoFontesDeRecurso.value.percentuais[idx] ?? null,
-    }));
-  }
-
   switch (true) {
     case !!carga.atividade_id:
       carga.iniciativa_id = undefined;
@@ -1208,15 +1201,16 @@ watch(portfólioSelecionado, (novo, antigo) => {
                 class="tc300"
                 :schema="schema.fields.fonte_recursos.innerType"
               />
+
               <input
-                :id="`fonte_recursos[${idx}].valor_percentual`"
                 type="text"
                 class="inputtext light mb1"
                 readonly
                 aria-readonly="true"
-                :value="resumoFontesDeRecurso.percentuais[idx] === null
-                  ? '—'
-                  : `${dinheiro(resumoFontesDeRecurso.percentuais[idx])}%`"
+                :value="
+                  resumoFontesDeRecurso.percentuais[idx] === null ?
+                    '—' : `${dinheiro(resumoFontesDeRecurso.percentuais[idx])}%`
+                "
               >
             </div>
 
@@ -1237,6 +1231,7 @@ watch(portfólioSelecionado, (novo, antigo) => {
             </button>
 
             <div class="f1 fb100">
+              <h1>123</h1>
               <LabelFromYup
                 name="observacao"
                 :for="`fonte_recursos[${idx}].observacao`"
@@ -1278,7 +1273,6 @@ watch(portfólioSelecionado, (novo, antigo) => {
               fonte_recurso_cod_sof: '',
               fonte_recurso_ano: null,
               valor_nominal: null,
-              valor_percentual: null,
               observacao: null,
             })"
           >

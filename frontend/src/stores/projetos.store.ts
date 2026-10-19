@@ -401,7 +401,8 @@ export const useProjetosStore = defineStore('projetos', {
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
       equipe: emFoco?.equipe.map((x) => x.pessoa.id) || [],
-      fonte_recursos: emFoco?.fonte_recursos || null,
+      fonte_recursos: emFoco?.fonte_recursos
+        ?.map(({ valor_percentual: _valorPercentual, ...fonte }) => fonte) || null,
       geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
       grupo_portfolio: emFoco?.grupo_portfolio?.map((x) => x.id) || null,
       meta_codigo: emFoco?.meta_codigo || '',
@@ -491,7 +492,7 @@ export const useProjetosStore = defineStore('projetos', {
       }, {} as { [key: string]: ProjetoDto[] }),
 
     projetosPortfolioModeloClonagem: ({ lista }: Estado): ProjetoDto[] => lista
-      .filter((e) => e.portfolio.modelo_clonagem == true),
+      .filter((e) => e.portfolio.modelo_clonagem === true),
 
     órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
       const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
