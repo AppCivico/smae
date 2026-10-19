@@ -24,18 +24,31 @@ DATA=$(date +%Y-%m-%d)
 TAG="v$(date +%Y.%m.%d)-release-$N${S:+-$S}"
 git rev-parse -q --verify "refs/tags/$TAG" >/dev/null && die "tag $TAG já existe"
 
+MINOR=$((10#$N))
+case $S in
+    '' | homol* | rc*) CORRECAO=0 ;;
+    *) CORRECAO=1 ;;
+esac
+
 if [[ -z $V ]]; then
-    MINOR=$((10#$N))
-    case $S in
-        '' | homol* | rc*) PATCH=0 ;;
-        *)
-            PATCH=$(git tag -l "v*-release-$N-*" | grep -Evc -- "-release-$N-(homol|rc)" || true)
-            PATCH=$((PATCH + 1))
-            ;;
-    esac
+    if ((CORRECAO)); then
+        TAGS_DE_CORRECAO=$(git tag -l "v*-release-$N-*" | grep -Ev -- "-release-$N-(homol|rc)" || true)
+        # tags antigas não têm "SMAE x.y.z" na mensagem; nelas vale a contagem
+        CONTAGEM=$(grep -c . <<<"$TAGS_DE_CORRECAO" || true)
+        MAIOR=$(git tag -l "v*-release-$N-*" --format='%(contents:subject)' |
+            sed -nE "s/^SMAE $CONTRATO\.$MINOR\.([0-9]+)$/\1/p" | sort -n | tail -1)
+        PATCH=$(( (${MAIOR:-0} > CONTAGEM ? ${MAIOR:-0} : CONTAGEM) + 1 ))
+    else
+        PATCH=0
+    fi
     V="$CONTRATO.$MINOR.$PATCH"
 fi
-[[ $V =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "versão inválida: $V"
+[[ $V =~ ^$CONTRATO\.$MINOR\.([0-9]+)$ ]] || die "versão $V não corresponde a $CONTRATO.$MINOR.x"
+if ((CORRECAO)); then
+    ((BASH_REMATCH[1] > 0)) || die "sufixo '$S' é correção; a versão precisa terminar em .1 ou mais"
+else
+    ((BASH_REMATCH[1] == 0)) || die "rc/homol/sem sufixo usa $CONTRATO.$MINOR.0"
+fi
 
 echo "versão: $V"
 echo "tag:    $TAG"
