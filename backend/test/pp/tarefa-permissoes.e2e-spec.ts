@@ -138,8 +138,23 @@ describe('tarefa permissões (PP): responsável, equipe e gestor', () => {
             const { c, t, espectador } = await cenario();
             const doEsp = await api(espectador).get(`${c.base}/tarefa/${t.id}`);
             assert.equal(doEsp.body.pode_editar, false);
+            assert.equal(doEsp.body.pode_editar_realizado, false);
         }
     );
+
+    it('responsável com perfil de colaborador e de espectador edita o realizado', async () => {
+        const { c, t } = await cenario();
+        const ambos = await criarPessoaComPrivilegios(['SMAE.colaborador_de_projeto', 'SMAE.espectador_de_projeto'], {
+            orgao_id: c.orgao_id,
+        });
+        await prisma().projeto.update({ where: { id: c.projeto_id }, data: { responsavel_id: ambos.pessoa.id } });
+        const lido = await api(ambos).get(`${c.base}/tarefa/${t.id}`);
+        assert.equal(lido.body.pode_editar_realizado, true);
+        const res = await api(ambos)
+            .patch(`${c.base}/tarefa/${t.id}`)
+            .send({ atualizacao_do_realizado: true, ...periodoReal('2033-01-01', 2) });
+        assertStatus(res, 200);
+    });
 
     it('MDO: colaborador responsável escreve em qualquer fase; sem vínculo não; espectador só lê', async () => {
         const c = await novoCronograma('MDO');
