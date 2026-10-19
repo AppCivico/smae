@@ -6,6 +6,7 @@ import { BatchSimpleIds, RecordWithId } from 'src/common/dto/record-with-id.dto'
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { formataSEI } from '../../common/formata-sei';
 
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import {
@@ -28,6 +29,7 @@ export class ContratoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const ctx = await this.getProjetoCtx(prismaTx, projeto_id);
                 await this.assertNumeroUnicoNoPortfolio(prismaTx, ctx.portfolio_id, dto.numero);
+                const processosSei = await this.validaProcessosSei(prismaTx, [projeto_id], dto.processos_sei);
 
                 const contrato = await prismaTx.contrato.create({
                     data: {
@@ -62,7 +64,7 @@ export class ContratoService {
                         },
                         processosSei: {
                             createMany: {
-                                data: dto.processos_sei.map((processo_sei) => {
+                                data: processosSei.map((processo_sei) => {
                                     return {
                                         numero_sei: processo_sei,
                                     };
@@ -313,6 +315,16 @@ export class ContratoService {
                 }
 
                 if (dto.processos_sei != undefined) {
+                    const vinculos = await prismaTx.contratoProjeto.findMany({
+                        where: { contrato_id: id, removido_em: null, projeto: { removido_em: null } },
+                        select: { projeto_id: true },
+                    });
+                    const processosSei = await this.validaProcessosSei(
+                        prismaTx,
+                        vinculos.map((v) => v.projeto_id),
+                        dto.processos_sei
+                    );
+
                     await prismaTx.contratoSei.deleteMany({
                         where: {
                             contrato_id: id,
@@ -320,7 +332,7 @@ export class ContratoService {
                     });
 
                     await prismaTx.contratoSei.createMany({
-                        data: dto.processos_sei.map((processo_sei) => {
+                        data: processosSei.map((processo_sei) => {
                             return {
                                 contrato_id: id,
                                 numero_sei: processo_sei,
@@ -555,6 +567,44 @@ export class ContratoService {
         });
         if (!projeto) throw new NotFoundException('Projeto não encontrado');
         return projeto;
+    }
+
+    /**
+     * Todo processo SEI do contrato precisa estar cadastrado (ativo) em alguma obra/projeto vinculado a ele
+     * — em contrato compartilhado, vale o cadastro de qualquer uma das obras. `contrato_sei.numero_sei` não
+     * tem FK para `projeto_registro_sei`, então a referência é garantida aqui.
+     *
+     * Devolve os números só com dígitos (mesmo formato de `projeto_registro_sei.processo_sei`), sem repetidos.
+     */
+    private async validaProcessosSei(
+        prismaTx: Prisma.TransactionClient,
+        projeto_ids: number[],
+        processos_sei: string[]
+    ): Promise<string[]> {
+        const processos = [...new Set(processos_sei.map((p) => p.replace(/[^0-9]/g, '')))];
+        if (processos.some((p) => p === ''))
+            throw new HttpException('Processos SEI: informe apenas números de processo válidos', 400);
+
+        const cadastrados = await prismaTx.projetoRegistroSei.findMany({
+            where: {
+                projeto_id: { in: projeto_ids },
+                projeto: { removido_em: null },
+                removido_em: null,
+                processo_sei: { in: processos },
+            },
+            select: { processo_sei: true },
+        });
+        const cadastradosSet = new Set(cadastrados.map((r) => r.processo_sei));
+
+        const faltantes = processos.filter((p) => !cadastradosSet.has(p));
+        if (faltantes.length)
+            throw new HttpException(
+                `Processo(s) SEI não cadastrado(s) na obra/projeto: ${faltantes.map((p) => (p.length === 16 ? formataSEI(p) : p)).join(', ')}. ` +
+                    'Cadastre-o(s) em "Processos SEI" ou remova-o(s) do contrato.',
+                400
+            );
+
+        return processos;
     }
 
     private async assertNumeroUnicoNoPortfolio(
