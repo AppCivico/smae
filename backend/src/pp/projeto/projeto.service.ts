@@ -1709,6 +1709,7 @@ export class ProjetoService {
                         tolerancia_atraso: true,
                         percentual_atraso: true,
                         status_cronograma: true,
+                        caminho_critico: true,
                     },
                 },
 

@@ -142,6 +142,70 @@ describe('projeto-tarefa', () => {
         });
     });
 
+    describe('caminho crítico', () => {
+        it('grava folga, tarefas críticas e o caminho no recálculo da listagem', async () => {
+            const portfolio = await criarPortfolio(admin, 'PP', { orgaos: [orgaoA.id] });
+            const projeto = await criarProjeto(admin, 'PP', {
+                portfolio_id: portfolio.id,
+                responsaveis_no_orgao_gestor: [gestorA.pessoa.id],
+            });
+            const rota = `/api/projeto/${projeto.id}/tarefa`;
+            const criar = async (dados: Record<string, unknown>) => {
+                const r = await api(gestorA).post(rota).send(tarefa(dados));
+                assertStatus(r, 201);
+                return r.body.id as number;
+            };
+
+            const t1 = await criar({
+                numero: 1,
+                inicio_planejado: '2026-01-01',
+                termino_planejado: '2026-01-05',
+                duracao_planejado: 5,
+            });
+            const t2 = await criar({
+                numero: 2,
+                duracao_planejado: 6,
+                dependencias: [{ dependencia_tarefa_id: t1, tipo: 'termina_pro_inicio', latencia: 0 }],
+            });
+            const t3 = await criar({
+                numero: 3,
+                inicio_planejado: '2026-01-01',
+                termino_planejado: '2026-01-03',
+                duracao_planejado: 3,
+            });
+
+            const lista = await api(gestorA).get(rota);
+            assertStatus(lista, 200);
+            const porId = new Map(lista.body.linhas.map((l: { id: number }) => [l.id, l]));
+            const ymd = (d: string | null) => d?.substring(0, 10) ?? null;
+            assert.equal(ymd((porId.get(t2) as any).termino_planejado), '2026-01-10');
+            assert.deepEqual(
+                [t1, t2, t3].map((id) => {
+                    const l = porId.get(id) as any;
+                    return [l.folga, l.eh_critica, ymd(l.termino_mais_tarde)];
+                }),
+                [
+                    [0, true, '2026-01-05'],
+                    [0, true, '2026-01-10'],
+                    [7, false, '2026-01-10'],
+                ]
+            );
+
+            const crono = await prisma().tarefaCronograma.findFirstOrThrow({ where: { projeto_id: projeto.id } });
+            assert.deepEqual(crono.caminho_critico, [t1, t2]);
+            const gravada = await prisma().tarefa.findUniqueOrThrow({ where: { id: t3 } });
+            assert.equal(gravada.folga, 7);
+            assert.equal(gravada.eh_critica, false);
+
+            const detalhe = await api(gestorA).get(`/api/projeto/${projeto.id}`);
+            assertStatus(detalhe, 200);
+            assert.deepEqual(detalhe.body.tarefa_cronograma.caminho_critico, [t1, t2]);
+
+            const lida = await api(gestorA).get(`${rota}/${t3}`);
+            assert.equal(lida.body.inicio_mais_tarde, '2026-01-08');
+        });
+    });
+
     describe('obras (projeto-mdo/tarefas-hierarquia)', () => {
         it(
             'hierarquia de obra responde 200 para quem edita a obra',

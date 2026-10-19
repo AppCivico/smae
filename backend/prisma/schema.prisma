@@ -4830,6 +4830,12 @@ model Tarefa {
     db_projecao_termino DateTime? @map("projecao_termino") @db.Date()
     db_projecao_atraso  Int?      @map("projecao_atraso")
 
+    // caminho crítico sobre o planejado, gravado no recálculo das projeções
+    folga              Int?
+    eh_critica         Boolean   @default(false)
+    inicio_mais_tarde  DateTime? @db.Date()
+    termino_mais_tarde DateTime? @db.Date()
+
     n_filhos_imediatos Int @default(0)
 
     custo_estimado Float?
@@ -4935,6 +4941,8 @@ model TarefaCronograma {
     realizado_custo   Float?
 
     projecao_termino DateTime? @db.Date()
+
+    caminho_critico Int[] // ids das tarefas folha críticas, em ordem de início planejado
 
     tolerancia_atraso Int     @default(0) // em dias
     em_atraso         Boolean @default(false)

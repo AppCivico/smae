@@ -22,5 +22,7 @@ export class TarefaCronogramaDto {
     tolerancia_atraso: number | null;
     percentual_atraso: number | null;
     status_cronograma: string | null;
+    /** ids das tarefas folha críticas, em ordem de início planejado */
+    caminho_critico: number[];
     nivel_maximo_tarefa?: number;
 }

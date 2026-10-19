@@ -160,6 +160,10 @@ export class TarefaUtilsService {
         await prismaTx.$executeRaw`select id from tarefa_cronograma where id = ${tarefa_cronograma_id}::int FOR UPDATE`;
     }
 
+    async agendaRecalculo(prismaTx: Prisma.TransactionClient, tarefa_cronograma_id: number) {
+        await prismaTx.$executeRaw`update tarefa_cronograma set tarefas_proximo_recalculo = now() where id = ${tarefa_cronograma_id}::int`;
+    }
+
     async verifica_nivel_maximo_portfolio(projetoId: number, nivel: number) {
         const portConfig = await this.prisma.projeto.findFirstOrThrow({
             where: { id: projetoId },

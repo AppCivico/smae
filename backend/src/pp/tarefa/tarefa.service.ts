@@ -36,6 +36,7 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
+import { calculaCaminhoCritico } from './caminho-critico';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -172,6 +173,7 @@ export class TarefaService {
 
         const executarCriacao = async (prismaTx: Prisma.TransactionClient) => {
             await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+            await this.utils.agendaRecalculo(prismaTx, tarefaCronoId);
             const logger = LoggerWithLog('TarefaService.create');
             logger.log(`cronograma=${tarefaCronoId}`);
             logger.log(`DTO: ${JSON.stringify(dto)}`);
@@ -511,6 +513,10 @@ export class TarefaService {
                 db_projecao_atraso: true,
                 db_projecao_inicio: true,
                 db_projecao_termino: true,
+                folga: true,
+                eh_critica: true,
+                inicio_mais_tarde: true,
+                termino_mais_tarde: true,
                 recursos: true,
                 backup_custo_estimado: true,
                 backup_custo_real: true,
@@ -857,11 +863,15 @@ export class TarefaService {
             this.logger.error(`Erro ao calcular projeções: ${error}`);
         }
 
+        const caminhoCritico = calculaCaminhoCritico(tarefasOrig);
+
         // mais um loop, agora pra pegar o max da projeção do nivel 1
         // e tbm passar o atraso dos parent pro objeto do retorno
         // e tbm conferir quem precisa atualizar as projeções no banco de dados
         const updates: Promise<any>[] = [];
         for (const tarefa of tarefas) {
+            const critico = caminhoCritico.por_tarefa.get(tarefa.id)!;
+
             if (tarefa.projecao_atraso && tarefa.n_filhos_imediatos > 0) {
                 this.logger.debug(
                     `calculando atraso dos filhos: tarefas_por_id[${tarefa.id}].atraso = ${tarefa.projecao_atraso}`
@@ -922,7 +932,26 @@ export class TarefaService {
                         })
                     );
                 }
+
+                if (
+                    tarefa_orig.folga !== critico.folga ||
+                    tarefa_orig.eh_critica !== critico.eh_critica ||
+                    ms(tarefa_orig.inicio_mais_tarde) !== ms(critico.inicio_mais_tarde) ||
+                    ms(tarefa_orig.termino_mais_tarde) !== ms(critico.termino_mais_tarde)
+                ) {
+                    updates.push(
+                        this.prisma.tarefa.update({
+                            where: { id: tarefa.id },
+                            data: critico,
+                        })
+                    );
+                }
             }
+
+            tarefa.folga = critico.folga;
+            tarefa.eh_critica = critico.eh_critica;
+            tarefa.inicio_mais_tarde = critico.inicio_mais_tarde;
+            tarefa.termino_mais_tarde = critico.termino_mais_tarde;
 
             (tarefa as any).db_projecao_atraso = undefined; //tira do retorno pro frontend não receber
             (tarefa as any).db_projecao_inicio = undefined; //tira do retorno pro frontend não receber
@@ -941,6 +970,13 @@ export class TarefaService {
         }
 
         await this.recalcCronogramaStatus(tarefaCronograma, max_term_planejado, max_term_proj, tarefaCronoId);
+
+        if (caminhoCritico.caminho.join(',') !== tarefaCronograma.caminho_critico.join(',')) {
+            await this.prisma.tarefaCronograma.update({
+                where: { id: tarefaCronoId },
+                data: { caminho_critico: caminhoCritico.caminho },
+            });
+        }
 
         ret.linhas = tarefas;
 
@@ -1078,6 +1114,10 @@ export class TarefaService {
                 custo_real_anualizado: true,
                 backup_custo_estimado: true,
                 backup_custo_real: true,
+                folga: true,
+                eh_critica: true,
+                inicio_mais_tarde: true,
+                termino_mais_tarde: true,
             },
         });
 
@@ -1091,6 +1131,8 @@ export class TarefaService {
             inicio_real: Date2YMD.toStringOrNull(row.inicio_real) as any as Date,
             termino_real: Date2YMD.toStringOrNull(row.termino_real) as any as Date,
             termino_projetado: Date2YMD.toStringOrNull(row.db_projecao_termino) as any as Date,
+            inicio_mais_tarde: Date2YMD.toStringOrNull(row.inicio_mais_tarde) as any as Date,
+            termino_mais_tarde: Date2YMD.toStringOrNull(row.termino_mais_tarde) as any as Date,
             custo_estimado_anualizado: this.buildAnualizado(row.custo_estimado_anualizado),
             custo_real_anualizado: this.buildAnualizado(row.custo_real_anualizado),
             projeto: projeto,
@@ -1111,6 +1153,7 @@ export class TarefaService {
             const now = new Date(Date.now());
 
             await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+            await this.utils.agendaRecalculo(prismaTx, tarefaCronoId);
             const logger = LoggerWithLog('TarefaService.update');
             logger.log(`tarefa=${id}, cronograma=${tarefaCronoId}`);
             logger.log(`DTO: ${JSON.stringify(dto)}`);
@@ -1707,6 +1750,7 @@ export class TarefaService {
                 const now = new Date(Date.now());
 
                 await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+                await this.utils.agendaRecalculo(prismaTx, tarefaCronoId);
                 const logger = LoggerWithLog('TarefaService.remove');
                 logger.log(`tarefa=${id}, cronograma=${tarefaCronoId}`);
 
