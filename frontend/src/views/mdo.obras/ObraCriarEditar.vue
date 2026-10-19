@@ -381,13 +381,6 @@ const resumoFontesDeRecurso = computed(() => calcularResumoFontesDeRecurso(
 const onSubmit = handleSubmit.withControlled(async (carga) => {
   const cargaManipulada = nulificadorTotal(carga);
 
-  if (Array.isArray(cargaManipulada.fonte_recursos)) {
-    cargaManipulada.fonte_recursos = cargaManipulada.fonte_recursos.map((fonte, idx) => ({
-      ...fonte,
-      valor_percentual: resumoFontesDeRecurso.value.percentuais[idx] ?? null,
-    }));
-  }
-
   switch (true) {
     case !!cargaManipulada.atividade_id:
       cargaManipulada.iniciativa_id = undefined;
@@ -1992,7 +1985,6 @@ watch(listaDeTiposDeIntervenção, () => {
             fonte_recurso_cod_sof: '',
             fonte_recurso_ano: null,
             valor_nominal: null,
-            valor_percentual: null,
             observacao: null,
           })"
         >

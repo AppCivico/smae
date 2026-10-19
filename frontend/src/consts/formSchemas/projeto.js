@@ -71,10 +71,7 @@ export default object()
             observacao: string()
               .label('Observações')
               .max(2048)
-              .nullable()
-              .meta({
-                balaoInformativo: 'Falta BE',
-              }),
+              .nullable(),
             valor_nominal: number()
               .label('Previsão de custo')
               .required('Informe a previsão de custo'),
