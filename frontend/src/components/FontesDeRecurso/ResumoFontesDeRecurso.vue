@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
+import SmaeDescriptionList, { type ListaItems } from '@/components/SmaeDescriptionList.vue';
 import type { ResumoFontesDeRecurso } from '@/helpers/calcularResumoFontesDeRecurso';
 import dinheiro from '@/helpers/dinheiro';
 
@@ -12,8 +12,8 @@ const props = defineProps<{
 
 const atributosDoItem = { style: { flex: '0 1 auto' } };
 
-const lista = computed(() => {
-  const itens = [{
+const lista = computed<ListaItems>(() => {
+  const itens: ListaItems = [{
     chave: 'custoTotalPlanejado',
     titulo: 'Custo total planejado',
     valor: props.custoTotalPlanejado,
