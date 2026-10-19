@@ -6,6 +6,7 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import { LIMITE_CAMPO_HTML, mensagemDeLimiteHtml } from '@/consts/limitesDeCampos';
 import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
@@ -107,7 +108,7 @@ export const acompanhamento = object()
       .required(),
     pauta: string()
       .label('Pauta')
-      .max(2048)
+      .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml)
       .nullable(),
     pontos_atencao: string()
       .label('Pontos de atenção')
