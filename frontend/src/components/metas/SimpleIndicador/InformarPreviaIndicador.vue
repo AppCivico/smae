@@ -36,12 +36,13 @@ async function enviarDados(dados: Record<string, unknown>) {
   emit('fechar');
 }
 
+// Espelha a regra de `IndicadorService.upsertPrevia` no backend
 const variavelTipo = computed(() => {
-  if (props.indicador.indicador_tipo === 'Numerico') {
+  if (!props.valores.variavel?.variavel_categorica_id) {
     return 'numerico';
   }
 
-  if (props.indicador.regionalizavel) {
+  if (props.indicador.regionalizavel && props.valores.variavel.variavel_mae_id) {
     return 'categorica_regionalizavel';
   }
 
