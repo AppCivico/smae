@@ -7,6 +7,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { formataSEI } from '../../common/formata-sei';
+import { garanteCoberturaSeiContratos } from './contrato-sei-cobertura';
 
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import {
@@ -442,6 +443,8 @@ export class ContratoService {
                         removido_por: user.id,
                     },
                 });
+            } else {
+                await garanteCoberturaSeiContratos(prismaTx, [id], user.id);
             }
         });
     }
