@@ -5,6 +5,7 @@ import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
+import motivoDeBloqueioDoProcessoSei from '@/helpers/motivoDeBloqueioDoProcessoSei';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
@@ -188,7 +189,8 @@ iniciar();
           <button
             class="like-a__text"
             aria-label="excluir"
-            title="excluir"
+            :title="motivoDeBloqueioDoProcessoSei(linha) || 'excluir'"
+            :disabled="!!motivoDeBloqueioDoProcessoSei(linha)"
             @click="excluirProcesso(linha.id, linha.processo_sei)"
           >
             <svg
