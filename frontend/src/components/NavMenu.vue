@@ -6,7 +6,6 @@ import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import rotasDoMenu from '@/consts/rotasDoMenu.ts';
 import { useAuthStore } from '@/stores/auth.store';
 
-import DataDoBuild from './DataDoBuild.vue';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
