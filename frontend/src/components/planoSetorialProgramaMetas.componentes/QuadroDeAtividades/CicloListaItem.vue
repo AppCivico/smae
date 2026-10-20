@@ -188,7 +188,6 @@ const variaveisMapeadas = computed(() => {
             },
           }"
           :title="tituloFaseMonitoramento"
-          :aria-label="tituloFaseMonitoramento"
         >
           <IconeFaseMonitoramento
             class="navegacao-item__icon"
