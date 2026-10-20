@@ -156,8 +156,10 @@ export class ProjetoSeiDto {
     criador: IdNomeExibicaoDto | null;
     comentarios: string | null;
     observacoes: string | null;
-    /** Contratos ativos deste projeto/obra que utilizam o processo; ele sai deles se for removido. */
+    /** Contratos ativos deste projeto/obra que utilizam o processo. */
     contratos: ProjetoSeiContratoDto[];
+    /** Contratos que impedem excluir ou alterar o número: nenhuma outra obra vinculada tem o processo. */
+    bloqueado_por_contratos: ProjetoSeiContratoDto[];
 }
 
 export class ListProjetoSeiDto {
