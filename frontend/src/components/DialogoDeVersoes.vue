@@ -2,6 +2,8 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import type { Colunas, Linhas } from '@/components/SmaeTable/tipagem';
 import { useVersaoStore } from '@/stores/versao.store';
 import { useWikiStore } from '@/stores/wiki.store';
 
@@ -14,6 +16,11 @@ const wikiStore = useWikiStore();
 
 const { versao, chamadasPendentes, erro } = storeToRefs(versaoStore);
 const { paginasMapeadas } = storeToRefs(wikiStore);
+
+const colunas: Colunas = [
+  { chave: 'nome', label: 'Sistema' },
+  { chave: 'versao', label: 'Versão', formatador: (valor) => `Versão ${valor}` },
+];
 
 const linkDasNotas = computed(() => paginasMapeadas.value.versoes || null);
 
@@ -36,26 +43,12 @@ function aoAbrir() {
       {{ erro }}
     </ErrorComponent>
 
-    <table
+    <SmaeTable
       v-else-if="versao"
-      class="tablemain"
-    >
-      <thead>
-        <tr>
-          <th>Sistema</th>
-          <th>Versão</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="servico in versao.servicos"
-          :key="servico.chave"
-        >
-          <td>{{ servico.nome }}</td>
-          <td>Versão {{ servico.versao }}</td>
-        </tr>
-      </tbody>
-    </table>
+      :colunas="colunas"
+      :dados="versao.servicos as unknown as Linhas"
+      campo-id="chave"
+    />
 
     <div
       v-if="linkDasNotas"
