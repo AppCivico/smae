@@ -12,9 +12,6 @@ import 'vue-router';
 export { };
 
 declare global {
-  const __FRONTEND_COMMIT_DATE__: string;
-  const __BACKEND_COMMIT_DATE__: string;
-
   type RecordWithId = RecordWithIdImport;
 
   interface ImportMetaEnv {
