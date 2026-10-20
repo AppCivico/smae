@@ -12,6 +12,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
+import motivoDeBloqueioDoProcessoSei from '@/helpers/motivoDeBloqueioDoProcessoSei';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -144,6 +145,8 @@ resetForm();
           required
           class="inputtext light mb1"
           :class="{ 'error': errors.processo_sei }"
+          :readonly="!!motivoDeBloqueioDoProcessoSei(emFoco)"
+          :title="motivoDeBloqueioDoProcessoSei(emFoco)"
           placeholder="DDDD.DDDD/DDDDDDD-D"
           @keyup="maskProcesso"
         />
@@ -253,6 +256,8 @@ resetForm();
   <button
     v-if="emFoco?.id"
     class="btn amarelo big"
+    :disabled="!!motivoDeBloqueioDoProcessoSei(emFoco)"
+    :title="motivoDeBloqueioDoProcessoSei(emFoco)"
     @click="excluirProcesso(emFoco.id)"
   >
     Remover item
