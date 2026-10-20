@@ -47,10 +47,15 @@ const {
 } = storeToRefs(panoramaStore);
 
 const legendas = {
-  situacao: listaDeFases.map((item) => ({
-    item: obterFaseLegenda(item),
-    icon: obterFaseIcone(item),
-  })),
+  situacao: listaDeFases
+    .map((item) => ({
+      item: obterFaseLegenda(item),
+      icon: obterFaseIcone(item),
+    }))
+    .concat({
+      item: 'Fase do monitoramento',
+      icon: 'i_ciclo_fase',
+    }),
   status: listaDeStatus.map((item) => ({
     item,
     icon: obterFaseStatus(item === 'atualizado'),
@@ -71,7 +76,8 @@ const listaDeMetasPreparado = computed(() => {
       iniciativaId: item.iniciativa_id,
       atividadeId: item.atividade_id,
       variaveis: item.variaveis as ListaVariaveis,
-      situacoes: item.monitoramento_ciclo,
+      monitoramento: item.monitoramento,
+      numeroFaseMonitoramento: item.monitoramento?.fase_atual?.posicao ?? null,
       pendencias: {
         cronograma: item.pendencia_cronograma,
         orcamento: item.pendencia_orcamento,
