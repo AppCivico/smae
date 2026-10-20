@@ -5,7 +5,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoSeiContratoDto, ProjetoSeiDto } from './entities/projeto.entity';
 
 @Injectable()
 export class ProjetoSeiService {
@@ -78,16 +78,61 @@ export class ProjetoSeiService {
 
         const contratoSei = projetosSei.length ? await this.contratoSeiDoProjeto(this.prisma, projeto.id) : [];
 
-        return projetosSei.map((registro) => {
-            return {
-                ...registro,
-                contratos: contratoSei
-                    .filter((r) => r.processo_sei === registro.processo_sei)
-                    .map((r) => r.contrato)
-                    // o mesmo número pode constar duas vezes no contrato (com e sem máscara)
-                    .filter((contrato, idx, lista) => lista.findIndex((c) => c.id === contrato.id) === idx),
-            };
+        return await Promise.all(
+            projetosSei.map(async (registro) => {
+                const contratos = this.contratosDoProcesso(contratoSei, registro.processo_sei);
+                return {
+                    ...registro,
+                    contratos,
+                    bloqueado_por_contratos: await this.contratosDependentes(
+                        this.prisma,
+                        contratos,
+                        registro.id,
+                        registro.processo_sei
+                    ),
+                };
+            })
+        );
+    }
+
+    private contratosDoProcesso(
+        contratoSei: Awaited<ReturnType<ProjetoSeiService['contratoSeiDoProjeto']>>,
+        processo_sei: string
+    ): ProjetoSeiContratoDto[] {
+        return (
+            contratoSei
+                .filter((r) => r.processo_sei === processo_sei)
+                .map((r) => r.contrato)
+                // o mesmo número pode constar duas vezes no contrato (com e sem máscara)
+                .filter((contrato, idx, lista) => lista.findIndex((c) => c.id === contrato.id) === idx)
+        );
+    }
+
+    // Contratos que ficariam sem o processo cadastrado em nenhuma obra vinculada se este registro saísse.
+    private async contratosDependentes(
+        prismaTx: Prisma.TransactionClient,
+        contratos: ProjetoSeiContratoDto[],
+        registro_id: number,
+        processo_sei: string
+    ): Promise<ProjetoSeiContratoDto[]> {
+        if (!contratos.length) return [];
+
+        const cobertos = await prismaTx.contratoProjeto.findMany({
+            where: {
+                contrato_id: { in: contratos.map((c) => c.id) },
+                removido_em: null,
+                projeto: {
+                    removido_em: null,
+                    ProjetoRegistroSei: {
+                        some: { processo_sei: processo_sei, removido_em: null, id: { not: registro_id } },
+                    },
+                },
+            },
+            select: { contrato_id: true },
         });
+        const cobertosSet = new Set(cobertos.map((r) => r.contrato_id));
+
+        return contratos.filter((c) => !cobertosSet.has(c.id));
     }
 
     /**
@@ -134,28 +179,9 @@ export class ProjetoSeiService {
         processo_sei: string,
         acao: 'removido' | 'alterado'
     ) {
-        const contratos = (await this.contratoSeiDoProjeto(prismaTx, projeto_id))
-            .filter((r) => r.processo_sei === processo_sei)
-            .map((r) => r.contrato)
-            .filter((contrato, idx, lista) => lista.findIndex((c) => c.id === contrato.id) === idx);
-        if (!contratos.length) return;
-
-        const cobertos = await prismaTx.contratoProjeto.findMany({
-            where: {
-                contrato_id: { in: contratos.map((c) => c.id) },
-                removido_em: null,
-                projeto: {
-                    removido_em: null,
-                    ProjetoRegistroSei: {
-                        some: { processo_sei: processo_sei, removido_em: null, id: { not: registro_id } },
-                    },
-                },
-            },
-            select: { contrato_id: true },
-        });
-        const cobertosSet = new Set(cobertos.map((r) => r.contrato_id));
-
-        const dependentes = contratos.filter((c) => !cobertosSet.has(c.id));
+        const contratoSei = await this.contratoSeiDoProjeto(prismaTx, projeto_id);
+        const contratos = this.contratosDoProcesso(contratoSei, processo_sei);
+        const dependentes = await this.contratosDependentes(prismaTx, contratos, registro_id, processo_sei);
         if (dependentes.length)
             throw new HttpException(
                 `Processo SEI não pode ser ${acao}, pois está em uso no(s) contrato(s): ` +

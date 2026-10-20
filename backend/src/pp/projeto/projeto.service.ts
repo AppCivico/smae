@@ -59,6 +59,7 @@ import { GeoLocService, UpsertEnderecoDto, UpsertEnderecoIdDto } from '../../geo
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
+import { garanteCoberturaSeiContratos } from '../contrato/contrato-sei-cobertura';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -3899,6 +3900,8 @@ export class ProjetoService {
                 });
             }
         }
+
+        await garanteCoberturaSeiContratos(prismaTx, contratoIds, user.id);
     }
 
     async append_document(tipo: TipoProjeto, projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
