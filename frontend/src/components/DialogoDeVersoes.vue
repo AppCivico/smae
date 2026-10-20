@@ -19,7 +19,13 @@ const { paginasMapeadas } = storeToRefs(wikiStore);
 
 const colunas: Colunas = [
   { chave: 'nome', label: 'Sistema' },
-  { chave: 'versao', label: 'Versão', formatador: (valor) => `Versão ${valor}` },
+  {
+    chave: 'versao',
+    label: 'Versão',
+    atributosDaColuna: {
+      class: 'col--minimum',
+    },
+  },
 ];
 
 const linkDasNotas = computed(() => paginasMapeadas.value.versoes || null);
