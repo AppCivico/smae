@@ -24,7 +24,7 @@ export const useVersaoStore = defineStore('versao', {
       this.chamadasPendentes.versao = true;
       this.erro = null;
       try {
-        this.versao = await this.requestS.get(`${baseUrl}/versao`);
+        this.versao = await this.requestS.get(`${baseUrl}/versao`) as VersaoDto;
       } catch (erro: unknown) {
         this.erro = erro;
       }
