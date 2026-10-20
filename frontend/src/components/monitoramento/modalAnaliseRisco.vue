@@ -1,9 +1,10 @@
-﻿<script setup>
+<script setup>
 import { storeToRefs } from 'pinia';
 import { Form } from 'vee-validate';
 import { ref } from 'vue';
 
 import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
+import { LIMITE_CAMPO_HTML } from '@/consts/limitesDeCampos';
 import { useAlertStore, useCiclosStore, useEditModalStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -18,26 +19,24 @@ const CiclosStore = useCiclosStore();
 const { SingleRisco } = storeToRefs(CiclosStore);
 
 const detalhamento = ref('');
-const ponto_de_atencao = ref('');
+const pontoDeAtencao = ref('');
 async function getAnaliseData() {
   await CiclosStore.getMetaRisco(props.ciclo_id, props.meta_id);
   detalhamento.value = SingleRisco.value.detalhamento;
-  ponto_de_atencao.value = SingleRisco.value.ponto_de_atencao;
+  pontoDeAtencao.value = SingleRisco.value.ponto_de_atencao;
 }
 getAnaliseData();
 
 async function onSubmit(values) {
   try {
-    let msg;
-    let r;
     const v = {
       ciclo_fisico_id: props.ciclo_id,
       meta_id: props.meta_id,
       detalhamento: detalhamento.value || '',
-      ponto_de_atencao: ponto_de_atencao.value || '',
+      ponto_de_atencao: pontoDeAtencao.value || '',
     };
-    r = await CiclosStore.updateMetaRisco(v);
-    msg = 'Análise de risco salva com sucesso!';
+    const r = await CiclosStore.updateMetaRisco(v);
+    const msg = 'Análise de risco salva com sucesso!';
     if (r === true) {
       editModalStore.clear();
       alertStore.success(msg);
@@ -70,18 +69,24 @@ async function onSubmit(values) {
 
     <Form
       ref="varForm"
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ isSubmitting }"
       :validation-schema="schema"
       :initial-values="SingleRisco"
       @submit="onSubmit"
     >
       <div class="mb2">
         <label class="label">Detalhamento</label>
-        <TextEditor v-model="detalhamento" />
+        <TextEditor
+          v-model="detalhamento"
+          :limite="LIMITE_CAMPO_HTML"
+        />
       </div>
       <div class="mb2">
         <label class="label">Ponto de atenção</label>
-        <TextEditor v-model="ponto_de_atencao" />
+        <TextEditor
+          v-model="pontoDeAtencao"
+          :limite="LIMITE_CAMPO_HTML"
+        />
       </div>
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">

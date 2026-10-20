@@ -1,9 +1,10 @@
-﻿<script setup>
+<script setup>
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
+import { LIMITE_CAMPO_HTML } from '@/consts/limitesDeCampos';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEnvioDeEmailsStore } from '@/stores/envioDeEmails.store';
 
@@ -70,6 +71,7 @@ function handleEnviar() {
       </SmaeLabel>
       <TextEditor
         v-model="corpo"
+        :limite="LIMITE_CAMPO_HTML"
       />
     </div>
 
