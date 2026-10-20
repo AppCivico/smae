@@ -4,13 +4,14 @@ import { storeToRefs } from 'pinia';
 import DialogoDeVersoes from '@/components/DialogoDeVersoes.vue';
 import type { ModulosDoSistema } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
+import { localizarData } from '@/helpers/dateToDate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVersaoStore } from '@/stores/versao.store';
 
 const authStore = useAuthStore();
 const versaoStore = useVersaoStore();
 
-const { versao, mesAnoDaVersao } = storeToRefs(versaoStore);
+const { versao } = storeToRefs(versaoStore);
 
 const {
   user: sessao,
@@ -51,8 +52,8 @@ versaoStore.buscar();
       >
         <p class="mb05">
           Versão {{ versao.versao }}
-          <template v-if="mesAnoDaVersao">
-            ({{ mesAnoDaVersao }})
+          <template v-if="versao.data">
+            ({{ localizarData(versao.data) }})
           </template>
         </p>
         <router-link
