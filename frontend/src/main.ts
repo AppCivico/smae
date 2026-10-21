@@ -21,6 +21,7 @@ import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
+import colarDatas from '@/plugins/colarDatas';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 
 import App from './App.vue';
@@ -106,6 +107,7 @@ app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
 app.directive('focus', autofocus);
 
 app.use(consoleNaTemplate);
+app.use(colarDatas);
 
 app.component('CheckClose', CheckClose);
 app.component('ErrorComponent', ErrorComponent);

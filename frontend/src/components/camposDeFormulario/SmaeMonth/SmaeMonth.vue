@@ -5,6 +5,8 @@ import {
   computed, ref, watch,
 } from 'vue';
 
+import converterDataColada from '@/helpers/converterDataColada';
+
 type Props = {
   name?: string
   separador?: string
@@ -62,6 +64,20 @@ function handleInput(el: Event) {
   el.target.value = value;
 
   localValue.value = obterMascara(value);
+}
+
+// a máscara trataria "19/01/1992" como mês 19; uma data completa vira só mês e ano
+function handleColar(evento: ClipboardEvent) {
+  if ((evento.target as HTMLInputElement).readOnly) return;
+
+  const data = converterDataColada(evento.clipboardData?.getData('text') || '');
+
+  if (!data) return;
+
+  evento.preventDefault();
+
+  const [ano, mes] = data.split('-');
+  localValue.value = [mes, ano].join(props.separador);
 }
 
 function handleAbandonarElemento() {
@@ -126,6 +142,7 @@ watch(() => props.modelValue, () => {
     class="inputtext"
     :value="valorExibicao"
     @input="handleInput"
+    @paste="handleColar"
     @blur="handleAbandonarElemento"
   >
 </template>
