@@ -110,6 +110,25 @@ describe('plugin colarDatas', () => {
     expect(campo.value).toBe('1992-01-19');
   });
 
+  it('descarta a leitura se o campo mudou enquanto ela acontecia', async () => {
+    vi.useFakeTimers();
+    let concluirLeitura: (texto: string) => void = () => {};
+    const readText = vi.fn(() => new Promise<string>((resolve) => {
+      concluirLeitura = resolve;
+    }));
+    vi.stubGlobal('navigator', { clipboard: { readText } });
+
+    pressionarCtrlV(campo);
+    await vi.runAllTimersAsync();
+
+    // a pessoa digita antes de confirmar o "Colar" do navegador
+    campo.value = '2000-01-01';
+    concluirLeitura('19/01/1992');
+    await vi.runAllTimersAsync();
+
+    expect(campo.value).toBe('2000-01-01');
+  });
+
   it('não lê a área de transferência quando o "paste" chega', async () => {
     vi.useFakeTimers();
     const readText = vi.fn().mockResolvedValue('01/01/2000');
