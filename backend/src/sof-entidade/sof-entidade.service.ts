@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
-import { SofApiService } from '../sof-api/sof-api.service';
+import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { JOB_LISTA_SOF_LOCK } from 'src/common/dto/locks';
 import { DateTime } from 'luxon';
 
@@ -52,7 +52,14 @@ export class SofEntidadeService {
                 `Cache expirado ou inexistente para detalhamento fonte ${numeroFonte} do ano ${ano}, buscando no SOF`
             );
             // Busca no SOF e atualiza o cache
-            const apiResponse = await this.sof.doDetalhamentoFonteRequest(ano, numeroFonte);
+            const apiResponse = await this.sof.doDetalhamentoFonteRequest(ano, numeroFonte).catch((error) => {
+                if (error instanceof SofError)
+                    throw new HttpException(
+                        'No momento, o serviço SOF está indisponível e não foi possível buscar o detalhamento da fonte.\n\nTente novamente mais tarde',
+                        400
+                    );
+                throw error;
+            });
 
             dados = await this.prisma.sofDetalhamentoFonte.upsert({
                 where: {
