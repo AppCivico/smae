@@ -403,8 +403,10 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
   }
 });
 
+// sem `emitUpdate`, o Tiptap emite `update` sem mudança de conteúdo e o
+// formulário fica sujo só por o campo ser habilitado ou desabilitado
 watch(() => props.disabled, (novoValor) => {
-  editor.value?.setEditable(!novoValor);
+  editor.value?.setEditable(!novoValor, false);
 });
 </script>
 <template>
