@@ -58,13 +58,17 @@ function buscarFases() {
   );
 }
 
-async function aoSalvarFase() {
+function atualizarFases() {
   // para a lista de monitoramento não exibir dados defasados
   if (ciclosDetalhadosPorId.value[props.cicloId]) {
     delete ciclosDetalhadosPorId.value[props.cicloId];
   }
 
-  await buscarFases();
+  return buscarFases();
+}
+
+async function aoSalvarFase() {
+  await atualizarFases();
 
   // mover para a próxima fase a preencher ou,
   // com todas preenchidas, ir para a `route.meta.rotaDeEscape`
@@ -220,7 +224,7 @@ onBeforeRouteLeave((para) => {
         :editavel="fase.editavel"
         @update:sujo="formulariosSujos[fase.config.id] = $event"
         @salvo="aoSalvarFase"
-        @documentos-alterados="aoSalvarFase"
+        @documentos-alterados="atualizarFases"
       />
     </template>
   </EnvelopeDeAbas>
