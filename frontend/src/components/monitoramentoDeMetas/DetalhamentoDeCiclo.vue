@@ -104,26 +104,20 @@ async function reabrirCiclo() {
     );
 
     if (sucesso) {
-      const promessas = [];
       // Atualizar tanto a lista quanto os detalhes do ciclo exibido
       if (estaAberto.value) {
-        promessas.push(
-          monitoramentoDeMetasStore.buscarCiclo(
-            route.params.planoSetorialId,
-            props.ciclo.id,
-            {
-              meta_id: route.params.meta_id,
-            },
-          ),
+        monitoramentoDeMetasStore.buscarCiclo(
+          route.params.planoSetorialId,
+          props.ciclo.id,
+          {
+            meta_id: route.params.meta_id,
+          },
         );
       }
-      promessas.push(
-        monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
-          meta_id: route.params.meta_id,
-        }),
-      );
 
-      await Promise.all(promessas);
+      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
+        meta_id: route.params.meta_id,
+      });
 
       router.push({
         name: `${route.meta.entidadeMãe}.monitoramentoDeMetasFases`,
