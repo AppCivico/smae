@@ -287,7 +287,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
         );
     },
 
-    anosDisponiveisNosCiclosPassados() {
+    anosDisponiveisNosCiclosPassados(): number[] {
       return Object.keys(this.ciclosPassadosPorAno).reduce((acc, ano) => {
         const anoDoItem = Number(ano);
         if (!Number.isNaN(anoDoItem)) {
@@ -297,10 +297,8 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       }, [] as number[]);
     },
 
-    anoMaisRecenteNosCiclosPassados() {
-      return this.anosDisponiveisNosCiclosPassados()[
-        this.anosDisponiveisNosCiclosPassados().length - 1
-      ];
+    anoMaisRecenteNosCiclosPassados():number | undefined {
+      return this.anosDisponiveisNosCiclosPassados.at(-1);
     },
   },
 })();
