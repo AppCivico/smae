@@ -2168,13 +2168,16 @@ export const programaHabitacional = object({
 
 export const projetoFiltro = object().shape({
   codigo: string()
-    .label('Número do contrato')
+    .label('Código do projeto')
     .nullableOuVazio(),
   ipp: number()
     .label('Itens por página')
     .nullableOuVazio(),
   nome: string()
     .label('Nome')
+    .nullableOuVazio(),
+  numero_contrato: string()
+    .label('Número do contrato')
     .nullableOuVazio(),
   ordem_coluna: string()
     .label('Ordenar por')

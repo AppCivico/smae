@@ -80,6 +80,7 @@ const chavesDeValoresValidos = [
   'equipamento_id',
   'grupo_tematico_id',
   'ipp',
+  'numero_contrato',
   'ordem_coluna',
   'ordem_direcao',
   'orgao_origem_id',
@@ -411,13 +412,30 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="flex g2 mb2 fb100 flexwrap espacador-final">
+    <div class="flex g2 mb2 fb100 flexwrap">
+      <div class="f1 fb25em">
+        <label
+          class="label"
+          for="numero_contrato"
+        >
+          Número do contrato
+        </label>
+
+        <input
+          id="numero_contrato"
+          class="inputtext light"
+          name="numero_contrato"
+          type="search"
+          :value="valoresIniciaisConsolidados.numero_contrato"
+        >
+      </div>
+
       <div class="f1 fb25em">
         <label
           class="label"
           for="codigo"
         >
-          Número do contrato
+          Código da obra
         </label>
 
         <input
@@ -428,27 +446,8 @@ onMounted(() => {
           :value="valoresIniciaisConsolidados.codigo"
         >
       </div>
-    </div>
 
-    <div class="flex g2 mb2 fb100 flexwrap">
       <div class="f1 fb25em">
-        <label
-          class="label"
-          for="palavra-chave"
-        >
-          Palavra-chave
-        </label>
-
-        <input
-          id="palavra-chave"
-          class="inputtext light"
-          name="palavra_chave"
-          type="search"
-          :value="valoresIniciaisConsolidados.palavra_chave"
-        >
-      </div>
-
-      <div class="f1">
         <label
           class="label"
           for="retornar_arquivados"
@@ -475,6 +474,25 @@ onMounted(() => {
             :checked="valoresIniciaisConsolidados.retornar_arquivados === true"
           >
         </div>
+      </div>
+    </div>
+
+    <div class="flex g2 mb2 flexwrap espacador-final">
+      <div class="f1">
+        <label
+          class="label"
+          for="palavra-chave"
+        >
+          Palavra-chave
+        </label>
+
+        <input
+          id="palavra-chave"
+          class="inputtext light"
+          name="palavra_chave"
+          type="search"
+          :value="valoresIniciaisConsolidados.palavra_chave"
+        >
       </div>
     </div>
 
