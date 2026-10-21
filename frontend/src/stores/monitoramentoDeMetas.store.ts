@@ -247,6 +247,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
           params,
         );
         delete this.erros.reabrirCiclo[cicloId];
+        delete this.chamadasPendentes.reabrirCiclo[cicloId];
         return true;
       } catch (erro) {
         this.erros.reabrirCiclo[cicloId] = erro;
