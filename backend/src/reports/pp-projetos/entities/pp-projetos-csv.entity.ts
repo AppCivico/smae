@@ -587,6 +587,9 @@ export class RelProjetosContratosCsvRow {
     @ReportColumn({ type: 'VARCHAR', label: 'Data-base' })
     data_base: string | null;
 
+    @ReportColumn({ type: 'DATE', label: 'Data Assinatura' })
+    data_assinatura: string | null;
+
     @ReportColumn({ type: 'DATE', label: 'Data Início' })
     data_inicio: string | null;
 

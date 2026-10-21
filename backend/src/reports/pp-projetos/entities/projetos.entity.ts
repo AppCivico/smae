@@ -174,6 +174,7 @@ export class RelProjetosContratosDto {
     @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
     unidade_prazo: ContratoPrazoUnidade | null;
     data_base: string | null;
+    data_assinatura: Date | null;
     data_inicio: Date | null;
     data_termino: Date | null;
     data_termino_atualizada: Date | null;

@@ -114,6 +114,7 @@ class RetornoDbContratos {
     prazo: number | null;
     unidade_prazo: ContratoPrazoUnidade | null;
     data_base: string | null;
+    data_assinatura: Date | null;
     data_inicio: Date | null;
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
@@ -467,6 +468,7 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
             contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            contrato.data_assinatura AS data_assinatura,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
             (
@@ -533,6 +535,7 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
                 prazo: db.prazo,
                 unidade_prazo: db.unidade_prazo,
                 data_base: db.data_base,
+                data_assinatura: db.data_assinatura,
                 data_inicio: db.data_inicio,
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
@@ -661,6 +664,7 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
                 prazo: r.prazo,
                 unidade_prazo: r.unidade_prazo,
                 data_base: r.data_base,
+                data_assinatura: DataParaYMD(r.data_assinatura),
                 data_inicio: DataParaYMD(r.data_inicio),
                 data_termino: DataParaYMD(r.data_termino),
                 data_termino_atualizada: DataParaYMD(r.data_termino_atualizada),
