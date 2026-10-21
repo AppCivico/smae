@@ -14,6 +14,7 @@ import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.v
 import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import monitoramentoDeMetasFase, { chaveDoBloco } from '@/consts/formSchemas/monitoramentoDeMetasFase';
+import { LIMITE_CAMPO_HTML } from '@/consts/limitesDeCampos';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
@@ -238,6 +239,7 @@ watch(formularioSujo, (novoValor) => {
                 :id="`fase-${fase.id}__${chaveDoBloco(bloco.id)}`"
                 v-bind="field"
                 :disabled="!editavel"
+                :limite="LIMITE_CAMPO_HTML"
               />
             </Field>
           </div>

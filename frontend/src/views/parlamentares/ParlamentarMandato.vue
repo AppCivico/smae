@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -10,11 +10,12 @@ import {
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import SmallModal from '@/components/SmallModal.vue';
 import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
+import SmallModal from '@/components/SmallModal.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
+import { LIMITE_CAMPO_HTML, LIMITE_CAMPO_MEDIO } from '@/consts/limitesDeCampos';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
@@ -543,6 +544,7 @@ iniciar();
           >
             <TextEditor
               v-bind="field"
+              :limite="LIMITE_CAMPO_MEDIO"
             />
           </Field>
           <ErrorMessage
@@ -564,6 +566,7 @@ iniciar();
           >
             <TextEditor
               v-bind="field"
+              :limite="LIMITE_CAMPO_HTML"
             />
           </Field>
           <ErrorMessage

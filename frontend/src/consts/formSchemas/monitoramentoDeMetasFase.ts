@@ -1,5 +1,7 @@
 import type { PsCicloFaseBlocoConfigDto } from '@back/pdm-ciclo/entities/ps-ciclo-fase.entity';
 
+import { LIMITE_CAMPO_HTML, mensagemDeLimiteHtml } from '@/consts/limitesDeCampos';
+
 import {
   array,
   number,
@@ -21,7 +23,7 @@ export default (blocos: Bloco[] = [], { aceitaTags = false }: Opcoes = {}) => ob
       .shape(blocos.reduce((acc, bloco) => {
         acc[chaveDoBloco(bloco.id)] = string()
           .label(bloco.rotulo)
-          .max(10240)
+          .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml)
           .required();
 
         return acc;

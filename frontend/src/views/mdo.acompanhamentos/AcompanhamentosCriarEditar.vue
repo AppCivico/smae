@@ -14,6 +14,7 @@ import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
+import { LIMITE_CAMPO_HTML, LIMITE_CAMPO_LONGO } from '@/consts/limitesDeCampos';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useAlertStore } from '@/stores/alert.store';
@@ -279,6 +280,7 @@ watch(itemParaEdicao, (novoItem) => {
           <TextEditor
             v-bind="field"
             :class="{ error: errors.pauta }"
+            :limite="LIMITE_CAMPO_HTML"
           />
         </Field>
         <ErrorMessage
@@ -301,6 +303,7 @@ watch(itemParaEdicao, (novoItem) => {
           <TextEditor
             v-bind="field"
             :class="{ error: errors.detalhamento }"
+            :limite="LIMITE_CAMPO_LONGO"
           />
         </Field>
         <ErrorMessage
@@ -387,6 +390,7 @@ watch(itemParaEdicao, (novoItem) => {
           <TextEditor
             v-bind="field"
             :class="{ error: errors.pontos_atencao }"
+            :limite="LIMITE_CAMPO_HTML"
           />
         </Field>
         <ErrorMessage
