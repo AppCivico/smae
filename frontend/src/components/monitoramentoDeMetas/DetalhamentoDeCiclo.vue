@@ -104,21 +104,6 @@ async function reabrirCiclo() {
     );
 
     if (sucesso) {
-      // Atualizar tanto a lista quanto os detalhes do ciclo exibido
-      if (estaAberto.value) {
-        monitoramentoDeMetasStore.buscarCiclo(
-          route.params.planoSetorialId,
-          props.ciclo.id,
-          {
-            meta_id: route.params.meta_id,
-          },
-        );
-      }
-
-      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
-        meta_id: route.params.meta_id,
-      });
-
       router.push({
         name: `${route.meta.entidadeMãe}.monitoramentoDeMetasFases`,
         params: {
