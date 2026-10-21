@@ -4244,6 +4244,8 @@ export class ProjetoService {
                 .plus({ days: 1 })
                 .toString();
 
+        const numerosContrato = (filters.numero_contrato ?? []).map((n) => n.trim()).filter((n) => n.length > 0);
+
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 registrado_em: {
@@ -4297,6 +4299,21 @@ export class ProjetoService {
                           some: {
                               removido_em: null,
                               processo_sei: { in: filters.registros_sei.map((e) => e.replace(/\D/g, '')) },
+                          },
+                      }
+                    : undefined,
+                ContratoProjeto: numerosContrato.length
+                    ? {
+                          some: {
+                              removido_em: null,
+                              contrato: {
+                                  removido_em: null,
+                                  OR: numerosContrato.map(
+                                      (numero): Prisma.ContratoWhereInput => ({
+                                          numero: { equals: numero, mode: 'insensitive' },
+                                      })
+                                  ),
+                              },
                           },
                       }
                     : undefined,
