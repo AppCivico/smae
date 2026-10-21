@@ -2,24 +2,31 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
+import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
+import TotalFontesDeRecurso from '@/components/FontesDeRecurso/TotalFontesDeRecurso.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { obra as schema } from '@/consts/formSchemas';
 import statusesObras from '@/consts/statusObras';
+import calcularResumoFontesDeRecurso from '@/helpers/calcularResumoFontesDeRecurso';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
+import truncate from '@/helpers/texto/truncate';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 
+const DotaçãoStore = useDotaçãoStore();
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
 const planosSimplificadosStore = usePlanosSimplificadosStore();
 
+const { FontesDeRecursosPorAnoPorCódigo } = storeToRefs(DotaçãoStore);
 const { planosPorId } = storeToRefs(planosSimplificadosStore);
 
 if (!planosSimplificadosStore.planosSimplificados.length
@@ -478,12 +485,47 @@ const dadosDeEncerramento = computed(() => {
   ];
 });
 
-defineProps({
+const colunasDeFontesDeRecursos = [
+  { chave: 'fonte_recurso_cod_sof', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label },
+  { chave: 'fonte_recurso_detalhamento', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_detalhamento_cod.spec.label },
+  { chave: 'fonte_recurso_ano', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label },
+  { chave: 'valor_nominal', label: schema.fields.fonte_recursos.innerType.fields.valor_nominal.spec.label },
+  { chave: 'valor_percentual', label: schema.fields.fonte_recursos.innerType.fields.valor_percentual.spec.label },
+];
+
+const dadosDeFontesDeRecursos = computed(() => {
+  if (!Array.isArray(emFoco.value?.fonte_recursos)) return [];
+
+  return emFoco.value.fonte_recursos.map((item) => ({
+    id: item.id,
+    fonte_recurso_cod_sof: item.fonte_recurso_cod_sof,
+    fonte_recurso_cod_sof_descricao: FontesDeRecursosPorAnoPorCódigo.value
+      ?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao || '',
+    fonte_recurso_detalhamento: item.fonte_recurso_detalhamento_cod
+      && item.fonte_recurso_detalhamento_descricao
+      ? `${item.fonte_recurso_detalhamento_cod} - ${item.fonte_recurso_detalhamento_descricao}`
+      : '-',
+    fonte_recurso_ano: item.fonte_recurso_ano,
+    valor_nominal: item.valor_nominal != null ? `R$ ${dinheiro(item.valor_nominal)}` : '-',
+    valor_percentual: item.valor_percentual != null ? `${dinheiro(item.valor_percentual)}%` : '-',
+  }));
+});
+
+const custoTotalPlanejado = computed(() => emFoco.value?.tarefa_cronograma?.previsao_custo ?? null);
+
+const resumoFontesDeRecurso = computed(() => calcularResumoFontesDeRecurso(
+  (emFoco.value?.fonte_recursos || []).map((fonte) => fonte.valor_nominal),
+  custoTotalPlanejado.value,
+));
+
+const props = defineProps({
   obraId: {
     type: Number,
     default: 0,
   },
 });
+
+obrasStore.buscarItem(props.obraId);
 
 if (!Array.isArray(organs.value) || !organs.value.length) {
   ÓrgãosStore.getAll();
@@ -634,6 +676,33 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           </dl>
         </template>
       </MapaExibir>
+    </section>
+
+    <section class="borda-inferior">
+      <h2>{{ schema.fields.fonte_recursos.spec.label }}</h2>
+      <SmaeTable
+        :titulo-para-rolagem-horizontal="schema.fields.fonte_recursos.spec.label"
+        :colunas="colunasDeFontesDeRecursos"
+        :dados="dadosDeFontesDeRecursos"
+        :rolagem-horizontal="true"
+      >
+        <template #celula:fonte_recurso_cod_sof="{ linha }">
+          {{ linha.fonte_recurso_cod_sof }}
+          <template v-if="linha.fonte_recurso_cod_sof_descricao">
+            - {{ truncate(linha.fonte_recurso_cod_sof_descricao, 36) }}
+          </template>
+        </template>
+      </SmaeTable>
+
+      <template v-if="dadosDeFontesDeRecursos.length">
+        <ResumoFontesDeRecurso
+          class="mt2"
+          :custo-total-planejado="custoTotalPlanejado"
+          :resumo="resumoFontesDeRecurso"
+        />
+
+        <TotalFontesDeRecurso :resumo="resumoFontesDeRecurso" />
+      </template>
     </section>
 
     <section class="borda-inferior">

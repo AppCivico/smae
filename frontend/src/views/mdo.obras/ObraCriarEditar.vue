@@ -524,6 +524,10 @@ watch(() => values.geolocalizacao, (novoValor, valorAntigo) => {
 
 const formularioSujo = useIsFormDirty();
 
+if (props.obraId) {
+  obrasStore.buscarItem(props.obraId);
+}
+
 watch(emFoco, () => {
   iniciar();
 }, { immediate: true });

@@ -447,6 +447,10 @@ function iniciar() {
   }
 }
 
+if (props.projetoId) {
+  projetosStore.buscarItem(props.projetoId);
+}
+
 watch(emFoco, () => {
   iniciar();
 }, { immediate: true });
@@ -1234,7 +1238,6 @@ watch(portfólioSelecionado, (novo, antigo) => {
             </button>
 
             <div class="f1 fb100">
-              <h1>123</h1>
               <LabelFromYup
                 name="observacao"
                 :for="`fonte_recursos[${idx}].observacao`"
