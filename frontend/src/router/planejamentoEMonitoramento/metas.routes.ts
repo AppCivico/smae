@@ -258,6 +258,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               meta: {
                 título: 'Fases do monitoramento',
                 títuloParaMenu: undefined,
+                // Rota de escape caso todas as fases estejam preenchidas
                 rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
                 migalhasDeMetas: [
                   `${entidadeMãe}.monitoramentoDeMetas`,

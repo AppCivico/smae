@@ -13,6 +13,7 @@ import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import FormularioDeFase from '@/components/monitoramentoDeMetas/FormularioDeFase.vue';
 import dateToTitle from '@/helpers/dateToTitle';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
@@ -56,13 +57,29 @@ function buscarFases() {
   );
 }
 
-function aoSalvarFase() {
+async function aoSalvarFase() {
   // para a lista de monitoramento não exibir dados defasados
   if (ciclosDetalhadosPorId.value[props.cicloId]) {
     delete ciclosDetalhadosPorId.value[props.cicloId];
   }
 
-  buscarFases();
+  await buscarFases();
+
+  // mover para a próxima fase a preencher ou,
+  // com todas preenchidas, ir para a `route.meta.rotaDeEscape`
+  const proximaFase = fases.value.find((fase) => !fase.preenchida);
+
+  if (!proximaFase) {
+    escaparDaRota(router);
+    return;
+  }
+  router.push({
+    params: route.params,
+    query: {
+      ...route.query,
+      aba: `fase-${proximaFase.config.id}`,
+    },
+  });
 }
 
 watch([
