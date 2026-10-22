@@ -14,6 +14,7 @@ import {
     ContratoCompartilhadoDisponivelDto,
     ContratoDetailDto,
     ContratoItemDto,
+    ContratoProcessoSeiDisponivelDto,
 } from './entities/contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { Date2YMD } from '../../common/date2ymd';
@@ -496,6 +497,54 @@ export class ContratoService {
                 valor: contrato.valor,
             };
         });
+    }
+
+    /**
+     * Processos SEI que podem compor o contrato: os cadastrados em qualquer obra/projeto ativo vinculado a ele
+     * (mesmo universo de `validaProcessosSei`). Repetidos ficam com o registro da obra da rota, se houver.
+     */
+    async listProcessosSeiDisponiveis(
+        projeto_id: number,
+        id: number,
+        user: PessoaFromJwt
+    ): Promise<ContratoProcessoSeiDisponivelDto[]> {
+        const contrato = await this.prisma.contrato.findFirst({
+            where: {
+                id,
+                removido_em: null,
+                ContratoProjeto: { some: { projeto_id: projeto_id, removido_em: null } },
+            },
+            select: { id: true },
+        });
+        if (!contrato) throw new NotFoundException('Contrato não encontrado');
+
+        const registros = await this.prisma.projetoRegistroSei.findMany({
+            where: {
+                removido_em: null,
+                projeto: {
+                    removido_em: null,
+                    ContratoProjeto: { some: { contrato_id: id, removido_em: null } },
+                },
+            },
+            orderBy: [{ processo_sei: 'asc' }, { id: 'asc' }],
+            select: {
+                processo_sei: true,
+                descricao: true,
+                projeto: { select: { id: true, nome: true } },
+            },
+        });
+
+        const porProcesso = new Map<string, ContratoProcessoSeiDisponivelDto>();
+        for (const r of registros) {
+            const atual = porProcesso.get(r.processo_sei);
+            if (atual && (atual.projeto.id === projeto_id || r.projeto.id !== projeto_id)) continue;
+            porProcesso.set(r.processo_sei, {
+                processo_sei: r.processo_sei,
+                descricao: r.descricao,
+                projeto: r.projeto,
+            });
+        }
+        return [...porProcesso.values()];
     }
 
     /**
