@@ -1,4 +1,4 @@
-import { ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { copiarColunas, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 
 /**
  * Colunas dos CSVs **brutos** do relatório de Obras (fonte `Obras`, módulo MDO).
@@ -37,7 +37,8 @@ import { ReportColumn, ReportRows } from '../../post-process/report-column.decor
  * que o cabeçalho nascia, já que este arquivo nunca passou uma lista `fields` explícita.
  *
  * Uma obra pode aparecer em mais de uma linha: a consulta faz `LEFT JOIN` com
- * `projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N.
+ * `projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N. Quem quer uma linha
+ * por obra tem `obras_simplificado.csv` — ver `RelObrasSimplificadoCsvRow`.
  */
 @ReportRows({
     arquivo: 'obras.csv',
@@ -295,6 +296,70 @@ export class RelObrasCsvRow {
 
     @ReportColumn({ type: 'INTEGER', label: 'n_unidades_atendidas', format: { raw: true } })
     n_unidades_atendidas: number | null;
+}
+
+/**
+ * Colunas de `obras.csv` que vêm dos `LEFT JOIN` 1:N (órgão participante e fonte de recurso).
+ * São elas que diferenciam as linhas repetidas de uma mesma obra.
+ */
+const COLUNAS_OBRAS_1_N = new Set([
+    'orgao_id',
+    'orgao_sigla',
+    'orgao_descricao',
+    'fonte_recurso_valor_pct',
+    'fonte_recurso_valor_nominal',
+]);
+
+/** A coluna é da obra em si (e não de um join 1:N)? */
+export function ehColunaDaObra(nome: string): boolean {
+    return !COLUNAS_OBRAS_1_N.has(nome);
+}
+
+/**
+ * Colunas do CSV bruto de `obras_simplificado.csv`: as mesmas de `obras.csv`, menos as que
+ * vêm de órgão participante e fonte de recurso — **uma linha por obra**.
+ *
+ * Existe para quem monta um modelo só com dados da obra (ex.: lista de obras para cruzar com
+ * contratos) e, no `obras.csv`, recebia linhas idênticas repetidas por causa dos joins 1:N.
+ * O `obras.csv` continua igual ao lado, para quem precisa do detalhamento.
+ *
+ * Mesmo padrão de `transferencias.csv` × `transferencias_e_distribuicao.csv`, com uma
+ * diferença: aqui o arquivo antigo **não** foi renomeado. Os cabeçalhos de `obras.csv` são
+ * contrato com automação e com modelos salvos, então o arquivo novo entra ao lado sem
+ * migration.
+ *
+ * As colunas são copiadas (mesma ordem, rótulo, tipo e formatação) em vez de redeclaradas.
+ */
+@ReportRows({
+    arquivo: 'obras_simplificado.csv',
+    fontes: ['Obras'],
+    descricao:
+        'Uma linha por obra, sem as colunas de órgão participante e fonte de recurso — ' +
+        'o mesmo conteúdo de obras.csv sem as linhas repetidas pelos joins.',
+})
+export class RelObrasSimplificadoCsvRow {}
+
+copiarColunas(RelObrasCsvRow, RelObrasSimplificadoCsvRow, ehColunaDaObra);
+
+/**
+ * As linhas de `obras_simplificado.csv` a partir das de `obras.csv`: uma por obra.
+ *
+ * Mesma regra de `linhasPorTransferencia`: as colunas da obra são iguais em todas as repetições
+ * geradas pelos joins 1:N, então ficar com a primeira ocorrência só descarta cópias. Deduplicar
+ * por `obra_id` (e não pela tupla de colunas) garante uma linha por obra mesmo que alguma coluna
+ * venha a divergir no futuro.
+ */
+export function linhasPorObra<T extends { obra_id: number }>(linhas: T[]): T[] {
+    const vistas = new Set<number>();
+    const out: T[] = [];
+
+    for (const linha of linhas) {
+        if (vistas.has(linha.obra_id)) continue;
+        vistas.add(linha.obra_id);
+        out.push(linha);
+    }
+
+    return out;
 }
 
 /**

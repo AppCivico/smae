@@ -2,7 +2,7 @@
 
 <!-- Gerado por bin/report-columns-gen.ts — não edite à mão. -->
 
-39 arquivos de relatório com schema de colunas declarado.
+41 arquivos de relatório com schema de colunas declarado.
 
 ## Arquivos
 
@@ -14,7 +14,7 @@
 | `analises-qualitativas-ps.csv` | `PSMonitoramentoMensal` | 9 | [detalhes](./report-columns/analises-qualitativas-ps-csv.md) |
 | `arquivos.csv` | `Obras`, `Projeto`, `Projetos` | 16 | [detalhes](./report-columns/arquivos-csv.md) |
 | `atividades-pendentes.csv` | `AtvPendentes` | 9 | [detalhes](./report-columns/atividades-pendentes-csv.md) |
-| `contratos.csv` | `Obras`, `Projeto`, `Projetos` | 35 | [detalhes](./report-columns/contratos-csv.md) |
+| `contratos.csv` | `Obras`, `Projeto`, `Projetos` | 36 | [detalhes](./report-columns/contratos-csv.md) |
 | `cronograma.csv` | `Obras`, `Projeto`, `Projetos`, `Transferencias` | 25 | [detalhes](./report-columns/cronograma-csv.md) |
 | `demandas.csv` | `Demandas` | 18 | [detalhes](./report-columns/demandas-csv.md) |
 | `detalhes-do-projeto.csv` | `Projeto` | 62 | [detalhes](./report-columns/detalhes-do-projeto-csv.md) |
@@ -30,7 +30,8 @@
 | `monitoramento-mensal-metas-ciclo-ps.csv` | `PSMonitoramentoMensal` | 7 | [detalhes](./report-columns/monitoramento-mensal-metas-ciclo-ps-csv.md) |
 | `monitoramento-mensal-variaveis-ps.csv` | `PSMonitoramentoMensal` | 23 | [detalhes](./report-columns/monitoramento-mensal-variaveis-ps-csv.md) |
 | `obra-status.csv` | `ObraStatus` | 11 | [detalhes](./report-columns/obra-status-csv.md) |
-| `obras.csv` | `Obras` | 74 | [detalhes](./report-columns/obras-csv.md) |
+| `obras_simplificado.csv` | `Obras` | 70 | [detalhes](./report-columns/obras-simplificado-csv.md) |
+| `obras.csv` | `Obras` | 75 | [detalhes](./report-columns/obras-csv.md) |
 | `origens.csv` | `Obras`, `Projeto`, `Projetos` | 10 | [detalhes](./report-columns/origens-csv.md) |
 | `parlamentares.csv` | `Parlamentares` | 15 | [detalhes](./report-columns/parlamentares-csv.md) |
 | `planejado.csv` | `PSOrcamento`, `ProjetoOrcamento`, `ObrasOrcamento` | 27 | [detalhes](./report-columns/planejado-csv.md) |
@@ -39,6 +40,7 @@
 | `previsao-custo.csv` | `PSPrevisaoCusto`, `ProjetoPrevisaoCusto`, `ObrasPrevisaoCusto` | 20 | [detalhes](./report-columns/previsao-custo-csv.md) |
 | `processos_sei.csv` | `Obras` | 7 | [detalhes](./report-columns/processos-sei-csv.md) |
 | `projeto-status.csv` | `ProjetoStatus` | 11 | [detalhes](./report-columns/projeto-status-csv.md) |
+| `projetos_simplificado.csv` | `Projetos` | 37 | [detalhes](./report-columns/projetos-simplificado-csv.md) |
 | `projetos.csv` | `Projetos` | 50 | [detalhes](./report-columns/projetos-csv.md) |
 | `regioes.csv` | `PSIndicadores` | 37 | [detalhes](./report-columns/regioes-csv.md) |
 | `riscos.csv` | `Projeto`, `Projetos` | 20 | [detalhes](./report-columns/riscos-csv.md) |
@@ -89,6 +91,7 @@ flowchart LR
     psmonitoramentomensal["PSMonitoramentoMensal"] --> monitoramento-mensal-metas-ciclo-ps-csv["monitoramento-mensal-metas-ciclo-ps.csv"]
     psmonitoramentomensal["PSMonitoramentoMensal"] --> monitoramento-mensal-variaveis-ps-csv["monitoramento-mensal-variaveis-ps.csv"]
     obrastatus["ObraStatus"] --> obra-status-csv["obra-status.csv"]
+    obras["Obras"] --> obras-simplificado-csv["obras_simplificado.csv"]
     obras["Obras"] --> obras-csv["obras.csv"]
     obras["Obras"] --> origens-csv["origens.csv"]
     projeto["Projeto"] --> origens-csv["origens.csv"]
@@ -104,6 +107,7 @@ flowchart LR
     obrasprevisaocusto["ObrasPrevisaoCusto"] --> previsao-custo-csv["previsao-custo.csv"]
     obras["Obras"] --> processos-sei-csv["processos_sei.csv"]
     projetostatus["ProjetoStatus"] --> projeto-status-csv["projeto-status.csv"]
+    projetos["Projetos"] --> projetos-simplificado-csv["projetos_simplificado.csv"]
     projetos["Projetos"] --> projetos-csv["projetos.csv"]
     psindicadores["PSIndicadores"] --> regioes-csv["regioes.csv"]
     projeto["Projeto"] --> riscos-csv["riscos.csv"]

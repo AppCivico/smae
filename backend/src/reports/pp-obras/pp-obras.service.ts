@@ -43,6 +43,8 @@ import {
     RelObrasFontesRecursoCsvRow,
     RelObrasOrigensCsvRow,
     RelObrasProcessosSeiCsvRow,
+    RelObrasSimplificadoCsvRow,
+    linhasPorObra,
 } from './entities/pp-obras-csv.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
@@ -332,12 +334,13 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
      * guard do Excel, XLSX tipado e modelos de coluna).
      *
      * A ordem é a mesma em que `toFileOutput` emite os arquivos. Este relatório não tem
-     * variação de colunas por parâmetro: os dez arquivos saem sempre, com o mesmo conjunto
+     * variação de colunas por parâmetro: os onze arquivos saem sempre, com o mesmo conjunto
      * de colunas.
      */
     async describeSchema(_params: CreateRelObrasDto): Promise<ReportFileSchema[]> {
         return [
             getReportRowSchema(RelObrasCsvRow),
+            getReportRowSchema(RelObrasSimplificadoCsvRow),
             getReportRowSchema(RelObrasCronogramaCsvRow),
             getReportRowSchema(RelObrasAcompanhamentosCsvRow),
             getReportRowSchema(RelObrasFontesRecursoCsvRow),
@@ -367,6 +370,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
         // ordem passam a sair de `schema.colunas`, e não mais de literais espalhados aqui.
         const [
             schemaObras,
+            schemaObrasSimplificado,
             schemaCronograma,
             schemaAcompanhamentos,
             schemaFontesRecurso,
@@ -378,14 +382,14 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             schemaArquivos,
         ] = await this.describeSchema(dto);
 
-        out.push(
-            await this.streamQueryToCSV(
-                `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
-                whereCond.queryParams,
-                schemaObras,
-                ctx
-            )
+        // `obras.csv` e `obras_simplificado.csv` são a mesma consulta em granularidades
+        // diferentes (ver `RelObrasSimplificadoCsvRow`): consulta uma vez, escreve os dois.
+        const linhasObras = await this.prisma.$queryRawUnsafe<any[]>(
+            `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
+            ...whereCond.queryParams
         );
+        out.push(await this.escreverCsv(linhasObras, schemaObras, ctx));
+        out.push(await this.escreverCsv(linhasPorObra(linhasObras ?? []), schemaObrasSimplificado, ctx));
 
         out.push(
             await this.streamQueryToCSV(
@@ -491,6 +495,11 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
         ctx: ReportContext
     ): Promise<FileOutput> {
         const results = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
+        return this.escreverCsv(results, schema, ctx);
+    }
+
+    /** Escreve o CSV bruto de `schema` a partir de linhas já consultadas. */
+    private async escreverCsv(results: any[], schema: ReportFileSchema, ctx: ReportContext): Promise<FileOutput> {
         const linhas = (results ?? []).map((row) => this.normalizarLinha(row, schema));
 
         // Com `fields` sempre presente, o parser emite CSV só com cabeçalho quando não há

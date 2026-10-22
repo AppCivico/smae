@@ -4,7 +4,7 @@ Uma linha por combinação de obra × fonte de recurso × órgão participante (
 
 Fontes que produzem este arquivo: `Obras`
 
-74 colunas.
+75 colunas.
 
 Classe de linha: `RelObrasCsvRow`
 
@@ -14,7 +14,8 @@ As colunas seguem exatamente a ordem do `SELECT` de `buildObrasBaseQuery()` — 
 que o cabeçalho nascia, já que este arquivo nunca passou uma lista `fields` explícita.
 
 Uma obra pode aparecer em mais de uma linha: a consulta faz `LEFT JOIN` com
-`projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N.
+`projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N. Quem quer uma linha
+por obra tem `obras_simplificado.csv` — ver `RelObrasSimplificadoCsvRow`.
 
 | Coluna | Tipo | Rótulo | Formatação | Descrição |
 | --- | --- | --- | --- | --- |
@@ -26,6 +27,8 @@ Uma obra pode aparecer em mais de uma linha: a consulta faz `LEFT JOIN` com
 | `etiquetas` | `VARCHAR` | etiquetas | — | — |
 | `status` | `VARCHAR` | status | — | — |
 | `projeto_etapa` | `VARCHAR` | projeto_etapa | — | — |
+| `grupos_observadores` | `VARCHAR` | grupos_observadores | — | — |
+| `mdo_observacoes` | `VARCHAR` | mdo_observacoes | — | — |
 | `inicio_planejado` | `DATE` | inicio_planejado | — | — |
 | `termino_planejado` | `DATE` | termino_planejado | — | — |
 | `previsao_inicio` | `DATE` | previsao_inicio | — | — |
@@ -81,7 +84,6 @@ Uma obra pode aparecer em mais de uma linha: a consulta faz `LEFT JOIN` com
 | `programa_habitacional` | `VARCHAR` | programa_habitacional | — | — |
 | `empreendimento_id` | `BIGINT` | empreendimento_id | sem formatação | — |
 | `empreendimento_identificador` | `VARCHAR` | empreendimento_identificador | — | — |
-| `mdo_observacoes` | `VARCHAR` | mdo_observacoes | — | — |
 | `portfolios_compartilhados_titulos` | `VARCHAR` | portfolios_compartilhados_titulos | — | — |
 | `secretario_responsavel` | `VARCHAR` | secretario_responsavel | — | — |
 | `secretario_executivo` | `VARCHAR` | secretario_executivo | — | — |
