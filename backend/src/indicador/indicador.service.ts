@@ -1670,6 +1670,7 @@ export class IndicadorService {
                 variavel_categoria: {
                     select: {
                         variavel_categorica_id: true,
+                        tipo: true,
                         variavel_mae: {
                             select: {
                                 variaveis_filhas: {
@@ -1759,8 +1760,12 @@ export class IndicadorService {
 
                 serieValor = valorTotal;
                 serieElementos = { 'totais_categorica': elementosArray } satisfies ElementoJsonDto;
-
-                if (indicador.regionalizavel && indicador.variavel_categoria.variavel_mae) {
+                // a variável calculada da mãe agrega as filhas regionais; já uma filha
+                // isolada também tem `variavel_mae`, mas tem um único valor por período
+                if (
+                    indicador.variavel_categoria.tipo === 'Calculada' &&
+                    indicador.variavel_categoria.variavel_mae
+                ) {
                     // não pode passar do número de variáveis filhas
                     const maxRegions = indicador.variavel_categoria.variavel_mae.variaveis_filhas.length;
                     if (valorTotal > maxRegions)
