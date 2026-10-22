@@ -452,21 +452,10 @@ export class TarefaService {
         if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']))
             return { pode_editar: false, pode_editar_realizado: temOrgao };
 
-        // TODO: os papéis de projeto não deveriam liberar cronograma de transferência
-        const temPapelDeEdicao = user.hasSomeRoles([
-            'CadastroTransferencia.administrador',
-            'Projeto.administrador',
-            'Projeto.administrador_no_orgao',
-            'SMAE.gestor_de_projeto',
-            'SMAE.colaborador_de_projeto',
-            'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-        ]);
-
         return {
-            pode_editar: temPapelDeEdicao || (temOrgao && !!user.orgao_id && r.orgao!.id == user.orgao_id),
+            pode_editar:
+                user.hasSomeRoles(['CadastroTransferencia.administrador']) ||
+                (temOrgao && !!user.orgao_id && r.orgao!.id == user.orgao_id),
             pode_editar_realizado: temOrgao,
         };
     }
