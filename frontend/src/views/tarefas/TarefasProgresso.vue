@@ -114,7 +114,7 @@ onMounted(() => {
     <hr class="ml2 f1">
 
     <div
-      v-if="!emFoco?.projeto?.permissoes?.apenas_leitura || $route.meta.entidaMãe"
+      v-if="emFoco?.pode_editar && !emFoco?.projeto?.permissoes?.apenas_leitura"
       class="ml2"
     >
       <SmaeLink
