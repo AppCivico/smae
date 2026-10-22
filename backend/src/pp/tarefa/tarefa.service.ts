@@ -58,10 +58,7 @@ export class ValidacaoDatas {
 
 type AcessoCronograma =
     | {
-          projeto: Pick<
-              ProjetoPermissoesDto,
-              'apenas_leitura' | 'sou_responsavel' | 'pode_editar_apenas_responsaveis_pos_planejamento'
-          >;
+          projeto: Pick<ProjetoPermissoesDto, 'apenas_leitura' | 'sou_responsavel'>;
       }
     | { transferencia: true };
 
@@ -441,10 +438,9 @@ export class TarefaService {
         const temOrgao = r.orgao !== null;
 
         if ('projeto' in acesso) {
-            // mesma regra dos guards do PATCH: ReadWrite para o planejado, responsável para o realizado
             const p = acesso.projeto;
             return {
-                pode_editar: !p.apenas_leitura || p.pode_editar_apenas_responsaveis_pos_planejamento,
+                pode_editar: !p.apenas_leitura,
                 pode_editar_realizado: temOrgao && (!p.apenas_leitura || p.sou_responsavel),
             };
         }

@@ -1623,6 +1623,18 @@ export class ProjetoService {
     }
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
+    async findOneEdicaoCronograma(
+        tipo: TipoProjeto,
+        id: number,
+        user: PessoaFromJwt
+    ): Promise<ProjetoDetailDto | ProjetoDetailMdoDto> {
+        const projeto = await this.findOne(tipo, id, user, 'ReadWrite');
+        // ReadWrite aceita o gerente pós-planejamento, que só edita os responsáveis, não o cronograma
+        if (projeto.permissoes.apenas_leitura)
+            throw new HttpException('Você não tem permissão para editar o cronograma deste projeto.', 403);
+        return projeto;
+    }
+
     async findOne(
         tipo: TipoProjeto | 'AUTO',
         id: number,

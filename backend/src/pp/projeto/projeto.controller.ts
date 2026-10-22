@@ -304,7 +304,7 @@ export class ProjetoController {
         @Body() cloneProjetoTarefasdto: CloneProjetoTarefasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<void> {
-        await this.projetoService.findOne(this.tipo, params.id, user, 'ReadWrite');
+        await this.projetoService.findOneEdicaoCronograma(this.tipo, params.id, user);
 
         await this.projetoService.cloneTarefas(this.tipo, params.id, cloneProjetoTarefasdto, user);
         return;
@@ -558,7 +558,7 @@ export class ProjetoMDOController {
         @Body() cloneProjetoTarefasdto: CloneProjetoTarefasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<void> {
-        await this.projetoService.findOne(this.tipo, params.id, user, 'ReadWrite');
+        await this.projetoService.findOneEdicaoCronograma(this.tipo, params.id, user);
         await this.projetoService.cloneTarefas(this.tipo, params.id, cloneProjetoTarefasdto, user);
         return;
     }
