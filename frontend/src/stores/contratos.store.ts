@@ -8,6 +8,7 @@ import type {
   ContratoItemDto,
   ListContratoCompartilhadoDisponivelDto,
   ListContratoDto,
+  ListContratoProcessoSeiDisponivelDto,
 } from '@back/pp/contrato/entities/contrato.entity';
 import type { ListProjetoSeiDto } from '@back/pp/projeto/entities/projeto.entity';
 import type { ListModalidadeContratacaoDto } from '@back/pp/_mdo/modalidade-contratacao/dto/mod-contratacao.dto';
@@ -112,12 +113,15 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
         { id: 'Meses', nome: 'Meses' },
       ];
     },
-    async buscarDependencias(mãeComId: MãeComId = undefined) {
+    async buscarDependencias(mãeComId: MãeComId = undefined, contratoId: number | string = 0) {
       this.chamadasPendentes.emFoco = true;
 
-      const obra = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}`);
+      const caminho = `${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}`;
+      const obra = await this.requestS.get(caminho);
 
-      const processosSei = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`) as ListProjetoSeiDto;
+      const processosSei = contratoId
+        ? await this.requestS.get(`${caminho}/contrato/${contratoId}/processos-sei-disponiveis`) as ListContratoProcessoSeiDisponivelDto
+        : await this.requestS.get(`${caminho}/sei`) as ListProjetoSeiDto;
 
       const orgaos = await this.requestS.get(`${baseUrl}/orgao`);
 
@@ -127,6 +131,9 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
         const processoSeiLocal = processoSei;
         processoSeiLocal.id = processoSei.processo_sei;
         processoSeiLocal.processo_sei = formatProcesso(processoSei.processo_sei);
+        if (processoSei.projeto && processoSei.projeto.id !== obra.id) {
+          processoSeiLocal.processo_sei += ` (${processoSei.projeto.nome})`;
+        }
         return processoSeiLocal;
       });
       this.listaDeDependencias.fontes_recurso = obra.fonte_recursos;
