@@ -1671,14 +1671,14 @@ export class IndicadorService {
                     select: {
                         variavel_categorica_id: true,
                         tipo: true,
-                        variavel_mae: {
+                        variavel_mae_id: true,
+                        FormulaCompostaCalc: {
+                            where: { removido_em: null },
                             select: {
-                                variaveis_filhas: {
-                                    where: {
-                                        removido_em: null,
-                                        tipo: 'Global',
+                                _count: {
+                                    select: {
+                                        FormulaCompostaVariavel: { where: { variavel: { removido_em: null } } },
                                     },
-                                    distinct: ['id'],
                                 },
                             },
                         },
@@ -1750,6 +1750,10 @@ export class IndicadorService {
                         );
 
                     const somaPraTerValor = +el.valor;
+                    if (!Number.isInteger(somaPraTerValor) || somaPraTerValor < 0)
+                        throw new BadRequestException(
+                            `A quantidade do valor categórico ${el.categorica_valor} deve ser um inteiro não negativo. Valor enviado: ${el.valor}`
+                        );
 
                     valorTotal += somaPraTerValor;
                     // Formato: [id, count]
@@ -1764,10 +1768,13 @@ export class IndicadorService {
                 // isolada também tem `variavel_mae`, mas tem um único valor por período
                 if (
                     indicador.variavel_categoria.tipo === 'Calculada' &&
-                    indicador.variavel_categoria.variavel_mae
+                    indicador.variavel_categoria.variavel_mae_id
                 ) {
-                    // não pode passar do número de variáveis filhas
-                    const maxRegions = indicador.variavel_categoria.variavel_mae.variaveis_filhas.length;
+                    // cada variável somada na fórmula composta contribui com no máximo 1
+                    const maxRegions = indicador.variavel_categoria.FormulaCompostaCalc.reduce(
+                        (acc, fc) => acc + fc._count.FormulaCompostaVariavel,
+                        0
+                    );
                     if (valorTotal > maxRegions)
                         throw new BadRequestException(
                             `Para indicadores categóricos regionalizados, a soma dos valores deve ser no máximo o número de regiões (${maxRegions}). Valor enviado: ${valorTotal}`
