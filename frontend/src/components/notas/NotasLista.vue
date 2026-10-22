@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { onMounted, ref, watch } from 'vue';
 
+import dateToField from '@/helpers/dateToField';
 import removerHtml from '@/helpers/html/removerHtml';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
@@ -145,14 +146,14 @@ watch(statusSelecionado, (novoValor) => {
         <td>
           {{
             item.data_nota
-              ? new Date(item.data_nota).toLocaleDateString("pt-BR")
+              ? dateToField(item.data_nota)
               : " - "
           }}
         </td>
         <td>
           {{
             item.rever_em
-              ? new Date(item.rever_em).toLocaleDateString("pt-BR")
+              ? dateToField(item.rever_em)
               : " - "
           }}
         </td>
