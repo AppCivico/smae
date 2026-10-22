@@ -17,6 +17,7 @@ const indicadoresStore = useIndicadoresStore();
 type Props = {
   indicador: IndicadorDto;
   valores: ListSeriesAgrupadas;
+  tipo?: 'numerico' | 'categorica' | 'categorica_regionalizavel';
 };
 
 const props = defineProps<Props>();
@@ -42,7 +43,7 @@ const variavelTipo = computed(() => {
     return 'numerico';
   }
 
-  if (props.indicador.regionalizavel && props.valores.variavel.variavel_mae_id) {
+  if (props.valores.variavel.tipo === 'Calculada' && props.valores.variavel.variavel_mae_id) {
     return 'categorica_regionalizavel';
   }
 

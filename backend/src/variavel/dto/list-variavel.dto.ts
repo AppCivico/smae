@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty, OmitType } from '@nestjs/swagger';
-import { Periodicidade, Serie, TipoPdm } from '@prisma/client';
+import { Periodicidade, Serie, TipoPdm, TipoVariavel } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
@@ -76,6 +76,7 @@ export class VariavelResumoInput {
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
     variavel_mae_id: number | null;
+    tipo: TipoVariavel;
 }
 
 export class VariavelAssuntoDto {
@@ -115,6 +116,8 @@ export class VariavelResumo {
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
     variavel_mae_id: number | null;
+    @ApiProperty({ enum: TipoVariavel, enumName: 'TipoVariavel' })
+    tipo: TipoVariavel;
 }
 
 export class ListSeriesAgrupadas {
