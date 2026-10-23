@@ -749,10 +749,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         :lista="estimativasIniciais"
         layout="flex"
       >
-        <template #termo="{item}">
-          <span style="color: #F2890D">{{ item.titulo }}</span>
-        </template>
-
         <template #descricao--previsao_inicio="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
         </template>
@@ -778,6 +774,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         :lista="planejamentoFisicoFinanceiro"
         layout="flex"
       >
+        <template #termo="{item}">
+          <span style="color: #F2890D">{{ item.titulo }}</span>
+        </template>
+
         <template #descricao--inicio_planejado="{ item }">
           {{ item.valor ? dateToField(item.valor) : '—' }}
         </template>
