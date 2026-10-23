@@ -120,6 +120,23 @@ export class VariavelResumo {
     tipo: TipoVariavel;
 }
 
+export const PreviaModo = {
+    Numerica: 'Numerica',
+    Categorica: 'Categorica',
+    CategoricaDistribuida: 'CategoricaDistribuida',
+    Bloqueada: 'Bloqueada',
+} as const;
+export type PreviaModo = (typeof PreviaModo)[keyof typeof PreviaModo];
+
+export class PreviaModoDto {
+    @ApiProperty({ enum: PreviaModo, enumName: 'PreviaModo' })
+    modo: PreviaModo;
+    /**
+     * Soma máxima das quantidades categóricas; null quando não se aplica
+     */
+    max_soma: number | null;
+}
+
 export class ListSeriesAgrupadas {
     linhas: SeriesAgrupadas[];
     /**
@@ -156,6 +173,11 @@ export class ListSeriesAgrupadas {
      * True if the user can upsert the ultima_previa_indicador.
      */
     pode_editar_previa?: boolean;
+
+    /**
+     * Como a prévia deve ser preenchida; o frontend escolhe o formulário por aqui
+     */
+    previa_modo?: PreviaModoDto;
 
     /**
      * Valor do ultimo "RealizadoAcumulado".
