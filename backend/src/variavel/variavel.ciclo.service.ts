@@ -924,7 +924,6 @@ export class VariavelCicloService {
                 recalculo_erro: true,
                 recalculo_tempo: true,
                 variavel_mae_id: true,
-                tipo: true,
 
                 variaveis_filhas: {
                     orderBy: [{ supraregional: 'asc' }, { regiao: { descricao: 'asc' } }, { codigo: 'asc' }],
@@ -943,7 +942,6 @@ export class VariavelCicloService {
                         recalculo_erro: true,
                         recalculo_tempo: true,
                         variavel_mae_id: true,
-                        tipo: true,
                         unidade_medida: { select: { id: true, sigla: true, descricao: true } },
                     },
                 },
@@ -1379,7 +1377,6 @@ export class VariavelCicloService {
                 descricao: variavel.unidade_medida.descricao,
             },
             variavel_mae_id: variavel.variavel_mae_id,
-            tipo: variavel.tipo,
             recalculando: variavel.recalculando,
             recalculo_erro: variavel.recalculo_erro,
             recalculo_tempo: variavel.recalculo_tempo,

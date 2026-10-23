@@ -3595,7 +3595,6 @@ export class VariavelService {
                 recalculo_erro: true,
                 recalculo_tempo: true,
                 variavel_mae_id: true,
-                tipo: true,
                 unidade_medida: { select: { id: true, sigla: true, descricao: true } },
             },
         });
@@ -3618,7 +3617,6 @@ export class VariavelService {
                 descricao: variavel.unidade_medida.descricao,
             },
             variavel_mae_id: variavel.variavel_mae_id,
-            tipo: variavel.tipo,
             recalculando: variavel.recalculando,
             recalculo_erro: variavel.recalculo_erro,
             recalculo_tempo: variavel.recalculo_tempo,
@@ -3791,7 +3789,6 @@ export class VariavelService {
                 recalculo_erro: variavel.recalculo_erro,
                 recalculo_tempo: variavel.recalculo_tempo,
                 variavel_mae_id: variavel.variavel_mae_id,
-                tipo: variavel.tipo,
                 suspendida_em: variavel.suspendida_em,
             },
             linhas: [],
