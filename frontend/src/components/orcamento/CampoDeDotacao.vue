@@ -7,8 +7,8 @@ import {
 import { useRoute } from 'vue-router';
 
 import { dotação as schema } from '@/consts/formSchemas';
-import deduplicarPorChave from '@/helpers/deduplicarPorChave.ts';
 import dinheiro from '@/helpers/dinheiro';
+import montarDadosDoAnoDaDotacao from '@/helpers/montarDadosDoAnoDaDotacao.ts';
 import toFloat from '@/helpers/toFloat';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 // PRA-FAZER: preenchimento inicial dos campos de parciais
@@ -23,7 +23,7 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  dotação: {
+  dotacao: {
     type: String,
     default: '',
   },
@@ -45,7 +45,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:modelValue',
   'update:complemento',
-  'update:dotação',
+  'update:dotacao',
   'update:respostasof',
 ]);
 
@@ -58,54 +58,54 @@ const {
 
 const route = useRoute();
 
-const DotaçãoStore = useDotaçãoStore();
+const dotacaoStore = useDotaçãoStore();
 
 const { ano } = route.params;
 
-const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(DotaçãoStore);
+const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(dotacaoStore);
 
 const largurasDeCampo = {
-  dotação: {
-    órgão: 2,
+  dotacao: {
+    orgao: 2,
     unidade: 2,
-    função: 2,
-    subFunção: 3,
+    funcao: 2,
+    subFuncao: 3,
     programa: 4,
     projetoAtividade: 5,
     contaDespesa: 8,
     fonte: 2,
   },
   complemento: {
-    complementoExercício: 1,
+    complementoExercicio: 1,
     complementoFonte: 3,
     complementoAcompanhamento: 4,
     complementoOrigem: 1,
   },
-  dotaçãoEComplemento: {
-    apenasDotação: 36,
+  dotacaoEComplemento: {
+    apenasDotacao: 36,
     comComplemento: 48,
   },
 };
 
 const validando = ref(false);
 
-const órgão = ref('');
+const orgao = ref('');
 const unidade = ref('');
-const função = ref('');
-const subFunção = ref('');
+const funcao = ref('');
+const subFuncao = ref('');
 const programa = ref('');
 const projetoAtividade = ref('');
 const contaDespesa = ref('');
 const fonte = ref('');
 
-const complementoExercício = ref('');
+const complementoExercicio = ref('');
 const complementoFonte = ref('');
 const complementoAcompanhamento = ref('');
 const complementoOrigem = ref('');
 
-const valorDaDotação = computed(() => {
+const valorDaDotacao = computed(() => {
   const campos = [
-    órgão, unidade, função, subFunção, programa, projetoAtividade, contaDespesa, fonte,
+    orgao, unidade, funcao, subFuncao, programa, projetoAtividade, contaDespesa, fonte,
   ];
   let valor = '';
 
@@ -121,7 +121,7 @@ const valorDaDotação = computed(() => {
 
 const valorDoComplemento = computed(() => {
   const campos = [
-    complementoExercício,
+    complementoExercicio,
     complementoFonte,
     complementoAcompanhamento,
     complementoOrigem,
@@ -138,45 +138,24 @@ const valorDoComplemento = computed(() => {
   return valor;
 });
 
-const dotaçãoCheia = computed(() => (valorDoComplemento.value
-  ? `${valorDaDotação.value}.${valorDoComplemento.value}`
-  : valorDaDotação.value));
+const dotacaoCheia = computed(() => (valorDoComplemento.value
+  ? `${valorDaDotacao.value}.${valorDoComplemento.value}`
+  : valorDaDotacao.value));
 
-const dadosDoAno = computed(() => {
-  const s = DotaçãoSegmentos.value?.[ano];
-  const orgaosDiponiveis = deduplicarPorChave(s?.orgaos, 'codigo');
-  const unidadesDisponiveis = deduplicarPorChave(
-    // eslint-disable-next-line eqeqeq
-    s?.unidades?.filter((x) => x.cod_orgao == órgão.value),
-    (x) => `${x.cod_orgao}/${x.codigo}`,
-  );
+const dadosDoAno = computed(() => montarDadosDoAnoDaDotacao(
+  DotaçãoSegmentos.value?.[ano],
+  {
+    orgao: orgao.value,
+    unidade: unidade.value,
+    funcao: funcao.value,
+    subFuncao: subFuncao.value,
+    programa: programa.value,
+    projetoAtividade: projetoAtividade.value,
+    fonte: fonte.value,
+  },
+));
 
-  const codigoComDescricao = (list, codigo) => {
-    // eslint-disable-next-line eqeqeq
-    const item = list?.find((x) => x.codigo == codigo);
-    return item ? `${item.codigo} - ${item.descricao}` : '';
-  };
-
-  return {
-    atualizado_em: s?.atualizado_em,
-    orgaosDiponiveis,
-    unidadesDisponiveis,
-    funcoesDisponiveis: s?.funcoes ?? [],
-    subFuncoesDisponiveis: s?.subfuncoes ?? [],
-    programasDisponiveis: s?.programas ?? [],
-    projetosAtividadesDisponiveis: s?.projetos_atividades ?? [],
-    fontesDisponiveis: s?.fonte_recursos ?? [],
-    órgão: codigoComDescricao(orgaosDiponiveis, órgão.value),
-    unidade: codigoComDescricao(unidadesDisponiveis, unidade.value),
-    função: codigoComDescricao(s?.funcoes, função.value),
-    subFunção: codigoComDescricao(s?.subfuncoes, subFunção.value),
-    programa: codigoComDescricao(s?.programas, programa.value),
-    projetoAtividade: codigoComDescricao(s?.projetos_atividades, projetoAtividade.value?.replace('.', '')),
-    fonte: codigoComDescricao(s?.fonte_recursos, fonte.value),
-  };
-});
-
-const dotaçãoEComplemento = computed({
+const dotacaoEComplemento = computed({
   get: () => props.modelValue,
   set(valor) {
     let valorLimpo = String(valor).replace(/([^0-9*])/g, '');
@@ -188,9 +167,9 @@ const dotaçãoEComplemento = computed({
     }
 
     if (valorLimpo.length) {
-      órgão.value = valorLimpo.slice(0, 2);
+      orgao.value = valorLimpo.slice(0, 2);
     } else {
-      órgão.value = '';
+      orgao.value = '';
     }
 
     if (valorLimpo.length >= 2) {
@@ -200,15 +179,15 @@ const dotaçãoEComplemento = computed({
     }
 
     if (valorLimpo.length >= 4) {
-      função.value = valorLimpo.slice(4, 6);
+      funcao.value = valorLimpo.slice(4, 6);
     } else {
-      função.value = '';
+      funcao.value = '';
     }
 
     if (valorLimpo.length >= 6) {
-      subFunção.value = valorLimpo.slice(6, 9);
+      subFuncao.value = valorLimpo.slice(6, 9);
     } else {
-      subFunção.value = '';
+      subFuncao.value = '';
     }
 
     if (valorLimpo.length >= 9) {
@@ -240,9 +219,9 @@ const dotaçãoEComplemento = computed({
     }
 
     if (valorLimpo.length >= 27) {
-      complementoExercício.value = valorLimpo.slice(27, 28);
+      complementoExercicio.value = valorLimpo.slice(27, 28);
     } else {
-      complementoExercício.value = '';
+      complementoExercicio.value = '';
     }
 
     if (valorLimpo.length >= 28) {
@@ -275,8 +254,8 @@ async function validarDota() {
   if (valid) {
     try {
       emit('update:respostasof', { loading: true });
-      const respostaDoSof = await DotaçãoStore
-        .getDotaçãoRealizado(valorDaDotação.value, ano, props.parametrosParaValidacao);
+      const respostaDoSof = await dotacaoStore
+        .getDotaçãoRealizado(valorDaDotacao.value, ano, props.parametrosParaValidacao);
       emit('update:respostasof', respostaDoSof);
     } catch (error) {
       emit('update:respostasof', error);
@@ -285,9 +264,9 @@ async function validarDota() {
   validando.value = false;
 }
 
-function mascararCódigos(evt, alémDoBásico = []) {
+function mascararCodigos(evt, alemDoBasico = []) {
   const teclasPermitidas = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-    .concat(Array.isArray(alémDoBásico) ? alémDoBásico : [alémDoBásico]);
+    .concat(Array.isArray(alemDoBasico) ? alemDoBasico : [alemDoBasico]);
 
   if (!teclasPermitidas.includes(evt.key)) {
     evt.preventDefault();
@@ -295,18 +274,18 @@ function mascararCódigos(evt, alémDoBásico = []) {
 }
 
 if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.segmentos) {
-  DotaçãoStore.getDotaçãoSegmentos(ano);
+  dotacaoStore.getDotaçãoSegmentos(ano);
 }
 
-watch(valorDaDotação, (novoValor) => {
-  handleChange(dotaçãoCheia.value);
-  emit('update:modelValue', dotaçãoCheia.value);
-  emit('update:dotação', novoValor);
+watch(valorDaDotacao, (novoValor) => {
+  handleChange(dotacaoCheia.value);
+  emit('update:modelValue', dotacaoCheia.value);
+  emit('update:dotacao', novoValor);
 });
 
 watch(valorDoComplemento, (novoValor) => {
-  handleChange(dotaçãoCheia.value);
-  emit('update:modelValue', dotaçãoCheia.value);
+  handleChange(dotacaoCheia.value);
+  emit('update:modelValue', dotacaoCheia.value);
   emit('update:complemento', novoValor);
 });
 </script>
@@ -315,22 +294,22 @@ watch(valorDoComplemento, (novoValor) => {
     <div class="f1">
       <label
         class="label"
-        for="campo-de-dotação"
+        for="campo-de-dotacao"
       >Dotação&nbsp;<span class="tvermelho">*</span></label>
       <input
-        id="campo-de-dotação"
-        v-model.trim="dotaçãoEComplemento"
-        name="dotaçãoEComplemento"
+        id="campo-de-dotacao"
+        v-model.trim="dotacaoEComplemento"
+        name="dotacaoEComplemento"
         type="text"
         class="inputtext light mb1"
         :maxlength="props.complemento === false
-          ? largurasDeCampo.dotaçãoEComplemento.apenasDotação
-          : largurasDeCampo.dotaçãoEComplemento.comComplemento"
+          ? largurasDeCampo.dotacaoEComplemento.apenasDotacao
+          : largurasDeCampo.dotacaoEComplemento.comComplemento"
         :class="{
           error: errors?.dotacao || respostasof.informacao_valida === false,
           loading: respostasof.loading
         }"
-        @keypress="($event) => mascararCódigos($event, ['*'])"
+        @keypress="($event) => mascararCodigos($event, ['*'])"
       >
 
       <ErrorMessage
@@ -358,13 +337,13 @@ watch(valorDoComplemento, (novoValor) => {
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <label
-          for="órgão"
+          for="orgao"
           class="label tc300"
         >Órgão&nbsp;<span class="tvermelho">*</span></label>
         <select
-          id="órgão"
-          v-model="órgão"
-          name="órgão"
+          id="orgao"
+          v-model="orgao"
+          name="orgao"
           class="inputtext light mb1"
         >
           <option
@@ -376,10 +355,10 @@ watch(valorDoComplemento, (novoValor) => {
           </option>
         </select>
         <div
-          v-if="órgão"
+          v-if="orgao"
           class="t12 tc500"
         >
-          {{ dadosDoAno.órgão }}
+          {{ dadosDoAno.orgao }}
         </div>
       </div>
       <div class="f1">
@@ -417,12 +396,12 @@ watch(valorDoComplemento, (novoValor) => {
       <div class="f1">
         <label
           class="label tc300"
-          for="função"
+          for="funcao"
         >Função&nbsp;<span class="tvermelho">*</span></label>
         <select
-          id="função"
-          v-model="função"
-          name="função"
+          id="funcao"
+          v-model="funcao"
+          name="funcao"
           class="inputtext light mb1"
         >
           <option
@@ -434,21 +413,21 @@ watch(valorDoComplemento, (novoValor) => {
           </option>
         </select>
         <div
-          v-if="função"
+          v-if="funcao"
           class="t12 tc500"
         >
-          {{ dadosDoAno.função }}
+          {{ dadosDoAno.funcao }}
         </div>
       </div>
       <div class="f1">
         <label
           class="label tc300"
-          for="subFunção"
+          for="subFuncao"
         >Subfunção&nbsp;<span class="tvermelho">*</span></label>
         <select
-          id="subFunção"
-          v-model="subFunção"
-          name="subFunção"
+          id="subFuncao"
+          v-model="subFuncao"
+          name="subFuncao"
           class="inputtext light mb1"
         >
           <option
@@ -460,10 +439,10 @@ watch(valorDoComplemento, (novoValor) => {
           </option>
         </select>
         <div
-          v-if="subFunção"
+          v-if="subFuncao"
           class="t12 tc500"
         >
-          {{ dadosDoAno.subFunção }}
+          {{ dadosDoAno.subFuncao }}
         </div>
       </div>
       <div class="f1">
@@ -529,8 +508,8 @@ watch(valorDoComplemento, (novoValor) => {
         <input
           id="contaDespesa"
           v-model="contaDespesa"
-          :maxlength="largurasDeCampo.dotação.contaDespesa"
-          :minlength="largurasDeCampo.dotação.contaDespesa"
+          :maxlength="largurasDeCampo.dotacao.contaDespesa"
+          :minlength="largurasDeCampo.dotacao.contaDespesa"
           name="contaDespesa"
           inputmode="numeric"
           type="text"
@@ -572,21 +551,21 @@ watch(valorDoComplemento, (novoValor) => {
       <div class="f1">
         <label
           class="label tc300"
-          for="complementoExercício"
+          for="complementoExercicio"
         >
           Exercício da Fonte de Recurso&nbsp;<span class="tvermelho">*</span>
         </label>
         <input
-          id="complementoExercício"
-          v-model="complementoExercício"
+          id="complementoExercicio"
+          v-model="complementoExercicio"
           class="inputtext light mb1"
           inputmode="numeric"
-          :maxlength="largurasDeCampo.complemento.complementoExercício"
-          :minlength="largurasDeCampo.complemento.complementoExercício"
-          name="complementoExercício"
+          :maxlength="largurasDeCampo.complemento.complementoExercicio"
+          :minlength="largurasDeCampo.complemento.complementoExercicio"
+          name="complementoExercicio"
           step="1"
           type="text"
-          @keypress="mascararCódigos"
+          @keypress="mascararCodigos"
         >
       </div>
       <div class="f1">
@@ -606,7 +585,7 @@ watch(valorDoComplemento, (novoValor) => {
           name="complementoFonte"
           step="1"
           type="text"
-          @keypress="mascararCódigos"
+          @keypress="mascararCodigos"
         >
       </div>
       <div class="f1">
@@ -625,7 +604,7 @@ watch(valorDoComplemento, (novoValor) => {
           :minlength="largurasDeCampo.complemento.complementoAcompanhamento"
           pattern="\d{4}"
           name="complementoAcompanhamento"
-          @keypress="mascararCódigos"
+          @keypress="mascararCodigos"
         >
       </div>
       <div class="f05">
@@ -644,7 +623,7 @@ watch(valorDoComplemento, (novoValor) => {
           :minlength="largurasDeCampo.complemento.complementoOrigem"
           pattern="\d"
           name="complementoOrigem"
-          @keypress="mascararCódigos"
+          @keypress="mascararCodigos"
         >
       </div>
     </div>

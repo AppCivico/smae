@@ -177,7 +177,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
       <CampoDeDotacao
         v-model:respostasof="respostasof"
         v-model:complemento="complemento"
-        v-model:dotação="dotação"
+        v-model:dotacao="dotação"
         v-model="dotaçãoComComplemento"
         :parametros-para-validacao="parametrosParaValidacao"
       />
