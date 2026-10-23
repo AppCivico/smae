@@ -99,15 +99,17 @@ const campos = computed<Formulario>(() => [
     },
   },
   {
-    class: 'fg999 espacador-final',
+    class: 'fg999',
     campos: {
+      numero_contrato: { tipo: 'search' },
       codigo: { tipo: 'search' },
+      retornar_arquivados: { tipo: 'checkbox' },
     },
   },
   {
+    class: 'fg999 espacador-final',
     campos: {
       palavra_chave: { tipo: 'search' },
-      retornar_arquivados: { tipo: 'checkbox' },
     },
   },
   {

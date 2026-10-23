@@ -139,7 +139,7 @@ watch(itemParaEdicao, (novosValores) => {
 }, { immediate: true });
 
 onMounted(async () => {
-  await contratosStore.buscarDependencias();
+  await contratosStore.buscarDependencias(undefined, route.params.contratoId);
 
   if (emFoco.value?.id) {
     fontesRecurso.value.participantes = carga.fontes_recurso.map((fonteRecurso) => fonteRecurso.id);

@@ -5,7 +5,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoSeiContratoDto, ProjetoSeiDto } from './entities/projeto.entity';
 
 @Injectable()
 export class ProjetoSeiService {
@@ -78,16 +78,61 @@ export class ProjetoSeiService {
 
         const contratoSei = projetosSei.length ? await this.contratoSeiDoProjeto(this.prisma, projeto.id) : [];
 
-        return projetosSei.map((registro) => {
-            return {
-                ...registro,
-                contratos: contratoSei
-                    .filter((r) => r.processo_sei === registro.processo_sei)
-                    .map((r) => r.contrato)
-                    // o mesmo número pode constar duas vezes no contrato (com e sem máscara)
-                    .filter((contrato, idx, lista) => lista.findIndex((c) => c.id === contrato.id) === idx),
-            };
+        return await Promise.all(
+            projetosSei.map(async (registro) => {
+                const contratos = this.contratosDoProcesso(contratoSei, registro.processo_sei);
+                return {
+                    ...registro,
+                    contratos,
+                    bloqueado_por_contratos: await this.contratosDependentes(
+                        this.prisma,
+                        contratos,
+                        registro.id,
+                        registro.processo_sei
+                    ),
+                };
+            })
+        );
+    }
+
+    private contratosDoProcesso(
+        contratoSei: Awaited<ReturnType<ProjetoSeiService['contratoSeiDoProjeto']>>,
+        processo_sei: string
+    ): ProjetoSeiContratoDto[] {
+        return (
+            contratoSei
+                .filter((r) => r.processo_sei === processo_sei)
+                .map((r) => r.contrato)
+                // o mesmo número pode constar duas vezes no contrato (com e sem máscara)
+                .filter((contrato, idx, lista) => lista.findIndex((c) => c.id === contrato.id) === idx)
+        );
+    }
+
+    // Contratos que ficariam sem o processo cadastrado em nenhuma obra vinculada se este registro saísse.
+    private async contratosDependentes(
+        prismaTx: Prisma.TransactionClient,
+        contratos: ProjetoSeiContratoDto[],
+        registro_id: number,
+        processo_sei: string
+    ): Promise<ProjetoSeiContratoDto[]> {
+        if (!contratos.length) return [];
+
+        const cobertos = await prismaTx.contratoProjeto.findMany({
+            where: {
+                contrato_id: { in: contratos.map((c) => c.id) },
+                removido_em: null,
+                projeto: {
+                    removido_em: null,
+                    ProjetoRegistroSei: {
+                        some: { processo_sei: processo_sei, removido_em: null, id: { not: registro_id } },
+                    },
+                },
+            },
+            select: { contrato_id: true },
         });
+        const cobertosSet = new Set(cobertos.map((r) => r.contrato_id));
+
+        return contratos.filter((c) => !cobertosSet.has(c.id));
     }
 
     /**
@@ -121,6 +166,30 @@ export class ProjetoSeiService {
         });
     }
 
+    /**
+     * O contrato só aceita processos SEI cadastrados em alguma obra/projeto vinculado a ele (ver
+     * `ContratoService.validaProcessosSei`). Remover ou trocar o número aqui deixaria o contrato apontando para
+     * um processo sem cadastro, então é bloqueado enquanto algum contrato depender exclusivamente deste registro.
+     * Em contrato compartilhado, se outra obra vinculada também tem o processo cadastrado, não há dependência.
+     */
+    private async assertProcessoSemDependenciaEmContrato(
+        prismaTx: Prisma.TransactionClient,
+        projeto_id: number,
+        registro_id: number,
+        processo_sei: string,
+        acao: 'removido' | 'alterado'
+    ) {
+        const contratoSei = await this.contratoSeiDoProjeto(prismaTx, projeto_id);
+        const contratos = this.contratosDoProcesso(contratoSei, processo_sei);
+        const dependentes = await this.contratosDependentes(prismaTx, contratos, registro_id, processo_sei);
+        if (dependentes.length)
+            throw new HttpException(
+                `Processo SEI não pode ser ${acao}, pois está em uso no(s) contrato(s): ` +
+                    `${dependentes.map((c) => c.numero).join(', ')}. Remova-o do(s) contrato(s) antes.`,
+                400
+            );
+    }
+
     async update_sei(
         tipo: TipoProjeto,
         projeto: ProjetoDetailDto,
@@ -151,29 +220,40 @@ export class ProjetoSeiService {
                 );
         }
 
-        const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
-            where: {
-                projeto_id: projeto.id,
-                projeto: { tipo: tipo, id: projeto.id },
-                id: seiID,
-                removido_em: null,
-            },
-        });
-        if (self.categoria !== 'Manual')
-            throw new HttpException(`Processo SEI não pode ser alterado, pois foi criado pelo sistema.`,
-                400
-            );
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const self = await prismaTx.projetoRegistroSei.findFirstOrThrow({
+                where: {
+                    projeto_id: projeto.id,
+                    projeto: { tipo: tipo, id: projeto.id },
+                    id: seiID,
+                    removido_em: null,
+                },
+            });
+            if (self.categoria !== 'Manual')
+                throw new HttpException(`Processo SEI não pode ser alterado, pois foi criado pelo sistema.`,
+                    400
+                );
 
-        await this.prisma.projetoRegistroSei.updateMany({
-            where: {
-                projeto_id: projeto.id,
-                id: seiID,
-            },
-            data: {
-                ...dto,
-                atualizado_em: new Date(Date.now()),
-                atualizado_por: user.id,
-            },
+            if (dto.processo_sei && dto.processo_sei !== self.processo_sei)
+                await this.assertProcessoSemDependenciaEmContrato(
+                    prismaTx,
+                    projeto.id,
+                    self.id,
+                    self.processo_sei,
+                    'alterado'
+                );
+
+            await prismaTx.projetoRegistroSei.updateMany({
+                where: {
+                    projeto_id: projeto.id,
+                    id: seiID,
+                },
+                data: {
+                    ...dto,
+                    atualizado_em: new Date(Date.now()),
+                    atualizado_por: user.id,
+                },
+            });
         });
 
         return { id: seiID };
@@ -194,6 +274,8 @@ export class ProjetoSeiService {
                     400
                 );
 
+            await this.assertProcessoSemDependenciaEmContrato(prismaTx, projeto.id, self.id, self.processo_sei, 'removido');
+
             await prismaTx.projetoRegistroSei.update({
                 where: {
                     id: seiID,
@@ -203,16 +285,6 @@ export class ProjetoSeiService {
                     removido_por: user.id,
                 },
             });
-
-            // O formulário do contrato só oferece os processos cadastrados no projeto/obra. Se o número
-            // continuasse no contrato, apareceria na lista/resumo sem poder ser retirado pela edição.
-            // Em contrato compartilhado a remoção vale para todas as obras/projetos, como qualquer
-            // outra alteração feita no contrato.
-            const emUso = (await this.contratoSeiDoProjeto(prismaTx, projeto.id)).filter(
-                (r) => r.processo_sei === self.processo_sei
-            );
-            if (emUso.length)
-                await prismaTx.contratoSei.deleteMany({ where: { id: { in: emUso.map((r) => r.id) } } });
         });
     }
 }

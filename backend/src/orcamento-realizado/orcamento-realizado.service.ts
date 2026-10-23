@@ -248,7 +248,14 @@ export class OrcamentoRealizadoService {
 
                 // chama após o update, vai disparar o erro se ultrapassar o limite
                 if (nota_empenho) {
-                    await this.verificaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
+                    await this.verificaNotaEmpenho(
+                        meta.pdm_id,
+                        dto.ano_referencia,
+                        prismaTxn,
+                        dotacao,
+                        processo,
+                        nota_empenho
+                    );
                 } else if (processo) {
                     await this.verificaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
                 } else if (dotacao) {
@@ -493,6 +500,7 @@ export class OrcamentoRealizadoService {
                 if (orcRealizado.nota_empenho) {
                     await this.verificaNotaEmpenho(
                         meta.pdm_id,
+                        orcRealizado.ano_referencia,
                         prismaTxn,
                         orcRealizado.dotacao,
                         orcRealizado.processo,
@@ -664,6 +672,7 @@ export class OrcamentoRealizadoService {
 
     private async verificaNotaEmpenho(
         pdm_id: number,
+        ano_referencia: number,
         prismaTxn: Prisma.TransactionClient,
         dotacao: string,
         processo: string | null,
@@ -679,7 +688,7 @@ export class OrcamentoRealizadoService {
 
         const novo_valor = await prismaTxn.pdmDotacaoProcessoNota.findFirst({
             where: {
-                ano_referencia: this.getAnoNota(nota_empenho),
+                ano_referencia: ano_referencia,
                 dotacao: dotacao,
                 dotacao_processo: processo!,
                 dotacao_processo_nota: nota_empenho,
@@ -1319,7 +1328,7 @@ export class OrcamentoRealizadoService {
                 orgao_id: user.orgao_id,
             },
         });
-        if (!podeEditar) throw new BadRequestException('Necessário participar do órgão responsável da meta');
+        if (!podeEditar.length) throw new BadRequestException('Necessário participar do órgão responsável da meta');
 
         const now = new Date(Date.now());
 
@@ -1351,7 +1360,7 @@ export class OrcamentoRealizadoService {
                 orgao_id: dto.orgao_id,
             },
         });
-        if (!podeEditar) throw new BadRequestException('Órgão informado precisa ser responsável na meta.');
+        if (!podeEditar.length) throw new BadRequestException('Órgão informado precisa ser responsável na meta.');
 
         const now = new Date(Date.now());
 

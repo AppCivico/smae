@@ -229,6 +229,7 @@ export class ParlamentarService {
         const parlamentar = await this.prisma.parlamentar.findUniqueOrThrow({
             where: {
                 id: id,
+                removido_em: null,
             },
             select: {
                 id: true,

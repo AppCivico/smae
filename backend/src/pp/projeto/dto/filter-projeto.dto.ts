@@ -132,6 +132,14 @@ export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) 
     @Transform(StringArrayTransform)
     codigo?: string[];
 
+    /**
+     * Número de contrato vinculado ao projeto/obra (igualdade, sem diferenciar maiúsculas/minúsculas)
+     **/
+    @IsOptional()
+    @IsString({ each: true })
+    @Transform(StringArrayTransform)
+    numero_contrato?: string[];
+
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)

@@ -1,4 +1,4 @@
-import { copiarColunas, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { copiarColunas, primeiraPorChave, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 import { TipoRelatorioTransferencia } from '../dto/create-transferencias.dto';
 
 /**
@@ -341,16 +341,7 @@ copiarColunas(RelTransferenciasEDistribuicaoCsvRow, RelTransferenciasCsvRow, ehC
  * o módulo do Prisma) para dentro do arquivo de schema.
  */
 export function linhasPorTransferencia<T extends { id: number }>(linhas: T[]): T[] {
-    const vistas = new Set<number>();
-    const out: T[] = [];
-
-    for (const linha of linhas) {
-        if (vistas.has(linha.id)) continue;
-        vistas.add(linha.id);
-        out.push(linha);
-    }
-
-    return out;
+    return primeiraPorChave(linhas, (l) => l.id);
 }
 
 /**

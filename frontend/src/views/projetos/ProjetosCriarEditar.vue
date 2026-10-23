@@ -14,11 +14,15 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
+import TotalFontesDeRecurso from '@/components/FontesDeRecurso/TotalFontesDeRecurso.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import schema from '@/consts/formSchemas/projeto';
 import listaDeStatuses from '@/consts/projectStatuses';
+import calcularResumoFontesDeRecurso from '@/helpers/calcularResumoFontesDeRecurso';
+import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -342,6 +346,13 @@ async function buscarPossiveisGerentes() {
   }
 }
 
+const custoTotalPlanejado = computed(() => emFoco.value?.tarefa_cronograma?.previsao_custo ?? null);
+
+const resumoFontesDeRecurso = computed(() => calcularResumoFontesDeRecurso(
+  (values.fonte_recursos || []).map((fonte) => fonte.valor_nominal),
+  custoTotalPlanejado.value,
+));
+
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
 const onSubmit = handleSubmit(async () => {
@@ -393,7 +404,9 @@ const onSubmit = handleSubmit(async () => {
 
       alertStore.success(msg);
       emFoco.value = null;
-      projetosStore.buscarItem(props.projetoId || resposta.id);
+      // como as rotas de saída mostram o item em foco,
+      // precisamos buscar novamente o item atualizado antes de redirecionar.
+      await projetosStore.buscarItem(props.projetoId || resposta.id);
       router.push(rotaApósSalvamento);
     }
   } catch (error) {
@@ -432,6 +445,10 @@ function iniciar() {
       }
     });
   }
+}
+
+if (props.projetoId) {
+  projetosStore.buscarItem(props.projetoId);
 }
 
 watch(emFoco, () => {
@@ -1033,6 +1050,11 @@ watch(portfólioSelecionado, (novo, antigo) => {
           {{ schema.fields.fonte_recursos.spec.label }}
         </legend>
 
+        <ResumoFontesDeRecurso
+          :custo-total-planejado="custoTotalPlanejado"
+          :resumo="resumoFontesDeRecurso"
+        />
+
         <FieldArray
           v-slot="{ fields, push, remove }"
           name="fonte_recursos"
@@ -1159,13 +1181,14 @@ watch(portfólioSelecionado, (novo, antigo) => {
             </div>
 
             <div class="f1 mb1">
-              <label class="label tc300">
-                Previsão de custo&nbsp;<span
-                  v-if="!fields[idx].value.valor_percentual"
-                  class="tvermelho"
-                >*</span>
-              </label>
+              <LabelFromYup
+                name="valor_nominal"
+                :for="`fonte_recursos[${idx}].valor_nominal`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
               <MaskedFloatInput
+                :id="`fonte_recursos[${idx}].valor_nominal`"
                 :name="`fonte_recursos[${idx}].valor_nominal`"
                 :value="fields[idx].value.valor_nominal"
                 class="inputtext light mb1"
@@ -1178,22 +1201,24 @@ watch(portfólioSelecionado, (novo, antigo) => {
             </div>
 
             <div class="f1 mb1">
-              <label class="label tc300">
-                Valor percentual&nbsp;<span
-                  v-if="!fields[idx].value.valor_nominal"
-                  class="tvermelho"
-                >*</span>
-              </label>
-              <MaskedFloatInput
-                :name="`fonte_recursos[${idx}].valor_percentual`"
-                :value="fields[idx].value.valor_percentual"
+              <LabelFromYup
+                name="valor_percentual"
+                :for="`fonte_recursos[${idx}].valor_percentual`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
+
+              <input
+                :id="`fonte_recursos[${idx}].valor_percentual`"
+                type="text"
                 class="inputtext light mb1"
-                :disabled="desabilitarTodosCampos.camposComuns"
-              />
-              <ErrorMessage
-                class="error-msg mb1"
-                :name="`fonte_recursos[${idx}].valor_percentual`"
-              />
+                readonly
+                aria-readonly="true"
+                :value="
+                  resumoFontesDeRecurso.percentuais[idx] === null ?
+                    '—' : `${dinheiro(resumoFontesDeRecurso.percentuais[idx])}%`
+                "
+              >
             </div>
 
             <button
@@ -1211,7 +1236,40 @@ watch(portfólioSelecionado, (novo, antigo) => {
                 <use xlink:href="#i_remove" />
               </svg>
             </button>
+
+            <div class="f1 fb100">
+              <LabelFromYup
+                name="observacao"
+                :for="`fonte_recursos[${idx}].observacao`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
+              <Field
+                :id="`fonte_recursos[${idx}].observacao`"
+                :name="`fonte_recursos[${idx}].observacao`"
+                as="textarea"
+                rows="3"
+                maxlength="2048"
+                class="inputtext light mb1"
+                :disabled="desabilitarTodosCampos.camposComuns"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].observacao`"
+              />
+            </div>
+
+            <hr class="f1 fb100">
           </div>
+
+          <template v-if="fields.length">
+            <ResumoFontesDeRecurso
+              :custo-total-planejado="custoTotalPlanejado"
+              :resumo="resumoFontesDeRecurso"
+            />
+
+            <TotalFontesDeRecurso :resumo="resumoFontesDeRecurso" />
+          </template>
 
           <button
             class="like-a__text addlink"
@@ -1221,7 +1279,7 @@ watch(portfólioSelecionado, (novo, antigo) => {
               fonte_recurso_cod_sof: '',
               fonte_recurso_ano: null,
               valor_nominal: null,
-              valor_percentual: null,
+              observacao: null,
             })"
           >
             <svg

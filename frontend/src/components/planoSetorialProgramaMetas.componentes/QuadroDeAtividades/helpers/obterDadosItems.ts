@@ -1,8 +1,5 @@
 enum CicloFase {
   Orcamento,
-  Analise,
-  Risco,
-  Fechamento,
   Cronograma,
 }
 export type ChavesFase = keyof typeof CicloFase;
@@ -16,23 +13,11 @@ const mapaDeFases: Record<ChavesFase, { icone: string; label: string }> = {
     icone: 'i_$',
     label: 'Orçamento',
   },
-  Analise: {
-    icone: 'i_iniciativa',
-    label: 'Analise Qualitativa',
-  },
-  Risco: {
-    icone: 'i_binoculars',
-    label: 'Risco',
-  },
-  Fechamento: {
-    icone: 'i_check',
-    label: 'Fechamento',
-  },
 } as const;
 
 const mapaDeStatus = {
-  pendente: '#FF0000',
-  atualizado: '#8EC122',
+  pendente: 'var(--vermelho)',
+  atualizado: 'var(--verde)',
 } as const;
 type ChavesStatus = keyof typeof mapaDeStatus;
 

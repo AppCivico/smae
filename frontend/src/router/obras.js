@@ -1,5 +1,6 @@
 import { useObrasStore } from '@/stores/obras.store';
 
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 import obrasAcompanhamentos from './obras.acompanhamentos';
 import obrasContratos from './obras.contratos';
 import obrasOrcamentos from './obras.orcamentos';
@@ -202,7 +203,7 @@ export default {
             {
               path: ':tarefaId',
               component: () => import('@/views/tarefas/TarefasItem.vue'),
-              props: true,
+              props: tiparPropsDeRota,
               children: [
                 {
                   path: '',

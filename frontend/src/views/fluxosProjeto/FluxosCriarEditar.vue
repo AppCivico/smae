@@ -369,7 +369,6 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
         <Field
           name="ativo"
           type="checkbox"
-          :disabled="emFoco?.edicao_restrita"
           :value="true"
           :unchecked-value="false"
           class="inputcheckbox mr1"

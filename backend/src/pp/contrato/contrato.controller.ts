@@ -13,6 +13,7 @@ import {
     ContratoDetailDto,
     ListContratoCompartilhadoDisponivelDto,
     ListContratoDto,
+    ListContratoProcessoSeiDisponivelDto,
 } from './entities/contrato.entity';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { AssociarContratoCompartilhadoDto } from './dto/associar-contrato-compartilhado.dto';
@@ -90,6 +91,19 @@ export class ContratoPPController {
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ContratoDetailDto> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return await this.contratoService.findOne(+params.id, +params.id2, user);
+    }
+
+    @Get(':id/contrato/:id2/processos-sei-disponiveis')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async listProcessosSeiDisponiveis(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListContratoProcessoSeiDisponivelDto> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        return {
+            linhas: await this.contratoService.listProcessosSeiDisponiveis(+params.id, +params.id2, user),
+        };
     }
 
     @Patch(':id/contrato/:id2')
@@ -177,6 +191,19 @@ export class ContratoMDOController {
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ContratoDetailDto> {
         await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
         return await this.contratoService.findOne(+params.id, +params.id2, user);
+    }
+
+    @Get(':id/contrato/:id2/processos-sei-disponiveis')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async listProcessosSeiDisponiveis(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListContratoProcessoSeiDisponivelDto> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+        return {
+            linhas: await this.contratoService.listProcessosSeiDisponiveis(+params.id, +params.id2, user),
+        };
     }
 
     @Patch(':id/contrato/:id2')

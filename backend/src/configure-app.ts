@@ -10,6 +10,9 @@ const winston = require('winston'),
 export function configureApp(app: NestExpressApplication, opts: { requestLogger?: boolean } = {}) {
     app.setGlobalPrefix('api');
 
+    // Forms can carry several MAX_LENGTH_HTML fields at once
+    app.useBodyParser('json', { limit: '1mb' });
+
     // Per-request Prisma query buffer (consumed by PrismaErrorFilter)
     app.use((_req: Request, _res: Response, next: () => void) => {
         prismaQueryAls.run({ startSeq: currentPrismaQuerySeq(), entries: [] }, () => next());

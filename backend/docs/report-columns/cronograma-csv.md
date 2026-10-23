@@ -70,7 +70,7 @@ e ao lado do `hierarquia` correto, porque ali remover quebraria o contrato.
 
 ## `RelProjetosCronogramaCsvRow`
 
-Código SOF: identificador, fica `VARCHAR` para não perder zeros à esquerda.
+Colunas do CSV bruto de `cronograma.csv` dos projetos.
 
 | Coluna | Tipo | Rótulo | Formatação | Descrição |
 | --- | --- | --- | --- | --- |

@@ -78,6 +78,11 @@ export class OrcamentoPrevistoService {
                     select: { id: true },
                 });
 
+                await prismaTxn.orcamentoPrevistoZerado.updateMany({
+                    where: { projeto_id, ano_referencia: dto.ano_referencia, removido_em: null },
+                    data: { removido_em: now, removido_por: user.id },
+                });
+
                 return metaOrcamento;
             },
             {
@@ -186,7 +191,7 @@ export class OrcamentoPrevistoService {
 
                         ano_referencia: metaOrcamento.ano_referencia,
 
-                        custo_previsto: dto.custo_previsto || metaOrcamento.custo_previsto,
+                        custo_previsto: dto.custo_previsto ?? metaOrcamento.custo_previsto,
                         parte_dotacao: dto.parte_dotacao || metaOrcamento.parte_dotacao,
 
                         criado_por: user.id,

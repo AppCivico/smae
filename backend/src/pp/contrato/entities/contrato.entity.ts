@@ -89,3 +89,14 @@ export class ContratoFonteRecursoDto {
     fonte_recurso_cod_sof: string;
     fonte_recurso_ano: number;
 }
+
+export class ContratoProcessoSeiDisponivelDto {
+    /** Só dígitos, como em `projeto_registro_sei.processo_sei` e `processos_sei` do contrato. */
+    processo_sei: string;
+    descricao: string | null;
+    projeto: IdNomeDto;
+}
+
+export class ListContratoProcessoSeiDisponivelDto {
+    linhas: ContratoProcessoSeiDisponivelDto[];
+}

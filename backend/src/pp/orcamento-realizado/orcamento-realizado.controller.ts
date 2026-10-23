@@ -72,9 +72,9 @@ export class OrcamentoRealizadoController {
         @Body() paramIds: BatchRecordWithId,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        await this.projetoService.findOne('PP', paramProj.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('PP', paramProj.id, user, 'ReadWriteTeam');
 
-        await this.orcamentoRealizadoService.removeEmLote('PP', paramIds, user);
+        await this.orcamentoRealizadoService.removeEmLote('PP', projeto.id, paramIds, user);
         return '';
     }
 
@@ -84,9 +84,9 @@ export class OrcamentoRealizadoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        await this.orcamentoRealizadoService.remove('PP', +params.id2, user);
+        await this.orcamentoRealizadoService.remove('PP', projeto.id, +params.id2, user);
         return '';
     }
 }
@@ -148,9 +148,9 @@ export class OrcamentoRealizadoMDOController {
         @Body() paramIds: BatchRecordWithId,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        await this.projetoService.findOne('MDO', paramProj.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('MDO', paramProj.id, user, 'ReadWriteTeam');
 
-        await this.orcamentoRealizadoService.removeEmLote('MDO', paramIds, user);
+        await this.orcamentoRealizadoService.removeEmLote('MDO', projeto.id, paramIds, user);
         return '';
     }
 
@@ -160,9 +160,9 @@ export class OrcamentoRealizadoMDOController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
 
-        await this.orcamentoRealizadoService.remove('MDO', +params.id2, user);
+        await this.orcamentoRealizadoService.remove('MDO', projeto.id, +params.id2, user);
         return '';
     }
 }

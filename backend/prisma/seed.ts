@@ -510,7 +510,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
     CadastroVariavelGlobal: [
         ['CadastroVariavelGlobal.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
-        ['CadastroVariavelGlobal.administrador_no_orgao', 'Inserir Indicadores e variáveis quando for responsável (sem subordinados)'],
+        [
+            'CadastroVariavelGlobal.administrador_no_orgao',
+            'Inserir Indicadores e variáveis quando for responsável (sem subordinados)',
+        ],
     ],
     CadastroVariavelCategorica: [
         ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
@@ -655,9 +658,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
-    CadastroGrupoVariavel: [
-        ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
-    ],
+    CadastroGrupoVariavel: [['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes']],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
         [
@@ -1449,7 +1450,10 @@ PerfilAcessoConfig.push(
     },
 
     {
-        nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, ['Coordenador de Grupo de Variáveis', 'Responsável em equipes']),
+        nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, [
+            'Coordenador de Grupo de Variáveis',
+            'Responsável em equipes',
+        ]),
         descricao: 'Participa como responsável por equipe',
         privilegios: ['SMAE.GrupoVariavel.colaborador'],
     },
@@ -2006,7 +2010,7 @@ async function populateEleicao() {
         { ano: 2020, tipo: EleicaoTipo.Municipal, atual_para_mandatos: true },
         { ano: 2022, tipo: EleicaoTipo.Geral, atual_para_mandatos: true },
         { ano: 2024, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
-        { ano: 2026, tipo: EleicaoTipo.Geral, atual_para_mandatos: false },
+        { ano: 2026, tipo: EleicaoTipo.Geral, atual_para_mandatos: true },
         { ano: 2028, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
         { ano: 2030, tipo: EleicaoTipo.Geral, atual_para_mandatos: false },
     ];

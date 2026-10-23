@@ -33,7 +33,9 @@ import {
     RelProjetosPlanoAcaoCsvRow,
     RelProjetosPlanoAcaoMonitoramentoCsvRow,
     RelProjetosRiscosCsvRow,
+    RelProjetosSimplificadoCsvRow,
     RelProjetosTermoEncerramentoCsvRow,
+    linhasPorProjeto,
     ppProjetosTransforms,
 } from './entities/pp-projetos-csv.entity';
 import {
@@ -104,6 +106,7 @@ class RetornoDbProjeto {
     fonte_recurso_valor_nominal: number;
     fonte_recurso_detalhamento_cod: string | null;
     fonte_recurso_detalhamento_descricao: string | null;
+    fonte_recurso_observacao: string | null;
 
     premissa_id: number;
     premissa: string;
@@ -254,6 +257,7 @@ class RetornoDbContratos {
     prazo: number | null;
     unidade_prazo: ContratoPrazoUnidade | null;
     data_base: string | null;
+    data_assinatura: Date | null;
     data_inicio: Date | null;
     data_termino: Date | null;
     data_termino_atualizada: Date | null;
@@ -613,7 +617,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
     }
 
     /**
-     * Schemas dos treze arquivos do relatório, na mesma ordem em que `toFileOutput` os emite.
+     * Schemas dos catorze arquivos do relatório, na mesma ordem em que `toFileOutput` os emite.
      *
      * O conjunto de colunas não depende de `params`: o recorte por portfólio/status/órgão filtra
      * **linhas**, nunca colunas. Um arquivo pode não sair (bloco sem nenhuma linha), e isso é
@@ -622,6 +626,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
     async describeSchema(_params: CreateRelProjetosDto): Promise<ReportFileSchema[]> {
         return [
             getReportRowSchema(RelProjetosCsvRow),
+            getReportRowSchema(RelProjetosSimplificadoCsvRow),
             getReportRowSchema(RelProjetosCronogramaCsvRow),
             getReportRowSchema(RelProjetosRiscosCsvRow),
             getReportRowSchema(RelProjetosPlanoAcaoCsvRow),
@@ -638,7 +643,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
     }
 
     /**
-     * Escreve os treze CSVs **brutos** do relatório.
+     * Escreve os catorze CSVs **brutos** do relatório.
      *
      * As listas `<bloco>Fields`/`<bloco>FieldNames` que existiam aqui viraram schema declarado
      * (`entities/pp-projetos-csv.entity.ts`): o cabeçalho passa a ser o nome de máquina de cada
@@ -656,6 +661,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
 
         const [
             schemaProjetos,
+            schemaProjetosSimplificado,
             schemaCronograma,
             schemaRiscos,
             schemaPlanosAcao,
@@ -671,8 +677,11 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
         ] = await this.describeSchema(params);
 
         // 1. Processar Projetos
-        await this.gerarCsv(schemaProjetos, projetosIds, out, ctx, 20);
+        await this.gerarCsv(schemaProjetos, projetosIds, out, ctx, 15);
         await ctx.resumoSaida('Projetos', projetosIds.length);
+
+        // 1.1. Projetos, uma linha por projeto (ver `RelProjetosSimplificadoCsvRow`)
+        await this.gerarCsv(schemaProjetosSimplificado, projetosIds, out, ctx, 20);
 
         // 2. Processar Cronograma
         await this.gerarCsv(schemaCronograma, projetosIds, out, ctx, 40);
@@ -834,6 +843,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
             r.valor_nominal AS fonte_recurso_valor_nominal,
             r.fonte_recurso_detalhamento_cod AS fonte_recurso_detalhamento_cod,
             r.fonte_recurso_detalhamento_descricao AS fonte_recurso_detalhamento_descricao,
+            r.observacao AS fonte_recurso_observacao,
             pp.id AS premissa_id,
             pp.premissa,
             pr.id AS restricao_id,
@@ -947,6 +957,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
                           valor_nominal: db.fonte_recurso_valor_nominal,
                           fonte_recurso_detalhamento_cod: db.fonte_recurso_detalhamento_cod,
                           fonte_recurso_detalhamento_descricao: db.fonte_recurso_detalhamento_descricao,
+                          observacao: db.fonte_recurso_observacao,
                       }
                     : null,
                 portfolios_compartilhados_titulos: db.portfolios_compartilhados_titulos,
@@ -1389,6 +1400,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
             contrato.prazo_numero AS prazo,
             contrato.prazo_unidade AS unidade_prazo,
             contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
+            contrato.data_assinatura AS data_assinatura,
             contrato.data_inicio AS data_inicio,
             contrato.data_termino AS data_termino,
             (
@@ -1455,6 +1467,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
                 prazo: db.prazo,
                 unidade_prazo: db.unidade_prazo,
                 data_base: db.data_base,
+                data_assinatura: db.data_assinatura,
                 data_inicio: db.data_inicio,
                 data_termino: db.data_termino,
                 data_termino_atualizada: db.data_termino_atualizada,
@@ -1743,7 +1756,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
 
             const batchData = await this.querySpecificDataByTable(tableName, batchIds);
 
-            if (tableName == 'projetos') {
+            if (tableName === 'projetos' || tableName === 'projetos_simplificado') {
                 // `status_traduzido` (era `status-traduzido`): o hífen não serve como nome de
                 // máquina, porque a coluna vira identificador SQL no pós-processamento. O rótulo
                 // entregue continua sendo `Status`.
@@ -1772,6 +1785,10 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
             case 'projetos':
                 await this.queryDataProjetos(whereCondForBatch, result);
                 break;
+            case 'projetos_simplificado':
+                // O lote é recortado por id de projeto, então deduplicar no lote basta.
+                await this.queryDataProjetos(whereCondForBatch, result);
+                return linhasPorProjeto(result as RelProjetosDto[]);
             case 'cronograma':
                 await this.queryDataCronograma(whereCondForBatch, result);
                 break;

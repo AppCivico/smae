@@ -2,6 +2,8 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
+import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
+import TotalFontesDeRecurso from '@/components/FontesDeRecurso/TotalFontesDeRecurso.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
@@ -9,6 +11,7 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import schema from '@/consts/formSchemas/projeto';
 import statuses from '@/consts/projectStatuses';
+import calcularResumoFontesDeRecurso from '@/helpers/calcularResumoFontesDeRecurso';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -192,6 +195,13 @@ const dadosDeFontesDeRecursos = computed(() => {
     valor_percentual: item.valor_percentual != null ? `${dinheiro(item.valor_percentual)}%` : '-',
   }));
 });
+
+const custoTotalPlanejado = computed(() => emFoco.value?.tarefa_cronograma?.previsao_custo ?? null);
+
+const resumoFontesDeRecurso = computed(() => calcularResumoFontesDeRecurso(
+  (emFoco.value?.fonte_recursos || []).map((fonte) => fonte.valor_nominal),
+  custoTotalPlanejado.value,
+));
 
 function formatarCodTitulo(obj, fallback = '-') {
   if (!obj) return fallback;
@@ -464,12 +474,14 @@ const dadosDeEncerramento = computed(() => {
   ];
 });
 
-defineProps({
+const props = defineProps({
   projetoId: {
     type: Number,
     default: 0,
   },
 });
+
+projetosStore.buscarItem(props.projetoId);
 
 if (!Array.isArray(organs.value) || !organs.value.length) {
   ÓrgãosStore.getAll();
@@ -642,6 +654,16 @@ if (!planosSimplificadosStore.planosSimplificados.length
           </template>
         </template>
       </SmaeTable>
+
+      <template v-if="dadosDeFontesDeRecursos.length">
+        <ResumoFontesDeRecurso
+          class="mt2"
+          :custo-total-planejado="custoTotalPlanejado"
+          :resumo="resumoFontesDeRecurso"
+        />
+
+        <TotalFontesDeRecurso :resumo="resumoFontesDeRecurso" />
+      </template>
     </section>
 
     <section class="borda-inferior">

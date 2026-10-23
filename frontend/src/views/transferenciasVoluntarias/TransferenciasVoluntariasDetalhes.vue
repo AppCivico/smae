@@ -82,7 +82,7 @@ function avançarEtapa() {
 }
 
 function cancelarTransferencia() {
-  alertStore.confirmAction('Tem certeza?', async () => {
+  alertStore.confirmAction('Você está cancelando essa transferência. Essa ação não poderá ser desfeita. Gostaria de continuar? ', async () => {
     if (await TransferenciasVoluntarias.cancelarItem(props.transferenciaId)) {
       await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 

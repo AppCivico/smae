@@ -9,6 +9,8 @@ const props = defineProps({
   },
 });
 
+// Só busca a tarefa se ela ainda não estiver em foco. A comparação é estrita, então
+// depende de `tarefaId` chegar como número (ver `inheritAttrs` em `TarefasRaiz`).
 if (tarefasStore.emFoco?.id !== props.tarefaId) {
   tarefasStore.$reset();
 

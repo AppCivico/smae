@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
+import type { PSMFCountDto, PSMFMonitoramentoMetaDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
 
@@ -9,6 +9,7 @@ import { type AbasDisponiveis } from '@/views/variaveis/CicloAtualizacao/CicloAt
 import {
   obterFaseIcone, obterFaseStatus, ChavesFase,
 } from './helpers/obterDadosItems';
+import IconeFaseMonitoramento from './IconeFaseMonitoramento.vue';
 
 const variaveisMetadado: Record<string, {
   legenda: string,
@@ -64,10 +65,9 @@ export type CicloVigenteItemParams = {
   titulo: string;
   codigo: string;
   variaveis: ListaVariaveis,
-  situacoes: {
-    fase: ChavesFase,
-    preenchido: boolean
-  }[],
+  monitoramento: PSMFMonitoramentoMetaDto | null,
+  // posição da fase atual entre as habilitadas; no ciclo fechado, a da última
+  numeroFaseMonitoramento?: number | null,
   pendencias: {
     cronograma: PSMFCountDto,
     orcamento: PSMFOrcamentoCountDto,
@@ -87,14 +87,6 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
     case 'Orcamento':
       return {
         name: '.MetaOrcamentoRealizado',
-        params: parametros,
-      };
-
-    case 'Analise':
-    case 'Fechamento':
-    case 'Risco':
-      return {
-        name: '.monitoramentoDeMetas',
         params: parametros,
       };
 
@@ -133,7 +125,7 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
 
 const situacoesMapeadas = computed(() => {
   const { cronograma, orcamento } = props.pendencias;
-  const situacoes = [...props.situacoes];
+  const situacoes: { fase: ChavesFase, preenchido: boolean }[] = [];
 
   if (cronograma.total >= 1) {
     situacoes.push({
@@ -150,6 +142,17 @@ const situacoesMapeadas = computed(() => {
   }
 
   return situacoes;
+});
+
+const exibirFaseMonitoramento = computed(() => !!props.monitoramento
+  && (props.monitoramento.fechado || !!props.monitoramento.fase_atual));
+
+const tituloFaseMonitoramento = computed(() => {
+  if (!props.monitoramento) return '';
+
+  return props.monitoramento.fechado
+    ? 'Ciclo fechado'
+    : props.monitoramento.fase_atual?.rotulo || '';
 });
 
 const variaveisMapeadas = computed(() => {
@@ -174,6 +177,27 @@ const variaveisMapeadas = computed(() => {
   <article class="ciclo-lista-item g1">
     <div class="ciclo-lista-item__navegacao">
       <div class="ciclo-lista-item__navegacao-conteudo">
+        <SmaeLink
+          v-if="exibirFaseMonitoramento"
+          class="flex justifyCenter start"
+          :to="{
+            name: '.monitoramentoDeMetas',
+            params: {
+              meta_id: $props.metaId,
+              planoSetorialId: $props.pdmId as number,
+            },
+          }"
+          :title="tituloFaseMonitoramento"
+        >
+          <IconeFaseMonitoramento
+            class="navegacao-item__icon"
+            :class="$props.monitoramento?.fechado
+              ? 'navegacao-item--atualizado'
+              : 'navegacao-item--pendente'"
+            :numero="$props.numeroFaseMonitoramento"
+          />
+        </SmaeLink>
+
         <SmaeLink
           v-for="situacao in situacoesMapeadas"
           :key="situacao.fase"
@@ -276,6 +300,14 @@ const variaveisMapeadas = computed(() => {
 .navegacao-item__icon {
   width: 100%;
   height: 100%;
+}
+
+.navegacao-item--pendente {
+  color: var(--vermelho);
+}
+
+.navegacao-item--atualizado {
+  color: var(--verde);
 }
 
 .ciclo-lista-item__conteudo {

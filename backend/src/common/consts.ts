@@ -21,7 +21,7 @@ export const CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM = '<PDM>Participante em equipe
 export const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['SMAE.superadmin'];
 export const MAX_LENGTH_DEFAULT = 255;
 export const MAX_LENGTH_MEDIO = 2048;
-export const MAX_LENGTH_HTML = 10240;
+export const MAX_LENGTH_HTML = 20480;
 export const MAX_LENGTH_LONG = 23000;
 export const CHUNK_SIZE = 1000;
 

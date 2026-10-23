@@ -53,27 +53,17 @@ export default object({
             .nullable(),
           id: number()
             .nullable(),
-          valor_nominal: mixed()
+          observacao: string()
+            .label('Observações')
+            .max(2048)
+            .nullable(),
+          valor_nominal: number()
             .label('Previsão de custo')
-            .when('valor_percentual', {
-              is: (valorPercentual) => !valorPercentual,
-              then: number()
-                .required('Ao menos um tipo de valor é necessário.'),
-              otherwise: mixed()
-                .nullable(),
-            }),
-          valor_percentual: mixed()
+            .required('Informe a previsão de custo'),
+          valor_percentual: number()
             .label('Valor percentual')
-            .when('valor_nominal', {
-              is: (valorNominal) => !valorNominal,
-              then: number()
-                .required('Ao menos um tipo de valor é necessário.')
-                .min(0.01, 'Não se pode investir menos de 0.01%')
-                .max(100, 'Não se pode investir mais de 100%'),
-              otherwise: mixed()
-                .nullable(),
-            }),
-        }, [['valor_percentual', 'valor_nominal']]),
+            .nullable(),
+        }),
     ),
   geolocalizacao: array()
     .label('Endereços')

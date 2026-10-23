@@ -36,35 +36,24 @@ async function enviarDados(dados: Record<string, unknown>) {
   emit('fechar');
 }
 
-const variavelTipo = computed(() => {
-  if (props.indicador.indicador_tipo === 'Numerico') {
-    return 'numerico';
-  }
-
-  if (props.indicador.regionalizavel) {
-    return 'categorica_regionalizavel';
-  }
-
-  return 'categorica';
-});
+const configuracaoPorModo = {
+  Numerica: {
+    titulo: 'Informar qualificação prévia',
+    componente: InformarNumerica,
+  },
+  Categorica: {
+    titulo: 'Informar valor prévio',
+    componente: InformarCategorica,
+  },
+  CategoricaDistribuida: {
+    titulo: 'Informar valor prévio',
+    componente: InformarCategoricaRegionalizavel,
+  },
+};
 
 const configuracaoPorTipo = computed(() => {
-  const config = {
-    numerico: {
-      titulo: 'Informar qualificação prévia',
-      componente: InformarNumerica,
-    },
-    categorica: {
-      titulo: 'Informar valor prévio',
-      componente: InformarCategorica,
-    },
-    categorica_regionalizavel: {
-      titulo: 'Informar valor prévio',
-      componente: InformarCategoricaRegionalizavel,
-    },
-  };
-
-  return config[variavelTipo.value];
+  const modo = props.valores.previa_modo?.modo;
+  return modo && modo !== 'Bloqueada' ? configuracaoPorModo[modo] : null;
 });
 
 </script>
@@ -72,7 +61,7 @@ const configuracaoPorTipo = computed(() => {
 <template>
   <div class="modal-preenchimento-manual">
     <header class="modal-header">
-      <h2>{{ configuracaoPorTipo.titulo }}</h2>
+      <h2>{{ configuracaoPorTipo?.titulo ?? 'Prévia' }}</h2>
     </header>
 
     <div class="flex g2 mb2">
@@ -98,8 +87,15 @@ const configuracaoPorTipo = computed(() => {
       </div>
     </div>
 
+    <p
+      v-if="!configuracaoPorTipo"
+      class="mt2"
+    >
+      Este indicador não permite o preenchimento de prévia.
+    </p>
     <component
       :is="configuracaoPorTipo.componente"
+      v-else
       class="mt2"
       :indicador="props.indicador"
       :valores="props.valores"

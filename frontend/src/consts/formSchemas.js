@@ -6,6 +6,12 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import {
+  LIMITE_CAMPO_HTML,
+  LIMITE_CAMPO_LONGO,
+  LIMITE_CAMPO_MEDIO,
+  mensagemDeLimiteHtml,
+} from '@/consts/limitesDeCampos';
 import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
@@ -95,7 +101,7 @@ export const acompanhamento = object()
       .required(),
     detalhamento: string()
       .label('Detalhamento')
-      .max(2048)
+      .max(LIMITE_CAMPO_LONGO, mensagemDeLimiteHtml)
       .nullable(),
     observacao: string()
       .label('Observação')
@@ -107,11 +113,11 @@ export const acompanhamento = object()
       .required(),
     pauta: string()
       .label('Pauta')
-      .max(2048)
+      .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml)
       .nullable(),
     pontos_atencao: string()
       .label('Pontos de atenção')
-      .max(2048)
+      .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml)
       .nullable(),
     // campo não utilizado em Obras
     risco: array()
@@ -1058,9 +1064,11 @@ export const macrotema = object({
 export const mandato = object({
   atuacao: string()
     .label('Atuação')
+    .max(LIMITE_CAMPO_MEDIO, mensagemDeLimiteHtml)
     .nullable(),
   biografia: string()
     .label('Biografia')
+    .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml)
     .nullable(),
   cargo: mixed()
     .label('Cargo')
@@ -1304,7 +1312,7 @@ export const planoDeAção = object()
       .nullable(),
     contramedida: string()
       .label('Contramedida')
-      .max(2048)
+      .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml)
       .required(),
     custo: number()
       .label('Custo da contramedida')
@@ -1324,7 +1332,7 @@ export const planoDeAção = object()
       .nullable(),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
-      .max(2048),
+      .max(LIMITE_CAMPO_HTML, mensagemDeLimiteHtml),
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
@@ -2160,13 +2168,16 @@ export const programaHabitacional = object({
 
 export const projetoFiltro = object().shape({
   codigo: string()
-    .label('Número do contrato')
+    .label('Código do projeto')
     .nullableOuVazio(),
   ipp: number()
     .label('Itens por página')
     .nullableOuVazio(),
   nome: string()
     .label('Nome')
+    .nullableOuVazio(),
+  numero_contrato: string()
+    .label('Número do contrato')
     .nullableOuVazio(),
   ordem_coluna: string()
     .label('Ordenar por')

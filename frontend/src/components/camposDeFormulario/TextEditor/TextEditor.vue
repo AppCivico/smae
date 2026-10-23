@@ -22,6 +22,7 @@ import {
   onMounted,
   ref,
   shallowRef,
+  useId,
   watch,
 } from 'vue';
 
@@ -40,6 +41,7 @@ import iconAlinharJustificado from './assets/quill--text-justify.svg?raw';
 import iconAlinharEsquerda from './assets/quill--text-left.svg?raw';
 import iconAlinharDireita from './assets/quill--text-right.svg?raw';
 import iconFonte from './assets/raphael--font.svg?raw';
+import IndicadorDeLimite from './IndicadorDeLimite.vue';
 
 const FontSize = Extension.create({
   name: 'fontSize',
@@ -171,10 +173,25 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // tamanho máximo do HTML gerado; quando informado, exibe o indicador de uso
+  limite: {
+    type: Number,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'change']);
 const editor = shallowRef(null);
+
+const idDoIndicador = useId();
+const tamanhoDoConteudo = ref(0);
+
+// @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
+function obterConteudo() {
+  const content = editor.value.getText() ? editor.value.getHTML() : '';
+  tamanhoDoConteudo.value = content.length;
+  return content;
+}
 
 const TABLE_DROPDOWN_MIN_WIDTH_REM = 14;
 
@@ -345,17 +362,20 @@ onMounted(() => {
     ],
     content: props.modelValue ?? props.value,
     editable: !props.disabled,
+    editorProps: props.limite
+      ? { attributes: { 'aria-describedby': idDoIndicador } }
+      : {},
+    onCreate: obterConteudo,
     onSelectionUpdate: syncToolbarState,
     onUpdate: () => {
       syncToolbarState();
-      // @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
-      const content = editor.value.getText() ? editor.value.getHTML() : '';
+      const content = obterConteudo();
 
       emit('update:modelValue', content);
       emit('change', content);
     },
     onBlur: () => {
-      const content = editor.value.getText() ? editor.value.getHTML() : '';
+      const content = obterConteudo();
 
       emit('update:modelValue', content);
       emit('change', content);
@@ -379,11 +399,14 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
     || (value === '' && editor.value.getText() === '');
   if (!isSame) {
     editor.value.commands.setContent(value, false);
+    obterConteudo();
   }
 });
 
+// sem `emitUpdate`, o Tiptap emite `update` sem mudança de conteúdo e o
+// formulário fica sujo só por o campo ser habilitado ou desabilitado
 watch(() => props.disabled, (novoValor) => {
-  editor.value?.setEditable(!novoValor);
+  editor.value?.setEditable(!novoValor, false);
 });
 </script>
 <template>
@@ -880,10 +903,17 @@ watch(() => props.disabled, (novoValor) => {
   </div>
   <div
     class="contentStyle tiptap"
+    :class="{ error: $props.limite && tamanhoDoConteudo > $props.limite }"
     v-bind="$attrs"
   >
     <editor-content :editor="editor" />
   </div>
+  <IndicadorDeLimite
+    v-if="editor && $props.limite"
+    :id="idDoIndicador"
+    :tamanho="tamanhoDoConteudo"
+    :limite="$props.limite"
+  />
 </template>
 <style lang="less" scoped>
 .menueditor {

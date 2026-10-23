@@ -20,9 +20,11 @@ type ItemDeLista = ConfigDeItem & {
 
 type ConfigOuChave = string | ConfigDeItem;
 
+export type ListaItems = Array<ItemDeLista>;
+
 type Props = {
   objeto?: ObjetoGenerico;
-  lista?: Array<ItemDeLista>;
+  lista?: ListaItems;
 };
 
 const props = defineProps({

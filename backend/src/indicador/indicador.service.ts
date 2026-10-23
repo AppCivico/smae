@@ -11,7 +11,7 @@ import { recalcPessoasAfetadasPorEquipes } from '../equipe-resp/recalc-perfis-eq
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaItem } from '../variavel-categorica/dto/variavel-categorica.dto';
-import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
+import { ListSeriesAgrupadas, PreviaModo, PreviaModoDto } from '../variavel/dto/list-variavel.dto';
 import {
     ElementoJsonDto,
     SerieIndicadorValorNominal,
@@ -1043,11 +1043,13 @@ export class IndicadorService {
         // Adicionar a Previa (Comum a ambos os fluxos)
         if (indicador.indicador_previa_opcao === 'PermitirPreenchimento') {
             const { proximoPeriodo, previaExistente } = await this.buscaProximaPrevia(id);
+            const previaModo = await this.resolvePreviaModo(id);
+            result.previa_modo = previaModo;
 
             result.pode_editar_previa = false;
             if (proximoPeriodo) {
                 const meta = await this.loadMetaFromIndicator(tipoParam, indicador, user);
-                const canWrite = meta.pode_editar;
+                const canWrite = meta.pode_editar && previaModo.modo !== PreviaModo.Bloqueada;
 
                 result.pode_editar_previa = canWrite;
 
@@ -1136,6 +1138,45 @@ export class IndicadorService {
         return {
             ...elementos,
             totais_categorica: resultado,
+        };
+    }
+
+    private async resolvePreviaModo(indicador_id: number): Promise<PreviaModoDto> {
+        const indicador = await this.prisma.indicador.findUniqueOrThrow({
+            where: { id: indicador_id },
+            select: {
+                variavel_categoria: {
+                    select: {
+                        variavel_categorica_id: true,
+                        tipo: true,
+                        FormulaCompostaCalc: {
+                            where: { removido_em: null },
+                            select: {
+                                autogerenciavel: true,
+                                _count: {
+                                    select: {
+                                        FormulaCompostaVariavel: { where: { variavel: { removido_em: null } } },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const variavel = indicador.variavel_categoria;
+        if (!variavel?.variavel_categorica_id) return { modo: PreviaModo.Numerica, max_soma: null };
+        if (variavel.tipo !== 'Calculada') return { modo: PreviaModo.Categorica, max_soma: 1 };
+
+        // só a soma simples gerada automaticamente garante no máximo 1 por variável somada
+        const formulas = variavel.FormulaCompostaCalc;
+        if (formulas.length === 0 || formulas.some((fc) => !fc.autogerenciavel))
+            return { modo: PreviaModo.Bloqueada, max_soma: null };
+
+        return {
+            modo: PreviaModo.CategoricaDistribuida,
+            max_soma: formulas.reduce((acc, fc) => acc + fc._count.FormulaCompostaVariavel, 0),
         };
     }
 
@@ -1667,28 +1708,13 @@ export class IndicadorService {
             where: { id: indicadorId, removido_em: null },
             select: {
                 indicador_previa_opcao: true,
-                variavel_categoria: {
-                    select: {
-                        variavel_categorica_id: true,
-                        variavel_mae: {
-                            select: {
-                                variaveis_filhas: {
-                                    where: {
-                                        removido_em: null,
-                                        tipo: 'Global',
-                                    },
-                                    distinct: ['id'],
-                                },
-                            },
-                        },
-                    },
-                },
+                variavel_categoria: { select: { variavel_categorica_id: true } },
                 meta_id: true,
                 atividade_id: true,
                 iniciativa_id: true,
-                regionalizavel: true,
             },
         });
+        const previaModo = await this.resolvePreviaModo(indicadorId);
 
         // o proximo período precisa bater com a referencia que tá no token
         // e se não existir, é pq está já no futuro (realizado completo) ou não tem mais períodos
@@ -1717,6 +1743,11 @@ export class IndicadorService {
             serieValor = null;
         } else {
             // Upsert request
+            if (previaModo.modo === PreviaModo.Bloqueada)
+                throw new BadRequestException(
+                    'Prévia não suportada para variável calculada de fórmula composta criada manualmente.'
+                );
+
             if (indicador.variavel_categoria && indicador.variavel_categoria.variavel_categorica_id) {
                 if (!dto.elementos)
                     throw new BadRequestException('Para indicadores categóricos, é obrigatório enviar os elementos.');
@@ -1749,6 +1780,10 @@ export class IndicadorService {
                         );
 
                     const somaPraTerValor = +el.valor;
+                    if (!Number.isInteger(somaPraTerValor) || somaPraTerValor < 0)
+                        throw new BadRequestException(
+                            `A quantidade do valor categórico ${el.categorica_valor} deve ser um inteiro não negativo. Valor enviado: ${el.valor}`
+                        );
 
                     valorTotal += somaPraTerValor;
                     // Formato: [id, count]
@@ -1759,20 +1794,12 @@ export class IndicadorService {
 
                 serieValor = valorTotal;
                 serieElementos = { 'totais_categorica': elementosArray } satisfies ElementoJsonDto;
-
-                if (indicador.regionalizavel && indicador.variavel_categoria.variavel_mae) {
-                    // não pode passar do número de variáveis filhas
-                    const maxRegions = indicador.variavel_categoria.variavel_mae.variaveis_filhas.length;
-                    if (valorTotal > maxRegions)
-                        throw new BadRequestException(
-                            `Para indicadores categóricos regionalizados, a soma dos valores deve ser no máximo o número de regiões (${maxRegions}). Valor enviado: ${valorTotal}`
-                        );
-                } else {
-                    if (valorTotal > 1)
-                        throw new BadRequestException(
-                            `Para indicadores categóricos não regionalizados, a soma dos valores deve ser no máximo 1. Valor enviado: ${valorTotal}`
-                        );
-                }
+                if (previaModo.max_soma !== null && valorTotal > previaModo.max_soma)
+                    throw new BadRequestException(
+                        previaModo.modo === PreviaModo.CategoricaDistribuida
+                            ? `Para indicadores categóricos regionalizados, a soma dos valores deve ser no máximo o número de regiões (${previaModo.max_soma}). Valor enviado: ${valorTotal}`
+                            : `Para indicadores categóricos não regionalizados, a soma dos valores deve ser no máximo ${previaModo.max_soma}. Valor enviado: ${valorTotal}`
+                    );
             } else {
                 if (dto.elementos && dto.elementos.length > 0) {
                     throw new BadRequestException('Este indicador não é categórico, não envie elementos.');

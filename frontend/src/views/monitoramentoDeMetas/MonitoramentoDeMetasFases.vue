@@ -13,6 +13,7 @@ import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import FormularioDeFase from '@/components/monitoramentoDeMetas/FormularioDeFase.vue';
 import dateToTitle from '@/helpers/dateToTitle';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
@@ -44,6 +45,7 @@ const {
 } = storeToRefs(monitoramentoDeMetasStore);
 
 const formulariosSujos = ref({});
+const abasProntas = ref(false);
 
 // a API já entrega apenas as fases e os blocos habilitados, em ordem
 const fases = computed(() => fasesDoCicloEmFoco.value?.fases || []);
@@ -56,46 +58,69 @@ function buscarFases() {
   );
 }
 
-function aoSalvarFase() {
+function atualizarFases() {
   // para a lista de monitoramento não exibir dados defasados
   if (ciclosDetalhadosPorId.value[props.cicloId]) {
     delete ciclosDetalhadosPorId.value[props.cicloId];
   }
 
-  buscarFases();
+  return buscarFases();
 }
 
-watch([
-  () => route.params.planoSetorialId,
-  () => route.params.meta_id,
-  () => props.cicloId,
-], () => {
-  // evitar a exibição das fases de outro ciclo ou de outra meta
-  fasesDoCicloEmFoco.value = null;
-  formulariosSujos.value = {};
+async function aoSalvarFase() {
+  await atualizarFases();
 
-  buscarFases();
-}, { immediate: true });
+  // mover para a próxima fase a preencher ou,
+  // com todas preenchidas, ir para a `route.meta.rotaDeEscape`
+  const proximaFase = fases.value.find((fase) => !fase.preenchida);
 
-// Sem aba na query, abrir a próxima fase a preencher ou, com todas preenchidas,
-// a última. As abas só são montadas depois disso porque, do contrário, o
-// `EnvelopeDeAbas` abriria a primeira.
-watch([
-  fases,
-  () => route.query.aba,
-], () => {
-  if (!fases.value.length || route.query.aba) return;
-
-  const proximaFase = fases.value.find((fase) => !fase.preenchida)
-    || fases.value[fases.value.length - 1];
-
-  router.replace({
+  if (!proximaFase) {
+    escaparDaRota(router);
+    return;
+  }
+  router.push({
     params: route.params,
     query: {
       ...route.query,
       aba: `fase-${proximaFase.config.id}`,
     },
   });
+}
+
+// Ao entrar na tela ou trocar de ciclo ou de meta, sem aba válida na query,
+// abrir a próxima fase a preencher ou, com todas preenchidas, a última. As abas
+// só são montadas depois disso porque, do contrário, o `EnvelopeDeAbas` abriria
+// a primeira.
+watch([
+  () => route.params.planoSetorialId,
+  () => route.params.meta_id,
+  () => props.cicloId,
+], async () => {
+  // evitar a exibição das fases de outro ciclo ou de outra meta
+  fasesDoCicloEmFoco.value = null;
+  formulariosSujos.value = {};
+  abasProntas.value = false;
+
+  await buscarFases();
+
+  if (!fases.value.length) return;
+
+  const abaExiste = fases.value.some((fase) => `fase-${fase.config.id}` === route.query.aba);
+
+  if (!abaExiste) {
+    const proximaFase = fases.value.find((fase) => !fase.preenchida)
+      || fases.value[fases.value.length - 1];
+
+    await router.replace({
+      params: route.params,
+      query: {
+        ...route.query,
+        aba: `fase-${proximaFase.config.id}`,
+      },
+    });
+  }
+
+  abasProntas.value = true;
 }, { immediate: true });
 
 const formularioSujo = computed(() => Object.values(formulariosSujos.value).some(Boolean));
@@ -174,7 +199,7 @@ onBeforeRouteLeave((para) => {
   <LoadingComponent v-if="chamadasPendentes.fasesDoCicloEmFoco && !fasesDoCicloEmFoco" />
 
   <EnvelopeDeAbas
-    v-else-if="fases.length && $route.query.aba"
+    v-else-if="fases.length && abasProntas"
     alinhamento="esquerda"
   >
     <template
@@ -199,7 +224,7 @@ onBeforeRouteLeave((para) => {
         :editavel="fase.editavel"
         @update:sujo="formulariosSujos[fase.config.id] = $event"
         @salvo="aoSalvarFase"
-        @documentos-alterados="aoSalvarFase"
+        @documentos-alterados="atualizarFases"
       />
     </template>
   </EnvelopeDeAbas>

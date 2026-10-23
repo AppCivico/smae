@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia';
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
 import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
@@ -12,6 +12,7 @@ import dateToTitle from '@/helpers/dateToTitle';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
+const router = useRouter();
 
 const props = defineProps({
   ciclo: {
@@ -103,18 +104,12 @@ async function reabrirCiclo() {
     );
 
     if (sucesso) {
-      // Atualizar tanto a lista quanto os detalhes do ciclo exibido
-      if (estaAberto.value) {
-        monitoramentoDeMetasStore.buscarCiclo(
-          route.params.planoSetorialId,
-          props.ciclo.id,
-          {
-            meta_id: route.params.meta_id,
-          },
-        );
-      }
-      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
-        meta_id: route.params.meta_id,
+      router.push({
+        name: `${route.meta.entidadeMãe}.monitoramentoDeMetasFases`,
+        params: {
+          ...route.params,
+          cicloId: props.ciclo.id,
+        },
       });
     } else {
       throw new Error('Falha ao reabrir ciclo');

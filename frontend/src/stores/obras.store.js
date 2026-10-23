@@ -309,6 +309,8 @@ export const useObrasStore = defineStore('obrasStore', {
           ? emFoco.colaboradores_no_orgao.map((x) => x.id)
           : [],
         equipamento_id: emFoco?.equipamento?.id || null,
+        fonte_recursos: emFoco?.fonte_recursos
+          ?.map(({ valor_percentual: _valorPercentual, ...fonte }) => fonte) || null,
         geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
         grupo_tematico_id: emFoco?.grupo_tematico?.id || null,
         grupo_portfolio: emFoco?.grupo_portfolio.map(({ id }) => id) || [],

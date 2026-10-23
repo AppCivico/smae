@@ -1,6 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 
+import dateToField from '@/helpers/dateToField';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 
@@ -49,14 +50,14 @@ if (listaTipo.value.length === 0) {
   <dl class="flex mb2 flexwrap g2">
     <div class="f1">
       <dt>Data</dt>
-      <dd>{{ new Date(emFoco?.data_nota).toLocaleDateString("pt-BR") }}</dd>
+      <dd>{{ dateToField(emFoco?.data_nota) }}</dd>
     </div>
     <div class="f1">
       <dt>Rever em</dt>
       <dd>
         {{
           emFoco?.rever_em
-            ? new Date(emFoco?.rever_em).toLocaleDateString("pt-BR")
+            ? dateToField(emFoco?.rever_em)
             : " - "
         }}
       </dd>
@@ -66,7 +67,7 @@ if (listaTipo.value.length === 0) {
       <dd>
         {{
           emFoco?.data_ordenacao
-            ? new Date(emFoco?.data_ordenacao).toLocaleDateString("pt-BR")
+            ? dateToField(emFoco?.data_ordenacao)
             : " - "
         }}
       </dd>

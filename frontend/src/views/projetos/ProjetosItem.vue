@@ -14,6 +14,15 @@ const projetosStore = useProjetosStore();
 const RegionsStore = useRegionsStore();
 const tarefasStore = useTarefasStore();
 
+// Não repassar os `$attrs` ao `<router-view>`: a rota envia todos os parâmetros da
+// URL, inclusive os das rotas filhas (ex.: `tarefaId`, ainda como string), mas só
+// `projetoId` é declarado aqui. Se herdados, os demais chegariam à rota filha por
+// cima das props que ela mesma calcula. Pior: quando somem (ex.: de `tarefas/20678`
+// para `tarefas/nova`), o Vue não atualiza o `<router-view>`, e o valor antigo fica
+// preso. Cada rota filha já recebe os parâmetros pelas próprias `props`, então não
+// há o que repassar daqui.
+defineOptions({ inheritAttrs: false });
+
 const props = defineProps({
   projetoId: {
     type: Number,

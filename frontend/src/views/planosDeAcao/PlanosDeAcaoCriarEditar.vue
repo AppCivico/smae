@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -11,6 +11,7 @@ import TextEditor from '@/components/camposDeFormulario/TextEditor/index.ts';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
+import { LIMITE_CAMPO_HTML } from '@/consts/limitesDeCampos';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -128,6 +129,7 @@ iniciar();
           <TextEditor
             v-bind="field"
             :class="{ error: errors.contramedida }"
+            :limite="LIMITE_CAMPO_HTML"
           />
         </Field>
         <ErrorMessage
@@ -316,6 +318,7 @@ iniciar();
           <TextEditor
             v-bind="field"
             :class="{ error: errors.medidas_de_contingencia }"
+            :limite="LIMITE_CAMPO_HTML"
           />
         </Field>
         <ErrorMessage
