@@ -1,6 +1,6 @@
 import { flatten } from '@json2csv/transforms';
 import { Date2YMD } from '../../../common/date2ymd';
-import { ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { copiarColunas, primeiraPorChave, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 import { ReportFileSchema } from '../../post-process/report-schema';
 import { CsvTransforms } from '../../shared/csv-file-handler';
 
@@ -216,6 +216,32 @@ export class RelProjetosCsvRow {
     fonte_recurso__fonte_recurso_ano: number | null;
 }
 
+/** Prefixos das colunas de `projetos.csv` que vêm dos `LEFT JOIN` 1:N. */
+const PREFIXOS_COLUNAS_PROJETOS_1_N = ['orgao_participante__', 'premissa__', 'restricao__', 'fonte_recurso__'];
+
+/** A coluna é do projeto em si (e não de um join 1:N)? */
+export function ehColunaDoProjeto(nome: string): boolean {
+    return !PREFIXOS_COLUNAS_PROJETOS_1_N.some((prefixo) => nome.startsWith(prefixo));
+}
+
+/** `projetos.csv` sem as colunas dos joins 1:N: uma linha por projeto. */
+@ReportRows({
+    arquivo: 'projetos_simplificado.csv',
+    fontes: ['Projetos'],
+    descricao:
+        'Uma linha por projeto, sem as colunas de órgão participante, premissa, restrição e fonte de recurso: ' +
+        'o mesmo conteúdo de projetos.csv sem as linhas repetidas pelos joins.',
+})
+export class RelProjetosSimplificadoCsvRow {}
+
+copiarColunas(RelProjetosCsvRow, RelProjetosSimplificadoCsvRow, ehColunaDoProjeto);
+
+/** As linhas de `projetos_simplificado.csv` a partir das de `projetos.csv`. */
+export function linhasPorProjeto<T extends { id: number }>(linhas: T[]): T[] {
+    return primeiraPorChave(linhas, (l) => l.id);
+}
+
+/** Colunas do CSV bruto de `cronograma.csv` dos projetos. */
 @ReportRows({
     arquivo: 'cronograma.csv',
     fontes: ['Projetos'],

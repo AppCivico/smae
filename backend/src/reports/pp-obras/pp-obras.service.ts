@@ -43,6 +43,8 @@ import {
     RelObrasFontesRecursoCsvRow,
     RelObrasOrigensCsvRow,
     RelObrasProcessosSeiCsvRow,
+    RelObrasSimplificadoCsvRow,
+    linhasPorObra,
 } from './entities/pp-obras-csv.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
@@ -332,12 +334,13 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
      * guard do Excel, XLSX tipado e modelos de coluna).
      *
      * A ordem é a mesma em que `toFileOutput` emite os arquivos. Este relatório não tem
-     * variação de colunas por parâmetro: os dez arquivos saem sempre, com o mesmo conjunto
+     * variação de colunas por parâmetro: os onze arquivos saem sempre, com o mesmo conjunto
      * de colunas.
      */
     async describeSchema(_params: CreateRelObrasDto): Promise<ReportFileSchema[]> {
         return [
             getReportRowSchema(RelObrasCsvRow),
+            getReportRowSchema(RelObrasSimplificadoCsvRow),
             getReportRowSchema(RelObrasCronogramaCsvRow),
             getReportRowSchema(RelObrasAcompanhamentosCsvRow),
             getReportRowSchema(RelObrasFontesRecursoCsvRow),
@@ -367,6 +370,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
         // ordem passam a sair de `schema.colunas`, e não mais de literais espalhados aqui.
         const [
             schemaObras,
+            schemaObrasSimplificado,
             schemaCronograma,
             schemaAcompanhamentos,
             schemaFontesRecurso,
@@ -378,14 +382,13 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             schemaArquivos,
         ] = await this.describeSchema(dto);
 
-        out.push(
-            await this.streamQueryToCSV(
-                `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
-                whereCond.queryParams,
-                schemaObras,
-                ctx
-            )
+        // Mesma consulta para `obras.csv` e `obras_simplificado.csv`.
+        const linhasObras = await this.prisma.$queryRawUnsafe<any[]>(
+            `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
+            ...whereCond.queryParams
         );
+        out.push(await this.escreverCsv(linhasObras, schemaObras, ctx));
+        out.push(await this.escreverCsv(linhasPorObra(linhasObras), schemaObrasSimplificado, ctx));
 
         out.push(
             await this.streamQueryToCSV(
@@ -491,6 +494,11 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
         ctx: ReportContext
     ): Promise<FileOutput> {
         const results = await this.prisma.$queryRawUnsafe<any[]>(query, ...params);
+        return this.escreverCsv(results, schema, ctx);
+    }
+
+    /** Escreve o CSV bruto de `schema` a partir de linhas já consultadas. */
+    private async escreverCsv(results: any[], schema: ReportFileSchema, ctx: ReportContext): Promise<FileOutput> {
         const linhas = (results ?? []).map((row) => this.normalizarLinha(row, schema));
 
         // Com `fields` sempre presente, o parser emite CSV só com cabeçalho quando não há
@@ -698,6 +706,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             orgao_gestor.id as orgao_gestor_id,
             orgao_gestor.sigla as orgao_gestor_sigla,
             orgao_gestor.descricao as orgao_gestor_descricao,
+            -- colunas de join 1:N (po, o, r) também ficam em COLUNAS_OBRAS_1_N (pp-obras-csv.entity.ts)
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao,
@@ -750,6 +759,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
           LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
           LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+          -- joins 1:N: coluna nova vinda deles precisa entrar em COLUNAS_OBRAS_1_N (pp-obras-csv.entity.ts)
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id

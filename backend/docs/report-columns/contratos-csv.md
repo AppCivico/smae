@@ -6,7 +6,7 @@ Uma linha por contrato vinculado aos projetos filtrados.
 
 Fontes que produzem este arquivo: `Obras`, `Projeto`, `Projetos`
 
-35 colunas.
+36 colunas.
 
 ## `RelObrasContratosCsvRow`
 
@@ -29,6 +29,7 @@ A ordem reproduz exatamente o antigo array `contratosFields`.
 | `prazo` | `INTEGER` | prazo | sem formatação | — |
 | `unidade_prazo` | `VARCHAR` | unidade_prazo | — | — |
 | `data_base` | `VARCHAR` | data_base | — | — |
+| `data_assinatura` | `DATE` | data_assinatura | — | — |
 | `data_inicio` | `DATE` | data_inicio | — | — |
 | `data_termino` | `DATE` | data_termino | — | — |
 | `data_termino_atualizada` | `DATE` | data_termino_atualizada | — | — |
@@ -64,6 +65,7 @@ Colunas do CSV bruto de `contratos.csv` da fonte `Projeto` (uma linha por contra
 | `prazo` | `INTEGER` | prazo | sem formatação | — |
 | `unidade_prazo` | `VARCHAR` | unidade_prazo | — | — |
 | `data_base` | `VARCHAR` | data_base | — | — |
+| `data_assinatura` | `DATE` | data_assinatura | — | — |
 | `data_inicio` | `DATE` | data_inicio | — | — |
 | `data_termino` | `DATE` | data_termino | — | — |
 | `data_termino_atualizada` | `DATE` | data_termino_atualizada | — | — |
@@ -100,6 +102,7 @@ Códigos dos riscos associados ao acompanhamento, concatenados com `|`.
 | `prazo` | `INTEGER` | Prazo | sem formatação | — |
 | `unidade_prazo` | `VARCHAR` | Unidade Prazo | — | — |
 | `data_base` | `VARCHAR` | Data-base | — | — |
+| `data_assinatura` | `DATE` | Data Assinatura | — | — |
 | `data_inicio` | `DATE` | Data Início | — | — |
 | `data_termino` | `DATE` | Data Término | — | — |
 | `data_termino_atualizada` | `DATE` | Data Término Atualizada | — | — |

@@ -1,4 +1,4 @@
-import { ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { copiarColunas, primeiraPorChave, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 
 /**
  * Colunas dos CSVs **brutos** do relatório de Obras (fonte `Obras`, módulo MDO).
@@ -37,7 +37,8 @@ import { ReportColumn, ReportRows } from '../../post-process/report-column.decor
  * que o cabeçalho nascia, já que este arquivo nunca passou uma lista `fields` explícita.
  *
  * Uma obra pode aparecer em mais de uma linha: a consulta faz `LEFT JOIN` com
- * `projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N.
+ * `projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N. Uma linha por obra:
+ * `obras_simplificado.csv` (`RelObrasSimplificadoCsvRow`).
  */
 @ReportRows({
     arquivo: 'obras.csv',
@@ -295,6 +296,40 @@ export class RelObrasCsvRow {
 
     @ReportColumn({ type: 'INTEGER', label: 'n_unidades_atendidas', format: { raw: true } })
     n_unidades_atendidas: number | null;
+}
+
+/**
+ * Colunas de `obras.csv` que vêm dos `LEFT JOIN` 1:N (órgão participante e fonte de recurso).
+ * Lista por nome, sem prefixo: coluna nova de join 1:N em `buildObrasBaseQuery` precisa entrar aqui.
+ */
+const COLUNAS_OBRAS_1_N = new Set([
+    'orgao_id',
+    'orgao_sigla',
+    'orgao_descricao',
+    'fonte_recurso_valor_pct',
+    'fonte_recurso_valor_nominal',
+]);
+
+/** A coluna é da obra em si (e não de um join 1:N)? */
+export function ehColunaDaObra(nome: string): boolean {
+    return !COLUNAS_OBRAS_1_N.has(nome);
+}
+
+/** `obras.csv` sem as colunas dos joins 1:N: uma linha por obra. */
+@ReportRows({
+    arquivo: 'obras_simplificado.csv',
+    fontes: ['Obras'],
+    descricao:
+        'Uma linha por obra, sem as colunas de órgão participante e fonte de recurso: ' +
+        'o mesmo conteúdo de obras.csv sem as linhas repetidas pelos joins.',
+})
+export class RelObrasSimplificadoCsvRow {}
+
+copiarColunas(RelObrasCsvRow, RelObrasSimplificadoCsvRow, ehColunaDaObra);
+
+/** As linhas de `obras_simplificado.csv` a partir das de `obras.csv`. */
+export function linhasPorObra<T extends { obra_id: number }>(linhas: T[]): T[] {
+    return primeiraPorChave(linhas, (l) => l.obra_id);
 }
 
 /**
