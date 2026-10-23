@@ -184,6 +184,35 @@ describe('projeto-orcamento-realizado: somas por portfolio (triggers)', () => {
         assert.equal(apos.soma_valor_empenho.toFixed(2), '0.00');
     });
 
+    it('nota de empenho de um ano anterior ao ano de referência respeita o limite do SOF', { todo: 'BUG #758 (corrigido em #779): verificaNotaEmpenho consulta portfolio_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
+        const ano = anoUnico();
+        const nota = `8/${ano - 1}`;
+        await semearDotacaoRealizada(ano, DOTACAO, { empenho: 1000, liquidado: 1000 });
+        await semearDotacaoRealizada(ano, DOTACAO, { empenho: 600, liquidado: 600, processo: PROCESSO });
+        await semearDotacaoRealizada(ano, DOTACAO, { empenho: 100, liquidado: 100, processo: PROCESSO, nota });
+        const p = await novoProjeto(portfolio1.id);
+        const extra = { processo: PROCESSO, nota_empenho: nota, nota_ano: String(ano - 1) };
+
+        const estoura = await criar(p.id, ano, DOTACAO, [item(12, 500, 50)], extra);
+        assertStatus(estoura, 400);
+        assert.match(estoura.body.message, /excede o total do empenho no SOF/);
+
+        const criado = await criar(p.id, ano, DOTACAO, [item(12, 80, 40)], extra);
+        assertStatus(criado, 201);
+        const pn = await prisma().portfolioDotacaoProcessoNota.findFirstOrThrow({
+            where: { portfolio_id: portfolio1.id, ano_referencia: ano, dotacao_processo_nota: nota },
+        });
+        assert.equal(pn.soma_valor_empenho.toFixed(2), '80.00');
+
+        const outro = await novoProjeto(portfolio1.id);
+        const somaEstoura = await criar(outro.id, ano, DOTACAO, [item(12, 21, 0)], extra);
+        assertStatus(somaEstoura, 400);
+        assertStatus(await criar(outro.id, ano, DOTACAO, [item(12, 20, 0)], extra), 201);
+
+        const editaEstoura = await api(admin).patch(`${rota(p.id)}/${criado.body.id}`).send({ itens: [item(12, 81, 40)] });
+        assertStatus(editaEstoura, 400);
+    });
+
     it('400 ao duplicar a dotação no projeto, mas a mesma dotação em outro ano ou projeto é aceita', async () => {
         const ano = anoUnico();
         await semearDotacaoRealizada(ano, DOTACAO, { empenho: 1000, liquidado: 1000 });

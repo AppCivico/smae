@@ -256,22 +256,68 @@ describe('orcamento-realizado: somas por dotação, processo e nota (triggers)',
         assert.match(procInex.body.message, /Processo não foi encontrado/);
     });
 
-    it('nota de empenho de um ano diferente do ano de referência respeita o limite do SOF', { todo: 'BUG: verificaNotaEmpenho consulta pdm_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
-        const { meta, ano } = await criarCenarioOrcamento();
-        const nota = `${NOTA_NUM}/${ano - 1}`;
-        await semearDotacaoRealizada(ano, DOTACAO, { empenho: 1000, liquidado: 1000 });
-        await semearDotacaoRealizada(ano, DOTACAO, { empenho: 600, liquidado: 600, processo: PROCESSO });
-        await semearDotacaoRealizada(ano, DOTACAO, { empenho: 100, liquidado: 100, processo: PROCESSO, nota });
+    describe('nota de empenho de um ano anterior ao ano de referência (restos a pagar)', () => {
+        async function cenarioNotaAnterior() {
+            const c = await criarCenarioOrcamento();
+            const nota = `${NOTA_NUM}/${c.ano - 1}`;
+            await semearDotacaoRealizada(c.ano, DOTACAO, { empenho: 1000, liquidado: 1000 });
+            await semearDotacaoRealizada(c.ano, DOTACAO, { empenho: 600, liquidado: 600, processo: PROCESSO });
+            await semearDotacaoRealizada(c.ano, DOTACAO, { empenho: 100, liquidado: 100, processo: PROCESSO, nota });
+            const corpo = (ano_referencia: number, itens: unknown[]) => ({
+                meta_id: c.meta.id,
+                ano_referencia,
+                dotacao: DOTACAO,
+                processo: PROCESSO,
+                nota_empenho: nota,
+                itens,
+            });
+            const somaNota = (ano_referencia: number) =>
+                prisma().pdmDotacaoProcessoNota.findFirst({
+                    where: { pdm_id: c.pdm.id, ano_referencia, dotacao: DOTACAO, dotacao_processo_nota: nota },
+                });
+            return { ...c, nota, corpo, somaNota };
+        }
 
-        const res = await post({
-            meta_id: meta.id,
-            ano_referencia: ano,
-            dotacao: DOTACAO,
-            processo: PROCESSO,
-            nota_empenho: nota,
-            itens: [item(12, 500, 50)],
+        it('criar acima do limite do SOF da nota responde 400', { todo: 'BUG #758 (corrigido em #779): verificaNotaEmpenho consulta pdm_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
+            const { ano, corpo } = await cenarioNotaAnterior();
+            const res = await post(corpo(ano, [item(12, 500, 50)]));
+            assertStatus(res, 400);
+            assert.match(res.body.message, /excede o total do empenho no SOF/);
         });
-        assertStatus(res, 400);
+
+        it('dentro do limite grava a soma no ano de referência e editar acima do limite responde 400', { todo: 'BUG #758 (corrigido em #779): verificaNotaEmpenho consulta pdm_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
+            const { meta, ano, nota, corpo, somaNota } = await cenarioNotaAnterior();
+            const criado = await post(corpo(ano, [item(12, 80, 40)]));
+            assertStatus(criado, 201);
+            assert.equal((await somaNota(ano))?.soma_valor_empenho.toFixed(2), '80.00');
+            assert.equal(await somaNota(ano - 1), null, 'a trigger não grava no ano da nota');
+
+            const linha = (await lista(meta.id, ano)).find((l) => l.id === criado.body.id)!;
+            assert.equal(linha.nota_empenho, nota, 'ano da nota diferente do ano de referência é mantido');
+            assert.equal(linha.smae_soma_valor_empenho, '80.00');
+            assert.equal(linha.empenho_liquido, '100.00');
+
+            const estoura = await api(admin)
+                .patch(`/api/orcamento-realizado/${criado.body.id}`)
+                .send({ meta_id: meta.id, itens: [item(12, 101, 40)] });
+            assertStatus(estoura, 400);
+            assert.match(estoura.body.message, /excede o total do empenho no SOF/);
+            assertStatus(
+                await api(admin).patch(`/api/orcamento-realizado/${criado.body.id}`).send({ meta_id: meta.id, itens: [item(12, 100, 40)] }),
+                200
+            );
+        });
+
+        it('o limite vale por ano de referência: a mesma nota no ano dela não consome o limite do ano seguinte', async () => {
+            const { pdm, ano, corpo, somaNota } = await cenarioNotaAnterior();
+            await prisma().pdmOrcamentoConfig.create({
+                data: { pdm_id: pdm.id, ano_referencia: ano - 1, previsao_custo_disponivel: true, planejado_disponivel: true, execucao_disponivel: true },
+            });
+            assertStatus(await post(corpo(ano - 1, [item(12, 90, 90)])), 201);
+            assertStatus(await post(corpo(ano, [item(12, 90, 30)])), 201);
+            assert.equal((await somaNota(ano - 1))?.soma_valor_empenho.toFixed(2), '90.00');
+            assert.equal((await somaNota(ano))?.soma_valor_empenho.toFixed(2), '90.00');
+        });
     });
 
     describe('remoção lógica de meta, iniciativa e atividade (0078)', () => {
