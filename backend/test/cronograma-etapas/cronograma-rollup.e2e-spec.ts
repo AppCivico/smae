@@ -406,7 +406,6 @@ describe('cronograma, etapas e consolidação (rollup)', () => {
 
         it(
             'mover para ordem acima do máximo mantém a sequência sem lacunas',
-            { todo: 'BUG: ordem acima do máximo usa último+1 contando a própria etapa e deixa lacuna (cronograma-etapas.service.ts:593)' },
             async () => {
                 const { cronograma } = await novoCronograma();
                 const a = await criarEtapaPS(ps, cronograma);
@@ -505,7 +504,6 @@ describe('cronograma, etapas e consolidação (rollup)', () => {
 
         it(
             'o atraso mais severo considera todas as etapas de topo, não só a última',
-            { todo: 'BUG: getAtrasoMaisSevero sobrescreve a severidade a cada etapa de topo (cronograma-etapas.service.ts:890)' },
             async () => {
                 const { meta, cronograma } = await novoCronograma();
                 await criarEtapaPS(ps, cronograma, {

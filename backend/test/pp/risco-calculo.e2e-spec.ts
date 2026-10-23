@@ -127,7 +127,6 @@ describe('projeto-risco: cálculo e consolidados por trigger', () => {
 
     it(
         'PATCH só da probabilidade recalcula com o impacto já gravado',
-        { todo: 'BUG: update() só recalcula nivel/grau/resposta quando o DTO traz probabilidade E impacto (src/pp/risco/risco.service.ts:386)' },
         async () => {
             const projeto = await novoProjeto();
             const id = await criarRisco(projeto.id, { probabilidade: 1, impacto: 5 });
@@ -140,7 +139,6 @@ describe('projeto-risco: cálculo e consolidados por trigger', () => {
 
     it(
         '400 com probabilidade ou impacto fora da escala 1 a 5',
-        { todo: 'BUG: CreateRiscoDto aceita qualquer número em probabilidade/impacto, sem @Min/@Max (src/pp/risco/dto/create-risco.dto.ts:13)' },
         async () => {
             const projeto = await novoProjeto();
             for (const dados of [

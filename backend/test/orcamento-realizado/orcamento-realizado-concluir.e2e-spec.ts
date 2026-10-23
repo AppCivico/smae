@@ -200,7 +200,7 @@ describe('orcamento-realizado: conclusão do ano por órgão', () => {
         assert.match(res.body.message, /responsável na meta/);
     });
 
-    it('admin só marca como concluído um órgão que é responsável pela meta', { todo: 'BUG: patchOrcamentoConcluidoMetaOrgao testa o retorno de findMany (array, sempre truthy) em vez de checar se veio vazio' }, async () => {
+    it('admin só marca como concluído um órgão que é responsável pela meta', async () => {
         const { meta, ano } = await cenario();
         const naoResponsavel = await criarOrgao();
         const res = await api(admin)

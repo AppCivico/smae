@@ -267,23 +267,17 @@ describe('transferencia: busca por palavra-chave (tsvector)', () => {
     });
 
     describe('PATCH parcial preserva os vínculos', () => {
-        it(
-            'editar só o objeto não desvincula os parlamentares',
-            {
-                todo: 'BUG: updateTransferencia remove todos os parlamentares quando o PATCH não envia `parlamentares` (transferencia.service.ts:576)',
-            },
-            async () => {
-                const { id } = await criarComTexto({});
-                const parlamentar = await criarParlamentar();
-                assertStatus(await vincularParlamentar(gestor, id, parlamentar.id), 200);
+        it('editar só o objeto não desvincula os parlamentares', async () => {
+            const { id } = await criarComTexto({});
+            const parlamentar = await criarParlamentar();
+            assertStatus(await vincularParlamentar(gestor, id, parlamentar.id), 200);
 
-                await editar(id, { objeto: uniq('novo objeto') });
+            await editar(id, { objeto: uniq('novo objeto') });
 
-                const ativos = await prisma().transferenciaParlamentar.count({
-                    where: { transferencia_id: id, removido_em: null },
-                });
-                assert.equal(ativos, 1);
-            }
-        );
+            const ativos = await prisma().transferenciaParlamentar.count({
+                where: { transferencia_id: id, removido_em: null },
+            });
+            assert.equal(ativos, 1);
+        });
     });
 });

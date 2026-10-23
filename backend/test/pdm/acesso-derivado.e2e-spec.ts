@@ -118,7 +118,6 @@ describe('acesso derivado de equipes (Plano Setorial)', () => {
 
     it(
         'responde 400 ao soltar a equipe do plano enquanto uma meta ainda a usa',
-        { todo: 'BUG: erro do trigger check_pdm_perfil_relations (__HTTP__ ... __EOF__) vira 500 com o Prisma 7, pois PrismaErrorFilterUnknown só captura PrismaClientUnknownRequestError (src/prisma-error-unknown.filter.ts:8)' },
         async () => {
             const c = await cenario();
             const res = await api(gestor, H)

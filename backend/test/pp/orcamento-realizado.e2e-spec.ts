@@ -259,7 +259,7 @@ describe('projeto-orcamento-realizado: somas por portfolio (triggers)', () => {
         assert.equal(intacto.soma_valor_empenho.toFixed(2), '100.00');
     });
 
-    it('remover pelo caminho de outro projeto responde 404 e não remove', { todo: 'BUG: remove e removeEmLote só filtram por tipo de projeto, ignoram o projeto da URL (planejado responde 404)' }, async () => {
+    it('remover pelo caminho de outro projeto responde 404 e não remove', async () => {
         const ano = anoUnico();
         await semearDotacaoRealizada(ano, DOTACAO, { empenho: 1000, liquidado: 1000 });
         const dono = await novoProjeto(portfolio1.id);

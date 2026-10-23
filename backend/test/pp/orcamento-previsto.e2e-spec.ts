@@ -142,7 +142,7 @@ describe('projeto-orcamento-previsto', () => {
         assert.equal((await listar(projeto.id, ano)).previsto_eh_zero, false);
     });
 
-    it('criar um previsto limpa a marcação de custo zerado do ano', { todo: 'BUG: o create do projeto não chama patchZerado(false) como o de meta-orcamento faz, e fica zerado com registro' }, async () => {
+    it('criar um previsto limpa a marcação de custo zerado do ano', async () => {
         const ano = (anoSeq += 10);
         assertStatus(
             await api(admin).patch(`${rota(projeto.id)}/zerado`).send({ ano_referencia: ano, considerar_zero: true }),
@@ -152,7 +152,7 @@ describe('projeto-orcamento-previsto', () => {
         assert.equal((await listar(projeto.id, ano)).previsto_eh_zero, false);
     });
 
-    it('editar o custo para zero grava zero', { todo: 'BUG: update usa `dto.custo_previsto || antigo`, então 0 mantém o valor anterior (meta-orcamento usa ??)' }, async () => {
+    it('editar o custo para zero grava zero', async () => {
         const ano = (anoSeq += 10);
         const a = await criar(projeto.id, base(ano, { custo_previsto: 100 }));
         assertStatus(await api(admin).patch(`${rota(projeto.id)}/${a.body.id}`).send({ custo_previsto: 0 }), 202);
