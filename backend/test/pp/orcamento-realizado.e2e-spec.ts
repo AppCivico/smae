@@ -184,7 +184,7 @@ describe('projeto-orcamento-realizado: somas por portfolio (triggers)', () => {
         assert.equal(apos.soma_valor_empenho.toFixed(2), '0.00');
     });
 
-    it('nota de empenho de um ano anterior ao ano de referência respeita o limite do SOF', { todo: 'BUG #758 (corrigido em #779): verificaNotaEmpenho consulta portfolio_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
+    it('nota de empenho de um ano anterior ao ano de referência respeita o limite do SOF', async () => {
         const ano = anoUnico();
         const nota = `8/${ano - 1}`;
         await semearDotacaoRealizada(ano, DOTACAO, { empenho: 1000, liquidado: 1000 });

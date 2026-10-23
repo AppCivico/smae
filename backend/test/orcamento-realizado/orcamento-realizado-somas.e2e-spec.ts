@@ -278,14 +278,14 @@ describe('orcamento-realizado: somas por dotação, processo e nota (triggers)',
             return { ...c, nota, corpo, somaNota };
         }
 
-        it('criar acima do limite do SOF da nota responde 400', { todo: 'BUG #758 (corrigido em #779): verificaNotaEmpenho consulta pdm_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
+        it('criar acima do limite do SOF da nota responde 400', async () => {
             const { ano, corpo } = await cenarioNotaAnterior();
             const res = await post(corpo(ano, [item(12, 500, 50)]));
             assertStatus(res, 400);
             assert.match(res.body.message, /excede o total do empenho no SOF/);
         });
 
-        it('dentro do limite grava a soma no ano de referência e editar acima do limite responde 400', { todo: 'BUG #758 (corrigido em #779): verificaNotaEmpenho consulta pdm_dotacao_processo_nota pelo ano da nota, mas a trigger grava pelo ano_referencia do registro, então o limite não é checado' }, async () => {
+        it('dentro do limite grava a soma no ano de referência e editar acima do limite responde 400', async () => {
             const { meta, ano, nota, corpo, somaNota } = await cenarioNotaAnterior();
             const criado = await post(corpo(ano, [item(12, 80, 40)]));
             assertStatus(criado, 201);
