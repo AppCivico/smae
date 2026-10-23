@@ -9,6 +9,7 @@ import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
+import montarDadosDoAnoDaDotacao from '@/helpers/montarDadosDoAnoDaDotacao.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useMetasStore } from '@/stores/metas.store';
@@ -48,6 +49,19 @@ const d_programa = ref('');
 const d_projetoatividade = ref('');
 const d_contadespesa = ref('');
 const d_fonte = ref('');
+
+const dadosDoAno = computed(() => montarDadosDoAnoDaDotacao(
+  DotaçãoSegmentos.value?.[ano],
+  {
+    orgao: d_orgao.value,
+    unidade: d_unidade.value,
+    funcao: d_funcao.value,
+    subFuncao: d_subfuncao.value,
+    programa: d_programa.value,
+    projetoAtividade: d_projetoatividade.value,
+    fonte: d_fonte.value,
+  },
+));
 
 const complemento = computed(() => {
   if (emFoco.value.dotacao_complemento) {
@@ -266,7 +280,7 @@ export default {
           class="inputtext light mb1 disabled"
         >
       </div>
-      <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
+      <template v-if="dadosDoAno.atualizado_em">
         <label class="label mb1">Dotação orcamentária - por segmento</label>
         <div class="flex g2 mb2">
           <div class="f1">
@@ -274,18 +288,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.orgao"
               disabled
             >
             <div
               v-if="d_orgao"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].orgaos.find(x => x.codigo == d_orgao))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.orgao }}
             </div>
           </div>
           <div class="f1">
@@ -293,18 +303,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.unidade"
               disabled
             >
             <div
               v-if="d_unidade"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].unidades.find(x => x.codigo == d_unidade))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.unidade }}
             </div>
           </div>
           <div class="f1">
@@ -312,18 +318,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.funcao"
               disabled
             >
             <div
               v-if="d_funcao"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].funcoes.find(x => x.codigo == d_funcao))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.funcao }}
             </div>
           </div>
           <div class="f1">
@@ -331,18 +333,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.subFuncao"
               disabled
             >
             <div
               v-if="d_subfuncao"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].subfuncoes.find(x => x.codigo == d_subfuncao))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.subFuncao }}
             </div>
           </div>
           <div class="f1">
@@ -350,18 +348,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.programa"
               disabled
             >
             <div
               v-if="d_programa"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].programas.find(x => x.codigo == d_programa))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.programa }}
             </div>
           </div>
         </div>
@@ -376,20 +370,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].projetos_atividades
-                .find(x => x.codigo == d_projetoatividade))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.projetoAtividade"
               disabled
             >
             <div
               v-if="d_projetoatividade"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].projetos_atividades
-                .find(x => x.codigo == d_projetoatividade))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.projetoAtividade }}
             </div>
           </div>
           <div class="f1">
@@ -406,18 +394,14 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
-                ? `${it.codigo} - ${it.descricao}`
-                : ''"
+              :value="dadosDoAno.fonte"
               disabled
             >
             <div
               v-if="d_fonte"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].fonte_recursos.find(x => x.codigo == d_fonte))
-                ? `${it.codigo} - ${it.descricao}`
-                : '' }}
+              {{ dadosDoAno.fonte }}
             </div>
           </div>
         </div>
