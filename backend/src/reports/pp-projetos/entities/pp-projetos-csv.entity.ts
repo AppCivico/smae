@@ -1,6 +1,6 @@
 import { flatten } from '@json2csv/transforms';
 import { Date2YMD } from '../../../common/date2ymd';
-import { copiarColunas, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
+import { copiarColunas, primeiraPorChave, ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 import { ReportFileSchema } from '../../post-process/report-schema';
 import { CsvTransforms } from '../../shared/csv-file-handler';
 
@@ -216,11 +216,7 @@ export class RelProjetosCsvRow {
     fonte_recurso__fonte_recurso_ano: number | null;
 }
 
-/**
- * Prefixos das colunas de `projetos.csv` que vêm dos `LEFT JOIN` 1:N (órgão participante,
- * premissa, restrição e fonte de recurso). São elas que diferenciam as linhas repetidas de um
- * mesmo projeto.
- */
+/** Prefixos das colunas de `projetos.csv` que vêm dos `LEFT JOIN` 1:N. */
 const PREFIXOS_COLUNAS_PROJETOS_1_N = ['orgao_participante__', 'premissa__', 'restricao__', 'fonte_recurso__'];
 
 /** A coluna é do projeto em si (e não de um join 1:N)? */
@@ -228,49 +224,21 @@ export function ehColunaDoProjeto(nome: string): boolean {
     return !PREFIXOS_COLUNAS_PROJETOS_1_N.some((prefixo) => nome.startsWith(prefixo));
 }
 
-/**
- * Colunas do CSV bruto de `projetos_simplificado.csv`: as mesmas de `projetos.csv`, menos as
- * de órgão participante, premissa, restrição e fonte de recurso — **uma linha por projeto**.
- *
- * Existe para quem monta um modelo só com dados do projeto e, no `projetos.csv`, recebia
- * linhas idênticas repetidas por causa dos joins 1:N. O `projetos.csv` continua igual ao lado,
- * para quem precisa do detalhamento.
- *
- * Mesmo padrão de `transferencias.csv` × `transferencias_e_distribuicao.csv`, mas sem
- * renomear o arquivo antigo: o arquivo novo entra ao lado e os modelos salvos não mudam.
- *
- * As colunas são copiadas (mesma ordem, rótulo, tipo e formatação) em vez de redeclaradas.
- */
+/** `projetos.csv` sem as colunas dos joins 1:N: uma linha por projeto. */
 @ReportRows({
     arquivo: 'projetos_simplificado.csv',
     fontes: ['Projetos'],
     descricao:
-        'Uma linha por projeto, sem as colunas de órgão participante, premissa, restrição e fonte de recurso — ' +
+        'Uma linha por projeto, sem as colunas de órgão participante, premissa, restrição e fonte de recurso: ' +
         'o mesmo conteúdo de projetos.csv sem as linhas repetidas pelos joins.',
 })
 export class RelProjetosSimplificadoCsvRow {}
 
 copiarColunas(RelProjetosCsvRow, RelProjetosSimplificadoCsvRow, ehColunaDoProjeto);
 
-/**
- * As linhas de `projetos_simplificado.csv` a partir das de `projetos.csv`: uma por projeto.
- *
- * Mesma regra de `linhasPorTransferencia`: as colunas do projeto são iguais em todas as
- * repetições geradas pelos joins 1:N, então ficar com a primeira ocorrência só descarta cópias.
- * Deduplicar por `id` (e não pela tupla de colunas) garante uma linha por projeto mesmo que
- * alguma coluna venha a divergir no futuro.
- */
+/** As linhas de `projetos_simplificado.csv` a partir das de `projetos.csv`. */
 export function linhasPorProjeto<T extends { id: number }>(linhas: T[]): T[] {
-    const vistas = new Set<number>();
-    const out: T[] = [];
-
-    for (const linha of linhas) {
-        if (vistas.has(linha.id)) continue;
-        vistas.add(linha.id);
-        out.push(linha);
-    }
-
-    return out;
+    return primeiraPorChave(linhas, (l) => l.id);
 }
 
 /** Colunas do CSV bruto de `cronograma.csv` dos projetos. */

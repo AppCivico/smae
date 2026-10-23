@@ -1786,8 +1786,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
                 await this.queryDataProjetos(whereCondForBatch, result);
                 break;
             case 'projetos_simplificado':
-                // Mesma consulta de `projetos`, uma linha por projeto. O lote é recortado por id
-                // de projeto, então deduplicar dentro do lote já é deduplicar no arquivo todo.
+                // O lote é recortado por id de projeto, então deduplicar no lote basta.
                 await this.queryDataProjetos(whereCondForBatch, result);
                 return linhasPorProjeto(result as RelProjetosDto[]);
             case 'cronograma':

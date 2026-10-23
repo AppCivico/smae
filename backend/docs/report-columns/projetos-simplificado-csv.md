@@ -1,6 +1,6 @@
 # projetos_simplificado.csv
 
-Uma linha por projeto, sem as colunas de órgão participante, premissa, restrição e fonte de recurso — o mesmo conteúdo de projetos.csv sem as linhas repetidas pelos joins.
+Uma linha por projeto, sem as colunas de órgão participante, premissa, restrição e fonte de recurso: o mesmo conteúdo de projetos.csv sem as linhas repetidas pelos joins.
 
 Fontes que produzem este arquivo: `Projetos`
 
@@ -8,17 +8,7 @@ Fontes que produzem este arquivo: `Projetos`
 
 Classe de linha: `RelProjetosSimplificadoCsvRow`
 
-Colunas do CSV bruto de `projetos_simplificado.csv`: as mesmas de `projetos.csv`, menos as
-de órgão participante, premissa, restrição e fonte de recurso — **uma linha por projeto**.
-
-Existe para quem monta um modelo só com dados do projeto e, no `projetos.csv`, recebia
-linhas idênticas repetidas por causa dos joins 1:N. O `projetos.csv` continua igual ao lado,
-para quem precisa do detalhamento.
-
-Mesmo padrão de `transferencias.csv` × `transferencias_e_distribuicao.csv`, mas sem
-renomear o arquivo antigo: o arquivo novo entra ao lado e os modelos salvos não mudam.
-
-As colunas são copiadas (mesma ordem, rótulo, tipo e formatação) em vez de redeclaradas.
+`projetos.csv` sem as colunas dos joins 1:N: uma linha por projeto.
 
 | Coluna | Tipo | Rótulo | Formatação | Descrição |
 | --- | --- | --- | --- | --- |

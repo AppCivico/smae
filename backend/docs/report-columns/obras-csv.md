@@ -14,8 +14,8 @@ As colunas seguem exatamente a ordem do `SELECT` de `buildObrasBaseQuery()` — 
 que o cabeçalho nascia, já que este arquivo nunca passou uma lista `fields` explícita.
 
 Uma obra pode aparecer em mais de uma linha: a consulta faz `LEFT JOIN` com
-`projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N. Quem quer uma linha
-por obra tem `obras_simplificado.csv` — ver `RelObrasSimplificadoCsvRow`.
+`projeto_fonte_recurso` e `projeto_orgao_participante`, que são 1:N. Uma linha por obra:
+`obras_simplificado.csv` (`RelObrasSimplificadoCsvRow`).
 
 | Coluna | Tipo | Rótulo | Formatação | Descrição |
 | --- | --- | --- | --- | --- |

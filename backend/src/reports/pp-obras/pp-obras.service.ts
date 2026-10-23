@@ -382,14 +382,13 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             schemaArquivos,
         ] = await this.describeSchema(dto);
 
-        // `obras.csv` e `obras_simplificado.csv` são a mesma consulta em granularidades
-        // diferentes (ver `RelObrasSimplificadoCsvRow`): consulta uma vez, escreve os dois.
+        // Mesma consulta para `obras.csv` e `obras_simplificado.csv`.
         const linhasObras = await this.prisma.$queryRawUnsafe<any[]>(
             `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
             ...whereCond.queryParams
         );
         out.push(await this.escreverCsv(linhasObras, schemaObras, ctx));
-        out.push(await this.escreverCsv(linhasPorObra(linhasObras ?? []), schemaObrasSimplificado, ctx));
+        out.push(await this.escreverCsv(linhasPorObra(linhasObras), schemaObrasSimplificado, ctx));
 
         out.push(
             await this.streamQueryToCSV(
@@ -707,6 +706,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
             orgao_gestor.id as orgao_gestor_id,
             orgao_gestor.sigla as orgao_gestor_sigla,
             orgao_gestor.descricao as orgao_gestor_descricao,
+            -- colunas de join 1:N (po, o, r) também ficam em COLUNAS_OBRAS_1_N (pp-obras-csv.entity.ts)
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao,
@@ -759,6 +759,7 @@ export class PPObrasService implements ReportableService, SchemaAwareReportableS
           LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
           LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+          -- joins 1:N: coluna nova vinda deles precisa entrar em COLUNAS_OBRAS_1_N (pp-obras-csv.entity.ts)
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id

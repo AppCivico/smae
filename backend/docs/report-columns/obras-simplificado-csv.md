@@ -1,6 +1,6 @@
 # obras_simplificado.csv
 
-Uma linha por obra, sem as colunas de órgão participante e fonte de recurso — o mesmo conteúdo de obras.csv sem as linhas repetidas pelos joins.
+Uma linha por obra, sem as colunas de órgão participante e fonte de recurso: o mesmo conteúdo de obras.csv sem as linhas repetidas pelos joins.
 
 Fontes que produzem este arquivo: `Obras`
 
@@ -8,19 +8,7 @@ Fontes que produzem este arquivo: `Obras`
 
 Classe de linha: `RelObrasSimplificadoCsvRow`
 
-Colunas do CSV bruto de `obras_simplificado.csv`: as mesmas de `obras.csv`, menos as que
-vêm de órgão participante e fonte de recurso — **uma linha por obra**.
-
-Existe para quem monta um modelo só com dados da obra (ex.: lista de obras para cruzar com
-contratos) e, no `obras.csv`, recebia linhas idênticas repetidas por causa dos joins 1:N.
-O `obras.csv` continua igual ao lado, para quem precisa do detalhamento.
-
-Mesmo padrão de `transferencias.csv` × `transferencias_e_distribuicao.csv`, com uma
-diferença: aqui o arquivo antigo **não** foi renomeado. Os cabeçalhos de `obras.csv` são
-contrato com automação e com modelos salvos, então o arquivo novo entra ao lado sem
-migration.
-
-As colunas são copiadas (mesma ordem, rótulo, tipo e formatação) em vez de redeclaradas.
+`obras.csv` sem as colunas dos joins 1:N: uma linha por obra.
 
 | Coluna | Tipo | Rótulo | Formatação | Descrição |
 | --- | --- | --- | --- | --- |

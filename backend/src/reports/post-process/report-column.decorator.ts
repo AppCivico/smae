@@ -89,6 +89,21 @@ export function copiarColunas(
     }
 }
 
+/** Uma linha por chave, mantendo a primeira ocorrência e a ordem de chegada. */
+export function primeiraPorChave<T>(linhas: T[], chave: (linha: T) => number): T[] {
+    const vistas = new Set<number>();
+    const out: T[] = [];
+
+    for (const linha of linhas) {
+        const k = chave(linha);
+        if (vistas.has(k)) continue;
+        vistas.add(k);
+        out.push(linha);
+    }
+
+    return out;
+}
+
 /**
  * Deriva o `ReportFileSchema` a partir dos decoradores da classe.
  *

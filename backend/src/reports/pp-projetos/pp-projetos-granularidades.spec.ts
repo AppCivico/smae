@@ -18,21 +18,16 @@ function linha(id: number, premissaId: number | null) {
 
 describe('granularidades do relatório de projetos', () => {
     it('mantém os nomes de arquivo de cada granularidade', () => {
-        // O nome é contrato: entra em `config.arquivos[].arquivo` dos modelos salvos e é o que o
-        // usuário vê no zip. `projetos.csv` não foi renomeado, por isso não houve migration.
+        // O nome entra em `config.arquivos[].arquivo` dos modelos salvos.
         expect(getReportRowsOptions(RelProjetosCsvRow)!.arquivo).toBe('projetos.csv');
         expect(getReportRowsOptions(RelProjetosSimplificadoCsvRow)!.arquivo).toBe('projetos_simplificado.csv');
     });
 
     it('projetos_simplificado.csv é o arquivo completo sem as colunas dos joins 1:N', () => {
-        // Igualdade estrutural (nome, tipo, rótulo e formatação): os dois são lidos como o mesmo
-        // relatório, e um rótulo divergente entre eles seria justamente o que `copiarColunas` evita.
         expect(simplificado.colunas).toEqual(projetos.colunas.filter((c) => ehColunaDoProjeto(c.name)));
     });
 
     it('remove exatamente as colunas de órgão participante, premissa, restrição e fonte de recurso', () => {
-        // Lista fechada: uma coluna 1:N nova em `projetos.csv` precisa entrar aqui de propósito,
-        // senão o arquivo simplificado volta a ter linhas que diferem só por ela.
         const removidas = projetos.colunas.filter((c) => !ehColunaDoProjeto(c.name)).map((c) => c.name);
         expect(removidas.sort()).toEqual(
             [
