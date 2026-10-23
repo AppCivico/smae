@@ -1,6 +1,6 @@
 // Espelha MAX_LENGTH_HTML de backend/src/common/consts.ts, que não pode ser
 // importado aqui porque depende do @prisma/client. Conta o HTML, não só o texto.
-export const LIMITE_CAMPO_HTML = 10240;
+export const LIMITE_CAMPO_HTML = 20480;
 
 // Espelha MAX_LENGTH_MEDIO e MAX_LENGTH_LONG, usados por alguns campos HTML no backend
 export const LIMITE_CAMPO_MEDIO = 2048;
