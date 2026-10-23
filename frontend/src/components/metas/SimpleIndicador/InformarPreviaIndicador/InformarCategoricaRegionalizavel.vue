@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/extensions
 import type { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
 import { Field, useForm } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { ValorPrevioCategoricaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
@@ -37,14 +37,23 @@ const { handleSubmit } = useForm<Campos>({
   validationSchema: schema,
 });
 
+const maxSoma = computed(() => props.valores.previa_modo?.max_soma ?? null);
+const erroSoma = ref('');
+
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
-  emit('submit', {
-    valor: '0',
-    elementos: Object.values(valoresControlados.valor_previo).map((item) => ({
-      categorica_valor: Number(item.qualificacao),
-      valor: item.quantidade || '',
-    })),
-  });
+  const elementos = Object.values(valoresControlados.valor_previo).map((item) => ({
+    categorica_valor: Number(item.qualificacao),
+    valor: item.quantidade || '',
+  }));
+
+  const soma = elementos.reduce((acc, item) => acc + (Number(item.valor) || 0), 0);
+  if (maxSoma.value !== null && soma > maxSoma.value) {
+    erroSoma.value = `A soma das quantidades (${soma}) passa do número de regiões (${maxSoma.value}).`;
+    return;
+  }
+
+  erroSoma.value = '';
+  emit('submit', { valor: '0', elementos });
 });
 
 const dadosTabela = computed(() => {
@@ -97,6 +106,20 @@ const colunas = computed(() => {
         />
       </template>
     </SmaeTable>
+
+    <p
+      v-if="maxSoma !== null"
+      class="t13 tc60 mt1"
+    >
+      Soma máxima: {{ maxSoma }}
+    </p>
+
+    <div
+      v-if="erroSoma"
+      class="error-msg mt1"
+    >
+      {{ erroSoma }}
+    </div>
 
     <div class="flex justifycenter mt2">
       <button
