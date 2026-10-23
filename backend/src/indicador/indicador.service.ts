@@ -534,32 +534,17 @@ export class IndicadorService {
         });
         await this.metaService.assertMetaWriteOrThrow(tipoParam, metaRow.meta_id, user, 'indicador');
 
-        let formula_variaveis = dto.formula_variaveis;
+        const formula_variaveis = dto.formula_variaveis;
         delete dto.formula_variaveis;
         const alteraFormula = dto.formula !== undefined || formula_variaveis !== undefined;
         let formula: string = dto.formula ? dto.formula : '';
         const antigaFormulaCompilada = indicadorOld.formula_compilada || '';
 
-        if (alteraFormula) {
-            if (dto.formula === undefined) {
-                formula =
-                    (await this.prisma.indicador.findFirstOrThrow({ where: { id }, select: { formula: true } }))
-                        .formula ?? '';
-            } else if (formula_variaveis === undefined) {
-                formula_variaveis = indicadorOld.formula_variaveis.map((fv) => ({
-                    referencia: fv.referencia,
-                    janela: fv.janela,
-                    variavel_id: fv.variavel_id,
-                    usar_serie_acumulada: fv.usar_serie_acumulada,
-                }));
-            }
-        }
-
-        if (formula && !formula_variaveis) {
-            throw new HttpException(`É necessário enviar o parâmetro formula_variaveis quando enviar formula`, 400);
-        } else if (!formula && formula_variaveis && formula_variaveis.length > 0) {
-            throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
-        }
+        if (alteraFormula && (dto.formula === undefined || !Array.isArray(formula_variaveis)))
+            throw new HttpException(
+                'formula e formula_variaveis precisam ser enviados juntos (formula vazia e [] para limpar)',
+                400
+            );
 
         let formula_compilada: string = alteraFormula
             ? await this.validateVariaveis(formula_variaveis, id, formula)
