@@ -41,7 +41,6 @@ export class TransfereGovController {
 
     @Patch('transferencia/:id')
     @ApiBearerAuth('access-token')
-    @ApiPaginatedResponse(TransfereGovDto)
     @Roles(['TransfereGov.atualizar'])
     async updateTransferencia(
         @Param() params: FindOneParams,

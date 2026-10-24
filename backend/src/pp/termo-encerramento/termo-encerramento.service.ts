@@ -147,6 +147,7 @@ export class TermoEncerramentoService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const now = new Date();
+        const hoje = Date2YMD.fromString(DateTime.local({ zone: SYSTEM_TIMEZONE }).toFormat('yyyy-MM-dd'));
 
         return await this.prisma.$transaction(async (prismaTx) => {
             // Busca snapshot atual do projeto (para campos de texto/snapshot)
@@ -196,7 +197,7 @@ export class TermoEncerramentoService {
                       justificativa_id: null,
                       justificativa_complemento: null,
                       responsavel_encerramento_nome: user.nome_exibicao,
-                      data_encerramento: now,
+                      data_encerramento: hoje,
                       assinatura: null,
                       posicao_logotipo: 'Esquerda' as PosicaoLogotipo,
                   };
@@ -253,7 +254,7 @@ export class TermoEncerramentoService {
 
                     responsavel_encerramento_nome:
                         dto.responsavel_encerramento_nome ?? baseDados.responsavel_encerramento_nome ?? '',
-                    data_encerramento: dto.data_encerramento ?? baseDados.data_encerramento ?? now,
+                    data_encerramento: dto.data_encerramento ?? baseDados.data_encerramento ?? hoje,
                     assinatura: dto.assinatura ?? baseDados.assinatura ?? null,
                     posicao_logotipo: dto.posicao_logotipo ?? baseDados.posicao_logotipo ?? 'Esquerda',
 
