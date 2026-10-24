@@ -31,8 +31,8 @@ export class RelProjetosDto {
     secretario_responsavel: string | undefined;
     secretario_executivo: string | undefined;
     coordenador_ue: string | undefined;
-    data_aprovacao: string | undefined;
-    data_revisao: string | undefined;
+    data_aprovacao: string | null;
+    data_revisao: string | null;
     gestores: string;
 
     orgao_participante: IdSiglaDescricao;

@@ -360,7 +360,7 @@ export class VariavelCicloService {
                 equipes,
                 pode_editar,
                 prazo,
-                em_atraso: v.atrasos.length > 0 || (prazo !== null && prazo <= hoje),
+                em_atraso: v.atrasos.length > 0 || (prazo !== null && prazo < hoje),
             } satisfies VariavelGlobalCicloDto;
         });
 

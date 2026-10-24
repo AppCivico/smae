@@ -372,15 +372,18 @@ export class TarefaService {
         };
     }
 
+    // datas do plainToInstance (DateTransform) são meia-noite no fuso do processo
+    private localYmd(d: Date | null): string | null {
+        return d ? DateTime.fromJSDate(d).toFormat('yyyy-MM-dd') : null;
+    }
+
     private toTarefaItemProjetadoDto(t: TarefaItemProjetadoCalc): TarefaItemProjetadoDto {
-        // datas do plainToInstance (DateTransform) são meia-noite no fuso do processo
-        const ymd = (d: Date | null) => (d ? DateTime.fromJSDate(d).toFormat('yyyy-MM-dd') : null);
         return {
             ...t,
-            inicio_planejado: ymd(t.inicio_planejado),
-            termino_planejado: ymd(t.termino_planejado),
-            inicio_real: ymd(t.inicio_real),
-            termino_real: ymd(t.termino_real),
+            inicio_planejado: this.localYmd(t.inicio_planejado),
+            termino_planejado: this.localYmd(t.termino_planejado),
+            inicio_real: this.localYmd(t.inicio_real),
+            termino_real: this.localYmd(t.termino_real),
             projecao_inicio: t.projecao_inicio?.toFormat('yyyy-MM-dd') ?? null,
             projecao_termino: t.projecao_termino?.toFormat('yyyy-MM-dd') ?? null,
             projecao_atraso: t.projecao_atraso ?? null,
@@ -1891,8 +1894,8 @@ export class TarefaService {
         const datas = resp.dependencias_datas;
         return {
             ...datas,
-            inicio_planejado: Date2YMD.toStringOrNull(datas.inicio_planejado),
-            termino_planejado: Date2YMD.toStringOrNull(datas.termino_planejado),
+            inicio_planejado: this.localYmd(datas.inicio_planejado),
+            termino_planejado: this.localYmd(datas.termino_planejado),
         };
     }
 

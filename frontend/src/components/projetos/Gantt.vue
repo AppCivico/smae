@@ -98,8 +98,13 @@ const dadosParaGantt = computed(() => props.data
   .filter((x) => (!nívelMáximoVisível.value ? true : x.nivel <= nívelMáximoVisível.value))
   .map((x) => ({
     ...x,
-    end_date: x[qualPropriedadeDeData('término')],
-    start_date: x[qualPropriedadeDeData('início')],
+    // `new Date('YYYY-MM-DD')` seria meia-noite UTC; dayjs lê no fuso local
+    end_date: x[qualPropriedadeDeData('término')]
+      ? dayjs(x[qualPropriedadeDeData('término')]).toDate()
+      : null,
+    start_date: x[qualPropriedadeDeData('início')]
+      ? dayjs(x[qualPropriedadeDeData('início')]).toDate()
+      : null,
     title: x.tarefa,
     completion_percentage: x.percentual_concluido,
   }))
