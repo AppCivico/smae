@@ -1,6 +1,8 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { PosicaoLogotipo, Prisma, TipoProjeto } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
@@ -12,9 +14,22 @@ import { TipoUpload } from '../../upload/entities/tipo-upload';
 // Tipo auxiliar para o snapshot calculado
 type SnapshotCalculado = Omit<
     TermoEncerramentoDetalheDto,
-    'id' | 'projeto_id' | 'em_rascunho' | 'pode_excluir' | 'icone' | 'justificativa'
+    | 'id'
+    | 'projeto_id'
+    | 'em_rascunho'
+    | 'pode_excluir'
+    | 'icone'
+    | 'justificativa'
+    | 'previsao_inicio'
+    | 'previsao_termino'
+    | 'data_inicio_real'
+    | 'data_termino_real'
 > & {
     icone_arquivo_id: number | null;
+    previsao_inicio: Date | null;
+    previsao_termino: Date | null;
+    data_inicio_real: Date | null;
+    data_termino_real: Date | null;
 };
 
 @Injectable()
@@ -66,17 +81,17 @@ export class TermoEncerramentoService {
                 status_final: termoExistente.status_final,
                 etapa_nome: termoExistente.etapa_nome,
 
-                previsao_inicio: termoExistente.previsao_inicio,
-                previsao_termino: termoExistente.previsao_termino,
-                data_inicio_real: termoExistente.data_inicio_real,
-                data_termino_real: termoExistente.data_termino_real,
+                previsao_inicio: Date2YMD.toStringOrNull(termoExistente.previsao_inicio),
+                previsao_termino: Date2YMD.toStringOrNull(termoExistente.previsao_termino),
+                data_inicio_real: Date2YMD.toStringOrNull(termoExistente.data_inicio_real),
+                data_termino_real: Date2YMD.toStringOrNull(termoExistente.data_termino_real),
                 previsao_custo: termoExistente.previsao_custo,
                 valor_executado_total: termoExistente.valor_executado_total,
 
                 justificativa_id: termoExistente.justificativa_id,
                 justificativa_complemento: termoExistente.justificativa_complemento,
                 responsavel_encerramento_nome: termoExistente.responsavel_encerramento_nome,
-                data_encerramento: termoExistente.data_encerramento,
+                data_encerramento: Date2YMD.toStringOrNull(termoExistente.data_encerramento),
                 assinatura: termoExistente.assinatura,
                 posicao_logotipo: termoExistente.posicao_logotipo,
 
@@ -102,17 +117,17 @@ export class TermoEncerramentoService {
             status_final: snapshot.status_final,
             etapa_nome: snapshot.etapa_nome,
 
-            previsao_inicio: snapshot.previsao_inicio,
-            previsao_termino: snapshot.previsao_termino,
-            data_inicio_real: snapshot.data_inicio_real,
-            data_termino_real: snapshot.data_termino_real,
+            previsao_inicio: Date2YMD.toStringOrNull(snapshot.previsao_inicio),
+            previsao_termino: Date2YMD.toStringOrNull(snapshot.previsao_termino),
+            data_inicio_real: Date2YMD.toStringOrNull(snapshot.data_inicio_real),
+            data_termino_real: Date2YMD.toStringOrNull(snapshot.data_termino_real),
             previsao_custo: snapshot.previsao_custo,
             valor_executado_total: snapshot.valor_executado_total,
 
             justificativa_id: null,
             justificativa_complemento: null,
             responsavel_encerramento_nome: user.nome_exibicao,
-            data_encerramento: new Date(),
+            data_encerramento: DateTime.local({ zone: SYSTEM_TIMEZONE }).toFormat('yyyy-MM-dd'),
             assinatura: null,
             posicao_logotipo: 'Esquerda',
 
@@ -132,6 +147,7 @@ export class TermoEncerramentoService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const now = new Date();
+        const hoje = Date2YMD.fromString(DateTime.local({ zone: SYSTEM_TIMEZONE }).toFormat('yyyy-MM-dd'));
 
         return await this.prisma.$transaction(async (prismaTx) => {
             // Busca snapshot atual do projeto (para campos de texto/snapshot)
@@ -181,7 +197,7 @@ export class TermoEncerramentoService {
                       justificativa_id: null,
                       justificativa_complemento: null,
                       responsavel_encerramento_nome: user.nome_exibicao,
-                      data_encerramento: now,
+                      data_encerramento: hoje,
                       assinatura: null,
                       posicao_logotipo: 'Esquerda' as PosicaoLogotipo,
                   };
@@ -238,7 +254,7 @@ export class TermoEncerramentoService {
 
                     responsavel_encerramento_nome:
                         dto.responsavel_encerramento_nome ?? baseDados.responsavel_encerramento_nome ?? '',
-                    data_encerramento: dto.data_encerramento ?? baseDados.data_encerramento ?? now,
+                    data_encerramento: dto.data_encerramento ?? baseDados.data_encerramento ?? hoje,
                     assinatura: dto.assinatura ?? baseDados.assinatura ?? null,
                     posicao_logotipo: dto.posicao_logotipo ?? baseDados.posicao_logotipo ?? 'Esquerda',
 

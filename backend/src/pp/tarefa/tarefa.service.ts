@@ -27,11 +27,12 @@ import {
 } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import {
+    DependenciasDatasCalc,
     DependenciasDatasDto,
-    ListApenasTarefaListDto,
     ListTarefaGenericoDto,
     TarefaDetailDto,
     TarefaItemDbDto,
+    TarefaItemProjetadoCalc,
     TarefaItemProjetadoDto,
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
@@ -50,7 +51,7 @@ export class InferenciaDatasDto {
 }
 
 export class ValidacaoDatas {
-    dependencias_datas: DependenciasDatasDto | null;
+    dependencias_datas: DependenciasDatasCalc | null;
     ordem_topologica_inicio_planejado: number[];
     ordem_topologica_termino_planejado: number[];
 }
@@ -323,7 +324,7 @@ export class TarefaService {
             termino_planejado?: Date | null;
             duracao_planejado?: number | null;
         },
-        dataDependencias: DependenciasDatasDto
+        dataDependencias: DependenciasDatasCalc
     ): Promise<InferenciaDatasDto> {
         const json = JSON.stringify({
             inicio_planejado_corrente: dto.inicio_planejado,
@@ -365,9 +366,27 @@ export class TarefaService {
             : null;
 
         return {
-            linhas: ret.linhas,
+            linhas: ret.linhas.map((t) => this.toTarefaItemProjetadoDto(t)),
             projeto: projeto,
             cabecalho: cabecalhoTransferencia,
+        };
+    }
+
+    // datas do plainToInstance (DateTransform) são meia-noite no fuso do processo
+    private localYmd(d: Date | null): string | null {
+        return d ? DateTime.fromJSDate(d).toFormat('yyyy-MM-dd') : null;
+    }
+
+    private toTarefaItemProjetadoDto(t: TarefaItemProjetadoCalc): TarefaItemProjetadoDto {
+        return {
+            ...t,
+            inicio_planejado: this.localYmd(t.inicio_planejado),
+            termino_planejado: this.localYmd(t.termino_planejado),
+            inicio_real: this.localYmd(t.inicio_real),
+            termino_real: this.localYmd(t.termino_real),
+            projecao_inicio: t.projecao_inicio?.toFormat('yyyy-MM-dd') ?? null,
+            projecao_termino: t.projecao_termino?.toFormat('yyyy-MM-dd') ?? null,
+            projecao_atraso: t.projecao_atraso ?? null,
         };
     }
 
@@ -380,10 +399,10 @@ export class TarefaService {
             return {
                 ...r,
                 ...this.calcPodeEditar(r, user),
-                inicio_planejado: Date2YMD.toStringOrNull(r.inicio_planejado) as any as Date,
-                termino_planejado: Date2YMD.toStringOrNull(r.termino_planejado) as any as Date,
-                inicio_real: Date2YMD.toStringOrNull(r.inicio_real) as any as Date,
-                termino_real: Date2YMD.toStringOrNull(r.termino_real) as any as Date,
+                inicio_planejado: Date2YMD.toStringOrNull(r.inicio_planejado),
+                termino_planejado: Date2YMD.toStringOrNull(r.termino_planejado),
+                inicio_real: Date2YMD.toStringOrNull(r.inicio_real),
+                termino_real: Date2YMD.toStringOrNull(r.termino_real),
                 atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
                 custo_estimado_anualizado: this.buildAnualizado(r.custo_estimado_anualizado),
                 custo_real_anualizado: this.buildAnualizado(r.custo_real_anualizado),
@@ -523,8 +542,8 @@ export class TarefaService {
     private async calculaAtrasoCronograma(
         tarefasOrig: TarefaItemDbDto[],
         tarefaCronoId: number
-    ): Promise<ListApenasTarefaListDto> {
-        const ret: ListApenasTarefaListDto = { linhas: [] };
+    ): Promise<{ linhas: TarefaItemProjetadoCalc[] }> {
+        const ret: { linhas: TarefaItemProjetadoCalc[] } = { linhas: [] };
 
         const tarefaCronograma = await this.prisma.tarefaCronograma.findFirstOrThrow({
             where: { id: tarefaCronoId },
@@ -532,7 +551,7 @@ export class TarefaService {
 
         // nesse caso, vai usar UTC, pois o javascript e o Prisma volta o Date como UTC.
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-        const tarefas = plainToInstance(TarefaItemProjetadoDto, <any[]>structuredClone(tarefasOrig));
+        const tarefas = plainToInstance(TarefaItemProjetadoCalc, <any[]>structuredClone(tarefasOrig));
 
         const orig_tarefas_por_id: Record<number, (typeof tarefasOrig)[0]> = {};
         for (const tarefa of tarefasOrig) {
@@ -553,7 +572,7 @@ export class TarefaService {
         // Função recursiva para calcular as projeções de início e término das tarefas
         // Utiliza um conjunto para evitar processamento duplicado e ciclos infinitos
         const jaPassou = new Set<number>();
-        const calculaProjecoes = (tarefa: TarefaItemProjetadoDto) => {
+        const calculaProjecoes = (tarefa: TarefaItemProjetadoCalc) => {
             // Evita reprocessar a mesma tarefa (proteção contra ciclos)
             if (jaPassou.has(tarefa.id)) return;
             jaPassou.add(tarefa.id);
@@ -1086,11 +1105,11 @@ export class TarefaService {
             ...row,
             ...this.calcPodeEditar(row, user),
             atraso: CalculaAtraso.emDias(hoje, row.termino_planejado, row.termino_real),
-            inicio_planejado: Date2YMD.toStringOrNull(row.inicio_planejado) as any as Date,
-            termino_planejado: Date2YMD.toStringOrNull(row.termino_planejado) as any as Date,
-            inicio_real: Date2YMD.toStringOrNull(row.inicio_real) as any as Date,
-            termino_real: Date2YMD.toStringOrNull(row.termino_real) as any as Date,
-            termino_projetado: Date2YMD.toStringOrNull(row.db_projecao_termino) as any as Date,
+            inicio_planejado: Date2YMD.toStringOrNull(row.inicio_planejado),
+            termino_planejado: Date2YMD.toStringOrNull(row.termino_planejado),
+            inicio_real: Date2YMD.toStringOrNull(row.inicio_real),
+            termino_real: Date2YMD.toStringOrNull(row.termino_real),
+            termino_projetado: Date2YMD.toStringOrNull(row.db_projecao_termino),
             custo_estimado_anualizado: this.buildAnualizado(row.custo_estimado_anualizado),
             custo_real_anualizado: this.buildAnualizado(row.custo_real_anualizado),
             projeto: projeto,
@@ -1836,7 +1855,7 @@ export class TarefaService {
         const json = JSON.stringify(deps);
         const res = (await prismaTx.$queryRaw`select calcula_dependencias_tarefas(${json}::jsonb)`) as any;
 
-        const resp = plainToInstance(DependenciasDatasDto, res[0]['calcula_dependencias_tarefas']);
+        const resp = plainToInstance(DependenciasDatasCalc, res[0]['calcula_dependencias_tarefas']);
 
         // <= 0 pois 0 dias já é negativo nessa situação do smae
         // onde 1 dia de duração o inicio e termino são os mesmos
@@ -1870,9 +1889,14 @@ export class TarefaService {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
         const resp = await this.calcDataDependencias(tarefaCronoId, this.prisma, dto);
-        if (!resp) return null;
+        if (!resp?.dependencias_datas) return null;
 
-        return resp.dependencias_datas;
+        const datas = resp.dependencias_datas;
+        return {
+            ...datas,
+            inicio_planejado: this.localYmd(datas.inicio_planejado),
+            termino_planejado: this.localYmd(datas.termino_planejado),
+        };
     }
 
     private async valida_grafo_dependencias(

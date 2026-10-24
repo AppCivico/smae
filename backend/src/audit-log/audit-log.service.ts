@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 import { FilterAuditLogDto, GroupByFieldsDto, GroupByFilterDto } from './dto/audit-log.dto';
 import { AuditLogDto, AuditLogSummaryRow } from './entities/audit-log.entity';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
-import { SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset!: number;
@@ -115,7 +115,7 @@ export class AuditLogService {
 
         return rows.map((r) => ({
             count: r.count,
-            date: r.dia ?? undefined,
+            date: r.dia ? Date2YMD.toString(r.dia) : undefined,
             contexto: r.contexto ?? undefined,
             pessoa_id: r.pessoa_id ?? undefined,
         }));

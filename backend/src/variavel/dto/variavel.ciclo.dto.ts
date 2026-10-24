@@ -128,7 +128,7 @@ export class VariavelGlobalCicloDto {
     equipes: IdTituloDto[];
 
     @IsDateYMD({ nullable: true })
-    prazo: Date | null;
+    prazo: string | null;
     pode_editar: boolean;
 }
 

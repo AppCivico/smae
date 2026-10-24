@@ -20,6 +20,7 @@ import { CONST_BOT_USER_ID, CONST_PERFIL_CASA_CIVIL, CONST_TIPO_NOTA_TRANSF_GOV 
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_TRANSFERE_GOV_LOCK } from '../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -708,7 +709,11 @@ export class TransfereGovSyncService {
         };
     }
 
-    async atualizarTransferencia(id: number, dto: UpdateTransfereGovTransferenciaDto, user: PessoaFromJwt) {
+    async atualizarTransferencia(
+        id: number,
+        dto: UpdateTransfereGovTransferenciaDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         // TODO: verificar a row.
 
         return await this.prisma.transfereGovOportunidade.update({
@@ -719,6 +724,7 @@ export class TransfereGovSyncService {
                 avaliacao: dto.avaliacao,
                 atualizado_em: new Date(Date.now()),
             },
+            select: { id: true },
         });
     }
 

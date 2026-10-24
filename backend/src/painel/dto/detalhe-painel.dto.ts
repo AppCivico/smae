@@ -1,3 +1,4 @@
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { Periodicidade, Periodo, Prisma, Serie } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 
@@ -6,8 +7,10 @@ export class DetailPainelVisualizacaoDto {
     periodicidade: Periodicidade;
     periodo: Periodo | null;
     periodo_valor: number | null;
-    periodo_inicio: Date | null;
-    periodo_fim: Date | null;
+    @IsDateYMD({ nullable: true })
+    periodo_inicio: string | null;
+    @IsDateYMD({ nullable: true })
+    periodo_fim: string | null;
     mostrar_acumulado: boolean;
     mostrar_planejado: boolean;
     ordem: number | null;

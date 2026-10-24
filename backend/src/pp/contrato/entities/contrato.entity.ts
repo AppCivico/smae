@@ -55,8 +55,10 @@ export class ContratoItemDto {
     @ApiProperty({ enum: StatusContrato, enumName: 'StatusContrato' })
     status: StatusContrato;
     objeto_resumo: string | null;
-    data_termino_inicial: Date | null;
-    data_termino_atual: Date | null;
+    @IsDateYMD({ nullable: true })
+    data_termino_inicial: string | null;
+    @IsDateYMD({ nullable: true })
+    data_termino_atual: string | null;
     valor: Decimal | null;
     processos_sei: string[] | null;
     quantidade_aditivos: number;

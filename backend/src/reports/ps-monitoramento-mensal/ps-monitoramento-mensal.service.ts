@@ -240,11 +240,11 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
                                 when r.nivel = 4 then r.id
                                 end as distrito_id,
                             sv.serie,
-                            sv.data_valor as data_referencia,
+                            to_char(sv.data_valor, 'YYYY-MM-DD') as data_referencia,
                             vcv.titulo as valor_categorica,
                             round(sv.valor_nominal, v.casas_decimais) as valor_nominal,
                             sv.atualizado_em AS data_preenchimento,
-                            sv.data_valor + periodicidade_intervalo(v.periodicidade) as data_proximo_ciclo,
+                            to_char(sv.data_valor + periodicidade_intervalo(v.periodicidade), 'YYYY-MM-DD') as data_proximo_ciclo,
                             coalesce(nullif(vgcaP.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_coleta,
                             coalesce(nullif(vgcaV.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_aprovador,
                             coalesce(nullif(vgcaL.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_liberador,
@@ -334,7 +334,7 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
                 m.codigo as meta_codigo,
                 m.titulo as meta_titulo,
                 coalesce(mcf.informacoes_complementares,'') as analise_qualitativa,
-                mcf.referencia_data as analise_qualitativa_data,
+                to_char(mcf.referencia_data, 'YYYY-MM-DD') as analise_qualitativa_data,
                 mcf.id as analise_id,
                 mcf.criado_em as analise_criado_em,
                 p_mcf.nome_exibicao as analise_criador,
@@ -343,12 +343,12 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
                 mcr.id as risco_id,
                 mcr.criado_em as risco_criado_em,
                 p_mcr.nome_exibicao as risco_criador,
-                mcr.referencia_data as risco_referencia_data,
+                to_char(mcr.referencia_data, 'YYYY-MM-DD') as risco_referencia_data,
                 coalesce(mcfec.comentario,'') as fechamento_comentario,
                 mcfec.id as fechamento_id,
                 mcfec.criado_em as fechamento_criado_em,
                 p_mcfec.nome_exibicao as fechamento_criador,
-                mcfec.referencia_data as fechamento_referencia_data
+                to_char(mcfec.referencia_data, 'YYYY-MM-DD') as fechamento_referencia_data
             from ciclo_fisico cf
             join pdm p on p.id = cf.pdm_id and p.removido_em is null
             join meta m on m.pdm_id = p.id and m.removido_em is null

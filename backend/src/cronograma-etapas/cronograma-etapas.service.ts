@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nest
 import { CronogramaEtapaNivel, PdmPerfilTipo, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
@@ -379,10 +379,10 @@ export class CronogramaEtapaService {
                     regiao_id: cronogramaEtapa.etapa.regiao_id,
                     nivel: cronogramaEtapa.etapa.nivel,
                     descricao: cronogramaEtapa.etapa.descricao,
-                    inicio_previsto: cronogramaEtapa.etapa.inicio_previsto,
-                    termino_previsto: cronogramaEtapa.etapa.termino_previsto,
-                    inicio_real: cronogramaEtapa.etapa.inicio_real,
-                    termino_real: cronogramaEtapa.etapa.termino_real,
+                    inicio_previsto: Date2YMD.toStringOrNull(cronogramaEtapa.etapa.inicio_previsto),
+                    termino_previsto: Date2YMD.toStringOrNull(cronogramaEtapa.etapa.termino_previsto),
+                    inicio_real: Date2YMD.toStringOrNull(cronogramaEtapa.etapa.inicio_real),
+                    termino_real: Date2YMD.toStringOrNull(cronogramaEtapa.etapa.termino_real),
                     prazo_inicio: cronogramaEtapa.etapa.prazo_inicio,
                     prazo_termino: cronogramaEtapa.etapa.prazo_termino,
                     titulo: cronogramaEtapa.etapa.titulo,
@@ -440,10 +440,10 @@ export class CronogramaEtapaService {
                                 regiao_id: f.regiao_id,
                                 nivel: f.nivel,
                                 descricao: f.descricao,
-                                inicio_previsto: f.inicio_previsto,
-                                termino_previsto: f.termino_previsto,
-                                inicio_real: f.inicio_real,
-                                termino_real: f.termino_real,
+                                inicio_previsto: Date2YMD.toStringOrNull(f.inicio_previsto),
+                                termino_previsto: Date2YMD.toStringOrNull(f.termino_previsto),
+                                inicio_real: Date2YMD.toStringOrNull(f.inicio_real),
+                                termino_real: Date2YMD.toStringOrNull(f.termino_real),
                                 prazo_inicio: f.prazo_inicio,
                                 prazo_termino: f.prazo_termino,
                                 titulo: f.titulo,
@@ -489,10 +489,10 @@ export class CronogramaEtapaService {
                                             regiao_id: ff.regiao_id,
                                             nivel: ff.nivel,
                                             descricao: ff.descricao,
-                                            inicio_previsto: ff.inicio_previsto,
-                                            termino_previsto: ff.termino_previsto,
-                                            inicio_real: ff.inicio_real,
-                                            termino_real: ff.termino_real,
+                                            inicio_previsto: Date2YMD.toStringOrNull(ff.inicio_previsto),
+                                            termino_previsto: Date2YMD.toStringOrNull(ff.termino_previsto),
+                                            inicio_real: Date2YMD.toStringOrNull(ff.inicio_real),
+                                            termino_real: Date2YMD.toStringOrNull(ff.termino_real),
                                             prazo_inicio: ff.prazo_inicio,
                                             prazo_termino: ff.prazo_termino,
                                             titulo: ff.titulo,
