@@ -536,19 +536,19 @@ export class IndicadorService {
 
         const formula_variaveis = dto.formula_variaveis;
         delete dto.formula_variaveis;
+        const alteraFormula = dto.formula !== undefined || formula_variaveis !== undefined;
         let formula: string = dto.formula ? dto.formula : '';
         const antigaFormulaCompilada = indicadorOld.formula_compilada || '';
-        if (dto.formula_variaveis && !dto.formula) {
-            formula = antigaFormulaCompilada;
-        }
 
-        if (formula && !formula_variaveis) {
-            throw new HttpException(`É necessário enviar o parâmetro formula_variaveis quando enviar formula`, 400);
-        } else if (!formula && formula_variaveis && formula_variaveis.length > 0) {
-            throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
-        }
+        if (alteraFormula && (dto.formula === undefined || !Array.isArray(formula_variaveis)))
+            throw new HttpException(
+                'formula e formula_variaveis precisam ser enviados juntos (formula vazia e [] para limpar)',
+                400
+            );
 
-        let formula_compilada: string = await this.validateVariaveis(formula_variaveis, id, formula);
+        let formula_compilada: string = alteraFormula
+            ? await this.validateVariaveis(formula_variaveis, id, formula)
+            : antigaFormulaCompilada;
 
         // TODO rever isso aqui, pq não ta usando pra nada
         // pq ta errado a logica (salvando sempre)
@@ -605,7 +605,7 @@ export class IndicadorService {
                         atualizado_por: user.id,
                         atualizado_em: now,
                         ...(dto as any), // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
-                        formula_compilada: formula_compilada,
+                        ...(alteraFormula ? { formula_compilada } : {}),
                         acumulado_usa_formula:
                             dto.acumulado_usa_formula === null ? undefined : dto.acumulado_usa_formula,
                     },
@@ -617,7 +617,7 @@ export class IndicadorService {
                 //const newVersion = IndicadorService.getIndicadorHash(indicador);
                 //this.logger.debug({ oldVersion, newVersion });
 
-                if (formula_variaveis) {
+                if (alteraFormula && formula_variaveis) {
                     ({ formula, formula_compilada } = await this.trocaReferencias(
                         formula_variaveis,
                         formula,
