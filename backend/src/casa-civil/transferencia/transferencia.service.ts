@@ -1834,6 +1834,7 @@ export class TransferenciaService {
                 tolerancia_atraso: true,
                 percentual_atraso: true,
                 status_cronograma: true,
+                caminho_critico: true,
 
                 transferencia: {
                     select: {
@@ -1861,6 +1862,7 @@ export class TransferenciaService {
             tolerancia_atraso: transferenciaCronograma.tolerancia_atraso,
             percentual_atraso: transferenciaCronograma.percentual_atraso,
             status_cronograma: transferenciaCronograma.status_cronograma,
+            caminho_critico: transferenciaCronograma.caminho_critico,
             nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
         };
     }

@@ -57,6 +57,16 @@ export class TarefaItemDto {
 
     custo_estimado_anualizado: CustoAnualizadoDto[] | null;
     custo_real_anualizado: CustoAnualizadoDto[] | null;
+
+    /** dias que a tarefa pode atrasar sem mover o término planejado do cronograma; mãe usa a menor folga das filhas */
+    folga: number | null;
+    eh_critica: boolean;
+
+    @IsDateYMD({ nullable: true })
+    inicio_mais_tarde: Date | null;
+
+    @IsDateYMD({ nullable: true })
+    termino_mais_tarde: Date | null;
 }
 
 export class TarefaItemDbDto extends TarefaItemDto {
