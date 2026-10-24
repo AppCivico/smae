@@ -16,6 +16,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ProjetoPermissoesDto } from '../projeto/entities/projeto.entity';
 import { ProjetoService } from '../projeto/projeto.service';
 import {
     CheckDependenciasDto,
@@ -54,6 +55,13 @@ export class ValidacaoDatas {
     ordem_topologica_inicio_planejado: number[];
     ordem_topologica_termino_planejado: number[];
 }
+
+type AcessoCronograma =
+    | {
+          projeto: Pick<ProjetoPermissoesDto, 'apenas_leitura' | 'sou_responsavel'>;
+      }
+    | { transferencia: true };
+
 const ms = (x: any) => (x instanceof Date ? x.getTime() : x?.isValid ? x.toMillis() : undefined);
 @Injectable()
 export class TarefaService {
@@ -350,7 +358,7 @@ export class TarefaService {
     ): Promise<ListTarefaGenericoDto> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
-        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId, user);
+        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId);
 
         // sempre carregando o projeto depois, pois as triggers tbm só vão carregar os dados após o update da projeção
         // antes os dados eram atualizados no banco e tbm diretamente na referencia que seria retornada
@@ -364,14 +372,16 @@ export class TarefaService {
             ? await this.transferenciaService.getCronogramaCabecalho(tarefaCronoInput.transferencia_id)
             : null;
 
+        const acesso: AcessoCronograma = projeto ? { projeto: projeto.permissoes } : { transferencia: true };
+
         return {
-            linhas: ret.linhas,
+            linhas: ret.linhas.map((r) => ({ ...r, ...this.calcPodeEditar(r, user, acesso) })),
             projeto: projeto,
             cabecalho: cabecalhoTransferencia,
         };
     }
 
-    async buscaLinhasRecalcProjecao(tarefaCronoId: number, user: PessoaFromJwt | null) {
+    async buscaLinhasRecalcProjecao(tarefaCronoId: number) {
         const antesQuery = Date.now();
         const rows = await this.findAllRows(tarefaCronoId);
         this.logger.warn(`query took ${Date.now() - antesQuery} ms`);
@@ -379,7 +389,8 @@ export class TarefaService {
         const rowsWithAtraso = rows.map((r) => {
             return {
                 ...r,
-                ...this.calcPodeEditar(r, user),
+                pode_editar: false,
+                pode_editar_realizado: false,
                 inicio_planejado: Date2YMD.toStringOrNull(r.inicio_planejado) as any as Date,
                 termino_planejado: Date2YMD.toStringOrNull(r.termino_planejado) as any as Date,
                 inicio_real: Date2YMD.toStringOrNull(r.inicio_real) as any as Date,
@@ -420,56 +431,28 @@ export class TarefaService {
         r: {
             orgao: { id: number } | null;
         },
-        user: PessoaFromJwt | null
+        user: PessoaFromJwt,
+        acesso: AcessoCronograma
     ): { pode_editar: boolean; pode_editar_realizado: boolean } {
-        if (user !== null) {
-            const pode_editar_realizado = r.orgao !== null;
-            // se o órgão estiver null,
-            // a tela do realizado não tem esse campo, portanto ainda não terminaram de configurar o cronograma
-            // que pode ter sido clonado ou puxado de um workflow
+        // órgão null: o cronograma (clonado ou vindo de workflow) ainda não foi configurado para o realizado
+        const temOrgao = r.orgao !== null;
 
-            // Gestor de distribuição de recurso nunca pode editar tarefas
-            if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso'])) {
-                return {
-                    pode_editar: false,
-                    pode_editar_realizado: pode_editar_realizado,
-                };
-            }
-
-            if (
-                user.hasSomeRoles([
-                    // tudo igual para quem é de projetos, fica sempre true, e segue a regra do frontend
-                    'Projeto.administrador',
-                    'Projeto.administrador_no_orgao',
-                    'SMAE.gestor_de_projeto',
-                    'SMAE.colaborador_de_projeto',
-                    // para quem é de transferência, só pode editar quem é administrador
-                    'CadastroTransferencia.administrador',
-
-                    'ProjetoMDO.administrador',
-                    'ProjetoMDO.administrador_no_orgao',
-                    'MDO.gestor_de_projeto',
-                    'MDO.colaborador_de_projeto',
-                ])
-            ) {
-                return {
-                    pode_editar: true,
-                    pode_editar_realizado: pode_editar_realizado,
-                };
-            }
-
-            // TODO passar o tipo do projeto da cá, pra conseguir liberar o acesso total de editação
-            // para quem é do MDO, não há nenhum
-
+        if ('projeto' in acesso) {
+            const p = acesso.projeto;
             return {
-                pode_editar: !!r.orgao && !!user.orgao_id && r.orgao.id == user.orgao_id,
-                pode_editar_realizado: pode_editar_realizado,
+                pode_editar: !p.apenas_leitura,
+                pode_editar_realizado: temOrgao && (!p.apenas_leitura || p.sou_responsavel),
             };
         }
 
+        if (user.hasSomeRoles(['SMAE.PerfilGestorDistribuicaoRecurso']))
+            return { pode_editar: false, pode_editar_realizado: temOrgao };
+
         return {
-            pode_editar: false,
-            pode_editar_realizado: false,
+            pode_editar:
+                user.hasSomeRoles(['CadastroTransferencia.administrador']) ||
+                (temOrgao && !!user.orgao_id && r.orgao!.id == user.orgao_id),
+            pode_editar_realizado: temOrgao,
         };
     }
 
@@ -1084,7 +1067,7 @@ export class TarefaService {
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
         return {
             ...row,
-            ...this.calcPodeEditar(row, user),
+            ...this.calcPodeEditar(row, user, projeto ? { projeto: projeto.permissoes } : { transferencia: true }),
             atraso: CalculaAtraso.emDias(hoje, row.termino_planejado, row.termino_real),
             inicio_planejado: Date2YMD.toStringOrNull(row.inicio_planejado) as any as Date,
             termino_planejado: Date2YMD.toStringOrNull(row.termino_planejado) as any as Date,
@@ -1187,7 +1170,10 @@ export class TarefaService {
 
             this.checkCustosAnualizados(validationDto);
 
-            const permissoes = this.calcPodeEditar(tarefa, user);
+            // em projeto, o acesso já foi validado pelo chamador com projetoService.findOne
+            const permissoes = tarefa.tarefa_cronograma.projeto_id
+                ? { pode_editar: true, pode_editar_realizado: tarefa.orgao !== null }
+                : this.calcPodeEditar(tarefa, user, { transferencia: true });
 
             if (!permissoes.pode_editar && dto instanceof UpdateTarefaDto)
                 throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
@@ -2070,7 +2056,7 @@ export class TarefaService {
         for (const item of projetosOuTransf) {
             this.logger.debug(`Recalculando atraso e projeções das tarefas cronograma ${JSON.stringify(item)}`);
 
-            await this.buscaLinhasRecalcProjecao(item.id, null);
+            await this.buscaLinhasRecalcProjecao(item.id);
             await this.prisma.tarefaCronograma.update({
                 where: { id: item.id },
                 data: {
