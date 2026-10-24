@@ -61,10 +61,12 @@ SELECT
     SUM(t.valor_total) AS valor,
     p.foto_upload_id AS parlamentar_foto_id,
     p.nome_popular
-FROM view_transferencia_analise t
+FROM (
+    SELECT DISTINCT transferencia_id, valor_total, parlamentar_id
+    FROM view_transferencia_analise
+) t
 CROSS JOIN LATERAL UNNEST(t.parlamentar_id::int[]) AS pid
 JOIN parlamentar p ON pid = p.id AND p.removido_em IS NULL
-LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.transferencia_id AND tp.parlamentar_id = pid AND tp.removido_em IS NULL
 WHERE t.parlamentar_id IS NOT NULL
 GROUP BY pid, p.foto_upload_id, p.nome_popular
 ORDER BY SUM(t.valor_total) DESC;
