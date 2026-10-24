@@ -1986,6 +1986,13 @@ export class VariavelService {
                     dto.fim_medicao === null ? undefined : dto.fim_medicao
                 );
             }
+            if (
+                tipo === 'Global' &&
+                updated.inicio_medicao &&
+                (dto.fim_medicao !== undefined || dto.inicio_medicao !== undefined)
+            ) {
+                await this.trataPeriodosSerieVariavel(prismaTxn, variavelId, null);
+            }
             await logger.saveLogs(prismaTxn, user.getLogData());
         });
 
@@ -2121,27 +2128,29 @@ export class VariavelService {
     public async trataPeriodosSerieVariavel(
         prismaTxn: Prisma.TransactionClient,
         variavelId: number,
-        indicadorId: number,
+        indicadorId: number | null,
         dataInicio?: Date,
         dataFim?: Date
     ) {
-        const [indicadorInfo, variavelInfo] = await Promise.all([
-            this.prisma.indicador.findFirst({ where: { id: indicadorId }, select: { periodicidade: true } }),
-            this.prisma.variavel.findFirst({ where: { id: variavelId }, select: { periodicidade: true } }),
-        ]);
-        if (!indicadorInfo || !variavelInfo) throw new HttpException('Variável ou indicador não encontrados', 400);
+        if (indicadorId !== null) {
+            const [indicadorInfo, variavelInfo] = await Promise.all([
+                this.prisma.indicador.findFirst({ where: { id: indicadorId }, select: { periodicidade: true } }),
+                this.prisma.variavel.findFirst({ where: { id: variavelId }, select: { periodicidade: true } }),
+            ]);
+            if (!indicadorInfo || !variavelInfo) throw new HttpException('Variável ou indicador não encontrados', 400);
 
-        // Verifica se a periodicidade da variavel é igual a do indicador, se não for, não faz nada
-        if (indicadorInfo.periodicidade != variavelInfo.periodicidade) return;
+            // Verifica se a periodicidade da variavel é igual a do indicador, se não for, não faz nada
+            if (indicadorInfo.periodicidade != variavelInfo.periodicidade) return;
+        }
 
         let periodoValido: string[] = [];
         if (!dataInicio && !dataFim) {
-            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId);
+            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, undefined, prismaTxn);
         } else {
             const filtro = new FilterPeriodoDto();
             filtro.data_inicio = dataInicio;
             filtro.data_fim = dataFim;
-            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filtro);
+            periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filtro, prismaTxn);
         }
         //Recupera as series que serao excluidas
         const seriesAfetadas = await prismaTxn.serieVariavel.findMany({
