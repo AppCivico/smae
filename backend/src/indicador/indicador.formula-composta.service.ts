@@ -56,7 +56,10 @@ export class IndicadorFormulaCompostaService {
     }
 
     async createPS(dto: CreatePSFormulaCompostaDto, user: PessoaFromJwt) {
-        if (dto.formula) this.checkFormulaCompostaRecursion(dto);
+        if (dto.formula) {
+            this.checkFormulaCompostaRecursion(dto);
+            await this.indicadorService.validateVariaveis(dto.formula_variaveis, null, dto.formula);
+        }
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
