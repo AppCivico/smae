@@ -85,4 +85,30 @@ describe('InputDateMasked.vue', () => {
 
     expect(input.element.value).toBe(''); // ainda exibe, mas pode querer limitar
   });
+
+  it('deve usar só mês e ano ao colar uma data completa', async () => {
+    const wrapper = montar();
+
+    const input = wrapper.find('input');
+    await input.trigger('paste', {
+      clipboardData: { getData: () => '19/01/1992' },
+    });
+
+    expect(input.element.value).toBe('01/1992');
+    expect(wrapper.emitted('update:modelValue')?.pop()).toEqual(['1992-01-01']);
+  });
+
+  it('não deve alterar o valor ao colar em campo somente leitura', async () => {
+    const wrapper = mount(InputDateMasked, {
+      props: defaultProps,
+      attrs: { readonly: true },
+    });
+
+    const input = wrapper.find('input');
+    await input.trigger('paste', {
+      clipboardData: { getData: () => '19/01/1992' },
+    });
+
+    expect(input.element.value).toBe('');
+  });
 });
