@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PosicaoLogotipo } from '@prisma/client';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class TermoEncerramentoIconeDto {
     id: number;
@@ -37,16 +38,21 @@ export class TermoEncerramentoDetalheDto {
 
     // --- Campos Editáveis ---
 
-    previsao_inicio: Date | null;
-    previsao_termino: Date | null;
-    data_inicio_real: Date | null;
-    data_termino_real: Date | null;
+    @IsDateYMD({ nullable: true })
+    previsao_inicio: string | null;
+    @IsDateYMD({ nullable: true })
+    previsao_termino: string | null;
+    @IsDateYMD({ nullable: true })
+    data_inicio_real: string | null;
+    @IsDateYMD({ nullable: true })
+    data_termino_real: string | null;
     previsao_custo: number | null;
     valor_executado_total: number | null;
     justificativa_id: number | null;
     justificativa_complemento: string | null;
     responsavel_encerramento_nome: string | null;
-    data_encerramento: Date | null;
+    @IsDateYMD({ nullable: true })
+    data_encerramento: string | null;
     assinatura: string | null;
 
     @ApiProperty({ enum: PosicaoLogotipo, enumName: 'PosicaoLogotipo' })

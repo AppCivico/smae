@@ -903,7 +903,10 @@ export class NotaService {
                 id: comunicado.id,
                 titulo: comunicado.titulo || '',
                 conteudo: comunicado.nota,
-                data: publicado_em && publicado_em.isValid ? publicado_em.toJSDate() : comunicado.data_nota,
+                data:
+                    publicado_em && publicado_em.isValid
+                        ? publicado_em.toJSDate()
+                        : new Date(Date2YMD.tzSp2UTC(comunicado.data_nota)),
                 dados,
                 lido: comunicado.usuarios_lidos.includes(user.id),
             };

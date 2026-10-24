@@ -1,6 +1,7 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { FilterRequestLogDto, GroupByFieldsDto } from './dto/request_log.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Date2YMD } from '../common/date2ymd';
 import { RequestLogDto, RequestSummaryRow } from './entities/request_log.entity';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -130,6 +131,7 @@ export class RequestLogService {
                 return {
                     count: r._count._all,
                     ...{ ...r, _count: undefined },
+                    request_date: r.request_date ? Date2YMD.toString(r.request_date) : undefined,
                 };
             });
     }

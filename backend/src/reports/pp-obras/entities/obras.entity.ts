@@ -161,10 +161,10 @@ export class RelObrasContratosDto {
     @ApiProperty({ enum: ContratoPrazoUnidade, enumName: 'ContratoPrazoUnidade' })
     unidade_prazo: ContratoPrazoUnidade | null;
     data_base: string | null;
-    data_assinatura: Date | null;
-    data_inicio: Date | null;
-    data_termino: Date | null;
-    data_termino_atualizada: Date | null;
+    data_assinatura: string | null;
+    data_inicio: string | null;
+    data_termino: string | null;
+    data_termino_atualizada: string | null;
     valor: number | null;
     observacoes: string | null;
     valor_contrato_atualizado: number | null;
@@ -182,10 +182,10 @@ export class RelObrasAditivosDto {
     contrato_id: number;
     tipo_categoria: string;
     tipo: IdNomeDto;
-    data: Date | null;
+    data: string | null;
     valor: number | null;
     percentual_medido: number | null;
-    data_termino_atual: Date | null;
+    data_termino_atual: string | null;
 }
 
 export class RelObrasTermoEncerramentoDto {

@@ -17,6 +17,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { Date2YMD } from '../common/date2ymd';
 import { CreateParamsPainelConteudoDto } from './dto/create-painel-conteudo.dto';
 import { CreatePainelDto } from './dto/create-painel.dto';
 import { DetailPainelVisualizacaoDto, PainelConteudoSerie } from './dto/detalhe-painel.dto';
@@ -120,7 +121,12 @@ export class PainelController {
     @Get(':id/conteudo/:id2/visualizacao')
     @Roles(['CadastroPainel.visualizar'])
     async detailPainelConteudoVisualizacao(@Param() params: FindTwoParams): Promise<DetailPainelVisualizacaoDto> {
-        return await this.painelService.getPainelConteudoVisualizacao(+params.id2);
+        const r = await this.painelService.getPainelConteudoVisualizacao(+params.id2);
+        return {
+            ...r,
+            periodo_inicio: Date2YMD.toStringOrNull(r.periodo_inicio),
+            periodo_fim: Date2YMD.toStringOrNull(r.periodo_fim),
+        };
     }
 
     @ApiBearerAuth('access-token')

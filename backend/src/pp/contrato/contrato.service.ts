@@ -149,8 +149,8 @@ export class ContratoService {
                 valor: contrato.valor,
                 processos_sei: contrato.processosSei.map((processo) => processo.numero_sei),
                 ...totais,
-                data_termino_atual: dataMaisAtual,
-                data_termino_inicial: contrato.data_termino,
+                data_termino_atual: Date2YMD.toStringOrNull(dataMaisAtual),
+                data_termino_inicial: Date2YMD.toStringOrNull(contrato.data_termino),
             };
         });
     }

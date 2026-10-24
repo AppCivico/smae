@@ -535,10 +535,10 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
                 prazo: db.prazo,
                 unidade_prazo: db.unidade_prazo,
                 data_base: db.data_base,
-                data_assinatura: db.data_assinatura,
-                data_inicio: db.data_inicio,
-                data_termino: db.data_termino,
-                data_termino_atualizada: db.data_termino_atualizada,
+                data_assinatura: Date2YMD.toStringOrNull(db.data_assinatura),
+                data_inicio: Date2YMD.toStringOrNull(db.data_inicio),
+                data_termino: Date2YMD.toStringOrNull(db.data_termino),
+                data_termino_atualizada: Date2YMD.toStringOrNull(db.data_termino_atualizada),
                 valor: db.valor,
                 observacoes: db.observacoes,
                 valor_contrato_atualizado: db.valor_contrato_atualizado ?? null,
@@ -591,10 +591,10 @@ export class PPProjetoService implements ReportableService, SchemaAwareReportabl
                 contrato_id: db.contrato_id,
                 tipo_categoria: db.tipo_categoria,
                 tipo: { id: db.tipo_aditivo_id, nome: db.tipo_aditivo_nome },
-                data: db.data ?? null,
+                data: Date2YMD.toStringOrNull(db.data ?? null),
                 valor: db.valor ?? null,
                 percentual_medido: db.percentual_medido ?? null,
-                data_termino_atual: db.data_termino_atual ?? null,
+                data_termino_atual: Date2YMD.toStringOrNull(db.data_termino_atual ?? null),
             };
         });
     }

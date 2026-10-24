@@ -1,3 +1,4 @@
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { CreatePSEquipePontoFocalDto } from '../../pdm/dto/create-pdm.dto';
 
@@ -71,10 +72,14 @@ export class CEEtapaDto {
     regiao_id: number | null;
     nivel: string | null;
     descricao: string | null;
-    inicio_previsto: Date | null;
-    termino_previsto: Date | null;
-    inicio_real: Date | null;
-    termino_real: Date | null;
+    @IsDateYMD({ nullable: true })
+    inicio_previsto: string | null;
+    @IsDateYMD({ nullable: true })
+    termino_previsto: string | null;
+    @IsDateYMD({ nullable: true })
+    inicio_real: string | null;
+    @IsDateYMD({ nullable: true })
+    termino_real: string | null;
     prazo_inicio: Date | null;
     prazo_termino: Date | null;
     titulo: string | null;

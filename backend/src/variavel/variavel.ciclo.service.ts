@@ -325,9 +325,10 @@ export class VariavelCicloService {
             },
         });
 
+        const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).toFormat('yyyy-MM-dd');
         const rows = variaveis.map((v) => {
             let pode_editar: boolean = false;
-            const prazo: Date | null = v.prazo;
+            const prazo = Date2YMD.toStringOrNull(v.prazo);
 
             // Filtra equipes pelo perfil necessário para a fase atual da variável
             const perfilNecessario = mapPerfil[v.fase];
@@ -359,10 +360,7 @@ export class VariavelCicloService {
                 equipes,
                 pode_editar,
                 prazo,
-                em_atraso:
-                    v.atrasos.length > 0 ||
-                    (v.prazo !== null &&
-                        v.prazo.valueOf() < DateTime.local({ zone: SYSTEM_TIMEZONE }).toJSDate().valueOf()),
+                em_atraso: v.atrasos.length > 0 || (prazo !== null && prazo <= hoje),
             } satisfies VariavelGlobalCicloDto;
         });
 
