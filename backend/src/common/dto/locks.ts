@@ -17,3 +17,4 @@ export const JOB_REPORT_LOCK = id++;
 export const JOB_CALC_LOCK = id++;
 export const JOB_LOG_BACKUP_JOB_LOCK_NUMBER = id++;
 export const JOB_REFRESH_MV_LOCK = id++;
+export const JOB_MONITORAMENTO_PDM_ANTIGO_LOCK = id++;

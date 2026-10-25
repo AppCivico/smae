@@ -1,8 +1,11 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CHUNK_SIZE, CONST_BOT_USER_ID } from '../common/consts';
+import { IsCrontabDisabled } from '../common/crontab-utils';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { JOB_MONITORAMENTO_PDM_ANTIGO_LOCK } from '../common/dto/locks';
 import { PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -40,6 +43,8 @@ function* emLotes<T>(lista: T[]): Generator<T[]> {
 
 @Injectable()
 export class PsMonitoramentoMigracaoService {
+    private readonly logger = new Logger(PsMonitoramentoMigracaoService.name);
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly pdmService: PdmService
@@ -76,41 +81,75 @@ export class PsMonitoramentoMigracaoService {
         await this.pdmService.assertUserPermission(tipo, pdmId, user, PdmPermissionLevel.CONFIG_WRITE);
 
         return await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient) => {
-                // bloqueia escritas de monitoramento (FOR SHARE) e edição de config do plano até o commit
-                const rows = await prismaTx.$queryRaw<{ sistema: string; monitoramento_por_blocos: boolean }[]>`
-                    SELECT sistema::text, monitoramento_por_blocos FROM pdm
-                    WHERE id = ${pdmId}::int AND removido_em IS NULL FOR NO KEY UPDATE`;
-                if (!rows.length) throw new HttpException('Plano não encontrado', 400);
-                if (rows[0].sistema === 'PDM') throw new HttpException('Operação não permitida para PDMs antigos', 400);
-                if (rows[0].monitoramento_por_blocos)
-                    throw new HttpException('Este plano já usa o monitoramento por fases configuradas', 400);
-
-                const fases = await this.carregaFases(prismaTx, pdmId);
-                if (!fases.some((f) => f.habilitada && !f.removido_em))
-                    throw new HttpException('O plano precisa de ao menos uma fase de monitoramento habilitada', 400);
-
-                const mapeamento: MapeamentoLegado = { ...sugereMapeamento(fases).mapeamento };
-                const informado = dto.mapeamento ?? {};
-                for (const chave of Object.keys(mapeamento) as (keyof MapeamentoLegado)[]) {
-                    const valor = informado[chave];
-                    if (valor !== undefined) mapeamento[chave] = valor;
-                }
-
-                const legado = await this.carregaLegado(prismaTx, pdmId);
-                const erros = [
-                    ...validaMapeamento(fases, mapeamento),
-                    ...pendenciasMapeamento(mapeamento, this.conteudo(legado)),
-                ];
-                if (erros.length) throw new HttpException(erros.join('; '), 400);
-
-                await this.copiaLegado(prismaTx, legado, mapeamento);
-                await prismaTx.pdm.update({ where: { id: pdmId }, data: { monitoramento_por_blocos: true } });
-
-                return this.contagem(legado);
-            },
+            (prismaTx: Prisma.TransactionClient) => this.migraNaTx(prismaTx, pdmId, dto.mapeamento ?? {}),
             { maxWait: 10000, timeout: 300000 }
         );
+    }
+
+    // PDMs antigos não têm quem chame o POST (exige CadastroPdm.editar), então migram aqui
+    @Cron('15 * * * *')
+    async migraPdmsAntigos(): Promise<void> {
+        if (IsCrontabDisabled('monitoramento_pdm_antigo')) return;
+
+        const pendentes = await this.prisma.pdm.findMany({
+            where: { sistema: 'PDM', removido_em: null, monitoramento_por_blocos: false },
+            select: { id: true },
+            orderBy: { id: 'asc' },
+        });
+
+        for (const { id } of pendentes) {
+            try {
+                await this.prisma.$transaction(
+                    async (prismaTx: Prisma.TransactionClient) => {
+                        const lock = await prismaTx.$queryRaw<{ locked: boolean }[]>`
+                            SELECT pg_try_advisory_xact_lock(${JOB_MONITORAMENTO_PDM_ANTIGO_LOCK}) as locked`;
+                        if (!lock[0].locked) return;
+
+                        const contagem = await this.migraNaTx(prismaTx, id, {});
+                        this.logger.log(`PDM ${id} migrado para monitoramento por fases: ${JSON.stringify(contagem)}`);
+                    },
+                    { maxWait: 10000, timeout: 300000 }
+                );
+            } catch (error) {
+                this.logger.error(`Falha ao migrar monitoramento do PDM ${id}: ${error}`);
+            }
+        }
+    }
+
+    private async migraNaTx(
+        prismaTx: Prisma.TransactionClient,
+        pdmId: number,
+        informado: Partial<MapeamentoLegado>
+    ): Promise<MonitoramentoMigracaoContagemDto> {
+        // bloqueia escritas de monitoramento (FOR SHARE) e edição de config do plano até o commit
+        const rows = await prismaTx.$queryRaw<{ monitoramento_por_blocos: boolean }[]>`
+            SELECT monitoramento_por_blocos FROM pdm
+            WHERE id = ${pdmId}::int AND removido_em IS NULL FOR NO KEY UPDATE`;
+        if (!rows.length) throw new HttpException('Plano não encontrado', 400);
+        if (rows[0].monitoramento_por_blocos)
+            throw new HttpException('Este plano já usa o monitoramento por fases configuradas', 400);
+
+        const fases = await this.carregaFases(prismaTx, pdmId);
+        if (!fases.some((f) => f.habilitada && !f.removido_em))
+            throw new HttpException('O plano precisa de ao menos uma fase de monitoramento habilitada', 400);
+
+        const mapeamento: MapeamentoLegado = { ...sugereMapeamento(fases).mapeamento };
+        for (const chave of Object.keys(mapeamento) as (keyof MapeamentoLegado)[]) {
+            const valor = informado[chave];
+            if (valor !== undefined) mapeamento[chave] = valor;
+        }
+
+        const legado = await this.carregaLegado(prismaTx, pdmId);
+        const erros = [
+            ...validaMapeamento(fases, mapeamento),
+            ...pendenciasMapeamento(mapeamento, this.conteudo(legado)),
+        ];
+        if (erros.length) throw new HttpException(erros.join('; '), 400);
+
+        await this.copiaLegado(prismaTx, legado, mapeamento);
+        await prismaTx.pdm.update({ where: { id: pdmId }, data: { monitoramento_por_blocos: true } });
+
+        return this.contagem(legado);
     }
 
     private async carregaFases(prisma: Prisma.TransactionClient, pdmId: number): Promise<FaseCfgMigracao[]> {
