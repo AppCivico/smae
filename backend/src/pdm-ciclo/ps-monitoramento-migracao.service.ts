@@ -1,5 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { HttpException, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CHUNK_SIZE, CONST_BOT_USER_ID } from '../common/consts';
@@ -42,7 +41,7 @@ function* emLotes<T>(lista: T[]): Generator<T[]> {
 }
 
 @Injectable()
-export class PsMonitoramentoMigracaoService {
+export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
     private readonly logger = new Logger(PsMonitoramentoMigracaoService.name);
 
     constructor(
@@ -86,11 +85,15 @@ export class PsMonitoramentoMigracaoService {
         );
     }
 
-    // PDMs antigos não têm quem chame o POST (exige CadastroPdm.editar), então migram aqui
-    @Cron('15 * * * *')
-    async migraPdmsAntigos(): Promise<void> {
+    // PDMs antigos não têm quem chame o POST (exige CadastroPdm.editar), então migram no boot
+    onApplicationBootstrap() {
         if (IsCrontabDisabled('monitoramento_pdm_antigo')) return;
+        setTimeout(() => {
+            this.migraPdmsAntigos().catch((error) => this.logger.error(`Falha ao migrar PDMs antigos: ${error}`));
+        }, 30_000).unref();
+    }
 
+    private async migraPdmsAntigos(): Promise<void> {
         const pendentes = await this.prisma.pdm.findMany({
             where: { sistema: 'PDM', removido_em: null, monitoramento_por_blocos: false },
             select: { id: true },
@@ -104,6 +107,12 @@ export class PsMonitoramentoMigracaoService {
                         const lock = await prismaTx.$queryRaw<{ locked: boolean }[]>`
                             SELECT pg_try_advisory_xact_lock(${JOB_MONITORAMENTO_PDM_ANTIGO_LOCK}) as locked`;
                         if (!lock[0].locked) return;
+
+                        const pdm = await prismaTx.pdm.findUniqueOrThrow({
+                            where: { id },
+                            select: { monitoramento_por_blocos: true },
+                        });
+                        if (pdm.monitoramento_por_blocos) return;
 
                         const contagem = await this.migraNaTx(prismaTx, id, {});
                         this.logger.log(`PDM ${id} migrado para monitoramento por fases: ${JSON.stringify(contagem)}`);
