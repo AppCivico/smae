@@ -189,8 +189,8 @@ export class DashTransferenciaService {
                 nota_id: r.id,
                 bloco_id: r.bloco_nota_id,
                 nota: r.nota,
-                data_nota: r.data_nota,
-                data_ordenacao: r.data_ordenacao,
+                data_nota: Date2YMD.toString(r.data_nota),
+                data_ordenacao: Date2YMD.toString(r.data_ordenacao),
                 status: r.status,
                 transferencia_identificador: r.transferencia_identificador,
             };

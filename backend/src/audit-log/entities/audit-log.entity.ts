@@ -11,7 +11,7 @@ export class AuditLogDto {
 
 export class AuditLogSummaryRow {
     count: number;
-    date?: Date;
+    date?: string;
     contexto?: string;
     pessoa_id?: number;
 }

@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { uuidv7 } from 'uuidv7';
 import { Date2YMD } from '../../common/date2ymd';
-import { TarefaItemProjetadoDto } from '../../pp/tarefa/entities/tarefa.entity';
+import { TarefaItemProjetadoCalc } from '../../pp/tarefa/entities/tarefa.entity';
 import { TarefaService } from '../../pp/tarefa/tarefa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
@@ -206,7 +206,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
     }
 
     private adicionaTarefas(
-        tarefas: TarefaItemProjetadoDto[],
+        tarefas: TarefaItemProjetadoCalc[],
         hierarquiaRef: Record<string, string>,
         parts: NotificationParts[]
     ) {

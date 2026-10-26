@@ -18,7 +18,7 @@ export class RequestLogDto {
 
 export class RequestSummaryRow {
     count: number;
-    request_date?: Date;
+    request_date?: string;
     req_method?: string;
     req_path_clean?: string;
     res_code?: number;

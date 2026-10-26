@@ -16,7 +16,7 @@ export class RelPsMonitoramentoMensalVariaveis {
     distrito_id: number | null;
     distrito: string | null;
     serie: string;
-    data_referencia: Date;
+    data_referencia: string;
     valor_categorica: string | null;
     valor_nominal: number;
     data_preenchimento: string;
