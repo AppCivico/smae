@@ -1,3 +1,4 @@
+import '../assert-utc';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { coletarInfoWorker, TaskService } from '../task/task.service';

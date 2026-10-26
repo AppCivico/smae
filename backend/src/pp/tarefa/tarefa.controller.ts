@@ -66,7 +66,7 @@ export class TarefaController {
         @Body() dto: CreateTarefaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOneEdicaoCronograma('PP', params.id, user);
 
         return await this.tarefaService.create({ projeto_id: projeto.id }, dto, user);
     }
@@ -162,7 +162,7 @@ export class TarefaController {
 
             return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         } else {
-            const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
+            const projeto = await this.projetoService.findOneEdicaoCronograma('PP', params.id, user);
 
             return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         }
@@ -174,7 +174,7 @@ export class TarefaController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOneEdicaoCronograma('PP', params.id, user);
 
         await this.tarefaService.remove({ projeto_id: projeto.id }, params.id2, user);
         return '';
@@ -213,7 +213,7 @@ export class TarefaMDOController {
         @Body() dto: CreateTarefaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOneEdicaoCronograma('MDO', params.id, user);
 
         return await this.tarefaService.create({ projeto_id: projeto.id }, dto, user);
     }
@@ -309,7 +309,7 @@ export class TarefaMDOController {
 
             return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         } else {
-            const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
+            const projeto = await this.projetoService.findOneEdicaoCronograma('MDO', params.id, user);
 
             return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         }
@@ -321,7 +321,7 @@ export class TarefaMDOController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOneEdicaoCronograma('MDO', params.id, user);
 
         await this.tarefaService.remove({ projeto_id: projeto.id }, params.id2, user);
         return '';
