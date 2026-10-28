@@ -3772,6 +3772,9 @@ model OrcamentoRealizado {
     iniciativa_id Int?
     atividade_id  Int?
 
+    transferencia_id        Int?
+    distribuicao_recurso_id Int?
+
     ano_referencia Int
     mes_utilizado  Int
     dotacao        String
@@ -3794,12 +3797,16 @@ model OrcamentoRealizado {
     meta                  Meta?                        @relation(fields: [meta_id], references: [id])
     iniciativa            Iniciativa?                  @relation(fields: [iniciativa_id], references: [id])
     atividade             Atividade?                   @relation(fields: [atividade_id], references: [id])
+    transferencia         Transferencia?               @relation(fields: [transferencia_id], references: [id])
+    distribuicao_recurso  DistribuicaoRecurso?         @relation(fields: [distribuicao_recurso_id], references: [id])
     criador               Pessoa                       @relation("criador", fields: [criado_por], references: [id])
     removedor             Pessoa?                      @relation("removedor", fields: [removido_por], references: [id])
     vinculosDistribuicoes DistribuicaoRecursoVinculo[]
 
     @@index([meta_id])
     @@index([projeto_id])
+    @@index([transferencia_id])
+    @@index([distribuicao_recurso_id])
     @@index([ano_referencia, projeto_id])
     @@index([ano_referencia, meta_id])
     @@index([ano_referencia, dotacao])
@@ -6396,6 +6403,7 @@ model Transferencia {
     parlamentar                    TransferenciaParlamentar[]
     classificacao                  Classificacao?                   @relation("classificacao", fields: [classificacao_id], references: [id])
     historico                      TransferenciaHistorico[]
+    orcamentos_realizados          OrcamentoRealizado[]
 
     @@map("transferencia")
 }
@@ -6560,6 +6568,7 @@ model DistribuicaoRecurso {
     vinculos            DistribuicaoRecursoVinculo[]
     solicitacoes_ajuste DistribuicaoRecursoSolicitacaoAjuste[]
     dotacoes            DistribuicaoRecursoDotacao[]
+    orcamentos_realizados OrcamentoRealizado[]
 
     @@map("distribuicao_recurso")
 }

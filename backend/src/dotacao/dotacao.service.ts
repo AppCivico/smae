@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import { AnoDotacaoDto } from './dto/dotacao.dto';
 import { ValorPlanejadoDto, ValorRealizadoDotacaoDto } from './entities/dotacao.entity';
+import { SomaRealizadoTransferencias } from './soma-realizado-transferencia';
 
 type TipoAcaoOrcamentaria = 'custeio' | 'investimento' | '';
 
@@ -445,6 +446,15 @@ export class DotacaoService {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
             }
+        } else if (dto.transferencia_id) {
+            const qr = await SomaRealizadoTransferencias(this.prisma, {
+                ano_referencia: dto.ano,
+                dotacao: dto.dotacao,
+                processo: null,
+                nota_empenho: null,
+            });
+            smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+            smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
         }
 
         return {
