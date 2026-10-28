@@ -81,10 +81,24 @@ export class TransferenciaOrcamentoRealizadoService {
                 const sof = await this.buscaSof(prismaTxn, chave);
                 const somas = this.calculaSomas(dto.itens, sof);
 
+                const outraTransferencia = await prismaTxn.orcamentoRealizado.findFirst({
+                    where: {
+                        transferencia_id: { not: transferenciaId },
+                        transferencia: { removido_em: null },
+                        removido_em: null,
+                        ano_referencia: chave.ano_referencia,
+                        dotacao: chave.dotacao,
+                    },
+                    select: { transferencia: { select: { identificador: true } } },
+                });
+                if (outraTransferencia)
+                    throw new BadRequestException(
+                        `Dotação já está vinculada a outra transferência (${outraTransferencia.transferencia!.identificador}).`
+                    );
+
                 const countExisting = await prismaTxn.orcamentoRealizado.count({
                     where: {
                         transferencia_id: transferenciaId,
-                        distribuicao_recurso_id,
                         dotacao_complemento,
                         removido_em: null,
                         ...chave,
@@ -92,7 +106,7 @@ export class TransferenciaOrcamentoRealizadoService {
                 });
                 if (countExisting)
                     throw new BadRequestException(
-                        'Já existe um registro com a mesma dotação/processo e/ou nota de empenho associado na transferência.'
+                        'Já existe um registro com a mesma dotação/processo e/ou nota de empenho na transferência ou em uma de suas distribuições.'
                     );
 
                 const created = await prismaTxn.orcamentoRealizado.create({
