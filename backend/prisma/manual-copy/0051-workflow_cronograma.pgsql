@@ -137,6 +137,7 @@ BEGIN
         LEFT JOIN tarefa t_parent_prev_sibling ON t_parent_prev_sibling.nivel = 1 AND t_parent_prev_sibling.numero = (SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id) - 1 AND t_parent_prev_sibling.tarefa_cronograma_id = _tarefa_cronograma_id
         LEFT JOIN tarefa t_cousin ON t_cousin.tarefa_pai_id = t_parent_prev_sibling.id AND t_cousin.numero = (SELECT MAX(numero) FROM tarefa WHERE tarefa_pai_id = t_parent_prev_sibling.id) AND t_cousin.tarefa_cronograma_id = _tarefa_cronograma_id
         WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id AND t1.nivel = 2
+            AND NOT EXISTS (SELECT 1 FROM tarefa filho WHERE filho.tarefa_pai_id = t1.id)
     )
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)
     SELECT tarefa_id, dependencia_tarefa_id, tipo, 0
