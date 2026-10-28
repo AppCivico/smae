@@ -51,6 +51,8 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 RUN mkdir /usr/src/app/logs && chown node:node /usr/src/app/logs
+# Symlink para Etc/UTC: um -v /etc/localtime do host sobrescreveria o próprio Etc/UTC
+RUN rm -f /etc/localtime && cp /usr/share/zoneinfo/Etc/UTC /etc/localtime
 USER node
 
 ARG NODE_ENV=production
