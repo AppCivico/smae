@@ -1,6 +1,6 @@
 import { OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, ValidateIf } from 'class-validator';
+import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
 import { CreateOrcamentoRealizadoDto } from '../../../orcamento-realizado/dto/create-orcamento-realizado.dto';
 import { TransferenciaOrcamentoRealizado } from '../entities/transferencia-orcamento-realizado.entity';
 
@@ -15,6 +15,7 @@ export class CreateTransferenciaOrcamentoRealizadoDto extends OmitType(CreateOrc
      */
     @IsOptional()
     @IsInt({ message: 'distribuicao_recurso_id precisa ser positivo' })
+    @Min(1, { message: 'distribuicao_recurso_id precisa ser positivo' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     distribuicao_recurso_id?: number | null;
