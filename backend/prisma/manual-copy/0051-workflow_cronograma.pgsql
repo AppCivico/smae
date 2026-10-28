@@ -98,7 +98,8 @@ BEGIN
             ft.duracao,
             tat.id AS transferencia_tarefa_id
         FROM fluxo_tarefa ft
-        JOIN tarefas_fases tf ON ft.fluxo_fase_id = tf.transferencia_fase_id
+        JOIN fases fs ON fs.fluxo_fase_id = ft.fluxo_fase_id
+        JOIN tarefas_fases tf ON tf.transferencia_fase_id = fs.transferencia_andamento_id
         JOIN workflow_tarefa wt ON ft.workflow_tarefa_id = wt.id
         JOIN transferencia_andamento_tarefa tat ON tat.workflow_tarefa_fluxo_id = wt.id
         JOIN transferencia_andamento ta ON ta.id = tat.transferencia_andamento_id AND ta.id = tf.transferencia_fase_id
