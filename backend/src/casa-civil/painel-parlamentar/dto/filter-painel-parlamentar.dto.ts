@@ -7,13 +7,13 @@ export class FilterPainelParlamentarDto {
     @ApiProperty({ description: 'Ano inicial (transferencia.ano), inclusivo', required: false })
     @IsOptional()
     @IsInt()
-    @Type(() => Number)
+    @Transform(NumberTransform)
     ano_inicio?: number;
 
     @ApiProperty({ description: 'Ano final (transferencia.ano), inclusivo', required: false })
     @IsOptional()
     @IsInt()
-    @Type(() => Number)
+    @Transform(NumberTransform)
     ano_fim?: number;
 }
 
