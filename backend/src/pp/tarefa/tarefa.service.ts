@@ -1174,6 +1174,10 @@ export class TarefaService {
                 dto.termino_real = tarefa.termino_real;
             }
 
+            // O workflow grava início/término real direto na tarefa espelhada, sem duração.
+            // Nos cronogramas de transferência, calcula a duração em vez de rejeitar.
+            if (tarefa.tarefa_cronograma.transferencia) this.preencheDuracaoRealSeNula(dto);
+
             this.checkIntervalosPlanejado(dto);
             this.checkIntervalosRealizado(dto);
             const validationDto = { ...dto };
@@ -1645,6 +1649,16 @@ export class TarefaService {
                 }
             }
         }
+    }
+
+    private preencheDuracaoRealSeNula(dto: UpdateTarefaDto) {
+        if (dto.duracao_real !== null || !dto.inicio_real || !dto.termino_real) return;
+        // inicio > termino continua sendo barrado por checkIntervalosRealizado
+        if (dto.inicio_real > dto.termino_real) return;
+
+        const dias = DateTime.fromJSDate(dto.termino_real).diff(DateTime.fromJSDate(dto.inicio_real), 'days').days;
+        // +1 por regra do sistema: começar e terminar no mesmo dia = 1 dia
+        dto.duracao_real = Math.round(dias) + 1;
     }
 
     private checkIntervalosRealizado(dto: UpdateTarefaDto) {

@@ -9,6 +9,7 @@ import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
 import { DateTime } from 'luxon';
 import { WorkflowService } from '../configuracao/workflow.service';
 import { Date2YMD } from '../../../common/date2ymd';
+import { atualizaDuracaoReal } from './atualiza-duracao-real';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -799,7 +800,7 @@ export class WorkflowAndamentoService {
                 }
 
                 // Tarefa do cronograma referente à fase anterior e acompanhamento.
-                await prismaTxn.tarefa.updateMany({
+                const tarefasEtapaAnterior = await prismaTxn.tarefa.updateManyAndReturn({
                     where: {
                         tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
                         OR: [
@@ -820,7 +821,14 @@ export class WorkflowAndamentoService {
                         atualizado_em: new Date(Date.now()),
                         fase_atual_workflow: false,
                     },
+                    select: { id: true },
                 });
+
+                await atualizaDuracaoReal(prismaTxn, [
+                    ...tarefasEtapaAnterior.map((t) => t.id),
+                    ...andamentoProxEtapa.tarefaEspelhada.map((t) => t.id),
+                    ...andamentoProxEtapa.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
+                ]);
 
                 await prismaTxn.transferencia.update({
                     where: { id: dto.transferencia_id },
