@@ -39,7 +39,12 @@ export class PrismaHelpers {
         // Para tabelas cujo vetor de busca também indexa o código quebrado em partes
         // (ex.: variavel usa REPLACE de '.' e '/' por espaço), passe /[\s./]+/ para que
         // uma busca por trecho do meio do código (ex.: "06.00719/2024") case com as partes.
-        splitRegex: RegExp = /\s+/
+        splitRegex: RegExp = /\s+/,
+        // Quando o vetor da tabela também indexa f_tsvector_numeros_flexiveis (ver 0054),
+        // palavras só com dígitos e . / - viram (junto:* | (parte1:* & parte2:* ...)),
+        // sem zeros à esquerda. Assim "067" acha "2026.067.89922" e "34994" acha "034994/2026".
+        // Com 3+ dígitos também busca por trecho do número: "499" acha "034994/2026".
+        numerosFlexiveis = false
     ): Promise<number[] | undefined> {
         let palavrasChave: number[] | undefined = undefined;
         if (input) {
@@ -53,7 +58,12 @@ export class PrismaHelpers {
             const words = trimmedInput
                 .split(splitRegex)
                 .filter((word) => word.length > 0)
-                .map((word) => `${escapeSpecialChars(word)}:*`)
+                .map((word) => {
+                    if (numerosFlexiveis && /^[\d./-]+$/.test(word) && /\d/.test(word)) {
+                        return PrismaHelpers.tsqueryNumeroFlexivel(word);
+                    }
+                    return `${escapeSpecialChars(word)}:*`;
+                })
                 .join(' & ');
 
             const rows: { id: number }[] = await prisma.$queryRawUnsafe(
@@ -63,5 +73,36 @@ export class PrismaHelpers {
             palavrasChave = rows.map((row) => row.id);
         }
         return palavrasChave;
+    }
+
+    // Mínimo de dígitos para buscar também por trecho do número (começo, meio ou fim):
+    // abaixo disso, "26" casaria com todo número que tem 26 (todo 2026, por exemplo).
+    // Tem que bater com o "length - 2" de f_tsvector_numeros_flexiveis (ver 0054).
+    private static readonly MIN_DIGITOS_TRECHO = 3;
+
+    private static tsqueryNumeroFlexivel(word: string): string {
+        const semZeros = (n: string) => n.replace(/^0+(?=\d)/, '');
+        const partes = word
+            .split(/[./-]+/)
+            .filter((p) => p.length > 0)
+            .map(semZeros);
+
+        const alternativas: string[] = [];
+        if (partes.length === 1) {
+            alternativas.push(partes[0] + ':*');
+        } else {
+            const todasAsPartes = partes.map((p) => p + ':*').join(' & ');
+            alternativas.push(semZeros(partes.join('')) + ':*', `(${todasAsPartes})`);
+        }
+
+        // Busca por trecho: o vetor indexa todos os finais de cada número com o prefixo "qx"
+        // (ver 0054), e um trecho qualquer é o começo de algum final. Usa os dígitos como
+        // digitados, com zeros e sem pontuação.
+        const digitos = word.replace(/\D/g, '');
+        if (digitos.length >= PrismaHelpers.MIN_DIGITOS_TRECHO) {
+            alternativas.push('qx' + digitos + ':*');
+        }
+
+        return alternativas.length === 1 ? alternativas[0] : `(${alternativas.join(' | ')})`;
     }
 }

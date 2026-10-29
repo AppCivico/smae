@@ -150,10 +150,80 @@ describe('transferencia: busca por palavra-chave (tsvector)', () => {
 
         it('f_rebuild_transferencia_tsvector inclui esfera, ano e tipo', async () => {
             const { id, tipo } = await criarComTexto({ ano: 2038 });
+            // o vetor é montado em background depois do POST
+            await esperar(async () => (await vetor(id)) !== null);
             const v = await vetor(id);
             assert.match(v, /'estadual'/);
             assert.match(v, /'2038'/);
             assert.ok(v.includes(`'${tipo.nome.split(' ')[0]}'`), v);
+        });
+    });
+
+    describe('números ignoram pontuação e zeros à esquerda', () => {
+        // dígitos aleatórios (1º sempre != 0) para não depender do resto da base
+        const digitos = (n: number) =>
+            [...randomBytes(n)].map((b, i) => String(i === 0 ? 1 + (b % 9) : b % 10)).join('');
+
+        it('emenda, demanda e observações casam por parte, junto ou outra pontuação', async () => {
+            const meio = digitos(4); // emenda 2026.0<meio>.<fim>
+            const fim = digitos(5);
+            const dem = digitos(5); // demanda 0<dem>/2026
+            const a = digitos(3); // observações 00<a>.<b>/7
+            const b = digitos(4);
+            const { id } = await criarComTexto({
+                emenda: `2026.0${meio}.${fim}`,
+                demanda: `0${dem}/2026`,
+                observacoes: `processo 00${a}.${b}/7 em andamento`,
+            });
+
+            // emenda: parte com zero à esquerda, última parte, prefixo do junto, ponto no lugar errado
+            await acha(`0${meio}`, id);
+            await acha(meio, id);
+            await acha(fim, id);
+            await acha(`20260${meio}`, id);
+            const junto = `20260${meio}${fim}`;
+            await acha(`${junto.slice(0, 7)}.${junto.slice(7)}`, id);
+            await acha(`2026.0${meio}.${fim}`, id);
+
+            // demanda
+            await acha(dem, id);
+            await acha(`0${dem}`, id);
+            await acha(`${dem}/2026`, id);
+            await acha(`0${dem}2026`, id);
+
+            // número nas observações, em outra formatação
+            await acha(`${a}${b}`, id);
+            await acha(`${a}.${b}-7`, id);
+
+            await naoAcha(`9${digitos(11)}`, id);
+            await naoAcha(`${dem}/1999`, id);
+        });
+
+        it('busca por trecho do número (meio ou fim), a partir de 3 dígitos', async () => {
+            const meio = digitos(4);
+            const fim = digitos(6);
+            const dem = digitos(6);
+            const { id } = await criarComTexto({
+                emenda: `2026.0${meio}.${fim}`,
+                demanda: `0${dem}/2026`,
+            });
+
+            // meio de uma parte
+            await acha(fim.slice(1, 4), id);
+            await acha(fim.slice(2, 5), id);
+            await acha(dem.slice(1, 5), id);
+            // final de uma parte (3 e 4 dígitos)
+            await acha(fim.slice(-3), id);
+            await acha(fim.slice(-4), id);
+            await acha(dem.slice(-4), id);
+            // trecho que atravessa a pontuação, digitado com ou sem ela
+            await acha(`${meio.slice(-2)}.${fim.slice(0, 3)}`, id);
+            await acha(`${meio.slice(-2)}${fim.slice(0, 3)}`, id);
+            await acha(`${dem.slice(-3)}/2026`, id);
+            await acha(`${dem.slice(-3)}2026`, id);
+
+            // 12 dígitos aleatórios não são o final de nenhum número desta transferência
+            await naoAcha(digitos(12), id);
         });
     });
 
