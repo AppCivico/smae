@@ -342,27 +342,18 @@ export class WorkflowAndamentoFaseService {
                     );
 
                     if (transferenciaAndamentoTarefaRow.tarefaEspelhada.length !== 0) {
-                        await prismaTxn.tarefa.findFirst({
-                            where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
-                            select: {
-                                id: true,
-                                inicio_real: true,
-                                termino_real: true,
-                            },
-                        });
+                        operations.push(
+                            prismaTxn.tarefa.update({
+                                where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
+                                data: {
+                                    termino_real: tarefa.concluida == true ? new Date(Date.now()) : null,
+                                    orgao_id: tarefa.orgao_responsavel_id,
+                                    percentual_concluido: tarefa.concluida == true ? 100 : 0,
+                                    atualizado_em: new Date(Date.now()),
+                                },
+                            })
+                        );
                     }
-
-                    operations.push(
-                        prismaTxn.tarefa.update({
-                            where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
-                            data: {
-                                termino_real: tarefa.concluida == true ? new Date(Date.now()) : null,
-                                orgao_id: tarefa.orgao_responsavel_id,
-                                percentual_concluido: tarefa.concluida == true ? 100 : 0,
-                                atualizado_em: new Date(Date.now()),
-                            },
-                        })
-                    );
 
                     idsAtualizados.push({ id: transferenciaAndamentoTarefaRow.id });
                 }
