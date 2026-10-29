@@ -4558,7 +4558,7 @@ model PortfolioProjetoCompartilhado {
     @@map("portfolio_projeto_compartilhado")
 }
 
-// Compartilhamento padrão: todo projeto/obra criado em `portfolio` nasce compartilhado
+// Compartilhamento padrão: todo projeto/obra criado (ou já existente, quando o padrão é adicionado) em `portfolio` fica compartilhado
 // com `portfolio_compartilhado` (vira uma linha em PortfolioProjetoCompartilhado).
 model PortfolioCompartilhamentoPadrao {
     id Int @id @default(autoincrement())

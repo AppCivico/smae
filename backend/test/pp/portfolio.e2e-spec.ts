@@ -7,6 +7,7 @@ import {
     criarOrgao,
     criarPessoaComPrivilegios,
     criarPessoaSemPrivilegios,
+    prisma,
     Sessao,
     uniq,
 } from '../lib';
@@ -185,6 +186,41 @@ describe('portfolio', () => {
                 responsaveis_no_orgao_gestor: [gestor.pessoa.id],
             });
             assertStatus(await api(gestor).get(`/api/portfolio/${compartilhado.id}`), 200);
+        });
+    });
+
+    describe('PP: compartilhamento padrão em projetos existentes', () => {
+        const compartilhadosAtivos = async (projeto_id: number) =>
+            (
+                await prisma().portfolioProjetoCompartilhado.findMany({
+                    where: { projeto_id, removido_em: null },
+                    select: { portfolio_id: true },
+                })
+            ).map((r) => r.portfolio_id);
+
+        it('adicionar padrão compartilha os projetos já existentes; remover mantém', async () => {
+            const origem = await criarPortfolio(admin, 'PP', { orgaos: [orgaoA.id] });
+            const guardaChuva = await criarPortfolio(admin, 'PP', { orgaos: [orgaoA.id] });
+            const projeto = await criarProjeto(soProjeto, 'PP', { portfolio_id: origem.id });
+            assert.deepEqual(await compartilhadosAtivos(projeto.id), []);
+
+            const comPadrao = await api(admin)
+                .patch(`${ROTA.PP.portfolio}/${origem.id}`)
+                .send({ portfolios_compartilhados_padrao: [guardaChuva.id] });
+            assertStatus(comPadrao, 200);
+            assert.deepEqual(await compartilhadosAtivos(projeto.id), [guardaChuva.id]);
+
+            // reenviar o mesmo padrão não duplica
+            await api(admin)
+                .patch(`${ROTA.PP.portfolio}/${origem.id}`)
+                .send({ portfolios_compartilhados_padrao: [guardaChuva.id] });
+            assert.deepEqual(await compartilhadosAtivos(projeto.id), [guardaChuva.id]);
+
+            const semPadrao = await api(admin)
+                .patch(`${ROTA.PP.portfolio}/${origem.id}`)
+                .send({ portfolios_compartilhados_padrao: [] });
+            assertStatus(semPadrao, 200);
+            assert.deepEqual(await compartilhadosAtivos(projeto.id), [guardaChuva.id]);
         });
     });
 

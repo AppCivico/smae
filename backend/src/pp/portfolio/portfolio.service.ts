@@ -567,6 +567,26 @@ export class PortfolioService {
                     };
                 }),
             });
+
+            // Removendo um padrão, os compartilhamentos já feitos ficam.
+            const projetos = await prismaTx.projeto.findMany({
+                where: { portfolio_id: row.id, removido_em: null },
+                select: {
+                    id: true,
+                    portfolios_compartilhados: {
+                        where: { removido_em: null, portfolio_id: { in: novos } },
+                        select: { portfolio_id: true },
+                    },
+                },
+            });
+            const compartilhamentos = projetos.flatMap((p) =>
+                novos
+                    .filter((n) => !p.portfolios_compartilhados.some((pc) => pc.portfolio_id == n))
+                    .map((n) => ({ portfolio_id: n, projeto_id: p.id, criado_em: now, criado_por: user.id }))
+            );
+            if (compartilhamentos.length > 0) {
+                await prismaTx.portfolioProjetoCompartilhado.createMany({ data: compartilhamentos });
+            }
         }
 
         const removidos = prevVersions.filter((p) => !compartilhadosPadrao.includes(p.portfolio_compartilhado_id));
