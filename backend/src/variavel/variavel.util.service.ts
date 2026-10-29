@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateYMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { FilterPeriodoDto } from './entities/variavel.entity';
 
 @Injectable()
@@ -10,7 +11,8 @@ export class VariavelUtilService {
     async gerarPeriodoVariavelEntreDatas(
         variavelId: number,
         indicadorId: number | null,
-        filtros?: FilterPeriodoDto
+        filtros?: FilterPeriodoDto,
+        prismaTx: Prisma.TransactionClient = this.prisma
     ): Promise<DateYMD[]> {
         if (isNaN(variavelId)) throw new BadRequestException('Variável inválida');
 
@@ -23,7 +25,7 @@ export class VariavelUtilService {
             unsafeCicloCorrente = `and p.p ${op} date_trunc('month', ('${data.toISOString()}'::date ))`;
         }
 
-        const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
+        const dados: Record<string, string>[] = await prismaTx.$queryRawUnsafe(`
             select to_char(p.p, 'yyyy-mm-dd') as dt
             from busca_periodos_variavel(${variavelId}::int ${indicadorId ? `, ${indicadorId}::int` : ''}) as g(p, inicio, fim),
             generate_series(inicio, fim, p) p
