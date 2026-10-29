@@ -1,14 +1,36 @@
+-- Versões "flexíveis" dos números de um texto, para a busca ignorar pontuação e zeros à esquerda.
+-- O parser do Postgres grava números colados em pontuação como um token só
+-- (ex.: "2026.067.89922", "034994/2026"), e aí nenhum pedaço casa na busca por prefixo.
+-- Para cada número encontrado devolve:
+--   - as partes, sem zeros à esquerda:  "2026.067.89922" -> "2026 67 89922"
+--   - o número junto, sem zeros à esquerda: "2026.067.89922" -> "202606789922"
+-- O termo digitado é normalizado do mesmo jeito em PrismaHelpers.buscaIdsPalavraChave.
+CREATE OR REPLACE FUNCTION f_tsvector_numeros_flexiveis(p_texto TEXT)
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+AS $$
+    SELECT COALESCE(
+        string_agg(
+            regexp_replace(regexp_replace(m[1], '[./\-]+', ' ', 'g'), '\m0+(\d)', '\1', 'g')
+            || ' ' ||
+            regexp_replace(regexp_replace(m[1], '[./\-]+', '', 'g'), '^0+(\d)', '\1'),
+            ' '
+        ),
+        ''
+    )
+    FROM regexp_matches(COALESCE(p_texto, ''), '(\d[\d./\-]*\d|\d)', 'g') AS m;
+$$;
+
 CREATE OR REPLACE FUNCTION f_rebuild_transferencia_tsvector(p_transferencia_id INTEGER)
 RETURNS TSVECTOR
 LANGUAGE 'plpgsql'
 STABLE
 AS $$
 DECLARE
-    v_tsvector_payload TSVECTOR;
+    v_texto TEXT;
 BEGIN
     SELECT
-        to_tsvector(
-            'simple_unaccent',
             COALESCE(CAST(t_main.esfera AS TEXT), '') || ' ' ||
             COALESCE(CAST(t_main.interface AS TEXT), '') || ' ' ||
             COALESCE(CAST(t_main.ano AS TEXT), '') || ' ' ||
@@ -58,15 +80,18 @@ BEGIN
                 ' '
             ) || ' ' ||
             COALESCE(t_main.programa, ' ')
-        )
-    INTO v_tsvector_payload
+    INTO v_texto
     FROM transferencia t_main
     LEFT JOIN transferencia_tipo tt ON tt.id = t_main.tipo_id
     LEFT JOIN orgao o1 ON o1.id = t_main.orgao_concedente_id
     LEFT JOIN orgao o2 ON o2.id = t_main.secretaria_concedente_id
     WHERE t_main.id = p_transferencia_id;
 
-    RETURN v_tsvector_payload;
+    IF v_texto IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    RETURN to_tsvector('simple_unaccent', v_texto || ' ' || f_tsvector_numeros_flexiveis(v_texto));
 END;
 $$;
 

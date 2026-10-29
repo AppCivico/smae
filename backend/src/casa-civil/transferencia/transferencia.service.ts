@@ -1256,7 +1256,7 @@ export class TransferenciaService {
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'transferencia', input);
+        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'transferencia', input, /\s+/, true);
     }
 
     /**
