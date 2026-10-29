@@ -157,6 +157,13 @@ export class TransferenciaHistoricoDto {
     tipo_novo: TransferenciaTipoCurtoDto | null;
     @ApiProperty({ enum: TransferenciaHistoricoAcao, enumName: 'TransferenciaHistoricoAcao' })
     acao: TransferenciaHistoricoAcao;
+    @ApiProperty({
+        description:
+            'Formato depende da ação. TrocaResponsavelWorkflow: { origem: "Workflow" | "Cronograma", ' +
+            'fase: { id, fase }, tarefa: { id, tarefa_fluxo } | null, ' +
+            'anterior: { orgao: { id, sigla, descricao } | null, pessoa: { id, nome_exibicao } | null }, ' +
+            'novo: { orgao, pessoa } }',
+    })
     dados_extra: any;
     criador: IdNomeExibicaoDto;
     criado_em: Date;

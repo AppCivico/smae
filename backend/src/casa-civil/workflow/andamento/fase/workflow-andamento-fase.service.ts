@@ -12,6 +12,7 @@ import {
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from '../../configuracao/workflow.service';
 import { WorkflowAndamentoService } from '../workflow-andamento.service';
+import { registrarTrocaResponsavelWorkflow } from 'src/casa-civil/transferencia/transferencia-historico.helper';
 
 @Injectable()
 export class WorkflowAndamentoFaseService {
@@ -163,7 +164,16 @@ export class WorkflowAndamentoFaseService {
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
-                    select: { id: true },
+                    select: { id: true, orgao_responsavel_id: true, pessoa_responsavel_id: true },
+                });
+
+                await registrarTrocaResponsavelWorkflow(prismaTxn, {
+                    transferencia_id: dto.transferencia_id,
+                    user_id: user.id,
+                    origem: 'Workflow',
+                    transferencia_andamento_id: self.id,
+                    orgao: { anterior: self.orgao_responsavel_id, novo: updated.orgao_responsavel_id },
+                    pessoa: { anterior: self.pessoa_responsavel_id, novo: updated.pessoa_responsavel_id },
                 });
 
                 // Atualizando tarefa no cronograma.
@@ -322,6 +332,24 @@ export class WorkflowAndamentoFaseService {
                         `Órgão deve ser enviado para tarefa "${tarefaWorkflowConfig.workflow_tarefa.tarefa_fluxo}", pois é de responsabilidade de outro órgão.`,
                         400
                     );
+
+                // Órgão `undefined` mantém o atual; só registra quando há troca de fato.
+                if (
+                    tarefa.orgao_responsavel_id !== undefined &&
+                    tarefa.orgao_responsavel_id !== transferenciaAndamentoTarefaRow.orgao_responsavel_id
+                ) {
+                    await registrarTrocaResponsavelWorkflow(prismaTxn, {
+                        transferencia_id: dto.transferencia_id,
+                        user_id: user.id,
+                        origem: 'Workflow',
+                        transferencia_andamento_id: transferenciaAndamento.id,
+                        transferencia_andamento_tarefa_id: transferenciaAndamentoTarefaRow.id,
+                        orgao: {
+                            anterior: transferenciaAndamentoTarefaRow.orgao_responsavel_id,
+                            novo: tarefa.orgao_responsavel_id ?? null,
+                        },
+                    });
+                }
 
                 if (
                     transferenciaAndamentoTarefaRow.feito != tarefa.concluida ||
