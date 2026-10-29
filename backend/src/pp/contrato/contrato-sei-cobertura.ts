@@ -4,9 +4,13 @@ import { Prisma } from '@prisma/client';
 export async function garanteCoberturaSeiContratos(
     prismaTx: Prisma.TransactionClient,
     contrato_ids: number[],
-    pessoa_id: number
+    pessoa_id: number,
+    projeto_origem_id: number
 ): Promise<void> {
     if (contrato_ids.length === 0) return;
+
+    const origem = await prismaTx.projeto.findUnique({ where: { id: projeto_origem_id }, select: { nome: true } });
+    const origemNome = origem?.nome ?? '';
 
     await prismaTx.$executeRaw`
         WITH descoberto AS (
@@ -25,18 +29,23 @@ export async function garanteCoberturaSeiContratos(
                     AND prs.processo_sei = regexp_replace(cs.numero_sei, '[^0-9]', '', 'g')
               )
         )
-        UPDATE projeto_registro_sei
-        SET removido_em = NULL, removido_por = NULL, atualizado_em = now(), atualizado_por = ${pessoa_id}
-        WHERE id IN (
-            SELECT max(prs.id)
+        UPDATE projeto_registro_sei r
+        SET removido_em = NULL, removido_por = NULL, atualizado_em = now(), atualizado_por = ${pessoa_id},
+            observacoes = concat_ws(E'\n\n', nullif(r.observacoes, ''), x.obs)
+        FROM (
+            SELECT max(prs.id) AS id,
+                   format('Restaurado automaticamente: processo do contrato %s, que deixou de estar vinculado a "%s".',
+                          c.numero, ${origemNome}::text) AS obs
             FROM descoberto d
+            JOIN contrato c ON c.id = d.contrato_id
             JOIN contrato_projeto cp ON cp.contrato_id = d.contrato_id AND cp.removido_em IS NULL
             JOIN projeto p ON p.id = cp.projeto_id AND p.removido_em IS NULL
             JOIN projeto_registro_sei prs ON prs.projeto_id = cp.projeto_id
                 AND prs.removido_em IS NOT NULL
                 AND prs.processo_sei = d.digitos
-            GROUP BY d.contrato_id, d.digitos
-        )`;
+            GROUP BY d.contrato_id, d.digitos, c.numero
+        ) x
+        WHERE r.id = x.id`;
 
     await prismaTx.$executeRaw`
         WITH descoberto AS (
@@ -56,7 +65,7 @@ export async function garanteCoberturaSeiContratos(
               )
         ),
         destino AS (
-            SELECT d.digitos,
+            SELECT d.digitos, c.numero,
                    coalesce(
                        (SELECT cp.projeto_id
                           FROM contrato_projeto cp
@@ -74,8 +83,12 @@ export async function garanteCoberturaSeiContratos(
             FROM descoberto d
             JOIN contrato c ON c.id = d.contrato_id
         )
-        INSERT INTO projeto_registro_sei (projeto_id, categoria, processo_sei, criado_em, criado_por)
-        SELECT DISTINCT projeto_id, 'Manual'::"CategoriaProcessoSei", digitos, now(), ${pessoa_id}::int
+        INSERT INTO projeto_registro_sei (projeto_id, categoria, processo_sei, observacoes, criado_em, criado_por)
+        SELECT DISTINCT ON (projeto_id, digitos) projeto_id, 'Manual'::"CategoriaProcessoSei", digitos,
+               format('Cadastrado automaticamente: processo do contrato %s, que deixou de estar vinculado a "%s".',
+                      numero, ${origemNome}::text),
+               now(), ${pessoa_id}::int
         FROM destino
-        WHERE projeto_id IS NOT NULL`;
+        WHERE projeto_id IS NOT NULL
+        ORDER BY projeto_id, digitos, numero`;
 }

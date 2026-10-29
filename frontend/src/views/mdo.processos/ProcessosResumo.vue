@@ -96,6 +96,20 @@ const {
         </dd>
       </div>
     </div>
+
+    <div
+      v-if="emFoco?.contratos?.length"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Contratos
+        </dt>
+        <dd class="t13">
+          {{ emFoco.contratos.map((contrato) => contrato.numero).join(', ') }}
+        </dd>
+      </div>
+    </div>
   </div>
 
   <div
