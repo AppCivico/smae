@@ -102,3 +102,17 @@ export class ContratoProcessoSeiDisponivelDto {
 export class ListContratoProcessoSeiDisponivelDto {
     linhas: ContratoProcessoSeiDisponivelDto[];
 }
+
+export class ContratoProcessoSeiMovidoDto {
+    /** Só dígitos. */
+    processo_sei: string;
+    /** Obra/projeto que passa a ter o processo cadastrado; null se o contrato ficar sem obra ativa. */
+    destino: IdNomeDto | null;
+}
+
+export class ContratoDesassociarPreviaDto {
+    /** Não sobra vínculo com obra/projeto ativo: o contrato é excluído junto. */
+    contrato_sera_excluido: boolean;
+    /** Processos SEI do contrato cadastrados só nesta obra/projeto, que serão cadastrados em outra obra vinculada. */
+    processos_movidos: ContratoProcessoSeiMovidoDto[];
+}

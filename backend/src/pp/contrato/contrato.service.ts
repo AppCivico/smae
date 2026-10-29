@@ -12,6 +12,7 @@ import { garanteCoberturaSeiContratos } from './contrato-sei-cobertura';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import {
     ContratoCompartilhadoDisponivelDto,
+    ContratoDesassociarPreviaDto,
     ContratoDetailDto,
     ContratoItemDto,
     ContratoProcessoSeiDisponivelDto,
@@ -448,6 +449,75 @@ export class ContratoService {
                 await garanteCoberturaSeiContratos(prismaTx, [id], user.id, projeto_id);
             }
         });
+    }
+
+    // Simula `remove`; o destino segue a mesma ordem de `garanteCoberturaSeiContratos`.
+    async previaRemove(projeto_id: number, id: number): Promise<ContratoDesassociarPreviaDto> {
+        const vinculo = await this.prisma.contratoProjeto.findFirst({
+            where: { contrato_id: id, projeto_id: projeto_id, removido_em: null, contrato: { removido_em: null } },
+            select: { id: true },
+        });
+        if (!vinculo) throw new NotFoundException('Contrato não encontrado');
+
+        const restantes = await this.prisma.contratoProjeto.count({
+            where: {
+                contrato_id: id,
+                removido_em: null,
+                projeto_id: { not: projeto_id },
+                projeto: { removido_em: null },
+            },
+        });
+        if (restantes === 0) return { contrato_sera_excluido: true, processos_movidos: [] };
+
+        const rows = await this.prisma.$queryRaw<{ processo_sei: string; projeto_id: number | null; nome: string | null }[]>`
+            WITH restantes AS (
+                SELECT cp.id AS cp_id, cp.projeto_id
+                FROM contrato_projeto cp
+                JOIN projeto p ON p.id = cp.projeto_id AND p.removido_em IS NULL
+                WHERE cp.contrato_id = ${id} AND cp.removido_em IS NULL AND cp.projeto_id <> ${projeto_id}
+            ),
+            descoberto AS (
+                SELECT DISTINCT regexp_replace(cs.numero_sei, '[^0-9]', '', 'g') AS digitos
+                FROM contrato_sei cs
+                WHERE cs.contrato_id = ${id}
+                  AND regexp_replace(cs.numero_sei, '[^0-9]', '', 'g') <> ''
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM restantes r
+                      JOIN projeto_registro_sei prs ON prs.projeto_id = r.projeto_id AND prs.removido_em IS NULL
+                      WHERE prs.processo_sei = regexp_replace(cs.numero_sei, '[^0-9]', '', 'g')
+                  )
+            ),
+            destino AS (
+                SELECT d.digitos,
+                       coalesce(
+                           (SELECT prs.projeto_id
+                              FROM restantes r
+                              JOIN projeto_registro_sei prs ON prs.projeto_id = r.projeto_id
+                                AND prs.removido_em IS NOT NULL
+                                AND prs.processo_sei = d.digitos
+                             ORDER BY prs.id DESC
+                             LIMIT 1),
+                           (SELECT r.projeto_id
+                              FROM restantes r
+                              JOIN contrato c ON c.id = ${id} AND c.projeto_id_deprecated = r.projeto_id
+                             LIMIT 1),
+                           (SELECT r.projeto_id FROM restantes r ORDER BY r.cp_id LIMIT 1)
+                       ) AS projeto_id
+                FROM descoberto d
+            )
+            SELECT d.digitos AS processo_sei, d.projeto_id, p.nome
+            FROM destino d
+            LEFT JOIN projeto p ON p.id = d.projeto_id
+            ORDER BY d.digitos`;
+
+        return {
+            contrato_sera_excluido: false,
+            processos_movidos: rows.map((r) => ({
+                processo_sei: r.processo_sei,
+                destino: r.projeto_id ? { id: r.projeto_id, nome: r.nome ?? '' } : null,
+            })),
+        };
     }
 
     /**

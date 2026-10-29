@@ -10,6 +10,7 @@ import { ProjetoService } from '../projeto/projeto.service';
 import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import {
+    ContratoDesassociarPreviaDto,
     ContratoDetailDto,
     ListContratoCompartilhadoDisponivelDto,
     ListContratoDto,
@@ -118,6 +119,17 @@ export class ContratoPPController {
         return await this.contratoService.update(+params.id, +params.id2, dto, user);
     }
 
+    @Get(':id/contrato/:id2/previa-remocao')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async previaRemove(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ContratoDesassociarPreviaDto> {
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.contratoService.previaRemove(+params.id, +params.id2);
+    }
+
     @Delete(':id/contrato/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...roles])
@@ -216,6 +228,17 @@ export class ContratoMDOController {
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
         return await this.contratoService.update(+params.id, +params.id2, dto, user);
+    }
+
+    @Get(':id/contrato/:id2/previa-remocao')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async previaRemove(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ContratoDesassociarPreviaDto> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.contratoService.previaRemove(+params.id, +params.id2);
     }
 
     @Delete(':id/contrato/:id2')
