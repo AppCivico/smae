@@ -80,7 +80,11 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
         await this.pdmService.assertUserPermission(tipo, pdmId, user, PdmPermissionLevel.CONFIG_WRITE);
 
         return await this.prisma.$transaction(
-            (prismaTx: Prisma.TransactionClient) => this.migraNaTx(prismaTx, pdmId, dto.mapeamento ?? {}),
+            async (prismaTx: Prisma.TransactionClient) => {
+                const pdm = await prismaTx.pdm.findFirst({ where: { id: pdmId }, select: { sistema: true } });
+                if (pdm?.sistema === 'PDM') throw new HttpException('Operação não permitida para PDMs antigos', 400);
+                return this.migraNaTx(prismaTx, pdmId, dto.mapeamento ?? {});
+            },
             { maxWait: 10000, timeout: 300000 }
         );
     }
@@ -105,7 +109,7 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
                 await this.prisma.$transaction(
                     async (prismaTx: Prisma.TransactionClient) => {
                         const lock = await prismaTx.$queryRaw<{ locked: boolean }[]>`
-                            SELECT pg_try_advisory_xact_lock(${JOB_MONITORAMENTO_PDM_ANTIGO_LOCK}) as locked`;
+                            SELECT pg_try_advisory_xact_lock(${JOB_MONITORAMENTO_PDM_ANTIGO_LOCK}::int, ${id}::int) as locked`;
                         if (!lock[0].locked) return;
 
                         const pdm = await prismaTx.pdm.findUniqueOrThrow({
