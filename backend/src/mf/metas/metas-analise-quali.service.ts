@@ -147,7 +147,7 @@ export class MetasAnaliseQualiService {
     async addMetaAnaliseQualitativaDocumentoInterno(
         dto: AnaliseQualitativaDocumentoDto,
         user: PessoaFromJwt,
-        prismaCtx?: Prisma.TransactionClient | undefined
+        prismaCtx: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
@@ -171,22 +171,7 @@ export class MetasAnaliseQualiService {
             return { id: cfq.id };
         };
 
-        let ret;
-        if (prismaCtx) {
-            ret = await performWrite(prismaCtx);
-        } else {
-            ret = await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    return await performWrite(prismaTx);
-                },
-                {
-                    isolationLevel: 'Serializable',
-                    maxWait: 5000,
-                    timeout: 5000,
-                }
-            );
-        }
-        return ret;
+        return await performWrite(prismaCtx);
     }
 
     async updateMetaAnaliseQualitativaDocumento(
@@ -210,9 +195,9 @@ export class MetasAnaliseQualiService {
         id: number,
         dto: UpdateAnaliseQualitativaDocumentoDto,
         user: PessoaFromJwt,
-        prismaCtx?: Prisma.TransactionClient | undefined
+        prismaCtx: Prisma.TransactionClient
     ): Promise<RecordWithId> {
-        const documento = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
+        const documento = await prismaCtx.metaCicloFisicoAnaliseDocumento.findFirst({
             where: {
                 id: id,
                 removido_em: null,
@@ -232,22 +217,7 @@ export class MetasAnaliseQualiService {
             return { id: updated.id };
         };
 
-        let ret;
-        if (prismaCtx) {
-            ret = await performWrite(prismaCtx);
-        } else {
-            ret = await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    return await performWrite(prismaTx);
-                },
-                {
-                    isolationLevel: 'Serializable',
-                    maxWait: 5000,
-                    timeout: 5000,
-                }
-            );
-        }
-        return ret;
+        return await performWrite(prismaCtx);
     }
 
     async deleteMetaAnaliseQualitativaDocumento(
@@ -269,9 +239,9 @@ export class MetasAnaliseQualiService {
     async deleteMetaAnaliseQualitativaDocumentoInterno(
         id: number,
         user: PessoaFromJwt,
-        prismaCtx?: Prisma.TransactionClient | undefined
+        prismaCtx: Prisma.TransactionClient
     ) {
-        const arquivo = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
+        const arquivo = await prismaCtx.metaCicloFisicoAnaliseDocumento.findFirst({
             where: {
                 id: id,
                 removido_em: null,
@@ -287,20 +257,7 @@ export class MetasAnaliseQualiService {
             });
         };
 
-        if (prismaCtx) {
-            await performWrite(prismaCtx);
-        } else {
-            await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    await performWrite(prismaTx);
-                },
-                {
-                    isolationLevel: 'Serializable',
-                    maxWait: 5000,
-                    timeout: 5000,
-                }
-            );
-        }
+        await performWrite(prismaCtx);
     }
 
     async addMetaAnaliseQualitativa(
@@ -321,7 +278,7 @@ export class MetasAnaliseQualiService {
     async addMetaAnaliseQualitativaInterno(
         dto: CreateAnaliseQualitativaDto,
         user: PessoaFromJwt,
-        prismaCtx?: Prisma.TransactionClient | undefined
+        prismaCtx: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
@@ -356,21 +313,6 @@ export class MetasAnaliseQualiService {
             return { id: cfq.id };
         };
 
-        let ret;
-        if (prismaCtx) {
-            ret = await performWrite(prismaCtx);
-        } else {
-            ret = await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    return await performWrite(prismaTx);
-                },
-                {
-                    isolationLevel: 'Serializable',
-                    maxWait: 5000,
-                    timeout: 5000,
-                }
-            );
-        }
-        return ret;
+        return await performWrite(prismaCtx);
     }
 }

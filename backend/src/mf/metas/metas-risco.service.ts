@@ -95,7 +95,7 @@ export class MetasRiscoService {
     async addMetaRiscoInterno(
         dto: RiscoDto,
         user: PessoaFromJwt,
-        prismaCtx?: Prisma.TransactionClient | undefined
+        prismaCtx: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
@@ -132,21 +132,6 @@ export class MetasRiscoService {
             return { id: cfq.id };
         };
 
-        let ret;
-        if (prismaCtx) {
-            ret = await performWrite(prismaCtx);
-        } else {
-            ret = await this.prisma.$transaction(
-                async (prismaTx: Prisma.TransactionClient) => {
-                    return await performWrite(prismaTx);
-                },
-                {
-                    isolationLevel: 'Serializable',
-                    maxWait: 5000,
-                    timeout: 5000,
-                }
-            );
-        }
-        return ret;
+        return await performWrite(prismaCtx);
     }
 }

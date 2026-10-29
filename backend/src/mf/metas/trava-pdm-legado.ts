@@ -7,9 +7,10 @@ async function travaPdmLegado(prismaTx: Prisma.TransactionClient, cicloFisicoId:
     const rows = await prismaTx.$queryRaw<{ monitoramento_por_blocos: boolean }[]>`
         SELECT p.monitoramento_por_blocos FROM pdm p
         JOIN ciclo_fisico cf ON cf.pdm_id = p.id
-        WHERE cf.id = ${cicloFisicoId}::int
+        WHERE cf.id = ${cicloFisicoId}::int AND p.removido_em IS NULL
         FOR SHARE OF p`;
-    if (rows[0]?.monitoramento_por_blocos)
+    if (!rows.length) throw new HttpException('Ciclo não encontrado', 400);
+    if (rows[0].monitoramento_por_blocos)
         throw new HttpException('Este plano usa o monitoramento por fases configuradas', 400);
 }
 
