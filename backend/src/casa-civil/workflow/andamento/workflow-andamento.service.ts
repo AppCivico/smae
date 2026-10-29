@@ -96,6 +96,12 @@ export class WorkflowAndamentoService {
                 possui_proxima_etapa
             );
 
+        // Tarefas de responsabilidade própria pertencem à SERI.
+        const orgaoSeri = await this.prisma.orgao.findFirst({
+            where: { removido_em: null, sigla: 'SERI' },
+            select: { id: true, sigla: true, descricao: true },
+        });
+
         // Buscando tarefas que são do cronograma.
         const tarefasCronograma = await this.prisma.tarefa.findMany({
             where: {
@@ -214,7 +220,8 @@ export class WorkflowAndamentoService {
                                                     fase.fase!.id,
                                                     transferencia.id,
                                                     tarefa.workflow_tarefa!.id,
-                                                    transferencia.workflow_id!
+                                                    transferencia.workflow_id!,
+                                                    orgaoSeri
                                                 ),
                                             };
                                         })
@@ -510,7 +517,8 @@ export class WorkflowAndamentoService {
         fase_id: number,
         transferencia_id: number,
         tarefa_id: number,
-        workflow_id: number
+        workflow_id: number,
+        orgaoSeri: { id: number; sigla: string; descricao: string } | null
     ): Promise<AndamentoTarefaDto | null> {
         const row = await this.prisma.transferenciaAndamentoTarefa.findFirst({
             where: {
@@ -556,18 +564,21 @@ export class WorkflowAndamentoService {
         });
         if (!row) return null;
 
+        const responsabilidade = row.workflow_tarefa.fluxoTarefas[0].responsabilidade;
+
+        // Tarefa própria não tem órgão preenchido pelo usuário: o responsável é sempre a SERI.
+        const orgaoResponsavel =
+            row.orgao_responsavel ?? (responsabilidade == WorkflowResponsabilidade.Propria ? orgaoSeri : null);
+
         return {
             id: row.id,
             concluida: row.feito,
-            necessita_preencher_orgao:
-                row.workflow_tarefa.fluxoTarefas[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
-                    ? true
-                    : false,
-            orgao_responsavel: row.orgao_responsavel
+            necessita_preencher_orgao: responsabilidade == WorkflowResponsabilidade.OutroOrgao ? true : false,
+            orgao_responsavel: orgaoResponsavel
                 ? {
-                      id: row.orgao_responsavel.id,
-                      sigla: row.orgao_responsavel.sigla,
-                      descricao: row.orgao_responsavel.descricao,
+                      id: orgaoResponsavel.id,
+                      sigla: orgaoResponsavel.sigla,
+                      descricao: orgaoResponsavel.descricao,
                   }
                 : null,
         };
