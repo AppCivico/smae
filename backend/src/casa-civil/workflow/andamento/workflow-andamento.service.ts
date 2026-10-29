@@ -800,43 +800,35 @@ export class WorkflowAndamentoService {
                 }
 
                 // Tarefa do cronograma referente à fase anterior e acompanhamento.
-                const whereEtapaAnterior: Prisma.TarefaWhereInput = {
-                    tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
-                    OR: [
-                        {
-                            tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
-                            nivel: 1,
-                        },
-                        {
-                            tarefa_pai: {
+                const tarefasEtapaAnterior = await prismaTxn.tarefa.updateManyAndReturn({
+                    where: {
+                        tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
+                        OR: [
+                            {
                                 tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                                nivel: 1,
                             },
-                            nivel: 2,
-                        },
-                    ],
-                };
-                await prismaTxn.tarefa.updateMany({
-                    where: whereEtapaAnterior,
+                            {
+                                tarefa_pai: {
+                                    tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                                },
+                                nivel: 2,
+                            },
+                        ],
+                    },
                     data: {
                         termino_real: new Date(Date.now()),
                         atualizado_em: new Date(Date.now()),
                         fase_atual_workflow: false,
                     },
+                    select: { id: true },
                 });
 
-                await atualizaDuracaoReal(prismaTxn, {
-                    OR: [
-                        whereEtapaAnterior,
-                        {
-                            id: {
-                                in: [
-                                    ...andamentoProxEtapa.tarefaEspelhada.map((t) => t.id),
-                                    ...andamentoProxEtapa.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
-                                ],
-                            },
-                        },
-                    ],
-                });
+                await atualizaDuracaoReal(prismaTxn, [
+                    ...tarefasEtapaAnterior.map((t) => t.id),
+                    ...andamentoProxEtapa.tarefaEspelhada.map((t) => t.id),
+                    ...andamentoProxEtapa.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
+                ]);
 
                 await prismaTxn.transferencia.update({
                     where: { id: dto.transferencia_id },

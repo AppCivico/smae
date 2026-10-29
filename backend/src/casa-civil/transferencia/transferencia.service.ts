@@ -2334,14 +2334,10 @@ export class TransferenciaService {
             }
         }
 
-        await atualizaDuracaoReal(prismaTxn, {
-            id: {
-                in: [
-                    andamentoPrimeiraFase.tarefaEspelhada[0].id,
-                    ...andamentoPrimeiraFase.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
-                ],
-            },
-        });
+        await atualizaDuracaoReal(prismaTxn, [
+            andamentoPrimeiraFase.tarefaEspelhada[0].id,
+            ...andamentoPrimeiraFase.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
+        ]);
 
         // Atualizando cols de controle na transferência
         await prismaTxn.transferencia.update({

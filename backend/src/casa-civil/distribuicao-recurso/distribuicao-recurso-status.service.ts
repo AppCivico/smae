@@ -187,14 +187,18 @@ export class DistribuicaoRecursoStatusService {
 
                     if (workflowValido) {
                         if (statusNovo.tipo == DistribuicaoStatusTipo.ConcluidoComSucesso) {
-                            await prismaTx.tarefa.updateMany({
+                            const tarefasConcluidas = await prismaTx.tarefa.updateManyAndReturn({
                                 where: { distribuicao_recurso_id: distribuicao_id },
                                 data: {
                                     termino_real: new Date(Date.now()),
                                     atualizado_em: new Date(Date.now()),
                                 },
+                                select: { id: true },
                             });
-                            await atualizaDuracaoReal(prismaTx, { distribuicao_recurso_id: distribuicao_id });
+                            await atualizaDuracaoReal(
+                                prismaTx,
+                                tarefasConcluidas.map((t) => t.id)
+                            );
                         }
 
                         if (statusNovo.tipo == DistribuicaoStatusTipo.Terminal) {

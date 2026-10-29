@@ -398,7 +398,7 @@ export class WorkflowAndamentoFaseService {
                 ...operations,
                 ...trocasResponsavel.map((troca) => registrarTrocaResponsavelWorkflow(prismaTxn, troca)),
             ]);
-            await atualizaDuracaoReal(prismaTxn, { id: { in: tarefasEspelhadasAtualizadas } });
+            await atualizaDuracaoReal(prismaTxn, tarefasEspelhadasAtualizadas);
         }
 
         return idsAtualizados;
@@ -461,7 +461,7 @@ export class WorkflowAndamentoFaseService {
                             fase_atual_workflow: false,
                         },
                     });
-                    await atualizaDuracaoReal(prismaTxn, { id: self.tarefaEspelhada[0].id });
+                    await atualizaDuracaoReal(prismaTxn, [self.tarefaEspelhada[0].id]);
 
                     // Tarefas filhas (ex: distribuição de recurso) também devem ser desmarcadas.
                     await prismaTxn.tarefa.updateMany({
@@ -623,14 +623,16 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
-                await prismaTxn.tarefa.update({
+                const tarefaFase = await prismaTxn.tarefa.update({
                     where: { transferencia_fase_id: andamentoNovaFase.id },
                     data: {
                         inicio_real: new Date(Date.now()),
                         atualizado_em: new Date(Date.now()),
                         fase_atual_workflow: true,
                     },
+                    select: { id: true },
                 });
+                const tarefasIniciadas = [tarefaFase.id];
 
                 // Buscando ids de distribuições de recursos, pois elas podem ter tarefas.
                 const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
@@ -648,10 +650,11 @@ export class WorkflowAndamentoFaseService {
                             fase_atual_workflow: true,
                         },
                     });
+                    tarefasIniciadas.push(tarefa.tarefaEspelhada[0].id);
                 }
 
                 if (distribuicoes.length > 0) {
-                    await prismaTxn.tarefa.updateMany({
+                    const tarefasDistribuicao = await prismaTxn.tarefa.updateManyAndReturn({
                         where: {
                             tarefa_pai: {
                                 transferencia_fase_id: andamentoNovaFase.id,
@@ -665,17 +668,12 @@ export class WorkflowAndamentoFaseService {
                             atualizado_em: new Date(Date.now()),
                             fase_atual_workflow: true,
                         },
+                        select: { id: true },
                     });
+                    tarefasIniciadas.push(...tarefasDistribuicao.map((t) => t.id));
                 }
 
-                // Fase e filhas (tarefas do workflow e distribuições).
-                await atualizaDuracaoReal(prismaTxn, {
-                    removido_em: null,
-                    OR: [
-                        { transferencia_fase_id: andamentoNovaFase.id },
-                        { tarefa_pai: { transferencia_fase_id: andamentoNovaFase.id } },
-                    ],
-                });
+                await atualizaDuracaoReal(prismaTxn, tarefasIniciadas);
 
                 await prismaTxn.transferencia.update({
                     where: { id: dto.transferencia_id },
@@ -922,16 +920,11 @@ export class WorkflowAndamentoFaseService {
                     }
                 }
 
-                // Datas reais foram limpas acima; a duração acompanha.
-                await atualizaDuracaoReal(prismaTxn, {
-                    id: {
-                        in: [
-                            ...faseParaReabrir.tarefaEspelhada.map((t) => t.id),
-                            ...faseParaReabrir.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
-                            ...(faseParaFechar?.tarefaEspelhada.map((t) => t.id) ?? []),
-                        ],
-                    },
-                });
+                await atualizaDuracaoReal(prismaTxn, [
+                    ...faseParaReabrir.tarefaEspelhada.map((t) => t.id),
+                    ...faseParaReabrir.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
+                    ...(faseParaFechar?.tarefaEspelhada.map((t) => t.id) ?? []),
+                ]);
 
                 // Atualizando a fase atual na transferência
                 await prismaTxn.transferencia.update({

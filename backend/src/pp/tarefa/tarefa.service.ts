@@ -1652,7 +1652,7 @@ export class TarefaService {
     }
 
     private preencheDuracaoRealSeNula(dto: UpdateTarefaDto) {
-        if (dto.duracao_real != null || !dto.inicio_real || !dto.termino_real) return;
+        if (dto.duracao_real !== null || !dto.inicio_real || !dto.termino_real) return;
         // inicio > termino continua sendo barrado por checkIntervalosRealizado
         if (dto.inicio_real > dto.termino_real) return;
 
