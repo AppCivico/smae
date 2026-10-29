@@ -285,6 +285,47 @@ describe('projeto', () => {
             });
         });
 
+        describe('troca de portfólio e compartilhamento padrão', () => {
+            const compartilhadosAtivos = async (projeto_id: number) =>
+                (
+                    await prisma().portfolioProjetoCompartilhado.findMany({
+                        where: { projeto_id, removido_em: null },
+                        select: { portfolio_id: true },
+                    })
+                ).map((r) => r.portfolio_id);
+
+            let destino: { id: number };
+            let guardaChuva: { id: number };
+
+            before(async () => {
+                guardaChuva = await criarPortfolio(portfolioAdmin, 'PP', { orgaos: [orgaoA.id] });
+                destino = await criarPortfolio(portfolioAdmin, 'PP', {
+                    orgaos: [orgaoA.id],
+                    portfolios_compartilhados_padrao: [guardaChuva.id],
+                });
+            });
+
+            it('transferir-portfolio compartilha com o padrão do portfólio destino', async () => {
+                const projeto = await criarProjeto(projetoAdmin, 'PP', { portfolio_id: portfolioA.id });
+
+                const res = await api(projetoAdmin)
+                    .post(`/api/projeto/${projeto.id}/transferir-portfolio`)
+                    .send({ portfolio_id: destino.id });
+                assertStatus(res, 201);
+                assert.deepEqual(await compartilhadosAtivos(projeto.id), [guardaChuva.id]);
+            });
+
+            it('PATCH com portfolio_id troca o portfólio sem aplicar o padrão', async () => {
+                const projeto = await criarProjeto(projetoAdmin, 'PP', { portfolio_id: portfolioA.id });
+
+                const res = await api(projetoAdmin).patch(`/api/projeto/${projeto.id}`).send({ portfolio_id: destino.id });
+                assertStatus(res, 200);
+                const noBanco = await prisma().projeto.findUniqueOrThrow({ where: { id: projeto.id } });
+                assert.equal(noBanco.portfolio_id, destino.id);
+                assert.deepEqual(await compartilhadosAtivos(projeto.id), []);
+            });
+        });
+
         describe('remoção e isolamento de tipo', () => {
             it('remove (soft delete) só quem enxerga o projeto; depois ele some', async () => {
                 const descartavel = await criarProjeto(projetoAdmin, 'PP', { portfolio_id: portfolioA.id });
