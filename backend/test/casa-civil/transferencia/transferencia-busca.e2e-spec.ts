@@ -199,7 +199,7 @@ describe('transferencia: busca por palavra-chave (tsvector)', () => {
             await naoAcha(`${dem}/1999`, id);
         });
 
-        it('busca também pelo final do número, a partir de 3 dígitos', async () => {
+        it('busca por trecho do número (meio ou fim), a partir de 3 dígitos', async () => {
             const meio = digitos(4);
             const fim = digitos(6);
             const dem = digitos(6);
@@ -208,13 +208,17 @@ describe('transferencia: busca por palavra-chave (tsvector)', () => {
                 demanda: `0${dem}/2026`,
             });
 
+            // meio de uma parte
+            await acha(fim.slice(1, 4), id);
+            await acha(fim.slice(2, 5), id);
+            await acha(dem.slice(1, 5), id);
             // final de uma parte (3 e 4 dígitos)
             await acha(fim.slice(-3), id);
             await acha(fim.slice(-4), id);
-            await acha(`${dem.slice(-4)}`, id);
-            // final que atravessa a pontuação, digitado com ou sem ela
-            await acha(`${meio.slice(-2)}.${fim}`, id);
-            await acha(`${meio.slice(-2)}${fim}`, id);
+            await acha(dem.slice(-4), id);
+            // trecho que atravessa a pontuação, digitado com ou sem ela
+            await acha(`${meio.slice(-2)}.${fim.slice(0, 3)}`, id);
+            await acha(`${meio.slice(-2)}${fim.slice(0, 3)}`, id);
             await acha(`${dem.slice(-3)}/2026`, id);
             await acha(`${dem.slice(-3)}2026`, id);
 

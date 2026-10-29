@@ -43,7 +43,7 @@ export class PrismaHelpers {
         // Quando o vetor da tabela também indexa f_tsvector_numeros_flexiveis (ver 0054),
         // palavras só com dígitos e . / - viram (junto:* | (parte1:* & parte2:* ...)),
         // sem zeros à esquerda. Assim "067" acha "2026.067.89922" e "34994" acha "034994/2026".
-        // Com 3+ dígitos também busca pelo final do número: "4994" acha "034994/2026".
+        // Com 3+ dígitos também busca por trecho do número: "499" acha "034994/2026".
         numerosFlexiveis = false
     ): Promise<number[] | undefined> {
         let palavrasChave: number[] | undefined = undefined;
@@ -75,9 +75,10 @@ export class PrismaHelpers {
         return palavrasChave;
     }
 
-    // Mínimo de dígitos para buscar também pelo final do número: abaixo disso, "26"
-    // casaria com todo número terminado em 26 (todo 2026, por exemplo).
-    private static readonly MIN_DIGITOS_FINAL = 3;
+    // Mínimo de dígitos para buscar também por trecho do número (começo, meio ou fim):
+    // abaixo disso, "26" casaria com todo número que tem 26 (todo 2026, por exemplo).
+    // Tem que bater com o "length - 2" de f_tsvector_numeros_flexiveis (ver 0054).
+    private static readonly MIN_DIGITOS_TRECHO = 3;
 
     private static tsqueryNumeroFlexivel(word: string): string {
         const semZeros = (n: string) => n.replace(/^0+(?=\d)/, '');
@@ -94,11 +95,12 @@ export class PrismaHelpers {
             alternativas.push(semZeros(partes.join('')) + ':*', `(${todasAsPartes})`);
         }
 
-        // Busca pelo final: o vetor indexa os números invertidos com o prefixo "qx" (ver 0054),
-        // então o final do número vira prefixo. Usa os dígitos como digitados (com zeros).
+        // Busca por trecho: o vetor indexa todos os finais de cada número com o prefixo "qx"
+        // (ver 0054), e um trecho qualquer é o começo de algum final. Usa os dígitos como
+        // digitados, com zeros e sem pontuação.
         const digitos = word.replace(/\D/g, '');
-        if (digitos.length >= PrismaHelpers.MIN_DIGITOS_FINAL) {
-            alternativas.push('qx' + [...digitos].reverse().join('') + ':*');
+        if (digitos.length >= PrismaHelpers.MIN_DIGITOS_TRECHO) {
+            alternativas.push('qx' + digitos + ':*');
         }
 
         return alternativas.length === 1 ? alternativas[0] : `(${alternativas.join(' | ')})`;

@@ -4,9 +4,10 @@
 -- Para cada número encontrado devolve:
 --   - as partes, sem zeros à esquerda:  "2026.067.89922" -> "2026 67 89922"
 --   - o número junto, sem zeros à esquerda: "2026.067.89922" -> "202606789922"
---   - para a busca pelo final do número, as partes e o junto invertidos, com o prefixo "qx"
---     (a busca por prefixo no invertido equivale a buscar pelo final):
---     "2026.067.89922" -> "qx22998 qx760 qx6202 qx229987606202"
+--   - para a busca por trecho (começo, meio ou fim), todos os finais do número junto com 3+
+--     dígitos, com o prefixo "qx". Buscar pelo começo de um final acha qualquer trecho:
+--     "2026.067.89922" -> "qx202606789922 qx02606789922 ... qx89922 qx9922 qx922"
+--     ("992", do meio de "89922", casa com "qx9922").
 -- O termo digitado é normalizado do mesmo jeito em PrismaHelpers.buscaIdsPalavraChave.
 CREATE OR REPLACE FUNCTION f_tsvector_numeros_flexiveis(p_texto TEXT)
 RETURNS TEXT
@@ -17,16 +18,20 @@ AS $$
         string_agg(
             regexp_replace(regexp_replace(m[1], '[./\-]+', ' ', 'g'), '\m0+(\d)', '\1', 'g')
             || ' ' ||
-            regexp_replace(regexp_replace(m[1], '[./\-]+', '', 'g'), '^0+(\d)', '\1')
-            || ' qx' ||
-            regexp_replace(reverse(m[1]), '[./\-]+', ' qx', 'g')
-            || ' qx' ||
-            reverse(regexp_replace(m[1], '[./\-]+', '', 'g')),
+            regexp_replace(j.junto, '^0+(\d)', '\1')
+            || COALESCE(
+                ' ' || (
+                    SELECT string_agg('qx' || substr(j.junto, i), ' ')
+                    FROM generate_series(1, length(j.junto) - 2) AS i
+                ),
+                ''
+            ),
             ' '
         ),
         ''
     )
-    FROM regexp_matches(COALESCE(p_texto, ''), '(\d[\d./\-]*\d|\d)', 'g') AS m;
+    FROM regexp_matches(COALESCE(p_texto, ''), '(\d[\d./\-]*\d|\d)', 'g') AS m
+    CROSS JOIN LATERAL (SELECT regexp_replace(m[1], '[./\-]+', '', 'g') AS junto) AS j;
 $$;
 
 CREATE OR REPLACE FUNCTION f_rebuild_transferencia_tsvector(p_transferencia_id INTEGER)
