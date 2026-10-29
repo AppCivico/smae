@@ -198,6 +198,29 @@ describe('transferencia: busca por palavra-chave (tsvector)', () => {
             await naoAcha(`9${digitos(11)}`, id);
             await naoAcha(`${dem}/1999`, id);
         });
+
+        it('busca também pelo final do número, a partir de 3 dígitos', async () => {
+            const meio = digitos(4);
+            const fim = digitos(6);
+            const dem = digitos(6);
+            const { id } = await criarComTexto({
+                emenda: `2026.0${meio}.${fim}`,
+                demanda: `0${dem}/2026`,
+            });
+
+            // final de uma parte (3 e 4 dígitos)
+            await acha(fim.slice(-3), id);
+            await acha(fim.slice(-4), id);
+            await acha(`${dem.slice(-4)}`, id);
+            // final que atravessa a pontuação, digitado com ou sem ela
+            await acha(`${meio.slice(-2)}.${fim}`, id);
+            await acha(`${meio.slice(-2)}${fim}`, id);
+            await acha(`${dem.slice(-3)}/2026`, id);
+            await acha(`${dem.slice(-3)}2026`, id);
+
+            // 12 dígitos aleatórios não são o final de nenhum número desta transferência
+            await naoAcha(digitos(12), id);
+        });
     });
 
     describe('triggers de tabelas relacionadas', () => {

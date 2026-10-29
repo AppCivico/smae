@@ -4,6 +4,9 @@
 -- Para cada número encontrado devolve:
 --   - as partes, sem zeros à esquerda:  "2026.067.89922" -> "2026 67 89922"
 --   - o número junto, sem zeros à esquerda: "2026.067.89922" -> "202606789922"
+--   - para a busca pelo final do número, as partes e o junto invertidos, com o prefixo "qx"
+--     (a busca por prefixo no invertido equivale a buscar pelo final):
+--     "2026.067.89922" -> "qx22998 qx760 qx6202 qx229987606202"
 -- O termo digitado é normalizado do mesmo jeito em PrismaHelpers.buscaIdsPalavraChave.
 CREATE OR REPLACE FUNCTION f_tsvector_numeros_flexiveis(p_texto TEXT)
 RETURNS TEXT
@@ -14,7 +17,11 @@ AS $$
         string_agg(
             regexp_replace(regexp_replace(m[1], '[./\-]+', ' ', 'g'), '\m0+(\d)', '\1', 'g')
             || ' ' ||
-            regexp_replace(regexp_replace(m[1], '[./\-]+', '', 'g'), '^0+(\d)', '\1'),
+            regexp_replace(regexp_replace(m[1], '[./\-]+', '', 'g'), '^0+(\d)', '\1')
+            || ' qx' ||
+            regexp_replace(reverse(m[1]), '[./\-]+', ' qx', 'g')
+            || ' qx' ||
+            reverse(regexp_replace(m[1], '[./\-]+', '', 'g')),
             ' '
         ),
         ''

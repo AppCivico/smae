@@ -43,6 +43,7 @@ export class PrismaHelpers {
         // Quando o vetor da tabela também indexa f_tsvector_numeros_flexiveis (ver 0054),
         // palavras só com dígitos e . / - viram (junto:* | (parte1:* & parte2:* ...)),
         // sem zeros à esquerda. Assim "067" acha "2026.067.89922" e "34994" acha "034994/2026".
+        // Com 3+ dígitos também busca pelo final do número: "4994" acha "034994/2026".
         numerosFlexiveis = false
     ): Promise<number[] | undefined> {
         let palavrasChave: number[] | undefined = undefined;
@@ -74,16 +75,32 @@ export class PrismaHelpers {
         return palavrasChave;
     }
 
+    // Mínimo de dígitos para buscar também pelo final do número: abaixo disso, "26"
+    // casaria com todo número terminado em 26 (todo 2026, por exemplo).
+    private static readonly MIN_DIGITOS_FINAL = 3;
+
     private static tsqueryNumeroFlexivel(word: string): string {
         const semZeros = (n: string) => n.replace(/^0+(?=\d)/, '');
         const partes = word
             .split(/[./-]+/)
             .filter((p) => p.length > 0)
             .map(semZeros);
-        if (partes.length === 1) return `${partes[0]}:*`;
 
-        const junto = semZeros(partes.join(''));
-        const todasAsPartes = partes.map((p) => p + ':*').join(' & ');
-        return `(${junto}:* | (${todasAsPartes}))`;
+        const alternativas: string[] = [];
+        if (partes.length === 1) {
+            alternativas.push(partes[0] + ':*');
+        } else {
+            const todasAsPartes = partes.map((p) => p + ':*').join(' & ');
+            alternativas.push(semZeros(partes.join('')) + ':*', `(${todasAsPartes})`);
+        }
+
+        // Busca pelo final: o vetor indexa os números invertidos com o prefixo "qx" (ver 0054),
+        // então o final do número vira prefixo. Usa os dígitos como digitados (com zeros).
+        const digitos = word.replace(/\D/g, '');
+        if (digitos.length >= PrismaHelpers.MIN_DIGITOS_FINAL) {
+            alternativas.push('qx' + [...digitos].reverse().join('') + ':*');
+        }
+
+        return alternativas.length === 1 ? alternativas[0] : `(${alternativas.join(' | ')})`;
     }
 }
