@@ -9,6 +9,7 @@ import { DateTime } from 'luxon';
 import { DistribuicaoHistoricoStatusDto } from './entities/distribuicao-recurso.entity';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { atualizaDuracaoReal } from '../workflow/andamento/atualiza-duracao-real';
 
 @Injectable()
 export class DistribuicaoRecursoStatusService {
@@ -193,6 +194,7 @@ export class DistribuicaoRecursoStatusService {
                                     atualizado_em: new Date(Date.now()),
                                 },
                             });
+                            await atualizaDuracaoReal(prismaTx, { distribuicao_recurso_id: distribuicao_id });
                         }
 
                         if (statusNovo.tipo == DistribuicaoStatusTipo.Terminal) {

@@ -49,6 +49,7 @@ import {
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { atualizaDuracaoReal } from '../workflow/andamento/atualiza-duracao-real';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
@@ -2332,6 +2333,15 @@ export class TransferenciaService {
                 });
             }
         }
+
+        await atualizaDuracaoReal(prismaTxn, {
+            id: {
+                in: [
+                    andamentoPrimeiraFase.tarefaEspelhada[0].id,
+                    ...andamentoPrimeiraFase.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
+                ],
+            },
+        });
 
         // Atualizando cols de controle na transferência
         await prismaTxn.transferencia.update({

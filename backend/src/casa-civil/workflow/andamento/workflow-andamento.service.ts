@@ -9,6 +9,7 @@ import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
 import { DateTime } from 'luxon';
 import { WorkflowService } from '../configuracao/workflow.service';
 import { Date2YMD } from '../../../common/date2ymd';
+import { atualizaDuracaoReal } from './atualiza-duracao-real';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -799,27 +800,42 @@ export class WorkflowAndamentoService {
                 }
 
                 // Tarefa do cronograma referente à fase anterior e acompanhamento.
-                await prismaTxn.tarefa.updateMany({
-                    where: {
-                        tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
-                        OR: [
-                            {
+                const whereEtapaAnterior: Prisma.TarefaWhereInput = {
+                    tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
+                    OR: [
+                        {
+                            tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                            nivel: 1,
+                        },
+                        {
+                            tarefa_pai: {
                                 tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
-                                nivel: 1,
                             },
-                            {
-                                tarefa_pai: {
-                                    tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
-                                },
-                                nivel: 2,
-                            },
-                        ],
-                    },
+                            nivel: 2,
+                        },
+                    ],
+                };
+                await prismaTxn.tarefa.updateMany({
+                    where: whereEtapaAnterior,
                     data: {
                         termino_real: new Date(Date.now()),
                         atualizado_em: new Date(Date.now()),
                         fase_atual_workflow: false,
                     },
+                });
+
+                await atualizaDuracaoReal(prismaTxn, {
+                    OR: [
+                        whereEtapaAnterior,
+                        {
+                            id: {
+                                in: [
+                                    ...andamentoProxEtapa.tarefaEspelhada.map((t) => t.id),
+                                    ...andamentoProxEtapa.tarefas.flatMap((t) => t.tarefaEspelhada.map((te) => te.id)),
+                                ],
+                            },
+                        },
+                    ],
                 });
 
                 await prismaTxn.transferencia.update({
