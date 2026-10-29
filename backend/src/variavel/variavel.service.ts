@@ -1986,12 +1986,15 @@ export class VariavelService {
                     dto.fim_medicao === null ? undefined : dto.fim_medicao
                 );
             }
-            if (
-                tipo === 'Global' &&
-                updated.inicio_medicao &&
-                (dto.fim_medicao !== undefined || dto.inicio_medicao !== undefined)
-            ) {
-                await this.trataPeriodosSerieVariavel(prismaTxn, variavelId, null);
+            // sem fim_medicao o período termina no último ciclo aberto e apagaria o previsto futuro
+            const mudouPeriodo =
+                selfBefUpdate.fim_medicao?.toString() !== updated.fim_medicao?.toString() ||
+                selfBefUpdate.inicio_medicao?.toString() !== updated.inicio_medicao?.toString();
+            if (tipo === 'Global' && updated.inicio_medicao && updated.fim_medicao && mudouPeriodo) {
+                for (const id of [variavelId, ...updated.variaveis_filhas.map((f) => f.id)]) {
+                    await this.trataPeriodosSerieVariavel(prismaTxn, id, null);
+                    await prismaTxn.$queryRaw`select monta_serie_acumulada(${id}::int, null)`;
+                }
             }
             await logger.saveLogs(prismaTxn, user.getLogData());
         });
@@ -2134,8 +2137,8 @@ export class VariavelService {
     ) {
         if (indicadorId !== null) {
             const [indicadorInfo, variavelInfo] = await Promise.all([
-                this.prisma.indicador.findFirst({ where: { id: indicadorId }, select: { periodicidade: true } }),
-                this.prisma.variavel.findFirst({ where: { id: variavelId }, select: { periodicidade: true } }),
+                prismaTxn.indicador.findFirst({ where: { id: indicadorId }, select: { periodicidade: true } }),
+                prismaTxn.variavel.findFirst({ where: { id: variavelId }, select: { periodicidade: true } }),
             ]);
             if (!indicadorInfo || !variavelInfo) throw new HttpException('Variável ou indicador não encontrados', 400);
 
@@ -2152,6 +2155,9 @@ export class VariavelService {
             filtro.data_fim = dataFim;
             periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filtro, prismaTxn);
         }
+        // período vazio faria o deleteMany abaixo apagar a série inteira
+        if (periodoValido.length === 0) return;
+
         //Recupera as series que serao excluidas
         const seriesAfetadas = await prismaTxn.serieVariavel.findMany({
             where: {
@@ -2170,7 +2176,7 @@ export class VariavelService {
                     data_valor: serie.data_valor,
                     valor_nominal: serie.valor_nominal,
                     variavel_categorica_id: serie.variavel_categorica_id,
-                    variavel_categorica_valor_id: serie.variavel_categorica_id,
+                    variavel_categorica_valor_id: serie.variavel_categorica_valor_id,
                     atualizado_em: serie.atualizado_em,
                     atualizado_por: serie.atualizado_por,
                     conferida: serie.conferida,
