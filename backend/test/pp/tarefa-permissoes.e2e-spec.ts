@@ -133,7 +133,6 @@ describe('tarefa permissões (PP): responsável, equipe e gestor', () => {
 
     it(
         'espectador do mesmo órgão da tarefa não é marcado como pode_editar',
-        { todo: 'BUG: calcPodeEditar cai na regra "órgão da tarefa == órgão do usuário" e marca pode_editar=true para espectador (src/pp/tarefa/tarefa.service.ts:419-461), mas o PATCH responde 403' },
         async () => {
             const { c, t, espectador } = await cenario();
             const doEsp = await api(espectador).get(`${c.base}/tarefa/${t.id}`);

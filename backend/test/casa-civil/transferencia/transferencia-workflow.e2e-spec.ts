@@ -334,7 +334,6 @@ describe('transferencia: ciclo de vida do workflow', () => {
 
         it(
             'reabrir fase de workflow concluído volta workflow_finalizado para false',
-            { todo: 'BUG: reabrirFaseAnterior não zera transferencia.workflow_finalizado (workflow-andamento-fase.service.ts:885)' },
             async () => {
                 const { wf, id } = await novaTransferenciaComWorkflow();
                 await percorrerAteOFim(wf, id);
@@ -346,7 +345,6 @@ describe('transferencia: ciclo de vida do workflow', () => {
 
         it(
             'a fase inicial aberta aparece no consolidado como situação atual',
-            { todo: 'BUG: startWorkflow não marca fase_atual_workflow na tarefa da 1a fase (transferencia.service.ts:2191), consolidado fica "Aguardando liberação"' },
             async () => {
                 const { wf, id } = await novaTransferenciaComWorkflow();
                 const consol = await consolidado(id);

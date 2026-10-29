@@ -201,30 +201,24 @@ describe('variável calculada (fórmula composta do Plano Setorial)', () => {
         assert.deepEqual(await serieVariavelDb(calc, 'Realizado'), { '2024-02-01': 21, '2024-03-01': 32 });
     });
 
-    it(
-        '400 ao criar composta do PS com referência que não está em formula_variaveis',
-        {
-            todo: 'BUG: createPS não chama validateVariaveis (indicador.formula-composta.service.ts:58), cria fórmula com $_2 sem variável',
-        },
-        async () => {
-            const a = await criaGlobal(admin, orgaoId);
-            const res = await api(admin)
-                .post('/api/plano-setorial-formula-composta')
-                .send({
-                    titulo: uniq('Inválida'),
-                    formula: '$_1 + $_2',
-                    formula_variaveis: [{ referencia: '_1', janela: 1, variavel_id: a, usar_serie_acumulada: false }],
-                    mostrar_monitoramento: true,
-                    nivel_regionalizacao: null,
-                    orgao_id: orgaoId,
-                    casas_decimais: 2,
-                    periodicidade: 'Mensal',
-                    regionalizavel: false,
-                    inicio_medicao: '2024-01-01',
-                    fim_medicao: '2024-03-01',
-                    unidade_medida_id: -1,
-                });
-            assertStatus(res, 400);
-        }
-    );
+    it('400 ao criar composta do PS com referência que não está em formula_variaveis', async () => {
+        const a = await criaGlobal(admin, orgaoId);
+        const res = await api(admin)
+            .post('/api/plano-setorial-formula-composta')
+            .send({
+                titulo: uniq('Inválida'),
+                formula: '$_1 + $_2',
+                formula_variaveis: [{ referencia: '_1', janela: 1, variavel_id: a, usar_serie_acumulada: false }],
+                mostrar_monitoramento: true,
+                nivel_regionalizacao: null,
+                orgao_id: orgaoId,
+                casas_decimais: 2,
+                periodicidade: 'Mensal',
+                regionalizavel: false,
+                inicio_medicao: '2024-01-01',
+                fim_medicao: '2024-03-01',
+                unidade_medida_id: -1,
+            });
+        assertStatus(res, 400);
+    });
 });

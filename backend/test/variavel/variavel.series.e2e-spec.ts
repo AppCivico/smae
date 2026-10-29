@@ -110,17 +110,11 @@ describe('séries de variável global', () => {
         });
     });
 
-    it(
-        'reduzir fim_medicao de global não deixa linhas de série acumulada fora do período',
-        {
-            todo: 'BUG: só PDM chama trataPeriodosSerieVariavel (variavel.service.ts:1975); global mantém acumulado além do fim',
-        },
-        async () => {
-            const v = await criaGlobal(admin, orgaoId, { acumulativa: true });
-            await grava(v, [{ periodo: '2024-01-01', valor: '1' }]);
-            await patch(v, { fim_medicao: '2024-02-01' });
-            const acumulado = await serieVariavelDb(v, 'RealizadoAcumulado');
-            assert.deepEqual(Object.keys(acumulado), ['2024-01-01', '2024-02-01']);
-        }
-    );
+    it('reduzir fim_medicao de global não deixa linhas de série acumulada fora do período', async () => {
+        const v = await criaGlobal(admin, orgaoId, { acumulativa: true });
+        await grava(v, [{ periodo: '2024-01-01', valor: '1' }]);
+        await patch(v, { fim_medicao: '2024-02-01' });
+        const acumulado = await serieVariavelDb(v, 'RealizadoAcumulado');
+        assert.deepEqual(Object.keys(acumulado), ['2024-01-01', '2024-02-01']);
+    });
 });
