@@ -96,8 +96,12 @@ type ConfigDeItem = {
   titulo?: string;                         // Título exibido (opcional)
   larguraBase?: string;                    // Largura base (ex: '20em', '100%')
   atributosDoItem?: Record<string, unknown>; // Atributos HTML extras para o item
+  atributosDoTermo?: Record<string, unknown>; // Atributos HTML extras para o <dt>
+  atributosDaDescricao?: Record<string, unknown>; // Atributos HTML extras para o <dd>
 };
 ```
+
+Ver [Atributos do termo e da descrição](#atributos-do-termo-e-da-descrição).
 
 ### Tipo `ItemDeLista`
 
@@ -259,6 +263,28 @@ Alternativamente, você pode usar as classes utilitárias `fbLARGURAem` através
 ```
 
 **Nota:** A propriedade `larguraBase` é preferível por ser mais explícita e não depender de classes CSS globais.
+
+## Atributos do termo e da descrição
+
+`atributosDoTermo` e `atributosDaDescricao` são aplicados ao `<dt>` e ao `<dd>` de cada item, da mesma forma que `atributosDoItem` é aplicado ao item. Podem vir do item da `lista` ou de `itensSelecionados`; os do item têm prioridade.
+
+Diferente dos demais atributos, que são somados aos do elemento, uma `class` **substitui** as classes tipográficas padrão (`t12 uc w700 mb05 tamarelo` no termo e `t13` na descrição). As classes estruturais `description-list__term` e `description-list__description` são sempre mantidas. Isso permite trocar o estilo por completo, o que não é possível com slots, que substituem apenas o conteúdo das tags:
+
+```vue
+<SmaeDescriptionList
+  :lista="[
+    {
+      chave: 'empenho',
+      titulo: 'Total empenhado',
+      valor: 'R$ 1.000,00',
+      atributosDoTermo: { class: 't12 w700 tc300' },
+      atributosDaDescricao: { class: 't18 w700' },
+    },
+  ]"
+/>
+```
+
+A `class` aceita qualquer formato do Vue (string, array ou objeto). Sem `class`, as classes padrão são mantidas e os demais atributos (`id`, `title`, `data-*`…) são apenas acrescentados.
 
 ## Estrutura HTML gerada
 

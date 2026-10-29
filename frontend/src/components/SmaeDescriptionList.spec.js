@@ -931,4 +931,109 @@ describe('SmaeDescriptionList', () => {
       expect(dl.classes()).toContain('description-list--grid-limitado');
     });
   });
+
+  describe('atributosDoTermo e atributosDaDescricao', () => {
+    it('mantém as classes padrão quando não são fornecidos', () => {
+      const wrapper = montarComponente({
+        lista: [{ chave: 'nome', valor: 'João' }],
+      });
+
+      expect(wrapper.find('dt').classes())
+        .toEqual(['description-list__term', 't12', 'uc', 'w700', 'mb05', 'tamarelo']);
+      expect(wrapper.find('dd').classes())
+        .toEqual(['description-list__description', 't13']);
+    });
+
+    it('a classe fornecida substitui as classes padrão, preservando a estrutural', () => {
+      const wrapper = montarComponente({
+        lista: [{
+          chave: 'nome',
+          valor: 'João',
+          atributosDoTermo: { class: 't12 w700 tc300' },
+          atributosDaDescricao: { class: 't18 w700' },
+        }],
+      });
+
+      expect(wrapper.find('dt').classes())
+        .toEqual(['description-list__term', 't12', 'w700', 'tc300']);
+      expect(wrapper.find('dd').classes())
+        .toEqual(['description-list__description', 't18', 'w700']);
+    });
+
+    it('aceita classe em formato de array ou objeto do Vue', () => {
+      const wrapper = montarComponente({
+        lista: [{
+          chave: 'nome',
+          valor: 'João',
+          atributosDoTermo: { class: ['t12', { tc300: true, tamarelo: false }] },
+        }],
+      });
+
+      expect(wrapper.find('dt').classes()).toEqual(['description-list__term', 't12', 'tc300']);
+    });
+
+    it('aplica os demais atributos sem afetar as classes padrão', () => {
+      const wrapper = montarComponente({
+        lista: [{
+          chave: 'nome',
+          valor: 'João',
+          atributosDoTermo: { id: 'termo-nome', title: 'Nome' },
+          atributosDaDescricao: { 'data-test': 'valor-nome' },
+        }],
+      });
+
+      const termo = wrapper.find('dt');
+      expect(termo.attributes('id')).toBe('termo-nome');
+      expect(termo.attributes('title')).toBe('Nome');
+      expect(termo.classes()).toContain('tamarelo');
+      expect(wrapper.find('dd').attributes('data-test')).toBe('valor-nome');
+      expect(wrapper.find('dd').classes()).toContain('t13');
+    });
+
+    it('vale para cada item separadamente', () => {
+      const wrapper = montarComponente({
+        lista: [
+          { chave: 'nome', valor: 'João', atributosDoTermo: { class: 'tc300' } },
+          { chave: 'idade', valor: 30 },
+        ],
+      });
+
+      const [primeiro, segundo] = wrapper.findAll('dt');
+      expect(primeiro.classes()).not.toContain('tamarelo');
+      expect(segundo.classes()).toContain('tamarelo');
+    });
+
+    it('lê as configurações de itensSelecionados', () => {
+      const wrapper = montarComponente({
+        objeto: { nome: 'João' },
+        itensSelecionados: [{
+          chave: 'nome',
+          atributosDoTermo: { class: 'tc300' },
+          atributosDaDescricao: { class: 't18' },
+        }],
+      });
+
+      expect(wrapper.find('dt').classes()).toEqual(['description-list__term', 'tc300']);
+      expect(wrapper.find('dd').classes()).toEqual(['description-list__description', 't18']);
+    });
+
+    it('os atributos do item da lista têm prioridade sobre os de itensSelecionados', () => {
+      const wrapper = montarComponente({
+        lista: [{
+          chave: 'nome',
+          valor: 'João',
+          atributosDoTermo: { class: 'tc300', title: 'do item' },
+        }],
+        itensSelecionados: [{
+          chave: 'nome',
+          atributosDoTermo: { class: 'tc600', title: 'da configuração', id: 'termo' },
+        }],
+      });
+
+      const termo = wrapper.find('dt');
+      expect(termo.classes()).toEqual(['description-list__term', 'tc300']);
+      expect(termo.attributes('title')).toBe('do item');
+      expect(termo.attributes('id')).toBe('termo');
+    });
+  });
 });
