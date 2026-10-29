@@ -104,14 +104,48 @@ const totalDeContratosFiltrados = computed(() => somarCamposDeContratos(listaFil
 const exibirColunasDeAcao = computed(() => !permissoesDoItemEmFoco.value.apenas_leitura
   || permissoesDoItemEmFoco.value.sou_responsavel);
 
-function excluirProcesso(id, nome) {
-  alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
-    if (await contratosStore.excluirItem(id)) {
-      alertStore.success('Contrato removido.');
+const nomeDaEntidade = computed(() => (route.meta.entidadeMãe === 'obras' ? 'obra' : 'projeto'));
+
+function montarAvisoDeDesassociacao(nome, previa) {
+  const entidade = nomeDaEntidade.value;
+  let mensagem = `Deseja mesmo desassociar o contrato "${nome}" ${entidade === 'obra' ? 'desta obra' : 'deste projeto'}?`;
+
+  if (previa?.contrato_sera_excluido) {
+    return `${mensagem}\n\nNão há outro(a) ${entidade} vinculado(a) a ele, então o contrato será excluído.`;
+  }
+
+  if (previa?.processos_movidos.length) {
+    const itens = previa.processos_movidos
+      .map((p) => `• ${formatProcesso(p.processo_sei)} → ${p.destino?.nome ?? '?'}`)
+      .join('\n');
+
+    mensagem += `\n\nO contrato usa processos SEI cadastrados só aqui. Eles serão copiados para outro(a) ${entidade} vinculado(a) ao contrato:\n${itens}`;
+  }
+
+  return mensagem;
+}
+
+async function excluirProcesso(linha) {
+  if (linha.contrato_exclusivo) {
+    alertStore.confirmAction(`Deseja mesmo remover "${linha.numero}"?`, async () => {
+      if (await contratosStore.excluirItem(linha.id)) {
+        alertStore.success('Contrato removido.');
+
+        await contratosStore.buscarTudo();
+      }
+    }, 'Remover');
+    return;
+  }
+
+  const previa = await contratosStore.buscarPreviaDeRemocao(linha.id);
+
+  alertStore.confirmAction(montarAvisoDeDesassociacao(linha.numero, previa), async () => {
+    if (await contratosStore.excluirItem(linha.id)) {
+      alertStore.success(previa?.contrato_sera_excluido ? 'Contrato removido.' : 'Contrato desassociado.');
 
       await contratosStore.buscarTudo();
     }
-  }, 'Remover');
+  }, 'Desassociar');
 }
 
 const colunas = computed(() => [
@@ -324,7 +358,7 @@ iniciar();
         class="block like-a__text tipinfo left"
         aria-label="excluir"
         title="excluir"
-        @click="excluirProcesso(linha.id, linha.numero)"
+        @click="excluirProcesso(linha)"
       >
         <svg
           :width="linha.contrato_exclusivo ? 20 : 24"

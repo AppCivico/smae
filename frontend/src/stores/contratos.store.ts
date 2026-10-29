@@ -4,6 +4,7 @@ import type { ContratoAditivoItemDto } from '@back/pp/contrato-aditivo/entities/
 import type { AssociarContratoCompartilhadoDto } from '@back/pp/contrato/dto/associar-contrato-compartilhado.dto';
 import type {
   ContratoCompartilhadoDisponivelDto,
+  ContratoDesassociarPreviaDto,
   ContratoDetailDto,
   ContratoItemDto,
   ListContratoCompartilhadoDisponivelDto,
@@ -170,6 +171,19 @@ export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${p
       }
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
+    },
+
+    async buscarPreviaDeRemocao(
+      id: number,
+      mãeComId: MãeComId = undefined,
+    ): Promise<ContratoDesassociarPreviaDto | null> {
+      const caminho = gerarCaminhoParaApi(mãeComId || this.route.params);
+      try {
+        return await this.requestS.get(`${baseUrl}/${caminho}/contrato/${id}/previa-remocao`) as ContratoDesassociarPreviaDto;
+      } catch (erro: unknown) {
+        this.erro = erro;
+        return null;
+      }
     },
 
     async excluirItem(id: number, mãeComId: MãeComId = undefined): Promise<boolean> {
