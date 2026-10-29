@@ -140,7 +140,6 @@ describe('transferencia: view de análise e ranking de parlamentares', () => {
 
     it(
         'ranking conta a transferência uma vez mesmo com várias distribuições válidas',
-        { todo: 'BUG: view_ranking_transferencia_parlamentar parte de view_transferencia_analise (uma linha por distribuição) e multiplica count e valor (0050-view_transferencia_analise.pgsql)' },
         async () => {
             const id = await comOrcamento();
             const p = await criarParlamentar();

@@ -316,25 +316,19 @@ describe('séries do indicador (PDM legado)', () => {
         assert.deepEqual(await indicadorDb(ind), antes);
     });
 
-    it(
-        'PATCH parcial do indicador (só título) preserva a fórmula compilada',
-        {
-            todo: 'BUG: update sempre grava formula_compilada de validateVariaveis(undefined, id, "") = "" (indicador.service.ts:551,608)',
-        },
-        async () => {
-            const ind = await criaIndicador();
-            const a = await criaVariavel(ind);
-            await salvaFormula(ind, {
-                formula: '$_1',
-                formula_variaveis: [{ referencia: '_1', janela: 1, variavel_id: a, usar_serie_acumulada: false }],
-            });
-            const antes = (await indicadorDb(ind)).formula_compilada;
-            assert.ok(antes);
+    it('PATCH parcial do indicador (só título) preserva a fórmula compilada', async () => {
+        const ind = await criaIndicador();
+        const a = await criaVariavel(ind);
+        await salvaFormula(ind, {
+            formula: '$_1',
+            formula_variaveis: [{ referencia: '_1', janela: 1, variavel_id: a, usar_serie_acumulada: false }],
+        });
+        const antes = (await indicadorDb(ind)).formula_compilada;
+        assert.ok(antes);
 
-            await salvaFormula(ind, { titulo: uniq('Só título') });
-            assert.equal((await indicadorDb(ind)).formula_compilada, antes);
-        }
-    );
+        await salvaFormula(ind, { titulo: uniq('Só título') });
+        assert.equal((await indicadorDb(ind)).formula_compilada, antes);
+    });
 
     it('encurtar o fim do indicador apaga (com histórico) a série da variável e do indicador fora do período', async () => {
         const ind = await criaIndicador();

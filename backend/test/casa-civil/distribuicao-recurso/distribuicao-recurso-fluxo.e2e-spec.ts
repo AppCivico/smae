@@ -45,7 +45,6 @@ describe('distribuicao-recurso: SEI, valor distribuído e preenchimento', () => 
 
         it(
             'rejeita o mesmo processo SEI escrito em formatos diferentes',
-            { todo: 'BUG: checkDuplicateSei compara o texto cru, mas o banco guarda só os dígitos (distribuicao-recurso.service.ts:429)' },
             async () => {
                 const id = await comOrcamentoLivre();
                 const duplicada = await criarComSei(id, [{ processo_sei: sei(11) }, { processo_sei: '6016202300000111' }]);

@@ -167,7 +167,6 @@ describe('cronograma, etapas e consolidação (rollup)', () => {
 
         it(
             'cronograma usa o menor início real já preenchido mesmo que só uma subfase tenha começado',
-            { todo: 'BUG: trigger só recalcula o cronograma quando uma etapa de topo muda (0033-triggers-crono-etapa.pgsql, f_trg_estapa_esticar_datas_do_pai)' },
             async () => {
                 const { cronograma } = await novoCronograma();
                 const e = await criarEtapaPS(ps, cronograma);
