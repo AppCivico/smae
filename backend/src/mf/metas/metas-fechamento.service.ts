@@ -4,6 +4,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { escreveNoPdmLegado } from './trava-pdm-legado';
 import { FechamentoDto, FilterFechamentoDto, MfListFechamentoDto } from './../metas/dto/mf-meta-fechamento.dto';
 
 @Injectable()
@@ -88,7 +89,9 @@ export class MetasFechamentoService {
             throw new HttpException('Você não pode criar Fechamentos.', 400);
         }
 
-        return this.addMetaFechamentoInterno(dto, user, prismaCtx);
+        return escreveNoPdmLegado(this.prisma, prismaCtx, dto.ciclo_fisico_id, (prismaTx) =>
+            this.addMetaFechamentoInterno(dto, user, prismaTx)
+        );
     }
 
     async addMetaFechamentoInterno(

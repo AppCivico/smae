@@ -6,6 +6,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { Html2Text } from '../../common/Html2Text';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
+import { escreveNoPdmLegado } from './trava-pdm-legado';
 import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
 
 @Injectable()
@@ -86,7 +87,9 @@ export class MetasRiscoService {
             throw new HttpException('Você não pode adicionar analise de risco.', 400);
         }
 
-        return this.addMetaRiscoInterno(dto, user, prismaCtx);
+        return escreveNoPdmLegado(this.prisma, prismaCtx, dto.ciclo_fisico_id, (prismaTx) =>
+            this.addMetaRiscoInterno(dto, user, prismaTx)
+        );
     }
 
     async addMetaRiscoInterno(
