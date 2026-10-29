@@ -3913,7 +3913,7 @@ export class ProjetoService {
             }
         }
 
-        await garanteCoberturaSeiContratos(prismaTx, contratoIds, user.id);
+        await garanteCoberturaSeiContratos(prismaTx, contratoIds, user.id, projeto_id);
     }
 
     async append_document(tipo: TipoProjeto, projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {

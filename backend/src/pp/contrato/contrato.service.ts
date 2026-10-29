@@ -445,7 +445,7 @@ export class ContratoService {
                     },
                 });
             } else {
-                await garanteCoberturaSeiContratos(prismaTx, [id], user.id);
+                await garanteCoberturaSeiContratos(prismaTx, [id], user.id, projeto_id);
             }
         });
     }
