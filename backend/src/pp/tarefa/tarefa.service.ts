@@ -5,6 +5,7 @@ import { Transform, Type, plainToInstance } from 'class-transformer';
 import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { DateTime } from 'luxon';
 import { TransferenciaService } from 'src/casa-civil/transferencia/transferencia.service';
+import { registrarTrocaResponsavelWorkflow } from 'src/casa-civil/transferencia/transferencia-historico.helper';
 import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -1530,10 +1531,20 @@ export class TarefaService {
                     where: { id: updatedSelf.transferencia_tarefa_id },
                     select: {
                         orgao_responsavel_id: true,
+                        transferencia_andamento: { select: { id: true, transferencia_id: true } },
                     },
                 });
 
                 if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
+                    await registrarTrocaResponsavelWorkflow(prismaTx, {
+                        transferencia_id: tarefaWorkflow.transferencia_andamento.transferencia_id,
+                        user_id: user.id,
+                        origem: 'Cronograma',
+                        transferencia_andamento_id: tarefaWorkflow.transferencia_andamento.id,
+                        transferencia_andamento_tarefa_id: updatedSelf.transferencia_tarefa_id,
+                        orgao: { anterior: tarefaWorkflow.orgao_responsavel_id, novo: updatedSelf.orgao_id },
+                    });
+
                     await prismaTx.transferenciaAndamentoTarefa.update({
                         where: { id: updatedSelf.transferencia_tarefa_id },
                         data: {
@@ -1553,11 +1564,19 @@ export class TarefaService {
                     where: { id: updatedSelf.transferencia_fase_id },
                     select: {
                         orgao_responsavel_id: true,
+                        transferencia_id: true,
                     },
                 });
-                console.log(tarefaWorkflow);
 
                 if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
+                    await registrarTrocaResponsavelWorkflow(prismaTx, {
+                        transferencia_id: tarefaWorkflow.transferencia_id,
+                        user_id: user.id,
+                        origem: 'Cronograma',
+                        transferencia_andamento_id: updatedSelf.transferencia_fase_id,
+                        orgao: { anterior: tarefaWorkflow.orgao_responsavel_id, novo: updatedSelf.orgao_id },
+                    });
+
                     await prismaTx.transferenciaAndamento.update({
                         where: { id: updatedSelf.transferencia_fase_id },
                         data: {
