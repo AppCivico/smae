@@ -12,7 +12,10 @@ import {
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from '../../configuracao/workflow.service';
 import { WorkflowAndamentoService } from '../workflow-andamento.service';
-import { registrarTrocaResponsavelWorkflow } from 'src/casa-civil/transferencia/transferencia-historico.helper';
+import {
+    registrarTrocaResponsavelWorkflow,
+    TrocaResponsavelWorkflowParams,
+} from 'src/casa-civil/transferencia/transferencia-historico.helper';
 
 @Injectable()
 export class WorkflowAndamentoFaseService {
@@ -258,6 +261,7 @@ export class WorkflowAndamentoFaseService {
         });
 
         const operations = [];
+        const trocasResponsavel: TrocaResponsavelWorkflowParams[] = [];
         const idsAtualizados: RecordWithId[] = [];
         if (dto.tarefas != undefined) {
             for (const tarefa of dto.tarefas) {
@@ -338,7 +342,7 @@ export class WorkflowAndamentoFaseService {
                     tarefa.orgao_responsavel_id !== undefined &&
                     tarefa.orgao_responsavel_id !== transferenciaAndamentoTarefaRow.orgao_responsavel_id
                 ) {
-                    await registrarTrocaResponsavelWorkflow(prismaTxn, {
+                    trocasResponsavel.push({
                         transferencia_id: dto.transferencia_id,
                         user_id: user.id,
                         origem: 'Workflow',
@@ -387,7 +391,10 @@ export class WorkflowAndamentoFaseService {
                 }
             }
 
-            await Promise.all(operations);
+            await Promise.all([
+                ...operations,
+                ...trocasResponsavel.map((troca) => registrarTrocaResponsavelWorkflow(prismaTxn, troca)),
+            ]);
         }
 
         return idsAtualizados;
