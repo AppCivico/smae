@@ -21,3 +21,12 @@ export function distribuicaoContabilizada(
 
     return !!(statusRow.status ?? statusRow.status_base)?.valor_distribuicao_contabilizado;
 }
+
+// Versão SQL de distribuicaoContabilizada(): `drAlias` é o alias da tabela distribuicao_recurso na query.
+export const SqlDistribuicaoContabilizada = (drAlias: Prisma.Sql) => Prisma.sql`COALESCE((
+    SELECT COALESCE(ds.valor_distribuicao_contabilizado, dsb.valor_distribuicao_contabilizado)
+    FROM distribuicao_recurso_status drs
+    LEFT JOIN distribuicao_status ds ON ds.id = drs.status_id
+    LEFT JOIN distribuicao_status_base dsb ON dsb.id = drs.status_base_id
+    WHERE drs.distribuicao_id = ${drAlias}.id AND drs.removido_em IS NULL
+    ORDER BY drs.data_troca DESC, drs.id DESC LIMIT 1), true)`;

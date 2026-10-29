@@ -6460,6 +6460,7 @@ model TransferenciaParlamentar {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([parlamentar_id])
     @@map("transferencia_parlamentar")
 }
 
@@ -6594,6 +6595,7 @@ model DistribuicaoParlamentar {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([parlamentar_id])
     @@map("distribuicao_parlamentar")
 }
 
@@ -7558,6 +7560,7 @@ model DistribuicaoRecursoStatus {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([distribuicao_id])
     @@map("distribuicao_recurso_status")
 }
 

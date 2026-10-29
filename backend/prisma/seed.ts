@@ -547,6 +547,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
         ['CadastroParlamentar.listar', 'Listar Parlamentar'],
         ['CadastroParlamentar.remover', 'Remover Parlamentar'],
+        ['CadastroParlamentar.painel', 'Ver painel do parlamentar (transferências e recursos)'],
         ['SMAE.acesso_telefone', 'Ver todos os telefones do parlamentar'],
     ],
     CadastroTransferencia: [
@@ -1282,6 +1283,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroParlamentar.inserir',
             'CadastroParlamentar.listar',
             'CadastroParlamentar.remover',
+            'CadastroParlamentar.painel',
             'Reports.remover.CasaCivil',
             'Reports.executar.CasaCivil',
             'Reports.modelo_admin.CasaCivil',
