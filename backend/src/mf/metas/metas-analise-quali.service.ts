@@ -6,6 +6,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { Html2Text } from '../../common/Html2Text';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
+import { escreveNoPdmLegado } from './trava-pdm-legado';
 import { UploadService } from '../../upload/upload.service';
 import {
     AnaliseQualitativaDocumentoDto,
@@ -35,6 +36,16 @@ export class MetasAnaliseQualiService {
         }
 
         return ret;
+    }
+
+    private async carregaCicloDoDocumento(id: number): Promise<number> {
+        const documento = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
+            where: { id, removido_em: null },
+            select: { ciclo_fisico_id: true },
+        });
+        if (!documento) throw new HttpException('Documento não encontrado ou já removido', 404);
+
+        return documento.ciclo_fisico_id;
     }
 
     async getMetaAnaliseQualitativa(
@@ -128,7 +139,9 @@ export class MetasAnaliseQualiService {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
         }
 
-        return this.addMetaAnaliseQualitativaDocumentoInterno(dto, user, prismaCtx);
+        return escreveNoPdmLegado(this.prisma, prismaCtx, dto.ciclo_fisico_id, (prismaTx) =>
+            this.addMetaAnaliseQualitativaDocumentoInterno(dto, user, prismaTx)
+        );
     }
 
     async addMetaAnaliseQualitativaDocumentoInterno(
@@ -187,7 +200,10 @@ export class MetasAnaliseQualiService {
             throw new HttpException('Você não pode atualizar análise qualitativa.', 400);
         }
 
-        return this.updateMetaAnaliseQualitativaDocumentoInterno(id, dto, user, prismaCtx);
+        const cicloFisicoId = await this.carregaCicloDoDocumento(id);
+        return escreveNoPdmLegado(this.prisma, prismaCtx, cicloFisicoId, (prismaTx) =>
+            this.updateMetaAnaliseQualitativaDocumentoInterno(id, dto, user, prismaTx)
+        );
     }
 
     async updateMetaAnaliseQualitativaDocumentoInterno(
@@ -244,7 +260,10 @@ export class MetasAnaliseQualiService {
             throw new HttpException('Você não pode remover analise qualitativa.', 400);
         }
 
-        return this.deleteMetaAnaliseQualitativaDocumentoInterno(id, user, prismaCtx);
+        const cicloFisicoId = await this.carregaCicloDoDocumento(id);
+        return escreveNoPdmLegado(this.prisma, prismaCtx, cicloFisicoId, (prismaTx) =>
+            this.deleteMetaAnaliseQualitativaDocumentoInterno(id, user, prismaTx)
+        );
     }
 
     async deleteMetaAnaliseQualitativaDocumentoInterno(
@@ -294,7 +313,9 @@ export class MetasAnaliseQualiService {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
         }
 
-        return this.addMetaAnaliseQualitativaInterno(dto, user, prismaCtx);
+        return escreveNoPdmLegado(this.prisma, prismaCtx, dto.ciclo_fisico_id, (prismaTx) =>
+            this.addMetaAnaliseQualitativaInterno(dto, user, prismaTx)
+        );
     }
 
     async addMetaAnaliseQualitativaInterno(
