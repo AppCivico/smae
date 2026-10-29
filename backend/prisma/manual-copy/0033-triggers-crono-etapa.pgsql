@@ -170,6 +170,18 @@ BEGIN
             (inicio_previsto IS DISTINCT FROM v_inicio_previsto)
         );
 
+        IF TG_OP = 'INSERT'
+            OR OLD.inicio_real IS DISTINCT FROM NEW.inicio_real
+            OR OLD.removido_em IS DISTINCT FROM NEW.removido_em THEN
+            PERFORM atualiza_inicio_fim_cronograma(sub.cronograma_id)
+                FROM (
+                    SELECT ce.cronograma_id
+                    FROM cronograma_etapa ce
+                    WHERE ce.etapa_id = NEW.id
+                    GROUP BY 1
+                ) sub;
+        END IF;
+
     END IF;
     RETURN NEW;
 END;
