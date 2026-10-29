@@ -11,7 +11,14 @@ type ConfigDeItem = {
   titulo?: string;
   larguraBase?: string;
   atributosDoItem?: Record<string, unknown>;
+  atributosDoTermo?: Record<string, unknown>;
+  atributosDaDescricao?: Record<string, unknown>;
 };
+
+// classes tipográficas padrão; uma `class` em `atributosDoTermo` ou
+// `atributosDaDescricao` as substitui, mantendo apenas a classe estrutural
+const CLASSES_PADRAO_DO_TERMO = 't12 uc w700 mb05 tamarelo';
+const CLASSES_PADRAO_DA_DESCRICAO = 't13';
 
 type ItemDeLista = ConfigDeItem & {
   valor: string | number | null | undefined;
@@ -165,7 +172,34 @@ function montarItem(config: ConfigDeItem, item: ItemDeLista): ItemDeLista {
     ...item,
     titulo: resolverTitulo(item.chave, item.titulo),
     atributosDoItem: aplicarLarguraBase(atributosMesclados, larguraBase),
+    atributosDoTermo: { ...config.atributosDoTermo, ...item.atributosDoTermo },
+    atributosDaDescricao: { ...config.atributosDaDescricao, ...item.atributosDaDescricao },
   };
+}
+
+function montarAtributos(
+  classeEstrutural: string,
+  classesPadrao: string,
+  atributos?: Record<string, unknown>,
+): Record<string, unknown> {
+  const { class: classe, ...demais } = atributos || {};
+
+  return {
+    ...demais,
+    class: [classeEstrutural, classe ?? classesPadrao],
+  };
+}
+
+function atributosDoTermo(item: ItemDeLista): Record<string, unknown> {
+  return montarAtributos('description-list__term', CLASSES_PADRAO_DO_TERMO, item.atributosDoTermo);
+}
+
+function atributosDaDescricao(item: ItemDeLista): Record<string, unknown> {
+  return montarAtributos(
+    'description-list__description',
+    CLASSES_PADRAO_DA_DESCRICAO,
+    item.atributosDaDescricao,
+  );
 }
 
 const listaConvertida = computed(() => {
@@ -269,9 +303,7 @@ const classeContainer = computed(() => [
         v-bind="item.atributosDoItem"
         :aria-field="item.chave"
       >
-        <dt
-          class="description-list__term t12 uc w700 mb05 tamarelo"
-        >
+        <dt v-bind="atributosDoTermo(item)">
           <slot
             :name="`termo--${item.chave}`"
             :item="item"
@@ -284,9 +316,7 @@ const classeContainer = computed(() => [
             </slot>
           </slot>
         </dt>
-        <dd
-          class="description-list__description t13"
-        >
+        <dd v-bind="atributosDaDescricao(item)">
           <slot
             :name="`descricao--${item.chave}`"
             :item="item"
