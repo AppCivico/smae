@@ -83,6 +83,7 @@ export class PrismaHelpers {
         if (partes.length === 1) return `${partes[0]}:*`;
 
         const junto = semZeros(partes.join(''));
-        return `(${junto}:* | (${partes.map((p) => `${p}:*`).join(' & ')}))`;
+        const todasAsPartes = partes.map((p) => p + ':*').join(' & ');
+        return `(${junto}:* | (${todasAsPartes}))`;
     }
 }
