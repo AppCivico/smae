@@ -389,6 +389,13 @@ export class VariavelGlobalController {
         return await this.variavelService.processVariaveisSuspensasSync();
     }
 
+    @Post('variavel/apara-series-fora-do-periodo')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'], 'Remove séries de variáveis globais fora do período de medição')
+    async aparaSeriesForaDoPeriodo(): Promise<{ variavel_id: number; series_removidas: number }[]> {
+        return await this.variavelService.aparaSeriesGlobaisForaDoPeriodo();
+    }
+
     /**
      * Processa variáveis globais suspensas manualmente.
      * Este endpoint é usado para forçar o processamento fora do cron job.

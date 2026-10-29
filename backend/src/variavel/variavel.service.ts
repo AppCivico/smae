@@ -2134,7 +2134,7 @@ export class VariavelService {
         indicadorId: number | null,
         dataInicio?: Date,
         dataFim?: Date
-    ) {
+    ): Promise<number> {
         if (indicadorId !== null) {
             const [indicadorInfo, variavelInfo] = await Promise.all([
                 prismaTxn.indicador.findFirst({ where: { id: indicadorId }, select: { periodicidade: true } }),
@@ -2143,7 +2143,7 @@ export class VariavelService {
             if (!indicadorInfo || !variavelInfo) throw new HttpException('Variável ou indicador não encontrados', 400);
 
             // Verifica se a periodicidade da variavel é igual a do indicador, se não for, não faz nada
-            if (indicadorInfo.periodicidade != variavelInfo.periodicidade) return;
+            if (indicadorInfo.periodicidade != variavelInfo.periodicidade) return 0;
         }
 
         let periodoValido: string[] = [];
@@ -2156,7 +2156,7 @@ export class VariavelService {
             periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filtro, prismaTxn);
         }
         // período vazio faria o deleteMany abaixo apagar a série inteira
-        if (periodoValido.length === 0) return;
+        if (periodoValido.length === 0) return 0;
 
         //Recupera as series que serao excluidas
         const seriesAfetadas = await prismaTxn.serieVariavel.findMany({
@@ -2191,6 +2191,36 @@ export class VariavelService {
                 variavel_id: variavelId,
             },
         });
+        return seriesAfetadas.length;
+    }
+
+    async aparaSeriesGlobaisForaDoPeriodo(): Promise<{ variavel_id: number; series_removidas: number }[]> {
+        const maes = await this.prisma.variavel.findMany({
+            where: {
+                tipo: 'Global',
+                removido_em: null,
+                variavel_mae_id: null,
+                inicio_medicao: { not: null },
+                fim_medicao: { not: null },
+            },
+            select: { id: true, variaveis_filhas: { where: { removido_em: null }, select: { id: true } } },
+            orderBy: { id: 'asc' },
+        });
+
+        const ret: { variavel_id: number; series_removidas: number }[] = [];
+        for (const mae of maes) {
+            const ids = [mae.id, ...mae.variaveis_filhas.map((f) => f.id)];
+            await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+                for (const id of ids) {
+                    const removidas = await this.trataPeriodosSerieVariavel(prismaTxn, id, null);
+                    if (removidas === 0) continue;
+                    await prismaTxn.$queryRaw`select monta_serie_acumulada(${id}::int, null)`;
+                    ret.push({ variavel_id: id, series_removidas: removidas });
+                }
+            });
+        }
+        this.logger.log(`Séries globais fora do período removidas: ${JSON.stringify(ret)}`);
+        return ret;
     }
 
     private isEquipesConfiguradas(dto: UpdateVariavelDto) {
