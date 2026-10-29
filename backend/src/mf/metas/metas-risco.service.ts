@@ -6,7 +6,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { Html2Text } from '../../common/Html2Text';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
-import { escreveNoPdmLegado } from './trava-pdm-legado';
+import { escreveNoCicloLegado } from '../../pdm-ciclo/trava-plano';
 import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
 
 @Injectable()
@@ -87,7 +87,7 @@ export class MetasRiscoService {
             throw new HttpException('Você não pode adicionar analise de risco.', 400);
         }
 
-        return escreveNoPdmLegado(this.prisma, prismaCtx, dto.ciclo_fisico_id, (prismaTx) =>
+        return escreveNoCicloLegado(this.prisma, prismaCtx, dto.ciclo_fisico_id, (prismaTx) =>
             this.addMetaRiscoInterno(dto, user, prismaTx)
         );
     }
@@ -95,43 +95,39 @@ export class MetasRiscoService {
     async addMetaRiscoInterno(
         dto: RiscoDto,
         user: PessoaFromJwt,
-        prismaCtx: Prisma.TransactionClient
+        prismaTx: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
-        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            await prismaTx.metaCicloFisicoRisco.updateMany({
-                where: {
-                    ciclo_fisico_id: dto.ciclo_fisico_id,
-                    meta_id: dto.meta_id,
-                    ultima_revisao: true,
-                },
-                data: {
-                    ultima_revisao: false,
-                },
-            });
+        await prismaTx.metaCicloFisicoRisco.updateMany({
+            where: {
+                ciclo_fisico_id: dto.ciclo_fisico_id,
+                meta_id: dto.meta_id,
+                ultima_revisao: true,
+            },
+            data: {
+                ultima_revisao: false,
+            },
+        });
 
-            dto.ponto_de_atencao = HtmlSanitizer(dto.ponto_de_atencao);
-            dto.detalhamento = HtmlSanitizer(dto.detalhamento);
+        dto.ponto_de_atencao = HtmlSanitizer(dto.ponto_de_atencao);
+        dto.detalhamento = HtmlSanitizer(dto.detalhamento);
 
-            const cfq = await prismaTx.metaCicloFisicoRisco.create({
-                data: {
-                    ciclo_fisico_id: dto.ciclo_fisico_id,
-                    ultima_revisao: true,
-                    criado_por: user.id,
-                    criado_em: now,
-                    referencia_data: ciclo.data_ciclo,
-                    ponto_de_atencao: dto.ponto_de_atencao,
-                    detalhamento: dto.detalhamento,
-                    meta_id: dto.meta_id,
-                },
-                select: { id: true },
-            });
+        const cfq = await prismaTx.metaCicloFisicoRisco.create({
+            data: {
+                ciclo_fisico_id: dto.ciclo_fisico_id,
+                ultima_revisao: true,
+                criado_por: user.id,
+                criado_em: now,
+                referencia_data: ciclo.data_ciclo,
+                ponto_de_atencao: dto.ponto_de_atencao,
+                detalhamento: dto.detalhamento,
+                meta_id: dto.meta_id,
+            },
+            select: { id: true },
+        });
 
-            return { id: cfq.id };
-        };
-
-        return await performWrite(prismaCtx);
+        return { id: cfq.id };
     }
 }

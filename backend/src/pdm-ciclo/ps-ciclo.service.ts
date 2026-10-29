@@ -1,5 +1,4 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -16,6 +15,7 @@ import { MetasAnaliseQualiService } from '../mf/metas/metas-analise-quali.servic
 import { MetasFechamentoService } from '../mf/metas/metas-fechamento.service';
 import { MetasRiscoService } from '../mf/metas/metas-risco.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { comTxPdmLegado } from './trava-plano';
 import { FilterPsCiclo } from './dto/update-pdm-ciclo.dto';
 import {
     CicloFisicoPSDto,
@@ -478,7 +478,7 @@ export class PsCicloService {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
         dto.ciclo_fisico_id = cicloId;
 
-        return await this.comTxLegado(pdmId, (prismaTx) =>
+        return await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
             this.analiseService.addMetaAnaliseQualitativaInterno(dto, user, prismaTx)
         );
     }
@@ -496,7 +496,7 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
         dto.ciclo_fisico_id = cicloId;
-        return await this.comTxLegado(pdmId, (prismaTx) =>
+        return await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
             this.analiseService.addMetaAnaliseQualitativaDocumentoInterno(dto, user, prismaTx)
         );
     }
@@ -513,7 +513,7 @@ export class PsCicloService {
         user: PessoaFromJwt
     ): Promise<void> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
-        await this.comTxLegado(pdmId, (prismaTx) =>
+        await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
             this.analiseService.deleteMetaAnaliseQualitativaDocumentoInterno(documentoId, user, prismaTx)
         );
     }
@@ -531,7 +531,9 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'risco');
         dto.ciclo_fisico_id = cicloId;
-        return await this.comTxLegado(pdmId, (prismaTx) => this.riscoService.addMetaRiscoInterno(dto, user, prismaTx));
+        return await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
+            this.riscoService.addMetaRiscoInterno(dto, user, prismaTx)
+        );
     }
 
     /**
@@ -547,7 +549,7 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, false, 'fechamento');
         dto.ciclo_fisico_id = cicloId;
-        return await this.comTxLegado(pdmId, (prismaTx) =>
+        return await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
             this.fechamentoService.addMetaFechamentoInterno(dto, user, prismaTx)
         );
     }
@@ -756,7 +758,7 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
 
-        await this.comTxLegado(pdmId, (prismaTx) =>
+        await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
             this.analiseService.updateMetaAnaliseQualitativaDocumentoInterno(documentoId, dto, user, prismaTx)
         );
 
@@ -790,19 +792,8 @@ export class PsCicloService {
             throw new HttpException('Não existe fechamento para reabrir neste ciclo', 400);
         }
 
-        await this.comTxLegado(pdmId, (prismaTx) =>
+        await comTxPdmLegado(this.prisma, pdmId, (prismaTx) =>
             this.fechamentoService.reabrirMetaFechamentoInterno(fechamento.id, user, prismaTx)
-        );
-    }
-
-    // legado: trava o plano para que a migração para fases configuradas não aconteça no meio da escrita
-    private async comTxLegado<T>(pdmId: number, fn: (prismaTx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
-        return await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient) => {
-                await this.psCicloFaseService.travaPlano(prismaTx, pdmId, false);
-                return await fn(prismaTx);
-            },
-            { isolationLevel: 'Serializable', maxWait: 5000, timeout: 15000 }
         );
     }
 }
