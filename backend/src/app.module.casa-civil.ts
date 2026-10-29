@@ -4,6 +4,7 @@ import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module'
 import { DemandaConfigModule } from './casa-civil/demanda-config/demanda-config.module';
 import { DemandaModule } from './casa-civil/demanda/demanda.module';
 import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
+import { PainelParlamentarModule } from './casa-civil/painel-parlamentar/painel-parlamentar.module';
 import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
 import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
@@ -27,6 +28,7 @@ import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
         VinculoModule,
         TipoVinculoModule,
         AreaTematicaModule,
+        PainelParlamentarModule,
     ],
 })
 export class AppModuleCasaCivil {}
