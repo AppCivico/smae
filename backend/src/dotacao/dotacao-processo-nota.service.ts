@@ -6,6 +6,7 @@ import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoNotaEmpenhoDto } from './dto/dotacao.dto';
 import { ValorRealizadoNotaEmpenhoDto } from './entities/dotacao.entity';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
+import { SomaRealizadoTransferencias } from './soma-realizado-transferencia';
 
 @Injectable()
 export class DotacaoProcessoNotaService {
@@ -231,6 +232,15 @@ export class DotacaoProcessoNotaService {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
             }
+        } else if (dto.transferencia_id) {
+            const qr = await SomaRealizadoTransferencias(this.prisma, {
+                ano_referencia: dto.ano,
+                dotacao: dotacao,
+                processo: processo,
+                nota_empenho: dto.nota_empenho,
+            });
+            smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+            smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
         }
 
         return {

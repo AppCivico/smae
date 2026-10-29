@@ -5,6 +5,7 @@ import { SofApiService, SofError } from '../sof-api/sof-api.service';
 import { DotacaoService } from './dotacao.service';
 import { AnoDotacaoProcessoDto } from './dto/dotacao.dto';
 import { ValorRealizadoProcessoDto } from './entities/dotacao.entity';
+import { SomaRealizadoTransferencias } from './soma-realizado-transferencia';
 
 @Injectable()
 export class DotacaoProcessoService {
@@ -192,6 +193,15 @@ export class DotacaoProcessoService {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
                 smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
             }
+        } else if (dto.transferencia_id) {
+            const qr = await SomaRealizadoTransferencias(this.prisma, {
+                ano_referencia: dto.ano,
+                dotacao: dotacao,
+                processo: dto.processo,
+                nota_empenho: null,
+            });
+            smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
+            smae_soma_valor_liquidado = qr.soma_valor_liquidado.toFixed(2);
         }
 
         return {

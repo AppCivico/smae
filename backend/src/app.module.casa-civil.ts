@@ -7,6 +7,7 @@ import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/dis
 import { PainelParlamentarModule } from './casa-civil/painel-parlamentar/painel-parlamentar.module';
 import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
+import { TransferenciaOrcamentoRealizadoModule } from './casa-civil/transferencia-orcamento-realizado/transferencia-orcamento-realizado.module';
 import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
 
 /**
@@ -23,6 +24,7 @@ import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
         DemandaModule,
         DemandaConfigModule,
         TransferenciaModule,
+        TransferenciaOrcamentoRealizadoModule,
         DistribuicaoRecursoModule,
         DashTransferenciaModule,
         VinculoModule,

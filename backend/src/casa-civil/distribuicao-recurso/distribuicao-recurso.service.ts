@@ -506,8 +506,8 @@ export class DistribuicaoRecursoService {
         };
 
         let orderByClause:
-            | Prisma.DistribuicaoRecursoOrderByWithRelationInput
-            | Prisma.DistribuicaoRecursoOrderByWithRelationInput[] = {};
+            Prisma.DistribuicaoRecursoOrderByWithRelationInput | Prisma.DistribuicaoRecursoOrderByWithRelationInput[] =
+            {};
         if (filters.order_by && filters.order_by == 'transferencia_identificador') {
             orderByClause = [
                 { transferencia: { ano: 'desc' } },
@@ -1917,6 +1917,15 @@ export class DistribuicaoRecursoService {
             });
 
             this.assertGestorPodeAcessar(user, self.orgao_gestor_id, 'remover');
+
+            const orcamentosRealizados = await prismaTx.orcamentoRealizado.count({
+                where: { distribuicao_recurso_id: id, removido_em: null },
+            });
+            if (orcamentosRealizados)
+                throw new HttpException(
+                    'Distribuição possui registros de execução orçamentária associados. Remova-os antes de remover a distribuição.',
+                    400
+                );
 
             await prismaTx.distribuicaoRecurso.updateMany({
                 where: {

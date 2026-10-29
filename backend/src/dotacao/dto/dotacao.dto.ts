@@ -33,6 +33,12 @@ export class AnoDto {
     @Validate(EitherPdmOrPortfolio)
     @Type(() => Number)
     portfolio_id: number | undefined;
+
+    @ApiProperty({ example: 0, required: false })
+    @IsOptional()
+    @Validate(EitherPdmOrPortfolio)
+    @Type(() => Number)
+    transferencia_id?: number | undefined;
 }
 
 export class AnoDotacaoDto extends AnoDto {
