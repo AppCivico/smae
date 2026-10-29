@@ -2167,25 +2167,23 @@ export class VariavelService {
         });
 
         //Cria os registros na tabela de historico
-        for (const serie of seriesAfetadas) {
-            await prismaTxn.serieVariavelHistorico.create({
-                data: {
-                    serie_variavel_id: serie.id,
-                    variavel_id: serie.variavel_id,
-                    serie: serie.serie,
-                    data_valor: serie.data_valor,
-                    valor_nominal: serie.valor_nominal,
-                    variavel_categorica_id: serie.variavel_categorica_id,
-                    variavel_categorica_valor_id: serie.variavel_categorica_valor_id,
-                    atualizado_em: serie.atualizado_em,
-                    atualizado_por: serie.atualizado_por,
-                    conferida: serie.conferida,
-                    conferida_por: serie.conferida_por,
-                    conferida_em: serie.conferida_em,
-                    ciclo_fisico_id: serie.ciclo_fisico_id,
-                },
-            });
-        }
+        await prismaTxn.serieVariavelHistorico.createMany({
+            data: seriesAfetadas.map((serie) => ({
+                serie_variavel_id: serie.id,
+                variavel_id: serie.variavel_id,
+                serie: serie.serie,
+                data_valor: serie.data_valor,
+                valor_nominal: serie.valor_nominal,
+                variavel_categorica_id: serie.variavel_categorica_id,
+                variavel_categorica_valor_id: serie.variavel_categorica_valor_id,
+                atualizado_em: serie.atualizado_em,
+                atualizado_por: serie.atualizado_por,
+                conferida: serie.conferida,
+                conferida_por: serie.conferida_por,
+                conferida_em: serie.conferida_em,
+                ciclo_fisico_id: serie.ciclo_fisico_id,
+            })),
+        });
         //Exclui os registros invalidos
         await prismaTxn.serieVariavel.deleteMany({
             where: {
