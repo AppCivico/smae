@@ -3025,7 +3025,15 @@ export class ProjetoService {
             if (dto.portfolio_id && dto.portfolio_id != projeto.portfolio_id) {
                 // Esse bypasss aqui (chamada de transferPortfolio) é feita para viabilizar a edição de portfolio_id em lote.
                 // Pois a tela chama um outro endpoint, logo chamo o delete do portfolio_id após utilizar.
-                await this.transferPortfolio(tipo, projetoId, { portfolio_id: dto.portfolio_id }, user, prismaTx);
+                // Na edição (inclusive em lote) os compartilhamentos ficam como estão, sem o padrão do portfólio novo.
+                await this.transferPortfolio(
+                    tipo,
+                    projetoId,
+                    { portfolio_id: dto.portfolio_id },
+                    user,
+                    prismaTx,
+                    false
+                );
                 delete dto.portfolio_id;
             }
 
@@ -4123,7 +4131,8 @@ export class ProjetoService {
         projetoId: number,
         dto: TransferProjetoPortfolioDto,
         user: PessoaFromJwt,
-        prismaTx?: Prisma.TransactionClient
+        prismaTx?: Prisma.TransactionClient,
+        aplicaCompartilhamentoPadrao = true
     ): Promise<RecordWithId> {
         const logger = LoggerWithLog('Projeto.transferPortfolio');
         logger.log(`projeto ${projetoId}. DTO: ${JSON.stringify(dto)}`);
@@ -4140,6 +4149,7 @@ export class ProjetoService {
                         nivel_maximo_tarefa: true,
                         nivel_regionalizacao: true,
                         orcamento_execucao_disponivel_meses: true,
+                        modelo_clonagem: true,
                         orgaos: {
                             select: { orgao_id: true },
                         },
@@ -4202,6 +4212,27 @@ export class ProjetoService {
                     },
                 }),
             ]);
+
+            const compartilhadosPadrao =
+                !aplicaCompartilhamentoPadrao || portfolioNovo.modelo_clonagem
+                    ? []
+                    : await this.portfolioService.buscaCompartilhamentoPadrao({
+                          id: portfolioNovo.id,
+                          orgaos: portfolioNovo.orgaos.map((o) => ({ id: o.orgao_id })),
+                      });
+            const novosCompartilhamentos = compartilhadosPadrao.filter(
+                (id) => !projeto.portfolios_compartilhados?.some((p) => p.id == id)
+            );
+            if (novosCompartilhamentos.length > 0) {
+                await prismaTx.portfolioProjetoCompartilhado.createMany({
+                    data: novosCompartilhamentos.map((portfolio_id) => ({
+                        portfolio_id,
+                        projeto_id: projetoId,
+                        criado_em: new Date(Date.now()),
+                        criado_por: user.id,
+                    })),
+                });
+            }
 
             await logger.saveLogs(prismaTx, user.getLogData());
             return { id: projeto.id };
