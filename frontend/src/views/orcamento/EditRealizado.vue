@@ -469,10 +469,16 @@ export default {
             <th style="width: 25%">
               Nome do projeto/atividade
             </th>
-            <th style="width: 25%">
+            <th
+              class="cell--number"
+              style="width: 25%"
+            >
               Empenho SOF
             </th>
-            <th style="width: 25%">
+            <th
+              class="cell--number"
+              style="width: 25%"
+            >
               Liquidação SOF
             </th>
           </tr>
@@ -482,10 +488,10 @@ export default {
             <td class="w700">
               {{ respostasof.projeto_atividade }}
             </td>
-            <td>
+            <td class="cell--number">
               R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}
             </td>
-            <td>
+            <td class="cell--number">
               R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}
             </td>
           </tr>

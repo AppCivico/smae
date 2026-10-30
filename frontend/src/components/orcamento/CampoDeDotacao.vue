@@ -652,10 +652,16 @@ watch(valorDoComplemento, (novoValor) => {
         <th style="width: 25%">
           Nome do projeto/atividade
         </th>
-        <th style="width: 25%">
+        <th
+          class="cell--number"
+          style="width: 25%"
+        >
           Empenho SOF
         </th>
-        <th style="width: 25%">
+        <th
+          class="cell--number"
+          style="width: 25%"
+        >
           Liquidação SOF
         </th>
       </tr>
@@ -665,8 +671,12 @@ watch(valorDoComplemento, (novoValor) => {
         <td class="w700">
           {{ respostasof.projeto_atividade }}
         </td>
-        <td>R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}</td>
-        <td>R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}</td>
+        <td class="cell--number">
+          R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}
+        </td>
+        <td class="cell--number">
+          R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}
+        </td>
       </tr>
     </tbody>
   </table>

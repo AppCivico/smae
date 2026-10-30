@@ -127,7 +127,7 @@ function restringirAZero() {
 
       <table
         v-if="linhasFiltradas?.length || previstoEhZero[ano]"
-        class="tablemain fix no-zebra horizontal-lines"
+        class="tablemain no-zebra horizontal-lines"
       >
         <thead>
           <tr>

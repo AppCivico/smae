@@ -179,10 +179,26 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
         <th />
       </tr>
       <tr>
-        <th>Percentagem</th>
-        <th>Valor <span class="tvermelho">*</span></th>
-        <th>Percentagem</th>
-        <th>Valor <span class="tvermelho">*</span></th>
+        <th
+          class="cell--number"
+        >
+          Percentagem
+        </th>
+        <th
+          class="cell--number"
+        >
+          Valor <span class="tvermelho">*</span>
+        </th>
+        <th
+          class="cell--number"
+        >
+          Percentagem
+        </th>
+        <th
+          class="cell--number"
+        >
+          Valor <span class="tvermelho">*</span>
+        </th>
         <th />
       </tr>
     </thead>
@@ -285,11 +301,11 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
           </abbr>
         </th>
         <td />
-        <td class="tc300">
+        <td class="tc300 cell--number">
           R$ {{ dinheiro(respostasof.smae_soma_valor_empenho || 0) }}
         </td>
         <td />
-        <td class="tc300">
+        <td class="tc300 cell--number">
           R$ {{ dinheiro(respostasof.smae_soma_valor_liquidado || 0) }}
         </td>
         <td />
@@ -300,6 +316,7 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
         </th>
         <td />
         <td
+          class="cell--number"
           :class="{
             tvermelho: totaisQueSuperamSOF.empenho
           }"
@@ -323,6 +340,7 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
         </td>
         <td />
         <td
+          class="cell--number"
           :class="{
             tvermelho: totaisQueSuperamSOF.liquidação
           }"
