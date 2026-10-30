@@ -49,8 +49,8 @@ const {
 });
 
 const níveisDeSuplênciaPreenchidos = computed(() => (Array
-  .isArray(emFoco.value?.mandato_atual?.suplentes)
-  ? emFoco.value.mandato_atual.suplentes.map((x) => x.suplencia)
+  .isArray(emFoco.value?.ultimo_mandato?.suplentes)
+  ? emFoco.value.ultimo_mandato.suplentes.map((x) => x.suplencia)
   : []));
 
 const onSubmit = handleSubmit.withControlled(async () => {
