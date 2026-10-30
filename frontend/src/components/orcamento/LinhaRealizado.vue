@@ -57,10 +57,16 @@ const linhasEscolhidas = computed({
       {{ item?.nota_empenho ? ' / ' + item.nota_empenho : '' }}
     </td>
 
-    <td :class="{'tvermelho': alemDoEmpenhado(item)}">
+    <td
+      class="cell--number"
+      :class="{ 'tvermelho': alemDoEmpenhado(item) }"
+    >
       {{ formataValor(item?.soma_valor_empenho) }}
     </td>
-    <td :class="{'tvermelho': alemDoLiquidado(item)}">
+    <td
+      class="cell--number"
+      :class="{ 'tvermelho': alemDoLiquidado(item) }"
+    >
       {{ formataValor(item?.soma_valor_liquidado) }}
     </td>
     <td>

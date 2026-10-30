@@ -285,7 +285,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 
       <table
         v-if="linhasFiltradas?.length"
-        class="tablemain fix no-zebra horizontal-lines"
+        class="tablemain no-zebra horizontal-lines"
       >
         <colgroup>
           <col>
@@ -303,8 +303,8 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
             <th style="width: 50%">
               Dotação / Processo / Nota
             </th>
-            <th>Empenho</th>
-            <th>Liquidação</th>
+            <th class="cell--number">Empenho</th>
+            <th class="cell--number">Liquidação</th>
             <th>Atualizado em</th>
             <th
               v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar"
@@ -337,12 +337,12 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                 <th class="tc600 w700 pl1">
                   {{ $props.etiquetaDosTotais }}
                 </th>
-                <td class="w700">
+                <td class="w700 cell--number">
                   {{ somasDaMeta.soma_valor_empenho
                     ? formataValor(somasDaMeta.soma_valor_empenho)
                     : '-' }}
                 </td>
-                <td class="w700">
+                <td class="w700 cell--number">
                   {{ somasDaMeta.soma_valor_liquidado
                     ? formataValor(somasDaMeta.soma_valor_liquidado)
                     : '-' }}
@@ -384,12 +384,12 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                     height="13"
                   ><use xlink:href="#i_right" /></svg><span>{{ g.label }}</span></span>
                 </td>
-                <td class="w700">
+                <td class="w700 cell--number">
                   {{ g.items.length
                     ? formataValor(g.items.reduce((red, x) => red + Number(x.soma_valor_empenho), 0))
                     : '-' }}
                 </td>
-                <td class="w700">
+                <td class="w700 cell--number">
                   {{ g.items.length
                     ? formataValor(g.items.reduce((red, x) => red + Number(x.soma_valor_liquidado), 0))
                     : '-' }}
@@ -429,12 +429,12 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                       height="13"
                     ><use xlink:href="#i_right" /></svg><span>{{ gg.label }}</span></span>
                   </td>
-                  <td class="w700">
+                  <td class="w700 cell--number">
                     {{ gg.items.length
                       ? formataValor(gg.items.reduce((red, x) => red + Number(x.soma_valor_empenho), 0))
                       : '-' }}
                   </td>
-                  <td class="w700">
+                  <td class="w700 cell--number">
                     {{ gg.items.length
                       ? formataValor(gg.items.reduce((red, x) => red + Number(x.soma_valor_liquidado), 0))
                       : '-' }}
