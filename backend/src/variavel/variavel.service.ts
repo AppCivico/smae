@@ -2741,7 +2741,7 @@ export class VariavelService {
                     cycle_date::date as data_ciclo_target
                 FROM cycle_ranges cr
                 CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-                WHERE cycle_date::date < (now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
+                WHERE cycle_date::date < (replaceable_now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
             )
             -- Filtra apenas ciclos que ainda não foram processados (ou foram removidos)
             -- E que ainda não possuem valores em serie_variavel (para evitar sobrescrever dados existentes)
@@ -3079,7 +3079,7 @@ export class VariavelService {
                     cycle_date::date as data_ciclo
                 FROM cycle_ranges cr
                 CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-                WHERE cycle_date::date < (now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
+                WHERE cycle_date::date < (replaceable_now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
             )
             -- Filtra apenas ciclos que ainda não foram processados (não tem análise de liberação)
             SELECT
@@ -3130,7 +3130,7 @@ export class VariavelService {
             SELECT cr.variavel_id, cycle_date::date AS data_ciclo
             FROM cr
             CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-            WHERE cycle_date::date < (now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
+            WHERE cycle_date::date < (replaceable_now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
             ORDER BY cr.variavel_id, cycle_date
         `;
             const allCyclesByVar = allCyclesDiag.reduce(
@@ -3178,7 +3178,7 @@ export class VariavelService {
                 SELECT cr.variavel_id, cycle_date::date AS data_ciclo
                 FROM cr
                 CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
-                WHERE cycle_date::date < (now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
+                WHERE cycle_date::date < (replaceable_now() AT TIME ZONE ${SYSTEM_TIMEZONE}::text)::date
             )
             SELECT
                 ac.variavel_id,
