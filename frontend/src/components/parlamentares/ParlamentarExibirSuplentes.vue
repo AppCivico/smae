@@ -27,10 +27,10 @@ const props = defineProps({
   },
 });
 
-const suplentes = computed(() => emFoco.value?.mandato_atual?.suplentes ?? []);
-const podeTerSuplentes = computed(() => !emFoco.value?.mandato_atual?.suplencia
-  && !(emFoco.value?.mandato_atual?.suplentes?.length >= 2)
-  && emFoco.value?.mandato_atual?.id);
+const suplentes = computed(() => emFoco.value?.ultimo_mandato?.suplentes ?? []);
+const podeTerSuplentes = computed(() => !emFoco.value?.ultimo_mandato?.suplencia
+  && !(emFoco.value?.ultimo_mandato?.suplentes?.length >= 2)
+  && emFoco.value?.ultimo_mandato?.id);
 
 const showSuplentesModal = ref(false);
 
@@ -49,7 +49,7 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
 </script>
 <template>
   <div
-    v-if="!emFoco?.mandato_atual?.suplencia"
+    v-if="!emFoco?.ultimo_mandato?.suplencia"
     class="mb4"
   >
     <div class="flex spacebetween center">
@@ -131,7 +131,7 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
     v-if="showSuplentesModal"
     :apenas-emitir="true"
     :parlamentar-id="emFoco?.id"
-    :mandato-id="emFoco?.mandato_atual?.id"
+    :mandato-id="emFoco?.ultimo_mandato?.id"
     @close="() => {
       showSuplentesModal = false;
       parlamentaresStore.buscarItem(emFoco.id);

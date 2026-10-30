@@ -1,8 +1,10 @@
-import ParlamentarDetalhe from '@/views/parlamentares/ParlamentarDetalhe.vue';
+import ParlamentarDetalheIndex from '@/views/parlamentares/ParlamentarDetalhe/ParlamentarDetalheIndex.vue';
 import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
 import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
 import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
 import ParlamentarMandato from '@/views/parlamentares/ParlamentarMandato.vue';
+
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
 export default {
   path: '/parlamentares',
@@ -86,14 +88,11 @@ export default {
     {
       path: ':parlamentarId',
       name: 'parlamentarDetalhe',
-      component: ParlamentarDetalhe,
-      props: ({ params }) => ({
-        ...params,
-        ...{ parlamentarId: Number.parseInt(params.parlamentarId, 10) || undefined },
-      }),
+      component: ParlamentarDetalheIndex,
+      props: tiparPropsDeRota,
 
       meta: {
-        título: 'Carometro',
+        título: 'Carômetro',
         rotasParaMigalhasDePão: [
           'parlamentaresListar',
         ],
