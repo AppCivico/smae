@@ -25,7 +25,18 @@ export class FilterPainelParlamentarTransferenciasDto extends FilterPainelParlam
     orgao_gestor_id?: number;
 
     @ApiProperty({
-        description: 'Ordenação pelo valor do repasse',
+        description:
+            'Ordenação por secretaria: transferências com distribuição deste órgão vêm primeiro ' +
+            '(e, dentro de cada transferência, as distribuições dele). Aplicada antes de ordem_valor.',
+        required: false,
+    })
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    ordem_orgao_id?: number;
+
+    @ApiProperty({
+        description: 'Ordenação pelo valor do repasse (critério de desempate quando há ordem_orgao_id)',
         enum: ['asc', 'desc'],
         default: 'desc',
         required: false,
