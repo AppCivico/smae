@@ -9,6 +9,7 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
+import PainelCartao from './components/PainelCartao.vue';
 import ParlamentarDetalheBiografia from './partials/ParlamentarDetalheBiografia.vue';
 import ParlamentarDetalhePainel from './partials/ParlamentarDetalhePainel.vue';
 
@@ -71,14 +72,11 @@ watch(() => props.parlamentarId, (id) => {
       </p>
     </div>
 
-    <section class="resumo-do-parlamentar__dados">
-      <header class="resumo-do-parlamentar__dados-cabecalho">
-        <h2 class="resumo-do-parlamentar__dados-titulo">
-          Dados do Parlamentar
-        </h2>
-        <hr class="resumo-do-parlamentar__linha">
-      </header>
-
+    <PainelCartao
+      class="resumo-do-parlamentar__dados"
+      titulo="Dados do Parlamentar"
+      sem-fundo
+    >
       <dl class="resumo-do-parlamentar__lista">
         <div>
           <dt>Nome</dt>
@@ -97,7 +95,7 @@ watch(() => props.parlamentarId, (id) => {
           <dd>{{ cargo || '—' }}</dd>
         </div>
       </dl>
-    </section>
+    </PainelCartao>
   </div>
 
   <EnvelopeDeAbas
@@ -180,40 +178,13 @@ watch(() => props.parlamentarId, (id) => {
   max-width: 792px;
   min-height: 212px;
   margin-top: 5px;
-  padding: 16px 30px 24px 32px;
-  border-radius: 12px;
-  background-color: @branco;
-  box-shadow: 0 9.66px 19.32px 0 fade(@primary, 10%);
-}
-
-.resumo-do-parlamentar__dados-cabecalho {
-  display: flex;
-  align-items: center;
-  gap: 27px;
-  margin-bottom: 17px;
-}
-
-.resumo-do-parlamentar__dados-titulo {
-  margin: 0;
-  font-size: 25px;
-  font-weight: 600;
-  line-height: 28px;
-  white-space: nowrap;
-  color: @c400;
-}
-
-.resumo-do-parlamentar__linha {
-  flex-grow: 1;
-  margin: 0;
-  border: 0;
-  border-top: 0.94px solid @c500;
 }
 
 .resumo-do-parlamentar__lista {
   display: grid;
   grid-template-columns: 248px 1fr;
   gap: 16px 0;
-  margin: 0;
+  margin: 17px 0 0;
 
   dt {
     font-size: 20px;
