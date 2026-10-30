@@ -312,10 +312,16 @@ watch(currentEdit, (novosValores) => {
               <th style="width: 50%">
                 Nome do projeto/atividade
               </th>
-              <th style="width: 120px">
+              <th
+                class="cell--number"
+                style="width: 120px"
+              >
                 Empenho SOF
               </th>
-              <th style="width: 120px">
+              <th
+                class="cell--number"
+                style="width: 120px"
+              >
                 Liquidação SOF
               </th>
             </tr>
@@ -327,8 +333,12 @@ watch(currentEdit, (novosValores) => {
               <td class="w700">
                 {{ respostasof.projeto_atividade }}
               </td>
-              <td>R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}</td>
-              <td>R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}</td>
+              <td class="cell--number">
+                R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}
+              </td>
+              <td class="cell--number">
+                R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}
+              </td>
             </tr>
           </tbody>
         </table>

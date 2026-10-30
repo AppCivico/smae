@@ -122,7 +122,7 @@ const somaDasLinhas = computed(() => ({
 
       <table
         v-if="linhasFiltradas?.length"
-        class="tablemain fix no-zebra horizontal-lines"
+        class="tablemain no-zebra horizontal-lines"
       >
         <thead>
           <tr>
