@@ -2,11 +2,14 @@
 defineProps<{
   titulo: string;
   rodape?: string;
+  semFundo?: boolean;
 }>();
 </script>
 
 <template>
-  <section class="painel-cartao">
+  <section
+    class="painel-cartao"
+  >
     <header class="painel-cartao__cabecalho">
       <h3 class="painel-cartao__titulo">
         {{ titulo }}
@@ -34,8 +37,6 @@ defineProps<{
   flex-direction: column;
   padding: 17px 32px 20px;
   border-radius: 12px;
-  background-color: @branco;
-  box-shadow: 0 9.66px 19.32px 0 fade(@primary, 10%);
 }
 
 .painel-cartao__cabecalho {
