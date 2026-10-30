@@ -28,6 +28,7 @@ import {
     calcFaseStatus,
     calcPct,
     calcPctParlamentarDistribuicao,
+    ordenaDistribuicoesPorOrgao,
     PAINEL_TOP_N,
 } from './painel-parlamentar.util';
 
@@ -201,6 +202,7 @@ export class PainelParlamentarService {
             ano_inicio: filtro.ano_inicio,
             ano_fim: filtro.ano_fim,
             orgao_gestor_id: filtro.orgao_gestor_id,
+            ordem_orgao_id: filtro.ordem_orgao_id,
             ordem_valor: ordem,
             ipp,
         });
@@ -223,6 +225,13 @@ export class PainelParlamentarService {
                     AND dr.orgao_gestor_id = ${filtro.orgao_gestor_id})`
             : Prisma.empty;
         const direcao = ordem === 'asc' ? Prisma.sql`ASC` : Prisma.sql`DESC`;
+        // "Ordenar por secretaria": quem tem distribuição do órgão escolhido sobe; o valor desempata.
+        const ordemOrgao = filtro.ordem_orgao_id
+            ? Prisma.sql`EXISTS (
+                SELECT 1 FROM distribuicao_recurso dr
+                WHERE dr.transferencia_id = t.id AND dr.removido_em IS NULL
+                    AND dr.orgao_gestor_id = ${filtro.ordem_orgao_id}) DESC,`
+            : Prisma.empty;
 
         const idsPagina = await this.prisma.$queryRaw<{ id: number; total: number }[]>`
             SELECT t.id, (COUNT(*) OVER())::int AS total
@@ -232,7 +241,7 @@ export class PainelParlamentarService {
                     SELECT 1 FROM transferencia_parlamentar tp
                     WHERE tp.transferencia_id = t.id AND tp.parlamentar_id = ${id} AND tp.removido_em IS NULL)
                 ${filtroOrgao}
-            ORDER BY t.valor ${direcao} NULLS LAST, t.id
+            ORDER BY ${ordemOrgao} t.valor ${direcao} NULLS LAST, t.id
             LIMIT ${ipp} OFFSET ${offset}
         `;
 
@@ -247,7 +256,9 @@ export class PainelParlamentarService {
         }
 
         const ids = idsPagina.map((r) => r.id);
-        const linhas = ids.length ? await this.carregaTransferencias(id, ids, orgaoRestrito) : [];
+        const linhas = ids.length
+            ? await this.carregaTransferencias(id, ids, orgaoRestrito, filtro.ordem_orgao_id ?? null)
+            : [];
 
         return {
             tem_mais: offset + linhas.length < totalRegistros,
@@ -263,7 +274,8 @@ export class PainelParlamentarService {
     private async carregaTransferencias(
         parlamentarId: number,
         ids: number[],
-        orgaoRestrito: number | null
+        orgaoRestrito: number | null,
+        ordemOrgaoId: number | null
     ): Promise<PainelParlamentarTransferenciaDto[]> {
         const rows = await this.prisma.transferencia.findMany({
             where: { id: { in: ids } },
@@ -356,7 +368,7 @@ export class PainelParlamentarService {
                     etapa: r.workflow_etapa_atual?.etapa_fluxo ?? null,
                     fase: r.workflow_fase_atual?.fase ?? null,
                     fase_status: calcFaseStatus(r.workflow_fase_atual, r.andamentoWorkflow),
-                    distribuicoes,
+                    distribuicoes: ordenaDistribuicoesPorOrgao(distribuicoes, ordemOrgaoId),
                 };
             });
     }

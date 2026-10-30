@@ -50,3 +50,12 @@ export function calcFaseStatus(faseAtual: { id: number } | null, andamento: Anda
 export function calcPctParlamentarDistribuicao(valorParlamentar: Decimal, valorDistribuicao: Decimal): number {
     return calcPct(valorParlamentar, valorDistribuicao);
 }
+
+/** Distribuições do órgão escolhido primeiro; as demais mantêm a ordem original (sort estável). */
+export function ordenaDistribuicoesPorOrgao<T extends { orgao: { id: number } }>(
+    distribuicoes: T[],
+    orgaoId: number | null
+): T[] {
+    if (!orgaoId) return distribuicoes;
+    return [...distribuicoes].sort((a, b) => Number(b.orgao.id === orgaoId) - Number(a.orgao.id === orgaoId));
+}

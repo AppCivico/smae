@@ -1,5 +1,11 @@
 import { Decimal } from 'decimal.js';
-import { agruparTopN, calcFaseStatus, calcPct, calcPctParlamentarDistribuicao } from './painel-parlamentar.util';
+import {
+    agruparTopN,
+    calcFaseStatus,
+    calcPct,
+    calcPctParlamentarDistribuicao,
+    ordenaDistribuicoesPorOrgao,
+} from './painel-parlamentar.util';
 
 const linha = (rotulo: string, valor: string) => ({ item: { sigla: rotulo }, rotulo, valor: new Decimal(valor) });
 
@@ -88,6 +94,24 @@ describe('painel-parlamentar.util', () => {
 
         it('distribuição de valor zero não divide por zero', () => {
             expect(calcPctParlamentarDistribuicao(new Decimal(100), new Decimal(0))).toBe(0);
+        });
+    });
+
+    describe('ordenaDistribuicoesPorOrgao', () => {
+        const d = (id: number, orgao: number) => ({ id, orgao: { id: orgao } });
+        const lista = [d(1, 10), d(2, 20), d(3, 10), d(4, 20)];
+
+        it('sem órgão, devolve a mesma ordem', () => {
+            expect(ordenaDistribuicoesPorOrgao(lista, null).map((x) => x.id)).toEqual([1, 2, 3, 4]);
+        });
+
+        it('sobe as do órgão escolhido, mantendo a ordem relativa', () => {
+            expect(ordenaDistribuicoesPorOrgao(lista, 20).map((x) => x.id)).toEqual([2, 4, 1, 3]);
+        });
+
+        it('não altera a lista original', () => {
+            ordenaDistribuicoesPorOrgao(lista, 20);
+            expect(lista.map((x) => x.id)).toEqual([1, 2, 3, 4]);
         });
     });
 });
