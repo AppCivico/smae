@@ -189,6 +189,40 @@ describe('ParlamentarDetalhePainel', () => {
       .toEqual(expect.objectContaining({ ano_inicio: '2021', ano_fim: '2023' }));
   });
 
+  it('não oferece anos que invertam o período', async () => {
+    const envelope = montar();
+    await flushPromises();
+
+    await envelope.find('select[name="ano_inicio"]').setValue('2025');
+
+    const opcaoDoFim = (ano: string) => envelope
+      .find(`select[name="ano_fim"] option[value="${ano}"]`);
+
+    expect(opcaoDoFim('2023').attributes('disabled')).toBeDefined();
+    expect(opcaoDoFim('2025').attributes('disabled')).toBeUndefined();
+
+    await envelope.find('select[name="ano_fim"]').setValue('2025');
+    await envelope.find('select[name="ano_inicio"]').setValue('');
+
+    const opcaoDoInicio = (ano: string) => envelope
+      .find(`select[name="ano_inicio"] option[value="${ano}"]`);
+
+    expect(opcaoDoInicio('2026').attributes('disabled')).toBeDefined();
+    expect(opcaoDoInicio('2024').attributes('disabled')).toBeUndefined();
+  });
+
+  it('busca em ordem crescente um período invertido na URL', async () => {
+    mockRoute.query = { ano_inicio: '2025', ano_fim: '2023' };
+
+    montar();
+    await flushPromises();
+
+    expect(parametrosDaUltimaChamada('/painel-parlamentar/2'))
+      .toEqual(expect.objectContaining({ ano_inicio: '2023', ano_fim: '2025' }));
+    expect(parametrosDaUltimaChamada('/painel-parlamentar/2/transferencias'))
+      .toEqual(expect.objectContaining({ ano_inicio: '2023', ano_fim: '2025' }));
+  });
+
   it('ordena as transferências por secretaria e valor a partir da primeira página', async () => {
     mockRoute.query = { pagina: '3', token_paginacao: 'antigo' };
 

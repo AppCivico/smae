@@ -11,6 +11,7 @@ import { usePainelParlamentarStore } from '@/stores/painelParlamentar.store';
 
 import BarraDePercentual from '../components/BarraDePercentual.vue';
 import CartaoDeTransferencia from '../components/CartaoDeTransferencia.vue';
+import FiltroDePeriodo from '../components/FiltroDePeriodo.vue';
 import GraficoPorPartido from '../components/GraficoPorPartido.vue';
 import GraficoPorSecretaria from '../components/GraficoPorSecretaria.vue';
 import PainelCartao from '../components/PainelCartao.vue';
@@ -27,27 +28,22 @@ const {
   painel, transferencias, paginacao, chamadasPendentes, erros,
 } = storeToRefs(painelParlamentarStore);
 
-const PRIMEIRO_ANO = 2004;
-
-const anos = Array.from(
-  { length: new Date().getFullYear() - PRIMEIRO_ANO + 1 },
-  (_, indice) => new Date().getFullYear() - indice,
-);
-
 const numeroOuIndefinido = (valor: unknown) => (valor ? Number(valor) : undefined);
 
-const periodo = computed(() => ({
-  ano_inicio: numeroOuIndefinido(route.query.ano_inicio),
-  ano_fim: numeroOuIndefinido(route.query.ano_fim),
-}));
+const periodo = computed(() => {
+  const inicio = numeroOuIndefinido(route.query.ano_inicio);
+  const fim = numeroOuIndefinido(route.query.ano_fim);
+
+  return inicio && fim && inicio > fim
+    ? { ano_inicio: fim, ano_fim: inicio }
+    : { ano_inicio: inicio, ano_fim: fim };
+});
 
 const ordenacao = computed(() => ({
   ordem_orgao_id: numeroOuIndefinido(route.query.ordem_orgao_id),
   ordem_valor: (route.query.ordem_valor as 'asc' | 'desc' | undefined) || undefined,
 }));
 
-const anoInicio = ref(route.query.ano_inicio || '');
-const anoFim = ref(route.query.ano_fim || '');
 const ordemOrgaoId = ref(route.query.ordem_orgao_id || '');
 const ordemValor = ref(route.query.ordem_valor || 'desc');
 
@@ -70,11 +66,8 @@ function navegarPara(novosParametros: Record<string, unknown>) {
   });
 }
 
-function filtrar() {
-  navegarPara({
-    ano_inicio: anoInicio.value || undefined,
-    ano_fim: anoFim.value || undefined,
-  });
+function filtrar(novoPeriodo: { ano_inicio?: number; ano_fim?: number }) {
+  navegarPara(novoPeriodo);
 }
 
 function ordenar() {
@@ -114,61 +107,12 @@ watch(
 
 <template>
   <div class="painel-do-parlamentar">
-    <form
+    <FiltroDePeriodo
       class="painel-do-parlamentar__filtro"
-      @submit.prevent="filtrar"
-    >
-      <label class="painel-do-parlamentar__campo">
-        <span class="painel-do-parlamentar__rotulo">Período</span>
-        <select
-          v-model="anoInicio"
-          name="ano_inicio"
-          class="painel-do-parlamentar__seletor"
-        >
-          <option value="">
-            Começo
-          </option>
-          <option
-            v-for="ano in anos"
-            :key="ano"
-            :value="String(ano)"
-          >
-            {{ ano }}
-          </option>
-        </select>
-      </label>
-
-      <span class="painel-do-parlamentar__ate">até</span>
-
-      <label class="painel-do-parlamentar__campo">
-        <span class="painel-do-parlamentar__rotulo">Período</span>
-        <select
-          v-model="anoFim"
-          name="ano_fim"
-          class="painel-do-parlamentar__seletor"
-        >
-          <option value="">
-            Fim
-          </option>
-          <option
-            v-for="ano in anos"
-            :key="ano"
-            :value="String(ano)"
-          >
-            {{ ano }}
-          </option>
-        </select>
-      </label>
-
-      <button
-        type="button"
-        class="btn painel-do-parlamentar__botao"
-        data-test="filtrar"
-        @click="filtrar"
-      >
-        Filtrar
-      </button>
-    </form>
+      :ano-inicio="periodo.ano_inicio"
+      :ano-fim="periodo.ano_fim"
+      @filtrar="filtrar"
+    />
 
     <LoadingComponent v-if="chamadasPendentes.painel && !painel" />
 
@@ -364,9 +308,6 @@ watch(
 
 <style scoped lang="less">
 .painel-do-parlamentar__filtro {
-  display: flex;
-  align-items: flex-end;
-  gap: 24px;
   margin-bottom: 48px;
 }
 
@@ -414,7 +355,6 @@ watch(
   font-size: 12.24px;
 }
 
-.painel-do-parlamentar__ate,
 .painel-do-parlamentar__ordenar-por {
   font-size: 12px;
   font-weight: 900;
@@ -422,10 +362,6 @@ watch(
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: @c600;
-}
-
-.painel-do-parlamentar__ate {
-  padding-bottom: 12px;
 }
 
 .painel-do-parlamentar__ordenar-por {
@@ -534,7 +470,6 @@ watch(
   display: flex;
   align-items: center;
   gap: 18px;
-  margin-bottom: 32px;
 }
 
 .painel-do-parlamentar__titulo-da-lista {
@@ -557,6 +492,7 @@ watch(
   display: flex;
   align-items: flex-end;
   gap: 16px;
+  padding-bottom: 30px;
 }
 
 .painel-do-parlamentar__transferencias-lista {
