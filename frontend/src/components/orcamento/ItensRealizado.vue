@@ -3,7 +3,7 @@ import Big from 'big.js';
 import { range } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-  computed, defineModel, defineOptions, nextTick,
+  computed, defineModel, defineOptions,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
