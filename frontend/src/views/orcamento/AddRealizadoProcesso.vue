@@ -211,7 +211,7 @@ watch(currentEdit, (novosValores) => {
         v-if="respostasof.length"
         class="mb2"
       >
-        <label class="label mb2">Dotação vinculada* <span class="tvermelho">*</span></label>
+        <label class="label mb2">Dotação vinculada <span class="tvermelho">*</span></label>
 
         <div class="flex g2">
           <div
