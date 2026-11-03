@@ -81,6 +81,14 @@ const complemento = computed(() => {
   return null;
 });
 
+function voltarParaListagem() {
+  if (route.meta?.rotaDeEscape) {
+    router.replace({ name: route.meta.rotaDeEscape, query: route.query });
+  } else if (parentlink) {
+    router.replace({ path: `${parentlink}/orcamento`, query: route.query });
+  }
+}
+
 (async () => {
   if (ano.value) {
     DotaçãoStore.getDotaçãoSegmentos(ano.value);
@@ -88,7 +96,13 @@ const complemento = computed(() => {
   if (id) {
     switch (route.meta.entidadeMãe) {
       case 'TransferenciasVoluntarias':
-        await OrcamentosStore.buscarTodosOsOrcamentosRealizados();
+        try {
+          await OrcamentosStore.buscarTodosOsOrcamentosRealizados();
+        } catch {
+          // o `requestS` já alertou o erro
+          voltarParaListagem();
+          return;
+        }
 
         ano.value = OrcamentosStore.orçamentoEmFoco?.ano_referencia;
         if (ano.value) {
@@ -113,7 +127,20 @@ const complemento = computed(() => {
         throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
 
-    emFoco.value = OrcamentoRealizado.value[ano.value]?.find((x) => x.id === Number(id));
+    const registro = OrcamentoRealizado.value[ano.value]?.find((x) => x.id === Number(id));
+
+    // removido em outra aba ou id inválido; em transferências, sem o registro
+    // não há nem o ano. Volta para a listagem, como após a remoção
+    if (!registro) {
+      if (!OrcamentoRealizado.value[ano.value]?.error) {
+        alertStore.error('Execução orçamentária não encontrada.');
+      }
+
+      voltarParaListagem();
+      return;
+    }
+
+    emFoco.value = registro;
 
     emFoco.value.dotacao = await emFoco.value.dotacao.split('.').map((x, i) => {
       if (x.indexOf('*') != -1) {
