@@ -55,7 +55,7 @@ const anoMaisRecente = computed(() => linhas.value[0]?.ano_referencia);
 const grupos = computed(() => {
   const daTransferencia = {
     chave: 'transferencia',
-    rotulo: 'Totais',
+    rotulo: 'Transferência',
     ehDistribuicao: false,
     linhas: [],
   };
