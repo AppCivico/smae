@@ -202,6 +202,96 @@ describe('detalhes por tela', () => {
     expect(wrapper.find('input[name="nota_ano"]').element.value).toBe('2023');
   });
 
+  describe('AddRealizadoNota e a resposta do SOF depois da troca de ano', () => {
+    async function validarEmAndamento(resultado, { falhar = false } = {}) {
+      const wrapper = montar(AddRealizadoNota, { anoDeReferencia: 2024 });
+      const dotacaoStore = useDotaçãoStore();
+      let concluir;
+      dotacaoStore.getDotaçãoRealizadoNota
+        .mockImplementation(() => new Promise((resolve, reject) => {
+          concluir = () => (falhar ? reject(resultado) : resolve(resultado));
+        }));
+
+      await wrapper.find('input[name="nota_empenho"]').setValue('123');
+      await wrapper.find('form button[type="button"]').trigger('click');
+      await vi.waitFor(() => expect(dotacaoStore.getDotaçãoRealizadoNota).toHaveBeenCalled());
+
+      return { wrapper, dotacaoStore, concluir: () => concluir() };
+    }
+
+    // a lista de dotações só aparece quando o SOF responde
+    const exibeResposta = (wrapper) => wrapper.text()
+      .includes('16.10.12.361.3010.2.873.33903900.00');
+
+    const resposta = {
+      nota_empenho: '000123/2024',
+      dotacao: '16.10.12.361.3010.2.873.33903900.00',
+      processo: '6016202400000011',
+      empenho_liquido: '10.00',
+      valor_liquidado: '5.00',
+    };
+
+    it('consulta o SOF com o ano corrente', async () => {
+      const { dotacaoStore, concluir } = await validarEmAndamento(resposta);
+      concluir();
+      await flushPromises();
+
+      expect(dotacaoStore.getDotaçãoRealizadoNota)
+        .toHaveBeenCalledWith('000123/2024', '2024', expect.anything());
+    });
+
+    it('sem troca de ano, exibe a resposta', async () => {
+      const { wrapper, concluir } = await validarEmAndamento(resposta);
+      concluir();
+      await flushPromises();
+
+      expect(exibeResposta(wrapper)).toBe(true);
+    });
+
+    it('descarta o sucesso que chega depois da troca de ano', async () => {
+      const { wrapper, concluir } = await validarEmAndamento(resposta);
+
+      await wrapper.setProps({ anoDeReferencia: 2023 });
+      concluir();
+      await flushPromises();
+
+      expect(exibeResposta(wrapper)).toBe(false);
+      expect(wrapper.find('input[name="nota_ano"]').element.value).toBe('2023');
+    });
+
+    // é assim que a tela exibe a recusa do SOF
+    const recusa = { informacao_valida: false };
+
+    it('sem troca de ano, exibe a recusa do SOF', async () => {
+      const { wrapper, concluir } = await validarEmAndamento(recusa, { falhar: true });
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.text()).toContain('Dotação não encontrada');
+    });
+
+    it('descarta a recusa que chega depois da troca de ano', async () => {
+      const { wrapper, concluir } = await validarEmAndamento(recusa, { falhar: true });
+
+      await wrapper.setProps({ anoDeReferencia: 2023 });
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.text()).not.toContain('Dotação não encontrada');
+    });
+
+    it('não fica carregando quando o ano da nota é trocado no próprio campo', async () => {
+      const { wrapper, concluir } = await validarEmAndamento(resposta);
+
+      await wrapper.find('input[name="nota_ano"]').setValue('2023');
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.text()).not.toContain('Aguardando resposta do SOF');
+      expect(exibeResposta(wrapper)).toBe(false);
+    });
+  });
+
   it('AddRealizadoNota envia `nota_ano` como texto, como exige a API', async () => {
     // preenche um mês válido, exigido pelo schema
     const ItensRealizado = {
