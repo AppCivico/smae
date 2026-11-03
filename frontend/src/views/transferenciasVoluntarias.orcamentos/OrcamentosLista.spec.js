@@ -3,7 +3,7 @@ import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils';
 import {
   afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, reactive } from 'vue';
 
 import FiltroPorOrgaoEUnidade from '@/components/orcamento/FiltroPorOrgaoEUnidade.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
@@ -12,7 +12,9 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 
 import OrcamentosLista from './OrcamentosLista.vue';
 
-const mockCurrentRoute = {
+// reativa, como a rota real, para a troca de transferência ser observada
+const mockCurrentRoute = reactive({
+  params: { transferenciaId: 320 },
   meta: {
     rotaParaEdição: 'TransferenciaOrcamentoRealizadoPorId',
     rotasParaAdição: [
@@ -20,7 +22,7 @@ const mockCurrentRoute = {
       { texto: 'Processo', nome: 'TransferenciaOrcamentoRealizadoPorProcesso' },
     ],
   },
-};
+});
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockCurrentRoute),
@@ -112,6 +114,7 @@ function montar({
 describe('OrcamentosLista de transferências', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCurrentRoute.params.transferenciaId = 320;
   });
 
   afterEach(() => {
@@ -124,6 +127,31 @@ describe('OrcamentosLista de transferências', () => {
 
     expect(useOrcamentosStore().buscarTodosOsOrcamentosRealizados)
       .toHaveBeenCalledWith();
+  });
+
+  it('busca uma única vez ao montar', async () => {
+    montar();
+    await flushPromises();
+
+    expect(useOrcamentosStore().buscarTodosOsOrcamentosRealizados).toHaveBeenCalledTimes(1);
+  });
+
+  it('busca de novo e atualiza a lista ao trocar de transferência', async () => {
+    const wrapper = montar();
+    await flushPromises();
+    const orcamentosStore = useOrcamentosStore();
+
+    expect(linhasDeRegistro(wrapper)).toHaveLength(2);
+
+    orcamentosStore.buscarTodosOsOrcamentosRealizados.mockImplementation(async () => {
+      orcamentosStore.OrcamentoRealizado = { [anoCorrente]: [{ ...registros[0], id: 5 }] };
+    });
+    mockCurrentRoute.params.transferenciaId = 317;
+    await flushPromises();
+
+    expect(orcamentosStore.buscarTodosOsOrcamentosRealizados).toHaveBeenCalledTimes(2);
+    expect(linhasDeRegistro(wrapper)).toHaveLength(1);
+    expect(wrapper.find('[data-test="editar-5"]').exists()).toBe(true);
   });
 
   it('lista registros de todos os anos, do mais recente ao mais antigo', async () => {
