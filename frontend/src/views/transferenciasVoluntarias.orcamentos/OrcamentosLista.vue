@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  computed, onUnmounted, ref,
+  computed, onUnmounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -194,7 +194,10 @@ function excluir(item) {
   }, 'Remover');
 }
 
-iniciar();
+// a mesma instância é reaproveitada ao trocar de transferência pela rota
+watch(() => route.params.transferenciaId, () => {
+  iniciar();
+}, { immediate: true });
 
 onUnmounted(() => {
   orcamentosStore.$reset();
