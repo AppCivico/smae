@@ -58,7 +58,7 @@ function navegarPara(novosParametros: Record<string, unknown>) {
     name: route.name,
     params: route.params,
     query: {
-      ...route.query,
+      ...structuredClone(route.query),
       ...novosParametros,
       pagina: undefined,
       token_paginacao: undefined,
@@ -216,54 +216,58 @@ watch(
           class="painel-do-parlamentar__ordenacao"
           @submit.prevent="ordenar"
         >
-          <span class="painel-do-parlamentar__ordenar-por">Ordenar por</span>
+          <fieldset class="painel-do-parlamentar__ordenacao-campos">
+            <legend class="painel-do-parlamentar__ordenar-por">
+              Ordenar por
+            </legend>
 
-          <label class="painel-do-parlamentar__campo painel-do-parlamentar__campo--pequeno">
-            Secretaria
-            <select
-              v-model="ordemOrgaoId"
-              name="ordem_orgao_id"
-              class="painel-do-parlamentar__seletor painel-do-parlamentar__seletor--pequeno"
-            >
-              <option value="">
-                Todas
-              </option>
-
-              <option
-                v-for="orgao in secretarias"
-                :key="orgao.id"
-                :value="String(orgao.id)"
-                :title="orgao.descricao"
+            <label class="painel-do-parlamentar__campo painel-do-parlamentar__campo--pequeno">
+              Secretaria
+              <select
+                v-model="ordemOrgaoId"
+                name="ordem_orgao_id"
+                class="painel-do-parlamentar__seletor painel-do-parlamentar__seletor--pequeno"
               >
-                {{ orgao.sigla }}
-              </option>
-            </select>
-          </label>
+                <option value="">
+                  Todas
+                </option>
 
-          <label class="painel-do-parlamentar__campo painel-do-parlamentar__campo--pequeno">
-            Valor
-            <select
-              v-model="ordemValor"
-              name="ordem_valor"
-              class="painel-do-parlamentar__seletor painel-do-parlamentar__seletor--pequeno"
+                <option
+                  v-for="orgao in secretarias"
+                  :key="orgao.id"
+                  :value="String(orgao.id)"
+                  :title="orgao.descricao"
+                >
+                  {{ orgao.sigla }}
+                </option>
+              </select>
+            </label>
+
+            <label class="painel-do-parlamentar__campo painel-do-parlamentar__campo--pequeno">
+              Valor
+              <select
+                v-model="ordemValor"
+                name="ordem_valor"
+                class="painel-do-parlamentar__seletor painel-do-parlamentar__seletor--pequeno"
+              >
+                <option value="desc">
+                  decrescente
+                </option>
+                <option value="asc">
+                  crescente
+                </option>
+              </select>
+            </label>
+
+            <button
+              type="button"
+              class="btn small painel-do-parlamentar__botao painel-do-parlamentar__botao--pequeno"
+              data-test="ordenar"
+              @click="ordenar"
             >
-              <option value="desc">
-                decrescente
-              </option>
-              <option value="asc">
-                crescente
-              </option>
-            </select>
-          </label>
-
-          <button
-            type="button"
-            class="btn small painel-do-parlamentar__botao painel-do-parlamentar__botao--pequeno"
-            data-test="ordenar"
-            @click="ordenar"
-          >
-            Ordenar
-          </button>
+              Ordenar
+            </button>
+          </fieldset>
         </form>
       </header>
 
@@ -345,8 +349,10 @@ watch(
   font-size: 0.9rem;
 }
 
+// Sem `float`, a `<legend>` fica fora do layout flex do `<fieldset>` e ocupa uma linha própria.
 .painel-do-parlamentar__ordenar-por {
-  padding-bottom: 0.6rem;
+  float: left;
+  padding: 0 0 0.6rem;
   font-size: 0.9rem;
   font-weight: 900;
   line-height: 1.5rem;
@@ -477,10 +483,16 @@ watch(
 
 .painel-do-parlamentar__ordenacao {
   order: 1;
+  padding-bottom: 2.1rem;
+}
+
+.painel-do-parlamentar__ordenacao-campos {
   display: flex;
   align-items: flex-end;
   gap: 1.1rem;
-  padding-bottom: 2.1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .painel-do-parlamentar__transferencias-lista {
