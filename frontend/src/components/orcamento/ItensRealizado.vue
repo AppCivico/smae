@@ -72,6 +72,10 @@ const mesesDisponíveis = computed(() => {
       }
       break;
 
+    // transferências não têm configuração de meses disponíveis
+    case 'TransferenciasVoluntarias':
+      break;
+
     default:
       if (!MetasStore) {
         MetasStore = useMetasStore();

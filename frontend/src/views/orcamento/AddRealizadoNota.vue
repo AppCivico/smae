@@ -8,8 +8,11 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
 
+import CampoDeDistribuicaoDeRecurso from '@/components/orcamento/CampoDeDistribuicaoDeRecurso.vue';
+import exigirDistribuicaoDeRecurso from '@/components/orcamento/helpers/exigirDistribuicaoDeRecurso';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
+import { itensDeExecucaoOrcamentaria } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
@@ -21,6 +24,18 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
+  // presente apenas em transferências, onde o ano é escolhido no formulário em
+  // vez de vir da rota
+  anoDeReferencia: {
+    type: Number,
+    default: null,
+  },
+  // presente apenas em transferências, onde a execução pode ser associada a
+  // uma distribuição de recursos
+  distribuicoesDeRecursos: {
+    type: Array,
+    default: null,
+  },
   parametrosParaValidacao: {
     type: Object,
     required: true,
@@ -33,7 +48,7 @@ const ProjetoStore = useProjetosStore();
 const route = useRoute();
 const router = useRouter();
 const { meta_id } = route.params;
-const { ano } = route.params;
+const ano = computed(() => props.anoDeReferencia ?? route.params.ano);
 const { id } = route.params;
 
 const MetasStore = useMetasStore();
@@ -54,7 +69,8 @@ const currentEdit = ref({
   itens: [],
 });
 const dota = ref('');
-const dotaAno = ref(ano);
+// a API exige texto; em transferências o ano chega como número
+const dotaAno = ref(String(ano.value));
 const respostasof = ref({});
 const validando = ref(false);
 
@@ -62,6 +78,7 @@ const regdota = /^\d{1,6}$/;
 const schema = Yup.object().shape({
   nota_empenho: Yup.string().required('Preencha o nota_empenho.').matches(regdota, 'Formato inválido'),
   dotacao: Yup.string(),
+  itens: itensDeExecucaoOrcamentaria,
   processo: Yup.string(),
 });
 
@@ -69,21 +86,18 @@ const {
   errors, handleSubmit, isSubmitting, resetForm, values, validateField,
 } = useForm({
   initialValues: currentEdit.value,
-  validationSchema: schema,
+  validationSchema: props.distribuicoesDeRecursos
+    ? exigirDistribuicaoDeRecurso(schema)
+    : schema,
 });
 
 const notaEmpenhoEAno = computed(() => `${values.nota_empenho}/${dotaAno.value}`);
 
 const desabilitarEnvio = computed(() => respostasof.value.nota_empenho !== notaEmpenhoEAno.value);
 
-const onSubmit = handleSubmit.withControlled(async () => {
-  if (desabilitarEnvio.value) {
-    validarDota();
-    return;
-  }
-
+const salvar = handleSubmit.withControlled(async () => {
   try {
-    values.ano_referencia = Number(ano);
+    values.ano_referencia = Number(ano.value);
 
     if (values.location) {
       values.atividade_id = null;
@@ -100,8 +114,9 @@ const onSubmit = handleSubmit.withControlled(async () => {
     }
 
     // sobrescrever propriedade `nota_empenho`
+    // campo `type="number"`: o que é digitado nele vira número
     const r = await OrcamentosStore.insertOrcamentoRealizado({
-      ...values, nota_empenho: notaEmpenhoEAno.value,
+      ...values, nota_empenho: notaEmpenhoEAno.value, nota_ano: String(dotaAno.value),
     });
     const msg = 'Dados salvos com sucesso!';
 
@@ -141,6 +156,17 @@ async function checkDelete(id) {
     }
   }, 'Remover');
 }
+// enquanto a nota não foi validada no SOF, enviar a valida; isso vem antes do
+// schema, que recusaria o formulário por ainda não ter meses
+function onSubmit(evento) {
+  if (desabilitarEnvio.value) {
+    validarDota();
+    return undefined;
+  }
+
+  return salvar(evento);
+}
+
 function dinheiro(v) {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
 }
@@ -189,6 +215,12 @@ async function validarDota(evt) {
 watch(currentEdit, (novosValores) => {
   resetForm({ values: toRaw(novosValores) });
 });
+
+// a validação no SOF era do ano anterior, e a nota acompanha o ano escolhido
+watch(ano, (novoAno) => {
+  dotaAno.value = String(novoAno);
+  respostasof.value = {};
+});
 </script>
 <template>
   <div class="flex spacebetween center">
@@ -197,13 +229,30 @@ watch(currentEdit, (novosValores) => {
 
     <CheckClose />
   </div>
-  <h3 class="mb2">
+  <h3
+    v-if="parent_item"
+    class="mb2"
+  >
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
+  <TituloDaPagina
+    v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+    as="h3"
+    class="mb2"
+  />
+  <h3
+    v-else
+    class="mb2"
+  >
+    <strong>{{ ano }}</strong>
+  </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
+    <!-- um segundo envio, por duplo clique ou Enter, geraria registro duplicado -->
     <form
-      @submit.prevent="onSubmit"
+      @submit.prevent="isSubmitting || onSubmit($event)"
     >
+      <slot name="ano-de-referencia" />
+
       <div class="flex center g2">
         <div class="f1">
           <label class="label">Nota de empenho <span class="tvermelho">*</span></label>
@@ -423,6 +472,11 @@ watch(currentEdit, (novosValores) => {
             {{ errors.location }}
           </div>
         </div>
+
+        <CampoDeDistribuicaoDeRecurso
+          v-if="distribuicoesDeRecursos"
+          :distribuicoes="distribuicoesDeRecursos"
+        />
 
         <ItensRealizado
           v-model="values.itens"

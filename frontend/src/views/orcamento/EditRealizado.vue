@@ -2,7 +2,9 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  defineOptions, computed, ref, toRaw, watch,
+  computed,
+  defineOptions,
+  ref, toRaw, watch,
 } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 
@@ -22,7 +24,8 @@ const DotaçãoStore = useDotaçãoStore();
 const route = useRoute();
 const router = useRouter();
 const { meta_id } = route.params;
-const { ano } = route.params;
+// transferências não têm o ano na rota; ele vem do registro, depois de carregado
+const ano = ref(route.params.ano);
 const { id } = route.params;
 
 const MetasStore = useMetasStore();
@@ -51,7 +54,7 @@ const d_contadespesa = ref('');
 const d_fonte = ref('');
 
 const dadosDoAno = computed(() => montarDadosDoAnoDaDotacao(
-  DotaçãoSegmentos.value?.[ano],
+  DotaçãoSegmentos.value?.[ano.value],
   {
     orgao: d_orgao.value,
     unidade: d_unidade.value,
@@ -79,9 +82,20 @@ const complemento = computed(() => {
 });
 
 (async () => {
-  DotaçãoStore.getDotaçãoSegmentos(ano);
+  if (ano.value) {
+    DotaçãoStore.getDotaçãoSegmentos(ano.value);
+  }
   if (id) {
     switch (route.meta.entidadeMãe) {
+      case 'TransferenciasVoluntarias':
+        await OrcamentosStore.buscarTodosOsOrcamentosRealizados();
+
+        ano.value = OrcamentosStore.orçamentoEmFoco?.ano_referencia;
+        if (ano.value) {
+          DotaçãoStore.getDotaçãoSegmentos(ano.value);
+        }
+        break;
+
       case 'projeto':
       case 'obras':
 
@@ -91,7 +105,7 @@ const complemento = computed(() => {
       case 'pdm':
       case 'planoSetorial':
       case 'programaDeMetas':
-        await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+        await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano.value);
         break;
 
       default:
@@ -99,7 +113,7 @@ const complemento = computed(() => {
         throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
 
-    emFoco.value = OrcamentoRealizado.value[ano]?.find((x) => x.id == id);
+    emFoco.value = OrcamentoRealizado.value[ano.value]?.find((x) => x.id === Number(id));
 
     emFoco.value.dotacao = await emFoco.value.dotacao.split('.').map((x, i) => {
       if (x.indexOf('*') != -1) {
@@ -184,7 +198,11 @@ const onSubmit = handleSubmit.withControlled(async () => {
 });
 
 async function checkDelete(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+  const pergunta = emFoco.value?.possui_vinculos
+    ? 'Esse item possui vínculos, que serão invalidados. Deseja mesmo removê-lo?'
+    : 'Deseja mesmo remover esse item?';
+
+  alertStore.confirmAction(pergunta, async () => {
     if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
@@ -246,8 +264,22 @@ export default {
     <CheckClose />
   </div>
 
-  <h3 class="mb2">
+  <h3
+    v-if="parent_item"
+    class="mb2"
+  >
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
+  </h3>
+  <TituloDaPagina
+    v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+    as="h3"
+    class="mb2"
+  />
+  <h3
+    v-else
+    class="mb2"
+  >
+    <strong>{{ ano }}</strong>
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
@@ -266,6 +298,17 @@ export default {
         <label class="label">Nota de empenho</label>
         <input
           :value="emFoco.nota_empenho"
+          type="text"
+          disabled
+          class="inputtext light mb1 disabled"
+        >
+      </div>
+      <div v-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'">
+        <label class="label">Execução associada a</label>
+        <input
+          :value="emFoco.distribuicao_recurso
+            ? emFoco.distribuicao_recurso.nome || emFoco.distribuicao_recurso.objeto
+            : 'Transferência'"
           type="text"
           disabled
           class="inputtext light mb1 disabled"

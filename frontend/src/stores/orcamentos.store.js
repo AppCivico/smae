@@ -20,6 +20,9 @@ function caminhoParaApi(parametrosDeModulo = this.route.params) {
     case !!parametrosDeModulo.obraId:
       return `projeto-mdo/${parametrosDeModulo.obraId}/`;
 
+    case !!parametrosDeModulo.transferenciaId:
+      return `transferencia/${parametrosDeModulo.transferenciaId}/`;
+
     default:
       console.trace('Caminho para orçamentos não pôde ser identificado:', parametrosDeModulo);
       throw new Error('Caminho para orçamentos não pôde ser identificado');
@@ -276,6 +279,29 @@ export const useOrcamentosStore = defineStore('Orcamentos', {
       }
     },
 
+    // transferências: a execução não é filtrada por ano, mas mantemos o
+    // agrupamento para que edição e totalizadores funcionem igual
+    async buscarTodosOsOrcamentosRealizados(
+      parametrosDeModulo = this.route.params,
+      extraParams = {},
+    ) {
+      const r = await this.requestS.get(
+        `${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado`,
+        extraParams,
+      );
+      const linhas = r.linhas ? r.linhas : r;
+      const porAno = {};
+
+      linhas.forEach((linha) => {
+        if (!porAno[linha.ano_referencia]) {
+          porAno[linha.ano_referencia] = [];
+        }
+        porAno[linha.ano_referencia].push(linha);
+      });
+
+      this.OrcamentoRealizado = porAno;
+    },
+
     // METAS & PROJETOS & OBRAS
     async restringirPrevistoAZero(
       ano,
@@ -459,6 +485,15 @@ export const useOrcamentosStore = defineStore('Orcamentos', {
   getters: {
     orçamentoEmFoco({ OrcamentoRealizado }) {
       const { ano, id } = this.route.params;
+
+      // transferências não têm o ano na rota, então procuramos em todos
+      if (!ano) {
+        return Object.values(OrcamentoRealizado || {})
+          .filter((x) => Array.isArray(x))
+          .flat()
+          .find((x) => x.id === Number(id));
+      }
+
       const anoEmFoco = Array.isArray(OrcamentoRealizado?.[ano])
         ? OrcamentoRealizado[ano]
         : [];

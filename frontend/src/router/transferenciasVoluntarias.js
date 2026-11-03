@@ -28,6 +28,7 @@ import TransferenciasVoluntariasVinculoEditar from '@/views/transferenciasVolunt
 import TransferenciasVoluntariasVinculos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculos.vue';
 
 import tiparPropsDeRota from './helpers/tiparPropsDeRota';
+import transferenciasVoluntariasOrcamentos from './transferenciasVoluntarias.orcamentos';
 
 const rotasParaMenuSecundário = [
   {
@@ -46,6 +47,7 @@ const rotasParaMenuSecundário = [
       'TransferenciasVoluntariaEditar',
       'RegistroDeTransferenciaEditar',
       'TransferenciaDistribuicaoDeRecursos.Lista',
+      'TransferenciaOrcamentoRealizado',
     ],
   },
 ];
@@ -501,6 +503,7 @@ export default {
             ],
           },
         },
+        transferenciasVoluntariasOrcamentos,
       ],
     },
     /* DOCUMENTOS */
