@@ -630,7 +630,8 @@ export const itensDeExecucaoOrcamentaria = array()
         .max(ref('valor_empenho'), 'Valor liquidado não pode ser maior que o valor empenhado')
         .required(),
     }),
-  );
+  )
+  .semDuplicatas('Cada mês só pode ser informado uma vez', { apenas: 'mes' });
 
 export const execuçãoOrçamentária = object()
   .shape({
