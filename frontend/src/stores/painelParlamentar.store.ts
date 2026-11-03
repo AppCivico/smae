@@ -11,14 +11,6 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/painel-parlamentar`;
 
-type Paginacao = {
-  tokenPaginacao: string | null;
-  paginas: number;
-  paginaCorrente: number;
-  temMais: boolean;
-  totalRegistros: number;
-};
-
 interface Estado {
   painel: PainelParlamentarDto | null;
   transferencias: PainelParlamentarTransferenciaDto[];

@@ -24,35 +24,24 @@ const barras = computed(() => props.itens.map((item, indice) => ({
 </script>
 
 <template>
-  <ul class="grafico-por-secretaria">
-    <li
+  <dl class="grafico-por-secretaria">
+    <div
       v-for="barra in barras"
       :key="barra.orgao?.id ?? 'outros'"
       class="grafico-por-secretaria__item"
+      :style="{ '--largura': barra.largura, '--cor': barra.cor }"
     >
-      <span class="grafico-por-secretaria__trilho">
-        <span
-          class="grafico-por-secretaria__barra"
-          :style="{ width: barra.largura, backgroundColor: barra.cor }"
-        />
-      </span>
-
-      <span class="grafico-por-secretaria__legenda">
-        <strong
-          class="grafico-por-secretaria__valor"
-          :style="{ color: barra.cor }"
-        >
-          {{ dinheiro(barra.valor) }}
-        </strong>
-        <span
-          class="grafico-por-secretaria__rotulo"
-          :title="barra.orgao?.descricao"
-        >
-          {{ barra.rotulo }}
-        </span>
-      </span>
-    </li>
-  </ul>
+      <dt
+        class="grafico-por-secretaria__rotulo"
+        :title="barra.orgao?.descricao"
+      >
+        {{ barra.rotulo }}
+      </dt>
+      <dd class="grafico-por-secretaria__valor">
+        {{ dinheiro(barra.valor) }}
+      </dd>
+    </div>
+  </dl>
 </template>
 
 <style scoped lang="less">
@@ -60,59 +49,56 @@ const barras = computed(() => props.itens.map((item, indice) => ({
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 1.6rem;
   margin: 0;
-  padding: 60px 0 20px;
-  list-style: none;
+  padding: 4.3rem 0 1.4rem;
 
   &::before {
     content: '';
     position: absolute;
-    top: 45px;
+    top: 3.2rem;
     bottom: 0;
-    left: 257px;
-    border-left: 0.52px solid fade(@c100, 50%);
+    left: 18.4rem;
+    border-left: 0.1rem solid fade(@c100, 50%);
   }
 }
 
 .grafico-por-secretaria__item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 17.1rem minmax(0, 1fr);
+  grid-template-areas:
+    'barra valor'
+    'barra rotulo';
   align-items: center;
-  gap: 42px;
-}
+  gap: 0.4rem 3rem;
 
-.grafico-por-secretaria__trilho {
-  display: flex;
-  justify-content: flex-end;
-  flex-shrink: 0;
-  width: 240px;
-}
-
-.grafico-por-secretaria__barra {
-  min-width: 36px;
-  height: 36px;
-  border-radius: 18px 0 0 18px;
-}
-
-.grafico-por-secretaria__legenda {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
+  &::before {
+    content: '';
+    grid-area: barra;
+    justify-self: end;
+    width: var(--largura);
+    min-width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 1.3rem 0 0 1.3rem;
+    background-color: var(--cor);
+  }
 }
 
 .grafico-por-secretaria__valor {
+  grid-area: valor;
+  color: var(--cor);
   font-family: 'Roboto Slab', serif;
-  font-size: 31.34px;
+  font-size: 2.2rem;
   font-weight: 600;
-  line-height: 24px;
+  line-height: 1.7rem;
 }
 
 .grafico-por-secretaria__rotulo {
+  grid-area: rotulo;
   overflow: hidden;
-  font-size: 13.58px;
+  font-size: 1rem;
   font-weight: 600;
-  line-height: 15px;
+  line-height: 1.1rem;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;

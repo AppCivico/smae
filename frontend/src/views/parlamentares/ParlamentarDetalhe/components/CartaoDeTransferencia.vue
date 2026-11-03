@@ -56,7 +56,6 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 </script>
 
 <template>
-  <h1>here</h1>
   <article class="cartao-de-transferencia">
     <header class="cartao-de-transferencia__cabecalho">
       <div class="cartao-de-transferencia__objeto">
@@ -164,38 +163,38 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 .cartao-de-transferencia {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 32px;
-  border-radius: 12px;
+  gap: 1.7rem;
+  padding: 2.3rem;
+  border-radius: 0.9rem;
   background-color: @branco;
-  box-shadow: 0 9.66px 19.32px 0 fade(@primary, 10%);
+  box-shadow: 0 0.7rem 1.4rem 0 fade(@primary, 10%);
   color: #233b5c;
 }
 
 .cartao-de-transferencia__cabecalho {
   display: flex;
-  gap: 73px;
+  gap: 5.2rem;
 }
 
 .cartao-de-transferencia__objeto {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  gap: 4px;
-  max-width: 596px;
+  gap: 0.3rem;
+  max-width: 42.6rem;
 }
 
 .cartao-de-transferencia__rotulo {
   margin: 0;
-  font-size: 16px;
+  font-size: 1.1rem;
   font-weight: 300;
-  line-height: 24px;
+  line-height: 1.7rem;
 }
 
 .cartao-de-transferencia__link {
   margin: 0;
-  font-size: 20px;
-  line-height: 24px;
+  font-size: 1.4rem;
+  line-height: 1.7rem;
 
   :deep(a) {
     color: inherit;
@@ -205,15 +204,15 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 .cartao-de-transferencia__valor {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.7rem;
   flex-shrink: 0;
-  width: 140px;
+  width: 10rem;
   margin: 0;
 
   dd {
     margin: 0;
-    font-size: 20px;
-    line-height: 24px;
+    font-size: 1.4rem;
+    line-height: 1.7rem;
     white-space: nowrap;
   }
 }
@@ -230,18 +229,18 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 
   :deep(th),
   :deep(td) {
-    padding: 0 12px;
+    padding: 0 0.9rem;
     text-align: left;
     vertical-align: middle;
   }
 
   :deep(thead th) {
-    padding-top: 6.7px;
-    padding-bottom: 6.7px;
-    border-bottom: 0.75px solid @c100;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 0.1rem solid @c100;
     // `.tablemain th` aplica `.tc300`, que usa !important
     color: @primary !important;
-    font-size: 10px;
+    font-size: 0.7rem;
     font-weight: 700;
     line-height: 1.2;
     text-transform: uppercase;
@@ -249,9 +248,9 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 
   :deep(tbody th),
   :deep(tbody td) {
-    height: 50.64px;
-    border-bottom: 0.75px solid @c100;
-    font-size: 12px;
+    height: 3.6rem;
+    border-bottom: 0.1rem solid @c100;
+    font-size: 0.9rem;
     line-height: 1.3;
   }
 
@@ -266,8 +265,8 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
   }
 
   :deep(tfoot td) {
-    height: 50.64px;
-    font-size: 12px;
+    height: 3.6rem;
+    font-size: 0.9rem;
     font-weight: 700;
     line-height: 1.3;
   }
@@ -285,45 +284,45 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 .cartao-de-transferencia__barra {
   position: relative;
   display: block;
-  width: 318px;
-  height: 18px;
+  width: 22.7rem;
+  height: 1.3rem;
   background-color: @c200;
 }
 
 .cartao-de-transferencia__barra-parlamentar {
   position: absolute;
-  top: 7.73px;
+  top: 0.6rem;
   left: 0;
-  height: 4px;
-  border-radius: 0 2px 2px 0;
+  height: 0.3rem;
+  border-radius: 0 0.1rem 0.1rem 0;
   background-color: @primary;
 }
 
 .cartao-de-transferencia__legenda {
   display: flex;
-  gap: 49px;
-  font-size: 11px;
+  gap: 3.5rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  line-height: 16px;
+  line-height: 1.1rem;
   letter-spacing: 0.0455em;
 }
 
 .cartao-de-transferencia__legenda-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.4rem;
   white-space: nowrap;
 }
 
 .cartao-de-transferencia__marcador--distribuicao {
-  width: 11px;
-  height: 11px;
+  width: 0.8rem;
+  height: 0.8rem;
   background-color: @c200;
 }
 
 .cartao-de-transferencia__marcador--parlamentar {
-  width: 10px;
-  height: 4px;
+  width: 0.7rem;
+  height: 0.3rem;
   background-color: @primary;
 }
 </style>

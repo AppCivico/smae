@@ -118,6 +118,7 @@ const montar = () => mount(ParlamentarDetalhePainel, {
       createSpy: vi.fn,
       plugins: [() => ({ requestS: mockRequestS })],
     })],
+    directives: { ScrollLockDebug: {} },
     mocks: { $route: mockRoute },
     stubs: {
       SmaeLink: RouterLinkStub,

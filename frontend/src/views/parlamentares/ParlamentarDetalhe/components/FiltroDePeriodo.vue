@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { watch } from 'vue';
 
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import schema from '@/consts/formSchemas/painelParlamentarFiltro';
 
 const props = defineProps<{
@@ -19,12 +21,18 @@ const anos = Array.from(
   (_, indice) => new Date().getFullYear() - indice,
 );
 
-const { handleSubmit } = useForm({
+const valoresDoPeriodo = () => ({
+  ano_inicio: props.anoInicio ? String(props.anoInicio) : '',
+  ano_fim: props.anoFim ? String(props.anoFim) : '',
+});
+
+const { handleSubmit, resetForm } = useForm({
   validationSchema: schema,
-  initialValues: {
-    ano_inicio: props.anoInicio ? String(props.anoInicio) : '',
-    ano_fim: props.anoFim ? String(props.anoFim) : '',
-  },
+  initialValues: valoresDoPeriodo(),
+});
+
+watch(() => [props.anoInicio, props.anoFim], () => {
+  resetForm({ values: valoresDoPeriodo() });
 });
 
 const filtrar = handleSubmit((valores) => {
@@ -43,9 +51,14 @@ const filtrar = handleSubmit((valores) => {
     @submit="filtrar"
   >
     <div class="filtro-de-periodo__campos">
-      <label class="filtro-de-periodo__campo">
-        <span class="filtro-de-periodo__rotulo">Período</span>
+      <div class="filtro-de-periodo__campo">
+        <SmaeLabel
+          class="filtro-de-periodo__rotulo"
+          name="ano_inicio"
+          :schema="schema"
+        />
         <Field
+          id="ano_inicio"
           as="select"
           name="ano_inicio"
           class="filtro-de-periodo__seletor"
@@ -61,13 +74,18 @@ const filtrar = handleSubmit((valores) => {
             {{ ano }}
           </option>
         </Field>
-      </label>
+      </div>
 
       <span class="filtro-de-periodo__ate">até</span>
 
-      <label class="filtro-de-periodo__campo">
-        <span class="filtro-de-periodo__rotulo">Período</span>
+      <div class="filtro-de-periodo__campo">
+        <SmaeLabel
+          class="filtro-de-periodo__rotulo"
+          name="ano_fim"
+          :schema="schema"
+        />
         <Field
+          id="ano_fim"
           as="select"
           name="ano_fim"
           class="filtro-de-periodo__seletor"
@@ -83,7 +101,7 @@ const filtrar = handleSubmit((valores) => {
             {{ ano }}
           </option>
         </Field>
-      </label>
+      </div>
 
       <button
         type="submit"
@@ -104,47 +122,48 @@ const filtrar = handleSubmit((valores) => {
 .filtro-de-periodo__campos {
   display: flex;
   align-items: flex-end;
-  gap: 24px;
+  gap: 1.7rem;
 }
 
 .filtro-de-periodo__campo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 186px;
+  gap: 0.6rem;
+  width: 13.3rem;
 }
 
 .filtro-de-periodo__rotulo {
-  font-size: 12px;
+  margin-bottom: 0;
+  font-size: 0.9rem;
   font-weight: 700;
-  line-height: 24px;
+  line-height: 1.7rem;
   text-transform: uppercase;
   color: @c600;
 }
 
 .filtro-de-periodo__seletor {
-  height: 44px;
-  padding: 10px 16px;
-  border: 1.5px solid @c100;
-  border-radius: 4px;
+  height: 3.1rem;
+  padding: 0.7rem 1.1rem;
+  border: 0.1rem solid @c100;
+  border-radius: 0.3rem;
   background-color: @branco;
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.4;
   color: @c400;
 }
 
 .filtro-de-periodo__ate {
-  padding-bottom: 12px;
-  font-size: 12px;
+  padding-bottom: 0.9rem;
+  font-size: 0.9rem;
   font-weight: 900;
-  line-height: 21px;
+  line-height: 1.5rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: @c600;
 }
 
 .filtro-de-periodo__botao {
-  height: 40px;
-  margin-bottom: 2px;
+  height: 2.9rem;
+  margin-bottom: 0.1rem;
 }
 </style>

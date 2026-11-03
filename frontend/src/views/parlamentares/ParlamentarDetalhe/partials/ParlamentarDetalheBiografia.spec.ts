@@ -56,13 +56,20 @@ const parlamentar = {
   mandatos: [],
 };
 
-const montar = (emFoco: unknown = parlamentar) => mount(ParlamentarDetalheBiografia, {
+const montar = (
+  emFoco: unknown = parlamentar,
+  privilegios: string[] = [],
+) => mount(ParlamentarDetalheBiografia, {
   global: {
     plugins: [createTestingPinia({
       stubActions: false,
       createSpy: vi.fn,
       initialState: {
         parlamentaresStore: { emFoco },
+        auth: {
+          sistemaEscolhido: 'SMAE',
+          privilegiosPorModulo: { SMAE: privilegios },
+        },
       },
     })],
     mocks: { $route: mockRoute },
@@ -143,6 +150,68 @@ describe('ParlamentarDetalheBiografia', () => {
     expect(linhas).toHaveLength(1);
     expect(linhas?.[0].text()).toBe('Nenhum registro encontrado.');
     expect(linhas?.[0].find('td').attributes('colspan')).toBe('3');
+  });
+
+  it('ordena a equipe por nome', async () => {
+    const envelope = montar({
+      ...parlamentar,
+      equipe: [
+        {
+          id: 3, nome: 'Zélia Prado', tipo: 'Assessor', telefone: null, email: null,
+        },
+        {
+          id: 4, nome: 'Ana Lima', tipo: 'Assessor', telefone: null, email: null,
+        },
+      ],
+    });
+    await flushPromises();
+
+    const nomes = secao(envelope, 'Assessores')
+      ?.findAll('tbody tr')
+      .map((linha) => linha.find('td').text());
+
+    expect(nomes).toEqual(['Ana Lima', 'Zélia Prado']);
+  });
+
+  it('associa os votos da capital e do interior ao seu percentual', async () => {
+    const envelope = montar();
+    await flushPromises();
+
+    const par = (rotulo: string) => envelope
+      .findAll('dl > div')
+      .find((item) => item.find('dt').text() === rotulo)
+      ?.find('dd')
+      .text();
+
+    expect(par('Votos no Estado')).toBe('456.900');
+    expect(par('Votos na Capital')).toContain('345.000');
+    expect(par('Votos na Capital')).toContain('76%');
+    expect(par('Votos no Interior')).toContain('111.000');
+    expect(par('Votos no Interior')).toContain('24%');
+  });
+
+  it('exibe o telefone de contato apenas a quem tem permissão', async () => {
+    const dados = {
+      ...parlamentar,
+      ultimo_mandato: { ...parlamentar.ultimo_mandato, telefone: '(11) 3333-4444' },
+    };
+    const semPermissao = montar(dados);
+    const comPermissao = montar(dados, ['SMAE.acesso_telefone']);
+    await flushPromises();
+
+    expect(semPermissao.text()).not.toContain('(11) 3333-4444');
+    expect(comPermissao.text()).toContain('(11) 3333-4444');
+  });
+
+  it('usa travessão para dados de contato ausentes', async () => {
+    const envelope = montar();
+    await flushPromises();
+
+    const endereco = envelope
+      .findAll('dl > div')
+      .find((item) => item.find('dt').text() === 'Endereço');
+
+    expect(endereco?.find('dd').text()).toBe('—');
   });
 
   it('lista os suplentes do mandato corrente', async () => {

@@ -151,6 +151,7 @@ watch(
 
         <BarraDePercentual
           class="painel-do-parlamentar__barra"
+          aria-label="Percentual utilizado do recurso disponibilizado"
           :percentual="painel.recurso.pct_utilizado"
           :rotulo="dinheiro(painel.recurso.valor_utilizado, { style: 'currency' })"
         />
@@ -164,6 +165,7 @@ watch(
         >
           <BarraDePercentual
             class="painel-do-parlamentar__barra"
+            aria-label="Participação no município"
             :percentual="painel.participacao_municipio.pct"
           />
         </PainelCartao>
@@ -210,8 +212,6 @@ watch(
           Transferências
         </h3>
 
-        <hr class="painel-do-parlamentar__linha">
-
         <form
           class="painel-do-parlamentar__ordenacao"
           @submit.prevent="ordenar"
@@ -219,9 +219,7 @@ watch(
           <span class="painel-do-parlamentar__ordenar-por">Ordenar por</span>
 
           <label class="painel-do-parlamentar__campo painel-do-parlamentar__campo--pequeno">
-            <span class="painel-do-parlamentar__rotulo painel-do-parlamentar__rotulo--pequeno">
-              Secretaria
-            </span>
+            Secretaria
             <select
               v-model="ordemOrgaoId"
               name="ordem_orgao_id"
@@ -243,10 +241,7 @@ watch(
           </label>
 
           <label class="painel-do-parlamentar__campo painel-do-parlamentar__campo--pequeno">
-            <span class="painel-do-parlamentar__rotulo painel-do-parlamentar__rotulo--pequeno">
-              Valor
-            </span>
-
+            Valor
             <select
               v-model="ordemValor"
               name="ordem_valor"
@@ -308,75 +303,66 @@ watch(
 
 <style scoped lang="less">
 .painel-do-parlamentar__filtro {
-  margin-bottom: 48px;
+  margin-bottom: 3.4rem;
 }
 
 .painel-do-parlamentar__campo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 186px;
-}
-
-.painel-do-parlamentar__campo--pequeno {
-  gap: 7px;
-  width: 157px;
-}
-
-.painel-do-parlamentar__rotulo {
-  font-size: 12px;
+  gap: 0.6rem;
+  width: 13.3rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  line-height: 24px;
+  line-height: 1.7rem;
   text-transform: uppercase;
   color: @c600;
 }
 
-.painel-do-parlamentar__rotulo--pequeno {
-  font-size: 10.5px;
-  line-height: 21px;
+.painel-do-parlamentar__campo--pequeno {
+  gap: 0.5rem;
+  width: 11.2rem;
+  font-size: 0.8rem;
+  line-height: 1.5rem;
 }
 
 .painel-do-parlamentar__seletor {
-  height: 44px;
-  padding: 10px 16px;
-  border: 1.5px solid @c100;
-  border-radius: 4px;
+  height: 3.1rem;
+  padding: 0.7rem 1.1rem;
+  border: 0.1rem solid @c100;
+  border-radius: 0.3rem;
   background-color: @branco;
-  font-size: 14px;
+  font-size: 1rem;
+  font-weight: 400;
   line-height: 1.4;
   color: @c400;
 }
 
 .painel-do-parlamentar__seletor--pequeno {
-  height: 38.5px;
-  padding: 8.75px 14px;
-  border-width: 1.3px;
-  border-radius: 3.5px;
-  font-size: 12.24px;
+  height: 2.8rem;
+  padding: 0.6rem 1rem;
+  border-width: 0.1rem;
+  border-radius: 0.3rem;
+  font-size: 0.9rem;
 }
 
 .painel-do-parlamentar__ordenar-por {
-  font-size: 12px;
+  padding-bottom: 0.6rem;
+  font-size: 0.9rem;
   font-weight: 900;
-  line-height: 21px;
+  line-height: 1.5rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: @c600;
-}
-
-.painel-do-parlamentar__ordenar-por {
-  padding-bottom: 8px;
   color: #233b5c;
 }
 
 .painel-do-parlamentar__botao {
-  height: 40px;
-  margin-bottom: 2px;
+  height: 2.9rem;
+  margin-bottom: 0.1rem;
 }
 
 .painel-do-parlamentar__botao--pequeno {
-  height: 32px;
-  margin-bottom: 3px;
+  height: 2.3rem;
+  margin-bottom: 0.2rem;
 }
 
 .painel-do-parlamentar__grade {
@@ -385,43 +371,43 @@ watch(
   grid-template-areas:
     'transferencias recurso'
     'coluna secretaria';
-  gap: 48px 46px;
-  margin-bottom: 74px;
+  gap: 3.4rem 3.3rem;
+  margin-bottom: 5.3rem;
 }
 
 .painel-do-parlamentar__transferencias {
   grid-area: transferencias;
-  min-height: 196px;
+  min-height: 14rem;
 }
 
 .painel-do-parlamentar__recurso {
   grid-area: recurso;
-  min-height: 196px;
+  min-height: 14rem;
 }
 
 .painel-do-parlamentar__coluna {
   grid-area: coluna;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 1.8rem;
 }
 
 .painel-do-parlamentar__participacao {
-  min-height: 181px;
+  min-height: 12.9rem;
 }
 
 .painel-do-parlamentar__partido {
-  min-height: 355px;
+  min-height: 25.4rem;
 }
 
 .painel-do-parlamentar__secretaria {
   grid-area: secretaria;
-  min-height: 562px;
+  min-height: 40.1rem;
 }
 
 .painel-do-parlamentar__contagem {
   margin: 0;
-  padding: 8px 0 4px;
+  padding: 0.6rem 0 0.3rem;
   font-family: 'Roboto Slab', serif;
   font-weight: 600;
   line-height: 1.3;
@@ -429,39 +415,39 @@ watch(
 }
 
 .painel-do-parlamentar__em-andamento {
-  font-size: 80px;
+  font-size: 5.7rem;
   color: @c500;
 }
 
 .painel-do-parlamentar__total {
-  margin-left: 6px;
-  font-size: 58px;
+  margin-left: 0.4rem;
+  font-size: 4.1rem;
   color: @c400;
 }
 
 .painel-do-parlamentar__disponibilizado {
-  margin: 14px 0 15px 4px;
-  font-size: 14px;
+  margin: 1rem 0 1.1rem 0.3rem;
+  font-size: 1rem;
   line-height: 1;
   color: @cinza-medio;
 }
 
 .painel-do-parlamentar__disponibilizado-rotulo {
-  font-size: 12px;
+  font-size: 0.9rem;
   font-weight: 300;
   color: #333;
 }
 
 .painel-do-parlamentar__barra {
-  margin: 0 0 32px 4px;
+  margin: 0 0 2.3rem 0.3rem;
 }
 
 .painel-do-parlamentar__participacao .painel-do-parlamentar__barra {
-  margin: 30px 0 20px;
+  margin: 2.1rem 0 1.4rem;
 }
 
 .painel-do-parlamentar__vazio {
-  margin: 24px 0;
+  margin: 1.7rem 0;
   text-align: center;
   color: @c400;
 }
@@ -469,39 +455,41 @@ watch(
 .painel-do-parlamentar__cabecalho-da-lista {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 1.3rem;
 }
 
 .painel-do-parlamentar__titulo-da-lista {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.4rem;
   font-weight: 600;
-  line-height: 26px;
+  line-height: 1.9rem;
   white-space: nowrap;
   color: @primary;
 }
 
-.painel-do-parlamentar__linha {
+.painel-do-parlamentar__cabecalho-da-lista::after {
+  content: '';
   flex-grow: 1;
   margin: 0;
   border: 0;
-  border-top: 0.94px solid @c500;
+  border-top: 0.1rem solid @c500;
 }
 
 .painel-do-parlamentar__ordenacao {
+  order: 1;
   display: flex;
   align-items: flex-end;
-  gap: 16px;
-  padding-bottom: 30px;
+  gap: 1.1rem;
+  padding-bottom: 2.1rem;
 }
 
 .painel-do-parlamentar__transferencias-lista {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 1.7rem;
 }
 
 .painel-do-parlamentar__paginacao {
-  margin-top: 72px;
+  margin-top: 5.1rem;
 }
 </style>

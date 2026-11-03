@@ -8,13 +8,30 @@ const props = defineProps<{
   rotulo?: string;
 }>();
 
-const largura = computed(() => `${Math.min(Math.max(props.percentual, 0), 100)}%`);
+const percentualLimitado = computed(() => Math.min(Math.max(props.percentual, 0), 100));
+
+const largura = computed(() => `${percentualLimitado.value}%`);
+
+const textoDoValor = computed(() => {
+  const percentual = `${dinheiro(props.percentual, { semDecimais: true })}%`;
+
+  return props.rotulo
+    ? `${percentual} (${props.rotulo})`
+    : percentual;
+});
 </script>
 
 <template>
-  <div class="barra-de-percentual">
-    <div class="barra-de-percentual__trilho">
-      <div
+  <div
+    class="barra-de-percentual"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    :aria-valuenow="percentualLimitado"
+    :aria-valuetext="textoDoValor"
+  >
+    <span class="barra-de-percentual__trilho">
+      <span
         class="barra-de-percentual__preenchimento"
         :style="{ width: largura }"
       />
@@ -25,7 +42,7 @@ const largura = computed(() => `${Math.min(Math.max(props.percentual, 0), 100)}%
       >
         {{ rotulo }}
       </span>
-    </div>
+    </span>
 
     <strong class="barra-de-percentual__valor">
       {{ dinheiro(percentual, { semDecimais: true }) }}%
@@ -37,14 +54,21 @@ const largura = computed(() => `${Math.min(Math.max(props.percentual, 0), 100)}%
 .barra-de-percentual {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 0.2rem;
+  height: auto;
+  overflow: visible;
+
+  &::before,
+  &::after {
+    content: none;
+  }
 }
 
 .barra-de-percentual__trilho {
   position: relative;
   flex-grow: 1;
-  height: 34px;
-  border-radius: 17px 0 0 17px;
+  height: 2.4rem;
+  border-radius: 1.2rem 0 0 1.2rem;
   background-color: @c300;
 }
 
@@ -53,8 +77,8 @@ const largura = computed(() => `${Math.min(Math.max(props.percentual, 0), 100)}%
   top: 0;
   right: 0;
   bottom: 0;
-  min-width: 34px;
-  border-radius: 17px 0 0 17px;
+  min-width: 2.4rem;
+  border-radius: 1.2rem 0 0 1.2rem;
   background-color: @c500;
 }
 
@@ -62,8 +86,8 @@ const largura = computed(() => `${Math.min(Math.max(props.percentual, 0), 100)}%
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 10px;
-  font-size: 10.85px;
+  margin-top: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 600;
   line-height: 1;
   color: @c500;
@@ -71,7 +95,7 @@ const largura = computed(() => `${Math.min(Math.max(props.percentual, 0), 100)}%
 
 .barra-de-percentual__valor {
   font-family: 'Roboto Slab', serif;
-  font-size: 39.5px;
+  font-size: 2.8rem;
   font-weight: 600;
   line-height: 1.3;
   color: @c500;
