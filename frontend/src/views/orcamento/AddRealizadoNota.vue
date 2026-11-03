@@ -186,24 +186,40 @@ async function validarDota(evt) {
   validando.value = true;
   dota.value = String(dota.value).padStart(6, '0');
 
+  // se o ano mudar durante a consulta, a resposta do ano anterior é descartada
+  const anoDaConsulta = dotaAno.value;
+  const anoMudou = () => anoDaConsulta !== dotaAno.value;
+  const descartar = () => {
+    // a troca pelo campo do ano da nota não passa pelo watcher de `ano`
+    if (respostasof.value?.loading) respostasof.value = {};
+  };
+
   try {
     respostasof.value = { loading: true };
     const { valid } = await validateField('nota_empenho');
-    if (valid) {
+    if (valid && anoMudou()) {
+      descartar();
+    } else if (valid) {
       const r = await DotaçãoStore
         .getDotaçãoRealizadoNota(
-          `${dota.value}/${dotaAno.value}`,
-          dotaAno.value,
+          `${dota.value}/${anoDaConsulta}`,
+          anoDaConsulta,
           props.parametrosParaValidacao,
         );
-      respostasof.value = r;
 
-      [dota.value] = r.nota_empenho && r.nota_empenho.indexOf('/') !== -1
-        ? r.nota_empenho.split('/')
-        : r.nota_empenho;
+      if (anoMudou()) {
+        descartar();
+      } else {
+        respostasof.value = r;
+
+        [dota.value] = r.nota_empenho && r.nota_empenho.indexOf('/') !== -1
+          ? r.nota_empenho.split('/')
+          : r.nota_empenho;
+      }
     }
   } catch (error) {
-    respostasof.value = error;
+    if (anoMudou()) descartar();
+    else respostasof.value = error;
   }
 
   if (evt?.stopPropagation) {
