@@ -228,6 +228,34 @@ describe('ParlamentarDetalhePainel', () => {
     expect(mockRoute.query.token_paginacao).toBeUndefined();
   });
 
+  it('preserva parâmetros aninhados da URL sem compartilhá-los com a rota anterior', async () => {
+    const filtroDaRotaAnterior = { ano: '2020' };
+
+    mockRoute.query = { filtro: filtroDaRotaAnterior } as unknown as typeof mockRoute.query;
+
+    const envelope = montar();
+    await flushPromises();
+
+    await envelope.find('[data-test="ordenar"]').trigger('click');
+    await flushPromises();
+
+    expect(mockRoute.query.filtro).toEqual(filtroDaRotaAnterior);
+    expect(mockRoute.query.filtro).not.toBe(filtroDaRotaAnterior);
+  });
+
+  it('agrupa os campos de ordenação sob a legenda "Ordenar por"', async () => {
+    const envelope = montar();
+    await flushPromises();
+
+    const grupo = envelope.findAll('fieldset')
+      .find((fieldset) => fieldset.find('legend').exists()
+        && fieldset.find('legend').text() === 'Ordenar por');
+
+    expect(grupo).toBeDefined();
+    expect(grupo?.find('select[name="ordem_orgao_id"]').exists()).toBe(true);
+    expect(grupo?.find('select[name="ordem_valor"]').exists()).toBe(true);
+  });
+
   it('lista as transferências com link para o resumo de cada uma', async () => {
     const envelope = montar();
     await flushPromises();

@@ -62,11 +62,6 @@ const podeVerTelefone = computed(() => authStore.temPermissãoPara('SMAE.acesso_
 const cargo = computed(() => {
   const valor = mandato.value?.cargo as keyof typeof cargosDeParlamentar | undefined;
 
-  // PR #835 — robsonsobral:
-  // "Eu gosto disso, mas muita gente ficar confusa. Não valeria a pena ter parênteses ao menos?"
-  // Código anterior:
-  // return valor ? cargosDeParlamentar[valor]?.nome || valor : '—';
-  // Correção:
   return valor ? (cargosDeParlamentar[valor]?.nome || valor) : '—';
 });
 
@@ -89,6 +84,27 @@ const parteDosVotos = (chave: string, titulo: string, valor: number | null | und
   atributosDoItem: { class: 'biografia-do-parlamentar__votos' },
   metadados: { percentual: percentualDosVotos(valor) },
 });
+
+const listaDoResumo = computed(() => [
+  { chave: 'eleito', titulo: 'Eleito', valor: simOuNao(mandato.value?.eleito) },
+  { chave: 'uf', titulo: 'UF', valor: mandato.value?.uf },
+  { chave: 'suplente', titulo: 'Suplente', valor: simOuNao(mandato.value?.suplencia) },
+  { chave: 'cargo', titulo: 'Cargo', valor: cargo.value },
+  { chave: 'em_atividade', titulo: 'Em atividade?', valor: simOuNao(emFoco.value?.em_atividade) },
+]);
+
+const listaDoPartido = computed(() => [
+  {
+    chave: 'partido_atual',
+    titulo: 'Partido Atual',
+    valor: mandato.value?.partido_atual?.sigla,
+  },
+  {
+    chave: 'partido_candidatura',
+    titulo: 'Partido da Candidatura',
+    valor: mandato.value?.partido_candidatura?.sigla,
+  },
+]);
 
 const listaDeRepresentatividade = computed(() => [
   {
@@ -193,28 +209,11 @@ const listaDeContato = computed(() => [
             <h4>Resumo da eleição</h4>
           </header>
 
-          <dl class="biografia-do-parlamentar__dados">
-            <div>
-              <dt>Eleito</dt>
-              <dd>{{ simOuNao(mandato.eleito) }}</dd>
-            </div>
-            <div>
-              <dt>UF</dt>
-              <dd>{{ mandato.uf || '—' }}</dd>
-            </div>
-            <div>
-              <dt>Suplente</dt>
-              <dd>{{ simOuNao(mandato.suplencia) }}</dd>
-            </div>
-            <div>
-              <dt>Cargo</dt>
-              <dd>{{ cargo }}</dd>
-            </div>
-            <div>
-              <dt>Em atividade?</dt>
-              <dd>{{ simOuNao(emFoco?.em_atividade) }}</dd>
-            </div>
-          </dl>
+          <SmaeDescriptionList
+            class="biografia-do-parlamentar__dados"
+            layout="grid"
+            :lista="listaDoResumo"
+          />
         </section>
 
         <section class="biografia-do-parlamentar__cartao">
@@ -222,16 +221,11 @@ const listaDeContato = computed(() => [
             <h4>Partido</h4>
           </header>
 
-          <dl class="biografia-do-parlamentar__dados biografia-do-parlamentar__dados--coluna">
-            <div>
-              <dt>Partido Atual</dt>
-              <dd>{{ mandato.partido_atual?.sigla || '—' }}</dd>
-            </div>
-            <div>
-              <dt>Partido da Candidatura</dt>
-              <dd>{{ mandato.partido_candidatura?.sigla || '—' }}</dd>
-            </div>
-          </dl>
+          <SmaeDescriptionList
+            class="biografia-do-parlamentar__dados biografia-do-parlamentar__dados--coluna"
+            layout="grid"
+            :lista="listaDoPartido"
+          />
         </section>
 
         <section class="biografia-do-parlamentar__cartao">
