@@ -38,6 +38,36 @@ describe('itensDeExecucaoOrcamentaria', () => {
     await expect(schema.validate(comUmMes(10, 5, { mes: 0 }))).rejects.toThrow('Mês inválido');
   });
 
+  describe('meses distintos', () => {
+    const item = (mes) => ({ mes, valor_empenho: 10, valor_liquidado: 5 });
+
+    it('aceita meses diferentes', async () => {
+      await expect(schema.isValid({ itens: [item(1), item(2), item(3)] })).resolves.toBe(true);
+    });
+
+    const errosDe = (itens) => schema.validate({ itens }, { abortEarly: false })
+      .then(() => null, (e) => e);
+
+    it('recusa o mesmo mês informado duas vezes', async () => {
+      const erro = await errosDe([item(1), item(3), item(1)]);
+
+      expect(erro.errors).toEqual([
+        'Cada mês só pode ser informado uma vez',
+        'Cada mês só pode ser informado uma vez',
+      ]);
+    });
+
+    it('compara o mês mesmo quando chega como texto', async () => {
+      await expect(schema.isValid({ itens: [item(2), item('2')] })).resolves.toBe(false);
+    });
+
+    it('aponta o erro no mês de cada linha repetida', async () => {
+      const erro = await errosDe([item(1), item(3), item(1)]);
+
+      expect(erro.inner.map((x) => x.path)).toEqual(['itens[0].mes', 'itens[2].mes']);
+    });
+  });
+
   it('trata o percentual apagado como ausente', async () => {
     await expect(schema.isValid(comUmMes(10, 5, { percentual_empenho: '', percentual_liquidado: '' })))
       .resolves.toBe(true);
