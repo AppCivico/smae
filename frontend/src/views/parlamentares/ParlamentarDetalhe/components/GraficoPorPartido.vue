@@ -92,8 +92,8 @@ const fatias = computed(() => {
 .grafico-por-partido {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding-top: 24px;
+  gap: 1.4rem;
+  padding-top: 1.7rem;
 }
 
 .grafico-por-partido__rosca {
@@ -104,30 +104,30 @@ const fatias = computed(() => {
 .grafico-por-partido__legenda {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 0.8rem;
   margin: 0;
-  padding: 4px 0 4px 20px;
-  border-left: 0.32px solid fade(@c100, 50%);
+  padding: 0.3rem 0 0.3rem 1.4rem;
+  border-left: 0.1rem solid fade(@c100, 50%);
   list-style: none;
 }
 
 .grafico-por-partido__item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0.2rem;
 }
 
 .grafico-por-partido__valor {
   font-family: 'Roboto Slab', serif;
-  font-size: 19.91px;
+  font-size: 1.4rem;
   font-weight: 600;
-  line-height: 15.27px;
+  line-height: 1.1rem;
 }
 
 .grafico-por-partido__rotulo {
-  font-size: 8.63px;
+  font-size: 0.6rem;
   font-weight: 600;
-  line-height: 9.29px;
+  line-height: 0.7rem;
   color: #7e858d;
 }
 

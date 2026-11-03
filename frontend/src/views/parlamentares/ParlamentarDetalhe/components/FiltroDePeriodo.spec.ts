@@ -8,7 +8,10 @@ import {
 
 import FiltroDePeriodo from './FiltroDePeriodo.vue';
 
-const montar = (props = {}) => mount(FiltroDePeriodo, { props });
+const montar = (props = {}) => mount(FiltroDePeriodo, {
+  props,
+  global: { directives: { ScrollLockDebug: {} } },
+});
 
 const escolherPeriodo = async (
   envelope: ReturnType<typeof montar>,
@@ -28,6 +31,28 @@ describe('FiltroDePeriodo', () => {
       .toBe('2021');
     expect((envelope.find('select[name="ano_fim"]').element as HTMLSelectElement).value)
       .toBe('2023');
+  });
+
+  it('acompanha o período quando ele muda depois de montado', async () => {
+    const envelope = montar({ anoInicio: 2021, anoFim: 2023 });
+
+    await envelope.setProps({ anoInicio: 2022, anoFim: 2024 });
+
+    await vi.waitFor(() => {
+      expect((envelope.find('select[name="ano_inicio"]').element as HTMLSelectElement).value)
+        .toBe('2022');
+      expect((envelope.find('select[name="ano_fim"]').element as HTMLSelectElement).value)
+        .toBe('2024');
+    });
+  });
+
+  it('identifica cada campo pelo seu próprio rótulo', () => {
+    const envelope = montar();
+
+    expect(envelope.find('label[for="ano_inicio"]').text()).toBe('Início do período');
+    expect(envelope.find('select#ano_inicio').exists()).toBe(true);
+    expect(envelope.find('label[for="ano_fim"]').text()).toBe('Fim do período');
+    expect(envelope.find('select#ano_fim').exists()).toBe(true);
   });
 
   it('emite o período escolhido ao filtrar', async () => {

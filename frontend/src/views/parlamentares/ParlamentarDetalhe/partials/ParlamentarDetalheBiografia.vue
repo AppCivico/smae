@@ -5,6 +5,7 @@ import { computed } from 'vue';
 import ParlamentaresExibirRepresentatividade
   from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
+import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import type { Colunas } from '@/components/SmaeTable/tipagem';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
@@ -31,8 +32,8 @@ type Pessoa = {
   email: string | null;
 };
 
-const equipe = computed<Pessoa[]>(() => [...(emFoco.value?.equipe || [])]
-  .sort((a: Pessoa, b: Pessoa) => a.nome.localeCompare(b.nome)));
+const equipe = computed<Pessoa[]>(() => (emFoco.value?.equipe || [])
+  .toSorted((a: Pessoa, b: Pessoa) => a.nome.localeCompare(b.nome)));
 
 const assessores = computed(() => equipe.value.filter((pessoa) => pessoa.tipo === 'Assessor'));
 const contatos = computed(() => equipe.value.filter((pessoa) => pessoa.tipo === 'Contato'));
@@ -61,7 +62,12 @@ const podeVerTelefone = computed(() => authStore.temPermissãoPara('SMAE.acesso_
 const cargo = computed(() => {
   const valor = mandato.value?.cargo as keyof typeof cargosDeParlamentar | undefined;
 
-  return valor ? cargosDeParlamentar[valor]?.nome || valor : '—';
+  // PR #835 — robsonsobral:
+  // "Eu gosto disso, mas muita gente ficar confusa. Não valeria a pena ter parênteses ao menos?"
+  // Código anterior:
+  // return valor ? cargosDeParlamentar[valor]?.nome || valor : '—';
+  // Correção:
+  return valor ? (cargosDeParlamentar[valor]?.nome || valor) : '—';
 });
 
 const votos = (valor: number | null | undefined) => (valor
@@ -75,6 +81,37 @@ const percentualDosVotos = (parte: number | null | undefined) => {
 };
 
 const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
+
+const parteDosVotos = (chave: string, titulo: string, valor: number | null | undefined) => ({
+  chave,
+  titulo,
+  valor: votos(valor),
+  atributosDoItem: { class: 'biografia-do-parlamentar__votos' },
+  metadados: { percentual: percentualDosVotos(valor) },
+});
+
+const listaDeRepresentatividade = computed(() => [
+  {
+    chave: 'votos_estado',
+    titulo: 'Votos no Estado',
+    valor: votos(mandato.value?.votos_estado),
+  },
+  parteDosVotos('votos_capital', 'Votos na Capital', mandato.value?.votos_capital),
+  parteDosVotos('votos_interior', 'Votos no Interior', mandato.value?.votos_interior),
+]);
+
+const listaDeContato = computed(() => [
+  { chave: 'endereco', titulo: 'Endereço', valor: mandato.value?.endereco },
+  { chave: 'gabinete', titulo: 'Gabinete', valor: mandato.value?.gabinete },
+  { chave: 'email', titulo: 'Email', valor: mandato.value?.email || emFoco.value?.email },
+  ...(podeVerTelefone.value
+    ? [{
+      chave: 'telefone',
+      titulo: 'Telefone',
+      valor: mandato.value?.telefone || emFoco.value?.telefone,
+    }]
+    : []),
+]);
 </script>
 
 <template>
@@ -87,7 +124,6 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
         class="biografia-do-parlamentar__cabecalho biografia-do-parlamentar__cabecalho--largo"
       >
         <h3>Área de Atuação</h3>
-        <hr>
       </header>
 
       <div
@@ -104,7 +140,6 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
         class="biografia-do-parlamentar__cabecalho biografia-do-parlamentar__cabecalho--largo"
       >
         <h3>Biografia</h3>
-        <hr>
       </header>
 
       <div
@@ -123,7 +158,6 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
       <section class="biografia-do-parlamentar__secao">
         <header class="biografia-do-parlamentar__cabecalho">
           <h3>{{ grupo.titulo }}</h3>
-          <hr>
         </header>
 
         <SmaeTable
@@ -151,14 +185,12 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
     >
       <header class="biografia-do-parlamentar__cabecalho">
         <h3>Eleição {{ mandato.eleicao?.ano }}</h3>
-        <hr>
       </header>
 
       <div class="biografia-do-parlamentar__cartoes">
         <section class="biografia-do-parlamentar__cartao">
           <header class="biografia-do-parlamentar__cartao-cabecalho">
             <h4>Resumo da eleição</h4>
-            <hr>
           </header>
 
           <dl class="biografia-do-parlamentar__dados">
@@ -188,7 +220,6 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
         <section class="biografia-do-parlamentar__cartao">
           <header class="biografia-do-parlamentar__cartao-cabecalho">
             <h4>Partido</h4>
-            <hr>
           </header>
 
           <dl class="biografia-do-parlamentar__dados biografia-do-parlamentar__dados--coluna">
@@ -206,58 +237,39 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
         <section class="biografia-do-parlamentar__cartao">
           <header class="biografia-do-parlamentar__cartao-cabecalho">
             <h4>Representatividade</h4>
-            <hr>
           </header>
 
-          <dl class="biografia-do-parlamentar__dados biografia-do-parlamentar__dados--coluna">
-            <div>
-              <dt>Votos no Estado</dt>
-              <dd>{{ votos(mandato.votos_estado) }}</dd>
-            </div>
-            <div
-              v-for="parte in [
-                { rotulo: 'Votos na Capital', valor: mandato.votos_capital },
-                { rotulo: 'Votos no Interior', valor: mandato.votos_interior },
-              ]"
-              :key="parte.rotulo"
-              class="biografia-do-parlamentar__votos"
-            >
-              <dt>{{ parte.rotulo }}</dt>
-              <dd>{{ votos(parte.valor) }}</dd>
-              <dd
-                class="biografia-do-parlamentar__barra-de-votos"
-                :style="{ '--percentual': `${percentualDosVotos(parte.valor)}%` }"
-              >
-                {{ percentualDosVotos(parte.valor) }}%
-              </dd>
-            </div>
-          </dl>
+          <SmaeDescriptionList
+            class="biografia-do-parlamentar__dados biografia-do-parlamentar__dados--coluna"
+            layout="grid"
+            :lista="listaDeRepresentatividade"
+          >
+            <template #descricao="{ item }">
+              <template v-if="item.metadados">
+                <span class="biografia-do-parlamentar__valor-dos-votos">{{ item.valor }}</span>
+                {{ ' ' }}
+                <span
+                  class="biografia-do-parlamentar__barra-de-votos"
+                  :style="{ '--percentual': `${item.metadados.percentual}%` }"
+                >{{ item.metadados.percentual }}%</span>
+              </template>
+              <template v-else>
+                {{ item.valor }}
+              </template>
+            </template>
+          </SmaeDescriptionList>
         </section>
 
         <section class="biografia-do-parlamentar__cartao">
           <header class="biografia-do-parlamentar__cartao-cabecalho">
             <h4>Informações de Contato</h4>
-            <hr>
           </header>
 
-          <dl class="biografia-do-parlamentar__dados">
-            <div>
-              <dt>Endereço</dt>
-              <dd>{{ mandato.endereco || '—' }}</dd>
-            </div>
-            <div>
-              <dt>Gabinete</dt>
-              <dd>{{ mandato.gabinete || '—' }}</dd>
-            </div>
-            <div>
-              <dt>Email</dt>
-              <dd>{{ mandato.email || emFoco?.email || '—' }}</dd>
-            </div>
-            <div v-if="podeVerTelefone">
-              <dt>Telefone</dt>
-              <dd>{{ mandato.telefone || emFoco?.telefone || '—' }}</dd>
-            </div>
-          </dl>
+          <SmaeDescriptionList
+            class="biografia-do-parlamentar__dados"
+            layout="grid"
+            :lista="listaDeContato"
+          />
         </section>
       </div>
     </section>
@@ -274,53 +286,58 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
 
 <style scoped lang="less">
 .biografia-do-parlamentar {
-  max-width: 1199px;
+  max-width: 85.6rem;
   color: #233b5c;
 }
 
 .biografia-do-parlamentar__secao {
-  margin-bottom: 56px;
+  margin-bottom: 4rem;
 }
 
 .biografia-do-parlamentar__cabecalho,
 .biografia-do-parlamentar__reaproveitado :deep(.flex.spacebetween.center) {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 1.1rem;
+  margin-bottom: 2.3rem;
 
   h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 1.4rem;
     font-weight: 700;
     line-height: 1.3;
     white-space: nowrap;
     color: @amarelo;
   }
+}
 
-  hr {
-    flex-grow: 1;
-    margin: 0;
-    border: 0;
-    border-top: 1.5px solid #889bb7;
-  }
+.biografia-do-parlamentar__cabecalho::after,
+.biografia-do-parlamentar__reaproveitado :deep(.flex.spacebetween.center hr) {
+  flex-grow: 1;
+  margin: 0;
+  border: 0;
+  border-top: 0.1rem solid #889bb7;
+}
+
+.biografia-do-parlamentar__cabecalho::after {
+  content: '';
 }
 
 .biografia-do-parlamentar__cabecalho--largo {
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 1.7rem;
+  margin-bottom: 1.7rem;
 
-  hr {
-    border-top: 1px solid @c500;
+  &::after {
+    border-top: 0.1rem solid @c500;
   }
 }
 
 .biografia-do-parlamentar__texto {
-  font-size: 16px;
+  font-size: 1.1rem;
   line-height: 1.3;
 
   :deep(p) {
-    margin: 0 0 16px;
+    margin: 0 0 1.1rem;
   }
 }
 
@@ -336,9 +353,9 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
   }
 
   th {
-    padding: 10.6px 8px;
-    border-bottom: 1.18px solid @c100;
-    font-size: 14.12px;
+    padding: 0.8rem 0.6rem;
+    border-bottom: 0.1rem solid @c100;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 1.2;
     text-align: left;
@@ -347,10 +364,10 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
   }
 
   td {
-    height: 80px;
-    padding: 14.12px 18.83px;
-    border-bottom: 1.18px solid @c100;
-    font-size: 16.48px;
+    height: 5.7rem;
+    padding: 1rem 1.3rem;
+    border-bottom: 0.1rem solid @c100;
+    font-size: 1.2rem;
     line-height: 1.3;
     color: @primary;
   }
@@ -377,70 +394,75 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
 
 .biografia-do-parlamentar__cartoes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 506px));
+  grid-template-columns: repeat(2, minmax(0, 36.1rem));
   justify-content: center;
-  gap: 53px 57px;
+  gap: 3.8rem 4.1rem;
 }
 
 .biografia-do-parlamentar__cartao {
-  min-height: 282px;
-  padding: 21px 37px 32px 45px;
-  border-radius: 12px;
+  min-height: 20.1rem;
+  padding: 1.5rem 2.6rem 2.3rem 3.2rem;
+  border-radius: 0.9rem;
   background-color: @branco;
-  box-shadow: 0 9.66px 19.32px 0 fade(@primary, 10%);
+  box-shadow: 0 0.7rem 1.4rem 0 fade(@primary, 10%);
 }
 
 .biografia-do-parlamentar__cartao-cabecalho {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 15px;
+  gap: 1.1rem;
+  margin-bottom: 1.1rem;
 
   h4 {
     margin: 0;
-    font-size: 22px;
+    font-size: 1.6rem;
     font-weight: 700;
     line-height: 1.3;
     white-space: nowrap;
     color: @c400;
   }
 
-  hr {
+  &::after {
+    content: '';
     flex-grow: 1;
     margin: 0;
     border: 0;
-    border-top: 1px solid @c400;
+    border-top: 0.1rem solid @c400;
   }
 }
 
-.biografia-do-parlamentar__dados {
+// `SmaeDescriptionList` tem raiz múltipla e não recebe o escopo deste componente, daí o `:deep()`.
+.biografia-do-parlamentar__cartao :deep(.biografia-do-parlamentar__dados) {
   display: grid;
-  grid-template-columns: 264px 1fr;
-  gap: 10px 0;
+  grid-template-columns: 18.9rem 1fr;
+  gap: 0.7rem 0;
   margin: 0;
 
   dt {
-    font-size: 20px;
+    // `.mb05`, aplicada pelo `SmaeDescriptionList`, usa !important
+    margin-bottom: 0 !important;
+    font-size: 1.4rem;
     font-weight: 700;
     line-height: 1.3;
+    text-transform: none;
     color: @amarelo;
   }
 
   dd {
-    margin: 4px 0 0;
-    font-size: 16px;
+    margin: 0.3rem 0 0;
+    font-size: 1.1rem;
     line-height: 1.3;
     white-space: pre-line;
   }
 }
 
-.biografia-do-parlamentar__dados--coluna {
+.biografia-do-parlamentar__cartao :deep(.biografia-do-parlamentar__dados--coluna) {
   grid-template-columns: 1fr;
 }
 
-.biografia-do-parlamentar__votos {
+.biografia-do-parlamentar__cartao :deep(.biografia-do-parlamentar__votos) {
   display: grid;
-  grid-template-columns: 185px 239px;
+  grid-template-columns: 13.2rem 17.1rem;
   grid-template-areas:
     'rotulo barra'
     'valor barra';
@@ -451,17 +473,21 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
   }
 
   dd {
-    grid-area: valor;
+    display: contents;
   }
 }
 
-.biografia-do-parlamentar__barra-de-votos.biografia-do-parlamentar__barra-de-votos {
+.biografia-do-parlamentar__valor-dos-votos {
+  grid-area: valor;
+  margin-top: 0.3rem;
+}
+
+.biografia-do-parlamentar__barra-de-votos {
   grid-area: barra;
   position: relative;
   align-self: end;
-  margin: 0;
-  padding-top: 23px;
-  font-size: 14px;
+  padding-top: 1.6rem;
+  font-size: 1rem;
   color: @amarelo;
 
   &::before,
@@ -470,8 +496,8 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
     position: absolute;
     top: 0;
     left: 0;
-    height: 17px;
-    border-radius: 8.5px;
+    height: 1.2rem;
+    border-radius: 0.6rem;
   }
 
   &::before {
