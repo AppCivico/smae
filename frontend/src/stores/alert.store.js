@@ -18,7 +18,11 @@ export const useAlertStore = defineStore('alert', {
         type: 'alert-success',
       });
     },
-    error(message, ignorarDuplicadas = true) {
+    error(erro, ignorarDuplicadas = true) {
+      // o `requestS` já alerta o texto da API e rejeita com um `Error` do mesmo
+      // texto; sem converter, a tela que o repassa aqui duplicaria o alerta
+      const message = erro instanceof Error ? erro.message : erro;
+
       if (ignorarDuplicadas && this.alertas.some((v) => v.message === message && v.type === 'alert-danger')) return;
       this.alertas.push({
         id: gerarId(),
