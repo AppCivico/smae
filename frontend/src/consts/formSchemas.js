@@ -595,38 +595,46 @@ export const etiqueta = object({
     .required(),
 });
 
+// meses de execução orçamentária, comuns à inclusão (por dotação, processo ou
+// nota) e à edição
+export const itensDeExecucaoOrcamentaria = array()
+  .label('Execução orçamentária')
+  .min(1)
+  .of(
+    object({
+      mes: number()
+        .label('Mês Ref.')
+        .max(12, 'Mês inválido')
+        .min(1, 'Mês inválido')
+        .required(),
+      // campo numérico apagado chega como texto vazio
+      percentual_empenho: number()
+        .label('Percentual empenho')
+        .max(100)
+        .min(0)
+        .nullable()
+        .transform((valor, original) => (original === '' ? null : valor)),
+      percentual_liquidado: number()
+        .label('Percentual liquidado')
+        .max(100)
+        .min(0)
+        .nullable()
+        .transform((valor, original) => (original === '' ? null : valor)),
+      valor_empenho: number()
+        .label('Valor empenho')
+        .min(0)
+        .required(),
+      valor_liquidado: number()
+        .label('Valor liquidado')
+        .min(0)
+        .max(ref('valor_empenho'), 'Valor liquidado não pode ser maior que o valor empenhado')
+        .required(),
+    }),
+  );
+
 export const execuçãoOrçamentária = object()
   .shape({
-    itens: array()
-      .label('Execução orçamentária')
-      .min(1)
-      .of(
-        object({
-          mes: number()
-            .label('Mês Ref.')
-            .max(12)
-            .min(1)
-            .required(),
-          percentual_empenho: number()
-            .label('Percentual empenho')
-            .max(100)
-            .min(0)
-            .nullable(),
-          percentual_liquidado: number()
-            .label('Percentual liquidado')
-            .max(100)
-            .min(0)
-            .nullable(),
-          valor_empenho: number()
-            .label('Valor empenho')
-            .min(0)
-            .required(),
-          valor_liquidado: number()
-            .label('Valor liquidado')
-            .min(0)
-            .required(),
-        }),
-      ),
+    itens: itensDeExecucaoOrcamentaria,
   });
 
 export const fase = object()
@@ -1233,26 +1241,7 @@ export const orçamentoRealizado = object({
     .label('Complemento')
     .matches(regEx.complementoDeDotação, { excludeEmptyString: true })
     .required('Necessário complementar a dotação com o detalhamento da fonte orçamentária'),
-  itens: array()
-    .label('Execução orçamentária')
-    .min(1)
-    .of(
-      object({
-        mes: number()
-          .label('Mês Ref.')
-          .max(12, 'Mês inválido')
-          .min(1, 'Mês inválido')
-          .required(),
-        valor_empenho: number()
-          .label('Valor empenho')
-          .min(0)
-          .required(),
-        valor_liquidado: number()
-          .label('Valor liquidado')
-          .min(0)
-          .required(),
-      }),
-    ),
+  itens: itensDeExecucaoOrcamentaria,
 });
 
 export const órgão = object()
