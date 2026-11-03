@@ -21,6 +21,13 @@ interface Estado {
 interface ExtraParams {
   pdm_id?: number;
   portfolio_id?: number;
+  transferencia_id?: number;
+}
+
+function verificarParametrosDoRealizado(extraParams: ExtraParams) {
+  if (!extraParams.pdm_id && !extraParams.portfolio_id && !extraParams.transferencia_id) {
+    throw new Error('`pdm_id`, `portfolio_id` ou `transferencia_id` são obrigatórios');
+  }
 }
 
 export const useDotaçãoStore = defineStore('dotação', {
@@ -91,9 +98,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
     },
     async getDotaçãoRealizado(dotacao: string, ano: number, extraParams: ExtraParams) {
-      if (!extraParams.pdm_id && !extraParams.portfolio_id) {
-        throw new Error('`pdm_id` ou `portfolio_id` são obrigatórios');
-      }
+      verificarParametrosDoRealizado(extraParams);
 
       try {
         const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado`, { dotacao, ano: Number(ano), ...extraParams });
@@ -103,9 +108,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
     },
     async getDotaçãoRealizadoNota(nota_empenho: string, ano: number, extraParams: ExtraParams) {
-      if (!extraParams.pdm_id && !extraParams.portfolio_id) {
-        throw new Error('`pdm_id` ou `portfolio_id` são obrigatórios');
-      }
+      verificarParametrosDoRealizado(extraParams);
 
       try {
         const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado-nota-empenho`, { nota_empenho, ano: Number(ano), ...extraParams });
@@ -115,9 +118,7 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
     },
     async getDotaçãoRealizadoProcesso(processo: string, ano: number, extraParams: ExtraParams) {
-      if (!extraParams.pdm_id && !extraParams.portfolio_id) {
-        throw new Error('`pdm_id` ou `portfolio_id` são obrigatórios');
-      }
+      verificarParametrosDoRealizado(extraParams);
 
       try {
         const r = await this.requestS.patch(`${baseUrl}/dotacao/valor-realizado-processo`, { processo, ano: Number(ano), ...extraParams });

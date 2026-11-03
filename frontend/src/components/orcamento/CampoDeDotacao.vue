@@ -13,11 +13,18 @@ import toFloat from '@/helpers/toFloat';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 // PRA-FAZER: preenchimento inicial dos campos de parciais
 const props = defineProps({
+  // presente apenas em transferências, onde o ano é escolhido no formulário em
+  // vez de vir da rota
+  anoDeReferencia: {
+    type: [Number, String],
+    default: null,
+  },
   parametrosParaValidacao: {
     type: Object,
     default: null,
-    required: true,
-    validator: (valorDaProp) => valorDaProp.pdm_id || valorDaProp.portfolio_id,
+    validator: (valorDaProp) => valorDaProp.pdm_id
+      || valorDaProp.portfolio_id
+      || valorDaProp.transferencia_id,
   },
   complemento: {
     type: String,
@@ -60,7 +67,7 @@ const route = useRoute();
 
 const dotacaoStore = useDotaçãoStore();
 
-const { ano } = route.params;
+const ano = computed(() => props.anoDeReferencia ?? route.params.ano);
 
 const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(dotacaoStore);
 
@@ -143,7 +150,7 @@ const dotacaoCheia = computed(() => (valorDoComplemento.value
   : valorDaDotacao.value));
 
 const dadosDoAno = computed(() => montarDadosDoAnoDaDotacao(
-  DotaçãoSegmentos.value?.[ano],
+  DotaçãoSegmentos.value?.[ano.value],
   {
     orgao: orgao.value,
     unidade: unidade.value,
@@ -255,7 +262,7 @@ async function validarDota() {
     try {
       emit('update:respostasof', { loading: true });
       const respostaDoSof = await dotacaoStore
-        .getDotaçãoRealizado(valorDaDotacao.value, ano, props.parametrosParaValidacao);
+        .getDotaçãoRealizado(valorDaDotacao.value, ano.value, props.parametrosParaValidacao);
       emit('update:respostasof', respostaDoSof);
     } catch (error) {
       emit('update:respostasof', error);
@@ -273,9 +280,18 @@ function mascararCodigos(evt, alemDoBasico = []) {
   }
 }
 
-if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.segmentos) {
-  dotacaoStore.getDotaçãoSegmentos(ano);
+if (!DotaçãoSegmentos.value[ano.value]?.atualizado_em && !chamadasPendentes.value.segmentos) {
+  dotacaoStore.getDotaçãoSegmentos(ano.value);
 }
+
+// a validação no SOF era do ano anterior
+watch(ano, (novoAno) => {
+  emit('update:respostasof', {});
+
+  if (!DotaçãoSegmentos.value[novoAno]?.atualizado_em) {
+    dotacaoStore.getDotaçãoSegmentos(novoAno);
+  }
+});
 
 watch(valorDaDotacao, (novoValor) => {
   handleChange(dotacaoCheia.value);

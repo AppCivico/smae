@@ -2,13 +2,16 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
-  defineOptions, ref, toRaw, watch,
+  computed, defineOptions, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
 
+import CampoDeDistribuicaoDeRecurso from '@/components/orcamento/CampoDeDistribuicaoDeRecurso.vue';
+import exigirDistribuicaoDeRecurso from '@/components/orcamento/helpers/exigirDistribuicaoDeRecurso';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
+import { itensDeExecucaoOrcamentaria } from '@/consts/formSchemas';
 import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
@@ -19,6 +22,18 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
+  // presente apenas em transferências, onde o ano é escolhido no formulário em
+  // vez de vir da rota
+  anoDeReferencia: {
+    type: Number,
+    default: null,
+  },
+  // presente apenas em transferências, onde a execução pode ser associada a
+  // uma distribuição de recursos
+  distribuicoesDeRecursos: {
+    type: Array,
+    default: null,
+  },
   parametrosParaValidacao: {
     type: Object,
     required: true,
@@ -30,7 +45,7 @@ const route = useRoute();
 const router = useRouter();
 const DotaçãoStore = useDotaçãoStore();
 const { meta_id } = route.params;
-const { ano } = route.params;
+const ano = computed(() => props.anoDeReferencia ?? route.params.ano);
 const { seiOuSinproc: regprocesso } = patterns;
 
 const MetasStore = useMetasStore();
@@ -53,13 +68,16 @@ const respostasof = ref({});
 const schema = Yup.object().shape({
   processo: Yup.string().required('Preencha o processo.').matches(regprocesso, 'Formato inválido'),
   dotacao: Yup.string(),
+  itens: itensDeExecucaoOrcamentaria,
 });
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values, validateField,
 } = useForm({
   initialValues: currentEdit.value,
-  validationSchema: schema,
+  validationSchema: props.distribuicoesDeRecursos
+    ? exigirDistribuicaoDeRecurso(schema)
+    : schema,
 });
 
 const onSubmit = handleSubmit(async () => {
@@ -69,7 +87,7 @@ const onSubmit = handleSubmit(async () => {
     let msg;
     let r;
 
-    values.ano_referencia = Number(ano);
+    values.ano_referencia = Number(ano.value);
 
     if (values.location) {
       values.atividade_id = null;
@@ -140,7 +158,7 @@ async function validarProcesso() {
     const { valid } = await validateField('processo');
     if (valid) {
       const r = await DotaçãoStore
-        .getDotaçãoRealizadoProcesso(dota.value, ano, props.parametrosParaValidacao);
+        .getDotaçãoRealizadoProcesso(dota.value, ano.value, props.parametrosParaValidacao);
       respostasof.value = r;
     } else {
       respostasof.value = {};
@@ -155,6 +173,11 @@ async function validarProcesso() {
 watch(currentEdit, (novosValores) => {
   resetForm({ values: toRaw(novosValores) });
 });
+
+// a validação no SOF era do ano anterior
+watch(ano, () => {
+  respostasof.value = {};
+});
 </script>
 <template>
   <div class="flex spacebetween center">
@@ -163,14 +186,31 @@ watch(currentEdit, (novosValores) => {
 
     <CheckClose />
   </div>
-  <h3 class="mb2">
+  <h3
+    v-if="parent_item"
+    class="mb2"
+  >
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
+  <TituloDaPagina
+    v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+    as="h3"
+    class="mb2"
+  />
+  <h3
+    v-else
+    class="mb2"
+  >
+    <strong>{{ ano }}</strong>
+  </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
+    <!-- um segundo envio, por duplo clique ou Enter, geraria registro duplicado -->
     <form
-      @submit.prevent="onSubmit"
+      @submit.prevent="isSubmitting || onSubmit($event)"
       @keyup.enter.stop.prevent
     >
+      <slot name="ano-de-referencia" />
+
       <div class="flex center g2 mb2">
         <div class="f1">
           <label class="label">Processo SEI ou SINPROC <span class="tvermelho">*</span></label>
@@ -343,6 +383,11 @@ watch(currentEdit, (novosValores) => {
             {{ errors.location }}
           </div>
         </div>
+
+        <CampoDeDistribuicaoDeRecurso
+          v-if="distribuicoesDeRecursos"
+          :distribuicoes="distribuicoesDeRecursos"
+        />
 
         <ItensRealizado
           v-model="values.itens"

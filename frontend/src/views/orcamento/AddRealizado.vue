@@ -2,11 +2,13 @@
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  ref, toRaw, watch,
+  computed, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import CampoDeDistribuicaoDeRecurso from '@/components/orcamento/CampoDeDistribuicaoDeRecurso.vue';
 import CampoDeDotacao from '@/components/orcamento/CampoDeDotacao.vue';
+import exigirDistribuicaoDeRecurso from '@/components/orcamento/helpers/exigirDistribuicaoDeRecurso';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import { orçamentoRealizado as schema } from '@/consts/formSchemas';
@@ -14,7 +16,19 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 
-defineProps({
+const props = defineProps({
+  // presente apenas em transferências, onde o ano é escolhido no formulário em
+  // vez de vir da rota
+  anoDeReferencia: {
+    type: Number,
+    default: null,
+  },
+  // presente apenas em transferências, onde a execução pode ser associada a
+  // uma distribuição de recursos
+  distribuicoesDeRecursos: {
+    type: Array,
+    default: null,
+  },
   parametrosParaValidacao: {
     type: Object,
     required: true,
@@ -26,7 +40,7 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const { meta_id } = route.params;
-const { ano } = route.params;
+const ano = computed(() => props.anoDeReferencia ?? route.params.ano);
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
@@ -43,7 +57,7 @@ const currentEdit = ref({
   dotacao: '',
   dotacao_complemento: '',
   dotacao_cheia: '',
-  ano_referencia: ano,
+  ano_referencia: ano.value,
 });
 
 const dotação = ref('');
@@ -55,12 +69,14 @@ const {
   errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
   initialValues: currentEdit.value,
-  validationSchema: schema,
+  validationSchema: props.distribuicoesDeRecursos
+    ? exigirDistribuicaoDeRecurso(schema)
+    : schema,
 });
 
 const onSubmit = handleSubmit(async () => {
   try {
-    const carga = { ...values };
+    const carga = { ...values, ano_referencia: Number(ano.value) };
 
     /* exemplo:
 84.22.10.304.3003.2.522.33903900.00.1.111.1111.1
@@ -144,13 +160,30 @@ export default {
     <CheckClose />
   </div>
 
-  <h3 class="mb2">
+  <h3
+    v-if="parent_item"
+    class="mb2"
+  >
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
+  <TituloDaPagina
+    v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+    as="h3"
+    class="mb2"
+  />
+  <h3
+    v-else
+    class="mb2"
+  >
+    <strong>{{ ano }}</strong>
+  </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
+    <!-- um segundo envio, por duplo clique ou Enter, geraria registro duplicado -->
     <form
-      @submit.prevent="onSubmit"
+      @submit.prevent="isSubmitting || onSubmit($event)"
     >
+      <slot name="ano-de-referencia" />
+
       <Field
         name="ano_referencia"
         :value="ano"
@@ -179,6 +212,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
         v-model:complemento="complemento"
         v-model:dotacao="dotação"
         v-model="dotaçãoComComplemento"
+        :ano-de-referencia="ano"
         :parametros-para-validacao="parametrosParaValidacao"
       />
 
@@ -268,6 +302,14 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
           {{ errors.location }}
         </div>
       </div>
+
+      <CampoDeDistribuicaoDeRecurso
+        v-if="distribuicoesDeRecursos
+          && Object.keys(respostasof).length
+          && !respostasof.error
+          && !respostasof.loading"
+        :distribuicoes="distribuicoesDeRecursos"
+      />
 
       <Field
         v-slot="{ field, meta: fieldMeta }"
