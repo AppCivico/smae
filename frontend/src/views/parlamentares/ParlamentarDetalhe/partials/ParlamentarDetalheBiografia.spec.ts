@@ -56,13 +56,13 @@ const parlamentar = {
   mandatos: [],
 };
 
-const montar = () => mount(ParlamentarDetalheBiografia, {
+const montar = (emFoco: unknown = parlamentar) => mount(ParlamentarDetalheBiografia, {
   global: {
     plugins: [createTestingPinia({
       stubActions: false,
       createSpy: vi.fn,
       initialState: {
-        parlamentaresStore: { emFoco: parlamentar },
+        parlamentaresStore: { emFoco },
       },
     })],
     mocks: { $route: mockRoute },
@@ -106,6 +106,43 @@ describe('ParlamentarDetalheBiografia', () => {
     expect(assessores?.text()).not.toContain('Marilda Borges');
     expect(contatos?.text()).toContain('Marilda Borges');
     expect(contatos?.text()).not.toContain('Gil Júnior');
+  });
+
+  it('exibe nome, telefone e email de cada pessoa da equipe', async () => {
+    const envelope = montar();
+    await flushPromises();
+
+    const assessores = secao(envelope, 'Assessores');
+    const cabecalhos = assessores?.findAll('thead th').map((celula) => celula.text());
+    const celulas = assessores?.findAll('tbody td').map((celula) => celula.text());
+
+    expect(cabecalhos).toEqual(['Nome', 'Telefone', 'Email']);
+    expect(celulas).toEqual(['Gil Júnior', '(21) 998693492', 'giljunior@camara.leg.br']);
+  });
+
+  it('usa travessão para telefone e email ausentes', async () => {
+    const envelope = montar({
+      ...parlamentar,
+      equipe: [{
+        id: 3, nome: 'Ana Lima', tipo: 'Assessor', telefone: null, email: null,
+      }],
+    });
+    await flushPromises();
+
+    const celulas = secao(envelope, 'Assessores')?.findAll('tbody td').map((celula) => celula.text());
+
+    expect(celulas).toEqual(['Ana Lima', '—', '—']);
+  });
+
+  it('avisa quando o grupo não tem pessoas', async () => {
+    const envelope = montar({ ...parlamentar, equipe: [parlamentar.equipe[0]] });
+    await flushPromises();
+
+    const linhas = secao(envelope, 'Contatos')?.findAll('tbody tr');
+
+    expect(linhas).toHaveLength(1);
+    expect(linhas?.[0].text()).toBe('Nenhum registro encontrado.');
+    expect(linhas?.[0].find('td').attributes('colspan')).toBe('3');
   });
 
   it('lista os suplentes do mandato corrente', async () => {

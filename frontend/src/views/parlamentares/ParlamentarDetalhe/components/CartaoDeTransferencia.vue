@@ -2,13 +2,53 @@
 import type { PainelParlamentarTransferenciaDto } from '@back/casa-civil/painel-parlamentar/entities/painel-parlamentar.entity';
 
 import SmaeLink from '@/components/SmaeLink.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import type { Colunas } from '@/components/SmaeTable/tipagem';
 import dinheiro from '@/helpers/dinheiro';
 
 defineProps<{
   transferencia: PainelParlamentarTransferenciaDto;
 }>();
 
-const moeda = (valor: number) => dinheiro(valor, { style: 'currency' });
+const moeda = (valor: unknown) => dinheiro(valor, { style: 'currency' });
+
+const colunas: Colunas = [
+  {
+    chave: 'nome',
+    label: 'Distribuição',
+    ehCabecalho: true,
+    atributosDaCelula: { scope: 'row' },
+    atributosDaColuna: { class: 'col--distribuicao' },
+  },
+  {
+    chave: 'orgao.sigla',
+    label: 'Órgão',
+    atributosDaColuna: { class: 'col--orgao' },
+  },
+  {
+    chave: 'situacao',
+    label: 'Situação da distribuição',
+    formatador: (situacao) => (situacao as string) || '—',
+    atributosDaColuna: { class: 'col--situacao' },
+  },
+  {
+    chave: 'valor',
+    label: 'Valor da distribuição',
+    formatador: moeda,
+    atributosDaColuna: { class: 'col--valor' },
+  },
+  {
+    chave: 'valor_parlamentar',
+    label: 'Valor do parlamentar',
+    formatador: moeda,
+    atributosDaColuna: { class: 'col--valor' },
+  },
+  {
+    chave: 'pct_parlamentar',
+    label: 'Valor investido pelo parlamentar nesta distribuição',
+    atributosDaColuna: { class: 'col--investimento' },
+  },
+];
 
 const larguraDoParlamentar = (percentual: number) => `${Math.min(Math.max(percentual, 0), 100)}%`;
 
@@ -16,6 +56,7 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 </script>
 
 <template>
+  <h1>here</h1>
   <article class="cartao-de-transferencia">
     <header class="cartao-de-transferencia__cabecalho">
       <div class="cartao-de-transferencia__objeto">
@@ -51,66 +92,52 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
       </dl>
     </header>
 
-    <table class="cartao-de-transferencia__tabela">
-      <colgroup>
-        <col class="col--distribuicao">
-        <col class="col--orgao">
-        <col class="col--situacao">
-        <col class="col--valor">
-        <col class="col--valor">
-        <col class="col--investimento">
-      </colgroup>
-
-      <thead>
+    <SmaeTable
+      class="cartao-de-transferencia__tabela"
+      :atributos-da-tabela="{ class: 'no-zebra' }"
+      :colunas="colunas"
+      :dados="transferencia.distribuicoes"
+      :personalizar-linhas="{
+        parametro: 'contabilizada',
+        alvo: false,
+        classe: 'cartao-de-transferencia__linha--nao-contabilizada',
+      }"
+    >
+      <template
+        v-if="!transferencia.distribuicoes.length"
+        #corpo
+      >
         <tr>
-          <th>Distribuição</th>
-          <th>Órgão</th>
-          <th>Situação da distribuição</th>
-          <th>Valor da distribuição</th>
-          <th>Valor do parlamentar</th>
-          <th>Valor investido pelo parlamentar nesta distribuição</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr
-          v-for="distribuicao in transferencia.distribuicoes"
-          :key="distribuicao.id"
-          :class="{
-            'cartao-de-transferencia__linha--nao-contabilizada': !distribuicao.contabilizada,
-          }"
-        >
-          <th scope="row">
-            {{ distribuicao.nome || distribuicao.objeto }}
-          </th>
-          <td :title="distribuicao.orgao.descricao">
-            {{ distribuicao.orgao.sigla }}
-          </td>
-          <td>{{ distribuicao.situacao || '—' }}</td>
-          <td>{{ moeda(distribuicao.valor) }}</td>
-          <td>{{ moeda(distribuicao.valor_parlamentar) }}</td>
-          <td>
-            <span
-              class="cartao-de-transferencia__barra"
-              role="img"
-              :aria-label="descricaoDaBarra(distribuicao.pct_parlamentar)"
-            >
-              <span
-                class="cartao-de-transferencia__barra-parlamentar"
-                :style="{ width: larguraDoParlamentar(distribuicao.pct_parlamentar) }"
-              />
-            </span>
-          </td>
-        </tr>
-
-        <tr v-if="!transferencia.distribuicoes.length">
           <td colspan="6">
             Nenhuma distribuição registrada.
           </td>
         </tr>
-      </tbody>
+      </template>
 
-      <tfoot>
+      <template #celula:nome="{ linha }">
+        {{ linha.nome || linha.objeto }}
+      </template>
+
+      <template #celula:orgao__sigla="{ linha }">
+        <span :title="linha.orgao.descricao">
+          {{ linha.orgao.sigla }}
+        </span>
+      </template>
+
+      <template #celula:pct_parlamentar="{ linha }">
+        <span
+          class="cartao-de-transferencia__barra"
+          role="img"
+          :aria-label="descricaoDaBarra(linha.pct_parlamentar)"
+        >
+          <span
+            class="cartao-de-transferencia__barra-parlamentar"
+            :style="{ width: larguraDoParlamentar(linha.pct_parlamentar) }"
+          />
+        </span>
+      </template>
+
+      <template #rodape>
         <tr>
           <td colspan="3" />
           <td>{{ moeda(transferencia.valor_distribuido) }}</td>
@@ -128,8 +155,8 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
             </span>
           </td>
         </tr>
-      </tfoot>
-    </table>
+      </template>
+    </SmaeTable>
   </article>
 </template>
 
@@ -192,70 +219,67 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 }
 
 .cartao-de-transferencia__tabela {
-  width: 100%;
-  border-collapse: collapse;
-  color: @primary;
-
-  .col--distribuicao {
-    width: 164px;
+  :deep(table) {
+    border-collapse: collapse;
+    color: @primary;
   }
 
-  .col--orgao {
-    width: 92px;
+  :deep(tr) {
+    border-bottom: 0;
   }
 
-  .col--situacao {
-    width: 146px;
-  }
-
-  .col--valor {
-    width: 132px;
-  }
-
-  .col--investimento {
-    width: 342px;
-  }
-
-  th,
-  td {
+  :deep(th),
+  :deep(td) {
     padding: 0 12px;
     text-align: left;
     vertical-align: middle;
   }
 
-  thead th {
+  :deep(thead th) {
     padding-top: 6.7px;
     padding-bottom: 6.7px;
     border-bottom: 0.75px solid @c100;
+    // `.tablemain th` aplica `.tc300`, que usa !important
+    color: @primary !important;
     font-size: 10px;
     font-weight: 700;
     line-height: 1.2;
     text-transform: uppercase;
   }
 
-  tbody th,
-  tbody td {
+  :deep(tbody th),
+  :deep(tbody td) {
     height: 50.64px;
     border-bottom: 0.75px solid @c100;
     font-size: 12px;
     line-height: 1.3;
   }
 
-  tbody th {
+  :deep(tbody th) {
     font-weight: 700;
     line-height: 1.4;
+    text-transform: none;
   }
 
-  tfoot td {
+  :deep(tfoot tr) {
+    border-top: 0;
+  }
+
+  :deep(tfoot td) {
     height: 50.64px;
     font-size: 12px;
     font-weight: 700;
     line-height: 1.3;
   }
-}
 
-.cartao-de-transferencia__linha--nao-contabilizada {
-  opacity: 0.5;
+  :deep(table th),
+  :deep(table td) {
+    overflow: visible;
+  }
+
+  :deep(.cartao-de-transferencia__linha--nao-contabilizada) {
+    opacity: 0.5;
+  }
 }
 
 .cartao-de-transferencia__barra {
