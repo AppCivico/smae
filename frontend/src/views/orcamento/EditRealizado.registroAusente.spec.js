@@ -89,4 +89,23 @@ describe('EditRealizado sem o registro', () => {
     expect(replace).not.toHaveBeenCalled();
     expect(useAlertStore().error).not.toHaveBeenCalled();
   });
+
+  it('associa o rótulo "Execução associada a" ao seu campo', async () => {
+    mockCurrentRoute.params.id = '1';
+    const wrapper = montar({
+      2024: [{
+        id: 1,
+        ano_referencia: 2024,
+        dotacao: '16.10.12.361.3010.2.873.33903900.00',
+        distribuicao_recurso: { id: 7, nome: 'Reforma da UBS' },
+      }],
+    });
+    await flushPromises();
+
+    const rotulo = wrapper.findAll('label').find((x) => x.text() === 'Execução associada a');
+    const campo = wrapper.find(`#${rotulo.attributes('for')}`);
+
+    expect(campo.element.value).toBe('Reforma da UBS');
+    expect(wrapper.findAll('#execucao-associada-a')).toHaveLength(1);
+  });
 });

@@ -331,8 +331,12 @@ export default {
         >
       </div>
       <div v-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'">
-        <label class="label">Execução associada a</label>
+        <label
+          class="label"
+          for="execucao-associada-a"
+        >Execução associada a</label>
         <input
+          id="execucao-associada-a"
           :value="emFoco.distribuicao_recurso
             ? emFoco.distribuicao_recurso.nome || emFoco.distribuicao_recurso.objeto
             : 'Transferência'"
