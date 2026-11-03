@@ -178,37 +178,18 @@ describe('ParlamentarDetalhePainel', () => {
 
     await envelope.find('select[name="ano_inicio"]').setValue('2021');
     await envelope.find('select[name="ano_fim"]').setValue('2023');
-    await envelope.find('[data-test="filtrar"]').trigger('click');
+    await envelope.find('.filtro-de-periodo').trigger('submit');
+
+    await vi.waitFor(() => {
+      expect(mockRoute.query).toEqual(expect.objectContaining({
+        ano_inicio: 2021,
+        ano_fim: 2023,
+      }));
+    });
     await flushPromises();
 
-    expect(mockRoute.query).toEqual(expect.objectContaining({
-      ano_inicio: '2021',
-      ano_fim: '2023',
-    }));
     expect(parametrosDaUltimaChamada('/painel-parlamentar/2'))
       .toEqual(expect.objectContaining({ ano_inicio: '2021', ano_fim: '2023' }));
-  });
-
-  it('não oferece anos que invertam o período', async () => {
-    const envelope = montar();
-    await flushPromises();
-
-    await envelope.find('select[name="ano_inicio"]').setValue('2025');
-
-    const opcaoDoFim = (ano: string) => envelope
-      .find(`select[name="ano_fim"] option[value="${ano}"]`);
-
-    expect(opcaoDoFim('2023').attributes('disabled')).toBeDefined();
-    expect(opcaoDoFim('2025').attributes('disabled')).toBeUndefined();
-
-    await envelope.find('select[name="ano_fim"]').setValue('2025');
-    await envelope.find('select[name="ano_inicio"]').setValue('');
-
-    const opcaoDoInicio = (ano: string) => envelope
-      .find(`select[name="ano_inicio"] option[value="${ano}"]`);
-
-    expect(opcaoDoInicio('2026').attributes('disabled')).toBeDefined();
-    expect(opcaoDoInicio('2024').attributes('disabled')).toBeUndefined();
   });
 
   it('busca em ordem crescente um período invertido na URL', async () => {

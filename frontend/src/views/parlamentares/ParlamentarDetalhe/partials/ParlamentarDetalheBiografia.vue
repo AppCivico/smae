@@ -5,6 +5,8 @@ import { computed } from 'vue';
 import ParlamentaresExibirRepresentatividade
   from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import type { Colunas } from '@/components/SmaeTable/tipagem';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import dinheiro from '@/helpers/dinheiro';
 import { useAuthStore } from '@/stores/auth.store';
@@ -34,6 +36,25 @@ const equipe = computed<Pessoa[]>(() => [...(emFoco.value?.equipe || [])]
 
 const assessores = computed(() => equipe.value.filter((pessoa) => pessoa.tipo === 'Assessor'));
 const contatos = computed(() => equipe.value.filter((pessoa) => pessoa.tipo === 'Contato'));
+
+const colunasDaEquipe: Colunas = [
+  {
+    chave: 'nome',
+    label: 'Nome',
+    atributosDaColuna: { class: 'col--nome' },
+  },
+  {
+    chave: 'telefone',
+    label: 'Telefone',
+    formatador: (telefone) => (telefone as string) || '—',
+    atributosDaColuna: { class: 'col--telefone' },
+  },
+  {
+    chave: 'email',
+    label: 'Email',
+    formatador: (email) => (email as string) || '—',
+  },
+];
 
 const podeVerTelefone = computed(() => authStore.temPermissãoPara('SMAE.acesso_telefone'));
 
@@ -105,37 +126,22 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
           <hr>
         </header>
 
-        <table class="biografia-do-parlamentar__tabela">
-          <colgroup>
-            <col class="col--nome">
-            <col class="col--telefone">
-            <col>
-          </colgroup>
-          <thead>
+        <SmaeTable
+          class="biografia-do-parlamentar__tabela"
+          :colunas="colunasDaEquipe"
+          :dados="grupo.pessoas"
+        >
+          <template
+            v-if="!grupo.pessoas.length"
+            #corpo
+          >
             <tr>
-              <th>Nome</th>
-              <th>Telefone</th>
-              <th>Email</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="pessoa in grupo.pessoas"
-              :key="pessoa.id"
-            >
-              <td>{{ pessoa.nome }}</td>
-              <td class="biografia-do-parlamentar__telefone">
-                {{ pessoa.telefone || '—' }}
-              </td>
-              <td>{{ pessoa.email || '—' }}</td>
-            </tr>
-            <tr v-if="!grupo.pessoas.length">
               <td colspan="3">
                 Nenhum registro encontrado.
               </td>
             </tr>
-          </tbody>
-        </table>
+          </template>
+        </SmaeTable>
       </section>
     </template>
 
@@ -318,7 +324,7 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
   }
 }
 
-.biografia-do-parlamentar__tabela,
+.biografia-do-parlamentar__tabela :deep(table),
 .biografia-do-parlamentar__reaproveitado :deep(table) {
   width: 100%;
   max-width: none;
@@ -358,9 +364,15 @@ const simOuNao = (valor: unknown) => (valor ? 'Sim' : 'Não');
   }
 }
 
-.biografia-do-parlamentar__telefone {
-  font-size: 20px;
-  color: #233b5c;
+.biografia-do-parlamentar__tabela :deep(table) {
+  tr {
+    border-bottom: 0;
+  }
+
+  th,
+  td {
+    overflow: visible;
+  }
 }
 
 .biografia-do-parlamentar__cartoes {
