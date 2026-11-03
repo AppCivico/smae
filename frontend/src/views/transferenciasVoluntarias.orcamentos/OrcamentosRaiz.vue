@@ -43,6 +43,9 @@ const parametrosParaValidacao = computed(() => ({
 const anoDeReferencia = ref(anoCorrente);
 
 watch(() => props.transferenciaId, (transferenciaId) => {
+  // o ano escolhido em outra transferência pode estar fora dos anos desta
+  anoDeReferencia.value = anoCorrente;
+
   if (transferenciaId) {
     distribuicaoRecursosStore.buscarTudo({ transferencia_id: transferenciaId });
   }

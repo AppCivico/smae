@@ -117,5 +117,19 @@ describe('OrcamentosRaiz de transferências', () => {
       expect(propsDoFilho).toBe(propsAntes);
       expect(propsDoFilho.anoDeReferencia).toBe(anoCorrente - 2);
     });
+
+    it('volta ao ano corrente ao trocar de transferência', async () => {
+      const wrapper = montar({ anoDaTransferencia: anoCorrente - 5 });
+      await wrapper.find('#ano-de-referencia').setValue(String(anoCorrente - 4));
+
+      // a nova transferência só começa no ano corrente; o ano anterior não existe nela
+      useTransferenciasVoluntariasStore().emFoco = { id: 317, ano: anoCorrente };
+      await wrapper.setProps({ transferenciaId: 317 });
+
+      expect(propsDoFilho.anoDeReferencia).toBe(anoCorrente);
+      expect(wrapper.find('#ano-de-referencia').element.value).toBe(String(anoCorrente));
+      expect(useDistribuicaoRecursosStore().buscarTudo)
+        .toHaveBeenLastCalledWith({ transferencia_id: 317 });
+    });
   });
 });
