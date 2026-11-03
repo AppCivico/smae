@@ -72,4 +72,61 @@ describe('CampoDeDotacao e o ano de referência', () => {
     expect(wrapper.emitted('update:respostasof')).toEqual([[{}]]);
     expect(dotacaoStore.getDotaçãoSegmentos).toHaveBeenLastCalledWith(2023);
   });
+
+  describe('resposta do SOF depois da troca de ano', () => {
+    const dotacaoValida = '16.10.12.361.3010.2.873.33903900.00.1.111.1111.1';
+
+    async function validarEmAndamento(resultado) {
+      mockCurrentRoute = { params: {} };
+      const { wrapper, dotacaoStore } = montar({ anoDeReferencia: 2024, modelValue: dotacaoValida });
+
+      let concluir;
+      dotacaoStore.getDotaçãoRealizado.mockImplementation(() => new Promise((resolve, reject) => {
+        concluir = () => (resultado instanceof Error ? reject(resultado) : resolve(resultado));
+      }));
+
+      await wrapper.find('button[type="button"]').trigger('click');
+      await vi.waitFor(() => expect(dotacaoStore.getDotaçãoRealizado).toHaveBeenCalled());
+
+      return { wrapper, dotacaoStore, concluir: () => concluir() };
+    }
+
+    it('consulta o SOF no ano corrente', async () => {
+      const { dotacaoStore, concluir } = await validarEmAndamento({ dotacao: 'x' });
+      concluir();
+      await flushPromises();
+
+      expect(dotacaoStore.getDotaçãoRealizado)
+        .toHaveBeenCalledWith(expect.anything(), 2024, { portfolio_id: 1 });
+    });
+
+    it('descarta o sucesso que chega depois da troca de ano', async () => {
+      const { wrapper, concluir } = await validarEmAndamento({ dotacao: 'x' });
+
+      await wrapper.setProps({ anoDeReferencia: 2023 });
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.emitted('update:respostasof').at(-1)).toEqual([{}]);
+    });
+
+    it('descarta o erro que chega depois da troca de ano', async () => {
+      const { wrapper, concluir } = await validarEmAndamento(new Error('SOF fora do ar'));
+
+      await wrapper.setProps({ anoDeReferencia: 2023 });
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.emitted('update:respostasof').at(-1)).toEqual([{}]);
+    });
+
+    it('sem troca de ano, repassa a resposta', async () => {
+      const { wrapper, concluir } = await validarEmAndamento({ dotacao: 'x' });
+
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.emitted('update:respostasof').at(-1)).toEqual([{ dotacao: 'x' }]);
+    });
+  });
 });

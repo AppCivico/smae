@@ -256,16 +256,18 @@ async function validarDota() {
 
   validando.value = true;
 
+  // se o ano mudar durante a consulta, a resposta do ano anterior é descartada
+  const anoDaConsulta = ano.value;
   const { valid } = await validate();
 
-  if (valid) {
+  if (valid && anoDaConsulta === ano.value) {
     try {
       emit('update:respostasof', { loading: true });
       const respostaDoSof = await dotacaoStore
-        .getDotaçãoRealizado(valorDaDotacao.value, ano.value, props.parametrosParaValidacao);
-      emit('update:respostasof', respostaDoSof);
+        .getDotaçãoRealizado(valorDaDotacao.value, anoDaConsulta, props.parametrosParaValidacao);
+      if (anoDaConsulta === ano.value) emit('update:respostasof', respostaDoSof);
     } catch (error) {
-      emit('update:respostasof', error);
+      if (anoDaConsulta === ano.value) emit('update:respostasof', error);
     }
   }
   validando.value = false;
