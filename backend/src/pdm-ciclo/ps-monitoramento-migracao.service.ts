@@ -89,17 +89,17 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
         );
     }
 
-    // PDMs antigos não têm quem chame o POST (exige CadastroPdm.editar), então migram no boot
+    // planos cujo mapeamento não é inferível ficam no legado (só log) e dependem do POST com mapeamento
     onApplicationBootstrap() {
         if (IsCrontabDisabled('monitoramento_pdm_antigo')) return;
         setTimeout(() => {
-            this.migraPdmsAntigos().catch((error) => this.logger.error(`Falha ao migrar PDMs antigos: ${error}`));
+            this.migraPendentes().catch((error) => this.logger.error(`Falha ao migrar monitoramento legado: ${error}`));
         }, 30_000).unref();
     }
 
-    private async migraPdmsAntigos(): Promise<void> {
+    private async migraPendentes(): Promise<void> {
         const pendentes = await this.prisma.pdm.findMany({
-            where: { sistema: 'PDM', removido_em: null, monitoramento_por_blocos: false },
+            where: { removido_em: null, monitoramento_por_blocos: false },
             select: { id: true },
             orderBy: { id: 'asc' },
         });
@@ -119,12 +119,14 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
                         if (pdm.monitoramento_por_blocos) return;
 
                         const contagem = await this.migraNaTx(prismaTx, id, {});
-                        this.logger.log(`PDM ${id} migrado para monitoramento por fases: ${JSON.stringify(contagem)}`);
+                        this.logger.log(
+                            `Plano ${id} migrado para monitoramento por fases: ${JSON.stringify(contagem)}`
+                        );
                     },
                     { maxWait: 10000, timeout: 300000 }
                 );
             } catch (error) {
-                this.logger.error(`Falha ao migrar monitoramento do PDM ${id}: ${error}`);
+                this.logger.error(`Falha ao migrar monitoramento do plano ${id}: ${error}`);
             }
         }
     }
@@ -173,6 +175,8 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
                 ordem: true,
                 rotulo: true,
                 habilitada: true,
+                aceita_tags: true,
+                aceita_anexos: true,
                 criado_em: true,
                 criado_por: true,
                 removido_em: true,
@@ -181,6 +185,7 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
                         id: true,
                         ordem: true,
                         rotulo: true,
+                        habilitado: true,
                         criado_em: true,
                         atualizado_por: true,
                         removido_em: true,
