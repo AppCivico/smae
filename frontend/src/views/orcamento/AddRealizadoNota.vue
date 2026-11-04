@@ -197,9 +197,9 @@ async function validarDota(evt) {
   try {
     respostasof.value = { loading: true };
     const { valid } = await validateField('nota_empenho');
-    if (valid && anoMudou()) {
+    if (!valid || anoMudou()) {
       descartar();
-    } else if (valid) {
+    } else {
       const r = await DotaçãoStore
         .getDotaçãoRealizadoNota(
           `${dota.value}/${anoDaConsulta}`,

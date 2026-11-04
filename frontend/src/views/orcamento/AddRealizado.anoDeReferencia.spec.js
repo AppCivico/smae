@@ -326,6 +326,20 @@ describe('detalhes por tela', () => {
       expect(wrapper.text()).not.toContain('Dotação não encontrada');
     });
 
+    it('com nota inválida, não consulta o SOF nem fica carregando', async () => {
+      const wrapper = montar(AddRealizadoNota, { anoDeReferencia: 2024 });
+      const dotacaoStore = useDotaçãoStore();
+
+      // vazia, a nota seria completada com zeros e passaria na validação
+      await wrapper.find('input[name="nota_empenho"]').setValue('12a');
+      await wrapper.find('form button[type="button"]').trigger('click');
+      await vi.waitFor(() => expect(wrapper.text()).toContain('Formato inválido'));
+      await flushPromises();
+
+      expect(dotacaoStore.getDotaçãoRealizadoNota).not.toHaveBeenCalled();
+      expect(wrapper.text()).not.toContain('Aguardando resposta do SOF');
+    });
+
     it('não fica carregando quando o ano da nota é trocado no próprio campo', async () => {
       const { wrapper, concluir } = await validarEmAndamento(resposta);
 
