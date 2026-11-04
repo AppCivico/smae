@@ -81,6 +81,28 @@ describe('EditRealizado sem o registro', () => {
     expect(replace).toHaveBeenCalledWith({ name: 'TransferenciaOrcamentoRealizado', query: {} });
   });
 
+  // em projetos, o ano vem da rota, e a store guarda o erro no lugar da lista
+  it.each([
+    ['um erro', { error: 'Falha na busca' }, false],
+    ['outro valor que não uma lista', { loading: true }, true],
+  ])('volta para a listagem quando o ano guarda %s', async (_, doAno, avisa) => {
+    mockCurrentRoute = {
+      params: { ano: '2025', id: '1', projetoId: 5 },
+      meta: { entidadeMãe: 'projeto', rotaDeEscape: 'projetoOrcamento' },
+      query: {},
+    };
+
+    montar({ 2025: doAno });
+    await flushPromises();
+
+    expect(replace).toHaveBeenCalledWith({ name: 'projetoOrcamento', query: {} });
+    if (avisa) {
+      expect(useAlertStore().error).toHaveBeenCalledWith('Execução orçamentária não encontrada.');
+    } else {
+      expect(useAlertStore().error).not.toHaveBeenCalled();
+    }
+  });
+
   it('com o registro presente, não sai da tela', async () => {
     mockCurrentRoute.params.id = '1';
     montar({ 2024: [{ id: 1, ano_referencia: 2024, dotacao: '16.10.12.361.3010.2.873.33903900.00' }] });

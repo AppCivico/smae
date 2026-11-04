@@ -127,12 +127,16 @@ function voltarParaListagem() {
         throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
 
-    const registro = OrcamentoRealizado.value[ano.value]?.find((x) => x.id === Number(id));
+    // em caso de falha, o ano guarda o objeto de erro em vez da lista
+    const doAno = OrcamentoRealizado.value[ano.value];
+    const registro = Array.isArray(doAno)
+      ? doAno.find((x) => x.id === Number(id))
+      : undefined;
 
     // removido em outra aba ou id inválido; em transferências, sem o registro
     // não há nem o ano. Volta para a listagem, como após a remoção
     if (!registro) {
-      if (!OrcamentoRealizado.value[ano.value]?.error) {
+      if (!doAno?.error) {
         alertStore.error('Execução orçamentária não encontrada.');
       }
 
