@@ -421,6 +421,14 @@ watch(ano, (novoAno) => {
           :id-do-item="$route.params.meta_id"
           class="mb1"
         />
+        <ListaDeCompartilhamentos
+          v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+          :ano="ano"
+          :dotação="respostasof.dotacao"
+          :processo="values.processo"
+          :nota-empenho="`${values.nota_empenho}/${values.nota_ano}`"
+          class="mb1"
+        />
 
         <div v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
           <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
