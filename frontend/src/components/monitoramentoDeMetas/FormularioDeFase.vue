@@ -266,14 +266,14 @@ watch(formularioSujo, (novoValor) => {
         />
       </fieldset>
 
-      <template v-if="fase.aceita_anexos">
+      <template v-if="fase.aceita_anexos || documentos.length">
         <ListaDeDocumentos
           :arquivos="documentos"
           :permitir-exclusao="editavel"
           @apagar="excluirDocumento($event)"
         />
 
-        <div v-if="editavel">
+        <div v-if="fase.aceita_anexos && editavel">
           <button
             type="button"
             class="addlink mb1"

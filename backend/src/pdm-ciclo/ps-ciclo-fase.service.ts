@@ -181,7 +181,12 @@ export class PsCicloFaseService {
         });
         const revisoesAnteriores = cicloAnterior
             ? await this.prisma.metaMonitoramentoFase.findMany({
-                  where: { meta_id: metaId, ciclo_fisico_id: cicloAnterior.id, ultima_revisao: true, removido_em: null },
+                  where: {
+                      meta_id: metaId,
+                      ciclo_fisico_id: cicloAnterior.id,
+                      ultima_revisao: true,
+                      removido_em: null,
+                  },
                   select: SelectRevisao,
               })
             : [];
@@ -206,7 +211,9 @@ export class PsCicloFaseService {
         const pode_editar = meta.pode_editar && (await this.temEscritaNoPlano(tipo, pdmId, user));
 
         const habilitadas = fases.filter((f) => f.habilitada);
-        const blocosVisiveis = new Set(habilitadas.flatMap((f) => f.blocos.filter((b) => b.habilitado).map((b) => b.id)));
+        const blocosVisiveis = new Set(
+            habilitadas.flatMap((f) => f.blocos.filter((b) => b.habilitado).map((b) => b.id))
+        );
         const fasesDeTags = new Set(habilitadas.filter((f) => f.aceita_tags).map((f) => f.id));
         const revisaoDto = (r: RevisaoCompleta) => this.revisaoDto(r, blocosVisiveis, fasesDeTags);
 
@@ -239,22 +246,20 @@ export class PsCicloFaseService {
                     atual: atual ? revisaoDto(atual) : null,
                     historico: daFase.filter((r) => !r.ultima_revisao).map(revisaoDto),
                     anterior: anterior ? revisaoDto(anterior) : null,
-                    documentos: fase.aceita_anexos
-                        ? documentos
-                              .filter((d) => d.fase_config_id === fase.id)
-                              .map((d) => ({
-                                  id: d.id,
-                                  fase_id: d.fase_config_id,
-                                  descricao: d.descricao,
-                                  criado_em: d.criado_em,
-                                  criador: d.criador,
-                                  arquivo: BuildArquivoBaseDto(
-                                      d.arquivo,
-                                      (id, expiresIn) =>
-                                          this.uploadService.getDownloadToken(id, expiresIn).download_token
-                                  ),
-                              }))
-                        : [],
+                    // aceita_anexos só bloqueia envio novo; o que já foi anexado continua visível
+                    documentos: documentos
+                        .filter((d) => d.fase_config_id === fase.id)
+                        .map((d) => ({
+                            id: d.id,
+                            fase_id: d.fase_config_id,
+                            descricao: d.descricao,
+                            criado_em: d.criado_em,
+                            criador: d.criador,
+                            arquivo: BuildArquivoBaseDto(
+                                d.arquivo,
+                                (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                            ),
+                        })),
                 };
             }),
             historico_fechamentos: revisoes.filter((r) => r.fecha_ciclo).map(revisaoDto),
@@ -277,7 +282,11 @@ export class PsCicloFaseService {
             const ciclo = await this.carregaCiclo(prismaTx, pdmId, cicloId);
             const fases = await this.carregaFases(prismaTx, pdmId);
             const fase = this.faseHabilitada(fases, faseId);
-            const estado = calculaEstadoCiclo(ciclo.ativo, fases, await this.carregaUltimas(prismaTx, metaId, [cicloId]));
+            const estado = calculaEstadoCiclo(
+                ciclo.ativo,
+                fases,
+                await this.carregaUltimas(prismaTx, metaId, [cicloId])
+            );
             this.assertFaseEditavel(fases, fase, estado);
 
             const conteudo = await this.validaConteudo(prismaTx, pdmId, fase, dto);
@@ -360,7 +369,11 @@ export class PsCicloFaseService {
             await this.assertDocumentoEditavel(prismaTx, pdmId, cicloId, documento.fase_config_id, metaId);
             await prismaTx.metaMonitoramentoFaseDocumento.update({
                 where: { id: documento.id },
-                data: { descricao: dto.descricao ?? null, atualizado_por: user.id, atualizado_em: new Date(Date.now()) },
+                data: {
+                    descricao: dto.descricao ?? null,
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                },
             });
             return { id: documento.id };
         }, TX_OPTS);
@@ -386,7 +399,13 @@ export class PsCicloFaseService {
         }, TX_OPTS);
     }
 
-    async reabre(tipo: TipoPdmType, pdmId: number, cicloId: number, metaId: number, user: PessoaFromJwt): Promise<void> {
+    async reabre(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        metaId: number,
+        user: PessoaFromJwt
+    ): Promise<void> {
         await this.assertMetaDoPlano(tipo, pdmId, metaId, user, 'readwrite');
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -434,11 +453,7 @@ export class PsCicloFaseService {
         }
     }
 
-    private async carregaCiclo(
-        prisma: Prisma.TransactionClient,
-        pdmId: number,
-        cicloId: number
-    ): Promise<CicloResumo> {
+    private async carregaCiclo(prisma: Prisma.TransactionClient, pdmId: number, cicloId: number): Promise<CicloResumo> {
         const ciclo = await prisma.cicloFisico.findFirst({
             where: { id: cicloId, pdm_id: pdmId },
             select: { id: true, data_ciclo: true, ativo: true },

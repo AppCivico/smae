@@ -6,6 +6,7 @@ export type BlocoCfgMigracao = {
     id: number;
     ordem: number;
     rotulo: string;
+    habilitado: boolean;
     criado_em: Date;
     atualizado_por: number | null;
     removido_em: Date | null;
@@ -16,6 +17,8 @@ export type FaseCfgMigracao = {
     ordem: number;
     rotulo: string;
     habilitada: boolean;
+    aceita_tags: boolean;
+    aceita_anexos: boolean;
     criado_em: Date;
     criado_por: number;
     removido_em: Date | null;
@@ -53,12 +56,7 @@ const PAPEIS: { fase: ChaveFase; posicao: number; blocos: ChaveBloco[] }[] = [
 ];
 
 export function normalizaRotulo(rotulo: string): string {
-    return rotulo
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .replace(/\s+/g, ' ')
-        .trim();
+    return rotulo.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 export function textoParaHtml(texto: string): string {
@@ -108,6 +106,51 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
         if (!fase || usadas.has(fase.id)) continue;
 
         usadas.add(fase.id);
+        aplicaFase(papel, fase);
+    }
+
+    // layout sem correspondência: o conteúdo vai para a próxima fase/bloco livre na ordem de exibição
+    const livres = fases
+        .filter((f) => !f.removido_em && f.habilitada && !f.aceita_tags && !usadas.has(f.id))
+        .sort(porOrdem);
+    for (const papel of PAPEIS) {
+        if (mapeamento[papel.fase] !== null) continue;
+        let idx = papel.fase === 'fechamento_fase_id' ? livres.length - 1 : 0;
+        if (papel.fase === 'qualificacao_fase_id')
+            idx = Math.max(
+                0,
+                livres.findIndex((f) => f.aceita_anexos)
+            );
+        const [fase] = livres.splice(idx, 1);
+        if (!fase) continue;
+        avisos.push(
+            `Nenhuma fase corresponde a "${MONITORAMENTO_CONFIG_DEFAULTS[papel.posicao].rotulo}"; o conteúdo vai para "${fase.rotulo}"`
+        );
+        aplicaFase(papel, fase);
+    }
+
+    for (const papel of PAPEIS) {
+        const fase = fases.find((f) => f.id === mapeamento[papel.fase]);
+        if (!fase) continue;
+        const ocupados = new Set(papel.blocos.map((chave) => mapeamento[chave]));
+        const blocosLivres = fase.blocos
+            .filter((b) => !b.removido_em && b.habilitado && !ocupados.has(b.id))
+            .sort(porOrdem);
+        papel.blocos.forEach((chave, idx) => {
+            if (mapeamento[chave] !== null) return;
+            const bloco = blocosLivres.shift();
+            if (!bloco) return;
+            mapeamento[chave] = bloco.id;
+            avisos.push(
+                `Nenhum bloco corresponde a "${MONITORAMENTO_CONFIG_DEFAULTS[papel.posicao].blocos[idx].rotulo}"; o conteúdo vai para "${bloco.rotulo}"`
+            );
+        });
+    }
+
+    return { mapeamento, avisos };
+
+    function aplicaFase(papel: (typeof PAPEIS)[number], fase: FaseCfgMigracao) {
+        const padrao = MONITORAMENTO_CONFIG_DEFAULTS[papel.posicao];
         mapeamento[papel.fase] = fase.id;
         if (fase.removido_em || !fase.habilitada)
             avisos.push(`O conteúdo de "${padrao.rotulo}" vai para a fase "${fase.rotulo}", que não é exibida`);
@@ -120,11 +163,16 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
                 avisos.push(
                     `O conteúdo de "${padrao.blocos[idx].rotulo}" vai para o bloco "${bloco.rotulo}", que foi removido`
                 );
+            else if (bloco && !bloco.habilitado)
+                avisos.push(
+                    `O conteúdo de "${padrao.blocos[idx].rotulo}" vai para o bloco "${bloco.rotulo}", que está desabilitado`
+                );
         });
     }
-
-    return { mapeamento, avisos };
 }
+
+const porOrdem = (a: { ordem: number; id: number }, b: { ordem: number; id: number }) =>
+    a.ordem - b.ordem || a.id - b.id;
 
 function sugereBlocos(
     fase: FaseCfgMigracao,
@@ -155,7 +203,9 @@ function sugereBlocos(
     padroes.forEach((p, idx) => {
         atribui(
             idx,
-            unico(fase.blocos.filter((b) => !usados.has(b.id) && normalizaRotulo(b.rotulo) === normalizaRotulo(p.rotulo)))
+            unico(
+                fase.blocos.filter((b) => !usados.has(b.id) && normalizaRotulo(b.rotulo) === normalizaRotulo(p.rotulo))
+            )
         );
     });
     return ret;
@@ -168,8 +218,7 @@ export function validaMapeamento(fases: FaseCfgMigracao[], m: MapeamentoLegado):
     for (const papel of PAPEIS) {
         const faseId = m[papel.fase];
         if (faseId === null) {
-            for (const chave of papel.blocos)
-                if (m[chave] !== null) erros.push(`${chave} informado sem ${papel.fase}`);
+            for (const chave of papel.blocos) if (m[chave] !== null) erros.push(`${chave} informado sem ${papel.fase}`);
             continue;
         }
         const fase = faseById.get(faseId);
