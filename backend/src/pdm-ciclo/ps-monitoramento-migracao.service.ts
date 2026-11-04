@@ -175,6 +175,7 @@ export class PsMonitoramentoMigracaoService implements OnApplicationBootstrap {
                 ordem: true,
                 rotulo: true,
                 habilitada: true,
+                aceita_tags: true,
                 criado_em: true,
                 criado_por: true,
                 removido_em: true,
