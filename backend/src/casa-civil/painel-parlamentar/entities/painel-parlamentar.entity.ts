@@ -37,7 +37,9 @@ export class PainelParlamentarPerfilDto {
 
 export class PainelParlamentarTransferenciasKpiDto {
     total: number;
-    @ApiProperty({ description: 'Transferências com workflow ainda não finalizado' })
+    @ApiProperty({
+        description: 'Transferências com workflow iniciado e ainda não finalizado (sem workflow não contam)',
+    })
     em_andamento: number;
 }
 
@@ -118,7 +120,10 @@ export class PainelParlamentarTransferenciaDto {
     valor_repasse: number;
     @ApiProperty({ description: 'Soma das distribuições contabilizadas' })
     valor_distribuido: number;
+    @ApiProperty({ description: 'Emenda: valor indicado pelo parlamentar na transferência' })
     valor_parlamentar: number;
+    @ApiProperty({ description: 'Soma do valor do parlamentar nas distribuições contabilizadas' })
+    valor_parlamentar_distribuido: number;
     etapa: string | null;
     fase: string | null;
     fase_status: string | null;

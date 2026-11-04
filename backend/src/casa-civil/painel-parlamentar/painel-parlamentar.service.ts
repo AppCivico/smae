@@ -66,8 +66,11 @@ export class PainelParlamentarService {
         const [perfil, [sql]] = await Promise.all([
             this.parlamentarService.findOne(id, user),
             this.prisma.$queryRaw<{ resultado: ResultadoPainelSql }[]>`
+                -- Em andamento: workflow iniciado e ainda não finalizado (sem workflow não conta).
                 WITH base AS MATERIALIZED (
-                    SELECT t.id AS transferencia_id, t.workflow_finalizado, tp.partido_id, tp.valor
+                    SELECT t.id AS transferencia_id,
+                        (t.workflow_id IS NOT NULL AND NOT t.workflow_finalizado) AS em_andamento,
+                        tp.partido_id, tp.valor
                     FROM transferencia t
                     JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id
                         AND tp.parlamentar_id = ${id} AND tp.removido_em IS NULL
@@ -77,7 +80,7 @@ export class PainelParlamentarService {
                     SELECT COALESCE(SUM(tp.valor), 0) AS valor
                     FROM transferencia t
                     JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
-                    WHERE ${condicoes} AND NOT t.workflow_finalizado
+                    WHERE ${condicoes} AND t.workflow_id IS NOT NULL AND NOT t.workflow_finalizado
                 ),
                 dist AS MATERIALIZED (
                     SELECT dr.orgao_gestor_id, dp.valor
@@ -90,10 +93,10 @@ export class PainelParlamentarService {
                 )
                 SELECT jsonb_build_object(
                     'total', (SELECT COUNT(DISTINCT transferencia_id)::int FROM base),
-                    'em_andamento', (SELECT COUNT(DISTINCT transferencia_id)::int FROM base WHERE NOT workflow_finalizado),
+                    'em_andamento', (SELECT COUNT(DISTINCT transferencia_id)::int FROM base WHERE em_andamento),
                     'valor_disponibilizado', (SELECT COALESCE(SUM(valor), 0)::text FROM base),
                     'valor_utilizado', (SELECT COALESCE(SUM(valor), 0)::text FROM dist),
-                    'valor_parlamentar_andamento', (SELECT COALESCE(SUM(valor), 0)::text FROM base WHERE NOT workflow_finalizado),
+                    'valor_parlamentar_andamento', (SELECT COALESCE(SUM(valor), 0)::text FROM base WHERE em_andamento),
                     'valor_total_andamento', (SELECT valor::text FROM total_andamento),
                     -- jsonb_agg: driver adapter (Prisma 7) devolve array_agg de $queryRaw como string; JSON volta como array JS
                     'por_secretaria', (
@@ -331,6 +334,7 @@ export class PainelParlamentarService {
             .filter((r): r is NonNullable<typeof r> => !!r)
             .map((r) => {
                 let valorDistribuido = new Decimal(0);
+                let valorParlamentarDistribuido = new Decimal(0);
 
                 const distribuicoes = r.distribuicao_recursos.map((dr): PainelParlamentarDistribuicaoDto => {
                     const contabilizada = distribuicaoContabilizada(dr.status);
@@ -341,7 +345,10 @@ export class PainelParlamentarService {
                     );
                     const statusAtual = dr.status[0];
 
-                    if (contabilizada) valorDistribuido = valorDistribuido.plus(valor);
+                    if (contabilizada) {
+                        valorDistribuido = valorDistribuido.plus(valor);
+                        valorParlamentarDistribuido = valorParlamentarDistribuido.plus(valorParlamentar);
+                    }
 
                     return {
                         id: dr.id,
@@ -362,6 +369,7 @@ export class PainelParlamentarService {
                     objeto: r.objeto,
                     valor_repasse: dec(r.valor).toNumber(),
                     valor_distribuido: valorDistribuido.toNumber(),
+                    valor_parlamentar_distribuido: valorParlamentarDistribuido.toNumber(),
                     valor_parlamentar: r.parlamentar
                         .reduce((acc, p) => acc.plus(dec(p.valor)), new Decimal(0))
                         .toNumber(),
