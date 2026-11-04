@@ -50,6 +50,7 @@ export const FONTES_POR_SISTEMA: Record<ModuloSistema, readonly FonteRelatorio[]
     CasaCivil: [
         FonteRelatorio.Parlamentares,
         FonteRelatorio.TribunalDeContas,
+        FonteRelatorio.TransferenciasOrcamento,
         FonteRelatorio.Transferencias,
         FonteRelatorio.AtvPendentes,
         FonteRelatorio.Demandas,

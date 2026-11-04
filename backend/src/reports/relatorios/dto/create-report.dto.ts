@@ -23,6 +23,7 @@ import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.
 import { CreatePsMonitoramentoMensalFilterDto } from '../../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 import { CreateRelTribunalDeContasDto } from 'src/reports/tribunal-de-contas/dto/create-tribunal-de-contas.dto';
+import { CreateRelTransferenciasOrcamentoDto } from 'src/reports/transferencias-orcamento/dto/create-transferencias-orcamento.dto';
 
 /**
  * Chave que carrega o `bruto` dentro de `relatorio.parametros`.
@@ -67,7 +68,8 @@ export class CreateReportDto {
             CreateRelProjetoPrevisaoCustoDto,
             CreatePsMonitoramentoMensalFilterDto,
             CreateCasaCivilAtividadesPendentesFilterDto,
-            CreateRelTribunalDeContasDto
+            CreateRelTribunalDeContasDto,
+            CreateRelTransferenciasOrcamentoDto
         ),
     })
     parametros: any;

@@ -3875,6 +3875,7 @@ enum FonteRelatorio {
     PSMonitoramentoMensal
     PSIndicadores
     Demandas
+    TransferenciasOrcamento
 }
 
 enum RelatorioVisibilidade {

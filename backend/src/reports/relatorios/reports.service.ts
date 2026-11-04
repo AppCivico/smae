@@ -58,6 +58,7 @@ import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { TransferenciasService } from '../transferencias/transferencias.service';
 import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
+import { TransferenciasOrcamentoService } from '../transferencias-orcamento/transferencias-orcamento.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto, PARAM_BRUTO } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
@@ -156,6 +157,8 @@ export class ReportsService {
         @Inject(forwardRef(() => TransferenciasService)) private readonly transferenciasService: TransferenciasService,
         @Inject(forwardRef(() => TribunalDeContasService))
         private readonly tribunalDeContasService: TribunalDeContasService,
+        @Inject(forwardRef(() => TransferenciasOrcamentoService))
+        private readonly transferenciasOrcamentoService: TransferenciasOrcamentoService,
         @Inject(forwardRef(() => PSMonitoramentoMensal))
         private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
         @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
@@ -774,6 +777,9 @@ export class ReportsService {
                 break;
             case 'TribunalDeContas':
                 service = this.tribunalDeContasService;
+                break;
+            case 'TransferenciasOrcamento':
+                service = this.transferenciasOrcamentoService;
                 break;
             case 'PSMonitoramentoMensal':
                 service = this.psMonitoramentoMensal;
@@ -1402,6 +1408,7 @@ export class ReportsService {
             CasaCivil: {
                 Parlamentares: '/relatorios/parlamentares',
                 TribunalDeContas: '/relatorios/tribunal-de-contas',
+                TransferenciasOrcamento: '/relatorios/execucao-orcamentaria',
                 Transferencias: '/relatorios/transferencias-voluntarias',
                 AtvPendentes: '/relatorios/atividades-pendentes',
                 Demandas: '/relatorios/demandas',
@@ -1447,6 +1454,8 @@ export class ReportsService {
                 return 'Transferências';
             case FonteRelatorio.TribunalDeContas:
                 return 'Tribunal de Contas';
+            case FonteRelatorio.TransferenciasOrcamento:
+                return 'Transferências - Execução Orçamentária';
             case FonteRelatorio.PSMonitoramentoMensal:
                 return 'Plano Setorial - Monitoramento Mensal';
             case FonteRelatorio.PSOrcamento:

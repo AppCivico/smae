@@ -17,6 +17,7 @@ import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
 import { TransferenciasModule } from '../transferencias/transferencias.module';
 import { PPObrasModule } from '../pp-obras/pp-obras.module';
 import { TribunalDeContasModule } from '../tribunal-de-contas/tribunal-de-contas.module';
+import { TransferenciasOrcamentoModule } from '../transferencias-orcamento/transferencias-orcamento.module';
 import { PsMonitoramentoMensalModule } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.module';
 import { CasaCivilAtividadesPendentesModule } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
 import { PessoaModule } from '../../pessoa/pessoa.module';
@@ -39,6 +40,7 @@ import { DemandasModule } from '../demandas/demandas.module';
         forwardRef(() => ParlamentaresModule),
         forwardRef(() => TransferenciasModule),
         forwardRef(() => TribunalDeContasModule),
+        forwardRef(() => TransferenciasOrcamentoModule),
         forwardRef(() => PsMonitoramentoMensalModule),
         forwardRef(() => CasaCivilAtividadesPendentesModule),
         forwardRef(() => TaskModule),

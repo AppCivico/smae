@@ -17,6 +17,7 @@ import { RelatorioModeloModule } from './reports/relatorio-modelo/relatorio-mode
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { TransferenciasModule } from './reports/transferencias/transferencias.module';
 import { TribunalDeContasModule } from './reports/tribunal-de-contas/tribunal-de-contas.module';
+import { TransferenciasOrcamentoModule } from './reports/transferencias-orcamento/transferencias-orcamento.module';
 
 /**
  * Reports modules aggregation
@@ -42,6 +43,7 @@ import { TribunalDeContasModule } from './reports/tribunal-de-contas/tribunal-de
         ParlamentaresModule,
         TransferenciasModule,
         TribunalDeContasModule,
+        TransferenciasOrcamentoModule,
         PsMonitoramentoMensalModule,
         CasaCivilAtividadesPendentesModule,
         ProjetoOrcamentoModule,

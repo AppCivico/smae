@@ -72,11 +72,11 @@ export class RelTribunalDeContasCsvRow {
     @ReportColumn({ type: 'VARCHAR', label: 'Política pública' })
     finalidade: string | null;
 
-    /** String na extração pelo mesmo motivo de `valor_repasse`. */
+    /** Soma da execução orçamentária da distribuição; string pelo mesmo motivo de `valor_repasse`. */
     @ReportColumn({ type: 'DECIMAL(18,2)', label: 'Empenho', format: { currency: 'R$', decimalPlaces: 2 } })
     valor_empenho: string | null;
 
-    /** String na extração pelo mesmo motivo de `valor_repasse`. */
+    /** Soma da execução orçamentária da distribuição; string pelo mesmo motivo de `valor_repasse`. */
     @ReportColumn({
         type: 'DECIMAL(18,2)',
         label: 'Liquidação/Pagamento',

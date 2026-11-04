@@ -24,6 +24,7 @@ import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
+import { CreateRelTransferenciasOrcamentoDto } from '../transferencias-orcamento/dto/create-transferencias-orcamento.dto';
 
 @Injectable()
 export class UtilsService {
@@ -189,6 +190,9 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             break;
         case 'TribunalDeContas':
             theClass = CreateRelTribunalDeContasDto;
+            break;
+        case 'TransferenciasOrcamento':
+            theClass = CreateRelTransferenciasOrcamentoDto;
             break;
         case 'PSMonitoramentoMensal':
             theClass = CreatePsMonitoramentoMensalFilterDto;
