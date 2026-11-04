@@ -161,6 +161,19 @@ describe('ParlamentarDetalhePainel', () => {
     expect(texto).toContain('900.000,00');
   });
 
+  it('explica cada indicador com o texto definido para ele', async () => {
+    const envelope = montar();
+    await flushPromises();
+
+    const rodapes = envelope.findAll('footer').map((rodape) => rodape.text());
+
+    expect(rodapes).toEqual(expect.arrayContaining([
+      'Total de recursos disponibilizados e percentual utilizado',
+      'Total de recursos disponibilizados pelo parlamentar por partido',
+      'Total de recursos disponibilizados pelo parlamentar para cada secretaria',
+    ]));
+  });
+
   it('busca os dados do período presente na URL', async () => {
     mockRoute.query = { ano_inicio: '2022', ano_fim: '2024' };
 

@@ -27,6 +27,25 @@ describe('BarraDePercentual', () => {
     expect(barra.attributes('aria-valuetext')).toBe('120%');
   });
 
+  it('mostra as casas decimais de um percentual fracionado', () => {
+    const envelope = mount(BarraDePercentual, { props: { percentual: 0.77 } });
+
+    expect(envelope.text()).toContain('0,77%');
+    expect(envelope.find('[role="progressbar"]').attributes('aria-valuetext')).toBe('0,77%');
+  });
+
+  it('não acrescenta casas decimais a um percentual inteiro', () => {
+    const envelope = mount(BarraDePercentual, { props: { percentual: 72 } });
+
+    expect(envelope.find('[role="progressbar"]').attributes('aria-valuetext')).toBe('72%');
+  });
+
+  it('não pinta a barra quando o percentual é zero', () => {
+    const envelope = mount(BarraDePercentual, { props: { percentual: 0 } });
+
+    expect(envelope.find('[data-test="preenchimento"]').exists()).toBe(false);
+  });
+
   it('inclui o rótulo no texto lido, já que o conteúdo da barra não é anunciado', () => {
     const barra = mount(BarraDePercentual, {
       props: { percentual: 72, rotulo: 'R$ 39.657.600,00' },

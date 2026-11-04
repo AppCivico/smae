@@ -142,7 +142,7 @@ watch(
       <PainelCartao
         class="painel-do-parlamentar__recurso"
         titulo="Recurso Disponibilizado e Utilizado"
-        rodape="Total de recursos disponibilizados, e percentual utilizado, em reais"
+        rodape="Total de recursos disponibilizados e percentual utilizado"
       >
         <p class="painel-do-parlamentar__disponibilizado">
           <span class="painel-do-parlamentar__disponibilizado-rotulo">Valor Disponibilizado:</span>
@@ -173,7 +173,7 @@ watch(
         <PainelCartao
           class="painel-do-parlamentar__partido"
           titulo="Participação por partido"
-          rodape="Total de recursos disponibilizados pelo parlamentar, referente a seu partido"
+          rodape="Total de recursos disponibilizados pelo parlamentar por partido"
         >
           <GraficoPorPartido
             v-if="painel.por_partido.length"
@@ -191,7 +191,7 @@ watch(
       <PainelCartao
         class="painel-do-parlamentar__secretaria"
         titulo="Total por Secretaria"
-        rodape="Total de recursos disponibilizados, pelo parlamentar para cada secretaria"
+        rodape="Total de recursos disponibilizados pelo parlamentar para cada secretaria"
       >
         <GraficoPorSecretaria
           v-if="painel.por_secretaria.length"
@@ -409,6 +409,10 @@ watch(
 .painel-do-parlamentar__secretaria {
   grid-area: secretaria;
   min-height: 40.1rem;
+
+  :deep(.painel-cartao__conteudo) {
+    flex-grow: 0;
+  }
 }
 
 .painel-do-parlamentar__contagem {

@@ -76,7 +76,6 @@ watch(() => props.parlamentarId, (id) => {
     <PainelCartao
       class="resumo-do-parlamentar__dados"
       titulo="Dados do Parlamentar"
-      sem-fundo
     >
       <dl class="resumo-do-parlamentar__lista">
         <div>

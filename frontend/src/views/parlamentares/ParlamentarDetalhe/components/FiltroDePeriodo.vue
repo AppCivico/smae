@@ -64,8 +64,9 @@ const filtrar = handleSubmit((valores) => {
           class="filtro-de-periodo__seletor"
         >
           <option value="">
-            Começo
+            -
           </option>
+
           <option
             v-for="ano in anos"
             :key="ano"
@@ -91,8 +92,9 @@ const filtrar = handleSubmit((valores) => {
           class="filtro-de-periodo__seletor"
         >
           <option value="">
-            Fim
+            -
           </option>
+
           <option
             v-for="ano in anos"
             :key="ano"
