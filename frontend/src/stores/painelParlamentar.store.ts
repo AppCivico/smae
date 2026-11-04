@@ -79,8 +79,6 @@ export const usePainelParlamentarStore = defineStore('painelParlamentar', {
           params,
         ) as PaginatedWithPagesDto<PainelParlamentarTransferenciaDto>;
 
-        console.log(linhas);
-
         this.transferencias = linhas;
         this.paginacao = {
           tokenPaginacao,
