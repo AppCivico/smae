@@ -196,6 +196,8 @@ function excluir(item) {
 
 // a mesma instância é reaproveitada ao trocar de transferência pela rota
 watch(() => route.params.transferenciaId, () => {
+  // o órgão e a unidade da transferência anterior podem não existir nesta
+  prefixoDaDotacao.value = '';
   iniciar();
 }, { immediate: true });
 
