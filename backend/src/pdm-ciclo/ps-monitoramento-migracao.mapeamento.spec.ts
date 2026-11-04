@@ -16,6 +16,7 @@ const bloco = (id: number, ordem: number, rotulo: string, extra: Partial<BlocoCf
     id,
     ordem,
     rotulo,
+    habilitado: true,
     criado_em: T0,
     atualizado_por: null,
     removido_em: null,
@@ -34,6 +35,7 @@ const fase = (
     rotulo,
     habilitada: true,
     aceita_tags: false,
+    aceita_anexos: true,
     criado_em: T0,
     criado_por: -1,
     removido_em: null,
@@ -146,6 +148,37 @@ describe('sugereMapeamento', () => {
             'Nenhuma fase corresponde a "Análise de risco"; o conteúdo vai para "Monitoramento"',
             'Nenhuma fase corresponde a "Fechamento"; o conteúdo vai para "Relatório"',
             'Nenhum bloco corresponde a "Comentário"; o conteúdo vai para "Status Relatório"',
+        ]);
+    });
+
+    it('fallback da qualificação prefere fase que aceita anexos e pula blocos desabilitados', () => {
+        const fases = [
+            fase(80, 1, 'Resumo', [bloco(80, 1, 'Texto')], { criado_por: 5, aceita_anexos: false }),
+            fase(
+                81,
+                2,
+                'Evidências',
+                [bloco(81, 1, 'Oculto', { habilitado: false, atualizado_por: 5 }), bloco(82, 2, 'Notas')],
+                {
+                    criado_por: 5,
+                }
+            ),
+            fase(82, 3, 'Encerramento', [bloco(83, 1, 'Parecer')], { criado_por: 5, aceita_anexos: false }),
+        ];
+        const { mapeamento, avisos } = sugereMapeamento(fases);
+        expect(mapeamento.qualificacao_fase_id).toBe(81);
+        expect(mapeamento.informacoes_complementares_bloco_id).toBe(82);
+        expect(mapeamento.risco_fase_id).toBe(80);
+        expect(mapeamento.fechamento_fase_id).toBe(82);
+        expect(avisos.some((a) => a.includes('não aceita anexos'))).toBe(false);
+    });
+
+    it('avisa quando a fase da qualificação não aceita anexos', () => {
+        const fases = backfill();
+        fases[0].aceita_anexos = false;
+        const { avisos } = sugereMapeamento(fases);
+        expect(avisos).toEqual([
+            'A fase "Qualificação" não aceita anexos; os documentos da qualificação não serão exibidos',
         ]);
     });
 

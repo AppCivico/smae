@@ -6,6 +6,7 @@ export type BlocoCfgMigracao = {
     id: number;
     ordem: number;
     rotulo: string;
+    habilitado: boolean;
     criado_em: Date;
     atualizado_por: number | null;
     removido_em: Date | null;
@@ -17,6 +18,7 @@ export type FaseCfgMigracao = {
     rotulo: string;
     habilitada: boolean;
     aceita_tags: boolean;
+    aceita_anexos: boolean;
     criado_em: Date;
     criado_por: number;
     removido_em: Date | null;
@@ -113,7 +115,13 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
         .sort(porOrdem);
     for (const papel of PAPEIS) {
         if (mapeamento[papel.fase] !== null) continue;
-        const fase = papel.fase === 'fechamento_fase_id' ? livres.pop() : livres.shift();
+        let idx = papel.fase === 'fechamento_fase_id' ? livres.length - 1 : 0;
+        if (papel.fase === 'qualificacao_fase_id')
+            idx = Math.max(
+                0,
+                livres.findIndex((f) => f.aceita_anexos)
+            );
+        const [fase] = livres.splice(idx, 1);
         if (!fase) continue;
         avisos.push(
             `Nenhuma fase corresponde a "${MONITORAMENTO_CONFIG_DEFAULTS[papel.posicao].rotulo}"; o conteúdo vai para "${fase.rotulo}"`
@@ -125,7 +133,9 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
         const fase = fases.find((f) => f.id === mapeamento[papel.fase]);
         if (!fase) continue;
         const ocupados = new Set(papel.blocos.map((chave) => mapeamento[chave]));
-        const blocosLivres = fase.blocos.filter((b) => !b.removido_em && !ocupados.has(b.id)).sort(porOrdem);
+        const blocosLivres = fase.blocos
+            .filter((b) => !b.removido_em && b.habilitado && !ocupados.has(b.id))
+            .sort(porOrdem);
         papel.blocos.forEach((chave, idx) => {
             if (mapeamento[chave] !== null) return;
             const bloco = blocosLivres.shift();
@@ -144,6 +154,8 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
         mapeamento[papel.fase] = fase.id;
         if (fase.removido_em || !fase.habilitada)
             avisos.push(`O conteúdo de "${padrao.rotulo}" vai para a fase "${fase.rotulo}", que não é exibida`);
+        if (papel.fase === 'qualificacao_fase_id' && !fase.aceita_anexos)
+            avisos.push(`A fase "${fase.rotulo}" não aceita anexos; os documentos da qualificação não serão exibidos`);
 
         const blocos = sugereBlocos(fase, padrao.blocos);
         papel.blocos.forEach((chave, idx) => {
@@ -152,6 +164,10 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
             if (bloco?.removido_em)
                 avisos.push(
                     `O conteúdo de "${padrao.blocos[idx].rotulo}" vai para o bloco "${bloco.rotulo}", que foi removido`
+                );
+            else if (bloco && !bloco.habilitado)
+                avisos.push(
+                    `O conteúdo de "${padrao.blocos[idx].rotulo}" vai para o bloco "${bloco.rotulo}", que está desabilitado`
                 );
         });
     }
