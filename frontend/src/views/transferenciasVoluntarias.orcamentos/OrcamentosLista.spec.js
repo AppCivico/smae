@@ -397,6 +397,28 @@ describe('OrcamentosLista de transferências', () => {
       expect(totais).not.toContain('1.000');
     });
 
+    it('limpa o prefixo ao trocar de transferência', async () => {
+      const wrapper = montarComTresDotacoes();
+      await flushPromises();
+      await wrapper.findComponent(FiltroPorOrgaoEUnidade).vm.$emit('update:modelValue', '84.22');
+
+      expect(linhasDeRegistro(wrapper)).toHaveLength(1);
+
+      // nenhuma dotação da nova transferência começa por 84.22
+      const orcamentosStore = useOrcamentosStore();
+      orcamentosStore.buscarTodosOsOrcamentosRealizados.mockImplementation(async () => {
+        orcamentosStore.OrcamentoRealizado = {
+          [anoCorrente - 1]: [registros[0]],
+          [anoCorrente]: [registros[1]],
+        };
+      });
+      mockCurrentRoute.params.transferenciaId = 317;
+      await flushPromises();
+
+      expect(linhasDeRegistro(wrapper)).toHaveLength(2);
+      expect(wrapper.findComponent(FiltroPorOrgaoEUnidade).props('modelValue')).toBe('');
+    });
+
     it('não aparece com um único registro', async () => {
       const wrapper = montar({ porAno: { [anoCorrente]: [registros[1]] } });
       await flushPromises();
