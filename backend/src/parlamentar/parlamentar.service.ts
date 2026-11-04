@@ -226,7 +226,7 @@ export class ParlamentarService {
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<ParlamentarDetailDto> {
-        const parlamentar = await this.prisma.parlamentar.findUniqueOrThrow({
+        const parlamentar = await this.prisma.parlamentar.findFirst({
             where: {
                 id: id,
                 removido_em: null,
@@ -353,6 +353,8 @@ export class ParlamentarService {
                 },
             },
         });
+        if (!parlamentar) throw new HttpException('Parlamentar não encontrado', 400);
+
         const comparecimentos = await this.prisma.eleicaoComparecimento.findMany({
             where: {
                 eleicao_id: {
