@@ -7,8 +7,14 @@ export class TransferenciaOrcamentoRealizadoDistribuicao {
     objeto: string;
 }
 
+export class TransferenciaOrcamentoRealizadoTransferencia {
+    id: number;
+    identificador: string;
+}
+
 export class TransferenciaOrcamentoRealizado extends OmitType(OrcamentoRealizado, ['meta', 'iniciativa', 'atividade']) {
     transferencia_id: number;
+    transferencia: TransferenciaOrcamentoRealizadoTransferencia;
     distribuicao_recurso: TransferenciaOrcamentoRealizadoDistribuicao | null;
     possui_vinculos: boolean;
 }

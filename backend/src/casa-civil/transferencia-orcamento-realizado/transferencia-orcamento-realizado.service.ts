@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { Decimal } from 'decimal.js';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateOrcamentoRealizadoItemDto } from '../../orcamento-realizado/dto/create-orcamento-realizado.dto';
 import {
@@ -21,6 +22,7 @@ import { TransferenciaService } from '../transferencia/transferencia.service';
 import { VinculoService } from '../vinculo/vinculo.service';
 import {
     CreateTransferenciaOrcamentoRealizadoDto,
+    FilterTransferenciaOrcamentoRealizadoCompartilhadoDto,
     UpdateTransferenciaOrcamentoRealizadoDto,
 } from './dto/transferencia-orcamento-realizado.dto';
 import { TransferenciaOrcamentoRealizado } from './entities/transferencia-orcamento-realizado.entity';
@@ -34,12 +36,15 @@ type ValorSof = {
 const chaveTexto = (c: ChaveRealizadoTransferencia) =>
     [c.ano_referencia, c.dotacao, c.processo ?? '', c.nota_empenho ?? ''].join('|');
 
+const CONFIG_LIBERAR_EMPENHO_MAIOR_QUE_SOF = 'TRANSFERENCIA_LIBERAR_EMPENHO_MAIOR_QUE_SOF';
+
 @Injectable()
 export class TransferenciaOrcamentoRealizadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
         private readonly transferenciaService: TransferenciaService,
+        private readonly smaeConfigService: SmaeConfigService,
         @Inject(forwardRef(() => VinculoService))
         private readonly vinculoService: VinculoService
     ) {}
@@ -80,21 +85,6 @@ export class TransferenciaOrcamentoRealizadoService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const sof = await this.buscaSof(prismaTxn, chave);
                 const somas = this.calculaSomas(dto.itens, sof);
-
-                const outraTransferencia = await prismaTxn.orcamentoRealizado.findFirst({
-                    where: {
-                        transferencia_id: { not: transferenciaId },
-                        transferencia: { removido_em: null },
-                        removido_em: null,
-                        ano_referencia: chave.ano_referencia,
-                        dotacao: chave.dotacao,
-                    },
-                    select: { transferencia: { select: { identificador: true } } },
-                });
-                if (outraTransferencia)
-                    throw new BadRequestException(
-                        `Dotação já está vinculada a outra transferência (${outraTransferencia.transferencia!.identificador}).`
-                    );
 
                 const countExisting = await prismaTxn.orcamentoRealizado.count({
                     where: {
@@ -184,11 +174,48 @@ export class TransferenciaOrcamentoRealizadoService {
     }
 
     async findAll(transferenciaId: number, user: PessoaFromJwt): Promise<TransferenciaOrcamentoRealizado[]> {
+        return this.listaLinhas({ transferencia_id: transferenciaId, removido_em: null }, user);
+    }
+
+    // sem permissionSet nas outras transferências: o aviso precisa enxergar todos os usos da dotação
+    async findCompartilhados(
+        filters: FilterTransferenciaOrcamentoRealizadoCompartilhadoDto,
+        user: PessoaFromJwt
+    ): Promise<TransferenciaOrcamentoRealizado[]> {
+        let nota_empenho: string | null = null;
+        if (filters.nota_empenho) {
+            nota_empenho = filters.nota_empenho.includes('/')
+                ? filters.nota_empenho
+                : `${filters.nota_empenho}/${filters.ano_referencia}`;
+            nota_empenho = FormataNotaEmpenho(nota_empenho);
+        }
+        const processo = filters.processo ? filters.processo.replace(/[^0-9]/g, '') : null;
+
+        return this.listaLinhas(
+            {
+                transferencia_id: { not: null },
+                transferencia: { removido_em: null },
+                removido_em: null,
+                ano_referencia: filters.ano_referencia,
+                dotacao: TrataDotacaoGrande(filters.dotacao),
+                processo: processo || null,
+                nota_empenho,
+                id: filters.not_id?.length ? { notIn: filters.not_id } : undefined,
+            },
+            user
+        );
+    }
+
+    private async listaLinhas(
+        where: Prisma.OrcamentoRealizadoWhereInput,
+        user: PessoaFromJwt
+    ): Promise<TransferenciaOrcamentoRealizado[]> {
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
-            where: { transferencia_id: transferenciaId, removido_em: null },
+            where,
             select: {
                 id: true,
                 transferencia_id: true,
+                transferencia: { select: { id: true, identificador: true } },
                 ano_referencia: true,
                 dotacao: true,
                 dotacao_complemento: true,
@@ -287,6 +314,7 @@ export class TransferenciaOrcamentoRealizadoService {
             return {
                 id: r.id,
                 transferencia_id: r.transferencia_id!,
+                transferencia: r.transferencia!,
                 ano_referencia: r.ano_referencia,
                 dotacao: r.dotacao,
                 dotacao_complemento: r.dotacao_complemento,
@@ -395,7 +423,11 @@ export class TransferenciaOrcamentoRealizadoService {
     ) {
         const soma = await SomaRealizadoTransferencias(prismaTxn, chave);
 
-        if (soma.soma_valor_empenho.greaterThan(sof.empenho_liquido)) throw new HttpException(FRASE_ERRO_EMPENHO, 400);
+        if (
+            soma.soma_valor_empenho.greaterThan(sof.empenho_liquido) &&
+            !(await this.smaeConfigService.getConfigBooleanWithDefault(CONFIG_LIBERAR_EMPENHO_MAIOR_QUE_SOF, false))
+        )
+            throw new HttpException(FRASE_ERRO_EMPENHO, 400);
 
         if (!LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF && soma.soma_valor_liquidado.greaterThan(sof.valor_liquidado))
             throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
