@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -7,6 +7,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import {
     CreateTransferenciaOrcamentoRealizadoDto,
+    FilterTransferenciaOrcamentoRealizadoCompartilhadoDto,
     ListTransferenciaOrcamentoRealizadoDto,
     UpdateTransferenciaOrcamentoRealizadoDto,
 } from './dto/transferencia-orcamento-realizado.dto';
@@ -38,6 +39,18 @@ export class TransferenciaOrcamentoRealizadoController {
     ): Promise<ListTransferenciaOrcamentoRealizadoDto> {
         const transferencia = await this.service.buscaTransferencia(params.id, user);
         return { linhas: await this.service.findAll(transferencia.id, user) };
+    }
+
+    @Get(':id/orcamento-realizado/compartilhados')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.listar'])
+    async findCompartilhados(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterTransferenciaOrcamentoRealizadoCompartilhadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListTransferenciaOrcamentoRealizadoDto> {
+        await this.service.buscaTransferencia(params.id, user);
+        return { linhas: await this.service.findCompartilhados(filters, user) };
     }
 
     @Patch(':id/orcamento-realizado/:id2')
