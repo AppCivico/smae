@@ -191,6 +191,52 @@ describe('detalhes por tela', () => {
       .toHaveBeenCalledWith(expect.anything(), 2023, { transferencia_id: 320 }));
   });
 
+  describe('AddRealizadoProcesso e a resposta do SOF depois da troca de ano', () => {
+    const dotacao = '16.10.12.361.3010.2.873.33903900.00';
+
+    async function validarEmAndamento() {
+      const wrapper = montar(AddRealizadoProcesso, { anoDeReferencia: 2024 });
+      const dotacaoStore = useDotaçãoStore();
+      let concluir;
+      dotacaoStore.getDotaçãoRealizadoProcesso
+        .mockImplementation(() => new Promise((resolve) => {
+          concluir = () => resolve([{ id: 1, dotacao, projeto_atividade: 'Reforma' }]);
+        }));
+
+      await wrapper.find('input[name="processo"]').setValue('6016.2024/0000001-1');
+      await wrapper.find('form button[type="button"]').trigger('click');
+      await vi.waitFor(() => expect(dotacaoStore.getDotaçãoRealizadoProcesso).toHaveBeenCalled());
+
+      return { wrapper, dotacaoStore, concluir: () => concluir() };
+    }
+
+    it('consulta o SOF com o ano do início da consulta', async () => {
+      const { dotacaoStore } = await validarEmAndamento();
+
+      expect(dotacaoStore.getDotaçãoRealizadoProcesso)
+        .toHaveBeenCalledWith(expect.anything(), 2024, expect.anything());
+    });
+
+    it('sem troca de ano, exibe as dotações do processo', async () => {
+      const { wrapper, concluir } = await validarEmAndamento();
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.text()).toContain(dotacao);
+    });
+
+    it('descarta as dotações que chegam depois da troca de ano', async () => {
+      const { wrapper, concluir } = await validarEmAndamento();
+
+      await wrapper.setProps({ anoDeReferencia: 2023 });
+      concluir();
+      await flushPromises();
+
+      expect(wrapper.text()).not.toContain(dotacao);
+      expect(wrapper.text()).not.toContain('Aguardando resposta do SOF');
+    });
+  });
+
   it('AddRealizadoNota acompanha o ano da nota com o ano escolhido', async () => {
     const wrapper = montar(AddRealizadoNota, { anoDeReferencia: 2024 });
 

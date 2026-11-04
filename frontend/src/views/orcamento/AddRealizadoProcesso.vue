@@ -153,18 +153,25 @@ function maskProcesso(el) {
 
 async function validarProcesso() {
   validando.value = true;
+
+  // se o ano mudar durante a consulta, a resposta do ano anterior é
+  // descartada; o watcher de `ano` já terá limpado `respostasof`
+  const anoDaConsulta = ano.value;
+  const anoMudou = () => anoDaConsulta !== ano.value;
+
   try {
     respostasof.value = { loading: true };
     const { valid } = await validateField('processo');
-    if (valid) {
+    if (valid && !anoMudou()) {
       const r = await DotaçãoStore
-        .getDotaçãoRealizadoProcesso(dota.value, ano.value, props.parametrosParaValidacao);
-      respostasof.value = r;
-    } else {
+        .getDotaçãoRealizadoProcesso(dota.value, anoDaConsulta, props.parametrosParaValidacao);
+
+      if (!anoMudou()) respostasof.value = r;
+    } else if (!valid) {
       respostasof.value = {};
     }
   } catch (error) {
-    respostasof.value = error;
+    if (!anoMudou()) respostasof.value = error;
   } finally {
     validando.value = false;
   }
