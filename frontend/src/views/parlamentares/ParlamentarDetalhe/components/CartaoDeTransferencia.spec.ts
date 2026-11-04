@@ -10,7 +10,8 @@ const transferencia = {
   objeto: 'Computadores para creches',
   valor_repasse: 1000000,
   valor_distribuido: 750000,
-  valor_parlamentar: 300000,
+  valor_parlamentar: 900000,
+  valor_parlamentar_distribuido: 300000,
   distribuicoes: [
     {
       id: 70,
@@ -89,6 +90,20 @@ describe('CartaoDeTransferencia', () => {
     expect(rodape).toContain('300.000,00');
     expect(rodape).toContain('valor da distribuição');
     expect(rodape).toContain('valor do parlamentar');
+  });
+
+  it('totaliza no rodapé o valor do parlamentar nas distribuições, e não o da emenda', () => {
+    const rodape = montar().find('tfoot').text();
+
+    expect(rodape).toContain('300.000,00');
+    expect(rodape).not.toContain('900.000,00');
+  });
+
+  it('mantém o valor da emenda visível no cabeçalho do cartão', () => {
+    const cabecalho = montar().find('header').text();
+
+    expect(cabecalho).toContain('Valor da emenda');
+    expect(cabecalho).toContain('900.000,00');
   });
 
   it('usa travessão quando a distribuição não tem situação', () => {

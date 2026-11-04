@@ -12,13 +12,14 @@ const percentualLimitado = computed(() => Math.min(Math.max(props.percentual, 0)
 
 const largura = computed(() => `${percentualLimitado.value}%`);
 
-const textoDoValor = computed(() => {
-  const percentual = `${dinheiro(props.percentual, { semDecimais: true })}%`;
+const percentualFormatado = computed(() => `${dinheiro(props.percentual, {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})}%`);
 
-  return props.rotulo
-    ? `${percentual} (${props.rotulo})`
-    : percentual;
-});
+const textoDoValor = computed(() => (props.rotulo
+  ? `${percentualFormatado.value} (${props.rotulo})`
+  : percentualFormatado.value));
 </script>
 
 <template>
@@ -32,6 +33,8 @@ const textoDoValor = computed(() => {
   >
     <span class="barra-de-percentual__trilho">
       <span
+        v-if="percentualLimitado > 0"
+        data-test="preenchimento"
         class="barra-de-percentual__preenchimento"
         :style="{ width: largura }"
       />
@@ -45,7 +48,7 @@ const textoDoValor = computed(() => {
     </span>
 
     <strong class="barra-de-percentual__valor">
-      {{ dinheiro(percentual, { semDecimais: true }) }}%
+      {{ percentualFormatado }}
     </strong>
   </div>
 </template>

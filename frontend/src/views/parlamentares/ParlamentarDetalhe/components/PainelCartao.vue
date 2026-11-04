@@ -2,7 +2,6 @@
 defineProps<{
   titulo: string;
   rodape?: string;
-  semFundo?: boolean;
 }>();
 </script>
 
@@ -35,6 +34,8 @@ defineProps<{
   flex-direction: column;
   padding: 1.2rem 2.3rem 1.4rem;
   border-radius: 0.9rem;
+  background-color: @branco;
+  box-shadow: 0 0.7rem 1.4rem 0 fade(@primary, 10%);
 }
 
 .painel-cartao__cabecalho {

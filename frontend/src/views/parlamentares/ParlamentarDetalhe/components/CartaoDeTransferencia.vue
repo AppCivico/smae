@@ -85,6 +85,13 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 
       <dl class="cartao-de-transferencia__valor">
         <dt class="cartao-de-transferencia__rotulo">
+          Valor da emenda
+        </dt>
+        <dd>{{ moeda(transferencia.valor_parlamentar) }}</dd>
+      </dl>
+
+      <dl class="cartao-de-transferencia__valor">
+        <dt class="cartao-de-transferencia__rotulo">
           Valor distribuído
         </dt>
         <dd>{{ moeda(transferencia.valor_distribuido) }}</dd>
@@ -140,7 +147,7 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
         <tr>
           <td colspan="3" />
           <td>{{ moeda(transferencia.valor_distribuido) }}</td>
-          <td>{{ moeda(transferencia.valor_parlamentar) }}</td>
+          <td>{{ moeda(transferencia.valor_parlamentar_distribuido) }}</td>
           <td>
             <span class="cartao-de-transferencia__legenda">
               <span class="cartao-de-transferencia__legenda-item">
@@ -240,7 +247,7 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
     border-bottom: 0.1rem solid @c100;
     // `.tablemain th` aplica `.tc300`, que usa !important
     color: @primary !important;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     font-weight: 700;
     line-height: 1.2;
     text-transform: uppercase;

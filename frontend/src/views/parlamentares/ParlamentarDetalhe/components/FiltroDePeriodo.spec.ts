@@ -55,6 +55,16 @@ describe('FiltroDePeriodo', () => {
     expect(envelope.find('select#ano_fim').exists()).toBe(true);
   });
 
+  it('deixa em branco a opção de período não informado', () => {
+    const envelope = montar();
+
+    ['ano_inicio', 'ano_fim'].forEach((campo) => {
+      const opcaoVazia = envelope.find(`select[name="${campo}"] option[value=""]`);
+
+      expect(opcaoVazia.text()).toBe('');
+    });
+  });
+
   it('emite o período escolhido ao filtrar', async () => {
     const envelope = montar();
 

@@ -4,7 +4,7 @@ import { computed } from 'vue';
 
 import dinheiro from '@/helpers/dinheiro';
 
-import corDoItem from './coresDoPainel';
+import { corDoPartido } from './coresDoPainel';
 
 const props = defineProps<{
   itens: PainelParlamentarPorPartidoDto[];
@@ -28,7 +28,7 @@ const fatias = computed(() => {
 
     const fatia = {
       ...item,
-      cor: corDoItem(indice, item.outros),
+      cor: corDoPartido(indice, item.outros),
       dasharray: `${Math.max(comprimento - ESPACAMENTO, 0)} ${CIRCUNFERENCIA}`,
       dashoffset: -deslocamento,
     };
@@ -70,10 +70,11 @@ const fatias = computed(() => {
         :key="fatia.partido?.id ?? 'outros'"
         class="grafico-por-partido__item"
       >
-        <strong
-          class="grafico-por-partido__valor"
-          :style="{ color: fatia.cor }"
-        >
+        <span
+          class="grafico-por-partido__marcador"
+          :style="{ backgroundColor: fatia.cor }"
+        />
+        <strong class="grafico-por-partido__valor">
           {{ dinheiro(fatia.valor) }}
         </strong>
         <span
@@ -112,9 +113,20 @@ const fatias = computed(() => {
 }
 
 .grafico-por-partido__item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  display: grid;
+  grid-template-columns: 0.9rem 1fr;
+  gap: 0.2rem 0.6rem;
+  align-items: center;
+}
+
+.grafico-por-partido__marcador {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+}
+
+.grafico-por-partido__rotulo {
+  grid-column: 2;
 }
 
 .grafico-por-partido__valor {
@@ -122,6 +134,7 @@ const fatias = computed(() => {
   font-size: 1.4rem;
   font-weight: 600;
   line-height: 1.1rem;
+  color: #233b5c;
 }
 
 .grafico-por-partido__rotulo {
