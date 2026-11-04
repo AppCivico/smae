@@ -434,6 +434,9 @@ export class TransferenciaOrcamentoRealizadoService {
     }
 
     private calculaSomas(itens: CreateOrcamentoRealizadoItemDto[], sof: ValorSof) {
+        if (new Set(itens.map((i) => i.mes)).size != itens.length)
+            throw new BadRequestException('Não é possível informar o mesmo mês mais de uma vez');
+
         const ultimo = [...itens].sort((a, b) => b.mes - a.mes)[0];
         let soma_valor_empenho = ultimo.valor_empenho;
         let soma_valor_liquidado = ultimo.valor_liquidado;

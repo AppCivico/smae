@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Expose } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsEnum, IsInt, IsOptional } from 'class-validator';
 
 export class CreateRelTransferenciasOrcamentoDto {
     @IsOptional()
@@ -13,19 +13,19 @@ export class CreateRelTransferenciasOrcamentoDto {
     esfera?: TransferenciaTipoEsfera;
 
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Expose()
     tipo_id?: number;
 
     /** ano de referência da execução orçamentária, inclusivo */
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Expose()
     ano_inicio?: number;
 
     /** ano de referência da execução orçamentária, inclusivo */
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Expose()
     ano_fim?: number;
 }
