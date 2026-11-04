@@ -50,6 +50,7 @@ export class TribunalDeContasService implements ReportableService, SchemaAwareRe
                 },
             },
             select: {
+                id: true,
                 valor: true,
                 objeto: true,
                 vigencia: true,
@@ -59,8 +60,6 @@ export class TribunalDeContasService implements ReportableService, SchemaAwareRe
                 },
                 rubrica_de_receita: true,
                 finalidade: true,
-                valor_empenho: true,
-                valor_liquidado: true,
                 transferencia: {
                     select: {
                         emenda: true,
@@ -110,6 +109,13 @@ export class TribunalDeContasService implements ReportableService, SchemaAwareRe
             },
         });
 
+        const somasExecucao = await this.prisma.orcamentoRealizado.groupBy({
+            by: ['distribuicao_recurso_id'],
+            where: { distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) }, removido_em: null },
+            _sum: { soma_valor_empenho: true, soma_valor_liquidado: true },
+        });
+        const execucaoPorDistribuicao = new Map(somasExecucao.map((r) => [r.distribuicao_recurso_id, r._sum]));
+
         const out: RelTribunalDeContasDto[] = distribuicoes
             .filter((distribuicao) => {
                 // Incluir: todas as linhas.
@@ -150,6 +156,7 @@ export class TribunalDeContasService implements ReportableService, SchemaAwareRe
                     }
                 });
                 const dotacaoStr = dotacoes.join(' | ');
+                const execucao = execucaoPorDistribuicao.get(distribuicao.id);
 
                 return {
                     ano: distribuicao.transferencia.ano,
@@ -175,8 +182,8 @@ export class TribunalDeContasService implements ReportableService, SchemaAwareRe
                     dotacao_orcamentaria: dotacaoStr ? dotacaoStr : null,
                     rubrica_de_receita: distribuicao.rubrica_de_receita ?? '',
                     finalidade: distribuicao.finalidade ?? '',
-                    valor_empenho: distribuicao.valor_empenho?.toString() ?? null,
-                    liquidacao_pagamento: distribuicao.valor_liquidado?.toString() ?? null,
+                    valor_empenho: execucao?.soma_valor_empenho?.toString() ?? null,
+                    liquidacao_pagamento: execucao?.soma_valor_liquidado?.toString() ?? null,
                 };
             });
 
