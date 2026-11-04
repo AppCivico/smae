@@ -165,21 +165,11 @@ describe('sugereMapeamento', () => {
             ),
             fase(82, 3, 'Encerramento', [bloco(83, 1, 'Parecer')], { criado_por: 5, aceita_anexos: false }),
         ];
-        const { mapeamento, avisos } = sugereMapeamento(fases);
+        const { mapeamento } = sugereMapeamento(fases);
         expect(mapeamento.qualificacao_fase_id).toBe(81);
         expect(mapeamento.informacoes_complementares_bloco_id).toBe(82);
         expect(mapeamento.risco_fase_id).toBe(80);
         expect(mapeamento.fechamento_fase_id).toBe(82);
-        expect(avisos.some((a) => a.includes('não aceita anexos'))).toBe(false);
-    });
-
-    it('avisa quando a fase da qualificação não aceita anexos', () => {
-        const fases = backfill();
-        fases[0].aceita_anexos = false;
-        const { avisos } = sugereMapeamento(fases);
-        expect(avisos).toEqual([
-            'A fase "Qualificação" não aceita anexos; os documentos da qualificação não serão exibidos',
-        ]);
     });
 
     it('blocos renomeados e editados caem nos blocos livres pela ordem (plano 32 da demo)', () => {

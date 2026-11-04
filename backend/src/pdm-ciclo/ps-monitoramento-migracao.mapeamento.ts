@@ -154,8 +154,6 @@ export function sugereMapeamento(fases: FaseCfgMigracao[]): { mapeamento: Mapeam
         mapeamento[papel.fase] = fase.id;
         if (fase.removido_em || !fase.habilitada)
             avisos.push(`O conteúdo de "${padrao.rotulo}" vai para a fase "${fase.rotulo}", que não é exibida`);
-        if (papel.fase === 'qualificacao_fase_id' && !fase.aceita_anexos)
-            avisos.push(`A fase "${fase.rotulo}" não aceita anexos; os documentos da qualificação não serão exibidos`);
 
         const blocos = sugereBlocos(fase, padrao.blocos);
         papel.blocos.forEach((chave, idx) => {
