@@ -164,17 +164,24 @@ const listaDeTotais = computed(() => [
 const alemDoEmpenhado = (x) => Number(x.smae_soma_valor_empenho) > Number(x.empenho_liquido);
 const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.valor_liquidado);
 
+// só a busca mais recente controla o carregamento e o erro; uma anterior que
+// termine antes exibiria a lista velha durante a carga da nova transferência
+let buscaCorrente = 0;
+
 async function iniciar() {
+  buscaCorrente += 1;
+  const estaBusca = buscaCorrente;
+
   chamadasPendentes.value = true;
   erro.value = null;
 
   try {
     await orcamentosStore.buscarTodosOsOrcamentosRealizados();
   } catch (e) {
-    erro.value = e;
+    if (estaBusca === buscaCorrente) erro.value = e;
   }
 
-  chamadasPendentes.value = false;
+  if (estaBusca === buscaCorrente) chamadasPendentes.value = false;
 }
 
 function excluir(item) {

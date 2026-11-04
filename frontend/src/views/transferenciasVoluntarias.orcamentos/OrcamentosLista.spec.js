@@ -154,6 +154,63 @@ describe('OrcamentosLista de transferências', () => {
     expect(wrapper.find('[data-test="editar-5"]').exists()).toBe(true);
   });
 
+  describe('com a busca da transferência anterior ainda pendente', () => {
+    async function trocarComBuscasPendentes() {
+      const wrapper = montar();
+      await flushPromises();
+      const orcamentosStore = useOrcamentosStore();
+      const pendentes = [];
+      orcamentosStore.buscarTodosOsOrcamentosRealizados
+        .mockImplementation(() => new Promise((resolve, reject) => {
+          pendentes.push({ resolve, reject });
+        }));
+
+      mockCurrentRoute.params.transferenciaId = 317;
+      await flushPromises();
+      mockCurrentRoute.params.transferenciaId = 318;
+      await flushPromises();
+
+      const [anterior, corrente] = pendentes;
+      return { wrapper, anterior, corrente };
+    }
+
+    const carregando = (wrapper) => wrapper.find('loading-component-stub').exists();
+
+    it('segue carregando quando a anterior termina primeiro', async () => {
+      const { wrapper, anterior, corrente } = await trocarComBuscasPendentes();
+
+      anterior.resolve();
+      await flushPromises();
+
+      expect(carregando(wrapper)).toBe(true);
+
+      corrente.resolve();
+      await flushPromises();
+
+      expect(carregando(wrapper)).toBe(false);
+    });
+
+    it('não exibe o erro da anterior', async () => {
+      const { wrapper, anterior, corrente } = await trocarComBuscasPendentes();
+
+      anterior.reject(new Error('500'));
+      corrente.resolve();
+      await flushPromises();
+
+      expect(wrapper.find('error-component-stub').exists()).toBe(false);
+    });
+
+    it('exibe o erro da corrente', async () => {
+      const { wrapper, anterior, corrente } = await trocarComBuscasPendentes();
+
+      anterior.resolve();
+      corrente.reject(new Error('500'));
+      await flushPromises();
+
+      expect(wrapper.find('error-component-stub').exists()).toBe(true);
+    });
+  });
+
   it('lista registros de todos os anos, do mais recente ao mais antigo', async () => {
     const wrapper = montar({
       porAno: {

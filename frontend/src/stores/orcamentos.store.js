@@ -5,6 +5,10 @@ import toFloat from '@/helpers/toFloat';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+// cada busca de todos os realizados invalida as anteriores, para que a
+// resposta atrasada de outra transferência não sobrescreva a corrente
+let buscaDeRealizadosCorrente = 0;
+
 function caminhoParaApi(parametrosDeModulo = this.route.params) {
   switch (true) {
     // precisa vir antes de metas porque planos setoriais também as têm
@@ -285,10 +289,18 @@ export const useOrcamentosStore = defineStore('Orcamentos', {
       parametrosDeModulo = this.route.params,
       extraParams = {},
     ) {
+      buscaDeRealizadosCorrente += 1;
+      const estaBusca = buscaDeRealizadosCorrente;
+
       const r = await this.requestS.get(
         `${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado`,
         extraParams,
       );
+
+      if (estaBusca !== buscaDeRealizadosCorrente) {
+        return;
+      }
+
       const linhas = r.linhas ? r.linhas : r;
       const porAno = {};
 
