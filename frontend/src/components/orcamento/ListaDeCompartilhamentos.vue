@@ -22,12 +22,13 @@ const planosSetoriaisStore = usePlanosSetoriaisStore(rotaCorrente.meta.entidadeM
 const { emFoco: programaOuPlanoEmFoco } = storeToRefs(planosSetoriaisStore);
 
 const props = defineProps({
+  // dispensável em transferências, que buscam fora de qualquer PdM
   pdm: {
     type: [
       Number,
       String,
     ],
-    required: true,
+    default: 0,
   },
   idDoItem: {
     type: [
@@ -74,6 +75,18 @@ const lista = computed(() => compartilhamentos.value
     let rota = '';
 
     switch (true) {
+      // sem `distribuicao_recurso`, o registro é da transferência em si
+      case !!x.transferencia_id:
+        prefixo = x.distribuicao_recurso ? 'distribuição' : 'transferência';
+        código = x.transferencia?.identificador || x.transferencia_id;
+        título = x.distribuicao_recurso?.nome || x.distribuicao_recurso?.objeto || '';
+        rota = {
+          name: 'TransferenciaOrcamentoRealizado',
+          params: {
+            transferenciaId: x.transferencia_id,
+          },
+        };
+        break;
       case !!x.atividade:
         prefixo = programaOuPlanoEmFoco.value?.rotulo_atividade || 'atividade';
         código = x.atividade.codigo;
@@ -126,21 +139,22 @@ const lista = computed(() => compartilhamentos.value
   }));
 
 async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
+  const ehTransferencia = rotaCorrente.meta.entidadeMãe === 'TransferenciasVoluntarias';
   let params = {};
 
   switch (true) {
-    case !pdm:
+    case !pdm && !ehTransferencia:
     case !ano:
     case !dotação:
-      compartilhamentos.value = [];
-      return;
-
-    case !patterns.dotação.test(dotação) && !patterns.dotaçãoComComplemento.test(dotação):
+    case !patterns.dotação.test(dotação)
+      && !patterns.dotaçãoComComplemento.test(dotação):
       compartilhamentos.value = [];
       return;
 
     default:
-      params = { pdm_id: pdm, ano_referencia: ano, dotacao: dotação };
+      params = ehTransferencia
+        ? { ano_referencia: ano, dotacao: dotação }
+        : { pdm_id: pdm, ano_referencia: ano, dotacao: dotação };
       break;
   }
 
@@ -168,6 +182,10 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
       case 'planoSetorial':
       case 'programaDeMetas':
         caminhoNaApi = `${baseUrl}/plano-setorial-orcamento-realizado/compartilhados-no-pdm`;
+        break;
+
+      case 'TransferenciasVoluntarias':
+        caminhoNaApi = `${baseUrl}/transferencia/${rotaCorrente.params.transferenciaId}/orcamento-realizado/compartilhados`;
         break;
       default:
         console.trace('Caminho para orçamentos não pôde ser identificado.');
@@ -329,7 +347,9 @@ watch(props, (novosValores) => {
                 :to="item.rota"
                 exibir-desabilitado
               >
-                {{ item.prefixo }} - {{ item.código }} - {{ truncate(item.título, 36) }}
+                {{ item.prefixo }} - {{ item.código }}{{
+                  item.título ? ` - ${truncate(item.título, 36)}` : ''
+                }}
               </SmaeLink>
             </th>
             <td class="cell--number">

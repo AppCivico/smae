@@ -200,7 +200,7 @@ export default {
         type="hidden"
       />
 
-<pre v-ScrollLockDebug>
+      <pre v-ScrollLockDebug>
 respostasof: {{ respostasof }}
 complemento: {{ complemento }}
 dotação: {{ dotação }}
@@ -226,6 +226,15 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
         :dotação="dotação"
         class="mb1"
         :id-do-item="$route.params.meta_id"
+      />
+      <ListaDeCompartilhamentos
+        v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'
+          && Object.keys(respostasof).length
+          && !respostasof.error
+          && !respostasof.loading"
+        :ano="ano"
+        :dotação="dotação"
+        class="mb1"
       />
 
       <div

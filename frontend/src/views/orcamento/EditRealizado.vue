@@ -533,6 +533,15 @@ export default {
         :nota-empenho="emFoco.nota_empenho"
         class="mb1"
       />
+      <ListaDeCompartilhamentos
+        v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias' && emFoco.dotacao"
+        :ano="ano"
+        :id-do-item="id"
+        :dotação="emFoco.dotacao"
+        :processo="emFoco.processo"
+        :nota-empenho="emFoco.nota_empenho"
+        class="mb1"
+      />
 
       <table
         v-if="respostasof.projeto_atividade != undefined"

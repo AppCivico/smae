@@ -315,6 +315,14 @@ watch(ano, () => {
         :id-do-item="$route.params.meta_id"
         class="mb1"
       />
+      <ListaDeCompartilhamentos
+        v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'
+          && respostasof.length && values.dotacao"
+        :ano="ano"
+        :dotação="values.dotacao"
+        :processo="values.processo"
+        class="mb1"
+      />
 
       <template v-if="respostasof.length && values.dotacao">
         <div v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
