@@ -27,7 +27,10 @@ export default {
         ? `Execução orçamentária da transferência ${emFoco.identificador}`
         : 'Execução orçamentária';
     },
-    limitarÀsPermissões: 'CadastroTransferencia.listar',
+    limitarÀsPermissões: [
+      'CadastroTransferenciaOrcamento.listar',
+      'CadastroTransferenciaOrcamento.editar',
+    ],
   },
 
   children: [
@@ -62,7 +65,9 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'TransferenciaOrcamentoRealizado',
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: [
+          'CadastroTransferenciaOrcamento.editar',
+        ],
         rotasParaMigalhasDePão: rotasParaMigalhasDePao,
       },
     },
@@ -73,7 +78,9 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'TransferenciaOrcamentoRealizado',
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: [
+          'CadastroTransferenciaOrcamento.editar',
+        ],
         rotasParaMigalhasDePão: rotasParaMigalhasDePao,
       },
     },
@@ -84,7 +91,9 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'TransferenciaOrcamentoRealizado',
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: [
+          'CadastroTransferenciaOrcamento.editar',
+        ],
         rotasParaMigalhasDePão: rotasParaMigalhasDePao,
       },
     },
@@ -95,7 +104,9 @@ export default {
       meta: {
         títuloParaMenu: '',
         rotaDeEscape: 'TransferenciaOrcamentoRealizado',
-        limitarÀsPermissões: 'CadastroTransferencia.editar',
+        limitarÀsPermissões: [
+          'CadastroTransferenciaOrcamento.editar',
+        ],
         rotasParaMigalhasDePão: rotasParaMigalhasDePao,
       },
     },
