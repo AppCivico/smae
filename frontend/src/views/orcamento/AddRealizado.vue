@@ -65,6 +65,11 @@ const dotaçãoComComplemento = ref('');
 const respostasof = ref({});
 const complemento = ref('');
 
+// o SOF já respondeu, sem erro, à consulta da dotação
+const dotacaoValidada = computed(() => Object.keys(respostasof.value).length > 0
+  && !respostasof.value.error
+  && !respostasof.value.loading);
+
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
@@ -218,9 +223,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
 
       <ListaDeCompartilhamentos
         v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
-          && Object.keys(respostasof).length
-          && !respostasof.error
-          && !respostasof.loading"
+          && dotacaoValidada"
         :ano="ano"
         :pdm="activePdm.id"
         :dotação="dotação"
@@ -228,10 +231,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
         :id-do-item="$route.params.meta_id"
       />
       <ListaDeCompartilhamentos
-        v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias'
-          && Object.keys(respostasof).length
-          && !respostasof.error
-          && !respostasof.loading"
+        v-else-if="$route.meta.entidadeMãe === 'TransferenciasVoluntarias' && dotacaoValidada"
         :ano="ano"
         :dotação="dotação"
         class="mb1"
@@ -239,9 +239,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
 
       <div
         v-if="['pdm', 'planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
-          && Object.keys(respostasof).length
-          && !respostasof.error
-          && !respostasof.loading"
+          && dotacaoValidada"
       >
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
@@ -313,10 +311,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
       </div>
 
       <CampoDeDistribuicaoDeRecurso
-        v-if="distribuicoesDeRecursos
-          && Object.keys(respostasof).length
-          && !respostasof.error
-          && !respostasof.loading"
+        v-if="distribuicoesDeRecursos && dotacaoValidada"
         :distribuicoes="distribuicoesDeRecursos"
       />
 
@@ -325,7 +320,7 @@ dotaçãoComComplemento: {{ dotaçãoComComplemento }}
         name="itens"
       >
         <ItensRealizado
-          v-if="Object.keys(respostasof).length && !respostasof.error && !respostasof.loading"
+          v-if="dotacaoValidada"
           v-model="field.value"
           :respostasof="respostasof"
           name="itens"
