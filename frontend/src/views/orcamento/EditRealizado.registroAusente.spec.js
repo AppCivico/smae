@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import {
   afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
+import { reactive } from 'vue';
 
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
@@ -110,6 +111,58 @@ describe('EditRealizado sem o registro', () => {
 
     expect(replace).not.toHaveBeenCalled();
     expect(useAlertStore().error).not.toHaveBeenCalled();
+  });
+
+  describe('reaproveitada para outro registro pela rota', () => {
+    const dotacao = '16.10.12.361.3010.2.873.33903900.00';
+    const doAno = {
+      2024: [
+        { id: 1, ano_referencia: 2024, dotacao },
+        { id: 2, ano_referencia: 2024, dotacao },
+      ],
+    };
+
+    beforeEach(() => {
+      // a rota reativa permite que a troca de parâmetro dispare o watcher
+      mockCurrentRoute = reactive({ ...mockCurrentRoute, params: { transferenciaId: 317, id: '1' } });
+    });
+
+    it('carrega o novo registro', async () => {
+      montar(doAno);
+      await flushPromises();
+      const orcamentosStore = useOrcamentosStore();
+
+      expect(orcamentosStore.emFoco.id).toBe(1);
+
+      mockCurrentRoute.params.id = '2';
+      await flushPromises();
+
+      expect(orcamentosStore.buscarTodosOsOrcamentosRealizados).toHaveBeenCalledTimes(2);
+      expect(orcamentosStore.emFoco.id).toBe(2);
+      expect(replace).not.toHaveBeenCalled();
+    });
+
+    it('não sai da tela quando a carga do registro anterior falha depois', async () => {
+      let falharAnterior;
+      montar(doAno, (store) => {
+        store.buscarTodosOsOrcamentosRealizados
+          .mockImplementationOnce(() => new Promise((_, reject) => {
+            falharAnterior = () => reject(new Error('500'));
+          }));
+      });
+      const orcamentosStore = useOrcamentosStore();
+
+      mockCurrentRoute.params.id = '2';
+      await flushPromises();
+
+      expect(orcamentosStore.emFoco.id).toBe(2);
+
+      falharAnterior();
+      await flushPromises();
+
+      expect(replace).not.toHaveBeenCalled();
+      expect(orcamentosStore.emFoco.id).toBe(2);
+    });
   });
 
   it('associa o rótulo "Execução associada a" ao seu campo', async () => {
