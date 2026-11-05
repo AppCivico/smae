@@ -20,7 +20,7 @@ export class TransferenciaOrcamentoRealizadoController {
 
     @Post(':id/orcamento-realizado')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferenciaOrcamento.editar'])
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreateTransferenciaOrcamentoRealizadoDto,
@@ -32,7 +32,7 @@ export class TransferenciaOrcamentoRealizadoController {
 
     @Get(':id/orcamento-realizado')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroTransferenciaOrcamento.listar'])
     async findAll(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -43,7 +43,7 @@ export class TransferenciaOrcamentoRealizadoController {
 
     @Get(':id/orcamento-realizado/compartilhados')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.listar'])
+    @Roles(['CadastroTransferenciaOrcamento.listar'])
     async findCompartilhados(
         @Param() params: FindOneParams,
         @Query() filters: FilterTransferenciaOrcamentoRealizadoCompartilhadoDto,
@@ -55,7 +55,7 @@ export class TransferenciaOrcamentoRealizadoController {
 
     @Patch(':id/orcamento-realizado/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferenciaOrcamento.editar'])
     async update(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateTransferenciaOrcamentoRealizadoDto,
@@ -67,7 +67,7 @@ export class TransferenciaOrcamentoRealizadoController {
 
     @Delete(':id/orcamento-realizado/:id2')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTransferencia.editar'])
+    @Roles(['CadastroTransferenciaOrcamento.editar'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

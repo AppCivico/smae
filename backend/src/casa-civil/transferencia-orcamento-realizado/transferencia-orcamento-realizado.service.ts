@@ -303,7 +303,7 @@ export class TransferenciaOrcamentoRealizadoService {
             notasSof.map((r) => [[r.dotacao, r.dotacao_processo, r.dotacao_processo_nota].join('|'), r])
         );
 
-        const pode_editar = user.hasSomeRoles(['CadastroTransferencia.editar', 'CadastroTransferencia.administrador']);
+        const pode_editar = user.hasSomeRoles(['CadastroTransferenciaOrcamento.editar']);
 
         const rows: TransferenciaOrcamentoRealizado[] = queryRows.map((r) => {
             const smae = smaeSomaRef.get(chaveTexto(r));

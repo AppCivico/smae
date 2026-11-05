@@ -164,6 +164,8 @@ export type ListaDePrivilegios =
     | 'CadastroTransferenciaAnexo.editar'
     | 'CadastroTransferenciaAnexo.listar'
     | 'CadastroTransferenciaAnexo.remover'
+    | 'CadastroTransferenciaOrcamento.listar'
+    | 'CadastroTransferenciaOrcamento.editar'
     | 'CadastroWorkflows.inserir'
     | 'CadastroWorkflows.listar'
     | 'CadastroWorkflows.editar'

@@ -146,6 +146,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroAreaTematica: ['Área Temática', 'CasaCivil'],
     CadastroNota: ['Notas', 'SMAE'],
     CadastroTransferenciaAnexo: ['Anexos de Transferências', 'CasaCivil'],
+    CadastroTransferenciaOrcamento: ['Orçamento Realizado de Transferências', 'CasaCivil'],
 
     ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
@@ -566,6 +567,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferenciaAnexo.editar', 'Editar Anexo de Transferência'],
         ['CadastroTransferenciaAnexo.listar', 'Listar Anexos de Transferência'],
         ['CadastroTransferenciaAnexo.remover', 'Remover Anexo de Transferência'],
+    ],
+    CadastroTransferenciaOrcamento: [
+        ['CadastroTransferenciaOrcamento.listar', 'Listar Orçamento Realizado de Transferência'],
+        ['CadastroTransferenciaOrcamento.editar', 'Inserir, editar e remover Orçamento Realizado de Transferência'],
     ],
     CadastroDistribuicaoSolicitacaoAjuste: [
         [
@@ -1310,6 +1315,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferenciaAnexo.listar',
             'CadastroTransferenciaAnexo.remover',
 
+            'CadastroTransferenciaOrcamento.listar',
+            'CadastroTransferenciaOrcamento.editar',
+
             'SMAE.CadastroDistribuicaoSolicitacaoAjuste.listar',
             'CadastroDistribuicaoSolicitacaoAjuste.administrador',
 
@@ -1361,6 +1369,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroTransferencia.listar',
             'AndamentoWorkflow.listar',
             'CadastroCronogramaTransferencia.listar',
+
+            'CadastroTransferenciaOrcamento.listar',
+            'CadastroTransferenciaOrcamento.editar',
 
             'CadastroDistribuicaoStatus.inserir',
             'CadastroDistribuicaoStatus.editar',
