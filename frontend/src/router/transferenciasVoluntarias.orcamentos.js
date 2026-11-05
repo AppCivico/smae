@@ -20,9 +20,13 @@ export default {
   props: tiparPropsDeRota,
   meta: {
     // herdado pelas telas de inclusão e edição, que o exibem como subtítulo
-    título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
-      ? `Execução orçamentária da transferência ${useTransferenciasVoluntariasStore().emFoco.identificador}`
-      : 'Execução orçamentária'),
+    título: () => {
+      const { emFoco } = useTransferenciasVoluntariasStore();
+
+      return emFoco?.identificador
+        ? `Execução orçamentária da transferência ${emFoco.identificador}`
+        : 'Execução orçamentária';
+    },
     limitarÀsPermissões: 'CadastroTransferencia.listar',
   },
 
