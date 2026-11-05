@@ -227,6 +227,26 @@ describe('transferencia: busca por palavra-chave (tsvector)', () => {
         });
     });
 
+    describe('palavras acham por trecho do meio ou do fim', () => {
+        it('a partir de 3 letras, ignorando acento e caixa', async () => {
+            const p = palavra('xw'); // objeto tem a palavra "e<p>ção", ex.: "exwabcdefção"
+            const { id } = await criarComTexto({ objeto: `Escola e${p}ção` });
+
+            // trecho do meio (como "masp" em "emasp")
+            await acha(p, id);
+            await acha(p.slice(2, 6), id);
+            await acha(p.slice(3, 6).toUpperCase(), id);
+            // trecho do fim, com e sem acento
+            await acha(`${p.slice(4)}ção`, id);
+            await acha(`${p.slice(4)}CAO`, id);
+            // junto com outra palavra continua sendo E
+            await acha(`escola ${p.slice(2, 6)}`, id);
+
+            await naoAcha(palavra(), id);
+            await naoAcha(`escola ${palavra()}`, id);
+        });
+    });
+
     describe('triggers de tabelas relacionadas', () => {
         it('renomear o tipo de transferência reindexa as transferências do tipo', async () => {
             const objeto = palavra();

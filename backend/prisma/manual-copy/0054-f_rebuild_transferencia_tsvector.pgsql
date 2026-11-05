@@ -34,6 +34,24 @@ AS $$
     CROSS JOIN LATERAL (SELECT regexp_replace(m[1], '[./\-]+', '', 'g') AS junto) AS j;
 $$;
 
+-- Trechos de palavras, para a busca achar um pedaço do meio ou do fim de uma palavra
+-- (ex.: "masp" em "emasp"). Recebe o vetor já montado (palavras sem acento e em minúsculas)
+-- e devolve todos os finais de cada palavra com 3+ letras, sem o primeiro (que já é a
+-- própria palavra), com o prefixo "qx": "emasp" -> "qxmasp qxasp".
+-- Buscar pelo começo de um final acha qualquer trecho. Só palavras só de letras: números
+-- já são tratados por f_tsvector_numeros_flexiveis.
+-- O termo digitado é normalizado do mesmo jeito em PrismaHelpers.buscaIdsPalavraChave.
+CREATE OR REPLACE FUNCTION f_tsvector_trechos_palavras(p_vetor TSVECTOR)
+RETURNS TEXT
+LANGUAGE sql
+IMMUTABLE
+AS $$
+    SELECT COALESCE(string_agg('qx' || substr(l.lexeme, i), ' '), '')
+    FROM unnest(p_vetor) AS l
+    CROSS JOIN LATERAL generate_series(2, length(l.lexeme) - 2) AS i
+    WHERE l.lexeme ~ '^[[:alpha:]]+$';
+$$;
+
 CREATE OR REPLACE FUNCTION f_rebuild_transferencia_tsvector(p_transferencia_id INTEGER)
 RETURNS TSVECTOR
 LANGUAGE 'plpgsql'
@@ -41,6 +59,7 @@ STABLE
 AS $$
 DECLARE
     v_texto TEXT;
+    v_vetor TSVECTOR;
 BEGIN
     SELECT
             COALESCE(CAST(t_main.esfera AS TEXT), '') || ' ' ||
@@ -103,7 +122,9 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    RETURN to_tsvector('simple_unaccent', v_texto || ' ' || f_tsvector_numeros_flexiveis(v_texto));
+    v_vetor := to_tsvector('simple_unaccent', v_texto || ' ' || f_tsvector_numeros_flexiveis(v_texto));
+
+    RETURN v_vetor || to_tsvector('simple_unaccent', f_tsvector_trechos_palavras(v_vetor));
 END;
 $$;
 
