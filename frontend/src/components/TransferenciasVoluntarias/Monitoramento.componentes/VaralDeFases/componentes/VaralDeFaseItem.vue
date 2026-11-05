@@ -136,7 +136,7 @@ function handleEditar() {
             </div>
 
             <div class="varal-de-fase-item__item">
-              <dt v-if="!props.secundario">
+              <dt v-if="!$props.secundario">
                 Situação
               </dt>
 
