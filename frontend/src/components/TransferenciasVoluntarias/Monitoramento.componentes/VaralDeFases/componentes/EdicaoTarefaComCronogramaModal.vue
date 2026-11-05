@@ -179,7 +179,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
         dados = {
           inicio_real: inicioReal.toISOString(),
           termino_real: terminoReal.toISOString(),
-          duracao_real: diasDecorridos > 1 ? diasDecorridos : 1,
+          duracao_real: Math.max(diasDecorridos, 1),
         };
       }
 
