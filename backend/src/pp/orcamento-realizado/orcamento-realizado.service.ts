@@ -19,6 +19,7 @@ import {
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
     LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF,
+    verificaMesesRepetidos,
     verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
 import { Decimal } from 'decimal.js';
@@ -66,6 +67,8 @@ export class OrcamentoRealizadoService {
         dto.dotacao = TrataDotacaoGrande(dto.dotacao);
 
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
+
+        verificaMesesRepetidos(dto.itens);
 
         let soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         let soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
@@ -256,6 +259,8 @@ export class OrcamentoRealizadoService {
             },
         });
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
+
+        verificaMesesRepetidos(dto.itens);
 
         let nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         let nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
