@@ -10,6 +10,7 @@ import { DateTime } from 'luxon';
 import { WorkflowService } from '../configuracao/workflow.service';
 import { Date2YMD } from '../../../common/date2ymd';
 import { atualizaDuracaoReal } from './atualiza-duracao-real';
+import { registrarTrocaResponsavelWorkflow } from 'src/casa-civil/transferencia/transferencia-historico.helper';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -754,6 +755,7 @@ export class WorkflowAndamentoService {
                         id: true,
                         workflow_etapa_id: true,
                         workflow_fase_id: true,
+                        orgao_responsavel_id: true,
                         tarefaEspelhada: {
                             select: {
                                 id: true,
@@ -774,11 +776,23 @@ export class WorkflowAndamentoService {
                 });
                 if (!andamentoProxEtapa) throw new Error('Próxima fase já deveria estar populada.');
 
-                // Tarefa referente à etapa.
+                // Fase própria é sempre da SERI. Nas demais, mantém o órgão já escolhido antes do início.
+                const novoOrgaoId = orgao_id ?? andamentoProxEtapa.orgao_responsavel_id;
+
+                await registrarTrocaResponsavelWorkflow(prismaTxn, {
+                    transferencia_id: dto.transferencia_id,
+                    user_id: user.id,
+                    origem: 'Workflow',
+                    transferencia_andamento_id: andamentoProxEtapa.id,
+                    orgao: { anterior: andamentoProxEtapa.orgao_responsavel_id, novo: novoOrgaoId },
+                });
+
+                // Tarefa referente à fase.
                 if (andamentoProxEtapa.tarefaEspelhada.length !== 0) {
                     await prismaTxn.tarefa.update({
                         where: { id: andamentoProxEtapa.tarefaEspelhada[0].id },
                         data: {
+                            orgao_id: novoOrgaoId,
                             inicio_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
                             fase_atual_workflow: true,
@@ -841,7 +855,7 @@ export class WorkflowAndamentoService {
                 return await prismaTxn.transferenciaAndamento.update({
                     where: { id: andamentoProxEtapa.id },
                     data: {
-                        orgao_responsavel_id: orgao_id,
+                        orgao_responsavel_id: novoOrgaoId,
                         data_inicio: new Date(Date.now()),
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),

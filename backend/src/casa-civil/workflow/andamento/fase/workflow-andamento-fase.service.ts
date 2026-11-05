@@ -607,25 +607,38 @@ export class WorkflowAndamentoFaseService {
                     select: {
                         id: true,
                         workflow_fase_id: true,
+                        orgao_responsavel_id: true,
                         tarefas: { select: { tarefaEspelhada: { select: { id: true } } } },
                     },
                 });
                 if (!andamentoNovaFase)
                     throw new HttpException('Andamento da próxima fase não populado ou já iniciado.', 400);
 
+                // Fase própria é sempre da SERI. Nas demais, mantém o órgão já escolhido antes do início.
+                const novoOrgaoId = orgao_id ?? andamentoNovaFase.orgao_responsavel_id;
+
                 await prismaTxn.transferenciaAndamento.update({
                     where: { id: andamentoNovaFase.id },
                     data: {
                         data_inicio: new Date(Date.now()),
-                        orgao_responsavel_id: orgao_id,
+                        orgao_responsavel_id: novoOrgaoId,
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
                 });
 
+                await registrarTrocaResponsavelWorkflow(prismaTxn, {
+                    transferencia_id: dto.transferencia_id,
+                    user_id: user.id,
+                    origem: 'Workflow',
+                    transferencia_andamento_id: andamentoNovaFase.id,
+                    orgao: { anterior: andamentoNovaFase.orgao_responsavel_id, novo: novoOrgaoId },
+                });
+
                 const tarefaFase = await prismaTxn.tarefa.update({
                     where: { transferencia_fase_id: andamentoNovaFase.id },
                     data: {
+                        orgao_id: novoOrgaoId,
                         inicio_real: new Date(Date.now()),
                         atualizado_em: new Date(Date.now()),
                         fase_atual_workflow: true,

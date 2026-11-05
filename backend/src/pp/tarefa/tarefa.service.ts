@@ -1526,7 +1526,13 @@ export class TarefaService {
                 }
             }
 
-            if (updatedSelf.transferencia_tarefa_id != null) {
+            // Só leva o órgão para o workflow (e registra no histórico) quando esta edição mudou o órgão.
+            // A tarefa espelhada nasce com um órgão diferente do andamento (ex.: SERI x nulo), então comparar
+            // apenas com o workflow geraria uma "troca" em qualquer edição de data/percentual.
+            const mudouOrgaoNoCronograma =
+                'orgao_id' in dto && (updatedSelf.orgao_id ?? null) !== (tarefa.orgao?.id ?? null);
+
+            if (mudouOrgaoNoCronograma && updatedSelf.transferencia_tarefa_id != null) {
                 const tarefaWorkflow = await prismaTx.transferenciaAndamentoTarefa.findFirstOrThrow({
                     where: { id: updatedSelf.transferencia_tarefa_id },
                     select: {
@@ -1548,10 +1554,7 @@ export class TarefaService {
                     await prismaTx.transferenciaAndamentoTarefa.update({
                         where: { id: updatedSelf.transferencia_tarefa_id },
                         data: {
-                            orgao_responsavel_id:
-                                updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
-                                    ? updatedSelf.orgao_id
-                                    : undefined,
+                            orgao_responsavel_id: updatedSelf.orgao_id,
                             atualizado_em: new Date(Date.now()),
                             atualizado_por: user.id,
                         },
@@ -1559,7 +1562,7 @@ export class TarefaService {
                 }
             }
 
-            if (updatedSelf.transferencia_fase_id != null) {
+            if (mudouOrgaoNoCronograma && updatedSelf.transferencia_fase_id != null) {
                 const tarefaWorkflow = await prismaTx.transferenciaAndamento.findFirstOrThrow({
                     where: { id: updatedSelf.transferencia_fase_id },
                     select: {
