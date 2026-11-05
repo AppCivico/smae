@@ -26,7 +26,8 @@ const router = useRouter();
 const { meta_id } = route.params;
 // transferências não têm o ano na rota; ele vem do registro, depois de carregado
 const ano = ref(route.params.ano);
-const { id } = route.params;
+// a mesma instância pode ser reaproveitada para outro registro pela rota
+const id = computed(() => route.params.id);
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
@@ -89,20 +90,30 @@ function voltarParaListagem() {
   }
 }
 
-(async () => {
+async function iniciar() {
+  // a carga de um registro anterior não deve sobrescrever a do corrente
+  const idDaCarga = id.value;
+  const outroRegistro = () => idDaCarga !== id.value;
+
+  // em transferências, o ano só muda depois da busca, junto do registro
+  if (route.params.ano) ano.value = route.params.ano;
+  respostasof.value = {};
+
   if (ano.value) {
     DotaçãoStore.getDotaçãoSegmentos(ano.value);
   }
-  if (id) {
+  if (id.value) {
     switch (route.meta.entidadeMãe) {
       case 'TransferenciasVoluntarias':
         try {
           await OrcamentosStore.buscarTodosOsOrcamentosRealizados();
         } catch {
           // o `requestS` já alertou o erro
-          voltarParaListagem();
+          if (!outroRegistro()) voltarParaListagem();
           return;
         }
+
+        if (outroRegistro()) return;
 
         ano.value = OrcamentosStore.orçamentoEmFoco?.ano_referencia;
         if (ano.value) {
@@ -127,10 +138,12 @@ function voltarParaListagem() {
         throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
 
+    if (outroRegistro()) return;
+
     // em caso de falha, o ano guarda o objeto de erro em vez da lista
     const doAno = OrcamentoRealizado.value[ano.value];
     const registro = Array.isArray(doAno)
-      ? doAno.find((x) => x.id === Number(id))
+      ? doAno.find((x) => x.id === Number(id.value))
       : undefined;
 
     // removido em outra aba ou id inválido; em transferências, sem o registro
@@ -179,7 +192,9 @@ function voltarParaListagem() {
     respostasof.value.smae_soma_valor_liquidado = toFloat(emFoco.value.smae_soma_valor_liquidado)
       - toFloat(emFoco.value.soma_valor_liquidado);
   }
-})();
+}
+
+watch(() => route.params.id, iniciar, { immediate: true });
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -206,7 +221,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
       }
     }
 
-    r = await OrcamentosStore.updateOrcamentoRealizado(id, values);
+    r = await OrcamentosStore.updateOrcamentoRealizado(id.value, values);
     msg = 'Dados salvos com sucesso!';
 
     if (r == true) {
