@@ -612,14 +612,12 @@ export const itensDeExecucaoOrcamentaria = array()
         .label('Percentual empenho')
         .max(100)
         .min(0)
-        .nullable()
-        .transform((valor, original) => (original === '' ? null : valor)),
+        .nullableOuVazio(),
       percentual_liquidado: number()
         .label('Percentual liquidado')
         .max(100)
         .min(0)
-        .nullable()
-        .transform((valor, original) => (original === '' ? null : valor)),
+        .nullableOuVazio(),
       valor_empenho: number()
         .label('Valor empenho')
         .min(0)
