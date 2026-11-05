@@ -12,6 +12,8 @@ export interface TrocaResponsavelWorkflowParams {
     transferencia_andamento_id: number;
     // Andamento da tarefa (transferencia_andamento_tarefa), quando a troca é numa tarefa da fase.
     transferencia_andamento_tarefa_id?: number;
+    // Tarefa do cronograma sem vínculo direto com o workflow (ex.: tarefa criada por distribuição de recurso).
+    tarefa_cronograma?: { id: number; tarefa: string };
     orgao: ValorAnteriorNovo;
     // Apenas fases têm pessoa responsável.
     pessoa?: ValorAnteriorNovo;
@@ -26,6 +28,7 @@ export interface TrocaResponsavelWorkflowParams {
  *   origem: 'Workflow' | 'Cronograma',
  *   fase: { id, fase },
  *   tarefa: { id, tarefa_fluxo } | null,
+ *   tarefa_cronograma: { id, tarefa } | null,
  *   anterior: { orgao: { id, sigla, descricao } | null, pessoa: { id, nome_exibicao } | null },
  *   novo:     { orgao: { id, sigla, descricao } | null, pessoa: { id, nome_exibicao } | null },
  * }
@@ -80,6 +83,7 @@ export async function registrarTrocaResponsavelWorkflow(
                 origem: params.origem,
                 fase: andamento.workflow_fase,
                 tarefa,
+                tarefa_cronograma: params.tarefa_cronograma ?? null,
                 anterior: {
                     orgao: orgao(params.orgao.anterior),
                     pessoa: pessoa(params.pessoa?.anterior),

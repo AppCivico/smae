@@ -1489,8 +1489,11 @@ export class TarefaService {
                 },
                 data: updateData,
                 select: {
+                    tarefa: true,
                     transferencia_fase_id: true,
                     transferencia_tarefa_id: true,
+                    distribuicao_recurso_id: true,
+                    tarefa_pai: { select: { transferencia_fase_id: true } },
                     orgao_id: true,
                     tarefa_cronograma: {
                         select: {
@@ -1589,6 +1592,25 @@ export class TarefaService {
                         },
                     });
                 }
+            }
+
+            // Tarefas criadas por distribuição de recurso não têm vínculo direto com o workflow
+            // (são cópias por distribuição), então só registram a troca no histórico, na fase-pai.
+            const faseDaDistribuicaoId = updatedSelf.tarefa_pai?.transferencia_fase_id;
+            if (
+                mudouOrgaoNoCronograma &&
+                updatedSelf.distribuicao_recurso_id != null &&
+                faseDaDistribuicaoId != null &&
+                updatedSelf.tarefa_cronograma.transferencia_id != null
+            ) {
+                await registrarTrocaResponsavelWorkflow(prismaTx, {
+                    transferencia_id: updatedSelf.tarefa_cronograma.transferencia_id,
+                    user_id: user.id,
+                    origem: 'Cronograma',
+                    transferencia_andamento_id: faseDaDistribuicaoId,
+                    tarefa_cronograma: { id: tarefa.id, tarefa: updatedSelf.tarefa },
+                    orgao: { anterior: tarefa.orgao?.id ?? null, novo: updatedSelf.orgao_id },
+                });
             }
 
             if (recalcNivel) {
