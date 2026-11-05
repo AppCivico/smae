@@ -92,6 +92,8 @@ export class OrcamentoRealizadoService {
 
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
+        verificaMesesRepetidos(dto.itens);
+
         let soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         let soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
 
@@ -312,6 +314,8 @@ export class OrcamentoRealizadoService {
         });
         if (!anoCount)
             throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
+
+        verificaMesesRepetidos(dto.itens);
 
         let nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         let nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
@@ -1893,6 +1897,11 @@ export function DoubleCheckException(
 export function DivPerc2Decimal(valorEmpOuLiq: Prisma.Decimal, perc_valor_empenhoOuLiq: number) {
     const soma_valor_empenhoOuLiq = +valorEmpOuLiq.times(new Decimal(perc_valor_empenhoOuLiq).div(100)).toFixed(2);
     return soma_valor_empenhoOuLiq;
+}
+
+export function verificaMesesRepetidos(itens: { mes: number }[]) {
+    if (new Set(itens.map((i) => i.mes)).size != itens.length)
+        throw new BadRequestException('Não é possível informar o mesmo mês mais de uma vez');
 }
 
 export function verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho: number, soma_valor_liquidado: number) {
