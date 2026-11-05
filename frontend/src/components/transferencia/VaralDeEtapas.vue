@@ -362,6 +362,50 @@ const temPermissaoParaConfigurar = computed(() => !transferenciaEmFoco.value?.ca
               </dl>
             </div>
           </div>
+          <div v-if="linha.acao==='TrocaResponsavelWorkflow'">
+            <strong class="tc600 uc">
+              <span class="tamarelo mr1">
+                TROCA RESPONSÁVEL{{ linha.dados_extra?.origem === 'Cronograma'
+                  ? ' (CRONOGRAMA)'
+                  : '' }}:
+              </span>
+              {{ linha.dados_extra?.tarefa?.tarefa_fluxo
+                || linha.dados_extra?.fase?.fase
+                || ' - ' }}
+            </strong> <br>
+            <strong class="tc600">
+              {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
+            </strong>
+            <div class="flex mt1">
+              <dl
+                v-for="(lado, chave) in {
+                  'Informação anterior': linha.dados_extra?.anterior,
+                  'Informação nova': linha.dados_extra?.novo,
+                }"
+                :key="chave"
+                class="mr2"
+              >
+                <p class="tc500 w700 mb0">
+                  {{ chave }}
+                </p>
+                <div class="flex mt05">
+                  <dt class="w700 mr1">
+                    Órgão responsável:
+                  </dt>
+                  <dd>{{ lado?.orgao?.sigla || ' - ' }}</dd>
+                </div>
+                <div
+                  v-if="!linha.dados_extra?.tarefa"
+                  class="flex mt05"
+                >
+                  <dt class="w700 mr1">
+                    Pessoa responsável:
+                  </dt>
+                  <dd>{{ lado?.pessoa?.nome_exibicao || ' - ' }}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
         </div>
       </div>
       <div
