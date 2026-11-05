@@ -29,7 +29,13 @@
     }
   }
 }
+
 .texto-com-botao__botao {
   order: 3;
+}
+.texto-com-botao__texto {
+  &:empty {
+    display: none;
+  }
 }
 </style>
