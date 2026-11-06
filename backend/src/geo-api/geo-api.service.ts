@@ -1,7 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Type, plainToClass } from 'class-transformer';
 import { IsArray, IsNumber, IsOptional, IsString, MaxLength, ValidateNested, validate } from 'class-validator';
-import { GeoJSON } from 'geojson';
+import type { GeoJSON } from 'geojson';
 import got, { Got } from 'got';
 import { IsGeoJSONMap } from '../auth/decorators/is-geojson-map.decorator';
 import { IsGeoJSON } from '../auth/decorators/is-geojson.decorator';

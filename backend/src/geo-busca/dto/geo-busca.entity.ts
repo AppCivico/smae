@@ -9,7 +9,7 @@ import {
     TipoProjeto,
 } from '@prisma/client';
 import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
-import { GeoJSON } from 'geojson';
+import type { GeoJSON } from 'geojson';
 
 export class GeoInfoBaseDto {
     @ApiProperty()

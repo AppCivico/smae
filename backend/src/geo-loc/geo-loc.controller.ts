@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpException, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { GeoJsonObject } from 'geojson';
+import type { GeoJsonObject } from 'geojson';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
