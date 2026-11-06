@@ -65,6 +65,7 @@ type EdicaoDados = {
   tipo: FaseTipo,
   dadosTarefa?: DadosTarefa,
   faseResponsabilidade?: 'OutroOrgao' | number
+  concluida: boolean,
 };
 function abrirModalFase(dadosEdicao: EdicaoDados) {
   exibirModalFase.value = true;
@@ -84,6 +85,7 @@ function abrirModalFase(dadosEdicao: EdicaoDados) {
       pessoa_responsavel_id: dadosEdicao.pessoa_responsavel?.id,
       fase_mae_id: dadosEdicao.dadosTarefa?.faseMaeId,
       inicio_real: dadosEdicao.dadosTarefa?.inicioReal,
+      concluido: dadosEdicao.concluida,
     },
   });
 }

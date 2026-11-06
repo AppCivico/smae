@@ -69,6 +69,7 @@ function handleEditar() {
     tipo: props.tipo,
     dadosTarefa: props.dadosTarefa,
     faseResponsabilidade: props.faseResponsabilidade,
+    concluida: props.concluida,
   });
 }
 
