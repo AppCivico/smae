@@ -1,7 +1,9 @@
 <script lang="ts" setup>
+import Swiper from 'swiper';
 import { Pagination, Navigation } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { ref, computed, defineSlots } from 'vue';
+import {
+  ref, computed, defineSlots, nextTick, onBeforeUnmount, watch,
+} from 'vue';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -16,47 +18,89 @@ const ehCarrosel = computed<boolean>(() => elementos.value.length > 1);
 
 const cardAtual = ref<number>(0);
 
+const carrossel = ref<HTMLElement | null>(null);
+const botaoAnterior = ref<HTMLElement | null>(null);
+const botaoProximo = ref<HTMLElement | null>(null);
+const paginacao = ref<HTMLElement | null>(null);
+
+let swiper: Swiper | null = null;
+
 function selecionarCardAtual(atual: number) {
   cardAtual.value = atual;
 }
 
-const onSwiper = (swiper) => {
-  selecionarCardAtual(swiper.realIndex);
-};
+function destruirCarrossel() {
+  swiper?.destroy(true, false);
+  swiper = null;
+}
 
-const onSlideChange = (swiper) => {
-  selecionarCardAtual(swiper.realIndex);
-};
+watch(carrossel, (elemento) => {
+  destruirCarrossel();
+  if (!elemento) return;
 
+  swiper = new Swiper(elemento, {
+    modules: [Pagination, Navigation],
+    slidesPerView: 1,
+    spaceBetween: 50,
+    noSwipingClass: 'chartContainer',
+    navigation: {
+      prevEl: botaoAnterior.value,
+      nextEl: botaoProximo.value,
+      // os ícones vêm do CSS deste componente
+      addIcons: false,
+    },
+    pagination: {
+      el: paginacao.value,
+      clickable: true,
+    },
+    on: {
+      init: (s) => selecionarCardAtual(s.realIndex),
+      slideChange: (s) => selecionarCardAtual(s.realIndex),
+    },
+  });
+}, { flush: 'post' });
+
+watch(() => elementos.value.length, async () => {
+  await nextTick();
+  swiper?.update();
+});
+
+onBeforeUnmount(destruirCarrossel);
 </script>
 
 <template>
   <div class="card-envelope-raiz">
-    <Swiper
+    <div
       v-if="ehCarrosel"
-      class="card-envelope-raiz__carrossel"
-      :slides-per-wiew="1"
-      :space-between="50"
-      :navigation="true"
-      :pagination="{ clickable: true }"
-      :no-swiping-class="'chartContainer'"
-      :modules="[
-        Pagination, Navigation,
-      ]"
-      @swiper="onSwiper"
-      @slide-change="onSlideChange"
+      ref="carrossel"
+      class="swiper card-envelope-raiz__carrossel"
     >
-      <swiper-slide
-        v-for="(elemento, elementoIndex) in elementos"
-        :key="elementoIndex"
-        class="card-envelope-raiz__slide"
-      >
-        <component
-          :is="elemento"
-          :visivel="elementoIndex === cardAtual"
-        />
-      </swiper-slide>
-    </Swiper>
+      <div class="swiper-wrapper">
+        <div
+          v-for="(elemento, elementoIndex) in elementos"
+          :key="elementoIndex"
+          class="swiper-slide card-envelope-raiz__slide"
+        >
+          <component
+            :is="elemento"
+            :visivel="elementoIndex === cardAtual"
+          />
+        </div>
+      </div>
+
+      <div
+        ref="botaoAnterior"
+        class="swiper-button-prev"
+      />
+      <div
+        ref="botaoProximo"
+        class="swiper-button-next"
+      />
+      <div
+        ref="paginacao"
+        class="swiper-pagination"
+      />
+    </div>
 
     <div v-else>
       <slot />
