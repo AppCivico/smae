@@ -213,14 +213,14 @@ watch(() => props.parlamentarId, (id) => {
   }
 }
 
-@container (max-width: 36rem) {
+@container (max-width: 504px) {
   .resumo-do-parlamentar__lista {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.1rem 1.7rem;
   }
 }
 
-@container (max-width: 22rem) {
+@container (max-width: 308px) {
   .resumo-do-parlamentar__lista {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -255,7 +255,7 @@ watch(() => props.parlamentarId, (id) => {
     color: @amarelo;
   }
 
-  @media screen and (max-width: 30em) {
+  @media screen and (max-width: 480px) {
     :deep(.abas__lista > li) {
       padding-right: 1.4rem;
     }

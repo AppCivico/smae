@@ -148,7 +148,7 @@ const fatias = computed(() => {
   text-transform: uppercase;
 }
 
-@container (max-width: 26rem) {
+@container (max-width: 364px) {
   .grafico-por-partido {
     flex-direction: column;
     align-items: stretch;
