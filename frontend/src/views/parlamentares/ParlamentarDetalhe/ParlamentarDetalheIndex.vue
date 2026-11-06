@@ -94,6 +94,14 @@ watch(() => props.parlamentarId, (id) => {
           <dt>Cargo</dt>
           <dd>{{ cargo || '—' }}</dd>
         </div>
+        <div>
+          <dt>Última Eleição</dt>
+          <dd>{{ emFoco?.ultimo_mandato?.eleicao?.ano || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Partido Atual</dt>
+          <dd>{{ emFoco?.ultimo_mandato?.partido_atual?.sigla || '—' }}</dd>
+        </div>
       </dl>
     </PainelCartao>
   </div>
@@ -182,7 +190,7 @@ watch(() => props.parlamentarId, (id) => {
 
 .resumo-do-parlamentar__lista {
   display: grid;
-  grid-template-columns: 17.7rem 1fr;
+  grid-template-columns: 17.7rem 1fr 1fr;
   gap: 1.1rem 0;
   margin: 1.2rem 0 0;
 

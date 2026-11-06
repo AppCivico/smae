@@ -33,7 +33,11 @@ const mockRequestS = {
     nome: 'Francisco Everardo Oliveira Silva',
     nome_popular: 'Gilzinho',
     nascimento: '1965-03-12',
-    ultimo_mandato: { cargo: 'DeputadoFederal' },
+    ultimo_mandato: {
+      cargo: 'DeputadoFederal',
+      eleicao: { ano: 2022 },
+      partido_atual: { sigla: 'PTdoB' },
+    },
     equipe: [],
     mandatos: [],
   })),
@@ -84,6 +88,18 @@ describe('ParlamentarDetalheIndex', () => {
     expect(texto).toContain('Francisco Everardo Oliveira Silva');
     expect(texto).toContain('12/03');
     expect(texto).toContain('Deputado Federal');
+  });
+
+  it('exibe o ano da última eleição e o partido atual do parlamentar', async () => {
+    const envelope = montar([]);
+    await flushPromises();
+
+    const dados = Object.fromEntries(envelope
+      .findAll('.resumo-do-parlamentar__lista > div')
+      .map((par) => [par.find('dt').text(), par.find('dd').text()]));
+
+    expect(dados['Última Eleição']).toBe('2022');
+    expect(dados['Partido Atual']).toBe('PTdoB');
   });
 
   it('oferece a aba de painel a quem pode ver o painel do parlamentar', async () => {
