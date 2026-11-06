@@ -95,12 +95,12 @@ watch(() => props.parlamentarId, (id) => {
           <dd>{{ cargo || '—' }}</dd>
         </div>
         <div>
-          <dt>Última Eleição</dt>
-          <dd>{{ emFoco?.ultimo_mandato?.eleicao?.ano || '—' }}</dd>
-        </div>
-        <div>
           <dt>Partido Atual</dt>
           <dd>{{ emFoco?.ultimo_mandato?.partido_atual?.sigla || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Última Eleição</dt>
+          <dd>{{ emFoco?.ultimo_mandato?.eleicao?.ano || '—' }}</dd>
         </div>
       </dl>
     </PainelCartao>
@@ -136,8 +136,9 @@ watch(() => props.parlamentarId, (id) => {
 
 .resumo-do-parlamentar__cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
-  gap: 9.1rem;
+  gap: 3.4rem 9.1rem;
   max-width: 85.7rem;
   margin-bottom: 5.1rem;
 }
@@ -148,11 +149,13 @@ watch(() => props.parlamentarId, (id) => {
   align-items: center;
   gap: 1.2rem;
   flex-shrink: 0;
+  max-width: 100%;
 }
 
 .resumo-do-parlamentar__foto {
   width: 19.9rem;
-  height: 20.6rem;
+  max-width: 100%;
+  aspect-ratio: 199 / 206;
   overflow: hidden;
   border: 0.4rem solid @amarelo;
   border-radius: 0.7rem;
@@ -182,7 +185,8 @@ watch(() => props.parlamentarId, (id) => {
 }
 
 .resumo-do-parlamentar__dados {
-  flex-grow: 1;
+  flex: 1 1 30rem;
+  min-width: 0;
   max-width: 56.6rem;
   min-height: 15.1rem;
   margin-top: 0.4rem;
@@ -206,6 +210,19 @@ watch(() => props.parlamentarId, (id) => {
     font-size: 1.1rem;
     line-height: 1.3;
     color: #233b5c;
+  }
+}
+
+@container (max-width: 36rem) {
+  .resumo-do-parlamentar__lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem 1.7rem;
+  }
+}
+
+@container (max-width: 22rem) {
+  .resumo-do-parlamentar__lista {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -236,6 +253,16 @@ watch(() => props.parlamentarId, (id) => {
 
   :deep(.abas-lista__item--aberta .abas__link) {
     color: @amarelo;
+  }
+
+  @media screen and (max-width: 30em) {
+    :deep(.abas__lista > li) {
+      padding-right: 1.4rem;
+    }
+
+    :deep(.abas__lista > li:not([hidden]) ~ li) {
+      padding-left: 1.4rem;
+    }
   }
 }
 </style>

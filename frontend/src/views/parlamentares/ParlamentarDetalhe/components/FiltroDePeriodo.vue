@@ -123,6 +123,7 @@ const filtrar = handleSubmit((valores) => {
 <style scoped lang="less">
 .filtro-de-periodo__campos {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 1.7rem;
 }

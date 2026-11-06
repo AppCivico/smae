@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import type { PainelParlamentarTransferenciaDto } from '@back/casa-civil/painel-parlamentar/entities/painel-parlamentar.entity';
+import { computed } from 'vue';
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import type { Colunas } from '@/components/SmaeTable/tipagem';
 import dinheiro from '@/helpers/dinheiro';
 
-defineProps<{
+const props = defineProps<{
   transferencia: PainelParlamentarTransferenciaDto;
 }>();
+
+const tituloDaRolagem = computed(() => `Distribuições da transferência ${props.transferencia.identificador}`);
 
 const moeda = (valor: unknown) => dinheiro(valor, { style: 'currency' });
 
@@ -100,6 +103,8 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 
     <SmaeTable
       class="cartao-de-transferencia__tabela"
+      rolagem-horizontal
+      :titulo-para-rolagem-horizontal="tituloDaRolagem"
       :atributos-da-tabela="{ class: 'no-zebra' }"
       :colunas="colunas"
       :dados="transferencia.distribuicoes"
@@ -169,6 +174,7 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 <style scoped lang="less">
 .cartao-de-transferencia {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 1.7rem;
   padding: 2.3rem;
@@ -180,13 +186,14 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 
 .cartao-de-transferencia__cabecalho {
   display: flex;
-  gap: 5.2rem;
+  flex-wrap: wrap;
+  gap: 1.7rem 5.2rem;
 }
 
 .cartao-de-transferencia__objeto {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  flex: 1 1 20rem;
   gap: 0.3rem;
   max-width: 42.6rem;
 }
@@ -225,6 +232,8 @@ const descricaoDaBarra = (percentual: number) => `${dinheiro(percentual, { semDe
 }
 
 .cartao-de-transferencia__tabela {
+  overflow-x: auto;
+
   :deep(table) {
     border-collapse: collapse;
     color: @primary;

@@ -113,6 +113,15 @@ describe('CartaoDeTransferencia', () => {
     expect(linha.findAll('td')[1].text()).toBe('—');
   });
 
+  it('permite rolar a tabela de distribuições na horizontal, identificando a transferência', () => {
+    const regiao = montar().find('[role="region"]');
+
+    expect(regiao.exists()).toBe(true);
+    expect(regiao.attributes('tabindex')).toBe('0');
+    expect(regiao.attributes('aria-label')).toBe('Distribuições da transferência 7/2024');
+    expect(regiao.find('table').exists()).toBe(true);
+  });
+
   it('avisa quando não há distribuições', () => {
     const linhas = montar({ ...transferencia, distribuicoes: [] }).findAll('tbody tr');
 

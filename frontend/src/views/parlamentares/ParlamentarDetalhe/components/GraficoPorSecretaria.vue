@@ -10,15 +10,13 @@ const props = defineProps<{
   itens: PainelParlamentarPorSecretariaDto[];
 }>();
 
-const LARGURA_MAXIMA = 240;
-
 const maiorValor = computed(() => Math.max(...props.itens.map((item) => item.valor), 0));
 
 const barras = computed(() => props.itens.map((item, indice) => ({
   ...item,
   cor: corDoItem(indice, item.outros),
   largura: maiorValor.value
-    ? `${(item.valor / maiorValor.value) * LARGURA_MAXIMA}px`
+    ? `${(item.valor / maiorValor.value) * 100}%`
     : '0',
 })));
 </script>
@@ -103,5 +101,28 @@ const barras = computed(() => props.itens.map((item, indice) => ({
   text-transform: uppercase;
   white-space: nowrap;
   color: #7e858d;
+}
+
+@container (max-width: 30rem) {
+  .grafico-por-secretaria {
+    padding-top: 1.7rem;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  .grafico-por-secretaria__item {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'valor'
+      'rotulo'
+      'barra';
+
+    &::before {
+      justify-self: start;
+      border-radius: 0 1.3rem 1.3rem 0;
+    }
+  }
 }
 </style>

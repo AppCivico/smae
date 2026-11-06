@@ -306,6 +306,10 @@ watch(
 </template>
 
 <style scoped lang="less">
+.painel-do-parlamentar {
+  container-type: inline-size;
+}
+
 .painel-do-parlamentar__filtro {
   margin-bottom: 3.4rem;
 }
@@ -464,6 +468,7 @@ watch(
 
 .painel-do-parlamentar__cabecalho-da-lista {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1.3rem;
 }
@@ -492,6 +497,7 @@ watch(
 
 .painel-do-parlamentar__ordenacao-campos {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 1.1rem;
   margin: 0;
@@ -507,5 +513,21 @@ watch(
 
 .painel-do-parlamentar__paginacao {
   margin-top: 5.1rem;
+}
+
+@container (max-width: 60rem) {
+  .painel-do-parlamentar__grade {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'transferencias'
+      'recurso'
+      'coluna'
+      'secretaria';
+  }
+
+  .painel-do-parlamentar__partido,
+  .painel-do-parlamentar__secretaria {
+    min-height: auto;
+  }
 }
 </style>
