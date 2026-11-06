@@ -1,11 +1,9 @@
+import type { TransferenciaHistoricoDto } from '@back/casa-civil/transferencia/entities/transferencia.dto';
 import type {
   WorkflowAndamentoDto,
   WorkflowAndamentoFasesDto,
   WorkflowAndamentoFluxoDto,
 } from '@back/casa-civil/workflow/andamento/entities/workflow-andamento.entity';
-import type {
-  TransferenciaHistoricoDto,
-} from '@back/casa-civil/transferencia/entities/transferencia.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -21,7 +19,7 @@ interface Estado {
   workflow: WorkflowAndamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
   historico: TransferenciaHistoricoDto | null;
-  etapaEmFoco: WorkflowAndamentoDto | null;
+  etapaEmFoco: WorkflowAndamentoFluxoDto | null;
   erro: null | unknown;
 }
 
@@ -205,8 +203,9 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
   getters: {
     etapaCorrente: ({ workflow }): WorkflowAndamentoFluxoDto | null => workflow?.fluxo?.[0] || null,
+
     faseAtual: ({ etapaEmFoco }) => {
-      const faseAtual = etapaEmFoco?.fases.find((fase) => fase.andamento.atual);
+      const faseAtual = etapaEmFoco?.fases.find((fase) => fase?.andamento?.atual);
 
       if (!faseAtual) {
         return null;
@@ -215,7 +214,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       return faseAtual;
     },
     proximaFase: ({ etapaEmFoco }) => {
-      const proximaFase = etapaEmFoco?.fases.find((fase) => !fase.andamento.concluida);
+      const proximaFase = etapaEmFoco?.fases.find((fase) => !fase?.andamento?.concluida);
 
       if (!proximaFase) {
         return null;
