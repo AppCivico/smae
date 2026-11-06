@@ -3,7 +3,9 @@ from typing import Literal, Optional
 
 DOMAIN ='www.gov.br'
 
-BASE_URL='transferegov/pt-br/comunicados/'
+# O portal é servido por um front-end React (Volto); o HTML não traz mais os
+# comunicados, então consultamos a API REST (JSON) do próprio portal.
+BASE_URL='transferegov/++api++/pt-br/comunicados/'
 
 MAPPER_ENDPOINTS = {
     'gerais' : 'comunicados-gerais',
@@ -56,11 +58,8 @@ class UrlBuilder:
         
         endpoint = self.__build_endpoint(gerais=gerais, tipo_emenda=tipo_emenda)
 
-        #neste caso não tem ano
-        if not gerais and tipo_emenda == 'especiais':
-            return endpoint
-        
-        return endpoint + f'/{ano}'
+        # Sem b_size a API pagina em 25 itens; pedimos tudo de uma vez.
+        return endpoint + f'/{ano}?b_size=1000'
 
     
     def __call__(self, gerais:bool, ano:int, tipo_emenda:Optional[TIPOS_EMENDAS]=None)->str:

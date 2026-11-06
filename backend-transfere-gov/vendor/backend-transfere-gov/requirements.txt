@@ -1,6 +1,6 @@
-beautifulsoup4==4.12.3
 fastapi==0.112.1
 requests==2.32.3
+tzdata
 uvicorn==0.30.6
 uvloop==0.20.0
 
