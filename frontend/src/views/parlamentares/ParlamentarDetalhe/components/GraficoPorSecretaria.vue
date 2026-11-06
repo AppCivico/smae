@@ -103,7 +103,7 @@ const barras = computed(() => props.itens.map((item, indice) => ({
   color: #7e858d;
 }
 
-@container (max-width: 30rem) {
+@container (max-width: 420px) {
   .grafico-por-secretaria {
     padding-top: 1.7rem;
 

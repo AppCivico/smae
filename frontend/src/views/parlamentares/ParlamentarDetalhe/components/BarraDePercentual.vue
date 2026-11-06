@@ -104,7 +104,7 @@ const textoDoValor = computed(() => (props.rotulo
   color: @c500;
 }
 
-@container (max-width: 22rem) {
+@container (max-width: 308px) {
   .barra-de-percentual {
     flex-direction: column-reverse;
     align-items: stretch;

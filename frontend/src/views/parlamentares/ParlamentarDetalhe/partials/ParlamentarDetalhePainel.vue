@@ -515,7 +515,7 @@ watch(
   margin-top: 5.1rem;
 }
 
-@container (max-width: 60rem) {
+@container (max-width: 840px) {
   .painel-do-parlamentar__grade {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
