@@ -62,5 +62,9 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    include: [
+      'src/**/*.{spec,test}.{ts,js}',
+    ],
+    name: 'front',
   },
 });
