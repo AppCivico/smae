@@ -147,4 +147,23 @@ const fatias = computed(() => {
 .grafico-por-partido__rotulo--outros {
   text-transform: uppercase;
 }
+
+@container (max-width: 26rem) {
+  .grafico-por-partido {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .grafico-por-partido__rosca {
+    align-self: center;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .grafico-por-partido__legenda {
+    padding: 1.4rem 0 0;
+    border-top: 0.1rem solid fade(@c100, 50%);
+    border-left: 0;
+  }
+}
 </style>

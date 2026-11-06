@@ -62,6 +62,7 @@ defineProps<{
 
 .painel-cartao__conteudo {
   flex-grow: 1;
+  container-type: inline-size;
 }
 
 .painel-cartao__rodape {

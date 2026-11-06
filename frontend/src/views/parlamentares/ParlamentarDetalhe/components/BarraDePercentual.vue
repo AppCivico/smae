@@ -103,4 +103,19 @@ const textoDoValor = computed(() => (props.rotulo
   line-height: 1.3;
   color: @c500;
 }
+
+@container (max-width: 22rem) {
+  .barra-de-percentual {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .barra-de-percentual__trilho {
+    flex-basis: 2.4rem;
+  }
+
+  .barra-de-percentual__valor {
+    align-self: flex-end;
+  }
+}
 </style>
