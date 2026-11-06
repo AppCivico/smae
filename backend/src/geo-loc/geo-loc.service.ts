@@ -9,7 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { GeoCamadaConfig, Prisma } from '@prisma/client';
 import * as turf from '@turf/simplify';
-import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
+import type { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { VinculoService } from '../casa-civil/vinculo/vinculo.service';
 import { SmaeConfigService } from '../common/services/smae-config.service';

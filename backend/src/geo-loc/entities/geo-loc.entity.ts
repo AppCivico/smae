@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { GeoReferenciaTipo } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
-import { GeoJSON } from 'geojson';
+import type { GeoJSON } from 'geojson';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform, PositiveNumberTransform } from '../../auth/transforms/number.transform';
