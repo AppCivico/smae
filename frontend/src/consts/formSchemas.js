@@ -3704,20 +3704,6 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
     .positive(),
 });
 
-export const EdicaoTransferenciaFase = object().shape({
-  orgao_id: string().label('Órgão responsável'),
-  pessoa_responsavel_id: number()
-    .label('Pessoa Responsável')
-    .when('orgao_id', (orgaoId, field) => (orgaoId === 'OutroOrgao' ? field.nullable() : field.required())),
-  situacao_id: number().label('Situação').required(),
-});
-
-export const EdicaoTransferenciaFaseTarefa = object().shape({
-  concluido: boolean().label('Concluído'),
-  orgao_id: number().label('Órgão responsável'),
-  pessoa_responsavel: string().label('Pessoa responsável'),
-});
-
 export const FiltroEndereco = object().shape({
   endereco: string().label('Endereço').required(),
 });

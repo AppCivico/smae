@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 import { useAuthStore } from '@/stores/auth.store';
 
-import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
+import {
+  montarPropsDaTarefa,
+  montarQueryDeEdicao,
+  type TarefaDoVaral,
+} from '../varalDeFases.helpers';
 
 export type FaseTipo = 'fase' | 'tarefa-cronograma' | 'tarefa-workflow';
 export type DadosTarefa = {
@@ -23,25 +27,27 @@ export type VaralDeItemProps = {
   responsavel?: {
     id: string,
     sigla: string,
-    descricao: string,
+    descricao?: string,
   },
   pessoaResponsavel?: {
     id: number,
     nome_exibicao: string,
   },
   situacao?: {
-    id: number,
+    id: number | null,
     situacao: string,
-    tipo_situacao: string
+    tipo_situacao?: string
   },
-  tarefas?: any[]
+  tarefas?: TarefaDoVaral[]
   situacoes?: any[]
   atual?: boolean,
   concluida?: boolean,
   podeConcluir?: boolean,
   bloqueado?: boolean,
   tipo: FaseTipo
-  faseResponsabilidade?: 'OutroOrgao' | number
+  // `id` do responsável pela fase mãe; `'OutroOrgao'` quando é de outro órgão
+  faseResponsabilidade?: string
+  recursos?: string,
 };
 
 type Props = VaralDeItemProps & {
@@ -54,24 +60,7 @@ const props = defineProps<Props>();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
-const edicaoModal = ref<EdicaoTarefaComCronogramaModalExposed | undefined>();
-
 const ehOutroOrgao = computed(() => props.responsavel?.id === 'OutroOrgao');
-
-function handleEditar() {
-  edicaoModal.value?.abrirModalFase({
-    id: props.id,
-    secundario: props.secundario,
-    orgao_responsavel: props.responsavel,
-    situacao: props.situacao,
-    pessoa_responsavel: props.pessoaResponsavel,
-    situacoes: props.situacoes,
-    tipo: props.tipo,
-    dadosTarefa: props.dadosTarefa,
-    faseResponsabilidade: props.faseResponsabilidade,
-    concluida: props.concluida,
-  });
-}
 
 </script>
 
@@ -106,7 +95,6 @@ function handleEditar() {
       </dt>
 
       <div class="varal-de-fase-item__conteudo">
-        <!-- {{ tipo }} -->
         <dt
           v-if="$props.largo || $props.secundario"
           class="varal-de-fase-item__titulo"
@@ -150,16 +138,15 @@ function handleEditar() {
           v-if="($props.atual || !$props.concluida) && !$props.bloqueado"
           class="varal-de-fase-item__agrupador-botoes"
         >
-          <button
+          <RouterLink
             v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
               && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')
             "
             class="varal-de-fase-item__botao"
-            type="button"
-            @click="handleEditar"
+            :to="{ query: { ...$route.query, ...montarQueryDeEdicao(props) } }"
           >
             Editar
-          </button>
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -173,34 +160,14 @@ function handleEditar() {
         :key="`fase--${tarefaIndex}`"
       >
         <VaralDeFaseItem
-          :id="tarefa.tarefa_cronograma_id || tarefa.workflow_tarefa.id"
+          v-bind="montarPropsDaTarefa(tarefa, props)"
           secundario
-          :fase-responsabilidade="$props.responsavel.id"
-          :titulo="tarefa.workflow_tarefa?.descricao"
-          :situacao="
-            tarefa.andamento.concluida
-              ? { id: null, situacao: 'Concluida' }
-              : undefined"
-          :responsavel="
-            tarefa.andamento.orgao_responsavel"
-          :atual="$props.atual"
           :bloqueado="$props.bloqueado"
-          :tipo="!tarefa.tarefa_cronograma_id ? 'tarefa-workflow' : 'tarefa-cronograma'"
           :largo="$props.largo"
-          :dados-tarefa="{
-            faseMaeId: $props.id,
-            inicioReal: tarefa.andamento.inicio_real
-          }"
-          :concluida="tarefa.andamento.concluida"
         />
       </template>
     </div>
   </article>
-
-  <EdicaoTarefaComCronogramaModal
-    ref="edicaoModal"
-    v-bind="$props"
-  />
 </template>
 
 <style lang="less" scoped>
@@ -357,6 +324,7 @@ function handleEditar() {
   color: #FFF;
   background-color: #005C8A;
   border: initial;
+  text-decoration: none;
 
   font-size: 1.14rem;
   line-height: 1;
