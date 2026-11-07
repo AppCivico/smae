@@ -2,7 +2,9 @@
 import { useResizeObserver } from '@vueuse/core';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
-import { nextTick, onMounted, ref } from 'vue';
+import {
+  computed, nextTick, onMounted, ref,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import TextoComBotao from '@/components/TextoComBotao.vue';
@@ -10,7 +12,10 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 
+import EdicaoFaseModal from './componentes/EdicaoFaseModal.vue';
+import EdicaoTarefaModal from './componentes/EdicaoTarefaModal.vue';
 import VaralDeFaseItem from './componentes/VaralDeFaseItem.vue';
+import { montarPropsDaFase, obterFases } from './varalDeFases.helpers';
 
 const TAMANHO_LARGO = 600;
 
@@ -30,6 +35,8 @@ const {
   etapaEmFoco, faseAtual, proximaFase, inícioDeFasePermitido,
 } = storeToRefs(workflowAndamentoStore);
 
+const fases = computed(() => obterFases(etapaEmFoco.value));
+
 useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
   await nextTick();
 
@@ -47,21 +54,6 @@ async function iniciarFase() {
   );
 
   workflowAndamentoStore.buscar();
-}
-
-function obterResponsavel({ andamento, responsabilidade }) {
-  if (andamento?.orgao_responsavel) {
-    return andamento?.orgao_responsavel;
-  }
-
-  const traducaoReponsabilidade = {
-    OutroOrgao: 'Outro Órgão',
-  };
-
-  return {
-    id: responsabilidade,
-    sigla: traducaoReponsabilidade[responsabilidade] || responsabilidade,
-  };
 }
 
 onMounted(() => {
@@ -104,18 +96,18 @@ onMounted(() => {
     </TextoComBotao>
 
     <div
-      v-if="etapaEmFoco.fases.length"
+      v-if="fases.length"
       class="varal-de-fases__lista "
     >
       <div
-        v-for="(faseObjeto, faseIndex) in etapaEmFoco.fases"
+        v-for="(faseObjeto, faseIndex) in fases"
         :key="`fase--${faseIndex}`"
         class="fase-item"
       >
         <div
           :class="[
             'item-contador',
-            { 'item-contador--atual': faseObjeto.andamento.atual },
+            { 'item-contador--atual': faseObjeto.andamento?.atual },
             {
               'item-contador--bloqueado':
                 !faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida
@@ -125,7 +117,7 @@ onMounted(() => {
           {{ `${faseIndex+1}`.padStart(2, '0') }}
 
           <div
-            v-if="tamanhoLargo && faseObjeto.andamento.atual"
+            v-if="tamanhoLargo && faseObjeto.andamento?.atual"
             class="item-contador__fase-atual smae-tooltip"
           >
             <span class="smae-tooltip__conteudo">Fase atual</span>
@@ -133,24 +125,17 @@ onMounted(() => {
         </div>
 
         <VaralDeFaseItem
-          :id="faseObjeto.fase.id"
-          :titulo="faseObjeto.fase.fase"
-          :duracao="faseObjeto.duracao"
-          :situacao="faseObjeto.andamento?.situacao"
-          :responsavel="obterResponsavel(faseObjeto)"
-          :pessoa-responsavel="faseObjeto.andamento?.pessoa_responsavel"
-          :tarefas="faseObjeto.tarefas"
-          :situacoes="faseObjeto.situacoes"
-          :atual="faseObjeto.andamento.atual"
-          :concluida="faseObjeto.andamento?.concluida"
-          :pode-concluir="faseObjeto.andamento?.pode_concluir"
+          v-bind="montarPropsDaFase(faseObjeto)"
           :bloqueado="transferenciaEmFoco?.cancelada
             || (!faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida)"
           :largo="tamanhoLargo"
-          tipo="fase"
         />
       </div>
     </div>
+
+    <EdicaoFaseModal />
+
+    <EdicaoTarefaModal />
   </section>
 </template>
 

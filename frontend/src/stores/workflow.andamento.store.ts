@@ -163,7 +163,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async encerrarFase(faseId: number, transferênciaId: number): Promise<boolean> {
+    async encerrarFase(faseId: number, transferênciaId?: number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 
       try {
@@ -202,8 +202,6 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   },
 
   getters: {
-    etapaCorrente: ({ workflow }): WorkflowAndamentoFluxoDto | null => workflow?.fluxo?.[0] || null,
-
     faseAtual: ({ etapaEmFoco }) => {
       const faseAtual = etapaEmFoco?.fases.find((fase) => fase?.andamento?.atual);
 
@@ -232,10 +230,8 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       || false;
     },
 
-    idDaPróximaFasePendente() {
-      // eslint-disable-next-line max-len
-      return this.etapaCorrente?.fases?.find((x: WorkflowAndamentoFasesDto) => x.andamento?.data_inicio === null)?.fase?.id
-       || 0;
-    },
+    // eslint-disable-next-line max-len
+    idDaPróximaFasePendente: ({ workflow }): number => workflow?.fluxo?.[0]?.fases?.find((x: WorkflowAndamentoFasesDto) => x.andamento?.data_inicio === null)?.fase?.id
+      || 0,
   },
 });
