@@ -56,6 +56,14 @@ export class WorkflowAndamentoFasesDto extends DetailWorkflowFluxoFaseDto {
 
 export class WorkflowAndamentoTarefasDto extends DetailWorkflowFluxoFaseTarefaDto {
     andamento: AndamentoTarefaDto | null;
+    /**
+     * Presente apenas nas tarefas vindas do cronograma da transferência: ID da tarefa no cronograma.
+     */
+    declare tarefa_cronograma_id?: number | null;
+    /**
+     * Presente apenas nas tarefas vindas do cronograma: responsável pela tarefa (coluna `tarefa.recursos`).
+     */
+    recursos?: string | null;
 }
 
 export class AndamentoFaseDto {

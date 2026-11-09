@@ -127,6 +127,7 @@ export class WorkflowAndamentoService {
                 inicio_real: true,
                 termino_real: true,
                 eh_marco: true,
+                recursos: true,
                 orgao: {
                     select: {
                         id: true,
@@ -189,6 +190,7 @@ export class WorkflowAndamentoService {
                                                     },
                                                     ordem: tarefa.numero,
                                                     marco: tarefa.eh_marco,
+                                                    recursos: tarefa.recursos,
                                                     responsabilidade: WorkflowResponsabilidade.OutroOrgao,
                                                     andamento: {
                                                         id: null,
