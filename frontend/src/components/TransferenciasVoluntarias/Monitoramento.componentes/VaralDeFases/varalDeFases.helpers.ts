@@ -11,11 +11,12 @@ type Responsavel = NonNullable<VaralDeItemProps['responsavel']>;
 // (`fase`, `responsabilidade`, `tarefa_cronograma_id`, `recursos`...),
 // por isso tipamos aqui apenas o que o varal usa.
 export type TarefaDoVaral = {
+  // `null` enquanto a tarefa ainda não tem andamento registrado
   andamento: {
     concluida: boolean;
     inicio_real?: string;
-    orgao_responsavel?: Responsavel;
-  };
+    orgao_responsavel?: Responsavel | null;
+  } | null;
   recursos?: string;
   tarefa_cronograma_id?: number | null;
   workflow_tarefa: {
@@ -95,17 +96,19 @@ export function montarPropsDaTarefa(
   tarefa: TarefaDoVaral,
   faseMae: VaralDeItemProps,
 ): VaralDeItemProps {
+  const concluida = !!tarefa.andamento?.concluida;
+
   return {
     atual: faseMae.atual,
-    concluida: tarefa.andamento.concluida,
+    concluida,
     dadosTarefa: {
       faseMaeId: faseMae.id,
-      inicioReal: tarefa.andamento.inicio_real,
+      inicioReal: tarefa.andamento?.inicio_real,
     },
     id: obterIdDaTarefa(tarefa),
     recursos: tarefa.recursos,
-    responsavel: tarefa.andamento.orgao_responsavel,
-    situacao: tarefa.andamento.concluida
+    responsavel: tarefa.andamento?.orgao_responsavel || undefined,
+    situacao: concluida
       ? { id: null, situacao: 'Concluída' }
       : undefined,
     tipo: obterTipoDaTarefa(tarefa),
