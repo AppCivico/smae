@@ -50,6 +50,12 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Quando `false`, o diálogo não abre e a URL é limpa,
+  // mesmo que alguém chegue com `?dialogo=<id>` na query
+  permitido: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const router = useRouter();
@@ -59,10 +65,12 @@ const { registrarPrefixo, removerPrefixo } = useDocumentTitle();
 
 const dialogRef = ref<HTMLDialogElement | null>(null);
 
-// Computed para verificar se o diálogo deve estar visível
-const dialogoEstaAberto = computed(
+const dialogoSolicitado = computed(
   () => router.currentRoute.value.query.dialogo === String(props.id),
 );
+
+// Computed para verificar se o diálogo deve estar visível
+const dialogoEstaAberto = computed(() => dialogoSolicitado.value && props.permitido);
 
 function limparQuery() {
   const query = structuredClone(router.currentRoute.value.query);
@@ -123,6 +131,18 @@ watch(
       emit('dialogo-aberto');
     } else {
       removerPrefixo(idDoPrefixo);
+    }
+  },
+  { immediate: true },
+);
+
+// `replace`, e não `push`, para que o botão "voltar" não retorne à URL recusada.
+// Não emite `dialogo-fechado`, porque o diálogo nunca chegou a abrir.
+watch(
+  () => dialogoSolicitado.value && !props.permitido,
+  (recusado) => {
+    if (recusado) {
+      router.replace({ query: limparQuery() });
     }
   },
   { immediate: true },

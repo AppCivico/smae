@@ -22,10 +22,16 @@ const mockRouterPush = vi.fn((to) => {
   return Promise.resolve();
 });
 
+const mockRouterReplace = vi.fn((to) => {
+  mockCurrentRoute.query = to?.query ?? {};
+  return Promise.resolve();
+});
+
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => mockCurrentRoute),
   useRouter: vi.fn(() => ({
     push: mockRouterPush,
+    replace: mockRouterReplace,
     currentRoute: {
       value: mockCurrentRoute,
     },
@@ -260,6 +266,66 @@ describe('SmaeDialog', () => {
       await botaoFechar.trigger('click');
 
       expect(wrapper.emitted('dialogo-aberto')).toHaveLength(1);
+    });
+  });
+
+  describe('permissão', () => {
+    it('não abre o diálogo quando permitido é false', () => {
+      mockCurrentRoute.query = { dialogo: 'teste' };
+
+      const wrapper = montarComponente({ permitido: false });
+
+      expect(wrapper.find('dialog').exists()).toBe(false);
+      expect(wrapper.find('.smae-dialog-backdrop').exists()).toBe(false);
+    });
+
+    it('limpa dialogo e parâmetros associados da URL com replace', () => {
+      mockCurrentRoute.query = {
+        dialogo: 'teste',
+        itemId: '123',
+        outroParam: 'manter',
+      };
+
+      montarComponente({ permitido: false, parametrosAssociados: ['itemId'] });
+
+      expect(mockRouterPush).not.toHaveBeenCalled();
+      expect(mockRouterReplace).toHaveBeenCalledTimes(1);
+
+      const chamada = mockRouterReplace.mock.calls[0][0];
+      expect(chamada.query.dialogo).toBeUndefined();
+      expect(chamada.query.itemId).toBeUndefined();
+      expect(chamada.query.outroParam).toBe('manter');
+    });
+
+    it('não emite dialogo-aberto nem dialogo-fechado quando recusado', () => {
+      mockCurrentRoute.query = { dialogo: 'teste' };
+
+      const wrapper = montarComponente({ permitido: false });
+
+      expect(wrapper.emitted('dialogo-aberto')).toBeFalsy();
+      expect(wrapper.emitted('dialogo-fechado')).toBeFalsy();
+    });
+
+    it('não mexe na URL quando o diálogo não foi solicitado', () => {
+      mockCurrentRoute.query = { dialogo: 'outro' };
+
+      montarComponente({ permitido: false });
+
+      expect(mockRouterReplace).not.toHaveBeenCalled();
+    });
+
+    it('fecha e limpa a URL quando a permissão é retirada com o diálogo aberto', async () => {
+      mockCurrentRoute.query = { dialogo: 'teste' };
+
+      const wrapper = montarComponente();
+      expect(wrapper.find('dialog').exists()).toBe(true);
+
+      await wrapper.setProps({ permitido: false });
+
+      expect(mockRouterReplace).toHaveBeenCalledTimes(1);
+      await vi.waitFor(() => {
+        expect(wrapper.find('dialog').exists()).toBe(false);
+      });
     });
   });
 
