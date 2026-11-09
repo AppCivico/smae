@@ -41,6 +41,29 @@
 - **Padrão:** `false`
 - **Descrição:** Quando `true`, exibe uma confirmação antes de fechar o diálogo com a mensagem "Deseja sair sem salvar as alterações?".
 
+### `permitido`
+
+- **Tipo:** `Boolean`
+- **Padrão:** `true`
+- **Descrição:** Quando `false`, o diálogo não abre, mesmo com `?dialogo=<id>` na URL, e remove da query o `dialogo` e os `parametrosAssociados` usando `router.replace`. Serve para impedir que um link direto abra um diálogo que a pessoa não pode usar. Esconder o botão que abre o diálogo não basta.
+- **Observações:**
+  - O componente não consulta permissões. Quem decide é o componente pai, que passa o resultado como booleano, então a regra pode ser tão composta quanto for necessário.
+  - Passe um valor já conhecido na montagem, como as permissões do `authStore`, que vêm do `localStorage`. Se o valor depender de dados assíncronos, mantenha `true` até que eles cheguem. Caso contrário, a URL será limpa antes da hora.
+  - Não substitui a validação no backend.
+  - Não emite `@dialogo-aberto` nem `@dialogo-fechado` quando o diálogo é recusado.
+
+**Exemplo de uso:**
+
+```vue
+<SmaeDialog
+  id="editar-fase"
+  :permitido="temPermissãoPara('CadastroWorkflows.editar')
+    && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')"
+>
+  <!-- Conteúdo do diálogo -->
+</SmaeDialog>
+```
+
 ## Eventos
 
 ### `@dialogo-fechado`
@@ -218,7 +241,7 @@ O componente permite passar atributos nativos do `<dialog>` através de `v-bind`
 
 ## Comportamento
 
-1. **Abertura Automática:** O diálogo abre automaticamente quando `$route.query.dialogo` corresponde ao `id` da prop.
+1. **Abertura Automática:** O diálogo abre automaticamente quando `$route.query.dialogo` corresponde ao `id` da prop, desde que `permitido` seja `true`.
 
 2. **Fechamento:** O diálogo pode ser fechado de três formas:
    - Clicando no botão X
