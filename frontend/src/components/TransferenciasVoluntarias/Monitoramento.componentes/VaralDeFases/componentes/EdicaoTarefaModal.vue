@@ -139,7 +139,7 @@ function salvarTarefaCronograma(
   });
 }
 
-const salvar = (fecharDialogo: () => void) => handleSubmit
+const salvar = (fecharDialogoAposSalvar: () => void) => handleSubmit
   .withControlled(async (valores) => {
     if (!tarefa.value) {
       return;
@@ -161,7 +161,7 @@ const salvar = (fecharDialogo: () => void) => handleSubmit
       return;
     }
 
-    fecharDialogo();
+    fecharDialogoAposSalvar();
     workflowAndamentoStore.buscar();
   });
 </script>

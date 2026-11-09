@@ -83,7 +83,7 @@ function abrirDialogo() {
   userStore.buscarPessoasSimplificadas();
 }
 
-const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
+const salvar = (fecharDialogoAposSalvar: () => void, finalizar = false) => handleSubmit
   .withControlled(async (valores) => {
     erroAoSalvar.value = '';
 
@@ -106,7 +106,7 @@ const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
       }
     }
 
-    fecharDialogo();
+    fecharDialogoAposSalvar();
     workflowAndamentoStore.buscar();
   });
 </script>
