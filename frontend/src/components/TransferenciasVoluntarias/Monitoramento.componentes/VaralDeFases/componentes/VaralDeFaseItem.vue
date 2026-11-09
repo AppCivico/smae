@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import {
   montarPropsDaTarefa,
   montarQueryDeEdicao,
+  podeEditarVaral,
   type TarefaDoVaral,
 } from '../varalDeFases.helpers';
 
@@ -137,9 +138,7 @@ const ehOutroOrgao = computed(() => props.responsavel?.id === 'OutroOrgao');
           class="varal-de-fase-item__agrupador-botoes"
         >
           <RouterLink
-            v-if="temPermissãoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
-              && !temPermissãoPara('SMAE.PerfilGestorDistribuicaoRecurso')
-            "
+            v-if="podeEditarVaral(temPermissãoPara)"
             class="varal-de-fase-item__botao"
             :to="{ query: { ...$route.query, ...montarQueryDeEdicao(props) } }"
           >

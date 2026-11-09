@@ -8,6 +8,7 @@ import { useRoute } from 'vue-router';
 import SmaeDialog from '@/components/SmaeDialog.vue';
 import schema from '@/consts/formSchemas/transferenciaEdicaoDeTarefa';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 
@@ -18,13 +19,16 @@ import {
   obterFases,
   obterIdDaTarefa,
   obterTipoDaTarefa,
+  podeEditarVaral,
 } from '../varalDeFases.helpers';
 
 const route = useRoute();
 
+const authStore = useAuthStore();
 const tarefaStore = useTarefasStore();
 const workflowAndamentoStore = useWorkflowAndamentoStore();
 
+const { temPermissãoPara } = storeToRefs(authStore);
 const { etapaEmFoco } = storeToRefs(workflowAndamentoStore);
 
 // Não usamos `tarefaStore.chamadasPendentes.emFoco` porque ele começa
@@ -167,6 +171,7 @@ const salvar = (fecharDialogo: () => void) => handleSubmit
     :id="DIALOGO_EDICAO_TAREFA"
     :titulo="tarefa?.titulo"
     :parametros-associados="['fase_id', 'tarefa_id', 'tarefa_tipo']"
+    :permitido="podeEditarVaral(temPermissãoPara)"
   >
     <template #default="{ fecharDialogo }">
       <p v-if="!tarefa">
