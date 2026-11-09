@@ -1595,7 +1595,8 @@ body:has(dialog[open].editModal-dialog) {
   background: @branco;
   color: @primary;
   display: block;
-  position: relative;
+  // Com `fixed`o diálogo aparece centralizado na área visível, independentemente da rolagem.
+  position: fixed;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0px 8px 16px rgba(21, 39, 65, 0.1);
@@ -1609,6 +1610,7 @@ body:has(dialog[open].editModal-dialog) {
 // Dialog nativo para modais
 .editModal-dialog {
   .modal();
+
   width: 80%;
   max-width: 665px;
   max-height: calc(100vh - 2rem);
@@ -1653,6 +1655,7 @@ body:has(dialog[open].editModal-dialog) {
 
   .editModal {
     .modal();
+    position: relative;
     justify-content: space-between;
     gap: 1em;
     width: 80%;
