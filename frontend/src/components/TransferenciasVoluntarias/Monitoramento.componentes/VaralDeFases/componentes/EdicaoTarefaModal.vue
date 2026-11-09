@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { differenceInDays } from 'date-fns';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
@@ -7,6 +7,7 @@ import { useRoute } from 'vue-router';
 
 import SmaeDialog from '@/components/SmaeDialog.vue';
 import schema from '@/consts/formSchemas/transferenciaEdicaoDeTarefa';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { useTarefasStore } from '@/stores/tarefas.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 
@@ -46,6 +47,15 @@ const tarefa = computed(() => {
     ? montarPropsDaTarefa(encontrada, montarPropsDaFase(faseMae))
     : null;
 });
+
+const dataDeHoje = () => format(new Date(), 'yyyy-MM-dd');
+
+const inicioReal = computed(() => dateTimeToDate(tarefa.value?.dadosTarefa?.inicioReal));
+
+// A API recusa término anterior ao início, então não dá para concluir antes de começar
+const inicioNoFuturo = computed(() => tarefa.value?.tipo === 'tarefa-cronograma'
+  && !!inicioReal.value
+  && inicioReal.value > dataDeHoje());
 
 const { handleSubmit, resetForm } = useForm({
   validationSchema: schema,
@@ -91,18 +101,30 @@ function salvarTarefaCronograma(
   dados: NonNullable<typeof tarefa.value>,
   valores: Record<string, unknown>,
 ) {
+  // A tarefa do cronograma não tem um campo "concluída": a API considera
+  // concluída a que tem `termino_real`. Por isso só enviamos datas quando a
+  // situação muda, para não sobrescrever o término de uma tarefa já concluída.
+  // A API também exige que as três propriedades venham juntas.
   let datas = {};
+  const inicio = dateTimeToDate(dados.dadosTarefa?.inicioReal) || null;
 
-  if (valores.concluido) {
-    const terminoReal = new Date();
-    const inicioReal = dados.dadosTarefa?.inicioReal
-      ? new Date(dados.dadosTarefa.inicioReal)
-      : terminoReal;
+  if (valores.concluido && !dados.concluida) {
+    // Datas sem horário (YYYY-MM-DD), e o dia de início conta na duração:
+    // término = início + (duração - 1) dias
+    const termino = dataDeHoje();
+    const inicioOuHoje = inicio || termino;
 
     datas = {
-      inicio_real: inicioReal.toISOString(),
-      termino_real: terminoReal.toISOString(),
-      duracao_real: Math.max(differenceInDays(terminoReal, inicioReal), 1),
+      inicio_real: inicioOuHoje,
+      termino_real: termino,
+      duracao_real: differenceInCalendarDays(parseISO(termino), parseISO(inicioOuHoje)) + 1,
+    };
+  } else if (!valores.concluido && dados.concluida) {
+    // Reabre a tarefa, mantendo a data de início
+    datas = {
+      inicio_real: inicio,
+      termino_real: null,
+      duracao_real: null,
     };
   }
 
@@ -180,6 +202,8 @@ const salvar = (fecharDialogo: () => void) => handleSubmit
               type="checkbox"
               :value="true"
               :unchecked-value="false"
+              :disabled="inicioNoFuturo"
+              :aria-describedby="inicioNoFuturo ? 'aviso-inicio-no-futuro' : undefined"
             />
 
             <SmaeLabel
@@ -189,6 +213,15 @@ const salvar = (fecharDialogo: () => void) => handleSubmit
               name="concluido"
             />
           </label>
+
+          <p
+            v-if="inicioNoFuturo && inicioReal"
+            id="aviso-inicio-no-futuro"
+            class="t12 mb0"
+          >
+            A tarefa só pode ser concluída a partir de
+            {{ format(parseISO(inicioReal), 'dd/MM/yyyy') }}, data de início real.
+          </p>
 
           <ErrorMessage
             name="concluido"
