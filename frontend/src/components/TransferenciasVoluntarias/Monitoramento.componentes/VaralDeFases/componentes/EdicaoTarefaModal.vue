@@ -182,12 +182,14 @@ const salvar = (fecharDialogo: () => void) => handleSubmit
         <div class="flex g2 mb1">
           <div class="f1 mb1">
             <SmaeLabel
+              id="edicao-tarefa-orgao-rotulo"
               :schema="schema"
               name="orgao_id"
             />
 
             <input
               class="inputtext"
+              aria-labelledby="edicao-tarefa-orgao-rotulo"
               :value="tarefa.responsavel?.sigla"
               disabled
             >

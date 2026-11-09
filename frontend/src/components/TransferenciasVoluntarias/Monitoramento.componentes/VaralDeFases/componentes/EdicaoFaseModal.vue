@@ -137,12 +137,14 @@ const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
         <div class="flex g2 mb1">
           <div class="f1 mb1">
             <SmaeLabel
+              id="edicao-fase-orgao-rotulo"
               :schema="schema"
               name="orgao_responsavel_id"
             />
 
             <input
               class="inputtext"
+              aria-labelledby="edicao-fase-orgao-rotulo"
               :value="fase.responsavel?.sigla"
               disabled
             >
