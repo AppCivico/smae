@@ -45,8 +45,6 @@ export type VaralDeItemProps = {
   podeConcluir?: boolean,
   bloqueado?: boolean,
   tipo: FaseTipo
-  // `id` do responsável pela fase mãe; `'OutroOrgao'` quando é de outro órgão
-  faseResponsabilidade?: string
   recursos?: string,
 };
 

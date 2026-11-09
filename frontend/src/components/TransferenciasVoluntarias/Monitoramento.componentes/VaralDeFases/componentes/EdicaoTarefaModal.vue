@@ -84,11 +84,10 @@ function salvarTarefaWorkflow(
     ? null
     : dados.responsavel?.id;
 
+  // Sem `orgao_responsavel_id` da fase: a API mantém o órgão atual dela,
+  // e salvar a tarefa não deve transferir a fase mãe para o órgão da tarefa
   return workflowAndamentoStore.editarFase({
     fase_id: dados.dadosTarefa?.faseMaeId,
-    orgao_responsavel_id: dados.faseResponsabilidade !== 'OutroOrgao'
-      ? orgaoId
-      : undefined,
     tarefas: [{
       id: dados.id,
       orgao_responsavel_id: orgaoId,

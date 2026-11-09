@@ -102,7 +102,6 @@ export function montarPropsDaTarefa(
       faseMaeId: faseMae.id,
       inicioReal: tarefa.andamento.inicio_real,
     },
-    faseResponsabilidade: faseMae.responsavel?.id,
     id: obterIdDaTarefa(tarefa),
     recursos: tarefa.recursos,
     responsavel: tarefa.andamento.orgao_responsavel,
