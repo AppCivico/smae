@@ -16,10 +16,11 @@ RUN fc-cache -f -v
 
 WORKDIR /usr/src/app
 
-RUN npm --loglevel=error install -g npm@11.4.2
+RUN npm --loglevel=error install -g npm@12.2.2
 
 COPY package.json ./
 COPY package-lock.json ./
+COPY .npmrc ./
 
 # scripts/ precisa existir antes do `npm ci`: o postinstall roda `prisma generate`. Como
 # prisma/ ainda não foi copiado, o postinstall PULA o generate — mantendo esta layer de
