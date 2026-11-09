@@ -44,6 +44,15 @@ export type FaseDoVaral = {
   tarefas: TarefaDoVaral[];
 };
 
+type VerificadorDePermissao = (permissao: string | string[]) => boolean;
+
+// O perfil de gestor de distribuição de recurso pode ter `CadastroWorkflows.inserir`,
+// mas não edita fases nem tarefas. A API também recusa a edição.
+export function podeEditarVaral(temPermissaoPara: VerificadorDePermissao): boolean {
+  return temPermissaoPara(['CadastroWorkflows.editar', 'CadastroWorkflows.inserir'])
+    && !temPermissaoPara('SMAE.PerfilGestorDistribuicaoRecurso');
+}
+
 const traducaoDeResponsabilidade: Record<string, string> = {
   OutroOrgao: 'Outro Órgão',
 };

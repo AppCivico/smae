@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 
 import SmaeDialog from '@/components/SmaeDialog.vue';
 import schema from '@/consts/formSchemas/transferenciaEdicaoDeFase';
+import { useAuthStore } from '@/stores/auth.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 
@@ -13,13 +14,16 @@ import {
   DIALOGO_EDICAO_FASE,
   montarPropsDaFase,
   obterFases,
+  podeEditarVaral,
 } from '../varalDeFases.helpers';
 
 const route = useRoute();
 
+const authStore = useAuthStore();
 const userStore = useUsersStore();
 const workflowAndamentoStore = useWorkflowAndamentoStore();
 
+const { temPermissãoPara } = storeToRefs(authStore);
 const { pessoasSimplificadas } = storeToRefs(userStore);
 const { chamadasPendentes, etapaEmFoco } = storeToRefs(workflowAndamentoStore);
 
@@ -112,6 +116,7 @@ const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
     :id="DIALOGO_EDICAO_FASE"
     :titulo="fase?.titulo"
     :parametros-associados="['fase_id']"
+    :permitido="podeEditarVaral(temPermissãoPara)"
     @dialogo-aberto="abrirDialogo"
   >
     <template #default="{ fecharDialogo }">
