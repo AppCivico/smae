@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import SmaeDialog from '@/components/SmaeDialog.vue';
@@ -22,6 +22,10 @@ const workflowAndamentoStore = useWorkflowAndamentoStore();
 
 const { pessoasSimplificadas } = storeToRefs(userStore);
 const { chamadasPendentes, etapaEmFoco } = storeToRefs(workflowAndamentoStore);
+
+// Não é limpo no `watch(fase)`, porque a busca após uma finalização
+// que falhou recria a fase e apagaria a mensagem
+const erroAoSalvar = ref<string>('');
 
 const fase = computed(() => {
   if (route.query.dialogo !== DIALOGO_EDICAO_FASE) {
@@ -70,12 +74,32 @@ watch(fase, (dados) => {
   });
 }, { immediate: true });
 
+function abrirDialogo() {
+  erroAoSalvar.value = '';
+  userStore.buscarPessoasSimplificadas();
+}
+
 const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
   .withControlled(async (valores) => {
-    await workflowAndamentoStore.editarFase(valores);
+    erroAoSalvar.value = '';
+
+    try {
+      await workflowAndamentoStore.editarFase(valores);
+    } catch {
+      erroAoSalvar.value = 'Não foi possível salvar a fase. Tente novamente.';
+      return;
+    }
 
     if (finalizar) {
-      await workflowAndamentoStore.encerrarFase(valores.fase_id);
+      try {
+        await workflowAndamentoStore.encerrarFase(valores.fase_id);
+      } catch {
+        // A edição já foi gravada, então atualizamos o varal e mantemos o
+        // diálogo aberto para que só a finalização seja tentada de novo
+        erroAoSalvar.value = 'As alterações foram salvas, mas não foi possível finalizar a fase.';
+        workflowAndamentoStore.buscar();
+        return;
+      }
     }
 
     fecharDialogo();
@@ -88,7 +112,7 @@ const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
     :id="DIALOGO_EDICAO_FASE"
     :titulo="fase?.titulo"
     :parametros-associados="['fase_id']"
-    @dialogo-aberto="userStore.buscarPessoasSimplificadas()"
+    @dialogo-aberto="abrirDialogo"
   >
     <template #default="{ fecharDialogo }">
       <p v-if="!fase">
@@ -183,6 +207,14 @@ const salvar = (fecharDialogo: () => void, finalizar = false) => handleSubmit
             />
           </div>
         </div>
+
+        <ErrorComponent
+          v-if="erroAoSalvar"
+          class="mb1"
+          role="alert"
+        >
+          {{ erroAoSalvar }}
+        </ErrorComponent>
 
         <div class="flex g1 justifycenter">
           <button
