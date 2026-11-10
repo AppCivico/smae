@@ -88,13 +88,17 @@ onBeforeUnmount(destruirCarrossel);
         </div>
       </div>
 
-      <div
+      <button
         ref="botaoAnterior"
-        class="swiper-button-prev"
+        type="button"
+        class="like-a__link swiper-button-prev"
+        aria-label="Anterior"
       />
-      <div
+      <button
         ref="botaoProximo"
-        class="swiper-button-next"
+        type="button"
+        class="like-a__link swiper-button-next"
+        aria-label="Próximo"
       />
       <div
         ref="paginacao"
@@ -140,7 +144,7 @@ onBeforeUnmount(destruirCarrossel);
 
     .swiper-button-prev {
       left: 0;
-      transform: translateX(-100%);
+      transform: translateX(-75%);
 
       &::after {
         content: url("@{u}icons/left.svg");
@@ -149,7 +153,7 @@ onBeforeUnmount(destruirCarrossel);
 
     .swiper-button-next {
       right: 0;
-      transform: translateX(100%);
+      transform: translateX(75%);
 
       &::after {
         content: url("@{u}icons/right.svg");
