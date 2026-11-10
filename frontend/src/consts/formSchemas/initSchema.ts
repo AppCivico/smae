@@ -18,6 +18,40 @@ import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
 
 import i18n from './config/i18n';
 
+type ParamsSemDuplicatas = Parameters<typeof haDuplicatasNaLista>[1];
+
+/**
+ * Tipagem dos métodos adicionados via `addMethod()` abaixo.
+ * Métodos adicionados em `mixed` valem para todos os schemas,
+ * porque, no yup 0.32, `mixed.prototype` é o `BaseSchema.prototype`.
+ *
+ * Os parâmetros genéricos precisam repetir os da declaração original
+ * para que as interfaces sejam mescladas, mesmo sem uso.
+ */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+declare module 'yup' {
+  interface BaseSchema<TCast, TContext, TOutput> {
+    inArray(arrayToCompare: unknown, message?: string): this;
+    nullableOuVazio(): this;
+    semDuplicatas(message?: string, params?: ParamsSemDuplicatas): this;
+  }
+
+  interface StringSchema<TType, TContext, TOut> {
+    fieldUntilToday(errorMessage?: string): this;
+    nullableOuVazio(): StringSchema<TType | null, TContext>;
+    validarCasasDecimais(casasDecimais?: number): this;
+  }
+
+  interface DateSchema<TType, TContext, TOut> {
+    nullableOuVazio(): DateSchema<TType | null, TContext>;
+  }
+
+  interface NumberSchema<TType, TContext, TOut> {
+    nullableOuVazio(): NumberSchema<TType | null, TContext>;
+  }
+}
+/* eslint-enable @typescript-eslint/no-unused-vars */
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -45,7 +79,7 @@ addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path}
 addMethod(string, 'nullableOuVazio', function _() {
   return this
     .nullable()
-    .transform((v) => (v === '' ? null : v));
+    .transform((v: unknown) => (v === '' ? null : v));
 });
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -72,7 +106,7 @@ addMethod(string, 'validarCasasDecimais', function _(casasDecimais = 0) {
 addMethod(date, 'nullableOuVazio', function _() {
   return this
     .nullable()
-    .transform((v) => {
+    .transform((v: Date) => {
       try {
         v.toISOString();
         return v;
@@ -120,7 +154,7 @@ addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não
 addMethod(number, 'nullableOuVazio', function _() {
   return this
     .nullable()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v));
+    .transform((v: unknown) => (v === '' || Number.isNaN(v) ? null : v));
 });
 
 /**
