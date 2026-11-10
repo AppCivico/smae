@@ -43,6 +43,7 @@ export default {
       /// CasaCivil
       'RelatóriosDeParlamentares',
       'RelatóriosDeTransferênciasVoluntárias',
+      'relatoriosDeExecucaoOrcamentariaDeTransferencias',
       'RelatóriosDeTribunalDeContas',
       'RelatóriosDeAtividadesPendentes',
       'relatóriosDeDemandas',
@@ -259,6 +260,41 @@ export default {
             rotaDeEscape: 'RelatóriosDeTransferênciasVoluntárias',
             rotasParaMigalhasDePão: [
               'RelatóriosDeTransferênciasVoluntárias',
+            ],
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'execucao-orcamentaria',
+      meta: {
+        título: 'Relatórios de execução orçamentária de transferências voluntárias',
+        títuloParaMenu: FONTES_POR_SISTEMA[ModuloSistema.CasaCivil].TransferenciasOrcamento.nome,
+        fonteDoRelatorio: 'TransferenciasOrcamento',
+        limitarÀsPermissões: 'Reports.executar.CasaCivil',
+      },
+      children: [
+        {
+          path: '',
+          name: 'relatoriosDeExecucaoOrcamentariaDeTransferencias',
+          component: ListaDeRelatorios,
+          meta: {
+            rotaNovoRelatorio: 'relatoriosDeExecucaoOrcamentariaDeTransferencias.novo',
+          },
+        },
+        {
+          component: () => import(
+            '@/views/relatorios/NovoRelatorioDeExecucaoOrcamentariaDeTransferencias.vue'
+          ),
+          path: 'novo',
+          name: 'relatoriosDeExecucaoOrcamentariaDeTransferencias.novo',
+          meta: {
+            título: 'Novo relatório de execução orçamentária de transferências voluntárias',
+            tituloParaMigalhaDePao: 'Novo relatório de execução orçamentária',
+            rotaDeEscape: 'relatoriosDeExecucaoOrcamentariaDeTransferencias',
+            rotasParaMigalhasDePão: [
+              'relatoriosDeExecucaoOrcamentariaDeTransferencias',
             ],
           },
         },
