@@ -51,7 +51,7 @@ export default object({
     .nullableOuVazio(),
   fonte: string()
     .label('Relatório')
-    .required('Selecione a fonte do relatório'),
+    .required('Selecione o relatório em que esse modelo será usado'),
   nome: string()
     .label('Nome')
     .max(250)
