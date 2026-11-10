@@ -58,6 +58,7 @@ const FONTES_POR_SISTEMA: Record<ModuloSistema, FontesDoSistema> = {
   [ModuloSistema.CasaCivil]: {
     Parlamentares: { nome: 'Parlamentares', valor: 'Parlamentares' },
     TribunalDeContas: { nome: 'Tribunal de contas', valor: 'TribunalDeContas' },
+    TransferenciasOrcamento: { nome: 'Execução orçamentária', valor: 'TransferenciasOrcamento' },
     Transferencias: { nome: 'Transferências voluntárias', valor: 'Transferencias' },
     AtvPendentes: { nome: 'Atividades pendentes', valor: 'AtvPendentes' },
     Demandas: { nome: 'Demandas', valor: 'Demandas' },
