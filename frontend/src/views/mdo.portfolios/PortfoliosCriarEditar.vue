@@ -5,6 +5,7 @@ import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import SmaeExplicacaoCampo from '@/components/SmaeExplicacaoCampo.vue';
 import schemaPortfolio, { portfoliosParaCompartilhamento } from '@/consts/formSchemas/portfolio';
 import months from '@/consts/months';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
@@ -289,6 +290,13 @@ portfolioStore.buscarTudo({}, false);
         })"
         label="titulo"
       />
+
+      <SmaeExplicacaoCampo
+        v-if="emFoco?.id"
+        name="portfolios_compartilhados_padrao"
+        :schema="schema"
+      />
+
       <ErrorMessage
         name="portfolios_compartilhados_padrao"
         class="error-msg"

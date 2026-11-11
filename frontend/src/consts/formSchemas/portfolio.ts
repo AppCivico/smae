@@ -95,6 +95,7 @@ export default ({
     .label('Compartilhar por padrão com')
     .meta({
       balaoInformativo: 'Projetos e obras criados neste portfólio já nascem compartilhados com os portfólios escolhidos. Só são aceitos portfólios com ao menos um órgão em comum e que não sejam modelos de clonagem.',
+      explicacao: 'Compartilhamentos adicionados serão incluídos para os Projetos/Obras neste portfólio, mas a sua remoção não afetará os compartilhamentos já existentes.',
     })
     .nullable()
     .of(
