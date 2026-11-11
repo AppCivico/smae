@@ -1245,13 +1245,26 @@ watch(portfólioSelecionado, (novo, antigo) => {
               />
               <Field
                 :id="`fonte_recursos[${idx}].observacao`"
+                v-slot="{ handleChange, value, field}"
                 :name="`fonte_recursos[${idx}].observacao`"
-                as="textarea"
-                rows="3"
-                maxlength="2048"
                 class="inputtext light mb1"
                 :disabled="desabilitarTodosCampos.camposComuns"
-              />
+              >
+                <SmaeText
+                  as="textarea"
+                  rows="5"
+                  class="inputtext light mb1"
+                  :class="{ error: errors[field.name] }"
+                  :schema="schema"
+                  :name="field.name"
+                  :model-value="value"
+                  :disabled="bloquearCampos"
+                  :aria-disabled="bloquearCampos"
+                  anular-vazio
+                  :max-length="255"
+                  @update:model-value="handleChange"
+                />
+              </Field>
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`fonte_recursos[${idx}].observacao`"
