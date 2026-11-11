@@ -66,10 +66,10 @@ export class PainelParlamentarService {
         const [perfil, [sql]] = await Promise.all([
             this.parlamentarService.findOne(id, user),
             this.prisma.$queryRaw<{ resultado: ResultadoPainelSql }[]>`
-                -- Em andamento: workflow iniciado e ainda não finalizado (sem workflow não conta).
+                -- Em andamento: workflow não finalizado; sem workflow iniciado também conta como em andamento.
                 WITH base AS MATERIALIZED (
                     SELECT t.id AS transferencia_id,
-                        (t.workflow_id IS NOT NULL AND NOT t.workflow_finalizado) AS em_andamento,
+                        (NOT t.workflow_finalizado) AS em_andamento,
                         tp.partido_id, tp.valor
                     FROM transferencia t
                     JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id
@@ -80,7 +80,7 @@ export class PainelParlamentarService {
                     SELECT COALESCE(SUM(tp.valor), 0) AS valor
                     FROM transferencia t
                     JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
-                    WHERE ${condicoes} AND t.workflow_id IS NOT NULL AND NOT t.workflow_finalizado
+                    WHERE ${condicoes} AND NOT t.workflow_finalizado
                 ),
                 dist AS MATERIALIZED (
                     SELECT dr.orgao_gestor_id, dp.valor

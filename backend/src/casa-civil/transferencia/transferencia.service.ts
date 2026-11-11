@@ -607,6 +607,22 @@ export class TransferenciaService {
                                 },
                             })
                         );
+
+                        // Remove também das distribuições desta transferência (linhas sem valor),
+                        // para não deixar o parlamentar órfão na distribuição.
+                        operations.push(
+                            prismaTxn.distribuicaoParlamentar.updateMany({
+                                where: {
+                                    distribuicao_recurso: { transferencia_id: id },
+                                    parlamentar_id: row.parlamentar_id,
+                                    removido_em: null,
+                                },
+                                data: {
+                                    removido_em: agora,
+                                    removido_por: user.id,
+                                },
+                            })
+                        );
                     }
                 }
 

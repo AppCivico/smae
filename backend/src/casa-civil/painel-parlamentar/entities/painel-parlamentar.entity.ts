@@ -38,7 +38,7 @@ export class PainelParlamentarPerfilDto {
 export class PainelParlamentarTransferenciasKpiDto {
     total: number;
     @ApiProperty({
-        description: 'Transferências com workflow iniciado e ainda não finalizado (sem workflow não contam)',
+        description: 'Transferências com workflow não finalizado (sem workflow iniciado também contam)',
     })
     em_andamento: number;
 }
