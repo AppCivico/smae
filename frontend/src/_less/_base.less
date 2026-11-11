@@ -98,6 +98,9 @@ textarea {
 }
 
 fieldset {
+  // o padrão dos navegadores é `min-content`, o que faz o `fieldset` alargar
+  // até o conteúdo em vez de deixar elementos internos rolarem horizontalmente
+  min-width: 0;
   border: 0;
   padding-top: 1.5rem;
   padding-right: 0;
