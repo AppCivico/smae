@@ -24,6 +24,7 @@ import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.
 import {
     AditamentosDto,
     DistribuicaoHistoricoStatusDto,
+    DistribuicaoExtratoExecucaoOrcamentariaDto,
     DistribuicaoRecursoDetailDto,
     DistribuicaoRecursoDto,
     DistribuicaoRecursoSeiDto,
@@ -1024,6 +1025,27 @@ export class DistribuicaoRecursoService {
                         id: true,
                     },
                 },
+                orcamentos_realizados: {
+                    where: { removido_em: null },
+                    orderBy: [{ ano_referencia: 'desc' }, { id: 'asc' }],
+                    select: {
+                        id: true,
+                        ano_referencia: true,
+                        dotacao: true,
+                        dotacao_complemento: true,
+                        processo: true,
+                        nota_empenho: true,
+                        soma_valor_empenho: true,
+                        soma_valor_liquidado: true,
+                        mes_utilizado: true,
+                        itens: {
+                            where: { sobrescrito_em: null },
+                            orderBy: { mes: 'desc' },
+                            take: 1,
+                            select: { mes: true },
+                        },
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
@@ -1178,6 +1200,19 @@ export class DistribuicaoRecursoService {
             pode_solicitar_ajuste: pode_solicitar_ajuste,
             pode_ver_hist_status: pode_ver_hist_status,
             possui_solicitacao_ajuste_pendente: row.solicitacoes_ajuste.length > 0,
+            extrato_execucao_orcamentaria: row.orcamentos_realizados.map((r) => {
+                return {
+                    id: r.id,
+                    ano_referencia: r.ano_referencia,
+                    dotacao: r.dotacao,
+                    dotacao_complemento: r.dotacao_complemento,
+                    processo: r.processo,
+                    nota_empenho: r.nota_empenho,
+                    soma_valor_empenho: r.soma_valor_empenho.toFixed(2),
+                    soma_valor_liquidado: r.soma_valor_liquidado.toFixed(2),
+                    mes_atualizado: r.itens[0]?.mes ?? r.mes_utilizado,
+                } satisfies DistribuicaoExtratoExecucaoOrcamentariaDto;
+            }),
         } satisfies DistribuicaoRecursoDetailDto;
     }
 

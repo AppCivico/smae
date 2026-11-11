@@ -81,7 +81,26 @@ export class ParlamentarDistribuicaoDto {
     valor: Decimal | null;
 }
 
-export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {}
+export class DistribuicaoExtratoExecucaoOrcamentariaDto {
+    /// id do orçamento realizado
+    id: number;
+    ano_referencia: number;
+    dotacao: string;
+    dotacao_complemento: string | null;
+    processo: string | null;
+    nota_empenho: string | null;
+    /// soma do empenho no ano (string com 2 casas decimais)
+    soma_valor_empenho: string;
+    /// soma da liquidação no ano (string com 2 casas decimais)
+    soma_valor_liquidado: string;
+    /// último mês (1-12) com valores informados ("Atualizado em")
+    mes_atualizado: number;
+}
+
+export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
+    @ApiProperty({ type: [DistribuicaoExtratoExecucaoOrcamentariaDto] })
+    extrato_execucao_orcamentaria: DistribuicaoExtratoExecucaoOrcamentariaDto[];
+}
 
 export class AditamentosDto {
     @IsDateYMD()
