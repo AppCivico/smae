@@ -6,7 +6,6 @@ import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { HtmlSanitizer } from '../common/html-sanitizer';
-import { Html2Text } from '../common/Html2Text';
 import { MetaService } from '../meta/meta.service';
 import { PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 import { PdmService } from '../pdm/pdm.service';
@@ -21,43 +20,22 @@ import {
 import { FilterPsCiclo } from './dto/update-pdm-ciclo.dto';
 import { CicloFisicoPSDto, ListPSCicloDto } from './entities/pdm-ciclo.entity';
 import { PsCicloFaseCicloDto, PsCicloFaseRevisaoDto, PsCicloFasesDto } from './entities/ps-ciclo-fase.entity';
+import {
+    blocosVisiveisDto,
+    carregaFasesConfig,
+    FaseConfig,
+    faseConfigDto,
+    SelectRevisaoLeitura,
+} from './monitoramento-fase.leitura';
 import { calculaEstadoCiclo, EstadoCiclo } from './ps-ciclo-fase.estado';
 import { MSG_PLANO_LEGADO, MSG_PLANO_POR_FASES, travaPlano } from './trava-plano';
 
 const TX_OPTS = { isolationLevel: 'Serializable', maxWait: 5000, timeout: 15000 } as const;
 
-const SelectFaseConfig = {
-    id: true,
-    ordem: true,
-    rotulo: true,
-    habilitada: true,
-    aceita_tags: true,
-    aceita_anexos: true,
-    blocos: {
-        where: { removido_em: null },
-        orderBy: { ordem: 'asc' as const },
-        select: { id: true, ordem: true, rotulo: true, habilitado: true },
-    },
-} satisfies Prisma.PdmMonitoramentoFaseConfigSelect;
-
-type FaseConfig = Prisma.PdmMonitoramentoFaseConfigGetPayload<{ select: typeof SelectFaseConfig }>;
-
 const SelectRevisao = {
-    id: true,
-    fase_config_id: true,
+    ...SelectRevisaoLeitura,
     ultima_revisao: true,
-    fecha_ciclo: true,
-    comentario_sistema: true,
-    referencia_data: true,
-    criado_em: true,
-    criado_por: true,
-    reaberto_em: true,
-    criador: { select: { id: true, nome_exibicao: true } },
-    reabridor: { select: { id: true, nome_exibicao: true } },
     fase_config: { select: { rotulo: true } },
-    blocos: {
-        select: { bloco_config_id: true, conteudo: true, bloco_config: { select: { rotulo: true, ordem: true } } },
-    },
     tags: {
         select: {
             tag: {
@@ -230,17 +208,7 @@ export class PsCicloFaseService {
                 const atual = daFase.find((r) => r.ultima_revisao);
                 const anterior = revisoesAnteriores.find((r) => r.fase_config_id === fase.id);
                 return {
-                    config: {
-                        id: fase.id,
-                        ordem: fase.ordem,
-                        rotulo: fase.rotulo,
-                        aceita_tags: fase.aceita_tags,
-                        aceita_anexos: fase.aceita_anexos,
-                        fecha_ciclo: fase.id === estado.faseFechamentoId,
-                        blocos: fase.blocos
-                            .filter((b) => b.habilitado)
-                            .map((b) => ({ id: b.id, ordem: b.ordem, rotulo: b.rotulo })),
-                    },
+                    config: faseConfigDto(fase, estado.faseFechamentoId),
                     preenchida: estado.preenchidas.includes(fase.id),
                     editavel: estado.editaveis.includes(fase.id),
                     atual: atual ? revisaoDto(atual) : null,
@@ -463,11 +431,7 @@ export class PsCicloFaseService {
     }
 
     private async carregaFases(prisma: Prisma.TransactionClient, pdmId: number): Promise<FaseConfig[]> {
-        return await prisma.pdmMonitoramentoFaseConfig.findMany({
-            where: { pdm_id: pdmId, removido_em: null },
-            orderBy: { ordem: 'asc' },
-            select: SelectFaseConfig,
-        });
+        return await carregaFasesConfig(prisma, pdmId);
     }
 
     private async carregaUltimas(prisma: Prisma.TransactionClient, metaId: number, cicloIds: number[]) {
@@ -613,15 +577,7 @@ export class PsCicloFaseService {
             criador: r.criador,
             reaberto_em: r.reaberto_em,
             reaberto_por: r.reabridor,
-            blocos: r.blocos
-                .filter((b) => blocosVisiveis.has(b.bloco_config_id))
-                .sort((a, b) => a.bloco_config.ordem - b.bloco_config.ordem)
-                .map((b) => ({
-                    bloco_id: b.bloco_config_id,
-                    rotulo: b.bloco_config.rotulo,
-                    conteudo: b.conteudo,
-                    conteudo_texto: Html2Text(b.conteudo),
-                })),
+            blocos: blocosVisiveisDto(r.blocos, blocosVisiveis),
             tags: fasesDeTags.has(r.fase_config_id)
                 ? r.tags.map((t) => ({
                       id: t.tag.id,

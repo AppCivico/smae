@@ -2,9 +2,7 @@ import { IntersectionType, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
-import { MfAnaliseQualitativaDto } from '../../../mf/metas/dto/mf-meta-analise-quali.dto';
-import { MfFechamentoDto } from '../../../mf/metas/dto/mf-meta-fechamento.dto';
-import { MfRiscoDto } from '../../../mf/metas/dto/mf-meta-risco.dto';
+import { MonitoramentoFaseLeituraDto } from '../../../pdm-ciclo/entities/ps-ciclo-fase.entity';
 import { SimplifiedPainelConteudoSeries, SimplifiedSeries } from '../../../painel/dto/detalhe-painel.dto';
 
 export class RelVarlSimplifiedSeries extends IntersectionType(
@@ -25,9 +23,12 @@ export class RelPainelDetalhe {
 
 export class RelMfMetas {
     meta: IdCodTituloDto;
-    analiseRisco: MfRiscoDto | null;
-    analiseQuali: MfAnaliseQualitativaDto | null;
-    fechamento: MfFechamentoDto | null;
+    ciclo_fechado: boolean;
+    ciclo_reaberto: boolean;
+    /**
+     * Fases habilitadas do plano, em ordem; vazio quando o plano não monitora por fases
+     */
+    fases: MonitoramentoFaseLeituraDto[];
 }
 
 export class RelSerieVariavelDto {

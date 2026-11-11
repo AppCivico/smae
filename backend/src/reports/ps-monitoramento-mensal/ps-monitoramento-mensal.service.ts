@@ -16,10 +16,7 @@ import {
 } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import {
-    RelPsMonitoramentoMensalAnaliseQualitativaCsvRow,
-    RelPsMonitoramentoMensalFechamentoCsvRow,
-    RelPsMonitoramentoMensalMetasCicloCsvRow,
-    RelPsMonitoramentoMensalRiscoCsvRow,
+    RelPsMonitoramentoMensalFasesCsvRow,
     RelPsMonitoramentoMensalVariaveisCsvRow,
 } from './entities/ps-monitoramento-mensal-csv.entity';
 import {
@@ -30,7 +27,8 @@ import {
 
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { Date2YMD } from '../../common/date2ymd';
-import { Html2Text } from '../../common/Html2Text';
+import { leMonitoramentoFases } from '../../pdm-ciclo/monitoramento-fase.leitura';
+import { montaLinhasFasesCsv } from './monitoramento-fases-csv';
 
 /**
  * Helpers de normalização para o CSV **bruto**.
@@ -78,43 +76,6 @@ function csvDecimal(valor: unknown): string | null {
     return String(valor);
 }
 
-class PSQualiCsv {
-    id: number;
-    criador_nome_exibicao: string | null;
-    criado_em: string | null;
-    informacoes_complementares: string | null;
-    informacoes_complementares_texto: string | null;
-    referencia_data: string | null;
-    meta_id: number;
-    meta_titulo: string | null;
-    meta_codigo: string | null;
-}
-
-class PSRiscoCsv {
-    id: number;
-    criador_nome_exibicao: string | null;
-    criado_em: string | null;
-    detalhamento: string | null;
-    detalhamento_texto: string | null;
-    ponto_de_atencao: string | null;
-    ponto_de_atencao_texto: string | null;
-    referencia_data: string | null;
-    meta_id: number;
-    meta_titulo: string | null;
-    meta_codigo: string | null;
-}
-
-class PSFechamentoCsv {
-    id: number;
-    criador_nome_exibicao: string | null;
-    criado_em: string | null;
-    comentario: string | null;
-    referencia_data: string | null;
-    meta_id: number;
-    meta_titulo: string | null;
-    meta_codigo: string | null;
-}
-
 @Injectable()
 export class PSMonitoramentoMensal implements ReportableService, SchemaAwareReportableService {
     constructor(
@@ -128,7 +89,6 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
 
         const indicadores = await this.indicadoresService.asJSON(this.paramsIndicadores(params), user);
 
-        // Query para extrair dados de arquivo de metas do ciclo.
         const ciclo_metas = await this.buscaMetasCiclo(params, user);
 
         return {
@@ -300,7 +260,6 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
     }
 
-    // TODO: aprimorar/otimizar parte de filtros para não repetir código.
     private async buscaMetasCiclo(
         params: CreatePsMonitoramentoMensalFilterDto,
         user: PessoaFromJwt | null
@@ -308,80 +267,51 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
         if (!params.plano_setorial_id) params.plano_setorial_id = undefined;
         if (!params.pdm_id) params.pdm_id = undefined;
 
-        if (!params.pdm_id && !params.plano_setorial_id) throw new BadRequestException('Informe o parâmetro pdm_id');
+        const pdmId = params.pdm_id ?? params.plano_setorial_id;
+        if (!pdmId) throw new BadRequestException('Informe o parâmetro pdm_id');
 
         const { metas } = await this.utils.applyFilter(
-            {
-                ...params,
-                pdm_id: params.pdm_id ?? params.plano_setorial_id,
-            },
-            { iniciativas: true, atividades: true },
+            { ...params, pdm_id: pdmId },
+            { iniciativas: false, atividades: false },
             user
         );
         const metasArr = metas.map((r) => r.id);
-
         if (metasArr.length > 10000)
             throw new BadRequestException('Mais de 10000 indicadores encontrados, por favor refine a busca.');
+        if (!metasArr.length) return [];
 
-        const paramMesAno = params.ano + '-' + params.mes + '-01';
+        const ciclo = await this.prisma.cicloFisico.findFirst({
+            where: { pdm_id: pdmId, data_ciclo: new Date(Date.UTC(params.ano, params.mes - 1, 1)) },
+            select: { id: true, data_ciclo: true },
+        });
+        if (!ciclo) return [];
 
-        // Query para extrair dados de arquivo de metas do ciclo.
-        // retorno deve ser no modelo RelPSMonitoramentoMensalCicloMetasDto
-        // os dados principais vem da tabela ciclo_fisico, e será feito join com as tables meta_ciclo_fisico_analise e meta_ciclo_fisico_risco
-        // para trazer informações adicionais.
-        const sql = `select
-                m.id as meta_id,
-                m.codigo as meta_codigo,
-                m.titulo as meta_titulo,
-                coalesce(mcf.informacoes_complementares,'') as analise_qualitativa,
-                to_char(mcf.referencia_data, 'YYYY-MM-DD') as analise_qualitativa_data,
-                mcf.id as analise_id,
-                mcf.criado_em as analise_criado_em,
-                p_mcf.nome_exibicao as analise_criador,
-                coalesce(mcr.detalhamento,'') as risco_detalhamento,
-                coalesce(mcr.ponto_de_atencao,'') as risco_ponto_atencao,
-                mcr.id as risco_id,
-                mcr.criado_em as risco_criado_em,
-                p_mcr.nome_exibicao as risco_criador,
-                to_char(mcr.referencia_data, 'YYYY-MM-DD') as risco_referencia_data,
-                coalesce(mcfec.comentario,'') as fechamento_comentario,
-                mcfec.id as fechamento_id,
-                mcfec.criado_em as fechamento_criado_em,
-                p_mcfec.nome_exibicao as fechamento_criador,
-                to_char(mcfec.referencia_data, 'YYYY-MM-DD') as fechamento_referencia_data
-            from ciclo_fisico cf
-            join pdm p on p.id = cf.pdm_id and p.removido_em is null
-            join meta m on m.pdm_id = p.id and m.removido_em is null
-            left join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.meta_id = m.id and mcf.removido_em is null and mcf.ultima_revisao = true
-            left join pessoa p_mcf on p_mcf.id = mcf.criado_por
-            left join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.meta_id = m.id and mcr.removido_em is null and mcr.ultima_revisao = true
-            left join pessoa p_mcr on p_mcr.id = mcr.criado_por
-            left join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.meta_id = m.id and mcfec.removido_em is null and mcfec.ultima_revisao = true
-            left join pessoa p_mcfec on p_mcfec.id = mcfec.criado_por
-            where m.id in (:metas)
-            and cf.pdm_id = :pdm_id
-            and cf.data_ciclo = :mesAno ::date
-            `;
+        const metasDb = await this.prisma.meta.findMany({
+            where: { id: { in: metasArr }, pdm_id: pdmId, removido_em: null },
+            select: { id: true, codigo: true, titulo: true },
+            orderBy: [{ codigo: 'asc' }, { id: 'asc' }],
+        });
+        const fasesPorMeta = await leMonitoramentoFases(
+            this.prisma,
+            pdmId,
+            ciclo.id,
+            metasDb.map((m) => m.id)
+        );
+        const data_ciclo = Date2YMD.toString(ciclo.data_ciclo);
 
-        // Fazendo replace de :metas, :mesAno e :pdm_id
-        // aceita tanto pdm_id quanto plano_setorial_id (como applyFilter/fetch já fazem),
-        // evitando 500 quando o chamador envia apenas plano_setorial_id
-        const pdmId = params.pdm_id ?? params.plano_setorial_id;
-        const sqlMetas = sql
-            .replace(':metas', metasArr.length ? metasArr.toString() : '0')
-            .replace(/:mesAno/g, "'" + paramMesAno + "'")
-            .replace(':pdm_id', pdmId!.toString());
-
-        const linhasMetas = (await this.prisma.$queryRawUnsafe(sqlMetas)) as RelPSMonitoramentoMensalCicloMetasDto[];
-
-        // Além da versão HTML, expõe a versão em texto limpo dos campos HTML,
-        // igualando o que já é gerado nos CSVs (colunas "(Texto)") do relatório em Excel.
-        return linhasMetas.map((row) => ({
-            ...row,
-            analise_qualitativa_texto: Html2Text(row.analise_qualitativa),
-            risco_detalhamento_texto: Html2Text(row.risco_detalhamento),
-            risco_ponto_atencao_texto: Html2Text(row.risco_ponto_atencao),
-        }));
+        return metasDb.map((meta) => {
+            const monitoramento = fasesPorMeta.get(meta.id);
+            return {
+                meta_id: meta.id,
+                meta_codigo: meta.codigo,
+                meta_titulo: meta.titulo,
+                ciclo_fisico_id: ciclo.id,
+                data_ciclo,
+                ciclo_fechado: monitoramento?.ciclo_fechado ?? false,
+                ciclo_reaberto: monitoramento?.ciclo_reaberto ?? false,
+                fases: monitoramento?.fases ?? [],
+            };
+        });
     }
 
     /**
@@ -404,22 +334,12 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
     /**
      * Schemas dos CSVs brutos, na mesma ordem em que `toFileOutput` os emite.
      *
-     * Todos os cinco arquivos próprios são condicionais (só saem quando há linhas); declarar
-     * todos aqui é o correto — o `aplicarModelo` casa schema com arquivo pelo nome e ignora,
-     * sem ruído, os schemas cujo arquivo não foi produzido.
+     * Os arquivos próprios são condicionais (só saem quando há linhas); o `aplicarModelo` casa
+     * schema com arquivo pelo nome e ignora os schemas cujo arquivo não foi produzido.
      *
      * No fim vêm os schemas do `IndicadoresService`, porque `toFileOutput` anexa os arquivos
-     * dele (`indicadores.csv` e `regioes.csv`) à saída deste relatório. Sem isso o
-     * pós-processamento não acha schema para esses dois e os repassa **crus** — cabeçalho
-     * técnico (`meta__codigo`), sem formatação pt-BR, sem XLSX e sem os rótulos configuráveis
-     * do PDM. Nenhum dos dois nomes colide com os cinco arquivos próprios, então o
-     * `findFileSchema` (que casa pelo primeiro schema com aquele nome) não fica ambíguo.
-     *
-     * O `isSchemaAware` é um teste em **runtime de propósito**, não um import das classes de
-     * linha do relatório de indicadores: a migração daquele serviço vive em outro PR, e este
-     * branch não tem as entidades dele. Assim o código compila e roda sozinho (o guard dá
-     * `false` e a saída é a de hoje) e passa a formatar os dois arquivos automaticamente
-     * assim que o serviço de indicadores ganhar `describeSchema`.
+     * dele (`indicadores.csv` e `regioes.csv`); sem eles o pós-processamento os repassaria crus.
+     * O `isSchemaAware` é teste em runtime para não acoplar às classes de linha daquele serviço.
      */
     async describeSchema(params: CreatePsMonitoramentoMensalFilterDto): Promise<ReportFileSchema[]> {
         const doIndicador = isSchemaAware(this.indicadoresService)
@@ -428,10 +348,7 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
 
         return [
             getReportRowSchema(RelPsMonitoramentoMensalVariaveisCsvRow),
-            getReportRowSchema(RelPsMonitoramentoMensalMetasCicloCsvRow),
-            getReportRowSchema(RelPsMonitoramentoMensalAnaliseQualitativaCsvRow),
-            getReportRowSchema(RelPsMonitoramentoMensalRiscoCsvRow),
-            getReportRowSchema(RelPsMonitoramentoMensalFechamentoCsvRow),
+            getReportRowSchema(RelPsMonitoramentoMensalFasesCsvRow),
             ...doIndicador,
         ];
     }
@@ -448,13 +365,8 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
         ctx.resumoSaida('Monitoramento Mensal Variáveis PS/PDMv2', rows.length);
         await ctx.progress(40);
 
-        // Depois do `fetch`: ele é quem valida `pdm_id`/`plano_setorial_id` e devolve 400 quando
-        // faltam. O `describeSchema` agora consulta o PDM (para os rótulos do relatório de
-        // indicadores), então chamá-lo antes trocaria esse 400 por um erro de Prisma.
-        // Os schemas de indicadores vêm depois dos cinco daqui e não são usados neste método —
-        // quem os consome é o pós-processamento, sobre os arquivos anexados no fim.
-        const [schemaVariaveis, schemaMetasCiclo, schemaQuali, schemaRisco, schemaFechamento] =
-            await this.describeSchema(params);
+        // Depois do `fetch`: ele valida `pdm_id`/`plano_setorial_id` e o `describeSchema` consulta o PDM.
+        const [schemaVariaveis, schemaFases] = await this.describeSchema(params);
 
         if (rows.length) {
             const reportTmpVars = ctx.getTmpFile('monitoramento-mensal-variaveis-ps.csv');
@@ -501,116 +413,21 @@ export class PSMonitoramentoMensal implements ReportableService, SchemaAwareRepo
         }
 
         const cicloMetasRows = await this.buscaMetasCiclo(params, user);
-        ctx.resumoSaida('Monitoramento Mensal Metas Ciclo PS', cicloMetasRows.length);
+        const fasesRows = montaLinhasFasesCsv(cicloMetasRows);
+        ctx.resumoSaida('Monitoramento Mensal Fases PS', fasesRows.length);
 
-        if (cicloMetasRows.length) {
-            const reportTmpMetas = ctx.getTmpFile('monitoramento-mensal-metas-ciclo-ps.csv');
-            // `Html2Text` continua na extração: é limpeza de conteúdo (o campo é HTML no
-            // banco), não formatação de locale.
-            const mainCsvRows: RelPsMonitoramentoMensalMetasCicloCsvRow[] = cicloMetasRows.map((row) => ({
-                meta_id: row.meta_id,
-                meta_codigo: row.meta_codigo,
-                analise_qualitativa: csvTexto(Html2Text(row.analise_qualitativa)),
-                analise_qualitativa_data: csvData(row.analise_qualitativa_data),
-                risco_detalhamento: csvTexto(Html2Text(row.risco_detalhamento)),
-                risco_ponto_atencao: csvTexto(Html2Text(row.risco_ponto_atencao)),
-                fechamento_comentario: csvTexto(row.fechamento_comentario),
-            }));
-            const metasCsvOptions: CsvWriterOptions<RelPsMonitoramentoMensalMetasCicloCsvRow> = {
+        if (fasesRows.length) {
+            const tmp = ctx.getTmpFile('monitoramento-mensal-fases-ps.csv');
+            const opts: CsvWriterOptions<RelPsMonitoramentoMensalFasesCsvRow> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
-                fields: schemaMetasCiclo.colunas.map((c) => c.name),
+                fields: schemaFases.colunas.map((c) => c.name),
             };
-            await WriteCsvToFile(mainCsvRows, reportTmpMetas.stream, metasCsvOptions);
-            out.push({
-                name: 'monitoramento-mensal-metas-ciclo-ps.csv',
-                localFile: reportTmpMetas.path,
-            });
+            await WriteCsvToFile(fasesRows, tmp.stream, opts);
+            out.push({ name: 'monitoramento-mensal-fases-ps.csv', localFile: tmp.path });
         }
 
-        const qualiRows: PSQualiCsv[] = [];
-        const riscoRows: PSRiscoCsv[] = [];
-        const fechamentoRows: PSFechamentoCsv[] = [];
-
-        for (const row of cicloMetasRows) {
-            if (row.analise_id) {
-                qualiRows.push({
-                    id: row.analise_id,
-                    criador_nome_exibicao: csvTexto(row.analise_criador),
-                    criado_em: csvTimestamp(row.analise_criado_em),
-                    informacoes_complementares: csvTexto(row.analise_qualitativa),
-                    informacoes_complementares_texto: csvTexto(Html2Text(row.analise_qualitativa)),
-                    referencia_data: csvData(row.analise_qualitativa_data),
-                    meta_id: row.meta_id,
-                    meta_titulo: row.meta_titulo,
-                    meta_codigo: row.meta_codigo,
-                });
-            }
-            if (row.risco_id) {
-                riscoRows.push({
-                    id: row.risco_id,
-                    criador_nome_exibicao: csvTexto(row.risco_criador),
-                    criado_em: csvTimestamp(row.risco_criado_em),
-                    detalhamento: csvTexto(row.risco_detalhamento),
-                    detalhamento_texto: csvTexto(Html2Text(row.risco_detalhamento)),
-                    ponto_de_atencao: csvTexto(row.risco_ponto_atencao),
-                    ponto_de_atencao_texto: csvTexto(Html2Text(row.risco_ponto_atencao)),
-                    referencia_data: csvData(row.risco_referencia_data),
-                    meta_id: row.meta_id,
-                    meta_titulo: row.meta_titulo,
-                    meta_codigo: row.meta_codigo,
-                });
-            }
-            if (row.fechamento_id) {
-                fechamentoRows.push({
-                    id: row.fechamento_id,
-                    criador_nome_exibicao: csvTexto(row.fechamento_criador),
-                    criado_em: csvTimestamp(row.fechamento_criado_em),
-                    comentario: csvTexto(row.fechamento_comentario),
-                    referencia_data: csvData(row.fechamento_referencia_data),
-                    meta_id: row.meta_id,
-                    meta_titulo: row.meta_titulo,
-                    meta_codigo: row.meta_codigo,
-                });
-            }
-        }
-
-        if (qualiRows.length) {
-            const tmp = ctx.getTmpFile('analises-qualitativas-ps.csv');
-            const opts: CsvWriterOptions<PSQualiCsv> = {
-                csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: schemaQuali.colunas.map((c) => c.name),
-            };
-            await WriteCsvToFile(qualiRows, tmp.stream, opts);
-            out.push({ name: 'analises-qualitativas-ps.csv', localFile: tmp.path });
-        }
-
-        if (riscoRows.length) {
-            const tmp = ctx.getTmpFile('analises-de-risco-ps.csv');
-            const opts: CsvWriterOptions<PSRiscoCsv> = {
-                csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: schemaRisco.colunas.map((c) => c.name),
-            };
-            await WriteCsvToFile(riscoRows, tmp.stream, opts);
-            out.push({ name: 'analises-de-risco-ps.csv', localFile: tmp.path });
-        }
-
-        if (fechamentoRows.length) {
-            const tmp = ctx.getTmpFile('fechamentos-ps.csv');
-            const opts: CsvWriterOptions<PSFechamentoCsv> = {
-                csvOptions: DefaultCsvOptions,
-                transforms: DefaultTransforms,
-                fields: schemaFechamento.colunas.map((c) => c.name),
-            };
-            await WriteCsvToFile(fechamentoRows, tmp.stream, opts);
-            out.push({ name: 'fechamentos-ps.csv', localFile: tmp.path });
-        }
-
-        // `indicadores.csv` e `regioes.csv`. O schema deles é declarado no `describeSchema`
-        // acima, com estes mesmos params — é o que faz o pós-processamento formatá-los junto
-        // com os cinco arquivos daqui.
+        // `indicadores.csv` e `regioes.csv`, cujo schema é declarado no `describeSchema` com os mesmos params
         const indicadores = await this.indicadoresService.toFileOutput(this.paramsIndicadores(params), ctx, user);
         for (const indicador of indicadores) {
             out.push(indicador);

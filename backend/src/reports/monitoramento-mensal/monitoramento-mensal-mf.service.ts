@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CicloFisico, Pdm, Prisma } from '@prisma/client';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
-import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service';
-import { MetasRiscoService } from '../../mf/metas/metas-risco.service';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { leMonitoramentoFases } from '../../pdm-ciclo/monitoramento-fase.leitura';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getReportRowSchema } from '../post-process/report-column.decorator';
+import { RelPsMonitoramentoMensalFasesCsvRow } from '../ps-monitoramento-mensal/entities/ps-monitoramento-mensal-csv.entity';
+import { montaLinhasFasesCsv } from '../ps-monitoramento-mensal/monitoramento-fases-csv';
 
 import { DefaultCsvOptions, DefaultTransforms, FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
@@ -17,48 +18,9 @@ import {
 import { CsvWriterOptions, WriteCsvToBuffer, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
-class QualiCsv {
-    informacoes_complementares: string;
-    referencia_data: string;
-    criado_em: string;
-    criador_nome_exibicao: string;
-    meta_id: string;
-    meta_titulo: string;
-    meta_codigo: string;
-    id: string;
-}
-
-class RiscoCsv {
-    detalhamento: string;
-    ponto_de_atencao: string;
-    referencia_data: string;
-    criado_em: string;
-    criador_nome_exibicao: string;
-    meta_id: string;
-    meta_titulo: string;
-    meta_codigo: string;
-    id: string;
-}
-
-class FechamentoCsv {
-    comentario: string;
-    referencia_data: string;
-    criado_em: string;
-    criador_nome_exibicao: string;
-    meta_id: string;
-    meta_titulo: string;
-    meta_codigo: string;
-    id: string;
-}
-
 @Injectable()
 export class MonitoramentoMensalMfService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly analiseQuali: MetasAnaliseQualiService,
-        private readonly analiseRisco: MetasRiscoService,
-        private readonly fechamento: MetasFechamentoService
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     async create_mf(dto: CreateRelMonitoramentoMensalDto, metas: number[]): Promise<RetMonitoramentoFisico | null> {
         const cf = await this.prisma.cicloFisico.findFirst({
@@ -71,37 +33,26 @@ export class MonitoramentoMensalMfService {
 
         const seriesVariaveis = await this.getSeriesVariaveis(cf, metas);
 
-        const metasOut: RelMfMetas[] = [];
-
         const metasDb = await this.prisma.meta.findMany({
             where: { id: { in: metas }, removido_em: null },
             select: { id: true, titulo: true, codigo: true },
         });
+        const fasesPorMeta = await leMonitoramentoFases(
+            this.prisma,
+            cf.pdm_id,
+            cf.id,
+            metasDb.map((m) => m.id)
+        );
 
-        for (const meta of metasDb) {
-            const ret: RelMfMetas = {
+        const metasOut: RelMfMetas[] = metasDb.map((meta) => {
+            const monitoramento = fasesPorMeta.get(meta.id);
+            return {
                 meta,
-                analiseQuali: null,
-                fechamento: null,
-                analiseRisco: null,
+                ciclo_fechado: monitoramento?.ciclo_fechado ?? false,
+                ciclo_reaberto: monitoramento?.ciclo_reaberto ?? false,
+                fases: monitoramento?.fases ?? [],
             };
-            const params = { ciclo_fisico_id: cf.id, meta_id: meta.id, apenas_ultima_revisao: true };
-
-            // fazendo dessa forma o prisma pode fazer as queries em parelelo
-            const results = await Promise.all([
-                this.analiseQuali.getMetaAnaliseQualitativa(params, null, null),
-                this.analiseRisco.getMetaRisco(params, null, null),
-                this.fechamento.getMetaFechamento(params, null, null),
-            ]);
-
-            if (results[0].analises.length) ret.analiseQuali = results[0].analises[0];
-
-            if (results[1].riscos.length) ret.analiseRisco = results[1].riscos[0];
-
-            if (results[2].fechamentos) ret.fechamento = results[2].fechamentos[0];
-
-            metasOut.push(ret);
-        }
+        });
 
         return {
             ano: cf.data_ciclo.getUTCFullYear(),
@@ -213,75 +164,29 @@ export class MonitoramentoMensalMfService {
         const out: FileOutput[] = [];
         if (!myInput.monitoramento_fisico || myInput.monitoramento_fisico.metas.length == 0) return [];
 
-        const qualiRows: QualiCsv[] = [];
-        const riscoRows: RiscoCsv[] = [];
-        const fechamentoRows: FechamentoCsv[] = [];
+        const { ano, mes } = myInput.monitoramento_fisico;
+        const data_ciclo = Date2YMD.toString(new Date(Date.UTC(ano, mes - 1, 1)));
+        const fasesRows = montaLinhasFasesCsv(
+            myInput.monitoramento_fisico.metas.map((m) => ({
+                meta_id: m.meta.id,
+                meta_codigo: m.meta.codigo,
+                meta_titulo: m.meta.titulo,
+                data_ciclo,
+                ciclo_fechado: m.ciclo_fechado,
+                fases: m.fases,
+            }))
+        );
 
-        for (const meta of myInput.monitoramento_fisico.metas) {
-            if (meta.analiseQuali) {
-                qualiRows.push({
-                    id: meta.analiseQuali.id.toString(),
-                    criador_nome_exibicao: meta.analiseQuali.criador.nome_exibicao,
-                    criado_em: meta.analiseQuali.criado_em.toString(),
-                    informacoes_complementares: meta.analiseQuali.informacoes_complementares,
-                    meta_codigo: meta.meta.codigo,
-                    meta_titulo: meta.meta.titulo,
-                    meta_id: meta.meta.id.toString(),
-                    referencia_data: meta.analiseQuali.referencia_data.toString(),
-                });
-            }
-            if (meta.analiseRisco) {
-                riscoRows.push({
-                    id: meta.analiseRisco.id.toString(),
-                    criador_nome_exibicao: meta.analiseRisco.criador.nome_exibicao,
-                    criado_em: meta.analiseRisco.criado_em.toString(),
-                    ponto_de_atencao: meta.analiseRisco.ponto_de_atencao,
-                    detalhamento: meta.analiseRisco.detalhamento,
-                    meta_codigo: meta.meta.codigo,
-                    meta_titulo: meta.meta.titulo,
-                    meta_id: meta.meta.id.toString(),
-                    referencia_data: meta.analiseRisco.referencia_data.toString(),
-                });
-            }
-            if (meta.fechamento) {
-                fechamentoRows.push({
-                    id: meta.fechamento.id.toString(),
-                    criador_nome_exibicao: meta.fechamento.criador.nome_exibicao,
-                    criado_em: meta.fechamento.criado_em.toString(),
-                    comentario: meta.fechamento.comentario,
-                    meta_codigo: meta.meta.codigo,
-                    meta_titulo: meta.meta.titulo,
-                    meta_id: meta.meta.id.toString(),
-                    referencia_data: meta.fechamento.referencia_data.toString(),
-                });
-            }
-        }
-
-        if (qualiRows.length) {
-            const opts: CsvWriterOptions<QualiCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
-            out.push({
-                name: 'analises-qualitativas.csv',
-                buffer: WriteCsvToBuffer(qualiRows, opts),
-            });
-        }
-
-        if (fechamentoRows.length) {
-            const opts: CsvWriterOptions<FechamentoCsv> = {
+        if (fasesRows.length) {
+            const opts: CsvWriterOptions<RelPsMonitoramentoMensalFasesCsvRow> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
+                fields: getReportRowSchema(RelPsMonitoramentoMensalFasesCsvRow).colunas.map((c) => ({
+                    value: c.name,
+                    label: c.label,
+                })),
             };
-            out.push({
-                name: 'fechamentos.csv',
-                buffer: WriteCsvToBuffer(fechamentoRows, opts),
-            });
-        }
-
-        if (riscoRows.length) {
-            const opts: CsvWriterOptions<RiscoCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
-            out.push({
-                name: 'analises-de-risco.csv',
-                buffer: WriteCsvToBuffer(riscoRows, opts),
-            });
+            out.push({ name: 'monitoramento-fases.csv', buffer: WriteCsvToBuffer(fasesRows, opts) });
         }
 
         const seriesVariaveis = myInput.monitoramento_fisico.seriesVariaveis;

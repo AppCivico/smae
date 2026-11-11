@@ -12,9 +12,7 @@ Os arquivos produzidos são empacotados em `.zip` quando há mais de um.
 | Arquivo | Colunas principais |
 |---|---|
 | `painel-{nome}.{id}.{periodicidade}.csv` | meta_*, iniciativa_*, atividade_*, variavel_*, data, Previsto, PrevistoAcumulado, Realizado, RealizadoAcumulado |
-| `analises-qualitativas.csv` _(opcional)_ | id, criador, criado_em, informacoes_complementares, referencia_data, meta_* |
-| `fechamentos.csv` _(opcional)_ | id, criador, criado_em, comentario, referencia_data, meta_* |
-| `analises-de-risco.csv` _(opcional)_ | id, criador, criado_em, ponto_de_atencao, detalhamento, referencia_data, meta_* |
+| `monitoramento-fases.csv` _(opcional)_ | meta_*, data_ciclo, ciclo_fechado, fase_ordem, fase_rotulo, bloco_ordem, bloco_rotulo, conteudo, revisao_id, referencia_data, criado_em, criador, reaberto_em, tags, documentos_qtde |
 | `serie-variaveis.csv` _(opcional)_ | serie, variavel_*, codigo, data_valor, valor_nominal, conferida, aguarda_cp, meta_*, iniciativa_*, atividade_*, analise_qualitativa |
 
 ---
@@ -26,9 +24,7 @@ Os arquivos produzidos são empacotados em `.zip` quando há mais de um.
 | Arquivo | Colunas principais |
 |---|---|
 | `monitoramento-mensal-variaveis-ps.csv` _(opcional)_ | indicador_*, variavel_*, municipio, regiao, subprefeitura, distrito, serie, data_referencia, valor_nominal, eh_previa, analises |
-| `analises-qualitativas-ps.csv` _(opcional)_ | id, criador, criado_em, informacoes_complementares, referencia_data, meta_* |
-| `analises-de-risco-ps.csv` _(opcional)_ | id, criador, criado_em, ponto_de_atencao, detalhamento, referencia_data, meta_* |
-| `fechamentos-ps.csv` _(opcional)_ | id, criador, criado_em, comentario, referencia_data, meta_* |
+| `monitoramento-mensal-fases-ps.csv` _(opcional)_ | uma linha por meta, fase e bloco: meta_*, data_ciclo, ciclo_fechado, fase_*, bloco_*, conteudo, revisao_id, referencia_data, criado_em, criador, reaberto_em, tags, documentos_qtde |
 | + arquivos de indicadores | (ver Indicadores abaixo) |
 
 ---

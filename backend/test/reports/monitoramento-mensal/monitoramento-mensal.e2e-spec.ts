@@ -84,4 +84,47 @@ describe('relatorio/monitoramento-mensal', () => {
     it('400 com metas_ids não numérico', async () => {
         assertStatus(await api(executor).post(url).send({ ano: 2027, mes: 3, metas_ids: 'x' }), 400);
     });
+
+    it('metas trazem as fases configuráveis do ciclo', async () => {
+        const admin = await criarPessoaComPrivilegios([
+            'Reports.executar.PDM',
+            'CadastroMeta.administrador_no_pdm_admin_cp',
+        ]);
+        const pdm = await criarPdmAntigo();
+        const db = prisma();
+        const autor = admin.pessoa.id;
+        await db.pdm.update({ where: { id: pdm.id }, data: { monitoramento_por_blocos: true } });
+        const data_ciclo = new Date('2027-03-01');
+        const ciclo = await db.cicloFisico.create({ data: { pdm_id: pdm.id, data_ciclo } });
+        const meta = await db.meta.create({
+            data: { pdm_id: pdm.id, status: 'Ativo', codigo: 'M-MF', titulo: 'Meta MF' },
+        });
+        const fase = await db.pdmMonitoramentoFaseConfig.create({
+            data: { pdm_id: pdm.id, ordem: 1, rotulo: 'Qualificação', criado_por: autor },
+        });
+        const bloco = await db.pdmMonitoramentoBlocoConfig.create({
+            data: { fase_id: fase.id, ordem: 1, rotulo: 'Texto', criado_por: autor },
+        });
+        await db.metaMonitoramentoFase.create({
+            data: {
+                meta_id: meta.id,
+                ciclo_fisico_id: ciclo.id,
+                fase_config_id: fase.id,
+                referencia_data: data_ciclo,
+                ultima_revisao: true,
+                fecha_ciclo: true,
+                criado_por: autor,
+                blocos: { create: [{ bloco_config_id: bloco.id, conteudo: '<p>ok</p>' }] },
+            },
+        });
+
+        const res = await api(admin).post(url).send({ ano: 2027, mes: 3, pdm_id: pdm.id });
+        assertStatus(res, 201);
+        const [item] = res.body.monitoramento_fisico.metas;
+        assert.equal(item.meta.id, meta.id);
+        assert.equal(item.ciclo_fechado, true);
+        assert.equal(item.fases.length, 1);
+        assert.equal(item.fases[0].config.fecha_ciclo, true);
+        assert.equal(item.fases[0].revisao.blocos[0].conteudo_texto, 'ok');
+    });
 });

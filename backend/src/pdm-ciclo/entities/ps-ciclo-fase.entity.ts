@@ -1,3 +1,4 @@
+import { OmitType } from '@nestjs/swagger';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateYMD } from '../../common/date2ymd';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
@@ -96,6 +97,35 @@ export class PsCicloFasesDto {
      */
     fases: PsCicloFaseEstadoDto[];
     historico_fechamentos: PsCicloFaseRevisaoDto[];
+}
+
+export class MonitoramentoFaseTagLeituraDto {
+    id: number;
+    descricao: string;
+}
+
+export class MonitoramentoFaseDocumentoLeituraDto {
+    id: number;
+    descricao: string | null;
+    nome_original: string;
+}
+
+export class MonitoramentoFaseRevisaoLeituraDto extends OmitType(PsCicloFaseRevisaoDto, [
+    'fase_id',
+    'fase_rotulo',
+    'ultima_revisao',
+    'tags',
+] as const) {
+    tags: MonitoramentoFaseTagLeituraDto[];
+}
+
+export class MonitoramentoFaseLeituraDto {
+    config: PsCicloFaseConfigDto;
+    /**
+     * Última revisão da fase no ciclo
+     */
+    revisao: MonitoramentoFaseRevisaoLeituraDto | null;
+    documentos: MonitoramentoFaseDocumentoLeituraDto[];
 }
 
 export class MonitoramentoMigracaoContagemDto {
