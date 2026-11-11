@@ -19,6 +19,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
@@ -1957,12 +1958,26 @@ watch(listaDeTiposDeIntervenção, () => {
             />
             <Field
               :id="`fonte_recursos[${idx}].observacao`"
+              v-slot="{ handleChange, value, field}"
               :name="`fonte_recursos[${idx}].observacao`"
-              as="textarea"
               rows="3"
-              maxlength="2048"
               class="inputtext light mb1"
-            />
+            >
+              <SmaeText
+                as="textarea"
+                rows="5"
+                class="inputtext light mb1"
+                :class="{ error: errors[field.name] }"
+                :schema="schema"
+                :name="field.name"
+                :model-value="value"
+                :disabled="bloquearCampos"
+                :aria-disabled="bloquearCampos"
+                anular-vazio
+                :max-length="255"
+                @update:model-value="handleChange"
+              />
+            </Field>
             <ErrorMessage
               class="error-msg mb1"
               :name="`fonte_recursos[${idx}].observacao`"
