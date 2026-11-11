@@ -15,7 +15,6 @@ import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaP
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
-import TotalFontesDeRecurso from '@/components/FontesDeRecurso/TotalFontesDeRecurso.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
@@ -1261,15 +1260,6 @@ watch(portfólioSelecionado, (novo, antigo) => {
 
             <hr class="f1 fb100">
           </div>
-
-          <template v-if="fields.length">
-            <ResumoFontesDeRecurso
-              :custo-total-planejado="custoTotalPlanejado"
-              :resumo="resumoFontesDeRecurso"
-            />
-
-            <TotalFontesDeRecurso :resumo="resumoFontesDeRecurso" />
-          </template>
 
           <button
             class="like-a__text addlink"

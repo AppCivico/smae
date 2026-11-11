@@ -2,8 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
-import ResumoFontesDeRecurso from '@/components/FontesDeRecurso/ResumoFontesDeRecurso.vue';
-import TotalFontesDeRecurso from '@/components/FontesDeRecurso/TotalFontesDeRecurso.vue';
+import RodapeFontesDeRecurso from '@/components/FontesDeRecurso/RodapeFontesDeRecurso.vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import SmaeDescriptionList from '@/components/SmaeDescriptionList.vue';
@@ -698,17 +697,18 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <template #celula:observacao="{ linha }">
           <span class="pre-wrap">{{ linha.observacao }}</span>
         </template>
+
+        <template
+          v-if="dadosDeFontesDeRecursos.length"
+          #rodape
+        >
+          <RodapeFontesDeRecurso
+            :resumo="resumoFontesDeRecurso"
+            :colspan-do-titulo="3"
+            :colspan-final="1"
+          />
+        </template>
       </SmaeTable>
-
-      <template v-if="dadosDeFontesDeRecursos.length">
-        <ResumoFontesDeRecurso
-          class="mt2"
-          :custo-total-planejado="custoTotalPlanejado"
-          :resumo="resumoFontesDeRecurso"
-        />
-
-        <TotalFontesDeRecurso :resumo="resumoFontesDeRecurso" />
-      </template>
     </section>
 
     <section class="borda-inferior">
