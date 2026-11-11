@@ -86,7 +86,7 @@ const {
 const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
-  const cargaManipulada = nulificadorTotal({ dotacoes: [], ...controlledValues });
+  const cargaManipulada = nulificadorTotal(controlledValues);
 
   try {
     cargaManipulada.pct_custeio = porcentagens.value.custeio;
@@ -867,89 +867,10 @@ onMounted(async () => {
             name="gestor_contrato"
           />
         </div>
-
-        <div class="f1">
-          <LabelFromYup
-            name="valor_liquidado"
-            :schema="schema"
-          />
-          <MaskedFloatInput
-            name="valor_liquidado"
-            type="text"
-            class="inputtext light mb2"
-            :value="values.valor_liquidado"
-            converter-para="string"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="valor_liquidado"
-          />
-        </div>
       </div>
     </fieldset>
 
     <fieldset>
-      <div class="mb1">
-        <LabelFromYup
-          name="dotacoes"
-          :schema="schema"
-          as="legend"
-          class="label mb1"
-        />
-
-        <FieldArray
-          v-slot="{ fields, push, remove }"
-          name="dotacoes"
-        >
-          <div
-            v-for="(field, idx) in fields"
-            :key="field.key"
-            class="flex flexwrap gx2 mb1"
-          >
-            <Field
-              :name="`dotacoes[${idx}]`"
-              type="text"
-              class="inputtext light f1"
-              placeholder="00.00.00.000.0000.0.000.00000000.00"
-              maxlength="250"
-            />
-
-            <button
-              class="like-a__text addlink"
-              aria-label="excluir"
-              title="excluir"
-              type="button"
-              @click="remove(idx)"
-            >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_remove" />
-              </svg>
-            </button>
-
-            <ErrorMessage
-              class="error-msg fb100"
-              :name="`dotacoes[${idx}]`"
-            />
-          </div>
-
-          <button
-            class="like-a__text addlink mb1"
-            type="button"
-            @click="push('')"
-          >
-            <svg
-              width="20"
-              height="20"
-            >
-              <use xlink:href="#i_+" />
-            </svg>Adicionar dotação
-          </button>
-        </FieldArray>
-      </div>
-
       <div class="mb1">
         <LabelFromYup
           :schema="schema"

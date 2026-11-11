@@ -70,17 +70,6 @@ export default object({
   distribuicao_conta: string()
     .label('Conta Corrente')
     .nullable(),
-  dotacoes: array()
-    .label('Dotações')
-    .of(string()
-      .label('Dotação')
-      .trim()
-      .max(255)
-      .min(1))
-    .semDuplicatas('Dotações não podem ter valores repetidos')
-    .meta({
-      balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
-    }),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
@@ -97,12 +86,6 @@ export default object({
     .nullable()
     .meta({
       balaoInformativo: 'Indica os motivos que justificam aditamento do contrato relacionado à Transferência Voluntária.',
-    }),
-  valor_liquidado: string()
-    .label('Liquidação/Pagamento')
-    .nullable()
-    .meta({
-      balaoInformativo: 'Indica o valor financeiro liquidado ou pago na Transferência Voluntária.',
     }),
   nome: string()
     .label('Nome')
