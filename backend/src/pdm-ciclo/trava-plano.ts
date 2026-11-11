@@ -14,6 +14,15 @@ export async function travaPlano(prismaTx: Prisma.TransactionClient, pdmId: numb
         throw new HttpException(porBlocos ? MSG_PLANO_LEGADO : MSG_PLANO_POR_FASES, 400);
 }
 
+export async function assertCicloLegado(prisma: PrismaService, cicloFisicoId: number): Promise<void> {
+    const ciclo = await prisma.cicloFisico.findFirst({
+        where: { id: cicloFisicoId },
+        select: { pdm: { select: { monitoramento_por_blocos: true } } },
+    });
+    if (!ciclo) throw new HttpException('Ciclo não encontrado', 400);
+    if (ciclo.pdm.monitoramento_por_blocos) throw new HttpException(MSG_PLANO_POR_FASES, 400);
+}
+
 export async function comTxPdmLegado<T>(
     prisma: PrismaService,
     pdmId: number,

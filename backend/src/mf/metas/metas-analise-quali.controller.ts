@@ -36,6 +36,7 @@ export class MetasAnaliseQualiController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<MfListAnaliseQualitativaDto & RequestInfoDto> {
         const start = Date.now();
+        await this.mfService.assertCicloLegado(dto.ciclo_fisico_id);
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {

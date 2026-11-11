@@ -29,6 +29,7 @@ export class MetasFechamentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<MfListFechamentoDto & RequestInfoDto> {
         const start = Date.now();
+        await this.mfService.assertCicloLegado(dto.ciclo_fisico_id);
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         return {
