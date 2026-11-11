@@ -176,6 +176,7 @@ const colunasDeFontesDeRecursos = [
   { chave: 'fonte_recurso_ano', label: schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label },
   { chave: 'valor_nominal', label: schema.fields.fonte_recursos.innerType.fields.valor_nominal.spec.label },
   { chave: 'valor_percentual', label: schema.fields.fonte_recursos.innerType.fields.valor_percentual.spec.label },
+  { chave: 'observacao', label: schema.fields.fonte_recursos.innerType.fields.observacao.spec.label },
 ];
 
 const dadosDeFontesDeRecursos = computed(() => {
@@ -193,6 +194,7 @@ const dadosDeFontesDeRecursos = computed(() => {
     fonte_recurso_ano: item.fonte_recurso_ano,
     valor_nominal: item.valor_nominal != null ? `R$ ${dinheiro(item.valor_nominal)}` : '-',
     valor_percentual: item.valor_percentual != null ? `${dinheiro(item.valor_percentual)}%` : '-',
+    observacao: item.observacao || '-',
   }));
 });
 
@@ -652,6 +654,10 @@ if (!planosSimplificadosStore.planosSimplificados.length
           <template v-if="linha.fonte_recurso_cod_sof_descricao">
             - {{ truncate(linha.fonte_recurso_cod_sof_descricao, 36) }}
           </template>
+        </template>
+
+        <template #celula:observacao="{ linha }">
+          <span class="pre-wrap">{{ linha.observacao }}</span>
         </template>
       </SmaeTable>
 
