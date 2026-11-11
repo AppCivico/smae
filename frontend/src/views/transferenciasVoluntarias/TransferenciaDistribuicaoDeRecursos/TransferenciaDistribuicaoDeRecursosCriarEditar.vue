@@ -18,7 +18,9 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import schema from '@/consts/formSchemas/transferenciaDistribuicaoDeRecursos';
+import dinheiro from '@/helpers/dinheiro';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -39,12 +41,49 @@ const {
 } = storeToRefs(TransferenciasVoluntarias);
 
 const {
-  chamadasPendentes, erro, itemParaEdicao,
+  chamadasPendentes,
+  emFoco,
+  erro,
+  itemParaEdicao,
 } = storeToRefs(distribuicaoRecursos);
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const camposModificados = ref(false);
+
+const colunasExtratoExecucaoOrcamentaria = [
+  {
+    chave: 'ano_referencia',
+    label: 'Ano',
+    atributosDaCelula: { class: 'cell--number' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'dotacao',
+    label: 'Dotação / Processo / Nota',
+    atributosDaCelula: { class: 'cell--nowrap' },
+  },
+  {
+    chave: 'soma_valor_empenho',
+    label: 'Empenho (R$)',
+    formatador: (v) => (v ? dinheiro(v) : '-'),
+    atributosDaCelula: { class: 'cell--number cell--nowrap' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'soma_valor_liquidado',
+    label: 'Liquidação (R$)',
+    formatador: (v) => (v ? dinheiro(v) : '-'),
+    atributosDaCelula: { class: 'cell--number cell--nowrap' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+  },
+  {
+    chave: 'mes_atualizado',
+    label: 'Atualizado em',
+    atributosDaCelula: { class: 'cell--data' },
+    atributosDoCabecalhoDeColuna: { class: 'cell--data' },
+  },
+];
 
 const porcentagens = ref({
   custeio: 0,
@@ -557,6 +596,29 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+
+      <SmaeTable
+        v-if="emFoco?.extrato_execucao_orcamentaria?.length"
+        class="mb2"
+        titulo="Extrato da execução orçamentária"
+        :colunas="colunasExtratoExecucaoOrcamentaria"
+        :dados="emFoco.extrato_execucao_orcamentaria"
+        rolagem-horizontal
+      >
+        <template #celula:dotacao="{ linha }">
+          {{ [
+            linha.dotacao_complemento
+              ? `${linha.dotacao}.${linha.dotacao_complemento}`
+              : linha.dotacao,
+            linha.processo,
+            linha.nota_empenho,
+          ].filter(Boolean).join(' / ') }}
+        </template>
+
+        <template #celula:mes_atualizado="{ linha }">
+          {{ String(linha.mes_atualizado).padStart(2, '0') }}/{{ linha.ano_referencia }}
+        </template>
+      </SmaeTable>
 
       <div
         v-if="values.parlamentares?.length !== 0"
