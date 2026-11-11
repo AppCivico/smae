@@ -2012,7 +2012,7 @@ export const registroDeTransferencia = object({
   percentagem_custeio: number()
     .min(0),
   dotacoes: array()
-    .label('Dotações')
+    .label('Dotações de ingresso')
     .of(string()
       .label('Dotação')
       .trim()
