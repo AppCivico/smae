@@ -173,6 +173,10 @@ versaoStore.buscar();
 
 .escolha-de-módulos__versao {
   color: @c400;
+
+  p {
+    overflow: visible;
+  }
 }
 
 .escolha-de-módulos__lista {
