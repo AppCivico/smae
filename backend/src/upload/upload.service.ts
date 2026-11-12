@@ -759,10 +759,14 @@ export class UploadService {
 
                     if (!description) description = '';
 
-                    await this.prisma.metaMonitoramentoFaseDocumento.update({
-                        where: { id: record.id },
+                    const atualizado = await this.prisma.metaMonitoramentoFaseDocumento.updateMany({
+                        where: { id: record.id, descricao: null, removido_em: null },
                         data: { descricao: description },
                     });
+                    if (!atualizado.count) {
+                        result.skipped++;
+                        continue;
+                    }
 
                     Logger.log(
                         `description for record ${record.id}: ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}`

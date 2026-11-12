@@ -6,7 +6,6 @@ import type {
 import type {
   CicloFisicoPSDto,
   ListPSCicloDto,
-  UltimaRevisao,
 } from '@back/pdm-ciclo/entities/pdm-ciclo.entity';
 import type { PsCicloFasesDto } from '@back/pdm-ciclo/entities/ps-ciclo-fase.entity';
 import { defineStore } from 'pinia';
@@ -44,8 +43,6 @@ type Erros = {
 type Estado = {
   listaDeCiclos: ListPSCicloDto['linhas'];
 
-  ultimaRevisao: UltimaRevisao | null;
-
   ciclosDetalhadosPorId: Record<ChaveGenerica, PsCicloFasesDto>;
 
   fasesDoCicloEmFoco: PsCicloFasesDto | null;
@@ -57,8 +54,6 @@ type Estado = {
 export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => defineStore(prefixo ? `${prefixo}.monitoramentoDeMetas` : 'monitoramentoDeMetas', {
   state: (): Estado => ({
     listaDeCiclos: [],
-
-    ultimaRevisao: null,
 
     ciclosDetalhadosPorId: {},
 
@@ -90,16 +85,12 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       this.chamadasPendentes.listaDeCiclos = true;
 
       try {
-        const {
-          linhas,
-          ultima_revisao: ultimaRevisao,
-        } = await this.requestS.get(
+        const { linhas } = await this.requestS.get(
           `${baseUrl}/plano-setorial/${pdmId}/ciclo`,
           params,
         ) as ListPSCicloDto;
 
         this.listaDeCiclos = linhas;
-        this.ultimaRevisao = ultimaRevisao;
 
         this.erros.listaDeCiclos = null;
       } catch (erro: unknown) {

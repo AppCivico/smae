@@ -28,7 +28,7 @@ import {
     SelectRevisaoLeitura,
 } from './monitoramento-fase.leitura';
 import { calculaEstadoCiclo, EstadoCiclo } from './ps-ciclo-fase.estado';
-import { MSG_PLANO_LEGADO, MSG_PLANO_POR_FASES, travaPlano } from './trava-plano';
+import { travaPlano } from './trava-plano';
 
 const TX_OPTS = { isolationLevel: 'Serializable', maxWait: 5000, timeout: 15000 } as const;
 
@@ -66,25 +66,13 @@ export class PsCicloFaseService {
         private readonly uploadService: UploadService
     ) {}
 
-    async modoPorBlocos(pdmId: number): Promise<boolean> {
-        const pdm = await this.prisma.pdm.findFirst({
-            where: { id: pdmId, removido_em: null },
-            select: { monitoramento_por_blocos: true },
-        });
-        if (!pdm) throw new HttpException('Plano não encontrado', 400);
-        return pdm.monitoramento_por_blocos;
-    }
-
-    async assertModoLegado(pdmId: number): Promise<void> {
-        if (await this.modoPorBlocos(pdmId)) throw new HttpException(MSG_PLANO_POR_FASES, 400);
-    }
-
     async listaCiclos(
         tipo: TipoPdmType,
         pdmId: number,
         params: FilterPsCiclo,
         user?: PessoaFromJwt
     ): Promise<ListPSCicloDto> {
+        await this.assertPlanoExiste(pdmId);
         if (params.meta_id && user) await this.assertMetaDoPlano(tipo, pdmId, params.meta_id, user, 'readonly');
 
         const ciclos = await this.prisma.cicloFisico.findMany({
@@ -120,18 +108,12 @@ export class PsCicloFaseService {
                 ativo: ciclo.ativo,
                 fechado: estado?.fechado ?? false,
                 reaberto: estado?.reaberto ?? false,
-                documentos_editaveis: [],
                 fases_preenchidas: estado?.preenchidas ?? [],
                 fases_editaveis: estado?.editaveis ?? [],
             } satisfies CicloFisicoPSDto;
         });
 
-        return {
-            linhas,
-            ultima_revisao: null,
-            documentos_editaveis: [],
-            monitoramento_por_blocos: true,
-        };
+        return { linhas };
     }
 
     async buscaFases(
@@ -142,7 +124,7 @@ export class PsCicloFaseService {
         user: PessoaFromJwt
     ): Promise<PsCicloFasesDto> {
         const meta = await this.assertMetaDoPlano(tipo, pdmId, metaId, user, 'readonly');
-        if (!(await this.modoPorBlocos(pdmId))) throw new HttpException(MSG_PLANO_LEGADO, 400);
+        await this.assertPlanoExiste(pdmId);
 
         const ciclo = await this.carregaCiclo(this.prisma, pdmId, cicloId);
         const cicloAnterior = await this.prisma.cicloFisico.findFirst({
@@ -246,7 +228,7 @@ export class PsCicloFaseService {
         await this.assertMetaDoPlano(tipo, pdmId, metaId, user, 'readwrite');
 
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            await travaPlano(prismaTx, pdmId, true);
+            await travaPlano(prismaTx, pdmId);
             const ciclo = await this.carregaCiclo(prismaTx, pdmId, cicloId);
             const fases = await this.carregaFases(prismaTx, pdmId);
             const fase = this.faseHabilitada(fases, faseId);
@@ -377,7 +359,7 @@ export class PsCicloFaseService {
         await this.assertMetaDoPlano(tipo, pdmId, metaId, user, 'readwrite');
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            await travaPlano(prismaTx, pdmId, true);
+            await travaPlano(prismaTx, pdmId);
             await this.carregaCiclo(prismaTx, pdmId, cicloId);
 
             const fechamento = await prismaTx.metaMonitoramentoFase.findFirst({
@@ -398,6 +380,11 @@ export class PsCicloFaseService {
                 data: { reaberto_em: new Date(Date.now()), reaberto_por: user.id },
             });
         }, TX_OPTS);
+    }
+
+    private async assertPlanoExiste(pdmId: number): Promise<void> {
+        const pdm = await this.prisma.pdm.findFirst({ where: { id: pdmId, removido_em: null }, select: { id: true } });
+        if (!pdm) throw new HttpException('Plano não encontrado', 400);
     }
 
     private async assertMetaDoPlano(
@@ -469,7 +456,7 @@ export class PsCicloFaseService {
         faseId: number,
         metaId: number
     ): Promise<CicloResumo> {
-        await travaPlano(prismaTx, pdmId, true);
+        await travaPlano(prismaTx, pdmId);
         const ciclo = await this.carregaCiclo(prismaTx, pdmId, cicloId);
         const fases = await this.carregaFases(prismaTx, pdmId);
         const fase = this.faseHabilitada(fases, faseId);

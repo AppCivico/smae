@@ -15,10 +15,6 @@ const useStore = defineStore('Ciclos', {
     dadosExtrasDeVariaveis: [],
     dadosExtrasDeComposta: {},
     SingleAnalise: {},
-    SingleMetaAnalise: {},
-    SingleMetaAnaliseDocs: {},
-    SingleRisco: {},
-    SingleFechamento: {},
     Cronogramas: {},
     SingleCronograma: {},
     SingleCronogramaEtapas: {},
@@ -56,10 +52,6 @@ const useStore = defineStore('Ciclos', {
       this.SingleMeta = {};
       this.MetaVars = {};
       this.SingleAnalise = {};
-      this.SingleMetaAnalise = {};
-      this.SingleMetaAnaliseDocs = {};
-      this.SingleRisco = {};
-      this.SingleFechamento = {};
 
       this.Cronogramas = {};
       this.SingleCronograma = {};
@@ -287,85 +279,6 @@ const useStore = defineStore('Ciclos', {
 
     async solicitarComplementaçãoEmLote(params) {
       if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/complemento-em-lote`, params)) return true;
-      return false;
-    },
-
-    // Meta
-    async getMetaAnalise(ciclo_id, meta_id) {
-      this.SingleMetaAnalise = { loading: true };
-      this.SingleMetaAnaliseDocs = { loading: true };
-
-      try {
-        const r = await this.requestS.get(`${baseUrl}/mf/metas/analise-qualitativa?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
-        this.SingleMetaAnalise = r.analises[0] ? r.analises[0] : {};
-        this.SingleMetaAnaliseDocs = r.arquivos;
-      } catch (error) {
-        this.SingleMetaAnalise = { error };
-        this.SingleMetaAnaliseDocs = {};
-      }
-    },
-    async updateMetaAnalise(params) {
-      if (await this.requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa`, params)) return true;
-      return false;
-    },
-    async deleteMetaArquivo(id) {
-      if (await this.requestS.delete(`${baseUrl}/mf/metas/analise-qualitativa/documento/${id}`)) {
-        this.SingleMetaAnaliseDocs = this.SingleMetaAnaliseDocs.filter((x) => x.id !== id);
-        return true;
-      }
-      return false;
-    },
-    async addMetaArquivo(params, dadosParaEnvio) {
-      try {
-        const { id = 0, download_token: downloadToken } = await this.requestS.patch(`${baseUrl}/mf/metas/analise-qualitativa/documento/`, params);
-
-        if (id) {
-          const dadosDoArquivo = {
-            id,
-            arquivo: {
-              nome_original: dadosParaEnvio.arquivo.name,
-              descricao: dadosParaEnvio.descricao,
-              download_token: downloadToken || dadosParaEnvio.upload_token,
-            },
-          };
-
-          this.SingleMetaAnaliseDocs.push(dadosDoArquivo);
-          return true;
-        }
-        return false;
-      } catch (error) {
-        return false;
-      }
-    },
-
-    // Risco
-    async getMetaRisco(ciclo_id, meta_id) {
-      this.SingleRisco = { loading: true };
-      try {
-        const r = await this.requestS.get(`${baseUrl}/mf/metas/risco?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
-        this.SingleRisco = r;
-        this.SingleRisco = r.riscos[0] ? r.riscos[0] : {};
-      } catch (error) {
-        this.SingleRisco = { error };
-      }
-    },
-    async updateMetaRisco(params) {
-      if (await this.requestS.patch(`${baseUrl}/mf/metas/risco`, params)) return true;
-      return false;
-    },
-
-    // Fechamento
-    async getMetaFechamento(ciclo_id, meta_id) {
-      this.SingleFechamento = { loading: true };
-      try {
-        const r = await this.requestS.get(`${baseUrl}/mf/metas/fechamento?ciclo_fisico_id=${ciclo_id}&meta_id=${meta_id}&apenas_ultima_revisao=true`);
-        this.SingleFechamento = r.fechamentos[0] ? r.fechamentos[0] : {};
-      } catch (error) {
-        this.SingleFechamento = { error };
-      }
-    },
-    async updateMetaFechamento(params) {
-      if (await this.requestS.patch(`${baseUrl}/mf/metas/fechamento`, params)) return true;
       return false;
     },
 

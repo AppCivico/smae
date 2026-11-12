@@ -26,7 +26,6 @@ v_pendente_cp_cronograma BOOLEAN;
 
 v_debug varchar;
 v_sistema "ModuloSistema";
-v_por_blocos BOOLEAN;
 v_fases int[];
 v_preenchidas int[];
 v_n int;
@@ -54,9 +53,9 @@ BEGIN
 
     -- todo pegar a fase da meta
     SELECT
-        cf.pdm_id, cfs.ciclo_fase, cf.data_ciclo, p.sistema, p.monitoramento_por_blocos
+        cf.pdm_id, cfs.ciclo_fase, cf.data_ciclo, p.sistema
             INTO
-        v_pdm_id, v_fase, v_data_ciclo, v_sistema, v_por_blocos
+        v_pdm_id, v_fase, v_data_ciclo, v_sistema
     FROM
          ciclo_fisico cf
      LEFT JOIN ciclo_fisico_fase cfs on cfs.id = cf.ciclo_fase_atual_id
@@ -171,65 +170,36 @@ BEGIN
         SELECT unnest(v_variaveis_aguardando_complementacao)
     );
 
-    IF v_por_blocos THEN
-        SELECT coalesce(array_agg(f.id ORDER BY f.ordem), '{}')
-            INTO v_fases
-        FROM pdm_monitoramento_fase_config f
-        WHERE f.pdm_id = v_pdm_id
-          AND f.habilitada
-          AND f.removido_em IS NULL;
-        v_n := cardinality(v_fases);
+    SELECT coalesce(array_agg(f.id ORDER BY f.ordem), '{}')
+        INTO v_fases
+    FROM pdm_monitoramento_fase_config f
+    WHERE f.pdm_id = v_pdm_id
+      AND f.habilitada
+      AND f.removido_em IS NULL;
+    v_n := cardinality(v_fases);
 
-        SELECT coalesce(array_agg(r.fase_config_id), '{}')
-            INTO v_preenchidas
+    SELECT coalesce(array_agg(r.fase_config_id), '{}')
+        INTO v_preenchidas
+    FROM meta_monitoramento_fase r
+    WHERE r.meta_id = pMetaId
+      AND r.ciclo_fisico_id = pCicloFisicoIdAtual
+      AND r.ultima_revisao
+      AND r.removido_em IS NULL;
+
+    v_fechamento_enviado := EXISTS (
+        SELECT 1
         FROM meta_monitoramento_fase r
         WHERE r.meta_id = pMetaId
           AND r.ciclo_fisico_id = pCicloFisicoIdAtual
           AND r.ultima_revisao
-          AND r.removido_em IS NULL;
+          AND r.fecha_ciclo
+          AND r.reaberto_em IS NULL
+          AND r.removido_em IS NULL
+    );
 
-        v_fechamento_enviado := EXISTS (
-            SELECT 1
-            FROM meta_monitoramento_fase r
-            WHERE r.meta_id = pMetaId
-              AND r.ciclo_fisico_id = pCicloFisicoIdAtual
-              AND r.ultima_revisao
-              AND r.fecha_ciclo
-              AND r.reaberto_em IS NULL
-              AND r.removido_em IS NULL
-        );
-
-        -- colunas fixas como no refresh_ps_meta_consolidado; ciclo fechado conta todas as fases como preenchidas
-        v_analise_qualitativa_enviada := v_fechamento_enviado OR (v_n > 0 AND v_fases[1] = ANY (v_preenchidas));
-        v_risco_enviado := v_fechamento_enviado OR (v_n > 0 AND v_fases[1:v_n - 1] <@ v_preenchidas);
-    ELSE
-        select 1 = (
-                select count(1)
-                from meta_ciclo_fisico_analise mcfa
-                where mcfa.removido_em is null
-                and mcfa.ultima_revisao
-                and mcfa.meta_id = pMetaId
-                and ciclo_fisico_id = pCicloFisicoIdAtual
-        ) into v_analise_qualitativa_enviada;
-
-        select 1 = (
-                select count(1)
-                from meta_ciclo_fisico_risco mcfr
-                where mcfr.removido_em is null
-                and mcfr.ultima_revisao
-                and mcfr.meta_id = pMetaId
-                and ciclo_fisico_id = pCicloFisicoIdAtual
-        ) into v_risco_enviado;
-
-        select 1 = (
-                select count(1)
-                from meta_ciclo_fisico_fechamento mcff
-                where mcff.removido_em is null
-                and mcff.ultima_revisao
-                and mcff.meta_id = pMetaId
-                and ciclo_fisico_id = pCicloFisicoIdAtual
-        ) into v_fechamento_enviado;
-    END IF;
+    -- colunas fixas como no refresh_ps_meta_consolidado; ciclo fechado conta todas as fases como preenchidas
+    v_analise_qualitativa_enviada := v_fechamento_enviado OR (v_n > 0 AND v_fases[1] = ANY (v_preenchidas));
+    v_risco_enviado := v_fechamento_enviado OR (v_n > 0 AND v_fases[1:v_n - 1] <@ v_preenchidas);
 
     -- Redefinir variáveis se não estiver na fase correspondente
     IF v_fase NOT IN ('Analise', 'Risco', 'Fechamento') THEN

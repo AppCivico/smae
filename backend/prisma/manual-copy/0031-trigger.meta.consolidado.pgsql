@@ -143,22 +143,8 @@ FOR EACH ROW
 EXECUTE FUNCTION f_meta_refresh_generic_trigger();
 
 DROP TRIGGER IF EXISTS trg_refresh_meta_meta_ciclo_fisico_risco ON meta_ciclo_fisico_risco;
-CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_risco
-AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_risco
-FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_generic_trigger();
-
 DROP TRIGGER IF EXISTS trg_refresh_meta_meta_ciclo_fisico_fechamento ON meta_ciclo_fisico_fechamento;
-CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_fechamento
-AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_fechamento
-FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_generic_trigger();
-
 DROP TRIGGER IF EXISTS trg_refresh_meta_meta_ciclo_fisico_analise ON meta_ciclo_fisico_analise;
-CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_analise
-AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_analise
-FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_generic_trigger();
 
 DROP TRIGGER IF EXISTS trg_refresh_meta_meta_monitoramento_fase ON meta_monitoramento_fase;
 CREATE TRIGGER trg_refresh_meta_meta_monitoramento_fase

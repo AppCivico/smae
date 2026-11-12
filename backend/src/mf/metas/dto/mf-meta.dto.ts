@@ -30,16 +30,6 @@ export const MfPerfilDto = {
 
 export type MfPerfilDto = (typeof MfPerfilDto)[keyof typeof MfPerfilDto];
 
-export class FilterMfMetasDto {
-    /**
-     * Qual ciclo usar para calcular o status (exceto Coleta, que o status é sempre em branco)
-     * @example "Fechamento"
-     */
-    @IsOptional()
-    @ApiProperty({ enum: CicloFase })
-    ciclo_fase?: CicloFase;
-}
-
 export class FilterMfVariaveis {
     /**
      * válido apenas para CP e técnico CP simular o comportamento do envio como se fosse um ponto_focal
@@ -103,10 +93,6 @@ export class MfMetaDto {
         status: string;
     };
     codigo_organizacoes: string[];
-    /**
-     * Só aparece quando filtrado por algum ciclo-fase em especial
-     */
-    status_ciclo_fase?: string;
 }
 
 export class ListMfMetasDto {
