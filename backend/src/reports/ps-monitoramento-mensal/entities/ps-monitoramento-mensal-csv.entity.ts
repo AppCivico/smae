@@ -13,10 +13,9 @@ import { ReportColumn, ReportRows } from '../../post-process/report-column.decor
  * ausência de valor, sem máscara e sem o hack `="valor"`. Separador decimal, `dd/mm/aaaa`
  * e rótulos são aplicados na etapa de pós-processamento.
  *
- * Os rótulos abaixo reproduzem **exatamente** os cabeçalhos que o relatório já emitia,
+ * Os rótulos de `monitoramento-mensal-variaveis-ps.csv` reproduzem **exatamente** os cabeçalhos que o relatório já emitia,
  * incluindo os que estão sem acento ('Serie', 'Data de Referencia', 'Analise Qualitativa
  * ...'): são cabeçalhos já entregues ao usuário e corrigi-los é decisão de negócio.
-
  */
 
 /**
@@ -152,161 +151,64 @@ export class RelPsMonitoramentoMensalVariaveisCsvRow {
 }
 
 /**
- * `monitoramento-mensal-metas-ciclo-ps.csv` — uma linha por meta do ciclo, com o resumo
- * (já convertido de HTML para texto) da análise qualitativa, do risco e do fechamento.
+ * `monitoramento-mensal-fases-ps.csv`: uma linha por (meta, fase, bloco); fase sem bloco de texto (tags) sai em uma linha.
  */
 @ReportRows({
-    arquivo: 'monitoramento-mensal-metas-ciclo-ps.csv',
+    arquivo: 'monitoramento-mensal-fases-ps.csv',
     fontes: ['PSMonitoramentoMensal'],
-    descricao: 'Uma linha por meta do ciclo mensal, com análise qualitativa, risco e fechamento em texto puro.',
+    descricao:
+        'Uma linha por meta, fase e bloco do monitoramento do ciclo, com a última revisão de cada fase. ' +
+        'Fases sem blocos de texto (fases de tags) saem em uma linha só.',
 })
-export class RelPsMonitoramentoMensalMetasCicloCsvRow {
+export class RelPsMonitoramentoMensalFasesCsvRow {
     @ReportColumn({ type: 'BIGINT', label: 'ID da Meta', format: { raw: true } })
     meta_id: number;
 
     @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
     meta_codigo: string | null;
-
-    /** Conteúdo já passado por `Html2Text` na extração (limpeza de domínio, não de locale). */
-    // Rótulo sem acento ('Analise') igual ao original.
-    @ReportColumn({ type: 'VARCHAR', label: 'Analise Qualitativa' })
-    analise_qualitativa: string | null;
-
-    // Rótulo sem acento ('Analise') igual ao original.
-    @ReportColumn({ type: 'DATE', label: 'Data da Analise Qualitativa' })
-    analise_qualitativa_data: string | null;
-
-    /** Idem: `Html2Text` aplicado na extração. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Detalhamento do Risco' })
-    risco_detalhamento: string | null;
-
-    /** Idem: `Html2Text` aplicado na extração. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Ponto de Atenção do Risco' })
-    risco_ponto_atencao: string | null;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Comentário de Fechamento' })
-    fechamento_comentario: string | null;
-}
-
-/**
- * `analises-qualitativas-ps.csv` — uma linha por análise qualitativa de meta do ciclo
- * (só as metas que têm análise entram).
- */
-@ReportRows({
-    arquivo: 'analises-qualitativas-ps.csv',
-    fontes: ['PSMonitoramentoMensal'],
-    descricao: 'Uma linha por análise qualitativa de meta no ciclo mensal, com o texto em HTML e em texto puro.',
-})
-export class RelPsMonitoramentoMensalAnaliseQualitativaCsvRow {
-    @ReportColumn({ type: 'BIGINT', label: 'ID', format: { raw: true } })
-    id: number;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Criador' })
-    criador_nome_exibicao: string | null;
-
-    /** `meta_ciclo_fisico_analise.criado_em` (timestamptz, gravado em UTC). */
-    @ReportColumn({ type: 'TIMESTAMP', label: 'Criado Em' })
-    criado_em: string | null;
-
-    /** HTML como está no banco — a coluna "(Texto)" ao lado é a versão limpa. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Informações Complementares' })
-    informacoes_complementares: string | null;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Informações Complementares (Texto)' })
-    informacoes_complementares_texto: string | null;
-
-    @ReportColumn({ type: 'DATE', label: 'Data de Referência' })
-    referencia_data: string | null;
-
-    @ReportColumn({ type: 'BIGINT', label: 'ID da Meta', format: { raw: true } })
-    meta_id: number;
 
     @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta' })
     meta_titulo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
-    meta_codigo: string | null;
-}
+    @ReportColumn({ type: 'DATE', label: 'Data do Ciclo' })
+    data_ciclo: string;
 
-/**
- * `analises-de-risco-ps.csv` — uma linha por análise de risco de meta do ciclo
- * (só as metas que têm risco entram).
- */
-@ReportRows({
-    arquivo: 'analises-de-risco-ps.csv',
-    fontes: ['PSMonitoramentoMensal'],
-    descricao: 'Uma linha por análise de risco de meta no ciclo mensal, com os textos em HTML e em texto puro.',
-})
-export class RelPsMonitoramentoMensalRiscoCsvRow {
-    @ReportColumn({ type: 'BIGINT', label: 'ID', format: { raw: true } })
-    id: number;
+    @ReportColumn({ type: 'VARCHAR', label: 'Ciclo Fechado' })
+    ciclo_fechado: string;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Criador' })
-    criador_nome_exibicao: string | null;
+    @ReportColumn({ type: 'INTEGER', label: 'Ordem da Fase', format: { raw: true } })
+    fase_ordem: number;
 
-    /** `meta_ciclo_fisico_risco.criado_em` (timestamptz, gravado em UTC). */
-    @ReportColumn({ type: 'TIMESTAMP', label: 'Criado Em' })
-    criado_em: string | null;
+    @ReportColumn({ type: 'VARCHAR', label: 'Fase' })
+    fase_rotulo: string;
 
-    /** HTML como está no banco — a coluna "(Texto)" ao lado é a versão limpa. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Detalhamento' })
-    detalhamento: string | null;
+    @ReportColumn({ type: 'INTEGER', label: 'Ordem do Bloco', format: { raw: true } })
+    bloco_ordem: number | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Detalhamento (Texto)' })
-    detalhamento_texto: string | null;
+    @ReportColumn({ type: 'VARCHAR', label: 'Bloco' })
+    bloco_rotulo: string | null;
 
-    /** HTML como está no banco — a coluna "(Texto)" ao lado é a versão limpa. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Ponto de Atenção' })
-    ponto_de_atencao: string | null;
+    @ReportColumn({ type: 'VARCHAR', label: 'Conteúdo', descricao: 'Conteúdo do bloco convertido de HTML para texto.' })
+    conteudo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Ponto de Atenção (Texto)' })
-    ponto_de_atencao_texto: string | null;
+    @ReportColumn({ type: 'BIGINT', label: 'ID da Revisão', format: { raw: true } })
+    revisao_id: number | null;
 
     @ReportColumn({ type: 'DATE', label: 'Data de Referência' })
     referencia_data: string | null;
 
-    @ReportColumn({ type: 'BIGINT', label: 'ID da Meta', format: { raw: true } })
-    meta_id: number;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta' })
-    meta_titulo: string | null;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
-    meta_codigo: string | null;
-}
-
-/**
- * `fechamentos-ps.csv` — uma linha por fechamento de meta do ciclo
- * (só as metas que têm fechamento entram).
- */
-@ReportRows({
-    arquivo: 'fechamentos-ps.csv',
-    fontes: ['PSMonitoramentoMensal'],
-    descricao: 'Uma linha por fechamento de meta no ciclo mensal.',
-})
-export class RelPsMonitoramentoMensalFechamentoCsvRow {
-    @ReportColumn({ type: 'BIGINT', label: 'ID', format: { raw: true } })
-    id: number;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Criador' })
-    criador_nome_exibicao: string | null;
-
-    /** `meta_ciclo_fisico_fechamento.criado_em` (timestamptz, gravado em UTC). */
     @ReportColumn({ type: 'TIMESTAMP', label: 'Criado Em' })
     criado_em: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Comentário' })
-    comentario: string | null;
+    @ReportColumn({ type: 'VARCHAR', label: 'Criador' })
+    criador: string | null;
 
-    @ReportColumn({ type: 'DATE', label: 'Data de Referência' })
-    referencia_data: string | null;
+    @ReportColumn({ type: 'TIMESTAMP', label: 'Reaberto Em' })
+    reaberto_em: string | null;
 
-    @ReportColumn({ type: 'BIGINT', label: 'ID da Meta', format: { raw: true } })
-    meta_id: number;
+    @ReportColumn({ type: 'VARCHAR', label: 'Tags', descricao: 'Descrições separadas por "; ".' })
+    tags: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta' })
-    meta_titulo: string | null;
-
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
-    meta_codigo: string | null;
+    @ReportColumn({ type: 'INTEGER', label: 'Quantidade de Documentos', format: { raw: true } })
+    documentos_qtde: number;
 }

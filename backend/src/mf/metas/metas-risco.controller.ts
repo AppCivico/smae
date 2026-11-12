@@ -31,6 +31,8 @@ export class MetasRiscoController {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
 
+        await this.mfService.assertCicloLegado(dto.ciclo_fisico_id);
+
         return {
             ...(await this.metasRiscoService.getMetaRisco(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },

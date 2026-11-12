@@ -7,6 +7,7 @@ import {
     criarPessoaComPrivilegios,
     criarPessoaSemPrivilegios,
     criarPlanoSetorial,
+    prisma,
     Sessao,
 } from '../../lib';
 
@@ -95,5 +96,150 @@ describe('relatorio/planos-setoriais-monitoramento-mensal', () => {
             .send({ ...periodo, pdm_id: 1 });
         assertStatus(res, 400);
         assert.match(res.body.message, /não tem mais permissões/);
+    });
+
+    it('ciclo_metas lê só as fases configuráveis, escondendo fase e bloco desabilitados', async () => {
+        const executor = await criarPessoaComPrivilegios([
+            'Reports.executar.ProgramaDeMetas',
+            'CadastroPDM.administrador',
+        ]);
+        const plano = await criarPlanoSetorial({ sistema: 'ProgramaDeMetas' });
+        const db = prisma();
+        const autor = executor.pessoa.id;
+        const meta = await db.meta.create({
+            data: { pdm_id: plano.id, status: 'Ativo', codigo: 'M-FASES', titulo: 'Meta com fases' },
+        });
+        const data_ciclo = new Date('2027-03-01');
+        const ciclo =
+            (await db.cicloFisico.findFirst({ where: { pdm_id: plano.id, data_ciclo } })) ??
+            (await db.cicloFisico.create({ data: { pdm_id: plano.id, data_ciclo } }));
+        await db.pdmMonitoramentoFaseConfig.updateMany({
+            where: { pdm_id: plano.id },
+            data: { removido_em: new Date(), removido_por: autor },
+        });
+
+        const fase = (ordem: number, rotulo: string, extra: Record<string, boolean> = {}) =>
+            db.pdmMonitoramentoFaseConfig.create({
+                data: { pdm_id: plano.id, ordem, rotulo, criado_por: autor, ...extra },
+            });
+        const analise = await fase(1, 'Análise');
+        const tags = await fase(2, 'Tags', { aceita_tags: true });
+        const desabilitada = await fase(3, 'Desabilitada', { habilitada: false });
+        const fechamento = await fase(4, 'Fechamento');
+        const bloco = (fase_id: number, ordem: number, rotulo: string, habilitado = true) =>
+            db.pdmMonitoramentoBlocoConfig.create({
+                data: { fase_id, ordem, rotulo, habilitado, criado_por: autor },
+            });
+        const texto = await bloco(analise.id, 1, 'Texto');
+        const oculto = await bloco(analise.id, 2, 'Oculto', false);
+        const comentario = await bloco(fechamento.id, 1, 'Comentário');
+        const tagA = await db.tag.create({ data: { pdm_id: plano.id, descricao: 'Zeta' } });
+        const tagB = await db.tag.create({ data: { pdm_id: plano.id, descricao: 'Alfa' } });
+
+        const revisao = (fase_config_id: number, extra: Record<string, unknown> = {}) =>
+            db.metaMonitoramentoFase.create({
+                data: {
+                    meta_id: meta.id,
+                    ciclo_fisico_id: ciclo.id,
+                    fase_config_id,
+                    referencia_data: data_ciclo,
+                    ultima_revisao: true,
+                    criado_por: autor,
+                    ...extra,
+                },
+            });
+        await revisao(analise.id, {
+            ultima_revisao: false,
+            blocos: { create: [{ bloco_config_id: texto.id, conteudo: '<p>antiga</p>' }] },
+        });
+        const atual = await revisao(analise.id, {
+            blocos: {
+                create: [
+                    { bloco_config_id: texto.id, conteudo: '<p>Olá <b>mundo</b></p>' },
+                    { bloco_config_id: oculto.id, conteudo: '<p>não aparece</p>' },
+                ],
+            },
+        });
+        await revisao(tags.id, { tags: { create: [{ tag_id: tagA.id }, { tag_id: tagB.id }] } });
+        await revisao(desabilitada.id);
+        await revisao(fechamento.id, {
+            fecha_ciclo: true,
+            blocos: { create: [{ bloco_config_id: comentario.id, conteudo: 'fim' }] },
+        });
+        const arquivo = await db.arquivo.create({
+            data: { tipo: 'DOCUMENTO', caminho: 'e2e/doc.pdf', nome_original: 'doc.pdf', tamanho_bytes: 1 },
+        });
+        await db.metaMonitoramentoFaseDocumento.create({
+            data: {
+                meta_id: meta.id,
+                ciclo_fisico_id: ciclo.id,
+                fase_config_id: analise.id,
+                arquivo_id: arquivo.id,
+                referencia_data: data_ciclo,
+                descricao: 'anexo',
+                criado_por: autor,
+            },
+        });
+
+        const res = await api(executor, { sistema: 'ProgramaDeMetas' })
+            .post(url)
+            .send({ ...periodo, pdm_id: plano.id });
+        assertStatus(res, 201);
+        assert.equal(res.body.ciclo_metas.length, 1);
+        const item = res.body.ciclo_metas[0];
+        assert.equal(item.meta_id, meta.id);
+        assert.equal(item.ciclo_fisico_id, ciclo.id);
+        assert.equal(item.data_ciclo, '2027-03-01');
+        assert.equal(item.ciclo_fechado, true);
+        assert.equal(item.ciclo_reaberto, false);
+        assert.deepEqual(
+            item.fases.map((f: { config: { rotulo: string; fecha_ciclo: boolean } }) => [
+                f.config.rotulo,
+                f.config.fecha_ciclo,
+            ]),
+            [
+                ['Análise', false],
+                ['Tags', false],
+                ['Fechamento', true],
+            ]
+        );
+
+        const [faseAnalise, faseTags, faseFechamento] = item.fases;
+        assert.deepEqual(faseAnalise.config.blocos, [{ id: texto.id, ordem: 1, rotulo: 'Texto' }]);
+        assert.equal(faseAnalise.revisao.id, atual.id);
+        assert.deepEqual(faseAnalise.revisao.blocos, [
+            { bloco_id: texto.id, rotulo: 'Texto', conteudo: '<p>Olá <b>mundo</b></p>', conteudo_texto: 'Olá mundo' },
+        ]);
+        assert.deepEqual(faseAnalise.documentos, [
+            { id: faseAnalise.documentos[0].id, descricao: 'anexo', nome_original: 'doc.pdf' },
+        ]);
+        assert.deepEqual(faseTags.revisao.tags, [
+            { id: tagB.id, descricao: 'Alfa' },
+            { id: tagA.id, descricao: 'Zeta' },
+        ]);
+        assert.equal(faseFechamento.revisao.fecha_ciclo, true);
+        assert.equal(faseFechamento.revisao.criador.id, autor);
+    });
+
+    it('plano sem monitoramento por fases devolve as metas com fases vazias', async () => {
+        const executor = await criarPessoaComPrivilegios([
+            'Reports.executar.ProgramaDeMetas',
+            'CadastroPDM.administrador',
+        ]);
+        const plano = await criarPlanoSetorial({ sistema: 'ProgramaDeMetas' });
+        const db = prisma();
+        await db.pdm.update({ where: { id: plano.id }, data: { monitoramento_por_blocos: false } });
+        await db.meta.create({ data: { pdm_id: plano.id, status: 'Ativo', codigo: 'M-LEG', titulo: 'Meta legado' } });
+        const data_ciclo = new Date('2027-03-01');
+        if (!(await db.cicloFisico.findFirst({ where: { pdm_id: plano.id, data_ciclo } })))
+            await db.cicloFisico.create({ data: { pdm_id: plano.id, data_ciclo } });
+
+        const res = await api(executor, { sistema: 'ProgramaDeMetas' })
+            .post(url)
+            .send({ ...periodo, pdm_id: plano.id });
+        assertStatus(res, 201);
+        assert.equal(res.body.ciclo_metas.length, 1);
+        assert.deepEqual(res.body.ciclo_metas[0].fases, []);
+        assert.equal(res.body.ciclo_metas[0].ciclo_fechado, false);
     });
 });

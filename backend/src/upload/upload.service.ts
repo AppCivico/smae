@@ -713,7 +713,7 @@ export class UploadService {
         };
 
         try {
-            const records = await this.prisma.metaCicloFisicoAnaliseDocumento.findMany({
+            const records = await this.prisma.metaMonitoramentoFaseDocumento.findMany({
                 where: {
                     descricao: null,
                     removido_em: null,
@@ -759,7 +759,7 @@ export class UploadService {
 
                     if (!description) description = '';
 
-                    await this.prisma.metaCicloFisicoAnaliseDocumento.update({
+                    await this.prisma.metaMonitoramentoFaseDocumento.update({
                         where: { id: record.id },
                         data: { descricao: description },
                     });
