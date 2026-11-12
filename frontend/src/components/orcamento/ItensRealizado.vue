@@ -113,30 +113,55 @@ function removeItem(i) {
   model.value.splice(i, 1);
 }
 
-function atualizarDePercentagem(i, coluna) {
+function obterCampos(coluna) {
   switch (coluna) {
     case 'empenho':
-      if (model.value[i].percentual_empenho === 0) {
-        model.value[i].percentual_empenho = null;
-      } else {
-        model.value[i].valor_empenho = new Big(model.value[i].percentual_empenho)
-          .times(new Big(props.respostasof.empenho_liquido).div(100)).toFixed(2);
-      }
-      break;
+      return {
+        base: props.respostasof.empenho_liquido,
+        campoPercentual: 'percentual_empenho',
+        campoValor: 'valor_empenho',
+      };
 
     case 'liquidação':
     case 'liquidacao':
-      if (model.value[i].percentual_liquidado === 0) {
-        model.value[i].percentual_liquidado = null;
-      } else {
-        model.value[i].valor_liquidado = new Big(model.value[i].percentual_liquidado)
-          .times(new Big(props.respostasof.valor_liquidado).div(100)).toFixed(2);
-      }
-      break;
+      return {
+        base: props.respostasof.valor_liquidado,
+        campoPercentual: 'percentual_liquidado',
+        campoValor: 'valor_liquidado',
+      };
 
     default:
       throw new Error('Coluna desconhecida fornecida');
   }
+}
+
+function atualizarDePercentagem(i, coluna) {
+  const { base, campoPercentual, campoValor } = obterCampos(coluna);
+  const percentual = model.value[i][campoPercentual];
+
+  if (percentual === 0) {
+    model.value[i][campoPercentual] = null;
+    return;
+  }
+
+  model.value[i][campoValor] = new Big(percentual)
+    .times(new Big(base).div(100))
+    .toFixed(2);
+}
+
+function atualizarDeValor(i, coluna, valor) {
+  const { base, campoPercentual } = obterCampos(coluna);
+
+  if (valor === null || valor === undefined || valor === ''
+    || !Number(base)) {
+    model.value[i][campoPercentual] = null;
+    return;
+  }
+
+  model.value[i][campoPercentual] = Number(new Big(valor)
+    .times(100)
+    .div(new Big(base))
+    .toFixed(2));
 }
 
 async function addItem() {
@@ -258,6 +283,7 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
             :name="`${name}[${i}].valor_empenho`"
             type="text"
             class="inputtext light"
+            @update:model-value="(valor) => atualizarDeValor(i, 'empenho', valor)"
           />
         </td>
         <td>
@@ -280,6 +306,7 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
             :name="`${name}[${i}].valor_liquidado`"
             type="text"
             class="inputtext light"
+            @update:model-value="(valor) => atualizarDeValor(i, 'liquidação', valor)"
           />
         </td>
         <td>
