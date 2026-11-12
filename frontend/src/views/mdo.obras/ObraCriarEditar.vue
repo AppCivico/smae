@@ -1956,28 +1956,19 @@ watch(listaDeTiposDeIntervenção, () => {
               class="tc300"
               :schema="schema.fields.fonte_recursos.innerType"
             />
-            <Field
-              :id="`fonte_recursos[${idx}].observacao`"
-              v-slot="{ handleChange, value, field}"
-              :name="`fonte_recursos[${idx}].observacao`"
-              rows="3"
+
+            <SmaeText
+              as="textarea"
+              rows="5"
               class="inputtext light mb1"
-            >
-              <SmaeText
-                as="textarea"
-                rows="5"
-                class="inputtext light mb1"
-                :class="{ error: errors[field.name] }"
-                :schema="schema"
-                :name="field.name"
-                :model-value="value"
-                :disabled="bloquearCampos"
-                :aria-disabled="bloquearCampos"
-                anular-vazio
-                :max-length="255"
-                @update:model-value="handleChange"
-              />
-            </Field>
+              :class="{ error: errors[field.name] }"
+              :schema="schema"
+              :name="`fonte_recursos[${idx}].observacao`"
+
+              anular-vazio
+              :max-length="255"
+            />
+
             <ErrorMessage
               class="error-msg mb1"
               :name="`fonte_recursos[${idx}].observacao`"
