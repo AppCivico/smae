@@ -2,7 +2,7 @@
 
 <!-- Gerado por bin/report-columns-gen.ts — não edite à mão. -->
 
-41 arquivos de relatório com schema de colunas declarado.
+38 arquivos de relatório com schema de colunas declarado.
 
 ## Arquivos
 
@@ -10,8 +10,6 @@
 | --- | --- | --- | --- |
 | `acompanhamentos.csv` | `Obras`, `Projeto`, `Projetos` | 23 | [detalhes](./report-columns/acompanhamentos-csv.md) |
 | `aditivos.csv` | `Obras`, `Projeto`, `Projetos` | 12 | [detalhes](./report-columns/aditivos-csv.md) |
-| `analises-de-risco-ps.csv` | `PSMonitoramentoMensal` | 11 | [detalhes](./report-columns/analises-de-risco-ps-csv.md) |
-| `analises-qualitativas-ps.csv` | `PSMonitoramentoMensal` | 9 | [detalhes](./report-columns/analises-qualitativas-ps-csv.md) |
 | `arquivos.csv` | `Obras`, `Projeto`, `Projetos` | 16 | [detalhes](./report-columns/arquivos-csv.md) |
 | `atividades-pendentes.csv` | `AtvPendentes` | 9 | [detalhes](./report-columns/atividades-pendentes-csv.md) |
 | `contratos.csv` | `Obras`, `Projeto`, `Projetos` | 36 | [detalhes](./report-columns/contratos-csv.md) |
@@ -21,13 +19,12 @@
 | `encaminhamentos.csv` | `Projeto` | 6 | [detalhes](./report-columns/encaminhamentos-csv.md) |
 | `enderecos.csv` | `Demandas`, `Obras`, `Projeto` | 23 | [detalhes](./report-columns/enderecos-csv.md) |
 | `executado.csv` | `PSOrcamento`, `ProjetoOrcamento`, `ObrasOrcamento` | 40 | [detalhes](./report-columns/executado-csv.md) |
-| `fechamentos-ps.csv` | `PSMonitoramentoMensal` | 8 | [detalhes](./report-columns/fechamentos-ps-csv.md) |
 | `fontes_recurso.csv` | `Obras` | 5 | [detalhes](./report-columns/fontes-recurso-csv.md) |
 | `geoloc.csv` | `Projetos` | 20 | [detalhes](./report-columns/geoloc-csv.md) |
 | `indicadores.csv` | `PSIndicadores` | 23 | [detalhes](./report-columns/indicadores-csv.md) |
 | `licoes_aprendidas.csv` | `Projetos` | 9 | [detalhes](./report-columns/licoes-aprendidas-csv.md) |
 | `monitoramento_planos_de_acao.csv` | `Projetos` | 6 | [detalhes](./report-columns/monitoramento-planos-de-acao-csv.md) |
-| `monitoramento-mensal-metas-ciclo-ps.csv` | `PSMonitoramentoMensal` | 7 | [detalhes](./report-columns/monitoramento-mensal-metas-ciclo-ps-csv.md) |
+| `monitoramento-mensal-fases-ps.csv` | `PSMonitoramentoMensal` | 17 | [detalhes](./report-columns/monitoramento-mensal-fases-ps-csv.md) |
 | `monitoramento-mensal-variaveis-ps.csv` | `PSMonitoramentoMensal` | 23 | [detalhes](./report-columns/monitoramento-mensal-variaveis-ps-csv.md) |
 | `obra-status.csv` | `ObraStatus` | 11 | [detalhes](./report-columns/obra-status-csv.md) |
 | `obras_simplificado.csv` | `Obras` | 70 | [detalhes](./report-columns/obras-simplificado-csv.md) |
@@ -60,8 +57,6 @@ flowchart LR
     obras["Obras"] --> aditivos-csv["aditivos.csv"]
     projeto["Projeto"] --> aditivos-csv["aditivos.csv"]
     projetos["Projetos"] --> aditivos-csv["aditivos.csv"]
-    psmonitoramentomensal["PSMonitoramentoMensal"] --> analises-de-risco-ps-csv["analises-de-risco-ps.csv"]
-    psmonitoramentomensal["PSMonitoramentoMensal"] --> analises-qualitativas-ps-csv["analises-qualitativas-ps.csv"]
     obras["Obras"] --> arquivos-csv["arquivos.csv"]
     projeto["Projeto"] --> arquivos-csv["arquivos.csv"]
     projetos["Projetos"] --> arquivos-csv["arquivos.csv"]
@@ -82,13 +77,12 @@ flowchart LR
     psorcamento["PSOrcamento"] --> executado-csv["executado.csv"]
     projetoorcamento["ProjetoOrcamento"] --> executado-csv["executado.csv"]
     obrasorcamento["ObrasOrcamento"] --> executado-csv["executado.csv"]
-    psmonitoramentomensal["PSMonitoramentoMensal"] --> fechamentos-ps-csv["fechamentos-ps.csv"]
     obras["Obras"] --> fontes-recurso-csv["fontes_recurso.csv"]
     projetos["Projetos"] --> geoloc-csv["geoloc.csv"]
     psindicadores["PSIndicadores"] --> indicadores-csv["indicadores.csv"]
     projetos["Projetos"] --> licoes-aprendidas-csv["licoes_aprendidas.csv"]
     projetos["Projetos"] --> monitoramento-planos-de-acao-csv["monitoramento_planos_de_acao.csv"]
-    psmonitoramentomensal["PSMonitoramentoMensal"] --> monitoramento-mensal-metas-ciclo-ps-csv["monitoramento-mensal-metas-ciclo-ps.csv"]
+    psmonitoramentomensal["PSMonitoramentoMensal"] --> monitoramento-mensal-fases-ps-csv["monitoramento-mensal-fases-ps.csv"]
     psmonitoramentomensal["PSMonitoramentoMensal"] --> monitoramento-mensal-variaveis-ps-csv["monitoramento-mensal-variaveis-ps.csv"]
     obrastatus["ObraStatus"] --> obra-status-csv["obra-status.csv"]
     obras["Obras"] --> obras-simplificado-csv["obras_simplificado.csv"]

@@ -1,3 +1,6 @@
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
+import { DateYMD } from '../../../common/date2ymd';
+import { MonitoramentoFaseLeituraDto } from '../../../pdm-ciclo/entities/ps-ciclo-fase.entity';
 import { ListIndicadoresDto } from '../../indicadores/entities/indicadores.entity';
 
 export class RelPsMonitoramentoMensalVariaveis {
@@ -33,29 +36,18 @@ export class RelPsMonitoramentoMensalVariaveis {
 }
 
 export class RelPSMonitoramentoMensalCicloMetasDto {
-    ps_id?: number;
     meta_id: number;
     meta_codigo: string;
     meta_titulo: string;
-    analise_qualitativa: string | null;
-    analise_qualitativa_texto: string | null;
-    analise_qualitativa_data: string | null;
-    analise_id: number | null;
-    analise_criado_em: string | null;
-    analise_criador: string | null;
-    risco_detalhamento: string | null;
-    risco_detalhamento_texto: string | null;
-    risco_ponto_atencao: string | null;
-    risco_ponto_atencao_texto: string | null;
-    risco_id: number | null;
-    risco_criado_em: string | null;
-    risco_criador: string | null;
-    risco_referencia_data: string | null;
-    fechamento_comentario: string | null;
-    fechamento_id: number | null;
-    fechamento_criado_em: string | null;
-    fechamento_criador: string | null;
-    fechamento_referencia_data: string | null;
+    ciclo_fisico_id: number;
+    @IsDateYMD()
+    data_ciclo: DateYMD;
+    ciclo_fechado: boolean;
+    ciclo_reaberto: boolean;
+    /**
+     * Fases habilitadas do plano, em ordem; vazio quando o plano não monitora por fases
+     */
+    fases: MonitoramentoFaseLeituraDto[];
 }
 
 export class RelPsMonitRetorno extends ListIndicadoresDto {

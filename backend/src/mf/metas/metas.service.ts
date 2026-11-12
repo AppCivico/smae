@@ -130,7 +130,28 @@ export class MetasService {
 
         let metaStatus: { meta_id: number }[] | undefined = undefined;
 
-        if (params.ciclo_fase == 'Analise') {
+        const porBlocos =
+            params.ciclo_fase && params.ciclo_fase != 'Coleta'
+                ? (
+                      await this.prisma.cicloFisico.findUniqueOrThrow({
+                          where: { id: cicloAtivoId },
+                          select: { pdm: { select: { monitoramento_por_blocos: true } } },
+                      })
+                  ).pdm.monitoramento_por_blocos
+                : false;
+
+        if (porBlocos) {
+            metaStatus = await this.prisma.metaMonitoramentoFase.findMany({
+                where: {
+                    ciclo_fisico_id: cicloAtivoId,
+                    ultima_revisao: true,
+                    removido_em: null,
+                    ...(params.ciclo_fase == 'Fechamento' ? { fecha_ciclo: true, reaberto_em: null } : {}),
+                },
+                select: { meta_id: true },
+                distinct: ['meta_id'],
+            });
+        } else if (params.ciclo_fase == 'Analise') {
             metaStatus = await this.prisma.metaCicloFisicoAnalise.findMany({
                 where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
                 select: { meta_id: true },
