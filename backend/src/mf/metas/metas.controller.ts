@@ -21,7 +21,6 @@ import { MfService } from '../mf.service';
 import {
     CicloFaseDto,
     FilterFormulaCompostaAnaliseQualitativaDto,
-    FilterMfMetasDto,
     FilterMfVariaveis,
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
@@ -66,16 +65,13 @@ export class MetasController {
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
     })
-    async metas(
-        @Query() params: FilterMfMetasDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListMfMetasDto & RequestInfoDto> {
+    async metas(@CurrentUser() user: PessoaFromJwt): Promise<ListMfMetasDto & RequestInfoDto> {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
 
         return {
-            linhas: await this.metasService.metas(config, cicloFisicoAtivo.id, params),
+            linhas: await this.metasService.metas(config, cicloFisicoAtivo.id),
             requestInfo: { queryTook: Date.now() - start },
             ciclo_ativo: cicloFisicoAtivo,
             perfil: config.perfil,

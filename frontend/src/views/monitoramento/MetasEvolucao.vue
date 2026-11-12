@@ -8,15 +8,11 @@ import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { default as countVars } from '@/components/monitoramento/countVars.vue';
 import listCompostas from '@/components/monitoramento/listCompostas.vue';
 import { default as listVars } from '@/components/monitoramento/listVars.vue';
-import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
-import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
-import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
 import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
 import modalRealizadoEmLote from '@/components/monitoramento/modalRealizadoEmLote.vue';
 import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
 import { auxiliarDePreenchimentoDeEvoluçãoDeMeta as schema } from '@/consts/formSchemas';
 import agrupadorDeVariáveis from '@/helpers/agrupadorDeVariaveis';
-import dateToField from '@/helpers/dateToField';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -24,8 +20,6 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useSideBarStore } from '@/stores/sideBar.store';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -45,10 +39,6 @@ const CiclosStore = useCiclosStore();
 const {
   SingleMeta,
   MetaVars,
-  SingleMetaAnalise,
-  SingleMetaAnaliseDocs,
-  SingleRisco,
-  SingleFechamento,
   chamadasPendentes,
 } = storeToRefs(CiclosStore);
 
@@ -58,12 +48,6 @@ async function iniciar() {
   CiclosStore.getMetaVars(meta_id);
 
   if (!activePdm.value.id) await PdMStore.getActive();
-
-  if (perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) {
-    CiclosStore.getMetaAnalise(activePdm.value.ciclo_fisico_ativo.id, meta_id);
-    CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id, meta_id);
-    CiclosStore.getMetaFechamento(activePdm.value.ciclo_fisico_ativo.id, meta_id);
-  }
 }
 
 function checkClose() {
@@ -104,28 +88,6 @@ function confirmFase(id, f) {
       () => { alertStore.clear(); },
     );
   }
-}
-
-function fecharciclo(ciclo_id, meta_id, parent) {
-  editModalStore.clear();
-  editModalStore.modal(modalFechamento, {
-    ciclo_id, meta_id, parent, checkClose,
-  });
-}
-function analisederisco(ciclo_id, meta_id, parent) {
-  editModalStore.clear();
-  editModalStore.modal(modalAnaliseRisco, {
-    ciclo_id, meta_id, parent, checkClose,
-  });
-}
-function qualificar(ciclo_id, meta_id, parent) {
-  editModalStore.clear();
-  editModalStore.modal(modalQualificacaoMeta, {
-    ciclo_id, meta_id, parent, checkClose,
-  });
-}
-function vazio(s) {
-  return s || '-';
 }
 
 async function onSubmit(values) {
@@ -336,210 +298,6 @@ iniciar();
         <div class="flex g2 end" />
       </Form>
     </auxiliarDePreenchimento>
-
-    <div
-      v-if="SingleFechamento?.id"
-      class="mb2"
-    >
-      <div class="flex spacebetween center mb1">
-        <h2>Fechamento do Ciclo</h2>
-        <hr class="ml2 f1">
-        <a
-          v-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)"
-          class="tprimary ml1"
-          @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-        ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_edit" /></svg></a>
-      </div>
-      <div class="label tc300">
-        Comentários
-      </div>
-      <div class="mb2">
-        {{ vazio(SingleFechamento.comentario) }}
-      </div>
-
-      <div class="label tc300">
-        Fechado por
-      </div>
-      <div
-        class="contentStyle mb2"
-      >
-        <strong>{{ SingleFechamento.criador?.nome_exibicao || SingleFechamento.criador }}</strong>
-        em <time :datetime="SingleFechamento.criado_em">
-          {{ dateToField(SingleFechamento.criado_em) }}
-        </time>
-      </div>
-    </div>
-    <div v-else-if="SingleFechamento.loading">
-      <span class="spinner">Carregando</span>
-    </div>
-    <div
-      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) &&
-        MetaVars.permissoes?.fechamento"
-      class="p1 bgc50 tc mb2"
-    >
-      <button
-        type="button"
-        class="btn"
-        @click="fecharciclo(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-      >
-        Fechar ciclo
-      </button>
-    </div>
-
-    <div
-      v-if="SingleRisco.id"
-      class="mb2"
-    >
-      <div class="flex spacebetween center mb1">
-        <h2>Análise de Risco</h2>
-        <hr class="ml2 f1">
-        <a
-          v-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)"
-          class="tprimary ml1"
-          @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-        ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_edit" /></svg></a>
-      </div>
-      <div class="label tc300">
-        Detalhamento
-      </div>
-      <div
-        class="contentStyle mb2"
-        v-html="SingleRisco.detalhamento || '-'"
-      />
-      <div class="label tc300">
-        Pontos de atenção
-      </div>
-      <div
-        class="contentStyle mb2"
-        v-html="SingleRisco.ponto_de_atencao || '-'"
-      />
-
-      <div class="label tc300">
-        Analisado por
-      </div>
-      <div
-        class="contentStyle mb2"
-      >
-        <strong>{{ SingleRisco.criador?.nome_exibicao || SingleRisco.criador }}</strong>
-        em <time :datetime="SingleRisco.criado_em">
-          {{ dateToField(SingleRisco.criado_em) }}
-        </time>
-      </div>
-    </div>
-    <div v-else-if="SingleRisco.loading">
-      <span class="spinner">Carregando</span>
-    </div>
-    <div
-      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) && MetaVars.permissoes?.risco"
-      class="p1 bgc50 tc mb2"
-    >
-      <button
-        type="button"
-        class="btn"
-        @click="analisederisco(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-      >
-        Adicionar Análise de Risco
-      </button>
-    </div>
-
-    <div
-      v-if="SingleMetaAnalise.id"
-      class="mb2"
-    >
-      <div class="flex spacebetween center mb1">
-        <h2>Qualificação</h2>
-        <hr class="ml2 f1">
-        <a
-          v-if="(perm.PDM?.admin_cp||perm.PDM?.tecnico_cp)"
-          class="tprimary ml1"
-          @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-        ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_edit" /></svg></a>
-      </div>
-      <div class="label tc300">
-        Informações complementares
-      </div>
-      <div class="mb2">
-        {{ vazio(SingleMetaAnalise.informacoes_complementares) }}
-      </div>
-
-      <div class="label tc300">
-        Qualificado por
-      </div>
-      <div
-        class="contentStyle mb2"
-      >
-        <strong>{{ SingleMetaAnalise.criador?.nome_exibicao || SingleMetaAnalise.criador }}</strong>
-        em <time :datetime="SingleMetaAnalise.criado_em">
-          {{ dateToField(SingleMetaAnalise.criado_em) }}
-        </time>
-      </div>
-
-      <table class="tablemain mt2 mb2 pl0">
-        <thead>
-          <tr>
-            <th style="width: 30%">
-              Documentos relacionados
-            </th>
-            <th style="width: 70%">
-              Descrição
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-if="SingleMetaAnaliseDocs.length">
-            <tr
-              v-for="subitem in SingleMetaAnaliseDocs"
-              :key="subitem.id"
-            >
-              <td>
-                <a
-                  :href="baseUrl+'/download/'+subitem?.arquivo?.download_token"
-                  download
-                >{{ vazio(subitem?.arquivo?.nome_original) }}</a>
-              </td>
-              <td>
-                <a
-                  :href="baseUrl+'/download/'+subitem?.arquivo?.download_token"
-                  download
-                >{{ vazio(subitem?.arquivo?.descricao) }}</a>
-              </td>
-            </tr>
-          </template>
-          <tr v-else>
-            <td colspan="60">
-              Nenhum arquivo adicionado
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-else-if="SingleMetaAnalise.loading">
-      <span class="spinner">Carregando</span>
-    </div>
-
-    <div
-      v-else-if="(perm.PDM?.admin_cp || perm.PDM?.tecnico_cp)
-        && MetaVars.permissoes?.analiseQualitativa"
-      class="p1 bgc50 tc mb2"
-    >
-      <button
-        type="button"
-        class="btn"
-        @click="qualificar(activePdm.ciclo_fisico_ativo.id,meta_id,SingleMeta)"
-      >
-        Qualificar
-      </button>
-    </div>
 
     <div class="boards">
       <template v-if="MetaVars.meta">

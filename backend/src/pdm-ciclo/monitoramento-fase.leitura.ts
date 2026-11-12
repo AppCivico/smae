@@ -137,10 +137,10 @@ export async function leMonitoramentoFases(
     if (!ids.length) return out;
 
     const [pdm, ciclo] = await Promise.all([
-        prisma.pdm.findFirst({ where: { id: pdmId, removido_em: null }, select: { monitoramento_por_blocos: true } }),
+        prisma.pdm.findFirst({ where: { id: pdmId, removido_em: null }, select: { id: true } }),
         prisma.cicloFisico.findFirst({ where: { id: cicloFisicoId, pdm_id: pdmId }, select: { ativo: true } }),
     ]);
-    if (!pdm?.monitoramento_por_blocos || !ciclo) return out;
+    if (!pdm || !ciclo) return out;
 
     const fases = await carregaFasesConfig(prisma, pdmId);
     if (!fases.length) return out;

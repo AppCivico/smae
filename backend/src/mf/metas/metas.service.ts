@@ -20,7 +20,6 @@ import {
     CicloAtivoDto,
     CicloFaseDto,
     FilterFormulaCompostaAnaliseQualitativaDto,
-    FilterMfMetasDto,
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
     FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
@@ -93,7 +92,7 @@ export class MetasService {
         private readonly smaeConfigService: SmaeConfigService
     ) {}
 
-    async metas(config: MfPessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
+    async metas(config: MfPessoaAcessoPdm, cicloAtivoId: number): Promise<MfMetaDto[]> {
         const rows = await this.prisma.meta.findMany({
             where: {
                 id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
@@ -128,71 +127,6 @@ export class MetasService {
             },
         });
 
-        let metaStatus: { meta_id: number }[] | undefined = undefined;
-
-        const porBlocos =
-            params.ciclo_fase && params.ciclo_fase != 'Coleta'
-                ? (
-                      await this.prisma.cicloFisico.findUniqueOrThrow({
-                          where: { id: cicloAtivoId },
-                          select: { pdm: { select: { monitoramento_por_blocos: true } } },
-                      })
-                  ).pdm.monitoramento_por_blocos
-                : false;
-
-        if (porBlocos) {
-            metaStatus = await this.prisma.metaMonitoramentoFase.findMany({
-                where: {
-                    ciclo_fisico_id: cicloAtivoId,
-                    ultima_revisao: true,
-                    removido_em: null,
-                    ...(params.ciclo_fase == 'Fechamento' ? { fecha_ciclo: true, reaberto_em: null } : {}),
-                },
-                select: { meta_id: true },
-                distinct: ['meta_id'],
-            });
-        } else if (params.ciclo_fase == 'Analise') {
-            metaStatus = await this.prisma.metaCicloFisicoAnalise.findMany({
-                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
-                select: { meta_id: true },
-            });
-        } else if (params.ciclo_fase == 'Risco') {
-            metaStatus = await this.prisma.metaCicloFisicoRisco.findMany({
-                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
-                select: { meta_id: true },
-            });
-        } else if (params.ciclo_fase == 'Fechamento') {
-            metaStatus = await this.prisma.metaCicloFisicoFechamento.findMany({
-                where: { ciclo_fisico_id: cicloAtivoId, removido_em: null },
-                select: { meta_id: true },
-            });
-        }
-        const labelsPorStatus: Record<CicloFase, Record<'true' | 'false', string>> = {
-            Analise: {
-                false: 'Metas sem análise qualitativa',
-                true: 'Metas com análise qualitativa',
-            },
-            Coleta: {
-                false: '',
-                true: '',
-            },
-            Risco: {
-                false: 'Metas sem análise de risco',
-                true: 'Metas com análise de risco',
-            },
-            Fechamento: {
-                false: 'Metas não fechadas',
-                true: 'Metas fechadas',
-            },
-        };
-
-        const metasStatusPorMeta: Record<number, boolean> = {};
-        if (metaStatus) {
-            for (const r of metaStatus) {
-                metasStatusPorMeta[r.meta_id] = true;
-            }
-        }
-
         const out: MfMetaDto[] = [];
         for (const r of rows) {
             let status_coleta = '';
@@ -221,9 +155,7 @@ export class MetasService {
 
             const coleta = config.metas_variaveis.includes(r.id);
             const cronograma = config.metas_cronograma.includes(r.id);
-            const statusMeta = metasStatusPorMeta[r.id] ? 'true' : 'false';
             out.push({
-                status_ciclo_fase: params.ciclo_fase ? labelsPorStatus[params.ciclo_fase][statusMeta] : undefined,
                 fase: r.ciclo_fase?.ciclo_fase || '(sem fase)',
                 codigo: r.codigo,
                 id: r.id,

@@ -4,32 +4,22 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
-import { FindOneParams, FindThreeParams, FindTwoParams } from '../common/decorators/find-params';
+import { FindThreeParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaSetorialController } from '../meta/meta.controller';
-import { PlanoSetorialController } from '../pdm/pdm.controller';
 import {
     CreatePsCicloFaseDocumentoDto,
-    MigrarMonitoramentoPorBlocosDto,
     SalvarPsCicloFaseDto,
     UpdatePsCicloFaseDocumentoDto,
 } from './dto/ps-ciclo-fase.dto';
 import { FilterMonitCicloDto } from './dto/update-pdm-ciclo.dto';
-import {
-    MonitoramentoMigracaoContagemDto,
-    MonitoramentoMigracaoPreviaDto,
-    PsCicloFasesDto,
-} from './entities/ps-ciclo-fase.entity';
+import { PsCicloFasesDto } from './entities/ps-ciclo-fase.entity';
 import { PsCicloFaseService } from './ps-ciclo-fase.service';
-import { PsMonitoramentoMigracaoService } from './ps-monitoramento-migracao.service';
 
 @Controller('plano-setorial')
 @ApiTags('Plano Setorial / Programa de Metas - Ciclo físico')
 export class PsCicloFaseController {
-    constructor(
-        private readonly psCicloFaseService: PsCicloFaseService,
-        private readonly migracaoService: PsMonitoramentoMigracaoService
-    ) {}
+    constructor(private readonly psCicloFaseService: PsCicloFaseService) {}
 
     @Get(':id/ciclo/:id2/fase')
     @ApiBearerAuth('access-token')
@@ -117,28 +107,5 @@ export class PsCicloFaseController {
         @TipoPDM() tipo: TipoPdmType
     ): Promise<void> {
         await this.psCicloFaseService.removeDocumento(tipo, params.id, params.id2, params.id3, query.meta_id, user);
-    }
-
-    @Get(':id/monitoramento-por-blocos')
-    @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.WritePerms])
-    async previaMigracao(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt,
-        @TipoPDM() tipo: TipoPdmType
-    ): Promise<MonitoramentoMigracaoPreviaDto> {
-        return await this.migracaoService.previa(tipo, params.id, user);
-    }
-
-    @Post(':id/monitoramento-por-blocos')
-    @ApiBearerAuth('access-token')
-    @Roles([...PlanoSetorialController.WritePerms])
-    async migra(
-        @Param() params: FindOneParams,
-        @Body() dto: MigrarMonitoramentoPorBlocosDto,
-        @CurrentUser() user: PessoaFromJwt,
-        @TipoPDM() tipo: TipoPdmType
-    ): Promise<MonitoramentoMigracaoContagemDto> {
-        return await this.migracaoService.migra(tipo, params.id, dto, user);
     }
 }

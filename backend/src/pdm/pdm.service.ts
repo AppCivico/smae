@@ -296,7 +296,7 @@ export class PdmService {
                     tipo: PdmModoParaTipo(tipo),
                     ativo: false,
                     sistema: tipo == 'PDM_AS_PS' ? 'ProgramaDeMetas' : tipo == '_PDM' ? 'PDM' : 'PlanoSetorial',
-                    monitoramento_por_blocos: tipo != '_PDM',
+                    monitoramento_por_blocos: true,
                 },
             });
             logger.log(`PDM criado com ID: ${pdm.id} e tipo: ${tipo}`);
@@ -333,14 +333,14 @@ export class PdmService {
                     user,
                     prismaTx
                 );
+            }
 
-                // PdM/PS não-legado: usa a config enviada (mesma transação) ou nasce com o padrão
-                if (dto.monitoramento_config) {
-                    this.validarMonitoramentoConfig(dto.monitoramento_config);
-                    await this.applyMonitoramentoConfig(prismaTx, pdm.id, dto.monitoramento_config, user, now);
-                } else {
-                    await this.seedMonitoramentoConfigDefaults(prismaTx, pdm.id, user);
-                }
+            // usa a config enviada (mesma transação) ou nasce com o padrão
+            if (dto.monitoramento_config) {
+                this.validarMonitoramentoConfig(dto.monitoramento_config);
+                await this.applyMonitoramentoConfig(prismaTx, pdm.id, dto.monitoramento_config, user, now);
+            } else {
+                await this.seedMonitoramentoConfigDefaults(prismaTx, pdm.id, user);
             }
 
             await logger.saveLogs(prismaTx, user.getLogData());
@@ -663,7 +663,6 @@ export class PdmService {
             meses: pdmConfig?.meses ?? [],
             orcamento_dia_abertura: pdm.orcamento_dia_abertura,
             orcamento_dia_fechamento: pdm.orcamento_dia_fechamento,
-            monitoramento_por_blocos: pdm.monitoramento_por_blocos,
             monitoramento_ciclo_fases: monitoramento_ciclo_fases,
             perm_level: perm_level,
             pode_editar: perm_level >= PdmPermissionLevel.CONFIG_WRITE,
@@ -1789,8 +1788,7 @@ export class PdmService {
         await prismaTx.$queryRaw`
             SELECT f_add_refresh_meta_task(m.id)::text
             FROM meta m
-            JOIN pdm p ON p.id = m.pdm_id
-            WHERE m.pdm_id = ${pdm_id}::int AND m.removido_em IS NULL AND p.monitoramento_por_blocos`;
+            WHERE m.pdm_id = ${pdm_id}::int AND m.removido_em IS NULL`;
 
         return ret;
     }

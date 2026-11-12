@@ -220,26 +220,4 @@ describe('relatorio/planos-setoriais-monitoramento-mensal', () => {
         assert.equal(faseFechamento.revisao.fecha_ciclo, true);
         assert.equal(faseFechamento.revisao.criador.id, autor);
     });
-
-    it('plano sem monitoramento por fases devolve as metas com fases vazias', async () => {
-        const executor = await criarPessoaComPrivilegios([
-            'Reports.executar.ProgramaDeMetas',
-            'CadastroPDM.administrador',
-        ]);
-        const plano = await criarPlanoSetorial({ sistema: 'ProgramaDeMetas' });
-        const db = prisma();
-        await db.pdm.update({ where: { id: plano.id }, data: { monitoramento_por_blocos: false } });
-        await db.meta.create({ data: { pdm_id: plano.id, status: 'Ativo', codigo: 'M-LEG', titulo: 'Meta legado' } });
-        const data_ciclo = new Date('2027-03-01');
-        if (!(await db.cicloFisico.findFirst({ where: { pdm_id: plano.id, data_ciclo } })))
-            await db.cicloFisico.create({ data: { pdm_id: plano.id, data_ciclo } });
-
-        const res = await api(executor, { sistema: 'ProgramaDeMetas' })
-            .post(url)
-            .send({ ...periodo, pdm_id: plano.id });
-        assertStatus(res, 201);
-        assert.equal(res.body.ciclo_metas.length, 1);
-        assert.deepEqual(res.body.ciclo_metas[0].fases, []);
-        assert.equal(res.body.ciclo_metas[0].ciclo_fechado, false);
-    });
 });

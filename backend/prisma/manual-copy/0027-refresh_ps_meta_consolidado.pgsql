@@ -9,11 +9,10 @@ DECLARE
     v_fase_analise_preenchida BOOLEAN;
     v_fase_risco_preenchida BOOLEAN;
     v_fase_fechamento_preenchida BOOLEAN;
-    v_por_blocos BOOLEAN;
     v_fases int[];
     v_n int;
     v_preenchidas int[];
-    -- fases configuradas expostas no painel (só por blocos)
+    -- fases configuradas expostas no painel
     v_fases_preenchidas int[] := ARRAY[]::int[];
     v_fase_atual_config_id int;
     -- Counters for meta and its children
@@ -63,10 +62,9 @@ BEGIN
         p.ativo AS v_pdm_ativo,
         cf.data_ciclo AS v_data_ciclo,
         CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId,
-        p.monitoramento_orcamento,
-        p.monitoramento_por_blocos
+        p.monitoramento_orcamento
             INTO
-        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId, v_monitoramento_orcamento, v_por_blocos
+        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId, v_monitoramento_orcamento
 
     FROM pdm p
     LEFT JOIN ciclo_fisico cf ON p.id = cf.pdm_id
@@ -87,7 +85,7 @@ BEGIN
         v_fase_risco_preenchida := FALSE;
         v_fase_fechamento_preenchida := FALSE;
         v_pendente_orcamento := FALSE;
-    ELSIF v_por_blocos THEN
+    ELSE
         SELECT coalesce(array_agg(f.id ORDER BY f.ordem), '{}')
             INTO v_fases
         FROM pdm_monitoramento_fase_config f
@@ -145,37 +143,6 @@ BEGIN
             ORDER BY o
             LIMIT 1;
         END IF;
-    ELSE
-        SELECT
-            EXISTS (
-                SELECT 1
-                FROM meta_ciclo_fisico_analise mcfa
-                WHERE mcfa.meta_id = pMetaId
-                AND mcfa.ciclo_fisico_id = v_CicloFisicoId
-                AND mcfa.ultima_revisao
-                AND mcfa.removido_em IS NULL
-            ),
-            EXISTS (
-                SELECT 1
-                FROM meta_ciclo_fisico_risco mcfr
-                WHERE mcfr.meta_id = pMetaId
-                AND mcfr.ciclo_fisico_id = v_CicloFisicoId
-                AND mcfr.ultima_revisao
-                AND mcfr.removido_em IS NULL
-            ),
-            EXISTS (
-                SELECT 1
-                FROM meta_ciclo_fisico_fechamento mcff
-                WHERE mcff.meta_id = pMetaId
-                AND mcff.ciclo_fisico_id = v_CicloFisicoId
-                AND mcff.ultima_revisao
-                AND mcff.removido_em IS NULL
-                AND mcff.reaberto_em IS NULL
-            )
-        INTO
-            v_fase_analise_preenchida,
-            v_fase_risco_preenchida,
-            v_fase_fechamento_preenchida;
     END IF;
 
     -- Clear existing data for this meta
