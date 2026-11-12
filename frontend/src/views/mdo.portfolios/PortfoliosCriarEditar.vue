@@ -55,7 +55,7 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit(async (carga) => {
+async function salvar(carga) {
   try {
     let r;
     const msg = props.portfolioId
@@ -75,6 +75,22 @@ const onSubmit = handleSubmit(async (carga) => {
   } catch (error) {
     alertStore.error(error);
   }
+}
+
+const onSubmit = handleSubmit(async (carga) => {
+  const compartilhamentosRemovidos = (itemParaEdicao.value?.portfolios_compartilhados_padrao || [])
+    .some((id) => !carga.portfolios_compartilhados_padrao?.includes(id));
+
+  if (props.portfolioId && compartilhamentosRemovidos) {
+    alertStore.confirmAction(
+      'A exclusão deste portfólio NÃO descompartilha automaticamente os projetos/obras anteriormente associados.',
+      () => salvar(carga),
+      'Salvar',
+    );
+    return;
+  }
+
+  await salvar(carga);
 });
 
 watch(itemParaEdicao, (novoValor) => {
@@ -289,12 +305,6 @@ portfolioStore.buscarTudo({}, false);
           selecionados: values.portfolios_compartilhados_padrao,
         })"
         label="titulo"
-      />
-
-      <SmaeExplicacaoCampo
-        v-if="emFoco?.id"
-        name="portfolios_compartilhados_padrao"
-        :schema="schema"
       />
 
       <ErrorMessage
