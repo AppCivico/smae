@@ -29,8 +29,9 @@ export class MetasRiscoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<MfListRiscoDto & RequestInfoDto> {
         const start = Date.now();
-        await this.mfService.assertCicloLegado(dto.ciclo_fisico_id);
         const config = await this.mfService.pessoaAcessoPdm(user);
+
+        await this.mfService.assertCicloLegado(dto.ciclo_fisico_id);
 
         return {
             ...(await this.metasRiscoService.getMetaRisco(dto, config, user)),
