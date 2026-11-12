@@ -3,13 +3,15 @@ import Big from 'big.js';
 import { range } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-  computed, defineModel, defineOptions,
+  computed, defineModel, defineOptions, reactive, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
+import maskFloat from '@/helpers/maskFloat';
 import { useMetasStore } from '@/stores/metas.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
@@ -212,6 +214,10 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
           class="cell--number"
         >
           Percentagem
+          <SmaeTooltip as="span">
+            Percentual do empenho líquido da SOF, apenas para ajudar a calcular o
+            valor. O percentual não é salvo: só o valor é gravado.
+          </SmaeTooltip>
         </th>
         <th
           class="cell--number"
@@ -222,6 +228,10 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
           class="cell--number"
         >
           Percentagem
+          <SmaeTooltip as="span">
+            Percentual do valor liquidado da SOF, apenas para ajudar a calcular o
+            valor. O percentual não é salvo: só o valor é gravado.
+          </SmaeTooltip>
         </th>
         <th
           class="cell--number"
@@ -264,16 +274,16 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
         </td>
 
         <td>
+          <!-- sem `name` nem `v-model`: o percentual não pode entrar no formulário -->
           <input
-            v-model="item.percentual_empenho"
-            name="percentual_empenho"
-            max="100"
-            min="0"
-            step="0.01"
+            :value="percentualExibido(item, 'empenho')"
+            :disabled="!Number(respostasof.empenho_liquido)"
+            type="text"
+            inputmode="numeric"
             autocomplete="off"
-            type="number"
             class="inputtext light"
-            @input="atualizarDePercentagem(i,'empenho')"
+            @input="atualizarDePercentagem(item, 'empenho', $event.target.value)"
+            @keyup="maskFloat($event, 2)"
           >
         </td>
         <td>
@@ -288,15 +298,14 @@ maisRecentesDosItens.liquidação: {{ maisRecentesDosItens.liquidação }}
         </td>
         <td>
           <input
-            v-model="item.percentual_liquidado"
-            name="percentual_liquidado"
-            max="100"
-            min="0"
-            step="0.01"
+            :value="percentualExibido(item, 'liquidação')"
+            :disabled="!Number(respostasof.valor_liquidado)"
+            type="text"
+            inputmode="numeric"
             autocomplete="off"
-            type="number"
             class="inputtext light"
-            @input="atualizarDePercentagem(i,'liquidação')"
+            @input="atualizarDePercentagem(item, 'liquidação', $event.target.value)"
+            @keyup="maskFloat($event, 2)"
           >
         </td>
         <td>
