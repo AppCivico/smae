@@ -102,6 +102,16 @@ describe('invariantes dos schemas de relatório', () => {
             expect(getReportRowsOptions(cls)!.fontes.length).toBeGreaterThan(0);
         });
 
+        it('escopo de fonte das colunas é subconjunto das fontes do arquivo', () => {
+            // Uma fonte no `@ReportColumn({ fontes })` que o `@ReportRows` não declara nunca
+            // listaria a coluna — é erro de digitação, não restrição.
+            const doArquivo = new Set(getReportRowsOptions(cls)!.fontes);
+            const invalidas = colunas.flatMap(({ propriedade, options }) =>
+                (options.fontes ?? []).filter((f) => !doArquivo.has(f)).map((f) => `${propriedade}: ${f}`)
+            );
+            expect(invalidas).toEqual([]);
+        });
+
         it('mantém a ordem de declaração entre metadados e schema', () => {
             expect(schema.colunas.map((c) => c.name)).toEqual(colunas.map((c) => c.propriedade));
         });

@@ -1,3 +1,4 @@
+import { FonteRelatorio } from '@prisma/client';
 import { ReportColumn, ReportRows } from '../../post-process/report-column.decorator';
 import { ReportFileSchema } from '../../post-process/report-schema';
 
@@ -68,6 +69,15 @@ const COLUNAS_PDM = new Set([
 
 /** Colunas de projeto — só entram quando **não** há PDM (Projeto/Obras). */
 const COLUNAS_PROJETO = new Set(['projeto__codigo', 'projeto__nome', 'projeto__id']);
+
+/**
+ * Escopo de fonte das colunas exclusivas de cada variante, para a **listagem** (seletor de colunas
+ * e validação de modelos). Sem isto a união de `ObrasOrcamento` trazia meta/iniciativa/atividade
+ * (que só existem no plano) e a de `PSOrcamento` trazia as de projeto. Não afeta a execução: quem
+ * recorta o arquivo de verdade é `recortarSchema`, e os dois conjuntos precisam bater.
+ */
+const FONTES_COM_PDM: FonteRelatorio[] = ['PSOrcamento'];
+const FONTES_DE_PROJETO: FonteRelatorio[] = ['ProjetoOrcamento', 'ObrasOrcamento'];
 
 /**
  * Rótulos que dependem do PDM: `pdm.rotulo_iniciativa` / `pdm.rotulo_atividade` vêm do banco e
@@ -144,51 +154,53 @@ export class RelOrcamentoExecutadoCsvRow {
     @ReportColumn({ type: 'VARCHAR', label: 'mês corrente' })
     mes_corrente: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta', fontes: FONTES_COM_PDM })
     meta__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta', fontes: FONTES_COM_PDM })
     meta__titulo: string | null;
 
-    @ReportColumn({ type: 'INTEGER', label: 'ID da Meta', format: { raw: true } })
+    @ReportColumn({ type: 'INTEGER', label: 'ID da Meta', format: { raw: true }, fontes: FONTES_COM_PDM })
     meta__id: number | null;
 
     /** Rótulo real vem de `pdm.rotulo_iniciativa` — sobrescrito por `recortarSchema`. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_INICIATIVA_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_INICIATIVA_PADRAO, fontes: FONTES_COM_PDM })
     iniciativa__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_INICIATIVA_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_INICIATIVA_PADRAO, fontes: FONTES_COM_PDM })
     iniciativa__titulo: string | null;
 
     @ReportColumn({
         type: 'INTEGER',
         label: 'ID da ' + ROTULO_INICIATIVA_PADRAO,
         format: { raw: true },
+        fontes: FONTES_COM_PDM,
     })
     iniciativa__id: number | null;
 
     /** Rótulo real vem de `pdm.rotulo_atividade` — sobrescrito por `recortarSchema`. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_ATIVIDADE_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_ATIVIDADE_PADRAO, fontes: FONTES_COM_PDM })
     atividade__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_ATIVIDADE_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_ATIVIDADE_PADRAO, fontes: FONTES_COM_PDM })
     atividade__titulo: string | null;
 
     @ReportColumn({
         type: 'INTEGER',
         label: 'ID da ' + ROTULO_ATIVIDADE_PADRAO,
         format: { raw: true },
+        fontes: FONTES_COM_PDM,
     })
     atividade__id: number | null;
 
     /** Rótulo 'Código Projeto' (sem "do") é o cabeçalho histórico; corrigir é decisão de negócio. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Código Projeto' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código Projeto', fontes: FONTES_DE_PROJETO })
     projeto__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Nome do Projeto' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Nome do Projeto', fontes: FONTES_DE_PROJETO })
     projeto__nome: string | null;
 
-    @ReportColumn({ type: 'INTEGER', label: 'ID do Projeto', format: { raw: true } })
+    @ReportColumn({ type: 'INTEGER', label: 'ID do Projeto', format: { raw: true }, fontes: FONTES_DE_PROJETO })
     projeto__id: number | null;
 
     /**
@@ -368,50 +380,52 @@ export class RelOrcamentoPlanejadoCsvRow {
     })
     ano: number | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código da Meta', fontes: FONTES_COM_PDM })
     meta__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Título da Meta', fontes: FONTES_COM_PDM })
     meta__titulo: string | null;
 
-    @ReportColumn({ type: 'INTEGER', label: 'ID da Meta', format: { raw: true } })
+    @ReportColumn({ type: 'INTEGER', label: 'ID da Meta', format: { raw: true }, fontes: FONTES_COM_PDM })
     meta__id: number | null;
 
     /** Rótulo real vem de `pdm.rotulo_iniciativa` — sobrescrito por `recortarSchema`. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_INICIATIVA_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_INICIATIVA_PADRAO, fontes: FONTES_COM_PDM })
     iniciativa__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_INICIATIVA_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_INICIATIVA_PADRAO, fontes: FONTES_COM_PDM })
     iniciativa__titulo: string | null;
 
     @ReportColumn({
         type: 'INTEGER',
         label: 'ID da ' + ROTULO_INICIATIVA_PADRAO,
         format: { raw: true },
+        fontes: FONTES_COM_PDM,
     })
     iniciativa__id: number | null;
 
     /** Rótulo real vem de `pdm.rotulo_atividade` — sobrescrito por `recortarSchema`. */
-    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_ATIVIDADE_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código da ' + ROTULO_ATIVIDADE_PADRAO, fontes: FONTES_COM_PDM })
     atividade__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_ATIVIDADE_PADRAO })
+    @ReportColumn({ type: 'VARCHAR', label: 'Título da ' + ROTULO_ATIVIDADE_PADRAO, fontes: FONTES_COM_PDM })
     atividade__titulo: string | null;
 
     @ReportColumn({
         type: 'INTEGER',
         label: 'ID da ' + ROTULO_ATIVIDADE_PADRAO,
         format: { raw: true },
+        fontes: FONTES_COM_PDM,
     })
     atividade__id: number | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Código Projeto' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Código Projeto', fontes: FONTES_DE_PROJETO })
     projeto__codigo: string | null;
 
-    @ReportColumn({ type: 'VARCHAR', label: 'Nome do Projeto' })
+    @ReportColumn({ type: 'VARCHAR', label: 'Nome do Projeto', fontes: FONTES_DE_PROJETO })
     projeto__nome: string | null;
 
-    @ReportColumn({ type: 'INTEGER', label: 'ID do Projeto', format: { raw: true } })
+    @ReportColumn({ type: 'INTEGER', label: 'ID do Projeto', format: { raw: true }, fontes: FONTES_DE_PROJETO })
     projeto__id: number | null;
 
     /** Sem complemento aqui: o planejado não tem `dotacao_complemento`. */
