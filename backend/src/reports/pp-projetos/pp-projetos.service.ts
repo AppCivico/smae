@@ -123,6 +123,8 @@ class RetornoDbProjeto {
     portfolios_compartilhados_titulos: string | null;
 
     etiquetas: string | null;
+
+    grupos_observadores: string | null;
 }
 
 class RetornoDbCronograma {
@@ -835,6 +837,13 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
                 JOIN portfolio_tag pt ON pt.id = ppt.portfolio_tag_id AND pt.removido_em IS NULL
                 WHERE ppt.projeto_id = projeto.id AND ppt.removido_em IS NULL
             ) as etiquetas,
+            (
+                SELECT
+                    string_agg(gp.titulo, ' | ' ORDER BY gp.titulo)
+                FROM projeto_grupo_portfolio pgp
+                JOIN grupo_portfolio gp ON gp.id = pgp.grupo_portfolio_id AND gp.removido_em IS NULL
+                WHERE pgp.projeto_id = projeto.id AND pgp.removido_em IS NULL
+            ) as grupos_observadores,
             r.id AS fonte_recurso_id,
             sof.descricao AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
@@ -962,6 +971,7 @@ export class PPProjetosService implements ReportableService, SchemaAwareReportab
                     : null,
                 portfolios_compartilhados_titulos: db.portfolios_compartilhados_titulos,
                 etiquetas: db.etiquetas ? db.etiquetas : null,
+                grupos_observadores: db.grupos_observadores ? db.grupos_observadores : null,
             });
         }
     }

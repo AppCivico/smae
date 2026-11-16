@@ -153,6 +153,10 @@ export class RelProjetosCsvRow {
     @ReportColumn({ type: 'VARCHAR', label: 'Portfólios Compartilhados' })
     portfolios_compartilhados_titulos: string | null;
 
+    /** Títulos dos grupos de observadores do projeto, concatenados com ` | `. */
+    @ReportColumn({ type: 'VARCHAR', label: 'Grupos de Observadores' })
+    grupos_observadores: string | null;
+
     @ReportColumn({ type: 'VARCHAR', label: 'Secretário Responsável' })
     secretario_responsavel: string | null;
 
@@ -214,6 +218,9 @@ export class RelProjetosCsvRow {
 
     @ReportColumn({ type: 'INTEGER', label: 'Ano da Fonte', format: { raw: true } })
     fonte_recurso__fonte_recurso_ano: number | null;
+
+    @ReportColumn({ type: 'VARCHAR', label: 'Observação da Fonte de Recurso' })
+    fonte_recurso__observacao: string | null;
 }
 
 /** Prefixos das colunas de `projetos.csv` que vêm dos `LEFT JOIN` 1:N. */

@@ -48,6 +48,8 @@ export class RelProjetosDto {
     projeto_etapa: string | null;
     portfolios_compartilhados_titulos: string | null;
     etiquetas: string | null;
+    /** Títulos dos grupos de observadores (grupo_portfolio) do projeto, concatenados com ` | `. */
+    grupos_observadores: string | null;
 }
 
 export class RelProjetosCronogramaDto {

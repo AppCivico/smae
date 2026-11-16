@@ -44,6 +44,7 @@ describe('granularidades do relatório de projetos', () => {
                 'fonte_recurso__fonte_recurso_ano',
                 'fonte_recurso__valor_percentual',
                 'fonte_recurso__valor_nominal',
+                'fonte_recurso__observacao',
             ].sort()
         );
     });
