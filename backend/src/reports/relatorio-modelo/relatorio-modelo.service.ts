@@ -7,7 +7,7 @@ import { RelatorioModeloArquivoDto, RelatorioModeloConfigDto } from '../post-pro
 import { compilarFiltros } from '../post-process/filtro-compiler';
 import {
     findReportRowClassesByFonte,
-    getReportRowColumns,
+    getReportRowColumnsDaFonte,
     getReportRowsOptions,
 } from '../post-process/report-column.decorator';
 import {
@@ -587,7 +587,7 @@ export class RelatorioModeloService {
             if (!opts) continue;
             if (out.some((a) => a.arquivo === opts.arquivo)) continue;
 
-            const colunas = getReportRowColumns(cls);
+            const colunas = getReportRowColumnsDaFonte(cls, fonte);
 
             out.push({
                 arquivo: opts.arquivo,

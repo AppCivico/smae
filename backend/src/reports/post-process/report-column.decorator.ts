@@ -20,6 +20,16 @@ export class ReportColumnOptions {
     format?: ReportColumnFormat;
     /** Nota explicativa — aparece na documentação gerada e na listagem da API. */
     descricao?: string;
+    /**
+     * Restringe a coluna a um subconjunto das `fontes` do `@ReportRows`. Omitido = vale para todas.
+     *
+     * Para classes compartilhadas entre fontes de sistemas diferentes, em que uma variante só
+     * existe para algumas delas (ex.: meta/iniciativa/atividade no orçamento só para o plano, não
+     * para Obras/Projetos). Afeta só a listagem por fonte ({@link getReportRowColumnsDaFonte}) —
+     * seletor de colunas, validação de modelos e união declarada. `getReportRowSchema`, usado na
+     * execução, continua com todas: o recorte em runtime é do `describeSchema` do serviço.
+     */
+    fontes?: FonteRelatorio[];
 }
 
 export class ReportRowsOptions {
@@ -128,6 +138,17 @@ export function getReportRowSchema(cls: ReportRowClass): ReportFileSchema {
 /** Metadados completos (inclui `descricao`), para docgen e API. */
 export function getReportRowColumns(cls: ReportRowClass): { propriedade: string; options: ReportColumnOptions }[] {
     return coletarColunas(cls);
+}
+
+/**
+ * Colunas da classe que se aplicam a `fonte` — descarta as que declaram `fontes` sem incluí-la.
+ * É a visão por fonte para listagem e validação; a execução usa {@link getReportRowSchema}.
+ */
+export function getReportRowColumnsDaFonte(
+    cls: ReportRowClass,
+    fonte: FonteRelatorio
+): { propriedade: string; options: ReportColumnOptions }[] {
+    return coletarColunas(cls).filter(({ options }) => !options.fontes || options.fontes.includes(fonte));
 }
 
 function coletarColunas(cls: ReportRowClass): { propriedade: string; options: ReportColumnOptions }[] {

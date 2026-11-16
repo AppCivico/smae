@@ -50,7 +50,7 @@ import {
 } from '../post-process/report-post-process.service';
 import {
     findReportRowClassesByFonte,
-    getReportRowColumns,
+    getReportRowColumnsDaFonte,
     getReportRowsOptions,
 } from '../post-process/report-column.decorator';
 import { isSchemaAware, ReportFileSchema } from '../post-process/report-schema';
@@ -113,7 +113,7 @@ function colunasDeclaradasDaFonte(fonte: FonteRelatorio): ColunasDaFonte {
         if (!opts) continue;
 
         const nomes = mapa.get(opts.arquivo) ?? new Set<string>();
-        for (const c of getReportRowColumns(cls)) nomes.add(c.propriedade);
+        for (const c of getReportRowColumnsDaFonte(cls, fonte)) nomes.add(c.propriedade);
         mapa.set(opts.arquivo, nomes);
     }
 
