@@ -96,7 +96,6 @@ describe('pdm-ciclo', () => {
 
     describe('/api/plano-setorial/:id/ciclo (Plano Setorial)', () => {
         let ps: { id: number };
-        let cicloId: number;
 
         before(async () => {
             ps = await criarPlanoSetorial({ sistema: 'PlanoSetorial' });
@@ -106,7 +105,6 @@ describe('pdm-ciclo', () => {
                     .send({ meses: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], data_inicio: '2025-01-01' }),
                 200
             );
-            cicloId = (await api(editor).get(`/api/pdm-ciclo?pdm_id=${ps.id}`)).body.linhas[0].id;
         });
 
         it('401 sem token e 403 sem privilégio de Plano Setorial', async () => {
@@ -127,13 +125,6 @@ describe('pdm-ciclo', () => {
             assertStatus(res, 200);
             assert.ok(Array.isArray(res.body.linhas));
             assert.ok(res.body.linhas.length > 0);
-        });
-
-        it('400 na análise qualitativa sem meta_id', async () => {
-            const res = await api(admin, { sistema: 'PlanoSetorial' }).get(
-                `/api/plano-setorial/${ps.id}/ciclo/${cicloId}/analise`
-            );
-            assertStatus(res, 400);
         });
     });
 });

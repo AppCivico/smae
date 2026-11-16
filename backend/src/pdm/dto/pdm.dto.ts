@@ -74,8 +74,6 @@ export class PdmDto {
     meses: number[];
     orcamento_dia_abertura: number;
     orcamento_dia_fechamento: number;
-    // false = monitoramento legado em tabelas fixas; true = monitoramento por blocos configuráveis (seam p/ refatoração futura).
-    monitoramento_por_blocos: boolean;
     // Vazio quando sistema === 'PDM' (legado). Caso contrário, as fases configuradas, ordenadas por `ordem`.
     monitoramento_ciclo_fases: PdmMonitoramentoFaseDto[];
 }

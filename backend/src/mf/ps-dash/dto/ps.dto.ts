@@ -117,13 +117,8 @@ export class PSMFQuadroVariaveisDto {
 }
 
 export class PSMFFaseMonitoramentoDto {
-    @ApiProperty({
-        description:
-            'ID da fase configurada (pdm_monitoramento_fase_config). null nos planos que ainda usam as fases fixas',
-        type: Number,
-        nullable: true,
-    })
-    id: number | null;
+    @ApiProperty({ description: 'ID da fase configurada (pdm_monitoramento_fase_config)' })
+    id: number;
 
     @ApiProperty({ description: 'Ordem da fase no ciclo' })
     ordem: number;
@@ -144,7 +139,7 @@ export class PSMFFaseAtualMonitoramentoDto extends PSMFFaseMonitoramentoDto {
     @ApiProperty({
         description:
             'Posição da fase (começando em 1) entre as fases habilitadas do plano. ' +
-            'Diferente de ordem, que conta as desabilitadas. Nos planos com fases fixas, igual à ordem',
+            'Diferente de ordem, que conta as desabilitadas',
     })
     posicao: number;
 }
@@ -208,8 +203,7 @@ export class PSMFQuadroMetasDto {
     @ApiProperty({
         description:
             'Preenchidas/a preencher por fase do monitoramento físico, na ordem do ciclo. ' +
-            'Com fases configuradas no PdM/PS (informar pdm_id), traz as fases habilitadas com os rótulos configurados; ' +
-            'senão, as fases fixas (qualificação, análise de risco e fechamento)',
+            'Traz as fases habilitadas do PdM/PS com os rótulos configurados; vazio sem pdm_id',
         type: [PSMFQuadroFaseMonitoramentoDto],
     })
     fases_monitoramento: PSMFQuadroFaseMonitoramentoDto[];

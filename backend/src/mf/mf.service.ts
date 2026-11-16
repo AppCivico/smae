@@ -5,7 +5,6 @@ import { Date2YMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { CicloAtivoDto, MfPerfilDto } from './metas/dto/mf-meta.dto';
 import { sleepFor } from '../common/sleepFor';
-import { assertCicloLegado } from '../pdm-ciclo/trava-plano';
 
 const erroSemPerfil = (logger: Logger) => {
     logger.verbose(`nenhum perfil encontrado`);
@@ -81,10 +80,6 @@ export class MfService {
             ...perfil,
             perfil: perfil.perfil as MfPerfilDto,
         };
-    }
-
-    async assertCicloLegado(cicloFisicoId: number): Promise<void> {
-        await assertCicloLegado(this.prisma, cicloFisicoId);
     }
 
     async cicloFisicoAtivo(): Promise<CicloAtivoDto> {

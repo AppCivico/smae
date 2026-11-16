@@ -3,7 +3,6 @@ import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateYMD } from '../../common/date2ymd';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
-import { MapeamentoMonitoramentoLegadoDto } from '../dto/ps-ciclo-fase.dto';
 
 export class PsCicloFaseBlocoConfigDto {
     id: number;
@@ -126,25 +125,4 @@ export class MonitoramentoFaseLeituraDto {
      */
     revisao: MonitoramentoFaseRevisaoLeituraDto | null;
     documentos: MonitoramentoFaseDocumentoLeituraDto[];
-}
-
-export class MonitoramentoMigracaoContagemDto {
-    metas: number;
-    ciclos: number;
-    analises: number;
-    riscos: number;
-    fechamentos: number;
-    fechamentos_automaticos: number;
-    documentos: number;
-}
-
-export class MonitoramentoMigracaoPreviaDto {
-    ja_migrado: boolean;
-    mapeamento: MapeamentoMonitoramentoLegadoDto;
-    contagem: MonitoramentoMigracaoContagemDto;
-    /**
-     * Conteúdo legado sem destino; a migração é recusada enquanto houver pendências
-     */
-    pendencias: string[];
-    avisos: string[];
 }

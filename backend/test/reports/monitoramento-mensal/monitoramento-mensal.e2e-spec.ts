@@ -93,7 +93,10 @@ describe('relatorio/monitoramento-mensal', () => {
         const pdm = await criarPdmAntigo();
         const db = prisma();
         const autor = admin.pessoa.id;
-        await db.pdm.update({ where: { id: pdm.id }, data: { monitoramento_por_blocos: true } });
+        await db.pdmMonitoramentoFaseConfig.updateMany({
+            where: { pdm_id: pdm.id },
+            data: { removido_em: new Date(), removido_por: autor },
+        });
         const data_ciclo = new Date('2027-03-01');
         const ciclo = await db.cicloFisico.create({ data: { pdm_id: pdm.id, data_ciclo } });
         const meta = await db.meta.create({
