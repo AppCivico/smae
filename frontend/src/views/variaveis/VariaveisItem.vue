@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { onUnmounted } from 'vue';
+import { onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
@@ -27,7 +27,7 @@ function iniciar() {
   }
 }
 
-iniciar();
+watch(() => props.variavelId, iniciar, { immediate: true });
 
 onUnmounted(() => {
   variaveisGlobaisStore.$reset();

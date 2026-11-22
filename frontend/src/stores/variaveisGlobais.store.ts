@@ -8,6 +8,7 @@ import type {
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
 } from '@back/variavel/dto/list-variavel.dto';
 import type { PeriodosValidosDto, VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
+import type { VariavelGlobalRelacionamentoDto } from '@back/variavel/relacionados/dto/variavel.relacionamento.dto';
 import { defineStore } from 'pinia';
 
 import type { ArvoreDeIniciativas } from './helpers/mapIniciativas';
@@ -31,6 +32,7 @@ interface Estado {
   seriesAgrupadas: ListSeriesAgrupadas | null;
   dadosDosPeriodosValidos: PeriodosValidosDto | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
+  relacionamentos: VariavelGlobalRelacionamentoDto | null;
 
   planosSimplificados: PdmSimplesDto[];
   metasSimplificadas: MetaSimplesDto[];
@@ -43,6 +45,7 @@ interface Estado {
     dadosDosPeriodosValidos: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
     seriesAgrupadas: boolean;
+    relacionamentos: boolean;
   };
   erros: Erros & {
     planosSimplificados: unknown;
@@ -51,6 +54,7 @@ interface Estado {
     dadosDosPeriodosValidos: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
     seriesAgrupadas: unknown;
+    relacionamentos: unknown;
   };
 
   paginacao: Paginacao;
@@ -65,6 +69,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     seriesAgrupadas: null,
     dadosDosPeriodosValidos: null,
     variaveisFilhasPorMae: {},
+    relacionamentos: null,
     planosSimplificados: [],
     metasSimplificadas: [],
     arvoreDeMetas: {},
@@ -78,6 +83,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       dadosDosPeriodosValidos: false,
       emFoco: false,
       seriesAgrupadas: false,
+      relacionamentos: false,
     },
     erros: {
       lista: null,
@@ -88,6 +94,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       dadosDosPeriodosValidos: null,
       emFoco: null,
       seriesAgrupadas: null,
+      relacionamentos: null,
     },
     paginacao: {
       tokenPaginacao: '',
@@ -132,6 +139,24 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         this.erros.variaveisFilhasPorMae[variavelId] = erro;
       }
       this.chamadasPendentes.variaveisFilhasPorMae[variavelId] = false;
+    },
+
+    async buscarRelacionamentos(variavelId: number, params = {}): Promise<void> {
+      this.chamadasPendentes.relacionamentos = true;
+      this.erros.relacionamentos = null;
+      this.relacionamentos = null;
+
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/variavel/${variavelId}/relacionados`,
+          params,
+        ) as VariavelGlobalRelacionamentoDto;
+
+        this.relacionamentos = resposta;
+      } catch (erro: unknown) {
+        this.erros.relacionamentos = erro;
+      }
+      this.chamadasPendentes.relacionamentos = false;
     },
 
     async buscarTudo(params = {}): Promise<void> {

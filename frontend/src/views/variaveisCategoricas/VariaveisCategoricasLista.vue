@@ -49,6 +49,7 @@ variaveisCategoricasStore.buscarTudo();
       <col>
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
     </colgroup>
     <thead>
       <tr>
@@ -56,6 +57,7 @@ variaveisCategoricasStore.buscarTudo();
         <th> Espécie </th>
         <th> Descrição </th>
         <th> Valores </th>
+        <th />
         <th />
         <th />
       </tr>
@@ -75,6 +77,21 @@ variaveisCategoricasStore.buscarTudo();
               .join(', ')
               || '-'
           }}
+        </td>
+        <td>
+          <SmaeLink
+            :to="{
+              name: 'variaveisListar',
+              query: { variavel_categorica_id: item.id },
+            }"
+            class="tipinfo tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_variavel" /></svg>
+            <div>Ver variáveis</div>
+          </SmaeLink>
         </td>
         <td>
           <router-link
