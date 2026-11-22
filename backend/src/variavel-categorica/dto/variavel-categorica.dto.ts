@@ -94,6 +94,10 @@ export class VariavelCategoricaItem {
     tipo: TipoVariavelCategorica;
     valores: VariavelCategoricaValorItem[];
     pode_editar: boolean;
+    /**
+     * Quantidade de variáveis não removidas que usam esta categórica
+     */
+    total_variaveis: number;
 }
 
 export class FilterVariavelCategoricaDto {

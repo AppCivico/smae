@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import {
+    AssuntoVariavelDto,
     CreateAssuntoVariavelDto,
     FilterAssuntoVariavelDto,
     UpdateAssuntoVariavelDto,
@@ -30,8 +31,8 @@ export class AssuntoVariavelService {
         });
     }
 
-    async findAll(filters: FilterAssuntoVariavelDto) {
-        return  await this.prisma.assuntoVariavel.findMany({
+    async findAll(filters: FilterAssuntoVariavelDto): Promise<AssuntoVariavelDto[]> {
+        const linhas = await this.prisma.assuntoVariavel.findMany({
             where: {
                 removido_em: null,
                 id: filters.id,
@@ -49,6 +50,18 @@ export class AssuntoVariavelService {
             },
             orderBy: { nome: 'asc' },
         });
+
+        const contagem = await this.prisma.variavelAssuntoVariavel.groupBy({
+            by: ['assunto_variavel_id'],
+            where: {
+                assunto_variavel_id: { in: linhas.map((r) => r.id) },
+                variavel: { removido_em: null },
+            },
+            _count: { _all: true },
+        });
+        const totalPorAssunto = new Map(contagem.map((c) => [c.assunto_variavel_id, c._count._all]));
+
+        return linhas.map((r) => ({ ...r, total_variaveis: totalPorAssunto.get(r.id) ?? 0 }));
     }
 
     async update(id: number, dto: UpdateAssuntoVariavelDto, user: PessoaFromJwt) {
