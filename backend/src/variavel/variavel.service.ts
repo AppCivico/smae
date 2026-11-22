@@ -79,6 +79,7 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
+import { calculaMotivoNaoPodeExcluir } from './entities/variavel-motivo-nao-pode-excluir';
 import { VariavelUtilService } from './variavel.util.service';
 
 const SUPRA_SUFIXO = ' - Supra';
@@ -1353,6 +1354,11 @@ export class VariavelService {
                     { ...r, variavel_categorica_id: r.variavel.variavel_categorica_id },
                     user
                 );
+                const motivo_nao_pode_excluir = calculaMotivoNaoPodeExcluir(
+                    pode_editar,
+                    r.planos.length > 0,
+                    idsComIndicadorAtivo.has(r.id)
+                );
 
                 return {
                     id: r.id,
@@ -1372,7 +1378,8 @@ export class VariavelService {
                     periodicidade: r.periodicidade,
                     pode_editar: pode_editar,
                     pode_editar_valor: pode_editar_valor,
-                    pode_excluir: pode_editar && r.planos.length == 0 && !idsComIndicadorAtivo.has(r.id),
+                    pode_excluir: motivo_nao_pode_excluir === null,
+                    motivo_nao_pode_excluir,
                     possui_variaveis_filhas: r.possui_variaveis_filhas,
                     supraregional: r.variavel.supraregional,
                     regiao: r.regiao
@@ -5145,12 +5152,18 @@ export class VariavelService {
             ]);
 
             const { pode_editar, pode_editar_valor } = this.calculaPermissaoVariavelGlobal(detalhes, user);
+            const motivo_nao_pode_excluir = calculaMotivoNaoPodeExcluir(
+                pode_editar,
+                !!viewRow?.planos.length,
+                bloqueadas.has(id)
+            );
 
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
                 pode_editar,
                 pode_editar_valor,
-                pode_excluir: pode_editar && !viewRow?.planos.length && !bloqueadas.has(id),
+                pode_excluir: motivo_nao_pode_excluir === null,
+                motivo_nao_pode_excluir,
                 medicao_orgao_id: detalhes.medicao_orgao_id,
                 validacao_orgao_id: detalhes.validacao_orgao_id,
                 liberacao_orgao_id: detalhes.liberacao_orgao_id,

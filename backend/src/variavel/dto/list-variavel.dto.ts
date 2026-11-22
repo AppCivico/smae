@@ -12,6 +12,7 @@ import {
 } from '../../variavel/entities/variavel.entity';
 import { ValorBaseFilhaDto, VariaveisPeriodosDto } from './create-variavel.dto';
 import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
+import { VariavelMotivoNaoPodeExcluir } from '../entities/variavel-motivo-nao-pode-excluir';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -59,6 +60,13 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     pode_editar: boolean;
     pode_editar_valor: boolean;
     pode_excluir: boolean;
+    @ApiProperty({
+        enum: VariavelMotivoNaoPodeExcluir,
+        enumName: 'VariavelMotivoNaoPodeExcluir',
+        nullable: true,
+        description: 'Motivo de pode_excluir ser false; null quando pode excluir',
+    })
+    motivo_nao_pode_excluir: VariavelMotivoNaoPodeExcluir | null;
 }
 
 export class VariavelResumoInput {

@@ -35,6 +35,11 @@ function abrirEdicaoValores(idDaVariavel, tipo, ehMae = false) {
   editandoValoresDeFilhas.value = ehMae;
 }
 
+const motivosParaNaoExcluir = {
+  EmPlano: 'Não é possível excluir: a variável está em um plano.',
+  EmIndicadorAtivo: 'Não é possível excluir: a variável está vinculada a um indicador ativo.',
+};
+
 async function excluirVariavel(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover a variável "${nome}"?`, async () => {
     if (await variaveisGlobaisStore.excluirItem(id)) {
@@ -258,6 +263,26 @@ watch(parametrosSerializados, () => {
           ><use xlink:href="#i_remove" /></svg>
           <div>Excluir variável "{{ variavel.titulo }}"</div>
         </button>
+        <SmaeLink
+          v-else-if="motivosParaNaoExcluir[variavel?.motivo_nao_pode_excluir]"
+          :to="{
+            name: 'variaveisResumo',
+            params: { variavelId: variavel.id },
+            query: $route.query,
+          }"
+          class="tipinfo left like-a__text botao-de-exclusao--indisponivel"
+          :aria-label="motivosParaNaoExcluir[variavel.motivo_nao_pode_excluir]"
+          exibir-desabilitado
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_remove" /></svg>
+          <div>
+            {{ motivosParaNaoExcluir[variavel.motivo_nao_pode_excluir] }}
+            Veja onde é utilizada no resumo da variável.
+          </div>
+        </SmaeLink>
       </td>
     </template>
   </TabelaDeVariaveisGlobais>
@@ -292,3 +317,8 @@ watch(parametrosSerializados, () => {
 
   <DialogoValorBase @edicao-bem-sucedida="variaveisGlobaisStore.buscarTudo(parametrosDeBusca);" />
 </template>
+<style lang="less" scoped>
+.botao-de-exclusao--indisponivel svg {
+  opacity: 0.35;
+}
+</style>
