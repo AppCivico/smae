@@ -57,11 +57,13 @@ assuntosStore.buscarTudo();
       <col>
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
     </colgroup>
     <thead>
       <tr>
         <th> Nome </th>
         <th> Categoria </th>
+        <th />
         <th />
         <th />
       </tr>
@@ -76,6 +78,21 @@ assuntosStore.buscarTudo();
         </td>
         <td>
           {{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}
+        </td>
+        <td>
+          <SmaeLink
+            :to="{
+              name: 'variaveisListar',
+              query: { assuntos: item.id },
+            }"
+            class="tipinfo tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_variavel" /></svg>
+            <div>Ver variáveis</div>
+          </SmaeLink>
         </td>
         <td>
           <router-link

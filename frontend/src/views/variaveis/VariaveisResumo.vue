@@ -1,11 +1,14 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 
+import VariaveisResumoOndeEUtilizada from './partials/VariaveisResumo/VariaveisResumoOndeEUtilizada.vue';
 import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
 
@@ -32,8 +35,12 @@ type CategoriaComAssuntoMapeado = {
   [key: number]: CategororiaComAssunto
 };
 
+const route = useRoute();
+const authStore = useAuthStore();
 const assuntosStore = useAssuntosStore();
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
+
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const {
   emFoco,
@@ -44,6 +51,14 @@ const {
 } = storeToRefs(assuntosStore);
 
 assuntosStore.buscarCategorias();
+
+const variavelId = computed<number>(() => Number(route.params.variavelId) || 0);
+
+const podeVerOndeEUtilizada = computed<boolean>(() => temPermissãoPara.value([
+  'CadastroVariavelGlobal.administrador_no_orgao',
+  'CadastroVariavelGlobal.administrador',
+  'SMAE.GrupoVariavel.participante',
+]));
 
 function simNao(valor: boolean) {
   return valor ? 'Sim' : 'Não';
@@ -263,6 +278,11 @@ const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() =>
       :titulo="sessao.titulo"
       :linhas="sessao.linhas"
       :quantidade-colunas="sessao.quantidadeColunas"
+    />
+
+    <VariaveisResumoOndeEUtilizada
+      v-if="podeVerOndeEUtilizada && variavelId"
+      :variavel-id="variavelId"
     />
   </section>
 </template>
