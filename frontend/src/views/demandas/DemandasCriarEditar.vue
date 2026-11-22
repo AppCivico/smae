@@ -27,6 +27,7 @@ import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
+import { diasEntre, formatarDias } from './diasNoStatus';
 import MapaStatus, { mapaSituacaoEncerramento, StatusDemanda } from './MapaStatus';
 
 type EtapaDoVaralComId = EtapaDoVaral & {
@@ -360,6 +361,7 @@ watch(itemParaEdicao, (novosValores) => {
           <th>Responsável</th>
           <th>Status anterior</th>
           <th>Novo status</th>
+          <th>Tempo no status</th>
           <th>Motivo</th>
         </tr>
       </thead>
@@ -382,11 +384,14 @@ watch(itemParaEdicao, (novosValores) => {
               : '-' }}
           </td>
           <td>{{ rotuloDoStatus(registro.status_novo, registro.situacao_encerramento) }}</td>
+          <td class="cell--nowrap">
+            {{ formatarDias(diasEntre(registro.criado_em, historico[indice - 1]?.criado_em)) }}
+          </td>
           <td>{{ registro.motivo || '-' }}</td>
         </tr>
 
         <tr v-if="!historico.length">
-          <td colspan="5">
+          <td colspan="6">
             Nenhum registro de histórico.
           </td>
         </tr>
