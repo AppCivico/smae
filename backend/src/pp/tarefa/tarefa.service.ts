@@ -37,7 +37,7 @@ import {
     TarefaItemProjetadoCalc,
     TarefaItemProjetadoDto,
 } from './entities/tarefa.entity';
-import { TarefaDotTemplate } from './tarefa.dot.template';
+import { OpcoesEap, TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
@@ -2154,7 +2154,8 @@ export class TarefaService {
     async getEap(
         tarefaCronoId: number,
         tarefaCronoInput: TarefaCronogramaInput,
-        format: GraphvizServiceFormat
+        format: GraphvizServiceFormat,
+        opcoes: OpcoesEap = {}
     ): Promise<NodeJS.ReadableStream> {
         let rootName: string = '';
         if (tarefaCronoInput.projeto_id) {
@@ -2169,7 +2170,7 @@ export class TarefaService {
 
         const rows = await this.findAllRows(tarefaCronoId);
 
-        const graphvizString = this.dotTemplate.buildGraphvizString(rootName, rows);
+        const graphvizString = this.dotTemplate.buildGraphvizString(rootName, rows, opcoes);
 
         const imgStream = await this.graphvizService.generateImage(graphvizString, format);
         return imgStream;

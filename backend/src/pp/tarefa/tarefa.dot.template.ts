@@ -11,6 +11,23 @@ interface Row {
 
 type TarefaRows = Row[];
 
+export const OrientacaoEap = {
+    vertical: 'vertical',
+    horizontal: 'horizontal',
+} as const;
+
+export type OrientacaoEap = (typeof OrientacaoEap)[keyof typeof OrientacaoEap];
+
+export interface OpcoesEap {
+    orientacao?: OrientacaoEap;
+    nivel_maximo?: number;
+}
+
+const RankdirPorOrientacao: Record<OrientacaoEap, string> = {
+    vertical: 'TB',
+    horizontal: 'LR',
+};
+
 function escapeDotLabel(inputString: string): string {
     const escapeCharacters: { [key: string]: string } = {
         '\\': '\\\\',
@@ -53,7 +70,11 @@ export class TarefaDotTemplate {
         return rows.filter((r) => r.nivel === 2);
     }
 
-    buildGraphvizString(projetoLabel: string, rows: TarefaRows) {
+    buildGraphvizString(projetoLabel: string, todasRows: TarefaRows, opcoes: OpcoesEap = {}) {
+        const rankdir = RankdirPorOrientacao[opcoes.orientacao ?? OrientacaoEap.vertical];
+        const nivelMaximo = opcoes.nivel_maximo;
+        const rows = nivelMaximo ? todasRows.filter((r) => r.nivel <= nivelMaximo) : todasRows;
+
         const graphvizString = `
             digraph G {
               // Set default node and edge styles
@@ -63,8 +84,7 @@ export class TarefaDotTemplate {
               splines="polyline";
               nodesep=0.5;           // Adjust the distance between nodes within the same rank
 
-              // Set layout to vertical
-              rankdir=TB;
+              rankdir=${rankdir};
 
               // Set distance between nodes on the same rank
               ranksep=0.2;

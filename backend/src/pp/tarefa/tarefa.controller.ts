@@ -102,7 +102,10 @@ export class TarefaController {
 
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
 
-        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
+        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato, {
+            orientacao: filter.orientacao,
+            nivel_maximo: filter.nivel_maximo,
+        });
         res.type(GraphvizContentTypeMap[formato]);
 
         res.set({
@@ -248,7 +251,10 @@ export class TarefaMDOController {
 
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
 
-        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
+        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato, {
+            orientacao: filter.orientacao,
+            nivel_maximo: filter.nivel_maximo,
+        });
         res.type(GraphvizContentTypeMap[formato]);
 
         res.set({

@@ -67,6 +67,13 @@ function resolverHierarquia(tarefa: TarefaItemDto, tarefasPorId: { [x: string | 
 
 export type FormatoDeEap = 'pdf' | 'svg' | 'png';
 
+export type OrientacaoDeEap = 'vertical' | 'horizontal';
+
+export type OpcoesDeEap = {
+  orientacao?: OrientacaoDeEap;
+  nivel_maximo?: number | null;
+};
+
 function gerarNomeDoArquivoDeEap(mãeComId: MãeComId, formato: FormatoDeEap): string {
   switch (true) {
     case !!mãeComId?.projetoId:
@@ -231,14 +238,22 @@ export const useTarefasStore = defineStore('tarefas', {
       }
     },
 
-    async baixarEap(formato: FormatoDeEap, mãeComId: MãeComId = undefined): Promise<boolean> {
+    async baixarEap(
+      formato: FormatoDeEap,
+      opcoes: OpcoesDeEap = {},
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
       const mãe = mãeComId || this.route.params;
       this.chamadasPendentes.eap = true;
 
       try {
         await this.requestS.get(
           `${baseUrl}/${gerarCaminhoParaApi(mãe)}/tarefas-eap`,
-          { formato },
+          {
+            formato,
+            orientacao: opcoes.orientacao || undefined,
+            nivel_maximo: opcoes.nivel_maximo || undefined,
+          },
           { nomeDoArquivoParaDownload: gerarNomeDoArquivoDeEap(mãe, formato) },
         );
         return true;

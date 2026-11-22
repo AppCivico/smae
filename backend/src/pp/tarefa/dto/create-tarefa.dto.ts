@@ -18,6 +18,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
+import { OrientacaoEap } from '../tarefa.dot.template';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
@@ -230,6 +231,30 @@ export class FilterEAPDto {
         message: 'Precisa ser um dos seguintes valores: ' + Object.values(GraphvizServiceFormat).join(', '),
     })
     formato?: GraphvizServiceFormat;
+
+    @IsOptional()
+    @ApiProperty({
+        enum: OrientacaoEap,
+        enumName: 'OrientacaoEap',
+        example: 'vertical',
+        description: 'padrão é vertical (de cima para baixo); horizontal desenha da esquerda para a direita',
+        required: false,
+    })
+    @IsEnum(OrientacaoEap, {
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(OrientacaoEap).join(', '),
+    })
+    orientacao?: OrientacaoEap;
+
+    @IsOptional()
+    @ApiProperty({
+        example: 2,
+        description: 'Quantidade máxima de níveis de tarefa desenhados; padrão é todos',
+        required: false,
+    })
+    @Type(() => Number)
+    @IsInt({ message: 'nivel_maximo precisa ser um número inteiro' })
+    @Min(1, { message: 'nivel_maximo precisa ser maior ou igual a 1' })
+    nivel_maximo?: number;
 }
 
 export class TarefaCronogramaInput {

@@ -1,16 +1,29 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, ref, useId } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/auth.store';
-import { type FormatoDeEap, useTarefasStore } from '@/stores/tarefas.store.ts';
+import {
+  type FormatoDeEap,
+  type OrientacaoDeEap,
+  useTarefasStore,
+} from '@/stores/tarefas.store.ts';
 
 const formatos: { valor: FormatoDeEap; rótulo: string }[] = [
   { valor: 'pdf', rótulo: 'PDF' },
   { valor: 'svg', rótulo: 'SVG' },
   { valor: 'png', rótulo: 'PNG' },
 ];
+
+const orientações: { valor: OrientacaoDeEap; rótulo: string }[] = [
+  { valor: 'vertical', rótulo: 'Vertical' },
+  { valor: 'horizontal', rótulo: 'Horizontal' },
+];
+
+const id = useId();
+const orientacao = ref<OrientacaoDeEap>('vertical');
+const nivelMaximo = ref<number | ''>('');
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -66,11 +79,68 @@ const desabilitado = computed(() => chamadasPendentes.value.eap
           class="like-a__link"
           :disabled="desabilitado"
           :title="!lista.length ? 'Não há tarefas para exportar' : undefined"
-          @click="tarefasStore.baixarEap(formato.valor)"
+          @click="tarefasStore.baixarEap(formato.valor, {
+            orientacao,
+            nivel_maximo: nivelMaximo || null,
+          })"
         >
           {{ formato.rótulo }}
         </button>
       </li>
+      <li class="exportar-eap__opcoes">
+        <fieldset>
+          <legend class="label">
+            Orientação
+          </legend>
+          <div class="flex g1 mb1">
+            <label
+              v-for="opcao in orientações"
+              :key="opcao.valor"
+              class="t12"
+            >
+              <input
+                v-model="orientacao"
+                type="radio"
+                class="inputcheckbox"
+                :name="`${id}-orientacao`"
+                :value="opcao.valor"
+              ><span>{{ opcao.rótulo }}</span>
+            </label>
+          </div>
+        </fieldset>
+        <label
+          class="label"
+          :for="`${id}-nivel-maximo`"
+        >
+          Níveis
+        </label>
+        <input
+          :id="`${id}-nivel-maximo`"
+          v-model.number="nivelMaximo"
+          type="number"
+          min="1"
+          step="1"
+          class="inputtext light"
+          placeholder="Todos"
+        >
+      </li>
     </ul>
   </div>
 </template>
+
+<style lang="less" scoped>
+.dropbtn:focus-within ul {
+  display: block;
+}
+
+.exportar-eap__opcoes {
+  padding-top: 1rem;
+  border-top: 1px solid @c100;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+</style>
