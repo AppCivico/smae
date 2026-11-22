@@ -14,9 +14,17 @@ const assuntosStore = useAssuntosStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(assuntosStore);
 const listaFiltradaPorTermoDeBusca = ref([]);
 
-async function excluirAssunto(id, descricao) {
+function mensagemDeExclusao(descricao, totalVariaveis) {
+  if (!totalVariaveis) {
+    return `Deseja mesmo remover "${descricao}"?`;
+  }
+
+  return `"${descricao}" é utilizado em ${totalVariaveis} ${totalVariaveis === 1 ? 'variável' : 'variáveis'}. Deseja mesmo remover?`;
+}
+
+async function excluirAssunto(id, descricao, totalVariaveis) {
   alertStore.confirmAction(
-    `Deseja mesmo remover "${descricao}"?`,
+    mensagemDeExclusao(descricao, totalVariaveis),
     async () => {
       if (await assuntosStore.excluirItem(id)) {
         assuntosStore.$reset();
@@ -55,7 +63,7 @@ assuntosStore.buscarTudo();
     <colgroup>
       <col>
       <col>
-      <col class="col--botão-de-ação">
+      <col class="col--number">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
     </colgroup>
@@ -63,7 +71,9 @@ assuntosStore.buscarTudo();
       <tr>
         <th> Nome </th>
         <th> Categoria </th>
-        <th />
+        <th class="cell--number">
+          Variáveis
+        </th>
         <th />
         <th />
       </tr>
@@ -79,20 +89,21 @@ assuntosStore.buscarTudo();
         <td>
           {{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}
         </td>
-        <td>
+        <td class="cell--number">
           <SmaeLink
+            v-if="item.total_variaveis"
             :to="{
               name: 'variaveisListar',
               query: { assuntos: item.id },
             }"
             class="tipinfo tprimary"
           >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_variavel" /></svg>
+            {{ item.total_variaveis }}
             <div>Ver variáveis</div>
           </SmaeLink>
+          <template v-else>
+            0
+          </template>
         </td>
         <td>
           <router-link
@@ -110,7 +121,7 @@ assuntosStore.buscarTudo();
             class="like-a__text"
             aria-label="excluir"
             title="excluir"
-            @click="excluirAssunto(item.id, item.nome)"
+            @click="excluirAssunto(item.id, item.nome, item.total_variaveis)"
           >
             <svg
               width="20"

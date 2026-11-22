@@ -128,12 +128,20 @@ export class VariavelCategoricaService {
             },
         });
 
+        const contagem = await this.prisma.variavel.groupBy({
+            by: ['variavel_categorica_id'],
+            where: { removido_em: null, variavel_categorica_id: { in: listActive.map((v) => v.id) } },
+            _count: { _all: true },
+        });
+        const totalPorCategorica = new Map(contagem.map((c) => [c.variavel_categorica_id, c._count._all]));
+
         return listActive.map((v) => {
             return {
                 id: v.id,
                 titulo: v.titulo,
                 descricao: v.descricao,
                 tipo: v.tipo,
+                total_variaveis: totalPorCategorica.get(v.id) ?? 0,
                 valores: v.valores.map((vv) => {
                     return {
                         id: vv.id,
