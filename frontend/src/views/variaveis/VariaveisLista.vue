@@ -71,6 +71,7 @@ const parametrosDeBusca = computed(() => ({
   periodicidade: route.query.periodicidade,
   plano_setorial_id: route.query.plano_setorial_id,
   regiao_id: route.query.regiao_id,
+  sem_uso: route.query.sem_uso,
   titulo: route.query.titulo,
   variavel_categorica_id: route.query.variavel_categorica_id,
   pagina: route.query.pagina,

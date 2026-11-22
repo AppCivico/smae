@@ -194,6 +194,15 @@ export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto,
     @IsInt()
     @Transform(NumberTransform)
     not_indicador_id?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }) => value === 'true' || value === true)
+    @ApiProperty({
+        description:
+            'Caso true, retorna apenas variáveis sem plano e sem vínculo com indicador ativo (nem delas, nem das filhas ou calculadas)',
+    })
+    sem_uso?: boolean;
 }
 
 export class FilterVariavelRelacionamentosDto {
