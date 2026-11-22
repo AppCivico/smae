@@ -138,7 +138,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
           <th style="width: 20%">
             Perfil
           </th>
-          <th style="width: 50px" />
+          <th style="width: 80px" />
         </tr>
       </thead>
       <tbody>
@@ -198,6 +198,22 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
                   ><use xlink:href="#i_edit" /></svg>
                 </router-link>
               </template>
+              <router-link
+                v-if="authStore.rotaEhPermitida('responsabilidadesDeUsuários')"
+                :to="{
+                  name: 'responsabilidadesDeUsuários',
+                  query: {
+                    pessoa_id: user.id
+                  }
+                }"
+                class="tprimary ml1"
+                title="Responsabilidades em metas"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_valores" /></svg>
+              </router-link>
             </td>
           </tr>
         </template>

@@ -286,6 +286,18 @@ onMounted(async () => {
       </TítuloDePágina>
 
       <hr class="ml2 f1">
+      <router-link
+        v-if="id && authStore.rotaEhPermitida('responsabilidadesDeUsuários')"
+        :to="{
+          name: 'responsabilidadesDeUsuários',
+          query: {
+            pessoa_id: id
+          }
+        }"
+        class="btn outline bgnone tcprimary ml2"
+      >
+        Responsabilidades em metas
+      </router-link>
       <CheckClose :formulario-sujo="formularioSujo" />
     </header>
 

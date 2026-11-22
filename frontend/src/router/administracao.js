@@ -728,7 +728,7 @@ export default [
       limitarÀsPermissões: 'CadastroPessoa.',
       título: 'Gerenciar usuários',
       rotasParaMenuSecundário: [
-        // PRA-FAZER: adicionar edição de responsabilidade
+        'responsabilidadesDeUsuários',
       ],
     },
     children: [
@@ -752,6 +752,22 @@ export default [
         component: AddEditUsers,
         meta: {
           rotaDeEscape: 'gerenciarUsuários',
+        },
+      },
+      {
+        path: 'responsabilidades',
+        name: 'responsabilidadesDeUsuários',
+        component: () => import('@/views/users/UsuariosResponsabilidades.vue'),
+        meta: {
+          título: 'Responsabilidades em metas',
+          rotaDeEscape: 'gerenciarUsuários',
+          rotasParaMigalhasDePão: ['gerenciarUsuários'],
+          // a API só lista e altera responsabilidades em metas quando o módulo corrente é o PDM
+          get limitarÀsPermissões() {
+            return useAuthStore().sistemaCorrente === 'PDM'
+              ? ['CadastroPessoa.editar_responsabilidade', 'CadastroPessoa.administrador.MDO']
+              : [];
+          },
         },
       },
     ],
