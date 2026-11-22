@@ -18,7 +18,7 @@ import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 
-import MapaStatus from './MapaStatus';
+import MapaStatus, { mapaSituacaoEncerramento } from './MapaStatus';
 
 const route = useRoute();
 const router = useRouter();
@@ -29,11 +29,6 @@ const statusInicial = (() => {
   return situacao ? `${status}_${situacao}` : String(status);
 });
 const statusSelecionados = ref<string | null>(statusInicial());
-
-const mapaSituacaoEncerramento = {
-  Concluido: 'Concluida',
-  Cancelado: 'Cancelada',
-};
 
 const itemsStatusDemanda = [
   { valor: 'Registro', label: 'Em registro', cor: '#E885BE' },

@@ -686,6 +686,7 @@ export class DemandaService {
                 status_anterior: true,
                 status_novo: true,
                 motivo: true,
+                situacao_encerramento: true,
                 criado_em: true,
                 criador: {
                     select: {
@@ -748,6 +749,7 @@ export class DemandaService {
                       status_anterior: ultimoHistorico.status_anterior,
                       status_novo: ultimoHistorico.status_novo,
                       motivo: ultimoHistorico.motivo,
+                      situacao_encerramento: ultimoHistorico.situacao_encerramento,
                       criado_por: ultimoHistorico.criador,
                       criado_em: Date2YMD.toString(ultimoHistorico.criado_em),
                   }
@@ -836,6 +838,7 @@ export class DemandaService {
                 status_anterior: true,
                 status_novo: true,
                 motivo: true,
+                situacao_encerramento: true,
                 criado_em: true,
                 criador: {
                     select: {
@@ -851,6 +854,7 @@ export class DemandaService {
             status_anterior: h.status_anterior,
             status_novo: h.status_novo,
             motivo: h.motivo,
+            situacao_encerramento: h.situacao_encerramento,
             criado_por: h.criador,
             criado_em: Date2YMD.toString(h.criado_em),
         }));
@@ -1026,6 +1030,7 @@ export class DemandaService {
                 status_anterior: fromStatus,
                 status_novo: toStatus,
                 motivo,
+                situacao_encerramento: toStatus === DemandaStatus.Encerrado ? (situacaoEncerramento ?? null) : null,
                 criado_por: user.id,
             },
         });

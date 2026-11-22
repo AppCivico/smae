@@ -8986,6 +8986,8 @@ model DemandaHistorico {
     status_novo     DemandaStatus
     motivo          String?        @db.Text
 
+    situacao_encerramento DemandaSituacao?
+
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 

@@ -27,7 +27,7 @@ import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
-import MapaStatus, { StatusDemanda } from './MapaStatus';
+import MapaStatus, { mapaSituacaoEncerramento, StatusDemanda } from './MapaStatus';
 
 type EtapaDoVaralComId = EtapaDoVaral & {
   id: StatusDemanda;
@@ -54,6 +54,13 @@ const {
   itemParaEdicao, geolocalizacaoPorToken, erro,
   historico, chamadasPendentes, erroHistorico,
 } = storeToRefs(demandasStore);
+
+function rotuloDoStatus(status: string, situacao?: string | null): string {
+  if (status === 'Encerrado' && situacao) {
+    return mapaSituacaoEncerramento[situacao] || situacao;
+  }
+  return MapaStatus[status] || status;
+}
 
 const schema = computed(() => (
   CadastroDemandaSchema({
@@ -359,7 +366,7 @@ watch(itemParaEdicao, (novosValores) => {
 
       <tbody>
         <tr
-          v-for="registro in historico"
+          v-for="(registro, indice) in historico"
           :key="registro.id"
         >
           <td class="cell--nowrap">
@@ -368,10 +375,13 @@ watch(itemParaEdicao, (novosValores) => {
           <td>{{ registro.criado_por?.nome_exibicao }}</td>
           <td>
             {{ registro.status_anterior
-              ? MapaStatus[registro.status_anterior] || registro.status_anterior
+              ? rotuloDoStatus(
+                registro.status_anterior,
+                historico[indice + 1]?.situacao_encerramento,
+              )
               : '-' }}
           </td>
-          <td>{{ MapaStatus[registro.status_novo] || registro.status_novo }}</td>
+          <td>{{ rotuloDoStatus(registro.status_novo, registro.situacao_encerramento) }}</td>
           <td>{{ registro.motivo || '-' }}</td>
         </tr>
 

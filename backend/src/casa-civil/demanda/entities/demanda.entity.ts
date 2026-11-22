@@ -69,6 +69,7 @@ export class DemandaHistoricoDto {
     status_anterior: DemandaStatus | null;
     status_novo: DemandaStatus;
     motivo: string | null;
+    situacao_encerramento: DemandaSituacao | null;
     criado_por: IdNomeExibicaoDto;
     criado_em: string;
 }
