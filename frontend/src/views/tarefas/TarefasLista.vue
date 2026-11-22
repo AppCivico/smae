@@ -9,6 +9,7 @@ import SmaeRange from '@/components/camposDeFormulario/SmaeRange.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
+import ExportarEap from '@/components/tarefas/ExportarEap.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -178,6 +179,8 @@ onUnmounted(() => {
         >
           <span class="btn"> Clonar tarefas </span>
         </SmaeLink>
+
+        <ExportarEap v-if="!route.params.projetoId" />
       </nav>
     </template>
   </CabecalhoDePagina>

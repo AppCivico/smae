@@ -64,7 +64,11 @@ function listErrors(r: string[]) {
   return r;
 }
 
-async function handleResponse(response: Response, alertarErros = true):Promise<object | null> {
+async function handleResponse(
+  response: Response,
+  alertarErros = true,
+  nomeDoArquivoParaDownload = '',
+):Promise<object | null> {
   const isJson = response.headers?.get('content-type')?.includes('application/json');
   const isZip = response.headers?.get('content-type')?.includes('application/zip');
 
@@ -107,7 +111,10 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
     return Promise.reject(new Error(String(error)));
   }
 
-  if (isZip) {
+  if (nomeDoArquivoParaDownload) {
+    const temNomeNoCabecalho = /filename="(.+)"/.test(response.headers.get('content-disposition') || '');
+    await responseDownload(response, temNomeNoCabecalho ? undefined : nomeDoArquivoParaDownload);
+  } else if (isZip) {
     responseDownload(response);
   }
 
@@ -138,7 +145,11 @@ function request(method: Method, upload = false) {
   return (
     url: RequestInfo | URL,
     params: ParametrosDeRequisicao = null,
-    opcoes: { AlertarErros?: boolean; headers?: HeadersInit } = { AlertarErros: true },
+    opcoes: {
+      AlertarErros?: boolean;
+      headers?: HeadersInit;
+      nomeDoArquivoParaDownload?: string;
+    } = { AlertarErros: true },
   ) => {
     let urlFinal = url instanceof URL
       ? url.href
@@ -189,7 +200,11 @@ function request(method: Method, upload = false) {
 
     // return fetch(urlFinal, requestOptions).then(handleResponse);
     return fetch(urlFinal, requestOptions)
-      .then((response) => handleResponse(response, opcoes.AlertarErros))
+      .then((response) => handleResponse(
+        response,
+        opcoes.AlertarErros,
+        opcoes.nomeDoArquivoParaDownload,
+      ))
       .finally(() => {
         switch (method) {
           case 'GET':

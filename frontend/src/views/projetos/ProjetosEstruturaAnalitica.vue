@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 
 import EstruturaAnalíticaProjeto from '@/components/projetos/EstruturaAnaliticaProjeto.vue';
+import ExportarEap from '@/components/tarefas/ExportarEap.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
@@ -34,6 +35,7 @@ iniciar();
   <div class="flex spacebetween center mb2">
     <h1>{{ emFoco?.nome }}</h1>
     <hr class="ml2 f1">
+    <ExportarEap class="ml2" />
   </div>
 
   <EstruturaAnalíticaProjeto
