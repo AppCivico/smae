@@ -19,18 +19,22 @@ export class VarGlobalRelFormulaCompostaDto {
     pdm_id: number | null;
     autogerenciavel: boolean;
     variavel: IdCodTituloDto;
+    indicadores: VarGlobalRelIndicadorBaseDto[];
 }
 
-export class VarGlobalRelIndicadorDto {
+export class VarGlobalRelIndicadorBaseDto {
     id: number;
     codigo: string;
     titulo: string;
-    tipo_indicador: IndicadorTipo;
     pdm_id: number | null;
-    variavel: IdCodTituloDto;
     meta?: IdCodTituloDto | null;
     iniciativa?: IdCodTituloDto | null;
     atividade?: IdCodTituloDto | null;
+}
+
+export class VarGlobalRelIndicadorDto extends VarGlobalRelIndicadorBaseDto {
+    tipo_indicador: IndicadorTipo;
+    variavel: IdCodTituloDto;
 }
 
 export class PdmInfoDto extends PdmRotuloInfoDto {

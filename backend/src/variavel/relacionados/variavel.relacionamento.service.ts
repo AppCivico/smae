@@ -9,6 +9,7 @@ import { GetVariavelWhereSet } from '../variavel.service';
 import {
     PdmInfoDto,
     VarGlobalRelFormulaCompostaDto,
+    VarGlobalRelIndicadorBaseDto,
     VarGlobalRelIndicadorDto,
     VariavelGlobalRelacionamentoDto,
 } from './dto/variavel.relacionamento.dto';
@@ -220,6 +221,10 @@ export class VariavelRelacionamentoService {
             ORDER BY fc.titulo, var.codigo
         `;
 
+        const indicadoresPorFormula = await this.buscaIndicadoresDasFormulas(
+            Array.from(new Set(formulasData.map((fc) => fc.formula_id)))
+        );
+
         // Etapa 5: Mapear resultados para DTOs
         const indicadoresReferenciando = indicadoresData.map(
             (ind): VarGlobalRelIndicadorDto => ({
@@ -269,6 +274,7 @@ export class VariavelRelacionamentoService {
                     codigo: fc.variavel_codigo,
                     titulo: fc.variavel_titulo,
                 },
+                indicadores: indicadoresPorFormula.get(fc.formula_id) ?? [],
             })
         );
 
@@ -284,6 +290,9 @@ export class VariavelRelacionamentoService {
                             ...formulasCompostasReferenciando
                                 .map((fc) => fc.pdm_id)
                                 .filter((id): id is number => id !== undefined),
+                            ...formulasCompostasReferenciando
+                                .flatMap((fc) => fc.indicadores.map((ind) => ind.pdm_id))
+                                .filter((id): id is number => id !== null),
                         ])
                     ),
                 },
@@ -316,5 +325,90 @@ export class VariavelRelacionamentoService {
             pdm_info: pdmFormatado,
             variaveis_busca: searchVariableIds,
         };
+    }
+
+    /**
+     * Indicadores onde a fórmula composta foi criada ou que a referenciam na própria fórmula
+     */
+    private async buscaIndicadoresDasFormulas(
+        formulaIds: number[]
+    ): Promise<Map<number, VarGlobalRelIndicadorBaseDto[]>> {
+        const porFormula = new Map<number, VarGlobalRelIndicadorBaseDto[]>();
+        if (!formulaIds.length) return porFormula;
+
+        const rows = await this.prisma.$queryRaw<
+            {
+                formula_composta_id: number;
+                indicador_id: number;
+                indicador_codigo: string;
+                indicador_titulo: string;
+                meta_id: number;
+                meta_codigo: string;
+                meta_titulo: string;
+                iniciativa_id: number | null;
+                iniciativa_codigo: string | null;
+                iniciativa_titulo: string | null;
+                atividade_id: number | null;
+                atividade_codigo: string | null;
+                atividade_titulo: string | null;
+                pdm_id: number;
+            }[]
+        >`
+            SELECT DISTINCT
+                rel.formula_composta_id,
+                i.id as indicador_id,
+                i.codigo as indicador_codigo,
+                i.titulo as indicador_titulo,
+                v.meta_id,
+                m.codigo as meta_codigo,
+                m.titulo as meta_titulo,
+                v.iniciativa_id,
+                ini.codigo as iniciativa_codigo,
+                ini.titulo as iniciativa_titulo,
+                v.atividade_id,
+                a.codigo as atividade_codigo,
+                a.titulo as atividade_titulo,
+                v.pdm_id
+            FROM (
+                SELECT ifc.formula_composta_id, ifc.indicador_id
+                FROM indicador_formula_composta ifc
+                WHERE ifc.desativado = false AND ifc.indicador_origem_id IS NULL
+                UNION
+                SELECT em_uso.formula_composta_id, em_uso.indicador_id
+                FROM indicador_formula_composta_em_uso em_uso
+            ) rel
+            JOIN indicador i ON i.id = rel.indicador_id AND i.removido_em IS NULL
+            JOIN view_metas_arvore_pdm v ON (
+                (i.meta_id IS NOT NULL AND v.meta_id = i.meta_id AND v.iniciativa_id IS NULL AND v.atividade_id IS NULL) OR
+                (i.iniciativa_id IS NOT NULL AND v.iniciativa_id = i.iniciativa_id AND v.atividade_id IS NULL) OR
+                (i.atividade_id IS NOT NULL AND v.atividade_id = i.atividade_id)
+            )
+            JOIN meta m ON m.id = v.meta_id
+            LEFT JOIN iniciativa ini ON ini.id = v.iniciativa_id
+            LEFT JOIN atividade a ON a.id = v.atividade_id
+            JOIN pdm p ON p.id = v.pdm_id AND p.removido_em IS NULL
+            WHERE rel.formula_composta_id = ANY(${formulaIds}::int[])
+            ORDER BY i.codigo
+        `;
+
+        for (const r of rows) {
+            const lista = porFormula.get(r.formula_composta_id) ?? [];
+            lista.push({
+                id: r.indicador_id,
+                codigo: r.indicador_codigo,
+                titulo: r.indicador_titulo,
+                pdm_id: r.pdm_id,
+                meta: { id: r.meta_id, codigo: r.meta_codigo, titulo: r.meta_titulo },
+                iniciativa: r.iniciativa_id
+                    ? { id: r.iniciativa_id, codigo: r.iniciativa_codigo!, titulo: r.iniciativa_titulo! }
+                    : null,
+                atividade: r.atividade_id
+                    ? { id: r.atividade_id, codigo: r.atividade_codigo!, titulo: r.atividade_titulo! }
+                    : null,
+            });
+            porFormula.set(r.formula_composta_id, lista);
+        }
+
+        return porFormula;
     }
 }

@@ -2,6 +2,7 @@
 import type { IdCodTituloDto } from '@back/common/dto/IdCodTitulo.dto';
 import type {
   PdmInfoDto,
+  VarGlobalRelIndicadorBaseDto,
   VarGlobalRelIndicadorDto,
 } from '@back/variavel/relacionados/dto/variavel.relacionamento.dto';
 import { storeToRefs } from 'pinia';
@@ -112,6 +113,13 @@ const indicadoresPorPlano = computed<GrupoDeIndicadores[]>(() => {
 
 const formulas = computed(() => relacionamentos.value?.formulas_compostas_referenciando || []);
 
+const exibirIndicadoresNasFormulas = computed<boolean>(() => formulas.value
+  .some((formula) => formula.indicadores.length));
+
+function planoDoIndicador(indicador: VarGlobalRelIndicadorBaseDto): PdmInfoDto | undefined {
+  return indicador.pdm_id !== null ? planosPorId.value[indicador.pdm_id] : undefined;
+}
+
 const exibirVariavelNasFormulas = computed<boolean>(() => formulas.value
   .some((formula) => formula.variavel.id !== props.variavelId));
 
@@ -123,10 +131,14 @@ const naoEhUtilizada = computed<boolean>(() => !indicadoresPorPlano.value.length
   && !formulas.value.length);
 
 function rotaDoIndicador(
-  indicador: VarGlobalRelIndicadorDto,
-  plano: PdmInfoDto,
+  indicador: VarGlobalRelIndicadorBaseDto,
+  plano?: PdmInfoDto,
 ): RouteLocationRaw | null {
   let entidadeMae: string;
+
+  if (!plano) {
+    return null;
+  }
 
   if (plano.tipo === 'PS') {
     entidadeMae = 'planoSetorial';
@@ -290,6 +302,9 @@ watch(() => props.variavelId, async (variavelId) => {
               <th>Título</th>
               <th>Tipo</th>
               <th>Plano</th>
+              <th v-if="exibirIndicadoresNasFormulas">
+                Indicador
+              </th>
               <th v-if="exibirVariavelNasFormulas">
                 Por meio da variável
               </th>
@@ -304,6 +319,31 @@ watch(() => props.variavelId, async (variavelId) => {
               <td>{{ nomesDosTipos[formula.tipo_pdm] || formula.tipo_pdm }}</td>
               <td>
                 {{ formula.pdm_id !== null ? planosPorId[formula.pdm_id]?.nome || '-' : '-' }}
+              </td>
+              <td v-if="exibirIndicadoresNasFormulas">
+                <ul
+                  v-if="formula.indicadores.length"
+                  class="lista-de-indicadores"
+                >
+                  <li
+                    v-for="indicador in formula.indicadores"
+                    :key="`formula--${formula.id}--indicador--${indicador.id}`"
+                  >
+                    <SmaeLink
+                      v-if="rotaDoIndicador(indicador, planoDoIndicador(indicador))"
+                      :to="rotaDoIndicador(indicador, planoDoIndicador(indicador))"
+                      exibir-desabilitado
+                    >
+                      {{ formatarItem(indicador) }}
+                    </SmaeLink>
+                    <template v-else>
+                      {{ formatarItem(indicador) }}
+                    </template>
+                  </li>
+                </ul>
+                <template v-else>
+                  -
+                </template>
               </td>
               <td v-if="exibirVariavelNasFormulas">
                 <template v-if="formula.variavel.id !== props.variavelId">
@@ -391,5 +431,11 @@ watch(() => props.variavelId, async (variavelId) => {
   color: #B8C0CC;
   white-space: nowrap;
   margin: 0;
+}
+
+.lista-de-indicadores {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 </style>
