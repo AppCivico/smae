@@ -18,6 +18,7 @@ import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 
+import { diasEntre, formatarDias } from './diasNoStatus';
 import MapaStatus, { mapaSituacaoEncerramento } from './MapaStatus';
 
 const route = useRoute();
@@ -177,6 +178,11 @@ watch(
       { chave: 'valor', label: 'Valor', formatador: v => dinheiro(v, { style: 'currency' }) },
       { chave: 'localizacao', label: 'Localizacao', formatador: v => truncate(v, 110) },
       { chave: 'status', label: '' },
+      {
+        chave: 'data_status_atual',
+        label: 'Tempo no status',
+        formatador: v => (v ? formatarDias(diasEntre(String(v))) : '-'),
+      },
     ]"
   >
     <template #celula:status="{linha}">
