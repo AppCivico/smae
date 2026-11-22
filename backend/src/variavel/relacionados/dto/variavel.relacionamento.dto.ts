@@ -10,6 +10,11 @@ export class VariavelGlobalRelacionamentoDto {
     variaveis_filhas?: IdCodTituloDto[];
     pdm_info: PdmInfoDto[];
     variaveis_busca: number[];
+    /**
+     * Há vínculo com indicador de plano removido, ou indicador ativo cuja meta/iniciativa/atividade foi removida;
+     * esses vínculos não aparecem em indicadores_referenciando
+     */
+    utilizada_em_planos_removidos: boolean;
 }
 
 export class VarGlobalRelFormulaCompostaDto {
