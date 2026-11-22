@@ -23,7 +23,7 @@ const orientações: { valor: OrientacaoDeEap; rótulo: string }[] = [
 
 const id = useId();
 const orientacao = ref<OrientacaoDeEap>('vertical');
-const nivelMaximo = ref<number | ''>('');
+const somentePrimeiroNivel = ref(false);
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -81,7 +81,7 @@ const desabilitado = computed(() => chamadasPendentes.value.eap
           :title="!lista.length ? 'Não há tarefas para exportar' : undefined"
           @click="tarefasStore.baixarEap(formato.valor, {
             orientacao,
-            nivel_maximo: nivelMaximo || null,
+            nivel_maximo: somentePrimeiroNivel ? 1 : null,
           })"
         >
           {{ formato.rótulo }}
@@ -108,21 +108,13 @@ const desabilitado = computed(() => chamadasPendentes.value.eap
             </label>
           </div>
         </fieldset>
-        <label
-          class="label"
-          :for="`${id}-nivel-maximo`"
-        >
-          Níveis
+        <label class="t12">
+          <input
+            v-model="somentePrimeiroNivel"
+            type="checkbox"
+            class="inputcheckbox"
+          ><span>Somente o primeiro nível</span>
         </label>
-        <input
-          :id="`${id}-nivel-maximo`"
-          v-model.number="nivelMaximo"
-          type="number"
-          min="1"
-          step="1"
-          class="inputtext light"
-          placeholder="Todos"
-        >
       </li>
     </ul>
   </div>
