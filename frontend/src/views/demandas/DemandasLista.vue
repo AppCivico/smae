@@ -47,10 +47,25 @@ const { lista } = storeToRefs(demandasStore);
 const { orgaosComNome: listaOrgaos } = storeToRefs(organsStore);
 const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 
-const opcoesOrgaos = computed(() => listaOrgaos.value.map((o) => ({
-  id: o.id,
-  label: o.nome_completo,
-})));
+const orgaosComDemandas = ref<{ id: number; label: string }[] | null>(null);
+
+const opcoesOrgaos = computed(() => orgaosComDemandas.value
+  ?? listaOrgaos.value.map((o) => ({
+    id: o.id,
+    label: o.nome_completo,
+  })));
+
+async function buscarOrgaosComDemandas() {
+  try {
+    const orgaos = await demandasStore.buscarOrgaosParaDemandas();
+    orgaosComDemandas.value = orgaos.map((o) => ({
+      id: o.id,
+      label: o.sigla ? `${o.sigla} - ${o.descricao}` : o.descricao,
+    }));
+  } catch {
+    await organsStore.getAll();
+  }
+}
 
 const opcoesAreasTematicas = computed(() => (listaAreasTematicas.value as any[]).map((a) => ({
   id: a.id,
@@ -99,7 +114,7 @@ const demandasFiltradas = computed(() => filtrarObjetos(lista.value, route.query
 
 onMounted(() => {
   Promise.all([
-    organsStore.getAll(),
+    buscarOrgaosComDemandas(),
     areasTematicasStore.buscarTudo(),
     buscarTudo(),
   ]).then();

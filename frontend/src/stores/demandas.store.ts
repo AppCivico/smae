@@ -4,6 +4,7 @@ import type {
 import type { CreateDemandaDto } from '@back/casa-civil/demanda/dto/create-demanda.dto';
 import type { CreateDemandaAcaoDto } from '@back/casa-civil/demanda/acao/dto/acao.dto';
 import type { FilterDemandaDto } from '@back/casa-civil/demanda/dto/filter-demanda.dto';
+import type { OrgaoReduzidoDto } from '@back/orgao/entities/orgao.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -79,6 +80,13 @@ export const useDemandasStore = defineStore('demandasStore', {
         this.erroHistorico = erro;
       }
       this.chamadasPendentes.historico = false;
+    },
+
+    async buscarOrgaosParaDemandas(): Promise<OrgaoReduzidoDto[]> {
+      const resposta: OrgaoReduzidoDto[] = await this.requestS.get(
+        `${baseUrl}/demanda/orgao-para-demandas`,
+      );
+      return Array.isArray(resposta) ? resposta : [];
     },
 
     async buscarTudo(params: FilterDemandaDto = {}): Promise<void> {
