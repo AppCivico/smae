@@ -19,6 +19,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
 import { CadastroDemandaSchema } from '@/consts/formSchemas/demanda';
+import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -51,6 +52,7 @@ const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 const { ativo: valoresLimitesAtivo } = storeToRefs(valoresLimitesStore);
 const {
   itemParaEdicao, geolocalizacaoPorToken, erro,
+  historico, chamadasPendentes, erroHistorico,
 } = storeToRefs(demandasStore);
 
 const schema = computed(() => (
@@ -245,6 +247,7 @@ onMounted(() => {
 
   if (props.demandaId) {
     demandasStore.buscarItem(props.demandaId);
+    demandasStore.buscarHistorico(props.demandaId);
     return;
   }
 
@@ -322,6 +325,64 @@ watch(itemParaEdicao, (novosValores) => {
       </span>
     </div>
   </div>
+
+  <details
+    v-if="demandaId"
+    class="mb2"
+  >
+    <summary>
+      <h2 class="t16 w700 tc300 mb0">
+        Histórico
+      </h2>
+    </summary>
+
+    <LoadingComponent v-if="chamadasPendentes.historico" />
+
+    <ErrorComponent
+      v-else-if="erroHistorico"
+      :erro="erroHistorico"
+    />
+
+    <table
+      v-else
+      class="tablemain mt1"
+    >
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Status anterior</th>
+          <th>Novo status</th>
+          <th>Motivo</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          v-for="registro in historico"
+          :key="registro.id"
+        >
+          <td class="cell--nowrap">
+            {{ dateToField(registro.criado_em) }}
+          </td>
+          <td>{{ registro.criado_por?.nome_exibicao }}</td>
+          <td>
+            {{ registro.status_anterior
+              ? MapaStatus[registro.status_anterior] || registro.status_anterior
+              : '-' }}
+          </td>
+          <td>{{ MapaStatus[registro.status_novo] || registro.status_novo }}</td>
+          <td>{{ registro.motivo || '-' }}</td>
+        </tr>
+
+        <tr v-if="!historico.length">
+          <td colspan="5">
+            Nenhum registro de histórico.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
 
   <form
     class="flex column g2"
