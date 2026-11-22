@@ -215,7 +215,13 @@ watch(() => props.variavelId, async (variavelId) => {
 
     <template v-else-if="relacionamentos">
       <p
-        v-if="naoEhUtilizada"
+        v-if="naoEhUtilizada && relacionamentos.utilizada_em_planos_removidos"
+        class="tc300"
+      >
+        Esta variável foi utilizada apenas em indicadores de planos ou metas removidos.
+      </p>
+      <p
+        v-else-if="naoEhUtilizada"
         class="tc300"
       >
         Esta variável não é utilizada em nenhum indicador nem em fórmula composta.

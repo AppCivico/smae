@@ -221,9 +221,10 @@ export class VariavelRelacionamentoService {
             ORDER BY fc.titulo, var.codigo
         `;
 
-        const indicadoresPorFormula = await this.buscaIndicadoresDasFormulas(
-            Array.from(new Set(formulasData.map((fc) => fc.formula_id)))
-        );
+        const [indicadoresPorFormula, utilizadaEmPlanosRemovidos] = await Promise.all([
+            this.buscaIndicadoresDasFormulas(Array.from(new Set(formulasData.map((fc) => fc.formula_id)))),
+            this.utilizadaEmPlanosRemovidos(searchVariableIds),
+        ]);
 
         // Etapa 5: Mapear resultados para DTOs
         const indicadoresReferenciando = indicadoresData.map(
@@ -324,7 +325,31 @@ export class VariavelRelacionamentoService {
             formulas_compostas_referenciando: formulasCompostasReferenciando,
             pdm_info: pdmFormatado,
             variaveis_busca: searchVariableIds,
+            utilizada_em_planos_removidos: utilizadaEmPlanosRemovidos,
         };
+    }
+
+    private async utilizadaEmPlanosRemovidos(variavelIds: number[]): Promise<boolean> {
+        const rows = await this.prisma.$queryRaw<{ existe: boolean }[]>`
+            SELECT EXISTS (
+                SELECT 1
+                FROM indicador_variavel iv
+                JOIN indicador i ON i.id = iv.indicador_id
+                LEFT JOIN atividade a ON a.id = i.atividade_id
+                LEFT JOIN iniciativa ini ON ini.id = coalesce(i.iniciativa_id, a.iniciativa_id)
+                JOIN meta m ON m.id = coalesce(i.meta_id, ini.meta_id)
+                JOIN pdm p ON p.id = m.pdm_id
+                WHERE iv.variavel_id = ANY(${variavelIds}::int[])
+                AND (
+                    p.removido_em IS NOT NULL
+                    OR (
+                        i.removido_em IS NULL
+                        AND (m.removido_em IS NOT NULL OR ini.removido_em IS NOT NULL OR a.removido_em IS NOT NULL)
+                    )
+                )
+            ) as existe
+        `;
+        return rows[0]?.existe ?? false;
     }
 
     /**
