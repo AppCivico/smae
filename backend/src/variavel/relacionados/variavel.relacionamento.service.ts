@@ -156,8 +156,8 @@ export class VariavelRelacionamentoService {
             JOIN variavel var ON var.id = iv.variavel_id AND var.removido_em IS NULL
             JOIN indicador i ON i.id = iv.indicador_id AND i.removido_em IS NULL
             LEFT JOIN view_metas_arvore_pdm v ON (
-                (i.meta_id IS NOT NULL AND v.meta_id = i.meta_id) OR
-                (i.iniciativa_id IS NOT NULL AND v.iniciativa_id = i.iniciativa_id) OR
+                (i.meta_id IS NOT NULL AND v.meta_id = i.meta_id AND v.iniciativa_id IS NULL AND v.atividade_id IS NULL) OR
+                (i.iniciativa_id IS NOT NULL AND v.iniciativa_id = i.iniciativa_id AND v.atividade_id IS NULL) OR
                 (i.atividade_id IS NOT NULL AND v.atividade_id = i.atividade_id)
             )
             LEFT JOIN meta m ON m.id = v.meta_id AND m.removido_em IS NULL
