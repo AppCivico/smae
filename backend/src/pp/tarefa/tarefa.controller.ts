@@ -105,11 +105,10 @@ export class TarefaController {
         const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
         res.type(GraphvizContentTypeMap[formato]);
 
-        if (formato == 'pdf' || formato == 'svg')
-            res.set({
-                'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
-                'Access-Control-Expose-Headers': 'content-disposition',
-            });
+        res.set({
+            'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
+            'Access-Control-Expose-Headers': 'content-disposition',
+        });
 
         imgStream.pipe(res);
     }
@@ -252,11 +251,10 @@ export class TarefaMDOController {
         const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
         res.type(GraphvizContentTypeMap[formato]);
 
-        if (formato == 'pdf' || formato == 'svg')
-            res.set({
-                'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
-                'Access-Control-Expose-Headers': 'content-disposition',
-            });
+        res.set({
+            'Content-Disposition': `attachment; filename="eap-obra-${params.id}.${formato}"`,
+            'Access-Control-Expose-Headers': 'content-disposition',
+        });
 
         imgStream.pipe(res);
     }
