@@ -148,6 +148,34 @@ function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
     throw new Error(`getMaxDiasPeriodicidade: Periodicidade=${periodicidade} não reconhecida`);
 }
 
+// vínculo com indicador não removido cuja árvore (meta/iniciativa/atividade) e plano também não foram removidos
+function IndicadorVariavelAtivoWhere(): Prisma.IndicadorVariavelWhereInput {
+    return {
+        desativado: false,
+        indicador: {
+            removido_em: null,
+            OR: [
+                { meta: { removido_em: null, pdm: { removido_em: null } } },
+                {
+                    iniciativa: {
+                        removido_em: null,
+                        meta: { removido_em: null, pdm: { removido_em: null } },
+                    },
+                },
+                {
+                    atividade: {
+                        removido_em: null,
+                        iniciativa: {
+                            removido_em: null,
+                            meta: { removido_em: null, pdm: { removido_em: null } },
+                        },
+                    },
+                },
+            ],
+        },
+    };
+}
+
 export function GetVariavelPalavraChave(input: string | undefined, prisma: PrismaClient) {
     // Além de espaço, quebra também em '.' e '/', pois o vetor de busca de variavel indexa
     // o código tanto inteiro quanto quebrado nessas separações (ver migration do vetores_busca).
@@ -1444,6 +1472,27 @@ export class VariavelService {
                     : undefined,
             },
         });
+
+        if (filters.sem_uso) {
+            const indicadorAtivo = IndicadorVariavelAtivoWhere();
+            // mesma regra de pode_excluir, sem a parte de permissão
+            globalSet.push({
+                planos: { isEmpty: true },
+                variavel: {
+                    indicador_variavel: { none: indicadorAtivo },
+                    variaveis_filhas: {
+                        none: { removido_em: null, indicador_variavel: { some: indicadorAtivo } },
+                    },
+                    FormulaCompostaMae: {
+                        none: {
+                            autogerenciavel: true,
+                            removido_em: null,
+                            variavel_calc: { indicador_variavel: { some: indicadorAtivo } },
+                        },
+                    },
+                },
+            });
+        }
 
         return globalSet;
     }
@@ -3333,28 +3382,7 @@ export class VariavelService {
         const links = await prismaTx.indicadorVariavel.findMany({
             where: {
                 variavel_id: { in: variavelIds },
-                desativado: false,
-                indicador: {
-                    removido_em: null,
-                    OR: [
-                        { meta: { removido_em: null, pdm: { removido_em: null } } },
-                        {
-                            iniciativa: {
-                                removido_em: null,
-                                meta: { removido_em: null, pdm: { removido_em: null } },
-                            },
-                        },
-                        {
-                            atividade: {
-                                removido_em: null,
-                                iniciativa: {
-                                    removido_em: null,
-                                    meta: { removido_em: null, pdm: { removido_em: null } },
-                                },
-                            },
-                        },
-                    ],
-                },
+                ...IndicadorVariavelAtivoWhere(),
             },
             select: { variavel_id: true },
             distinct: ['variavel_id'],

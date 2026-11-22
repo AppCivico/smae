@@ -62,6 +62,7 @@ const chavesDeValoresValidos = [
   'orgao_proprietario_id',
   'palavra_chave',
   'periodicidade',
+  'sem_uso',
   'titulo',
   'variavel_categorica_id',
 ];
@@ -422,6 +423,33 @@ iniciar();
     </div>
 
     <div class="flex flexwrap end g2 fb100">
+      <div class="f1 fb10em">
+        <label
+          class="label"
+          for="sem-uso"
+        >
+          Uso
+        </label>
+        <select
+          id="sem-uso"
+          name="sem_uso"
+          class="inputtext light"
+        >
+          <option
+            value=""
+            :selected="!valoresIniciaisConsolidados.sem_uso"
+          >
+            Todas
+          </option>
+          <option
+            value="true"
+            :selected="String(valoresIniciaisConsolidados.sem_uso) === 'true'"
+            title="Sem plano e sem vínculo com indicador ativo"
+          >
+            Sem uso
+          </option>
+        </select>
+      </div>
       <div class="f1 fb10em">
         <label
           class="label"
