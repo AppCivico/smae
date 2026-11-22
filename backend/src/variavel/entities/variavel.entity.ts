@@ -17,6 +17,7 @@ import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.enti
 import { VariavelResumo } from '../dto/list-variavel.dto';
 import { SerieCore } from '../../common/consts';
 import { IndicadorPreviaCategorica } from '../dto/create-variavel.dto';
+import { VariavelMotivoNaoPodeExcluir } from './variavel-motivo-nao-pode-excluir';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -92,6 +93,13 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     pode_editar: boolean;
     pode_editar_valor: boolean;
     pode_excluir: boolean;
+    @ApiProperty({
+        enum: VariavelMotivoNaoPodeExcluir,
+        enumName: 'VariavelMotivoNaoPodeExcluir',
+        nullable: true,
+        description: 'Motivo de pode_excluir ser false; null quando pode excluir',
+    })
+    motivo_nao_pode_excluir: VariavelMotivoNaoPodeExcluir | null;
     orgao_responsal_coleta: IdSigla | null;
     suspendida_em: Date | null;
 }
