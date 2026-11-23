@@ -6,7 +6,7 @@ import type {
   VarGlobalRelIndicadorDto,
 } from '@back/variavel/relacionados/dto/variavel.relacionamento.dto';
 import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
+import { computed, onUnmounted, watch } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
@@ -28,11 +28,19 @@ const props = defineProps<Props>();
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const {
-  relacionamentos,
+  relacionamentosPorVariavel,
   metasSimplificadas,
   chamadasPendentes,
   erros,
 } = storeToRefs(variaveisGlobaisStore);
+
+const relacionamentos = computed(() => relacionamentosPorVariavel.value[props.variavelId] ?? null);
+const carregandoRelacionamentos = computed<boolean>(
+  () => !!chamadasPendentes.value.relacionamentosPorVariavel[props.variavelId],
+);
+const erroDosRelacionamentos = computed(
+  () => erros.value.relacionamentosPorVariavel[props.variavelId] ?? null,
+);
 
 const nomesDosTipos: Record<string, string> = {
   PS: 'Plano Setorial',
@@ -194,6 +202,10 @@ watch(() => props.variavelId, async (variavelId) => {
     variaveisGlobaisStore.buscarMetasSimplificadas();
   }
 }, { immediate: true });
+
+onUnmounted(() => {
+  variaveisGlobaisStore.limparRelacionamentos(props.variavelId);
+});
 </script>
 
 <template>
@@ -206,11 +218,11 @@ watch(() => props.variavelId, async (variavelId) => {
       <hr class="f1">
     </div>
 
-    <LoadingComponent v-if="chamadasPendentes.relacionamentos" />
+    <LoadingComponent v-if="carregandoRelacionamentos" />
 
     <ErrorComponent
-      v-else-if="erros.relacionamentos"
-      :erro="erros.relacionamentos"
+      v-else-if="erroDosRelacionamentos"
+      :erro="erroDosRelacionamentos"
     />
 
     <template v-else-if="relacionamentos">

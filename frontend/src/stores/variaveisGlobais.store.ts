@@ -32,7 +32,7 @@ interface Estado {
   seriesAgrupadas: ListSeriesAgrupadas | null;
   dadosDosPeriodosValidos: PeriodosValidosDto | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
-  relacionamentos: VariavelGlobalRelacionamentoDto | null;
+  relacionamentosPorVariavel: { [key: string | number]: VariavelGlobalRelacionamentoDto | null };
 
   planosSimplificados: PdmSimplesDto[];
   metasSimplificadas: MetaSimplesDto[];
@@ -45,7 +45,7 @@ interface Estado {
     dadosDosPeriodosValidos: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
     seriesAgrupadas: boolean;
-    relacionamentos: boolean;
+    relacionamentosPorVariavel: { [key: string | number]: boolean };
   };
   erros: Erros & {
     planosSimplificados: unknown;
@@ -54,7 +54,7 @@ interface Estado {
     dadosDosPeriodosValidos: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
     seriesAgrupadas: unknown;
-    relacionamentos: unknown;
+    relacionamentosPorVariavel: { [key: string | number]: unknown };
   };
 
   paginacao: Paginacao;
@@ -69,7 +69,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     seriesAgrupadas: null,
     dadosDosPeriodosValidos: null,
     variaveisFilhasPorMae: {},
-    relacionamentos: null,
+    relacionamentosPorVariavel: {},
     planosSimplificados: [],
     metasSimplificadas: [],
     arvoreDeMetas: {},
@@ -83,7 +83,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       dadosDosPeriodosValidos: false,
       emFoco: false,
       seriesAgrupadas: false,
-      relacionamentos: false,
+      relacionamentosPorVariavel: {},
     },
     erros: {
       lista: null,
@@ -94,7 +94,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       dadosDosPeriodosValidos: null,
       emFoco: null,
       seriesAgrupadas: null,
-      relacionamentos: null,
+      relacionamentosPorVariavel: {},
     },
     paginacao: {
       tokenPaginacao: '',
@@ -141,10 +141,13 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.variaveisFilhasPorMae[variavelId] = false;
     },
 
+    // indexado por variável para que uma resposta atrasada (ex.: navegação de
+    // uma variável para a mãe/filha antes do fim da busca) não sobrescreva os
+    // dados nem o estado de carregamento de outra variável
     async buscarRelacionamentos(variavelId: number, params = {}): Promise<void> {
-      this.chamadasPendentes.relacionamentos = true;
-      this.erros.relacionamentos = null;
-      this.relacionamentos = null;
+      this.chamadasPendentes.relacionamentosPorVariavel[variavelId] = true;
+      this.erros.relacionamentosPorVariavel[variavelId] = null;
+      this.relacionamentosPorVariavel[variavelId] = null;
 
       try {
         const resposta = await this.requestS.get(
@@ -152,11 +155,17 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
           params,
         ) as VariavelGlobalRelacionamentoDto;
 
-        this.relacionamentos = resposta;
+        this.relacionamentosPorVariavel[variavelId] = resposta;
       } catch (erro: unknown) {
-        this.erros.relacionamentos = erro;
+        this.erros.relacionamentosPorVariavel[variavelId] = erro;
       }
-      this.chamadasPendentes.relacionamentos = false;
+      this.chamadasPendentes.relacionamentosPorVariavel[variavelId] = false;
+    },
+
+    limparRelacionamentos(variavelId: number): void {
+      delete this.relacionamentosPorVariavel[variavelId];
+      delete this.chamadasPendentes.relacionamentosPorVariavel[variavelId];
+      delete this.erros.relacionamentosPorVariavel[variavelId];
     },
 
     async buscarTudo(params = {}): Promise<void> {
