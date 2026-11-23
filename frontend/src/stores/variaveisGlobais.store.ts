@@ -497,7 +497,8 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         return acc;
       }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
 
-    // sem Object.groupBy: o plugin-legacy não aplica polyfill no bundle moderno (Chrome < 117, Safari < 17.4)
+    // sem Object.groupBy: o plugin-legacy não aplica polyfill no bundle moderno
+    // (Chrome < 117, Safari < 17.4)
     metasSimplificadasPorPlano: ({ metasSimplificadas }) => metasSimplificadas
       .reduce((acc, cur) => {
         if (!acc[cur.pdm_id]) acc[cur.pdm_id] = [];
