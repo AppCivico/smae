@@ -37,7 +37,7 @@ import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
 import { exceptionFactory } from './common/validation/validation-exception-factory';
 import { PrismaModule } from './prisma/prisma.module';
-import { PrismaErrorFilter } from './prisma-error.filter';
+import { PrismaErrorFilter, PrismaInitializationErrorFilter } from './prisma-error.filter';
 import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { RequestLogModule } from './request_log/request_log.module';
 import { SysadminModule } from './sysadmin/sysadmin.module';
@@ -162,6 +162,10 @@ import { AuditLogModule } from './audit-log/audit-log.module';
         {
             provide: APP_FILTER,
             useClass: PrismaErrorFilter,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: PrismaInitializationErrorFilter,
         },
         {
             provide: APP_FILTER,

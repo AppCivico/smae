@@ -5,6 +5,13 @@ import { AuthRequest } from './auth/models/AuthRequest';
 import { respondTriggerHttpError } from './prisma-error-unknown.filter';
 import { getRecentPrismaQueries } from './prisma/prisma-query-context';
 
+const ERROS_CONEXAO = new Set(['P1001', 'P1002', 'P1008', 'P1011', 'P1017']);
+
+const BANCO_INDISPONIVEL = {
+    message: 'Banco de dados temporariamente indisponível',
+    detail: 'Por favor, repita a operação',
+};
+
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaErrorFilter implements ExceptionFilter {
     private logger: Logger = new Logger('Prisma Error');
@@ -36,7 +43,9 @@ export class PrismaErrorFilter implements ExceptionFilter {
         // Recent SQL queries captured for this request (oldest -> newest)
         const recentQueries = getRecentPrismaQueries();
 
-        if (exception.code == 'P2025') {
+        if (ERROS_CONEXAO.has(exception.code)) {
+            response.status(503).json(BANCO_INDISPONIVEL);
+        } else if (exception.code == 'P2025') {
             response.status(404).json(
                 this.convertLog(ehAdmin, {
                     message: `Registro não encontrado na tabela '${model}'`,
@@ -125,5 +134,15 @@ export class PrismaErrorFilter implements ExceptionFilter {
                 code: log.code,
             };
         }
+    }
+}
+
+@Catch(Prisma.PrismaClientInitializationError)
+export class PrismaInitializationErrorFilter implements ExceptionFilter {
+    private logger: Logger = new Logger('Prisma Error');
+
+    catch(exception: Prisma.PrismaClientInitializationError, host: ArgumentsHost) {
+        this.logger.error(exception.message, exception.stack);
+        host.switchToHttp().getResponse<Response>().status(503).json(BANCO_INDISPONIVEL);
     }
 }
