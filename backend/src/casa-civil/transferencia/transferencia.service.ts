@@ -827,10 +827,17 @@ export class TransferenciaService {
 
                 // Atualiza dotacoes da transferência (diff: adiciona novas, remove excluídas)
                 if (dto.dotacoes !== undefined) {
-                    const currDotacoesSet = new Set(self.dotacoes.map((d) => d.dotacao));
+                    // relê: a distribuição inicial criada acima já propaga as dotações para a transferência
+                    const currDotacoes = (
+                        await prismaTxn.transferenciaDotacao.findMany({
+                            where: { transferencia_id: id, removido_em: null },
+                            select: { dotacao: true },
+                        })
+                    ).map((d) => d.dotacao);
+                    const currDotacoesSet = new Set(currDotacoes);
                     const sentDotacoesSet = new Set(dotacoesParaDistribuicao);
                     const novas = dotacoesParaDistribuicao.filter((d) => !currDotacoesSet.has(d));
-                    const removidas = self.dotacoes.map((d) => d.dotacao).filter((d) => !sentDotacoesSet.has(d));
+                    const removidas = currDotacoes.filter((d) => !sentDotacoesSet.has(d));
                     if (novas.length) {
                         await prismaTxn.transferenciaDotacao.createMany({
                             data: novas.map((dotacao) => ({
