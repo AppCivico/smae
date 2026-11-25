@@ -25,8 +25,9 @@ export class PrismaErrorFilter implements ExceptionFilter {
         if (request.user && request.user.hasSomeRoles(['SMAE.superadmin'])) ehAdmin = true;
 
         // Extract model name from the error message
-        const modelMatch = exception.message.match(/Invalid `(\w+)\./) || exception.message.match(/No (\w+) found/);
-        const model = modelMatch ? modelMatch[1] : exception.meta?.modelName || 'unknown';
+        const modelMatch =
+            exception.message.match(/Invalid `(?:\w+\.)?(\w+)\.\w+\(\)`/) || exception.message.match(/No (\w+) found/);
+        const model = exception.meta?.modelName || (modelMatch ? modelMatch[1] : 'unknown');
 
         // Try to extract the where clause from the message
         const whereMatch = exception.message.match(/where:\s*({[^}]+})/);
@@ -54,7 +55,15 @@ export class PrismaErrorFilter implements ExceptionFilter {
                     location: appStackLine.trim(),
                 })
             );
-        } else if (exception.code == 'P2034' || exception.code == 'P2002') {
+        } else if (exception.code == 'P2002') {
+            response.status(409).json(
+                this.convertLog(ehAdmin, {
+                    message: 'Registro duplicado: já existe um registro com estes dados',
+                    detail: `Tabela ${model}, restrição ${this.uniqueTarget(exception)}`,
+                    location: appStackLine.trim(),
+                })
+            );
+        } else if (exception.code == 'P2034') {
             response.status(423).json(
                 this.convertLog(ehAdmin, {
                     message: 'Impasse durante execução das transações no banco de dados ' + exception.code,
@@ -91,6 +100,15 @@ export class PrismaErrorFilter implements ExceptionFilter {
                 2
             )
         );
+    }
+
+    // com driver adapter o alvo vem em meta.driverAdapterError.cause.constraint, não em meta.target
+    private uniqueTarget(exception: Prisma.PrismaClientKnownRequestError): string {
+        const meta = exception.meta as any;
+        const constraint = meta?.driverAdapterError?.cause?.constraint;
+        const target = meta?.target ?? constraint?.index ?? constraint?.fields;
+        if (!target) return 'desconhecida';
+        return Array.isArray(target) ? target.join(', ') : String(target);
     }
 
     private convertLog(ehAdmin: boolean, log: any): any {
