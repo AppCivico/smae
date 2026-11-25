@@ -247,6 +247,21 @@ describe('transferencia', () => {
             assert.equal(Number(inicial.valor_total), 1600);
         });
 
+        it('primeiro completar-registro com dotações grava cada dotação uma vez', async () => {
+            const id = await criarTransferencia(gestor);
+            const dotacoes = ['16.24.10.302.3003.2.873.33903900.00', '16.24.10.302.3003.2.873.44905200.00'];
+            assertStatus(await completarTransferencia(gestor, id, valores, { dotacoes }), 200);
+
+            const banco = await prisma().transferenciaDotacao.findMany({
+                where: { transferencia_id: id, removido_em: null },
+                orderBy: { dotacao: 'asc' },
+            });
+            assert.deepEqual(
+                banco.map((d) => d.dotacao),
+                dotacoes
+            );
+        });
+
         it('distribuição contabilizada trava a redução do custeio da transferência', async () => {
             const id = await criarTransferencia(gestor);
             assertStatus(await completarTransferencia(gestor, id, valores), 200);
