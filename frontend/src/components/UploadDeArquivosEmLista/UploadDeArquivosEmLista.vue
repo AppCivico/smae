@@ -89,6 +89,7 @@ const {
   lista: listaDeTiposDeDocumentos,
   tiposPorId,
   chamadasPendentes: chamadasPendentesDeTipos,
+  erro: erroAoBuscarTipos,
 } = storeToRefs(tiposDeDocumentosStore);
 
 const arquivosNovos = ref<ArquivoNovo[]>([]);
@@ -121,14 +122,28 @@ const tipoDeDocumentoNaoResolvido = computed(() => extensoesDoTipo.value === nul
 const falhaAoResolverTipo = computed(() => tipoDeDocumentoNaoResolvido.value
   && !chamadasPendentesDeTipos.value.lista);
 
+// sem a lista não há o que escolher: vale também quando a escolha de tipo está visível
+const falhaAoCarregarLista = computed(() => exigeTipoDeDocumento.value
+  && !chamadasPendentesDeTipos.value.lista
+  && !listaDeTiposDeDocumentos.value.length
+  && !!erroAoBuscarTipos.value);
+
+const mensagemDeFalhaDosTipos = computed<string | undefined>(() => {
+  if (falhaAoCarregarLista.value) return 'Não foi possível carregar os tipos de documento.';
+  if (tipoDocumentoId.value && falhaAoResolverTipo.value) {
+    return 'Não foi possível carregar o tipo de documento.';
+  }
+  return undefined;
+});
+
 const envioBloqueado = computed(() => exigeTipoDeDocumento.value
   && (!tipoDocumentoId.value || tipoDeDocumentoNaoResolvido.value));
 
 const motivoDoBloqueio = computed<string | undefined>(() => {
   if (!envioBloqueado.value) return undefined;
+  if (mensagemDeFalhaDosTipos.value) return mensagemDeFalhaDosTipos.value;
   if (!tipoDocumentoId.value) return 'Escolha um tipo de documento antes de enviar um arquivo.';
-  if (!falhaAoResolverTipo.value) return 'Carregando o tipo de documento…';
-  return 'Não foi possível carregar o tipo de documento.';
+  return 'Carregando o tipo de documento…';
 });
 
 const extensoesConhecidas = computed<string[]>(() => extensoesDoTipo.value ?? []);
@@ -417,10 +432,10 @@ defineExpose({
     </slot>
 
     <p
-      v-if="tipoDocumentoId && falhaAoResolverTipo"
+      v-if="mensagemDeFalhaDosTipos"
       class="upload-erro"
     >
-      Não foi possível carregar o tipo de documento.
+      {{ mensagemDeFalhaDosTipos }}
       <button
         type="button"
         class="like-a__text"

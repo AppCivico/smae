@@ -23,6 +23,7 @@ vi.mock('@/composables/useUpload', () => ({
 type EstadoDosTipos = {
   lista?: { id: number; titulo: string; extensoes: string | null }[];
   pendente?: boolean;
+  erro?: unknown;
 };
 
 function montar(props: Record<string, unknown>, estado: EstadoDosTipos = {}) {
@@ -32,6 +33,7 @@ function montar(props: Record<string, unknown>, estado: EstadoDosTipos = {}) {
       tiposDeDocumentos: {
         lista: estado.lista ?? [],
         chamadasPendentes: { lista: estado.pendente ?? false, emFoco: false },
+        erro: estado.erro ?? null,
       },
     },
   });
@@ -140,6 +142,38 @@ describe('UploadDeArquivosEmLista com tipo DOCUMENTO', () => {
 
     await escolherArquivo(envelope, 'qualquer.xyz');
     expect(uploadArquivo).toHaveBeenCalledTimes(1);
+  });
+
+  it('exibe a falha e permite tentar de novo também com a escolha de tipo visível', async () => {
+    const { envelope, store } = montar(
+      { tipo: 'DOCUMENTO' },
+      { erro: new Error('Erro de comunicação do servidor.') },
+    );
+    vi.mocked(store.buscarTudo).mockClear();
+
+    expect(envelope.find('select').exists()).toBe(true);
+    expect(envelope.find('.upload-erro').text())
+      .toContain('Não foi possível carregar os tipos de documento.');
+    expect(botaoDeAdicionar(envelope).attributes('disabled')).toBeDefined();
+    expect(botaoDeAdicionar(envelope).attributes('title'))
+      .toBe('Não foi possível carregar os tipos de documento.');
+
+    const tentarDeNovo = envelope.findAll('button').find((b) => b.text() === 'Tentar novamente');
+    if (!tentarDeNovo) throw new Error('Botão "Tentar novamente" ausente');
+    await tentarDeNovo.trigger('click');
+    expect(store.buscarTudo).toHaveBeenCalledTimes(1);
+  });
+
+  it('não exibe falha enquanto a lista carrega nem depois de carregar', async () => {
+    const pendente = montar({ tipo: 'DOCUMENTO' }, { pendente: true });
+    expect(pendente.envelope.find('.upload-erro').exists()).toBe(false);
+    pendente.envelope.unmount();
+
+    const carregada = montar(
+      { tipo: 'DOCUMENTO' },
+      { lista: [{ id: 3, titulo: 'Ata', extensoes: 'docx' }] },
+    );
+    expect(carregada.envelope.find('.upload-erro').exists()).toBe(false);
   });
 
   it('exige a escolha do tipo quando ele não vem por prop', async () => {
