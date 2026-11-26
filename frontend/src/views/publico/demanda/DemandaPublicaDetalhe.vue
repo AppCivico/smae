@@ -106,6 +106,29 @@ const dadosDemanda = computed(() => {
   return dados;
 });
 
+const EXTENSOES_DE_IMAGEM = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'avif']);
+
+function extensaoDoArquivo(arquivoItem) {
+  const partes = (arquivoItem.arquivo?.nome_original || '').toLowerCase().split('.');
+  return partes.length > 1 ? partes.pop() : '';
+}
+
+// O DTO público não expõe o `mime_type` do original; mas imagens recebem
+// prévia do tipo `redimensionamento` e as demais são convertidas para PDF.
+function ehImagem(arquivoItem) {
+  const { preview } = arquivoItem.arquivo || {};
+
+  if (preview?.tipo) {
+    return preview.tipo === 'redimensionamento';
+  }
+
+  return EXTENSOES_DE_IMAGEM.has(extensaoDoArquivo(arquivoItem));
+}
+
+function urlDoArquivo(arquivoItem) {
+  return `${baseUrl}/publico/arquivos/${arquivoItem.arquivo.download_token}?inline=true`;
+}
+
 function urlImagem(arquivoItem) {
   const { arquivo } = arquivoItem;
 
@@ -113,8 +136,39 @@ function urlImagem(arquivoItem) {
     ? arquivo.preview.download_token
     : arquivo.download_token;
 
-  return `${baseUrl}/publico/arquivos/${token}`;
+  return `${baseUrl}/publico/arquivos/${token}?inline=true`;
 }
+
+function formatarTamanho(bytes) {
+  if (!bytes) return '';
+
+  const unidades = ['byte', 'kilobyte', 'megabyte', 'gigabyte'];
+  const indice = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), unidades.length - 1);
+
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'unit',
+    unit: unidades[indice],
+    unitDisplay: 'short',
+    maximumFractionDigits: indice > 1 ? 1 : 0,
+  }).format(bytes / 1024 ** indice);
+}
+
+const arquivosSeparados = computed(() => {
+  const imagens = [];
+  const documentos = [];
+
+  (demanda.value?.arquivos || []).forEach((arquivoItem) => {
+    if (!arquivoItem.arquivo?.download_token) return;
+
+    if (ehImagem(arquivoItem)) {
+      imagens.push(arquivoItem);
+    } else {
+      documentos.push(arquivoItem);
+    }
+  });
+
+  return { imagens, documentos };
+});
 
 async function buscarDemanda() {
   chamadasPendentes.value.emFoco = true;
@@ -280,22 +334,72 @@ watch(() => props.id, () => {
 
     <div class="flex column g2">
       <section
-        v-if="demanda.arquivos?.length"
+        v-if="arquivosSeparados.imagens.length"
         class="demanda-publica__secao"
       >
         <div class="demanda-publica__galeria">
-          <div
-            v-for="arquivo in demanda.arquivos"
+          <a
+            v-for="arquivo in arquivosSeparados.imagens"
             :key="arquivo.id"
+            :href="urlDoArquivo(arquivo)"
+            target="_blank"
+            rel="noopener"
             class="demanda-publica__imagem-container"
           >
             <img
               :src="urlImagem(arquivo)"
               :alt="arquivo.descricao || 'Imagem da demanda'"
               class="demanda-publica__imagem"
+              loading="lazy"
             >
-          </div>
+          </a>
         </div>
+      </section>
+
+      <section
+        v-if="arquivosSeparados.documentos.length"
+        class="demanda-publica__secao"
+      >
+        <ul class="demanda-publica__documentos">
+          <li
+            v-for="arquivo in arquivosSeparados.documentos"
+            :key="arquivo.id"
+          >
+            <a
+              :href="urlDoArquivo(arquivo)"
+              :download="arquivo.arquivo.nome_original"
+              target="_blank"
+              rel="noopener"
+              class="demanda-publica__documento"
+            >
+              <svg
+                width="24"
+                height="24"
+                aria-hidden="true"
+              ><use xlink:href="#i_document" /></svg>
+
+              <span class="demanda-publica__documento-texto">
+                <span class="demanda-publica__documento-nome">
+                  {{ arquivo.descricao || arquivo.arquivo.nome_original }}
+                </span>
+                <small class="demanda-publica__documento-detalhes">
+                  <template v-if="extensaoDoArquivo(arquivo)">
+                    {{ extensaoDoArquivo(arquivo).toUpperCase() }}
+                  </template>
+                  <template v-if="arquivo.arquivo.tamanho_bytes">
+                    · {{ formatarTamanho(arquivo.arquivo.tamanho_bytes) }}
+                  </template>
+                </small>
+              </span>
+
+              <svg
+                width="20"
+                height="20"
+                aria-hidden="true"
+              ><use xlink:href="#i_download" /></svg>
+            </a>
+          </li>
+        </ul>
       </section>
 
       <section
@@ -355,6 +459,51 @@ watch(() => props.id, () => {
   object-fit: cover;
   .br(16px);
   .bs(0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.demanda-publica__documentos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demanda-publica__documento {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 1rem;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid @c100;
+  .br(16px);
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: @amarelo;
+  }
+}
+
+.demanda-publica__documento-texto {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.demanda-publica__documento-nome {
+  overflow-wrap: anywhere;
+}
+
+.demanda-publica__documento-detalhes {
+  color: @c500;
 }
 
 .erro-demanda {
