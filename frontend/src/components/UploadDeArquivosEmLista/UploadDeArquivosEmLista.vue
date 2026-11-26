@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { TipoUpload } from '@back/upload/entities/tipo-upload';
+import { storeToRefs } from 'pinia';
 import {
   computed, ref, useTemplateRef, watch,
 } from 'vue';
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import { useUpload } from '@/composables/useUpload';
+import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 interface ArquivoBase {
   id: number;
@@ -31,6 +33,11 @@ type FnExcluir = (id: number) => Promise<void> | void;
 type Props = {
   arquivosExistentes?: ArquivoExistente[];
   tipo?: TipoUpload;
+  /**
+   * Tipo de documento usado em todos os envios quando `tipo` é `DOCUMENTO`.
+   * Se ausente, o componente exibe uma lista para a pessoa escolher.
+   */
+  tipoDocumentoId?: number;
   accept?: string;
   label?: string;
   required?: boolean;
@@ -48,6 +55,7 @@ type ArquivoNaLista =
 const props = withDefaults(defineProps<Props>(), {
   arquivosExistentes: () => [],
   tipo: undefined,
+  tipoDocumentoId: undefined,
   accept: undefined,
   label: 'Adicionar arquivo',
   id: 'upload-arquivos',
@@ -70,8 +78,24 @@ const {
   erro,
 } = useUpload();
 
+const tiposDeDocumentosStore = useTiposDeDocumentosStore();
+const {
+  lista: listaDeTiposDeDocumentos,
+  chamadasPendentes: chamadasPendentesDeTipos,
+} = storeToRefs(tiposDeDocumentosStore);
+
 const arquivosNovos = ref<ArquivoNovo[]>([]);
 const inputRef = useTemplateRef('inputRef');
+const tipoDocumentoEscolhido = ref<number | ''>('');
+
+// `fnAdicionar` faz o próprio envio; só aí o tipo de documento não é responsabilidade nossa
+const exigeTipoDeDocumento = computed(() => props.tipo === 'DOCUMENTO' && !props.fnAdicionar);
+const exibirEscolhaDeTipo = computed(() => exigeTipoDeDocumento.value && !props.tipoDocumentoId);
+
+const tipoDocumentoId = computed<number | undefined>(() => props.tipoDocumentoId
+  || (tipoDocumentoEscolhido.value || undefined));
+
+const envioBloqueado = computed(() => exigeTipoDeDocumento.value && !tipoDocumentoId.value);
 
 const listaUnificada = computed<ArquivoNaLista[]>(() => {
   const existentes: ArquivoNaLista[] = props.arquivosExistentes.map((arq) => ({
@@ -111,7 +135,7 @@ async function obterToken(file: File): Promise<string> {
   }
 
   if (props.tipo) {
-    return uploadArquivo(file, props.tipo);
+    return uploadArquivo(file, props.tipo, { tipoDocumentoId: tipoDocumentoId.value });
   }
 
   throw new Error('É necessário fornecer "tipo" ou "fnAdicionar"');
@@ -177,12 +201,19 @@ function limpar() {
 }
 
 function abrirSeletorDeArquivos() {
+  if (envioBloqueado.value) return;
   inputRef.value?.click();
 }
 
 watch(() => props.arquivosExistentes, () => {
   emitirTokens();
 }, { deep: true });
+
+watch(exibirEscolhaDeTipo, (exibir) => {
+  if (exibir && !listaDeTiposDeDocumentos.value.length && !chamadasPendentesDeTipos.value.lista) {
+    tiposDeDocumentosStore.buscarTudo();
+  }
+}, { immediate: true });
 
 defineExpose({
   tokensDeUpload: computed(() => arquivosNovos.value.map((a) => a.upload_token)),
@@ -249,6 +280,36 @@ defineExpose({
       </li>
     </ul>
 
+    <div
+      v-if="exibirEscolhaDeTipo"
+      class="mb1"
+    >
+      <label
+        class="label"
+        :for="`${id}-tipo-documento`"
+      >
+        Tipo de documento <span class="tvermelho">*</span>
+      </label>
+      <select
+        :id="`${id}-tipo-documento`"
+        v-model.number="tipoDocumentoEscolhido"
+        class="inputtext light"
+        :class="{ loading: chamadasPendentesDeTipos.lista }"
+        :disabled="carregando || chamadasPendentesDeTipos.lista"
+      >
+        <option value="">
+          Selecione
+        </option>
+        <option
+          v-for="tipoDeDocumento in listaDeTiposDeDocumentos"
+          :key="tipoDeDocumento.id"
+          :value="tipoDeDocumento.id"
+        >
+          {{ tipoDeDocumento.titulo }}
+        </option>
+      </select>
+    </div>
+
     <input
       :id="`${id}-input`"
       ref="inputRef"
@@ -256,7 +317,7 @@ defineExpose({
       :name="name"
       :accept="accept"
       :required="required && listaUnificada.length === 0"
-      :disabled="carregando"
+      :disabled="carregando || envioBloqueado"
       class="upload-input"
       @change="handleFileChange"
     >
@@ -274,7 +335,10 @@ defineExpose({
       <button
         class="like-a__text addlink"
         type="button"
-        :disabled="carregando"
+        :disabled="carregando || envioBloqueado"
+        :title="envioBloqueado
+          ? 'Escolha um tipo de documento antes de enviar um arquivo.'
+          : undefined"
         @click="abrirSeletorDeArquivos"
       >
         <svg

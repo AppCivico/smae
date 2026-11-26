@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
   nextTick,
@@ -11,6 +12,7 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { useUpload } from '@/composables/useUpload';
 import dateToDate from '@/helpers/dateToDate';
+import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 import schema from './formularioArquivo';
 
@@ -52,6 +54,12 @@ const {
   validationSchema: schema,
 });
 
+const tiposDeDocumentosStore = useTiposDeDocumentosStore();
+const {
+  lista: listaDeTiposDeDocumentos,
+  chamadasPendentes: chamadasPendentesDeTipos,
+} = storeToRefs(tiposDeDocumentosStore);
+
 const emit = defineEmits<Emits>();
 const props = withDefaults(
   defineProps<Props>(),
@@ -78,10 +86,14 @@ const {
 function abrirModal() {
   modoEdicaoMetadados.value = false;
   itemEmEdicao.value = null;
-  resetForm({ values: { autoriza_divulgacao: false } });
+  resetForm({ values: { autoriza_divulgacao: false, tipo_documento_id: null } });
   arquivoSelecionado.value = null;
   nomeArquivoSelecionado.value = '';
   exibirModal.value = true;
+
+  if (!listaDeTiposDeDocumentos.value.length && !chamadasPendentesDeTipos.value.lista) {
+    tiposDeDocumentosStore.buscarTudo();
+  }
 }
 
 function fecharModal() {
@@ -139,7 +151,9 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     const file = values.arquivo as File;
     let token;
     if (alterouArquivo.value) {
-      token = await uploadArquivo(file, 'DOCUMENTO');
+      token = await uploadArquivo(file, 'DOCUMENTO', {
+        tipoDocumentoId: values.tipo_documento_id,
+      });
     }
 
     if (values.id) {
@@ -267,6 +281,40 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         <ErrorMessage
           class="error-msg mb1"
           name="autoriza_divulgacao"
+        />
+      </div>
+
+      <div
+        v-if="!modoEdicaoMetadados"
+        class="mb1"
+      >
+        <SmaeLabel
+          name="tipo_documento_id"
+          :schema="schema"
+          required
+        />
+
+        <Field
+          name="tipo_documento_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ error: errors.tipo_documento_id, loading: chamadasPendentesDeTipos.lista }"
+          :disabled="chamadasPendentesDeTipos.lista"
+        >
+          <option value="">
+            Selecione
+          </option>
+          <option
+            v-for="tipoDeDocumento in listaDeTiposDeDocumentos"
+            :key="tipoDeDocumento.id"
+            :value="tipoDeDocumento.id"
+          >
+            {{ tipoDeDocumento.titulo }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="tipo_documento_id"
         />
       </div>
 

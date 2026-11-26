@@ -35,7 +35,7 @@ const title = 'Adicionar arquivo';
 
 const schema = Yup.object().shape({
   descricao: Yup.string().required('Preencha a descrição'),
-  tipo_documento_id: Yup.string().nullable(),
+  tipo_documento_id: Yup.string().required('Escolha um tipo de documento'),
   arquivo: Yup.string().required('Selecione um arquivo'),
 });
 
