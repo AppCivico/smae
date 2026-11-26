@@ -439,6 +439,38 @@
   }
 }
 
+// Painel flutuante dos menus suspensos (`.dropbtn`): fica oculto, abaixo e
+// centralizado em relação ao gatilho, com borda e seta amarelas no topo.
+// Quem o usa decide quando exibi-lo (`display: block`).
+.menu-flutuante() {
+  position: absolute;
+  top: 100%;
+  right: 50%;
+  transform: translateX(50%);
+  width: max-content;
+  max-width: 200px;
+  background: white;
+  border-top: 4px solid @amarelo;
+  border-radius: .5rem;
+  padding: 1rem;
+  display: none;
+  animation: fadeIn .5s;
+  z-index: 99;
+  .bs(0px 8px 16px rgba(21, 39, 65, 0.1));
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    margin: -0.5rem;
+    border: .5rem solid transparent;
+    border-top-color: @amarelo;
+    border-left-color: @amarelo;
+    transform: rotate(45deg);
+  }
+}
+
 .vertical-numerada__lista() {
   counter-reset: item;
   position: relative;
