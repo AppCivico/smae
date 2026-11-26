@@ -9,11 +9,29 @@ interface UploadResponse {
   upload_token: string;
 }
 
+export interface OpcoesDeUpload {
+  /** Obrigatório quando `tipo` é `DOCUMENTO`: o backend rejeita o envio sem ele. */
+  tipoDocumentoId?: number | null;
+}
+
 export function useUpload() {
   const carregando = ref(false);
   const erro = ref<unknown>(null);
 
-  async function uploadArquivo(file: File, tipo: TipoUpload): Promise<string> {
+  async function uploadArquivo(
+    file: File,
+    tipo: TipoUpload,
+    opcoes: OpcoesDeUpload = {},
+  ): Promise<string> {
+    const { tipoDocumentoId } = opcoes;
+    const tipoDocumentoValido = Number(tipoDocumentoId) > 0;
+
+    if (tipo === 'DOCUMENTO' && !tipoDocumentoValido) {
+      const erroTipo = new Error('Escolha um tipo de documento antes de enviar o arquivo.');
+      erro.value = erroTipo;
+      throw erroTipo;
+    }
+
     const authStore = useAuthStore();
     const tamanhoMaximo = authStore.user?.max_upload_size;
 
@@ -30,6 +48,9 @@ export function useUpload() {
 
       const formData = new FormData();
       formData.append('tipo', tipo);
+      if (tipoDocumentoId) {
+        formData.append('tipo_documento_id', String(tipoDocumentoId));
+      }
       formData.append('arquivo', file);
 
       const resposta = await requestS.upload(
