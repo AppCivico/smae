@@ -351,7 +351,8 @@ watch(() => props.id, () => {
           >
             <img
               :src="urlImagem(arquivo)"
-              :alt="arquivo.descricao || 'Imagem da demanda'"
+              :alt="arquivo.descricao
+                || `Descrição de \`${arquivo.arquivo.nome_original}\` não fornecida`"
               class="demanda-publica__imagem"
               loading="lazy"
             >
