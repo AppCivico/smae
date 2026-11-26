@@ -1,17 +1,25 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { reactive } from 'vue';
+import {
+  computed, reactive, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
+import {
+  arquivoTemExtensaoPermitida,
+  extensoesComoTexto,
+  extensoesParaAccept,
+  listarExtensoes,
+} from '@/helpers/extensoesDeArquivo';
 import requestS from '@/helpers/requestS.ts';
 import { router } from '@/router';
 import {
   useAlertStore,
-  useDocumentTypesStore,
   useEditModalStore, usePdMStore,
 } from '@/stores';
+import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -22,10 +30,20 @@ const { pdm_id } = route.params;
 
 const props = defineProps(['props']);
 
-const documentTypesStore = useDocumentTypesStore();
-const { tempDocumentTypes } = storeToRefs(documentTypesStore);
-documentTypesStore.clear();
-documentTypesStore.filterDocumentTypes();
+const tiposDeDocumentosStore = useTiposDeDocumentosStore();
+const {
+  lista: listaDeTiposDeDocumentos,
+  tiposPorId,
+  chamadasPendentes: chamadasPendentesDeTipos,
+} = storeToRefs(tiposDeDocumentosStore);
+tiposDeDocumentosStore.buscarTudo();
+
+const tipoDocumentoId = ref('');
+const erroDeArquivo = ref('');
+
+const extensoesPermitidas = computed(() => (tipoDocumentoId.value
+  ? listarExtensoes(tiposPorId.value[tipoDocumentoId.value]?.extensoes)
+  : []));
 
 const PdMStore = usePdMStore();
 const { singlePdm } = storeToRefs(PdMStore);
@@ -85,11 +103,45 @@ async function checkClose() {
     alertStore.clear();
   });
 }
+function removerArquivo() {
+  curfile.name = '';
+  curfile.file = undefined;
+}
+
+function mensagemDeExtensaoInvalida(nomeDoArquivo) {
+  return `"${nomeDoArquivo}" não é aceito para este tipo de documento. `
+    + `Extensões permitidas: ${extensoesComoTexto(extensoesPermitidas.value)}.`;
+}
+
 function addFile(e) {
   const { files } = e.target;
-  curfile.name = files[0].name;
-  curfile.file = files[0];
+  const [arquivo] = files;
+  e.target.value = '';
+
+  if (!arquivo) return;
+
+  // `accept` só sugere ao seletor do sistema; a pessoa ainda pode escolher "Todos os arquivos"
+  if (!arquivoTemExtensaoPermitida(arquivo.name, extensoesPermitidas.value)) {
+    removerArquivo();
+    erroDeArquivo.value = mensagemDeExtensaoInvalida(arquivo.name);
+    return;
+  }
+
+  erroDeArquivo.value = '';
+  curfile.name = arquivo.name;
+  curfile.file = arquivo;
 }
+
+// trocar o tipo depois de escolher o arquivo pode torná-lo inválido
+watch(extensoesPermitidas, () => {
+  if (!curfile.file || arquivoTemExtensaoPermitida(curfile.file.name, extensoesPermitidas.value)) {
+    erroDeArquivo.value = '';
+    return;
+  }
+
+  erroDeArquivo.value = mensagemDeExtensaoInvalida(curfile.file.name);
+  removerArquivo();
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -127,16 +179,18 @@ function addFile(e) {
         <div class="f1">
           <label class="label">Tipo de Documento <span class="tvermelho">*</span></label>
           <Field
+            v-model="tipoDocumentoId"
             name="tipo_documento_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.tipo_documento_id }"
+            :class="{ 'error': errors.tipo_documento_id, loading: chamadasPendentesDeTipos.lista }"
+            :disabled="chamadasPendentesDeTipos.lista"
           >
             <option value="">
               Selecione
             </option>
             <option
-              v-for="d in tempDocumentTypes"
+              v-for="d in listaDeTiposDeDocumentos"
               :key="d.id"
               :value="d.id"
             >
@@ -157,11 +211,17 @@ function addFile(e) {
             v-if="!curfile.name"
             class="addlink"
             :class="{ 'error': errors.arquivo }"
+            :aria-disabled="!tipoDocumentoId"
+            :style="!tipoDocumentoId ? 'opacity: .5; cursor: not-allowed;' : undefined"
           ><svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg><span>Selecionar arquivo</span><input
+          ><use xlink:href="#i_+" /></svg><span>Selecionar arquivo<template
+            v-if="extensoesPermitidas.length"
+          > ({{ extensoesComoTexto(extensoesPermitidas) }})</template></span><input
             type="file"
+            :accept="extensoesParaAccept(extensoesPermitidas)"
+            :disabled="!tipoDocumentoId"
             :onchange="addFile"
             style="display:none;"
           ></label>
@@ -169,19 +229,27 @@ function addFile(e) {
           <div v-else-if="curfile.name">
             <span>{{ curfile?.name?.slice(0, 30) }}</span> <a
               class="addlink"
-              @click="curfile.name = ''"
+              @click="removerArquivo"
             ><svg
               width="20"
               height="20"
             ><use xlink:href="#i_remove" /></svg></a>
           </div>
+
+          <p
+            v-if="!tipoDocumentoId && !curfile.name"
+            class="t12 tc500 mt05"
+          >
+            Escolha um tipo de documento antes de selecionar o arquivo.
+          </p>
+
           <Field
             v-model="curfile.file"
             name="arquivo"
             type="hidden"
           />
           <div class="error-msg">
-            {{ errors.arquivo }}
+            {{ erroDeArquivo || errors.arquivo }}
           </div>
         </div>
       </div>

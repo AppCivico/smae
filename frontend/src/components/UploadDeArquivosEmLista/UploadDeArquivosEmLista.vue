@@ -7,6 +7,12 @@ import {
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import { useUpload } from '@/composables/useUpload';
+import {
+  arquivoTemExtensaoPermitida,
+  extensoesComoTexto,
+  extensoesParaAccept,
+  listarExtensoes,
+} from '@/helpers/extensoesDeArquivo';
 import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 interface ArquivoBase {
@@ -81,6 +87,7 @@ const {
 const tiposDeDocumentosStore = useTiposDeDocumentosStore();
 const {
   lista: listaDeTiposDeDocumentos,
+  tiposPorId,
   chamadasPendentes: chamadasPendentesDeTipos,
 } = storeToRefs(tiposDeDocumentosStore);
 
@@ -96,6 +103,17 @@ const tipoDocumentoId = computed<number | undefined>(() => props.tipoDocumentoId
   || (tipoDocumentoEscolhido.value || undefined));
 
 const envioBloqueado = computed(() => exigeTipoDeDocumento.value && !tipoDocumentoId.value);
+
+// extensões do tipo de documento escolhido; vazio quando não se aplica
+// ou quando o tipo aceita qualquer extensão
+const extensoesDoTipo = computed<string[]>(() => {
+  if (!exigeTipoDeDocumento.value || !tipoDocumentoId.value) return [];
+
+  return listarExtensoes(tiposPorId.value[tipoDocumentoId.value]?.extensoes);
+});
+
+const extensoesAceitas = computed<string | undefined>(() => props.accept
+  || extensoesParaAccept(extensoesDoTipo.value));
 
 const listaUnificada = computed<ArquivoNaLista[]>(() => {
   const existentes: ArquivoNaLista[] = props.arquivosExistentes.map((arq) => ({
@@ -146,6 +164,14 @@ async function handleFileChange(event: Event) {
   const file = input.files?.[0];
 
   if (!file) return;
+
+  // `accept` só sugere ao seletor do sistema; a pessoa ainda pode escolher "Todos os arquivos"
+  if (!arquivoTemExtensaoPermitida(file.name, extensoesDoTipo.value)) {
+    erro.value = new Error(`"${file.name}" não é aceito para este tipo de documento. `
+      + `Extensões permitidas: ${extensoesComoTexto(extensoesDoTipo.value)}.`);
+    input.value = '';
+    return;
+  }
 
   try {
     const token = await obterToken(file);
@@ -315,7 +341,7 @@ defineExpose({
       ref="inputRef"
       type="file"
       :name="name"
-      :accept="accept"
+      :accept="extensoesAceitas"
       :required="required && listaUnificada.length === 0"
       :disabled="carregando || envioBloqueado"
       class="upload-input"
@@ -348,7 +374,9 @@ defineExpose({
           <use xlink:href="#i_+" />
         </svg>
 
-        {{ $props.label }}
+        {{ $props.label }}<template v-if="extensoesDoTipo.length">
+          ({{ extensoesComoTexto(extensoesDoTipo) }})
+        </template>
       </button>
     </slot>
 
