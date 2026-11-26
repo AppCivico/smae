@@ -66,7 +66,7 @@ const valoresIniciais = computed(() => ({
 
 const listaDeAcumuladosIniciais = computed(() => (ehAcumulativa.value
   ? seriesFilhas.value?.[`${props.tipoDeValor}Acumulado`]
-    .map((item) => Number(item.valor) || 0)
+    ?.map((item) => Number(item.valor) || 0) || []
   : []
 ));
 
@@ -103,14 +103,17 @@ const tituloIntroducao = (() => {
   }
 })();
 
+function somar(valores: unknown[] = []): number {
+  const total = valores.reduce<number>((acc, cur) => acc + (Number(cur) || 0), 0);
+  const casasDecimais = seriesAgrupadas.value?.variavel?.casas_decimais ?? 0;
+
+  // evita resíduo de ponto flutuante, ex.: 0.1 + 0.2
+  return Number(total.toFixed(Math.min(Math.max(casasDecimais, 0), 20)));
+}
+
 const soma = computed(() => ({
-  fornecidos: cargaControlada?.value?.valores?.reduce(
-    (acc, cur) => acc
-  + (Number(cur.valor) || 0),
-    0,
-  ),
-  // TODO: calcular corretamente o acumulado
-  acumulados: 0,
+  fornecidos: somar(cargaControlada?.value?.valores?.map((item) => item.valor)),
+  acumulados: somar(acumuladosEmEdicao.value),
 }));
 
 const onSubmit = handleSubmit(async () => {
