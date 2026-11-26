@@ -330,7 +330,10 @@ watch(() => props.id, () => {
     v-else-if="demanda"
     class="demanda-publica"
   >
-    <SmaeDescriptionList :lista="dadosDemanda" />
+    <SmaeDescriptionList
+      :lista="dadosDemanda"
+      class="mb2"
+    />
 
     <div class="flex column g2">
       <section
