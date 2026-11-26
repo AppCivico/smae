@@ -103,17 +103,24 @@ const tituloIntroducao = (() => {
   }
 })();
 
+const casasDecimaisDaSoma = computed(() => Math.min(20, Math.max(
+  0,
+  seriesAgrupadas.value?.variavel?.casas_decimais ?? 0,
+  ...(seriesAgrupadas.value?.variavel_filhas || []).map((v) => v.casas_decimais ?? 0),
+)));
+
 function somar(valores: unknown[] = []): number {
   const total = valores.reduce<number>((acc, cur) => acc + (Number(cur) || 0), 0);
-  const casasDecimais = seriesAgrupadas.value?.variavel?.casas_decimais ?? 0;
 
   // evita resíduo de ponto flutuante, ex.: 0.1 + 0.2
-  return Number(total.toFixed(Math.min(Math.max(casasDecimais, 0), 20)));
+  return Number(total.toFixed(casasDecimaisDaSoma.value));
 }
 
 const soma = computed(() => ({
   fornecidos: somar(cargaControlada?.value?.valores?.map((item) => item.valor)),
-  acumulados: somar(acumuladosEmEdicao.value),
+  // filha não acumulativa exibe "-" na coluna, então fica fora do total
+  acumulados: somar(acumuladosEmEdicao.value
+    .filter((_, i) => seriesFilhas.value?.[props.tipoDeValor]?.[i]?.variavel?.acumulativa)),
 }));
 
 const onSubmit = handleSubmit(async () => {
