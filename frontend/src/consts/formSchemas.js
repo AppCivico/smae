@@ -1428,9 +1428,6 @@ export const planoSetorial = object({
   monitoramento_orcamento: boolean()
     .label('Monitoramento de orçamento')
     .nullable(),
-  monitoramento_por_blocos: boolean()
-    .label('Monitoramento por blocos')
-    .nullable(),
   nivel_orcamento: mixed()
     .label('Nível de controle orçamentário')
     // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora

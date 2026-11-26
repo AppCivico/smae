@@ -75,3 +75,9 @@ export class FilterMonitCicloDto {
     @Transform(NumberTransform)
     meta_id: number;
 }
+
+export class ReaberturaDto {
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    meta_id: number;
+}

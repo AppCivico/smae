@@ -91,14 +91,13 @@ EXECUTE FUNCTION f_pdm_perfil_refresh_meta_trigger();
 
 DROP TRIGGER IF EXISTS trg_refresh_meta_pdm ON pdm;
 CREATE TRIGGER trg_refresh_meta_pdm
-AFTER UPDATE OF ativo, monitoramento_orcamento, data_inicio, data_fim, monitoramento_por_blocos ON pdm
+AFTER UPDATE OF ativo, monitoramento_orcamento, data_inicio, data_fim ON pdm
 FOR EACH ROW
 WHEN (
     OLD.ativo IS DISTINCT FROM NEW.ativo
     OR OLD.monitoramento_orcamento IS DISTINCT FROM NEW.monitoramento_orcamento
     OR OLD.data_inicio IS DISTINCT FROM NEW.data_inicio
     OR OLD.data_fim IS DISTINCT FROM NEW.data_fim
-    OR OLD.monitoramento_por_blocos IS DISTINCT FROM NEW.monitoramento_por_blocos
 )
 EXECUTE FUNCTION f_pdm_refresh_meta_trigger();
 
@@ -111,10 +110,8 @@ BEGIN
     FOR v_meta_id IN (
         SELECT m.id
         FROM meta m
-        JOIN pdm p ON p.id = m.pdm_id
         WHERE m.pdm_id = NEW.pdm_id
           AND m.removido_em IS NULL
-          AND p.monitoramento_por_blocos
     ) LOOP
         PERFORM f_add_refresh_meta_task(v_meta_id);
     END LOOP;

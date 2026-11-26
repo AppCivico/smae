@@ -55,7 +55,7 @@ WITH meta_consolidated AS (
         BOOL_OR(CASE WHEN tipo = 'meta' AND ciclo_fisico_id IS NOT NULL THEN fase_risco_preenchida ELSE FALSE END) AS fase_risco_preenchida,
         BOOL_OR(CASE WHEN tipo = 'meta' AND ciclo_fisico_id IS NOT NULL THEN fase_fechamento_preenchida ELSE FALSE END) AS fase_fechamento_preenchida,
         BOOL_OR(ciclo_fisico_id IS NOT NULL) AS has_ciclo_fisico,
-        -- fases configuradas (Pdm.monitoramento_por_blocos), também só da linha da meta
+        -- fases configuradas, também só da linha da meta
         MAX(fase_atual_config_id) FILTER (WHERE tipo = 'meta') AS fase_atual_config_id,
         COALESCE(MAX(fases_preenchidas) FILTER (WHERE tipo = 'meta'), '{}'::int[]) AS fases_preenchidas
     FROM
