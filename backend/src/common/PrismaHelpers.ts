@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { quoteTsQueryLexeme } from './escape-tsquery';
 
 export class PrismaHelpers {
     static async prismaCodigo2IdMap(
@@ -54,10 +55,6 @@ export class PrismaHelpers {
             const trimmedInput = input.trim();
             if (trimmedInput.length === 0) return [];
 
-            const escapeSpecialChars = (text: string) => {
-                return text.replace(/[&|!@()\\[\]{}:*?\-\\]/g, '\\$&');
-            };
-
             const words = trimmedInput
                 .split(splitRegex)
                 .filter((word) => word.length > 0)
@@ -70,7 +67,7 @@ export class PrismaHelpers {
                         // de palavras indexados por f_tsvector_trechos_palavras.
                         return `(${word}:* | qx${word}:*)`;
                     }
-                    return `${escapeSpecialChars(word)}:*`;
+                    return `${quoteTsQueryLexeme(word)}:*`;
                 })
                 .join(' & ');
 

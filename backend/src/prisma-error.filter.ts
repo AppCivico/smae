@@ -12,6 +12,18 @@ const BANCO_INDISPONIVEL = {
     detail: 'Por favor, repita a operação',
 };
 
+const VALOR_INVALIDO = { message: 'Valor inválido na requisição para este campo' };
+
+const ERROS_VALOR_INVALIDO = new Set(['P2000', 'P2006', 'P2007', 'P2020', 'P2023', 'P2033']);
+
+// SQLSTATE classe 22 (data exception: encoding, cast, overflow, LIMIT negativo) vem do input, não de bug nosso.
+export function ehErroDeValorInvalido(exception: Prisma.PrismaClientKnownRequestError): boolean {
+    if (ERROS_VALOR_INVALIDO.has(exception.code)) return true;
+    const meta = exception.meta as any;
+    const sqlState = meta?.driverAdapterError?.cause?.originalCode ?? meta?.driverAdapterError?.cause?.code ?? meta?.code;
+    return /^22/.test(String(sqlState ?? ''));
+}
+
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaErrorFilter implements ExceptionFilter {
     private logger: Logger = new Logger('Prisma Error');
@@ -45,6 +57,8 @@ export class PrismaErrorFilter implements ExceptionFilter {
 
         if (ERROS_CONEXAO.has(exception.code)) {
             response.status(503).json(BANCO_INDISPONIVEL);
+        } else if (ehErroDeValorInvalido(exception)) {
+            response.status(400).json(VALOR_INVALIDO);
         } else if (exception.code == 'P2025') {
             response.status(404).json(
                 this.convertLog(ehAdmin, {
@@ -144,5 +158,16 @@ export class PrismaInitializationErrorFilter implements ExceptionFilter {
     catch(exception: Prisma.PrismaClientInitializationError, host: ArgumentsHost) {
         this.logger.error(exception.message, exception.stack);
         host.switchToHttp().getResponse<Response>().status(503).json(BANCO_INDISPONIVEL);
+    }
+}
+
+// Prisma recusa o valor antes de ir ao banco (int fora do int4, Invalid Date, tipo errado).
+@Catch(Prisma.PrismaClientValidationError)
+export class PrismaValidationErrorFilter implements ExceptionFilter {
+    private logger: Logger = new Logger('Prisma Error');
+
+    catch(exception: Prisma.PrismaClientValidationError, host: ArgumentsHost) {
+        this.logger.error(exception.message, exception.stack);
+        host.switchToHttp().getResponse<Response>().status(400).json(VALOR_INVALIDO);
     }
 }

@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CicloFase } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
@@ -63,11 +63,13 @@ export class PSMFFiltroDashboardQuadroVariaveisDto extends OmitType(PSMFFiltroDa
 export class PSMFFiltroDashboardMetasDto extends PSMFFiltroDashboardQuadroDto {
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     pagina?: number = 1; // Para paginação
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     ipp?: number = 20; // Para paginação
 

@@ -107,6 +107,8 @@ export class UploadService {
             if (!/[^\u0000-\u00ff]/.test(originalname)) {
                 originalname = Buffer.from(originalname, 'latin1').toString('utf8');
             }
+            // eslint-disable-next-line no-control-regex
+            originalname = originalname.replace(/[\u0000-\u001f\u007f]/g, '');
         } else {
             originalname = createUploadDto.descricao ?? 'upload.bin';
         }
@@ -127,7 +129,7 @@ export class UploadService {
             String(user.id),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            originalname.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
+            nomeParaChave(originalname),
         ].join('/');
 
         createUploadDto.tipo_documento_id =
@@ -1111,4 +1113,10 @@ export class UploadService {
             pulados,
         };
     }
+}
+
+// MinIO recusa segmento vazio ou só com pontos ("..") na chave.
+function nomeParaChave(nome: string): string {
+    const limpo = nome.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, '');
+    return limpo === '' || /^\.+$/.test(limpo) ? 'arquivo' : limpo;
 }

@@ -25,6 +25,7 @@ import { AppModuleSupporting } from './app.module.supporting';
 import { AppModuleTasks } from './app.module.tasks';
 import { AppModuleWorkflow } from './app.module.workflow';
 import { AppService } from './app.service';
+import { RejectNulBytesMiddleware } from './common/middleware/reject-nul-bytes.middleware';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { SmaeThrottlerGuard } from './auth/guards/throttler.guard';
@@ -37,7 +38,7 @@ import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
 import { exceptionFactory } from './common/validation/validation-exception-factory';
 import { PrismaModule } from './prisma/prisma.module';
-import { PrismaErrorFilter, PrismaInitializationErrorFilter } from './prisma-error.filter';
+import { PrismaErrorFilter, PrismaInitializationErrorFilter, PrismaValidationErrorFilter } from './prisma-error.filter';
 import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { RequestLogModule } from './request_log/request_log.module';
 import { SysadminModule } from './sysadmin/sysadmin.module';
@@ -169,6 +170,10 @@ import { AuditLogModule } from './audit-log/audit-log.module';
         },
         {
             provide: APP_FILTER,
+            useClass: PrismaValidationErrorFilter,
+        },
+        {
+            provide: APP_FILTER,
             useClass: PrismaErrorFilterUnknown,
         },
         {
@@ -202,7 +207,7 @@ import { AuditLogModule } from './audit-log/audit-log.module';
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(LoggerMiddleware).forRoutes({
+        consumer.apply(RejectNulBytesMiddleware, LoggerMiddleware).forRoutes({
             path: '*',
             method: RequestMethod.ALL,
         });

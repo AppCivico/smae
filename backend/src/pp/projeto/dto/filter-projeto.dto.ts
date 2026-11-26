@@ -11,6 +11,7 @@ import {
     IsOptional,
     IsString,
     MaxLength,
+    Min,
 } from 'class-validator';
 import {
     NumberArrayTransformOrEmpty,
@@ -225,11 +226,13 @@ export class FilterProjetoMDODto extends IntersectionType(CoreFilterProjetoMDODt
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     ipp?: number = 25;
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     pagina?: number = 1;
 }

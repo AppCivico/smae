@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
@@ -26,11 +26,13 @@ export class PainelEstrategicoFilterDto {
 export class PainelEstrategicoListaFilterDto extends PainelEstrategicoFilterDto {
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     ipp?: number = 25;
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     pagina?: number = 1;
 

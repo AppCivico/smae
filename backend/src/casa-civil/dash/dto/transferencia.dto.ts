@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
@@ -141,11 +141,13 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
 export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(FilterDashTransferenciasAnaliseDto) {
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     ipp?: number = 25;
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     pagina?: number = 1;
 
@@ -157,11 +159,13 @@ export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(Fi
 export class FilterDashTransferenciasWorkflowDto extends FilterDashTransferenciasDto {
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     ipp?: number = 25;
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     pagina?: number = 1;
 

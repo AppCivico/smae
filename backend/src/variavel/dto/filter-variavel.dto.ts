@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { AscDescEnum } from '../../pp/projeto/dto/filter-projeto.dto';
@@ -178,11 +178,13 @@ export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto,
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     ipp?: number = 25;
 
     @IsOptional()
     @IsInt()
+    @Min(1)
     @Transform(NumberTransform)
     pagina?: number = 1;
 
