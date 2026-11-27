@@ -1,14 +1,25 @@
 import { NestExpressApplication } from '@nestjs/platform-express';
+import * as compression from 'compression';
 import { Request, Response } from 'express';
 import { join } from 'path';
 import { currentPrismaQuerySeq, prismaQueryAls } from './prisma/prisma-query-context';
 
 const SMAE_HEADERS = 'smae-sistemas';
+
+// octet-stream conta como compressível no mime-db; só JSON (inclui jsonlines+json) e texto
+const COMPRESSIVEL = /^(application\/(json|[\w.-]+\+json)|text\/)/;
+function deveComprimir(req: Request, res: Response): boolean {
+    const type = res.getHeader('Content-Type');
+    return typeof type === 'string' && COMPRESSIVEL.test(type) && compression.filter(req, res);
+}
+
 const winston = require('winston'),
     expressWinston = require('express-winston');
 
 export function configureApp(app: NestExpressApplication, opts: { requestLogger?: boolean } = {}) {
     app.setGlobalPrefix('api');
+
+    app.use(compression({ threshold: 1024, filter: deveComprimir }));
 
     // Forms can carry several MAX_LENGTH_HTML fields at once
     app.useBodyParser('json', { limit: '1mb' });
