@@ -5,6 +5,11 @@ const MapaStatus: Record<string, string> = {
   Encerrado: 'Encerrada',
 };
 
+export const mapaSituacaoEncerramento: Record<string, string> = {
+  Concluido: 'Concluida',
+  Cancelada: 'Cancelada',
+};
+
 export type StatusDemanda = 'Registro' | 'Validacao' | 'Publicado' | 'Encerrado';
 
 export default MapaStatus;

@@ -18,7 +18,8 @@ import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 
-import MapaStatus from './MapaStatus';
+import { diasEntre, formatarDias } from './diasNoStatus';
+import MapaStatus, { mapaSituacaoEncerramento } from './MapaStatus';
 
 const route = useRoute();
 const router = useRouter();
@@ -29,11 +30,6 @@ const statusInicial = (() => {
   return situacao ? `${status}_${situacao}` : String(status);
 });
 const statusSelecionados = ref<string | null>(statusInicial());
-
-const mapaSituacaoEncerramento = {
-  Concluido: 'Concluida',
-  Cancelado: 'Cancelada',
-};
 
 const itemsStatusDemanda = [
   { valor: 'Registro', label: 'Em registro', cor: '#E885BE' },
@@ -51,10 +47,25 @@ const { lista } = storeToRefs(demandasStore);
 const { orgaosComNome: listaOrgaos } = storeToRefs(organsStore);
 const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 
-const opcoesOrgaos = computed(() => listaOrgaos.value.map((o) => ({
-  id: o.id,
-  label: o.nome_completo,
-})));
+const orgaosComDemandas = ref<{ id: number; label: string }[] | null>(null);
+
+const opcoesOrgaos = computed(() => orgaosComDemandas.value
+  ?? listaOrgaos.value.map((o) => ({
+    id: o.id,
+    label: o.nome_completo,
+  })));
+
+async function buscarOrgaosComDemandas() {
+  try {
+    const orgaos = await demandasStore.buscarOrgaosParaDemandas();
+    orgaosComDemandas.value = orgaos.map((o) => ({
+      id: o.id,
+      label: o.sigla ? `${o.sigla} - ${o.descricao}` : o.descricao,
+    }));
+  } catch {
+    await organsStore.getAll();
+  }
+}
 
 const opcoesAreasTematicas = computed(() => (listaAreasTematicas.value as any[]).map((a) => ({
   id: a.id,
@@ -103,7 +114,7 @@ const demandasFiltradas = computed(() => filtrarObjetos(lista.value, route.query
 
 onMounted(() => {
   Promise.all([
-    organsStore.getAll(),
+    buscarOrgaosComDemandas(),
     areasTematicasStore.buscarTudo(),
     buscarTudo(),
   ]).then();
@@ -182,6 +193,11 @@ watch(
       { chave: 'valor', label: 'Valor', formatador: v => dinheiro(v, { style: 'currency' }) },
       { chave: 'localizacao', label: 'Localizacao', formatador: v => truncate(v, 110) },
       { chave: 'status', label: '' },
+      {
+        chave: 'data_status_atual',
+        label: 'Tempo no status',
+        formatador: v => (v ? formatarDias(diasEntre(String(v))) : '-'),
+      },
     ]"
   >
     <template #celula:status="{linha}">

@@ -19,6 +19,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeVaralEtapas, { EtapaDoVaral } from '@/components/SmaeVaralEtapas.vue';
 import { CadastroDemandaSchema } from '@/consts/formSchemas/demanda';
+import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAreasTematicasStore } from '@/stores/areasTematicas.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -26,7 +27,8 @@ import { useDemandasStore } from '@/stores/demandas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useValoresLimitesStore } from '@/stores/valoresLimites.store';
 
-import MapaStatus, { StatusDemanda } from './MapaStatus';
+import { diasEntre, formatarDias } from './diasNoStatus';
+import MapaStatus, { mapaSituacaoEncerramento, StatusDemanda } from './MapaStatus';
 
 type EtapaDoVaralComId = EtapaDoVaral & {
   id: StatusDemanda;
@@ -51,7 +53,15 @@ const { lista: listaAreasTematicas } = storeToRefs(areasTematicasStore);
 const { ativo: valoresLimitesAtivo } = storeToRefs(valoresLimitesStore);
 const {
   itemParaEdicao, geolocalizacaoPorToken, erro,
+  historico, chamadasPendentes, erroHistorico,
 } = storeToRefs(demandasStore);
+
+function rotuloDoStatus(status: string, situacao?: string | null): string {
+  if (status === 'Encerrado' && situacao) {
+    return mapaSituacaoEncerramento[situacao] || situacao;
+  }
+  return MapaStatus[status] || status;
+}
 
 const schema = computed(() => (
   CadastroDemandaSchema({
@@ -245,6 +255,7 @@ onMounted(() => {
 
   if (props.demandaId) {
     demandasStore.buscarItem(props.demandaId);
+    demandasStore.buscarHistorico(props.demandaId);
     return;
   }
 
@@ -322,6 +333,71 @@ watch(itemParaEdicao, (novosValores) => {
       </span>
     </div>
   </div>
+
+  <details
+    v-if="demandaId"
+    class="mb2"
+  >
+    <summary>
+      <h2 class="t16 w700 tc300 mb0">
+        Histórico
+      </h2>
+    </summary>
+
+    <LoadingComponent v-if="chamadasPendentes.historico" />
+
+    <ErrorComponent
+      v-else-if="erroHistorico"
+      :erro="erroHistorico"
+    />
+
+    <table
+      v-else
+      class="tablemain mt1"
+    >
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Status anterior</th>
+          <th>Novo status</th>
+          <th>Tempo no status</th>
+          <th>Motivo</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          v-for="(registro, indice) in historico"
+          :key="registro.id"
+        >
+          <td class="cell--nowrap">
+            {{ dateToField(registro.criado_em) }}
+          </td>
+          <td>{{ registro.criado_por?.nome_exibicao }}</td>
+          <td>
+            {{ registro.status_anterior
+              ? rotuloDoStatus(
+                registro.status_anterior,
+                historico[indice + 1]?.situacao_encerramento,
+              )
+              : '-' }}
+          </td>
+          <td>{{ rotuloDoStatus(registro.status_novo, registro.situacao_encerramento) }}</td>
+          <td class="cell--nowrap">
+            {{ formatarDias(diasEntre(registro.criado_em, historico[indice - 1]?.criado_em)) }}
+          </td>
+          <td>{{ registro.motivo || '-' }}</td>
+        </tr>
+
+        <tr v-if="!historico.length">
+          <td colspan="6">
+            Nenhum registro de histórico.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
 
   <form
     class="flex column g2"

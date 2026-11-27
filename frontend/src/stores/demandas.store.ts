@@ -1,7 +1,10 @@
-import type { DemandaDetailDto, DemandaDto, ListDemandaDto } from '@back/casa-civil/demanda/entities/demanda.entity';
+import type {
+  DemandaDetailDto, DemandaDto, DemandaHistoricoDto, ListDemandaDto,
+} from '@back/casa-civil/demanda/entities/demanda.entity';
 import type { CreateDemandaDto } from '@back/casa-civil/demanda/dto/create-demanda.dto';
 import type { CreateDemandaAcaoDto } from '@back/casa-civil/demanda/acao/dto/acao.dto';
 import type { FilterDemandaDto } from '@back/casa-civil/demanda/dto/filter-demanda.dto';
+import type { OrgaoReduzidoDto } from '@back/orgao/entities/orgao.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -11,6 +14,7 @@ type Lista = DemandaDto[];
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
+  historico: boolean;
 }
 
 interface Paginacao {
@@ -22,8 +26,10 @@ interface Paginacao {
 interface Estado {
   lista: Lista;
   emFoco: DemandaDetailDto | null;
+  historico: DemandaHistoricoDto[];
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
+  erroHistorico: null | unknown;
   paginacao: Paginacao;
 }
 
@@ -31,11 +37,14 @@ export const useDemandasStore = defineStore('demandasStore', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
+    historico: [],
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      historico: false,
     },
     erro: null,
+    erroHistorico: null,
     paginacao: {
       tokenProximaPagina: null,
       temMais: false,
@@ -57,6 +66,27 @@ export const useDemandasStore = defineStore('demandasStore', {
         this.erro = erro;
       }
       this.chamadasPendentes.emFoco = false;
+    },
+
+    async buscarHistorico(id: number): Promise<void> {
+      this.chamadasPendentes.historico = true;
+      this.erroHistorico = null;
+      try {
+        const resposta: DemandaHistoricoDto[] = await this.requestS.get(
+          `${baseUrl}/demanda/${id}/historico`,
+        );
+        this.historico = Array.isArray(resposta) ? resposta : [];
+      } catch (erro: unknown) {
+        this.erroHistorico = erro;
+      }
+      this.chamadasPendentes.historico = false;
+    },
+
+    async buscarOrgaosParaDemandas(): Promise<OrgaoReduzidoDto[]> {
+      const resposta: OrgaoReduzidoDto[] = await this.requestS.get(
+        `${baseUrl}/demanda/orgao-para-demandas`,
+      );
+      return Array.isArray(resposta) ? resposta : [];
     },
 
     async buscarTudo(params: FilterDemandaDto = {}): Promise<void> {
