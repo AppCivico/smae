@@ -1326,6 +1326,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroDemandaConfig.remover',
             'CadastroDemandaConfig.listar',
 
+            'CadastroAreaTematica.listar',
+
             'CadastroDemanda.editar',
             'CadastroDemanda.inserir',
             'CadastroDemanda.remover',
