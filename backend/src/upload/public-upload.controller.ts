@@ -2,6 +2,7 @@ import { Controller, Get, HttpException, Param, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { IsPublic } from '../auth/decorators/is-public.decorator';
+import { headersDeDownload } from './download-headers';
 import { UploadService } from './upload.service';
 
 @ApiTags('Publico - Arquivos')
@@ -17,8 +18,7 @@ export class PublicUploadController {
             const arquivoId = this.uploadService.checkPublicToken(token);
             const arquivo = await this.uploadService.getReadableStreamById(arquivoId);
 
-            res.setHeader('Content-Type', arquivo.mime_type);
-            res.setHeader('Content-Disposition', `inline; filename="${arquivo.nome}"`);
+            res.set(headersDeDownload(arquivo.nome, arquivo.mime_type, true));
             arquivo.stream.pipe(res);
         } catch (error) {
             if (error instanceof HttpException) throw error;

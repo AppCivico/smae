@@ -21,6 +21,7 @@ import { IpAddress } from '../common/decorators/current-ip';
 import { CreateUploadDto } from './dto/create-upload.dto';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { DownloadOptions } from './dto/download-options';
+import { headersDeDownload } from './download-headers';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
 
@@ -56,15 +57,7 @@ export class UploadController {
         try {
             const data = await this.uploadService.getReadableStreamByToken(dlToken);
 
-            if (!filters.inline) {
-                res.set({
-                    'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"',
-                });
-            }
-            res.set({
-                'Content-Type': data.mime_type,
-            });
-
+            res.set(headersDeDownload(data.nome, data.mime_type, !!filters.inline));
             data.stream.pipe(res);
         } catch (err) {
             if (err instanceof HttpException) throw err;
