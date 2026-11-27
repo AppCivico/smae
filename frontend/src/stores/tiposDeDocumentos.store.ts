@@ -35,6 +35,8 @@ export const useTiposDeDocumentosStore = defineStore('tiposDeDocumentos', {
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
+      // sem isso, uma falha anterior continuaria visível após nova busca bem-sucedida
+      this.erro = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/tipo-documento`, params) as ListTipoDocumentoDto;

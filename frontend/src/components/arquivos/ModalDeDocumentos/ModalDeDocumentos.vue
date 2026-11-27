@@ -1,6 +1,8 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
+  computed,
   nextTick,
   ref, useTemplateRef, watch,
 } from 'vue';
@@ -11,6 +13,13 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { useUpload } from '@/composables/useUpload';
 import dateToDate from '@/helpers/dateToDate';
+import {
+  arquivoTemExtensaoPermitida,
+  extensoesComoTexto,
+  extensoesParaAccept,
+  listarExtensoes,
+} from '@/helpers/extensoesDeArquivo';
+import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 import schema from './formularioArquivo';
 
@@ -48,9 +57,24 @@ const {
   handleSubmit,
   resetForm,
   validateField,
+  setFieldError,
+  values: valoresDoFormulario,
 } = useForm({
   validationSchema: schema,
 });
+
+const tiposDeDocumentosStore = useTiposDeDocumentosStore();
+const {
+  lista: listaDeTiposDeDocumentos,
+  tiposPorId,
+  chamadasPendentes: chamadasPendentesDeTipos,
+} = storeToRefs(tiposDeDocumentosStore);
+
+const tipoDocumentoId = computed<number>(() => Number(valoresDoFormulario.tipo_documento_id) || 0);
+
+const extensoesPermitidas = computed<string[]>(() => (tipoDocumentoId.value
+  ? listarExtensoes(tiposPorId.value[tipoDocumentoId.value]?.extensoes)
+  : []));
 
 const emit = defineEmits<Emits>();
 const props = withDefaults(
@@ -78,10 +102,14 @@ const {
 function abrirModal() {
   modoEdicaoMetadados.value = false;
   itemEmEdicao.value = null;
-  resetForm({ values: { autoriza_divulgacao: false } });
+  resetForm({ values: { autoriza_divulgacao: false, tipo_documento_id: null } });
   arquivoSelecionado.value = null;
   nomeArquivoSelecionado.value = '';
   exibirModal.value = true;
+
+  if (!listaDeTiposDeDocumentos.value.length && !chamadasPendentesDeTipos.value.lista) {
+    tiposDeDocumentosStore.buscarTudo();
+  }
 }
 
 function fecharModal() {
@@ -89,7 +117,19 @@ function fecharModal() {
 }
 
 function abrirSeletorDeArquivos() {
+  if (!tipoDocumentoId.value) return;
   inputRef.value?.click();
+}
+
+function limparArquivoSelecionado() {
+  arquivoSelecionado.value = null;
+  nomeArquivoSelecionado.value = '';
+  setFieldValue('arquivo', undefined, false);
+}
+
+function mensagemDeExtensaoInvalida(nomeDoArquivo: string): string {
+  return `"${nomeDoArquivo}" não é aceito para este tipo de documento. `
+    + `Extensões permitidas: ${extensoesComoTexto(extensoesPermitidas.value)}.`;
 }
 
 async function handleEditarMetadados(linha: ArquivoDocumento) {
@@ -115,10 +155,18 @@ function handleFileChange(event: Event) {
 
   if (!file) return;
 
+  input.value = '';
+
+  // `accept` é só uma sugestão ao seletor do sistema: a pessoa ainda pode escolher
+  // "Todos os arquivos". Conferimos aqui para não esperar a recusa do backend.
+  if (!arquivoTemExtensaoPermitida(file.name, extensoesPermitidas.value)) {
+    limparArquivoSelecionado();
+    setFieldError('arquivo', mensagemDeExtensaoInvalida(file.name));
+    return;
+  }
+
   arquivoSelecionado.value = file;
   nomeArquivoSelecionado.value = file.name;
-
-  input.value = '';
 
   setFieldValue('arquivo', file);
   validateField('arquivo');
@@ -139,7 +187,9 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     const file = values.arquivo as File;
     let token;
     if (alterouArquivo.value) {
-      token = await uploadArquivo(file, 'DOCUMENTO');
+      token = await uploadArquivo(file, 'DOCUMENTO', {
+        tipoDocumentoId: values.tipo_documento_id,
+      });
     }
 
     if (values.id) {
@@ -200,6 +250,15 @@ watch(exibirModal, (exibir) => {
   if (exibir) {
     alterouArquivo.value = false;
   }
+});
+
+// trocar o tipo depois de escolher o arquivo pode torná-lo inválido
+watch(extensoesPermitidas, () => {
+  const arquivo = arquivoSelecionado.value;
+  if (!arquivo || arquivoTemExtensaoPermitida(arquivo.name, extensoesPermitidas.value)) return;
+
+  limparArquivoSelecionado();
+  setFieldError('arquivo', mensagemDeExtensaoInvalida(arquivo.name));
 });
 
 function onDeletarArquivo(linha: Record<string, unknown>) {
@@ -275,6 +334,40 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         class="mb1"
       >
         <SmaeLabel
+          name="tipo_documento_id"
+          :schema="schema"
+          required
+        />
+
+        <Field
+          name="tipo_documento_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ error: errors.tipo_documento_id, loading: chamadasPendentesDeTipos.lista }"
+          :disabled="chamadasPendentesDeTipos.lista"
+        >
+          <option value="">
+            Selecione
+          </option>
+          <option
+            v-for="tipoDeDocumento in listaDeTiposDeDocumentos"
+            :key="tipoDeDocumento.id"
+            :value="tipoDeDocumento.id"
+          >
+            {{ tipoDeDocumento.titulo }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="tipo_documento_id"
+        />
+      </div>
+
+      <div
+        v-if="!modoEdicaoMetadados"
+        class="mb1"
+      >
+        <SmaeLabel
           name="arquivo"
           :schema="schema"
         />
@@ -283,7 +376,8 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
           ref="inputRef"
           style="display:none;"
           type="file"
-          :disabled="carregando"
+          :accept="extensoesParaAccept(extensoesPermitidas)"
+          :disabled="carregando || !tipoDocumentoId"
           @change="handleFileChange($event)"
         >
 
@@ -295,7 +389,7 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         <button
           class="like-a__text addlink"
           type="button"
-          :disabled="carregando"
+          :disabled="carregando || !tipoDocumentoId"
           :aria-busy="carregando"
           @click="abrirSeletorDeArquivos"
         >
@@ -306,8 +400,17 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
             <use xlink:href="#i_+" />
           </svg>
 
-          Selecionar arquivo
+          Selecionar arquivo<template v-if="extensoesPermitidas.length">
+            ({{ extensoesComoTexto(extensoesPermitidas) }})
+          </template>
         </button>
+
+        <p
+          v-if="!tipoDocumentoId"
+          class="t12 tc500 mt05"
+        >
+          Escolha um tipo de documento antes de selecionar o arquivo.
+        </p>
 
         <span
           v-if="nomeArquivoSelecionado"

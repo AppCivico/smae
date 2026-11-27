@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import type { TipoUpload } from '@back/upload/entities/tipo-upload';
+import { storeToRefs } from 'pinia';
 import {
   computed, ref, useTemplateRef, watch,
 } from 'vue';
 
 import SmaeLink from '@/components/SmaeLink.vue';
 import { useUpload } from '@/composables/useUpload';
+import {
+  arquivoTemExtensaoPermitida,
+  extensoesComoTexto,
+  extensoesParaAccept,
+  listarExtensoes,
+} from '@/helpers/extensoesDeArquivo';
+import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 interface ArquivoBase {
   id: number;
@@ -31,6 +39,11 @@ type FnExcluir = (id: number) => Promise<void> | void;
 type Props = {
   arquivosExistentes?: ArquivoExistente[];
   tipo?: TipoUpload;
+  /**
+   * Tipo de documento usado em todos os envios quando `tipo` é `DOCUMENTO`.
+   * Se ausente, o componente exibe uma lista para a pessoa escolher.
+   */
+  tipoDocumentoId?: number;
   accept?: string;
   label?: string;
   required?: boolean;
@@ -48,6 +61,7 @@ type ArquivoNaLista =
 const props = withDefaults(defineProps<Props>(), {
   arquivosExistentes: () => [],
   tipo: undefined,
+  tipoDocumentoId: undefined,
   accept: undefined,
   label: 'Adicionar arquivo',
   id: 'upload-arquivos',
@@ -70,8 +84,78 @@ const {
   erro,
 } = useUpload();
 
+const tiposDeDocumentosStore = useTiposDeDocumentosStore();
+const {
+  lista: listaDeTiposDeDocumentos,
+  tiposPorId,
+  chamadasPendentes: chamadasPendentesDeTipos,
+  erro: erroAoBuscarTipos,
+} = storeToRefs(tiposDeDocumentosStore);
+
 const arquivosNovos = ref<ArquivoNovo[]>([]);
 const inputRef = useTemplateRef('inputRef');
+const tipoDocumentoEscolhido = ref<number | ''>('');
+
+// `fnAdicionar` faz o próprio envio; só aí o tipo de documento não é responsabilidade nossa
+const exigeTipoDeDocumento = computed(() => props.tipo === 'DOCUMENTO' && !props.fnAdicionar);
+const exibirEscolhaDeTipo = computed(() => exigeTipoDeDocumento.value && !props.tipoDocumentoId);
+
+const tipoDocumentoId = computed<number | undefined>(() => props.tipoDocumentoId
+  || (tipoDocumentoEscolhido.value || undefined));
+
+/**
+ * Extensões do tipo de documento em uso:
+ * - `[]` quando não se aplica ou quando o tipo aceita qualquer extensão;
+ * - `null` enquanto o tipo não foi encontrado na lista (busca pendente, falha
+ * ou id inexistente). Isso não pode virar "qualquer extensão".
+ */
+const extensoesDoTipo = computed<string[] | null>(() => {
+  if (!exigeTipoDeDocumento.value || !tipoDocumentoId.value) return [];
+
+  const tipoDeDocumento = tiposPorId.value[tipoDocumentoId.value];
+  if (!tipoDeDocumento) return null;
+
+  return listarExtensoes(tipoDeDocumento.extensoes);
+});
+
+const tipoDeDocumentoNaoResolvido = computed(() => extensoesDoTipo.value === null);
+const falhaAoResolverTipo = computed(() => tipoDeDocumentoNaoResolvido.value
+  && !chamadasPendentesDeTipos.value.lista);
+
+// sem a lista não há o que escolher: vale também quando a escolha de tipo está visível
+const falhaAoCarregarLista = computed(() => exigeTipoDeDocumento.value
+  && !chamadasPendentesDeTipos.value.lista
+  && !listaDeTiposDeDocumentos.value.length
+  && !!erroAoBuscarTipos.value);
+
+const mensagemDeFalhaDosTipos = computed<string | undefined>(() => {
+  if (falhaAoCarregarLista.value) return 'Não foi possível carregar os tipos de documento.';
+  if (tipoDocumentoId.value && falhaAoResolverTipo.value) {
+    return 'Não foi possível carregar o tipo de documento.';
+  }
+  return undefined;
+});
+
+const envioBloqueado = computed(() => exigeTipoDeDocumento.value
+  && (!tipoDocumentoId.value || tipoDeDocumentoNaoResolvido.value));
+
+const motivoDoBloqueio = computed<string | undefined>(() => {
+  if (!envioBloqueado.value) return undefined;
+  if (mensagemDeFalhaDosTipos.value) return mensagemDeFalhaDosTipos.value;
+  if (!tipoDocumentoId.value) return 'Escolha um tipo de documento antes de enviar um arquivo.';
+  return 'Carregando o tipo de documento…';
+});
+
+const extensoesConhecidas = computed<string[]>(() => extensoesDoTipo.value ?? []);
+
+const extensoesAceitas = computed<string | undefined>(() => props.accept
+  || extensoesParaAccept(extensoesConhecidas.value));
+
+// a store guarda a falha em `erro`; aqui ela aparece como tipo não resolvido
+function buscarTiposDeDocumentos(): Promise<void> {
+  if (chamadasPendentesDeTipos.value.lista) return Promise.resolve();
+  return tiposDeDocumentosStore.buscarTudo();
+}
 
 const listaUnificada = computed<ArquivoNaLista[]>(() => {
   const existentes: ArquivoNaLista[] = props.arquivosExistentes.map((arq) => ({
@@ -111,7 +195,7 @@ async function obterToken(file: File): Promise<string> {
   }
 
   if (props.tipo) {
-    return uploadArquivo(file, props.tipo);
+    return uploadArquivo(file, props.tipo, { tipoDocumentoId: tipoDocumentoId.value });
   }
 
   throw new Error('É necessário fornecer "tipo" ou "fnAdicionar"');
@@ -122,6 +206,23 @@ async function handleFileChange(event: Event) {
   const file = input.files?.[0];
 
   if (!file) return;
+
+  const extensoes = extensoesDoTipo.value;
+
+  // sem os dados do tipo não há como saber o que é permitido
+  if (envioBloqueado.value || extensoes === null) {
+    erro.value = new Error(motivoDoBloqueio.value || 'Tipo de documento indisponível.');
+    input.value = '';
+    return;
+  }
+
+  // `accept` só sugere ao seletor do sistema; a pessoa ainda pode escolher "Todos os arquivos"
+  if (!arquivoTemExtensaoPermitida(file.name, extensoes)) {
+    erro.value = new Error(`"${file.name}" não é aceito para este tipo de documento. `
+      + `Extensões permitidas: ${extensoesComoTexto(extensoes)}.`);
+    input.value = '';
+    return;
+  }
 
   try {
     const token = await obterToken(file);
@@ -177,12 +278,21 @@ function limpar() {
 }
 
 function abrirSeletorDeArquivos() {
+  if (envioBloqueado.value) return;
   inputRef.value?.click();
 }
 
 watch(() => props.arquivosExistentes, () => {
   emitirTokens();
 }, { deep: true });
+
+// os dados do tipo são necessários sempre que o envio é nosso, mesmo com
+// `tipoDocumentoId` vindo por prop e a escolha de tipo escondida
+watch(exigeTipoDeDocumento, (exige) => {
+  if (exige && !listaDeTiposDeDocumentos.value.length) {
+    buscarTiposDeDocumentos();
+  }
+}, { immediate: true });
 
 defineExpose({
   tokensDeUpload: computed(() => arquivosNovos.value.map((a) => a.upload_token)),
@@ -249,14 +359,44 @@ defineExpose({
       </li>
     </ul>
 
+    <div
+      v-if="exibirEscolhaDeTipo"
+      class="mb1"
+    >
+      <label
+        class="label"
+        :for="`${id}-tipo-documento`"
+      >
+        Tipo de documento <span class="tvermelho">*</span>
+      </label>
+      <select
+        :id="`${id}-tipo-documento`"
+        v-model.number="tipoDocumentoEscolhido"
+        class="inputtext light"
+        :class="{ loading: chamadasPendentesDeTipos.lista }"
+        :disabled="carregando || chamadasPendentesDeTipos.lista"
+      >
+        <option value="">
+          Selecione
+        </option>
+        <option
+          v-for="tipoDeDocumento in listaDeTiposDeDocumentos"
+          :key="tipoDeDocumento.id"
+          :value="tipoDeDocumento.id"
+        >
+          {{ tipoDeDocumento.titulo }}
+        </option>
+      </select>
+    </div>
+
     <input
       :id="`${id}-input`"
       ref="inputRef"
       type="file"
       :name="name"
-      :accept="accept"
+      :accept="extensoesAceitas"
       :required="required && listaUnificada.length === 0"
-      :disabled="carregando"
+      :disabled="carregando || envioBloqueado"
       class="upload-input"
       @change="handleFileChange"
     >
@@ -274,7 +414,8 @@ defineExpose({
       <button
         class="like-a__text addlink"
         type="button"
-        :disabled="carregando"
+        :disabled="carregando || envioBloqueado"
+        :title="motivoDoBloqueio"
         @click="abrirSeletorDeArquivos"
       >
         <svg
@@ -284,9 +425,25 @@ defineExpose({
           <use xlink:href="#i_+" />
         </svg>
 
-        {{ $props.label }}
+        {{ $props.label }}<template v-if="extensoesConhecidas.length">
+          ({{ extensoesComoTexto(extensoesConhecidas) }})
+        </template>
       </button>
     </slot>
+
+    <p
+      v-if="mensagemDeFalhaDosTipos"
+      class="upload-erro"
+    >
+      {{ mensagemDeFalhaDosTipos }}
+      <button
+        type="button"
+        class="like-a__text"
+        @click="buscarTiposDeDocumentos"
+      >
+        Tentar novamente
+      </button>
+    </p>
 
     <p
       v-if="erro"

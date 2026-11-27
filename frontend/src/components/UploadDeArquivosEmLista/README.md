@@ -101,6 +101,7 @@ async function salvar() {
 | `modelValue` | `string[]` | Não | `[]` | Array de upload tokens (v-model) |
 | `arquivosExistentes` | `ArquivoExistente[]` | Não | `[]` | Arquivos existentes do backend |
 | `tipo` | `TipoUpload` | Não* | `undefined` | Tipo de upload: `DOCUMENTO`, `ICONE_TAG`, etc |
+| `tipoDocumentoId` | `number` | Não | `undefined` | Tipo de documento usado nos envios com `tipo="DOCUMENTO"`. Se ausente, o componente exibe uma lista para a pessoa escolher (o backend rejeita `DOCUMENTO` sem ele). Ignorado com `fnAdicionar` |
 | `accept` | `string` | Não | `undefined` | Extensões aceitas (ex: `.pdf,.doc`) |
 | `label` | `string` | Não | `'Adicionar arquivo'` | Texto do botão de adicionar |
 | `required` | `boolean` | Não | `false` | Se obrigatório (valida quando lista vazia) |
