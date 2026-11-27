@@ -45,7 +45,6 @@ export class DemandaConfigService {
                     );
                 }
 
-                // Find current active record FIRST (before overlap check)
                 const activeConfig = await prismaTxn.demandaConfig.findFirst({
                     where: {
                         ativo: true,
@@ -54,48 +53,35 @@ export class DemandaConfigService {
                     select: {
                         id: true,
                         data_inicio_vigencia: true,
-                        data_fim_vigencia: true,
                     },
                 });
 
-                // Check for date overlaps, excluding active (it will be auto-closed)
+                // Só substitui a ativa quem começa depois dela; o resto entra como histórico
+                const substituiAtiva =
+                    activeConfig !== null && dto.data_inicio_vigencia > activeConfig.data_inicio_vigencia;
+
                 await this.checkDateOverlap(
                     prismaTxn,
                     dto.data_inicio_vigencia,
                     dto.data_fim_vigencia,
-                    activeConfig ? [activeConfig.id] : []
+                    substituiAtiva ? [activeConfig.id] : []
                 );
 
-                // If exists, shrink or supersede the active config
-                if (activeConfig) {
+                if (substituiAtiva) {
                     const newEndDate = new Date(dto.data_inicio_vigencia);
                     newEndDate.setDate(newEndDate.getDate() - 1);
 
-                    if (newEndDate < activeConfig.data_inicio_vigencia) {
-                        // New config fully supersedes the active one — soft delete it
-                        await prismaTxn.demandaConfig.update({
-                            where: { id: activeConfig.id },
-                            data: {
-                                ativo: null,
-                                removido_por: user.id,
-                                removido_em: new Date(Date.now()),
-                            },
-                        });
-                    } else {
-                        // Shrink the active config to end right before the new one starts
-                        await prismaTxn.demandaConfig.update({
-                            where: { id: activeConfig.id },
-                            data: {
-                                data_fim_vigencia: newEndDate,
-                                ativo: null,
-                                atualizado_por: user.id,
-                                atualizado_em: new Date(Date.now()),
-                            },
-                        });
-                    }
+                    await prismaTxn.demandaConfig.update({
+                        where: { id: activeConfig.id },
+                        data: {
+                            data_fim_vigencia: newEndDate,
+                            ativo: null,
+                            atualizado_por: user.id,
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
                 }
 
-                // Create new config with ativo = true
                 const demandaConfig = await prismaTxn.demandaConfig.create({
                     data: {
                         data_inicio_vigencia: dto.data_inicio_vigencia,
@@ -109,7 +95,7 @@ export class DemandaConfigService {
                         alerta_valor_min: dto.alerta_valor_min ?? false,
                         alerta_valor_max: dto.alerta_valor_max ?? true,
                         observacao: dto.observacao,
-                        ativo: true,
+                        ativo: activeConfig === null || substituiAtiva ? true : null,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
@@ -423,6 +409,7 @@ export class DemandaConfigService {
                 },
                 select: {
                     ativo: true,
+                    data_inicio_vigencia: true,
                 },
             });
 
@@ -460,9 +447,8 @@ export class DemandaConfigService {
                 },
             });
 
-            // If deleting active record, activate the next most recent record
             if (existing.ativo === true) {
-                const nextMostRecent = await prismaTxn.demandaConfig.findFirst({
+                const maisRecente = await prismaTxn.demandaConfig.findFirst({
                     where: {
                         id: { not: id },
                         removido_em: null,
@@ -472,12 +458,14 @@ export class DemandaConfigService {
                     },
                     select: {
                         id: true,
+                        data_inicio_vigencia: true,
                     },
                 });
 
-                if (nextMostRecent) {
+                // Só reativa a anterior se a removida era a mais recente
+                if (maisRecente && maisRecente.data_inicio_vigencia < existing.data_inicio_vigencia) {
                     await prismaTxn.demandaConfig.update({
-                        where: { id: nextMostRecent.id },
+                        where: { id: maisRecente.id },
                         data: {
                             ativo: true,
                             data_fim_vigencia: null,
