@@ -36,15 +36,16 @@ class PageRequest:
         
         self.session.headers['HOST'] = 'www.gov.br'
         self.session.headers['Referer'] = 'https://www.gov.br/transferegov/pt-br/comunicados'
+        self.session.headers['Accept'] = 'application/json'
 
-    def __get_n_retries(self, url:str)->str:
-        '''Faz o get da pagina de determinada url, tentando MAX_RETRIES vezes'''
+    def __get_n_retries(self, url:str)->dict:
+        '''Faz o get (JSON) de determinada url, tentando MAX_RETRIES vezes'''
         
         for n in range(MAX_RETRIES):
             try:
                 with self.session.get(url) as response:
                     response.raise_for_status()
-                    return response.text
+                    return response.json()
             except HTTPError as exc:
                 code = exc.response.status_code
                 
@@ -57,7 +58,7 @@ class PageRequest:
             raise RuntimeError(f'Max retries exceeded for url: {url}. HTTP Exception: {exc}. Status code: {code}')
     
 
-    def __call__(self, url:str)->str:
+    def __call__(self, url:str)->dict:
 
         return self.__get_n_retries(url)
 
