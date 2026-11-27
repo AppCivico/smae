@@ -21,7 +21,11 @@ import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { CreateGeoEnderecoReferenciaDto, FindGeoEnderecoReferenciaDto } from 'src/geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from 'src/geo-loc/geo-loc.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from 'src/upload/arquivo-preview.helper';
+import {
+    BuildArquivoBaseDto,
+    PrismaArquivoComPreviewPayload,
+    PrismaArquivoComPreviewSelect,
+} from 'src/upload/arquivo-preview.helper';
 import { UploadService } from 'src/upload/upload.service';
 import { uuidv7 } from 'uuidv7';
 import { ObjectDiff } from '../../common/objectDiff';
@@ -647,7 +651,12 @@ export class DemandaService {
                         id: true,
                         autoriza_divulgacao: true,
                         descricao: true,
-                        arquivo: { select: PrismaArquivoComPreviewSelect },
+                        arquivo: {
+                            select: {
+                                ...PrismaArquivoComPreviewSelect,
+                                TipoDocumento: { select: { id: true, titulo: true, descricao: true } },
+                            },
+                        },
                     },
                     orderBy: [{ autoriza_divulgacao: 'desc' }, { descricao: 'asc' }],
                 },
@@ -736,8 +745,9 @@ export class DemandaService {
                 id: a.id,
                 autoriza_divulgacao: a.autoriza_divulgacao,
                 descricao: a.descricao,
+                tipo_documento: a.arquivo.TipoDocumento,
                 arquivo: BuildArquivoBaseDto(
-                    a.arquivo,
+                    a.arquivo as PrismaArquivoComPreviewPayload,
                     (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
                 ),
             })),

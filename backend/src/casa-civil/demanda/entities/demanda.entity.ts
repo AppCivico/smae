@@ -4,10 +4,17 @@ import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { GeolocalizacaoDto } from 'src/geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from 'src/upload/dto/create-upload.dto';
 
+export class DemandaArquivoTipoDocumentoDto {
+    id: number;
+    titulo: string;
+    descricao: string | null;
+}
+
 export class DemandaArquivoDto {
     id: number;
     autoriza_divulgacao: boolean;
     descricao: string | null;
+    tipo_documento: DemandaArquivoTipoDocumentoDto | null;
     arquivo: ArquivoBaseDto;
 }
 
