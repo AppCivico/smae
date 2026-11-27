@@ -26,6 +26,7 @@ import schema from './formularioArquivo';
 interface ArquivoDocumentoBase {
   descricao: string;
   autoriza_divulgacao: boolean;
+  tipo_documento?: { id: number; titulo: string; descricao: string | null } | null;
   arquivo: {
     nome_original: string;
     download_token: string;
@@ -148,6 +149,11 @@ async function handleEditarMetadados(linha: ArquivoDocumento) {
   });
 }
 
+function tipoDocumentoSelecionado(): ArquivoDocumento['tipo_documento'] {
+  const tipo = tiposPorId.value[tipoDocumentoId.value];
+  return tipo ? { id: tipo.id, titulo: tipo.titulo, descricao: tipo.descricao ?? null } : null;
+}
+
 function handleFileChange(event: Event) {
   alterouArquivo.value = true;
   const input = event.target as HTMLInputElement;
@@ -206,6 +212,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 
       if (token) {
         alvo.upload_token = token;
+        alvo.tipo_documento = tipoDocumentoSelecionado();
         alvo.arquivo = {
           nome_original: file.name,
           download_token: token,
@@ -224,6 +231,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         upload_token: token,
         descricao: values.descricao as string,
         autoriza_divulgacao: values.autoriza_divulgacao as boolean,
+        tipo_documento: tipoDocumentoSelecionado(),
         arquivo: {
           nome_original: file.name,
           download_token: token,
@@ -470,8 +478,8 @@ function onDeletarArquivo(linha: Record<string, unknown>) {
         formatador: i => i ? 'Sim' : 'Não'
       },
       {
-        chave: 'arquivo.preview.mime_type',
-        label: 'Tipo arquivo'
+        chave: 'tipo_documento.titulo',
+        label: 'Tipo de documento'
       },
       {
         chave: 'arquivo.preview.atualizado_em',
