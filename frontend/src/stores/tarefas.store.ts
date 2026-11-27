@@ -40,6 +40,7 @@ interface ChamadasPendentes {
   emFoco: boolean;
   clonarTarefas: boolean;
   validaçãoDeDependências: boolean;
+  eap: boolean;
 }
 
 interface Estado {
@@ -62,6 +63,28 @@ function resolverHierarquia(tarefa: TarefaItemDto, tarefasPorId: { [x: string | 
   return tarefa.tarefa_pai_id
     ? `${resolverHierarquia(tarefasPorId[tarefa.tarefa_pai_id], tarefasPorId)}.${tarefa.numero}`
     : String(tarefa.numero);
+}
+
+export type FormatoDeEap = 'pdf' | 'svg' | 'png';
+
+export type OrientacaoDeEap = 'vertical' | 'horizontal';
+
+export type OpcoesDeEap = {
+  orientacao?: OrientacaoDeEap;
+  nivel_maximo?: number | null;
+};
+
+function gerarNomeDoArquivoDeEap(mãeComId: MãeComId, formato: FormatoDeEap): string {
+  switch (true) {
+    case !!mãeComId?.projetoId:
+      return `eap-projeto-${mãeComId?.projetoId}.${formato}`;
+    case !!mãeComId?.obraId:
+      return `eap-obra-${mãeComId?.obraId}.${formato}`;
+    case !!mãeComId?.transferenciaId:
+      return `eap-transferencia-${mãeComId?.transferenciaId}.${formato}`;
+    default:
+      return `eap.${formato}`;
+  }
 }
 
 function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
@@ -91,6 +114,7 @@ export const useTarefasStore = defineStore('tarefas', {
       emFoco: true,
       clonarTarefas: false,
       validaçãoDeDependências: false,
+      eap: false,
     },
 
     erro: null,
@@ -211,6 +235,32 @@ export const useTarefasStore = defineStore('tarefas', {
         this.erro = erro;
         this.chamadasPendentes.validaçãoDeDependências = false;
         return false;
+      }
+    },
+
+    async baixarEap(
+      formato: FormatoDeEap,
+      opcoes: OpcoesDeEap = {},
+      mãeComId: MãeComId = undefined,
+    ): Promise<boolean> {
+      const mãe = mãeComId || this.route.params;
+      this.chamadasPendentes.eap = true;
+
+      try {
+        await this.requestS.get(
+          `${baseUrl}/${gerarCaminhoParaApi(mãe)}/tarefas-eap`,
+          {
+            formato,
+            orientacao: opcoes.orientacao || undefined,
+            nivel_maximo: opcoes.nivel_maximo || undefined,
+          },
+          { nomeDoArquivoParaDownload: gerarNomeDoArquivoDeEap(mãe, formato) },
+        );
+        return true;
+      } catch {
+        return false;
+      } finally {
+        this.chamadasPendentes.eap = false;
       }
     },
 

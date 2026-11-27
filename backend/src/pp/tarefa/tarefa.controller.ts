@@ -102,14 +102,16 @@ export class TarefaController {
 
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
 
-        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
+        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato, {
+            orientacao: filter.orientacao,
+            nivel_maximo: filter.nivel_maximo,
+        });
         res.type(GraphvizContentTypeMap[formato]);
 
-        if (formato == 'pdf' || formato == 'svg')
-            res.set({
-                'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
-                'Access-Control-Expose-Headers': 'content-disposition',
-            });
+        res.set({
+            'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
+            'Access-Control-Expose-Headers': 'content-disposition',
+        });
 
         imgStream.pipe(res);
     }
@@ -249,14 +251,16 @@ export class TarefaMDOController {
 
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
 
-        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
+        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato, {
+            orientacao: filter.orientacao,
+            nivel_maximo: filter.nivel_maximo,
+        });
         res.type(GraphvizContentTypeMap[formato]);
 
-        if (formato == 'pdf' || formato == 'svg')
-            res.set({
-                'Content-Disposition': `attachment; filename="eap-projeto-${params.id}.${formato}"`,
-                'Access-Control-Expose-Headers': 'content-disposition',
-            });
+        res.set({
+            'Content-Disposition': `attachment; filename="eap-obra-${params.id}.${formato}"`,
+            'Access-Control-Expose-Headers': 'content-disposition',
+        });
 
         imgStream.pipe(res);
     }
